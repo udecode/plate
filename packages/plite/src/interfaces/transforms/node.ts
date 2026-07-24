@@ -82,7 +82,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
     T extends ElementOrTextIn<V>,
   >(
     editor: Editor<V, TExtensions>,
-    nodes: T | T[],
+    nodes: T | readonly T[],
     options?: NodeInsertNodesOptions<T>
   ) => void;
 
@@ -160,7 +160,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
     T extends ElementOrTextIn<TValue>,
   >(
     editor: Editor<TValue, TExtensions>,
-    children: T[],
+    children: readonly T[],
     options: NodeReplaceChildrenOptions
   ) => void;
 
@@ -206,7 +206,7 @@ export interface NodeMutationMethods<V extends Value = Value> {
     T extends NodeIn<TValue>,
   >(
     editor: Editor<TValue, TExtensions>,
-    props: string | string[],
+    props: string | readonly string[],
     options?: NodeUnsetNodesOptions<T>
   ) => void;
 

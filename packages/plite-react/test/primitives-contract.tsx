@@ -104,7 +104,7 @@ describe('plite-react primitives contract', () => {
     expect(placeholder?.tagName).toBe('SPAN');
   });
 
-  test('EditableText passes overlay defaults to custom placeholder renderers', () => {
+  test('EditableText passes only structural defaults to placeholder renderers', () => {
     const rendered = render(
       <EditableText
         placeholder="Type something"
@@ -127,8 +127,9 @@ describe('plite-react primitives contract', () => {
     expect(placeholder?.style.position).toBe('absolute');
     expect(placeholder?.style.pointerEvents).toBe('none');
     expect(placeholder?.style.width).toBe('100%');
-    expect(placeholder?.style.opacity).toBe('0.333');
     expect(placeholder?.style.userSelect).toBe('none');
+    expect(placeholder?.style.opacity).toBe('');
+    expect(placeholder?.style.textDecoration).toBe('');
   });
 
   test('PliteElement and PliteSpacer own the element and spacer shape', () => {

@@ -340,7 +340,10 @@ describe('basic mark input rules', () => {
     },
   ])('$title', ({ input, output, plugin, text }) => {
     const editor = createBaseEditor({
-      plugins: [...basicMarkPlugins, plugin],
+      plugins: [
+        ...basicMarkPlugins.filter((candidate) => candidate.key !== plugin.key),
+        plugin,
+      ],
       selection: input.selection,
       initialValue: input.children,
     });

@@ -7,14 +7,16 @@ import {
   SelectionApi,
 } from '@platejs/plite';
 import {
-  HAS_BEFORE_INPUT_SUPPORT,
-  IS_WEBKIT,
   isDOMElement,
   isDOMNode,
   isDOMText,
   isPlainTextOnlyPaste,
 } from '@platejs/plite-dom';
-import { DOMCoverage } from '@platejs/plite-dom/internal';
+import {
+  DOMCoverage,
+  isWebKitDOMHost,
+  supportsDOMBeforeInput,
+} from '@platejs/plite-dom/internal';
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -820,10 +822,10 @@ export const applyEditablePaste = ({
 
   if (
     canHandlePaste &&
-    (!HAS_BEFORE_INPUT_SUPPORT ||
+    (!supportsDOMBeforeInput(event) ||
       hasClipboardFiles(event.clipboardData) ||
       isPlainTextOnlyPaste(event.nativeEvent) ||
-      IS_WEBKIT)
+      isWebKitDOMHost(event))
   ) {
     // COMPAT: Certain browsers don't support the `beforeinput` event, so we
     // fall back to React's `onPaste` here instead.

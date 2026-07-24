@@ -24,7 +24,6 @@ import { cleanDocx } from '@platejs/docx';
 import type { BasePlugins } from '@platejs/core';
 import {
   BaseParagraphPlugin,
-  HtmlPlugin,
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
@@ -50,26 +49,21 @@ const TestLinkPlugin = createBasePlugin({
       },
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        parse: ({ element, type }) => {
-          const url = element.getAttribute('href');
-
-          if (!url) return;
-
-          return {
-            target: element.getAttribute('target') || '_blank',
-            type,
-            url,
-          };
-        },
-        rules: [{ validNodeName: 'A' }],
-      },
-    },
-  },
   type: KEYS.link,
-});
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => {
+    const url = element.getAttribute('href');
+
+    if (!url) return;
+
+    return {
+      target: element.getAttribute('target') || '_blank',
+      url,
+    };
+  },
+  decodeOnly: true,
+  match: [{ tag: 'a' }],
+}));
 
 const TestTableRowPlugin = createBasePlugin({
   key: KEYS.tr,
@@ -85,8 +79,11 @@ const TestTableRowPlugin = createBasePlugin({
       },
     };
   },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'TR' }] } } },
-});
+}).extendHtmlCodec(() => ({
+  decode: () => ({}),
+  decodeOnly: true,
+  match: [{ tag: 'tr' }],
+}));
 
 const TestTableCellPlugin = createBasePlugin({
   key: KEYS.td,
@@ -98,8 +95,11 @@ const TestTableCellPlugin = createBasePlugin({
       }),
     },
   }),
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'TD' }] } } },
-});
+}).extendHtmlCodec(() => ({
+  decode: () => ({}),
+  decodeOnly: true,
+  match: [{ tag: 'td' }],
+}));
 
 const TestTablePlugin = createBasePlugin({
   key: KEYS.table,
@@ -116,8 +116,11 @@ const TestTablePlugin = createBasePlugin({
       },
     };
   },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'TABLE' }] } } },
-});
+}).extendHtmlCodec(() => ({
+  decode: () => ({}),
+  decodeOnly: true,
+  match: [{ tag: 'table' }],
+}));
 
 /** Read .docx file from docx package's __tests__ directory */
 export const readDocxFixture = (filename: string): Buffer => {
@@ -182,7 +185,7 @@ export const testDocxImporter = ({
 
     // Deserialize HTML to nodes
     const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
-    const nodes = editor.plugin(HtmlPlugin).api.deserialize({
+    const nodes = editor.api.html.deserialize({
       element: doc.body,
     });
 

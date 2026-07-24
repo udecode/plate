@@ -15,12 +15,10 @@ import {
   target,
 } from '@platejs/plite';
 
-import {
-  ChangeSet,
-  DocumentChangeBuilder,
-  IndexedDocument,
-  type JsonEditorValue,
-} from '../src/core/document-change';
+import { ChangeDraft } from '../src/core/change/builder';
+import { DocumentIndex } from '../src/core/change/document-index';
+import { RootChange } from '../src/core/change/root-change';
+import type { JsonEditorValue } from '../src/core/change/tokens';
 import {
   ensureElementOwnedRootIndex,
   getElementOwnedRootGrammarBindings,
@@ -208,7 +206,7 @@ const validateWithBuilder = (
   change: DocumentChange,
   schemaApi: ReturnType<typeof getEditorSchema>
 ) => {
-  const builder = new DocumentChangeBuilder(before, {
+  const builder = new ChangeDraft(before, {
     indexConstructedRoot: schemaApi.indexConstructedRoot,
     validateConstructed: (input) => {
       if (
@@ -686,14 +684,14 @@ describe('incremental schema validation', () => {
     const compiled = getCompiledEditorSchemaFromApi(getEditorSchema(editor));
 
     assert.ok(compiled);
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       Array.from({ length: 12_000 }, (_, index) =>
         ownedRootElement('paragraph-owner', OWNED_ROOT, `${index}`)
       )
     );
 
     ensureElementOwnedRootIndex(compiled, 'main', before);
-    const change = ChangeSet.create(before, [
+    const change = RootChange.create(before, [
       {
         from: before.nodeRange([1000]).from,
         to: before.nodeRange([10_999]).to,
@@ -722,7 +720,7 @@ describe('incremental schema validation', () => {
     const full = ensureElementOwnedRootIndex(
       compiled,
       'main',
-      IndexedDocument.fromValue(structuredClone(after.value))
+      DocumentIndex.fromValue(structuredClone(after.value))
     );
     const summarize = (index: typeof incremental) =>
       getElementOwnedRootGrammarBindings(index, OWNED_ROOT).map(
@@ -759,7 +757,7 @@ describe('incremental schema validation', () => {
       ],
       type: 'container',
     } as Element;
-    const before = IndexedDocument.fromValue([
+    const before = DocumentIndex.fromValue([
       paragraph('left'),
       ownedRootElement('paragraph-owner'),
       nested,
@@ -787,7 +785,7 @@ describe('incremental schema validation', () => {
     );
 
     assert.deepEqual(changed.candidates, [{ path: [2], recursive: true }]);
-    const change = ChangeSet.create(before, [
+    const change = RootChange.create(before, [
       { from: removed.from, to: removed.to },
     ]);
     const after = change.apply(before);
@@ -817,7 +815,7 @@ describe('incremental schema validation', () => {
       const full = ensureElementOwnedRootIndex(
         compiled,
         'main',
-        IndexedDocument.fromValue(structuredClone(after.value))
+        DocumentIndex.fromValue(structuredClone(after.value))
       );
 
       assert.equal(
@@ -956,15 +954,15 @@ describe('incremental schema validation', () => {
     const compiled = getCompiledEditorSchemaFromApi(getEditorSchema(editor));
 
     assert.ok(compiled);
-    let document = IndexedDocument.fromValue(editor.read.children());
+    let document = DocumentIndex.fromValue(editor.read.children());
     let index = ensureElementOwnedRootIndex(compiled, 'main', document);
     const iterations = 10_000;
 
     for (let iteration = 0; iteration < iterations; iteration += 1) {
-      const target = IndexedDocument.fromValue(
+      const target = DocumentIndex.fromValue(
         Object.freeze([document.value[1]!, document.value[0]!])
       );
-      const change = ChangeSet.between(document, target);
+      const change = RootChange.between(document, target);
       const after = change.apply(document);
 
       index = rebaseElementOwnedRootIndex(

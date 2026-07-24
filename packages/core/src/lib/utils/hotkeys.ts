@@ -1,4 +1,9 @@
-import { IS_APPLE } from '@udecode/utils';
+import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
+import {
+  type KeyboardEventLike as PliteKeyboardEventLike,
+  type HotkeySpec,
+  isHotkey as isDOMHotkey,
+} from '@platejs/plite-dom';
 import { type KeyboardEventLike, isKeyHotkey } from 'is-hotkey';
 
 import type { BaseEditor } from '../editor';
@@ -60,14 +65,24 @@ export const createHotkey = (key: string) => {
   const generic = (HOTKEYS as any)[key];
   const apple = (APPLE_HOTKEYS as any)[key];
   const windows = (WINDOWS_HOTKEYS as any)[key];
-  const isGeneric = generic && isKeyHotkey(generic);
   const isApple = apple && isKeyHotkey(apple);
   const isWindows = windows && isKeyHotkey(windows);
 
   return (event: KeyboardEventLike) => {
-    if (isGeneric?.(event)) return true;
-    if (IS_APPLE && isApple?.(event)) return true;
-    if (!IS_APPLE && isWindows?.(event)) return true;
+    const appleHost = usesAppleDOMHotkeys(event);
+
+    if (
+      generic &&
+      isDOMHotkey(
+        generic as HotkeySpec,
+        { platform: appleHost ? 'apple' : 'other' },
+        event as PliteKeyboardEventLike
+      )
+    ) {
+      return true;
+    }
+    if (appleHost && isApple?.(event)) return true;
+    if (!appleHost && isWindows?.(event)) return true;
 
     return false;
   };

@@ -5,6 +5,16 @@ import type { BasePlugin } from '../../lib';
 type NominalPluginReference = Readonly<{ key: string; type: string }>;
 
 const pluginDescriptors = new WeakSet<object>();
+const pluginSchemaFamilies = new WeakMap<object, object>();
+const htmlCodecSchemaFamilies = new WeakMap<
+  (...args: any[]) => unknown,
+  Readonly<{
+    owner: object | null;
+    target: object | null;
+  }>
+>();
+
+const createPluginSchemaFamily = (): object => Object.freeze(() => {});
 
 const opaquePluginRenderKeys = new Set<PropertyKey>([
   'aboveEditable',
@@ -96,11 +106,45 @@ const collectOpaquePluginHostResources = (
   }
 };
 
-export const brandPluginDescriptor = <T extends object>(value: T): T => {
+export const brandPluginDescriptor = <T extends object>(
+  value: T,
+  familySource?: object
+): T => {
+  lockPluginSchema(value);
   pluginDescriptors.add(value);
+  const family = familySource
+    ? pluginSchemaFamilies.get(familySource)
+    : pluginSchemaFamilies.get(value);
+
+  pluginSchemaFamilies.set(value, family ?? createPluginSchemaFamily());
 
   return value;
 };
+
+export const getPluginSchemaFamily = (value: object): object | null =>
+  pluginSchemaFamilies.get(value) ?? null;
+
+export const registerHtmlCodecSchemaFamilies = <
+  T extends (...args: any[]) => unknown,
+>(
+  extension: T,
+  owner: object,
+  target: object
+): T => {
+  htmlCodecSchemaFamilies.set(
+    extension,
+    Object.freeze({
+      owner: getPluginSchemaFamily(owner),
+      target: getPluginSchemaFamily(target),
+    })
+  );
+
+  return extension;
+};
+
+export const getHtmlCodecSchemaFamilies = (
+  extension: (...args: any[]) => unknown
+) => htmlCodecSchemaFamilies.get(extension);
 
 const hasStringIdentity = (value: object): value is NominalPluginReference => {
   const key = Object.getOwnPropertyDescriptor(value, 'key');
@@ -171,6 +215,22 @@ const cloneFrozenPluginDescriptor = <T>(
 export const freezePluginDescriptorValue = <T>(value: T): T =>
   typeof value === 'function' ? value : cloneFrozenPluginDescriptor(value);
 
+function lockPluginSchema(value: object) {
+  const descriptor = Object.getOwnPropertyDescriptor(value, 'schema');
+
+  if (!descriptor || !Object.hasOwn(descriptor, 'value')) return;
+  if (descriptor.configurable === false && descriptor.writable === false) {
+    return;
+  }
+
+  Object.defineProperty(value, 'schema', {
+    configurable: false,
+    enumerable: descriptor.enumerable,
+    value: freezePluginDescriptorValue(descriptor.value),
+    writable: false,
+  });
+}
+
 const mergeDefinedProperties = (
   base: unknown,
   source: unknown
@@ -204,9 +264,19 @@ const moveEditorApiDeclaration = (value: unknown) => {
 };
 
 export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
-  const preservesDescriptorIdentity = [basePlugin, ...sourcePlugins].some(
+  const identitySources = [basePlugin, ...sourcePlugins].filter(
     isNominalPluginDescriptor
   );
+  const preservesDescriptorIdentity = identitySources.length > 0;
+  const schemaFamilies = new Set(
+    identitySources.map((source) => getPluginSchemaFamily(source))
+  );
+
+  if (schemaFamilies.size > 1) {
+    throw new Error(
+      'Plate cannot merge plugin descriptors from different schema families.'
+    );
+  }
   const plugins = [basePlugin, ...sourcePlugins].map(moveEditorApiDeclaration);
   const opaqueHostResources = new WeakSet<object>();
 
@@ -237,6 +307,6 @@ export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
   );
 
   return preservesDescriptorIdentity && merged && typeof merged === 'object'
-    ? (brandPluginDescriptor(merged) as T)
+    ? (brandPluginDescriptor(merged, identitySources[0]) as T)
     : merged;
 }

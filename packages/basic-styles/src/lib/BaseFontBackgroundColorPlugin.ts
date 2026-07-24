@@ -10,24 +10,20 @@ export const BaseFontBackgroundColorPlugin = createBasePlugin({
       styleKey: 'backgroundColor',
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validStyle: {
-              backgroundColor: '*',
-            },
-          },
-        ],
-        parse: ({ element, type }) => ({
-          [type]: element.style.backgroundColor,
-        }),
-      },
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => element.style.backgroundColor || undefined,
+    encode: ({ value }) => ({
+      style: { backgroundColor: value },
+      tag: 'span',
+    }),
+    match: [{ style: { backgroundColor: '*' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    clear: () => {
+      tx.marks.remove(type);
     },
-  },
-}).extendTx(({ type }) => (tx) => ({
-  set: (value: string) => {
-    tx.marks.add(type, value);
-  },
-}));
+    set: (value: string) => {
+      tx.marks.add(type, value);
+    },
+  }));

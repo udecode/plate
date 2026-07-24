@@ -7,7 +7,7 @@ describe('serializeInlineMd', () => {
   const editor = createTestEditor();
 
   it('serialize plain text correctly', () => {
-    const nodes = [{ text: 'Hello world' }];
+    const nodes = [{ text: 'Hello world' }] as const satisfies readonly Text[];
     const result = serializeInlineMd(editor, { value: nodes });
     expect(result).toBe('Hello world\n');
   });

@@ -93,6 +93,12 @@ details > summary {
   outline: none;
 }
 
+[data-plite-example] [data-plite-drop-cursor] {
+  z-index: 2;
+  border-radius: 2px;
+  background: #2563eb;
+}
+
 [data-plite-editor] > * + *,
 [data-plite-chunk] > * + * {
   margin-top: 1em;

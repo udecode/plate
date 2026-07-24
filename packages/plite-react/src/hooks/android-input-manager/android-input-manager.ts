@@ -32,6 +32,7 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   EDITOR_TO_PLACEHOLDER_ELEMENT,
   EDITOR_TO_USER_MARKS,
+  isDOMSyncMutation,
   IS_COMPOSING,
   IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
@@ -65,7 +66,6 @@ import {
   ReactEditor,
   type ReactRuntimeEditor,
 } from '../../plugin/react-editor';
-import { isDOMSyncMutation } from '../../editable/dom-sync-mutation-ownership';
 
 export type Action = { at?: Point | Range; run: () => void };
 

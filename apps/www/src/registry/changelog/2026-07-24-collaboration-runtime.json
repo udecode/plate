@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-collaboration-runtime",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-collaboration-runtime.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Run collaboration with independent peers and remote cursors",
+  "targets": [
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "remote-cursor-overlay",
+      "files": ["apps/www/src/registry/ui/remote-cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-collaboration-runtime-fb3bbef6",
+      "kind": "behavior",
+      "summary": "Run two independent local Yjs peers with connection, schema, history, and remote cursor controls.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["collaboration-demo", "remote-cursor-overlay"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-collaboration-runtime",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

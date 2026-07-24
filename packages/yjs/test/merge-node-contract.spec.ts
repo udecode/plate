@@ -6,16 +6,16 @@ import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   type Peer,
   paragraph,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const initialValue = (): Descendant[] => [
@@ -34,12 +34,12 @@ const createPeer = (
   clientId: string,
   seedUpdate?: Uint8Array,
   children: readonly Descendant[] = initialValue()
-): Peer => createYjsPeer({ children, clientId, seedUpdate });
+): Peer => createYjsHistoryPeer({ children, clientId, seedUpdate });
 
 const createPeers = (
   clientIds: readonly string[],
   children: readonly Descendant[] = initialValue()
-): Peer[] => createSeededYjsPeers({ children, clientIds });
+): Peer[] => createSeededYjsHistoryPeers({ children, clientIds });
 
 const mergeSecondParagraph = (peer: Peer): void => {
   peer.editor.update.nodes.merge({ at: [1] });
@@ -106,10 +106,10 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);
   });
 
@@ -128,10 +128,10 @@ describe('@platejs/yjs merge_node collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!beta']);
   });
 });

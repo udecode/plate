@@ -6,6 +6,11 @@ Translate canonical Plite document changes and shared effects through Yjs with
 app-owned `YjsProviderLike` adapters. Import remote Yjs events as incremental
 canonical changes and merge set-valued text properties by value.
 
+Transport registered shared effects exactly once through versioned records,
+retry unknown effect codecs after registration, compact acknowledged events
+safely, and preserve fitted slice changes through reconnect and concurrent
+edits.
+
 **Migration:** Configure `YjsPlugin` with the Yjs document and provider adapter
 from application code. Raw Plite editors can install `createYjsExtension`
 directly. Import React cursor and provider-state hooks from
@@ -17,4 +22,5 @@ metadata envelopes.
 
 Synchronize primary children and named roots as one document, preserve
 root-qualified awareness selections, and group multi-root commits into one Yjs
-transaction and undo step.
+transaction. Preserve shared character identity across compatible text
+replacements so remote positions survive canonical history replay.

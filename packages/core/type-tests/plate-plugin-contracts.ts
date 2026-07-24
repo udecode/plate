@@ -4,6 +4,21 @@ import {
   createPlatePlugin,
   type ExtendedPlatePlugin,
 } from '@platejs/core/react';
+import { ContentSlice } from '@platejs/plite';
+
+const ConfiguredPlateCodecContractPlugin = createPlatePlugin({
+  key: 'configuredPlateCodecContract',
+})
+  .extendCodecs(() => ({
+    'application/x-plate-codec-contract': {
+      decode: () => ContentSlice.closed([{ text: 'value' }]),
+      scope: 'document',
+    },
+  }))
+  .configure({});
+
+// @ts-expect-error Consumer configuration is terminal for React codec authoring.
+ConfiguredPlateCodecContractPlugin.extendCodecs(() => ({}));
 
 type ExtendDeclarationBoundaryConfig =
   PluginConfig<'extendDeclarationBoundary'>;

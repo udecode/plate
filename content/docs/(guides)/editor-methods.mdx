@@ -150,11 +150,9 @@ The portal owns that plugin's API, one-shot update commands, type, and live
 options.
 
 ```ts title="html-methods.ts" showLineNumbers
-import { HtmlPlugin } from 'platejs';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-const html = editor.plugin(HtmlPlugin);
-
-const nodes = html.api.deserialize({ element: '<p>Hello</p>' });
+editor.plugin(BoldPlugin).update.toggle();
 ```
 
 | Method | Use for |

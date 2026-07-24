@@ -4,7 +4,7 @@ import type { Descendant } from '../interfaces/node';
 import { getLiveSelection } from './public-state';
 
 const unwrapFragmentNodes = (
-  nodes: Descendant[],
+  nodes: readonly Descendant[],
   types: readonly string[],
   result: Descendant[] = []
 ) => {
@@ -14,7 +14,7 @@ const unwrapFragmentNodes = (
       typeof node.type === 'string' &&
       types.includes(node.type)
     ) {
-      unwrapFragmentNodes(node.children as Descendant[], types, result);
+      unwrapFragmentNodes(node.children, types, result);
     } else {
       result.push(node);
     }

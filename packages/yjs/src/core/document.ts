@@ -29,7 +29,6 @@ import {
 
 const HIDDEN_ATTRIBUTE = 'plite:yjs-hidden';
 const NODE_ID_ATTRIBUTE = 'plite:yjs-id';
-export const SPLIT_UNDO_TEXT_ATTRIBUTE = 'plite:yjs-split-undo-text';
 const VIRTUAL_CHILD_ID_ATTRIBUTE = 'plite:yjs-virtual-child-id';
 const VIRTUAL_PLACEHOLDER_ATTRIBUTE = 'plite:yjs-virtual-placeholder';
 const VIRTUAL_YJS_CHILD_RAW_INDEX = -1;
@@ -37,7 +36,6 @@ const INTERNAL_YJS_ATTRIBUTES = [
   HIDDEN_ATTRIBUTE,
   NODE_ID_ATTRIBUTE,
   PLITE_TYPE_ATTRIBUTE,
-  SPLIT_UNDO_TEXT_ATTRIBUTE,
   VIRTUAL_CHILD_ID_ATTRIBUTE,
   VIRTUAL_PLACEHOLDER_ATTRIBUTE,
 ] as const;
@@ -789,7 +787,7 @@ export const getYjsVisiblePath = (
   target: YjsNode
 ): Path | null => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
-  const path: Path = [];
+  const path: number[] = [];
   const visit = (node: YjsNode, visited: Set<YjsNode>): Path | null => {
     if (node === target) {
       return copyPath(path);
@@ -1356,6 +1354,165 @@ const readPliteNodeFromYjsWithResolver = (
   pliteElement.children = children.length > 0 ? children : [{ text: '' }];
 
   return pliteElement as Descendant;
+};
+
+export const removeSupersededVirtualYjsSplitSuffixes = (
+  root: Y.XmlElement,
+  insertedNodes: ReadonlySet<YjsNode>,
+  truncatedTextNodes: ReadonlySet<Y.XmlText>
+): ReadonlySet<YjsNode> => {
+  const resolveNodeById = createLazyYjsNodeIdResolver(root);
+  const changed = new Set<YjsNode>();
+  const hasTruncatedTextDescendant = (parent: Y.XmlElement): boolean => {
+    for (const text of truncatedTextNodes) {
+      let current = text.parent;
+
+      while (current !== null) {
+        if (current === parent) return true;
+
+        current = current.parent;
+      }
+    }
+
+    return false;
+  };
+
+  for (const inserted of insertedNodes) {
+    if (
+      !(inserted instanceof Y.XmlElement) ||
+      inserted.doc !== root.doc ||
+      isHiddenYjsNode(inserted)
+    ) {
+      continue;
+    }
+
+    const insertedIsPlaceholder = isVirtualYjsPlaceholder(inserted);
+    let previous: YjsNode | undefined;
+    let right: YjsNode | undefined;
+
+    if (insertedIsPlaceholder) {
+      const insertedParent = inserted.parent;
+
+      if (!(insertedParent instanceof Y.XmlElement)) continue;
+
+      previous = insertedParent;
+
+      const parent = insertedParent.parent;
+
+      if (!(parent instanceof Y.XmlElement)) continue;
+
+      const siblingSlots = getYjsVisibleChildSlots(
+        root,
+        parent,
+        resolveNodeById
+      );
+      const previousIndex = siblingSlots.findIndex(
+        (slot) => slot.node === previous
+      );
+
+      right = siblingSlots[previousIndex + 1]?.node;
+    } else {
+      const parent = inserted.parent;
+
+      if (!(parent instanceof Y.XmlElement)) continue;
+
+      const siblingSlots = getYjsVisibleChildSlots(
+        root,
+        parent,
+        resolveNodeById
+      );
+      const insertedIndex = siblingSlots.findIndex(
+        (slot) => slot.node === inserted
+      );
+
+      previous = siblingSlots[insertedIndex - 1]?.node;
+      right = inserted;
+    }
+
+    if (
+      !(previous instanceof Y.XmlElement) ||
+      !(right instanceof Y.XmlElement) ||
+      getPliteYjsElementType(previous) !== getPliteYjsElementType(right) ||
+      !yjsAttributeRecordsEqual(
+        getPublicYjsElementAttributes(previous),
+        getPublicYjsElementAttributes(right)
+      )
+    ) {
+      continue;
+    }
+
+    const rightChildren = getYjsVisibleChildNodes(root, right, resolveNodeById);
+    const previousRawChildren = getRawYjsChildren(previous);
+    const previousSlots = getYjsVisibleChildSlots(
+      root,
+      previous,
+      resolveNodeById,
+      previousRawChildren
+    );
+    const suffixSlot = previousSlots.at(-1);
+    const rightChild = rightChildren[0];
+    const suffixValue =
+      suffixSlot === undefined
+        ? null
+        : readPliteNodeFromYjsWithResolver(
+            root,
+            suffixSlot.node,
+            resolveNodeById
+          );
+    const rightValue =
+      rightChild === undefined
+        ? null
+        : readPliteNodeFromYjsWithResolver(root, rightChild, resolveNodeById);
+    const exactSuffix =
+      suffixValue !== null &&
+      rightValue !== null &&
+      areJsonLikeValuesEqual(suffixValue, rightValue);
+    let extendedSuffix = false;
+
+    if (
+      suffixValue !== null &&
+      rightValue !== null &&
+      NodeApi.isText(suffixValue) &&
+      NodeApi.isText(rightValue) &&
+      suffixValue.text.length > 0 &&
+      rightValue.text.startsWith(suffixValue.text) &&
+      hasTruncatedTextDescendant(previous)
+    ) {
+      const { text: _suffixText, ...suffixProperties } = suffixValue;
+      const { text: _rightText, ...rightProperties } = rightValue;
+
+      extendedSuffix = areJsonLikeValuesEqual(
+        suffixProperties,
+        rightProperties
+      );
+    }
+
+    if (
+      rightChildren.length !== 1 ||
+      rightChild === undefined ||
+      suffixSlot === undefined ||
+      !hasRawYjsChildSlot(suffixSlot) ||
+      !isHiddenYjsNode(suffixSlot.node) ||
+      (!exactSuffix && !extendedSuffix)
+    ) {
+      continue;
+    }
+
+    const placeholder = previousRawChildren[suffixSlot.rawIndex];
+
+    if (
+      !(placeholder instanceof Y.XmlElement) ||
+      !isVirtualYjsPlaceholder(placeholder) ||
+      (insertedIsPlaceholder && placeholder !== inserted)
+    ) {
+      continue;
+    }
+
+    previous.delete(suffixSlot.rawIndex, 1);
+    changed.add(previous);
+  }
+
+  return changed;
 };
 
 const cloneYjsNodeWithRoot = (

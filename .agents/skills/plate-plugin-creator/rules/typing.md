@@ -4,6 +4,7 @@
 
 - Builder inference
 - Owner context
+- Staged capabilities
 - Type-owner repair
 - Public contracts and plugin exports
 - Locals, tests, keys, and literals
@@ -59,6 +60,75 @@ Plugin callbacks already expose the typed owner context:
 Keep one-owner behavior inline and capture those values. Do not move a callback
 into another file by inventing context/config/extension ferry types or threading
 `BaseEditor`, resolved plugin type, options, and `tx` through helper signatures.
+
+## Stage Capabilities, Not Plumbing
+
+A plugin chain is a typed capability dependency graph. Put a reusable
+plugin-owned capability in an earlier builder stage, then consume the
+accumulated inferred surface from later stages:
+
+```ts
+export const BaseFooPlugin = createBasePlugin({
+  key: KEYS.foo,
+  options: {
+    labels: [{ id: "alpha", value: "Alpha" }],
+  },
+})
+  .extendApi(({ getOptions }) => ({
+    getLabel: (id: string) =>
+      getOptions().labels.find((label) => label.id === id)?.value,
+  }))
+  .extendTx(({ api }) => (tx) => ({
+    insertFoo: (id: string) => {
+      const label = api.getLabel(id);
+
+      if (!label) return;
+
+      tx.nodes.insert({
+        children: [{ text: label }],
+        type: KEYS.foo,
+      });
+    },
+  }))
+  .extendTx(({ plugin }) => (tx) => ({
+    insertFooPair: (firstId: string, secondId: string) => {
+      tx[plugin.key].insertFoo(firstId);
+      tx[plugin.key].insertFoo(secondId);
+    },
+  }));
+
+export const FooConsumerPlugin = createBasePlugin({
+  key: "fooConsumer",
+  dependencies: [BaseFooPlugin],
+}).extendApi(({ editor }) => ({
+  hasLabel: (id: string) => editor.api.foo.getLabel(id) !== undefined,
+}));
+```
+
+Repeated `.extendApi()` / `.extendTx()` calls are correct when their order
+expresses a real capability dependency. They preserve local inference and make
+the accumulated capability visible to required dependents.
+
+Stage only an honest scoped capability such as the dependent-facing `getLabel`
+query above. Do not publish a private implementation fragment merely to share
+it across builder stages. Keep one-use machinery lexical; keep a shared pure
+domain algorithm private; coalesce stages or name a builder gap when private
+runtime context would otherwise require plumbing.
+
+Inside a later tx stage, call an earlier tx method through the active
+`tx[plugin.key]` group. Do not use `editor.plugin(...).update`,
+`context.update`, or another one-shot update there; it would open a nested
+transaction.
+
+New methods should accept domain inputs such as `value`, `entry`, `at`, or
+operation options. Do not invent function parameters for `editor`, `api`,
+`read`, `tx`, `getOptions`, resolved plugin option values, or resolved type
+when the builder context can capture or stage them.
+
+Keep an explicit state/read-view parameter only at an honest composition
+boundary where the same query must observe an uncommitted transaction snapshot.
+Prove that boundary with an active-transaction test; never replace it with
+stale `editor.read` merely to remove a parameter.
 
 Do not add:
 

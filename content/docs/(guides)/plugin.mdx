@@ -150,37 +150,46 @@ const ExamplePlugin = createPlatePlugin({
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
 
 ```ts showLineNumbers
-import { KEYS } from "platejs";
+import { KEYS, property, target } from 'platejs';
 
 const TextAlignPlugin = createPlatePlugin({
   key: "align",
-  targetPluginKeys: [KEYS.p],
+  schema: ({ own, plugins, targetPluginKeys }) => ({
+    properties: [
+      own.elementProperty(property.string(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  }),
   inject: {
+    isBlock: true,
     nodeProps: {
       defaultNodeValue: "start",
-      nodeKey: "align",
       styleKey: "textAlign",
       validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
-    // This is injected into each installed, enabled target. In this example, ParagraphPlugin can deserialize the `textAlign` style.
-    targetParserToInject: ({ editor, plugin }) => ({
-      parsers: {
-        html: {
-          deserializer: {
-            parse: ({ element, node }) => {
-              if (element.style.textAlign) {
-                node[editor.getType("align")] = element.style.textAlign;
-              }
-            },
-          },
-        },
-      },
-    }),
   },
-});
+  targetPluginKeys: [KEYS.p],
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => element.style.textAlign || undefined,
+  encode: ({ value }) => ({ style: { textAlign: value } }),
+  match: [
+    {
+      style: {
+        textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      },
+    },
+  ],
+}));
 ```
 
-A paragraph node affected by the above plugin would look like this:
+`inject.nodeProps` owns rendering, while `.extendHtmlCodec()` owns the
+bidirectional HTML claim. Both use the plugin's resolved `type`, so terminal
+`.configure({ type })` changes the stored property without duplicating a key in
+the codec.
+
+A paragraph node affected by the plugin looks like this:
 
 ```ts showLineNumbers {3}
 {
@@ -353,27 +362,29 @@ const LowPriorityPlugin = createPlatePlugin({
 
 This is particularly useful when you need to ensure certain plugins are initialized or run before others.
 
-### Custom Parsers
+### HTML Input Hooks
 
-The `parsers` property accepts string keys to build your own parsers:
+Use the flat hooks under `parsers.html` to decide whether a plugin participates
+in an HTML input, transform the source string, or transform the decoded
+fragment.
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+const HtmlCleanupPlugin = createPlatePlugin({
+  key: 'htmlCleanup',
   parsers: {
-    myCustomParser: {
-      deserializer: {
-        parse: // ...
-      },
-      serializer: {
-        parse: // ...
-      }
+    html: {
+      query: ({ data, format }) =>
+        format === 'text/html' && data.includes('<!--StartFragment-->'),
+      transformData: ({ data }) =>
+        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
     },
   },
 });
 ```
 
-Core plugins includes `html` and `htmlReact` parsers.
+`query`, `transformData`, and `transformFragment` are siblings under
+`parsers.html`. Node-level HTML conversion remains separate from these
+whole-input hooks.
 
 ## Typed Plugins
 

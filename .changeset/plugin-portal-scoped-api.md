@@ -2,15 +2,27 @@
 "@platejs/core": major
 ---
 
-Scope `editor.plugin(FooPlugin).api` to the plugin API and expose the composed
-editor API through `editor.plugin(FooPlugin).editor.api`.
+Publish every installed non-empty plugin API under its inferred plugin key on
+`editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact
+generic portal. Both paths reference the same immutable API object. Reject
+plugin-key collisions with explicit editor API namespaces.
+Expose `editor.plugin(Plugin).installed` for optional package integrations.
 
-Contextually infer callbacks for contract-declared explicit transaction groups.
+Contextually infer callbacks for contract-declared explicit transaction groups
+and plugin extension command transactions.
 
 Replace Slate-era Core exports with Plite and Plate-owned names.
 
-Replace `pipeInsertDataQuery` with `prepareInsertDataQuery`, which compiles one
+Replace `pipeInsertDataQuery` with `prepareHtmlParserQuery`, which compiles one
 resolved plugin query and runs it against an immutable editor state.
+
+Keep element-provider updates local to their own node while descriptor-scoped
+ancestor reads subscribe to the exact owning provider.
+
+Remove `editor.meta.pluginList`, `editor.meta.isFallback`,
+`editor.getOptionsStore`, and public plugin `optionsStore` fields. Read
+installed plugins and live options through `editor.getPlugin(Plugin)` or the
+descriptor-scoped portal.
 
 Pass each render wrapper its owning plugin portal context and forward Plite DOM
 strategy props through Plate content.
@@ -21,14 +33,15 @@ mark names.
 Skip autofocus, input rule, and override work when lifecycle targets are unavailable.
 
 Preserve initial selections when `transformInitialValue` wraps selected text
-during editor setup.
+during editor setup. Run the same document-input transforms before schema
+fitting for complete `editor.update.value.replace(...)` loads.
 
 Install typed plugin-object dependencies recursively with deterministic
 overrides, dependency-first ordering, and graph validation.
 
 Declare document identity with top-level `type`, element behavior through
 `schema.element`, marks through descriptor-backed `schema.mark`, rendering
-through `render`, and DOM attribute policy through `host`.
+through `render`, and trusted DOM projection through `render.nodeProps`.
 
 Derive schema identity from compiled plugin semantics when editor creation
 omits `schema`. Pass `{ id, version }` only for application-named History,
@@ -37,6 +50,8 @@ without a `schema` option.
 
 Keep plugin-owned values in one `options` bag. Define package-owned behavior
 with `create*Plugin()`, `.extend(...)`, and the narrower `.extend*()` methods.
+Compose repeated `.extend()` stages for plugin API, reads, updates, selectors,
+and editor extensions.
 Apply at most one terminal consumer `.configure(...)` call per descriptor:
 object configuration can set descriptor fields, while contextual configuration
 can derive options, handlers, renderers, and shortcuts. Contextual extensions
@@ -45,7 +60,7 @@ override. Read and update live values through the scoped portal's `getOptions`,
 `setOption`, and `setOptions`; live option updates do not rebuild the compiled
 schema.
 
-Declare cross-plugin schema and host targets with the plugin's top-level
+Declare cross-plugin schema and render targets with the plugin's top-level
 `targetPluginKeys` field.
 
 Register semantic command policy through extension
@@ -67,22 +82,25 @@ elements and paths through descriptor-aware `useElement`, `useOptionalElement`,
 
 Render static HTML through `renderStaticHtml` from `platejs/static`.
 
-**Migration:** Replace nested plugin API reads with the scoped portal API:
+**Migration:** Read installed plugin APIs from the inferred editor API in app
+code. Use the scoped portal when generic package code only knows the plugin
+descriptor:
 
 ```tsx
 // Before
 editor.getApi(FooPlugin).foo.method();
-editor.api.foo.method();
 
 // After
+editor.api.foo.method();
+
+// Generic package code
 editor.plugin(FooPlugin).api.method();
-editor.plugin(FooPlugin).editor.api.foo.method();
 ```
 
 Prepare parser queries once, then run them against read-only editor state:
 
 ```tsx
-const canInsert = prepareInsertDataQuery(editor, ParserPlugin);
+const canInsert = prepareHtmlParserQuery(editor, MyPlugin);
 const allowed = editor.read((state) => canInsert(state, options));
 ```
 
@@ -99,7 +117,7 @@ Rename these exports:
 Replace dependency keys such as `dependencies: ['feature']` with the plugin
 object, for example `dependencies: [BaseFeaturePlugin]`.
 
-Replace the overloaded `node` declaration with explicit model and host fields:
+Replace the overloaded `node` declaration with explicit model and render fields:
 
 ```tsx
 createPlatePlugin({
@@ -158,7 +176,7 @@ import { serializeHtml } from 'platejs/static';
 import { renderStaticHtml } from 'platejs/static';
 ```
 
-Move injection target lists to the plugin descriptor:
+Replace `inject.targetPlugins` with top-level `targetPluginKeys`:
 
 ```tsx
 createPlatePlugin({
@@ -168,25 +186,54 @@ createPlatePlugin({
 });
 ```
 
+Replace `inject.targetPluginToInject` with
+`.extendHtmlCodec(TargetPlugin, ...)` for HTML mappings or
+`override.plugins[key]` for package-owned adaptation of an installed peer.
+
 Classify plugin relationships explicitly:
 
 - Use `dependencies` for required structure and capabilities.
-- Use `plugins` for one direct level of optional defaults with valid fallback
-  behavior.
-- Use readonly plugin arrays for presets and product policy.
+- Include optional capabilities as ordinary entries in the consumer plugin
+  array.
+- Let an optional enhancement depend on its required base capability; do not
+  make the base capability bundle the enhancement.
 
-Configure a bundled default through the ordinary plugin array:
+Configure or omit an optional capability through the ordinary plugin array:
 
 ```tsx
 const plugins = [
   CodeBlockPlugin,
-  CodeSyntaxPlugin.configure({ enabled: false }),
+  CodeHighlightPlugin.configure({
+    options: { lowlight },
+  }),
 ];
 ```
 
-Remove `configurePlugin`, `extendPlugin`, `rootPlugin`, `override.plugins`, and
-`override.enabled`. Configure complete descriptors directly and omit optional
-descriptors from app-owned arrays when they are not needed.
+Remove `configurePlugin`, `extendPlugin`, `rootPlugin`, and
+`override.enabled`. Configure imported target descriptors directly. Package
+plugins that cannot import a foreign target or control the editor kit may use
+`override.plugins[key]` to adapt an already-installed peer; missing targets are
+ignored, topology is immutable, required dependencies cannot be disabled, and
+target configuration wins.
 
-Rename parser projections from `inject.plugins` to `inject.parsers` and from
-`targetPluginToInject` to `targetParserToInject`.
+Replace `parsers.html.deserializer`, serializer declarations, and injected HTML
+node-rule projections with schema-inferred `.extendHtmlCodec()` contributions.
+Keep whole-input HTML hooks directly under `parsers.html`:
+
+```tsx
+createPlatePlugin({
+  key: 'docx',
+  parsers: {
+    html: { query, transformData, transformFragment },
+  },
+});
+
+const BoldPlugin = createPlatePlugin({
+  key: 'bold',
+  schema: { mark: property.boolean() },
+}).extendHtmlCodec(() => ({
+  decode: () => true,
+  encode: ({ value }) => (value ? { tag: 'strong' } : null),
+  match: [{ tag: ['strong', 'b'] }],
+}));
+```

@@ -7,11 +7,9 @@ import {
   type InferConfig,
   type PluginConfig,
   createBasePlugin,
-  prepareParserPluginContext,
 } from '@platejs/core';
-import type { Descendant, Value } from '@platejs/plite';
-import { ContentSlice, ElementApi } from '@platejs/plite';
-import { type HostCodec, hostCodecs } from '@platejs/plite-dom';
+import type { Descendant, EditorCoreStateView } from '@platejs/plite';
+import { ContentSlice } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { bindFirst, isUrl } from '@udecode/utils';
 
@@ -87,70 +85,37 @@ export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
         ),
     },
   }))
-  .extend({
-    parser: {
-      format: ['text/plain', 'text/markdown'],
-      query: ({ data, source }) => shouldParseMarkdown(data, source),
-    },
-  })
-  .extendExtension('hostCodec', ({ editor, plugin }) => {
-    const createContext = prepareParserPluginContext(editor, plugin);
-    const parse: NonNullable<HostCodec['parse']> = ({ data, state }) => {
+  .extendCodecs(({ editor, plugin }) => {
+    const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
-        createMarkdownRuntime(createContext(state)),
+        createMarkdownRuntime(editor, plugin.key, state),
         data
       );
 
-      return ContentSlice.fromJSON({
-        content: document.children,
-        openEnd: 0,
-        openStart: 0,
-        ...(document.roots ? { roots: document.roots } : {}),
-      });
+      return ContentSlice.closed(document.children);
     };
+    const encode = (slice: ContentSlice, state: EditorCoreStateView) =>
+      serializeMdWithRuntime(
+        createMarkdownRuntime(editor, plugin.key, state),
+        undefined,
+        {
+          children: [...slice.content],
+        }
+      );
 
-    return hostCodecs('plate-markdown-host-codec', [
-      {
-        format: 'text/markdown',
-        key: 'plate:markdown:text/markdown',
-        owns: [{ kind: 'schema' }],
-        parse,
-        query: ({ data, source }) => shouldParseMarkdown(data, source),
-        serialize: ({ slice, state }) => {
-          const roots: Record<string, Value> = {};
-
-          Object.entries(slice.roots ?? {}).forEach(([root, content]) => {
-            const blocks = content.flatMap((node) =>
-              ElementApi.isElement(node) ? [node] : []
-            );
-
-            if (blocks.length !== content.length) {
-              throw new Error(
-                `Markdown content root "${root}" must contain blocks.`
-              );
-            }
-
-            roots[root] = blocks;
-          });
-
-          return serializeMdWithRuntime(
-            createMarkdownRuntime(createContext(state)),
-            undefined,
-            {
-              children: [...slice.content],
-              ...(Object.keys(roots).length > 0 ? { roots } : {}),
-            }
-          );
-        },
-      },
-      {
-        format: 'text/plain',
-        key: 'plate:markdown:text/plain',
-        owns: [{ kind: 'schema' }],
-        parse,
+    return {
+      'text/markdown': {
+        scope: 'document',
+        decode: ({ data, state }) => decode(data, state),
+        encode: ({ slice, state }) => encode(slice, state),
         query: ({ data, source }) => shouldParseMarkdown(data, source),
       },
-    ]);
+      'text/plain': {
+        scope: 'document',
+        decode: ({ data, state }) => decode(data, state),
+        query: ({ data, source }) => shouldParseMarkdown(data, source),
+      },
+    };
   });
 
 export type MarkdownConfig = InferConfig<typeof MarkdownPlugin>;

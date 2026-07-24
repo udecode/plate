@@ -6,8 +6,8 @@ import {
   assertPeerTexts,
   clearYjsTrace,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -17,11 +17,11 @@ import {
   type Peer,
   paragraph,
   readPeerPliteValue,
-  redoYjsPeer,
-  redoYjsPeerAndSync,
+  redoHistoryPeer,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeer,
-  undoYjsPeerAndSync,
+  undoHistoryPeer,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -52,7 +52,7 @@ const createPeer = (
   seedUpdate?: Uint8Array,
   children: readonly Descendant[] = initialValue()
 ): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children,
     clientId,
     numericClientId: clientIds[clientId],
@@ -60,7 +60,7 @@ const createPeer = (
   });
 
 const createPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: ids,
     numericClientIds,
@@ -231,10 +231,10 @@ describe('@platejs/yjs canonical replacement collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha AdaLin fragment']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha Ada']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha AdaLin fragment']);
   });
 
@@ -244,7 +244,7 @@ describe('@platejs/yjs canonical replacement collaboration contract', () => {
     insertLocalBang(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
 
-    undoYjsPeer(peer);
+    undoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha']);
 
     clearYjsTrace(peer);
@@ -253,7 +253,7 @@ describe('@platejs/yjs canonical replacement collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha']);
     assert.deepEqual(getYjsTrace(peer), []);
 
-    redoYjsPeer(peer);
+    redoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
   });
 

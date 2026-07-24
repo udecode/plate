@@ -22,7 +22,7 @@ import {
   useOptionalElement,
   usePluginOption,
 } from '@platejs/core/react';
-import type { Element, NodeEntry, Path } from '@platejs/plite';
+import type { Element, NodeEntry, Path, Value } from '@platejs/plite';
 import {
   type ResizeEvent,
   type ResizeHandle,
@@ -92,8 +92,8 @@ function setCellBorderSize(
  * rectangle's outer edges on/off, `'top'|'bottom'|'left'|'right'` toggles only
  * that side of the bounding rect.
  */
-export function setSelectedCellsBorder(
-  editor: BaseEditor,
+export function setSelectedCellsBorder<V extends Value>(
+  editor: BaseEditor<V, any>,
   {
     border,
     cells,
@@ -314,10 +314,16 @@ export type TableCellElementState = {
 export const useTableCellElement = (): TableCellElementState => {
   const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
-  const isCellSelected = useIsCellSelected(element);
-  const isSelectingCell = useEditorSelector<boolean, typeof editor>((editor) =>
-    editor.plugin(TablePlugin).api.isSelectingCell()
-  );
+  const selectionState = useEditorSelector<number, typeof editor>((editor) => {
+    const table = editor.plugin(TablePlugin).api;
+
+    return (
+      (table.isCellSelected(element.id) ? 1 : 0) |
+      (table.isSelectingCell() ? 2 : 0)
+    );
+  });
+  const isCellSelected = (selectionState & 1) !== 0;
+  const isSelectingCell = (selectionState & 2) !== 0;
 
   const rowSizeOverrides = useTableValue('rowSizeOverrides');
   const { minHeight, width } = useTableCellSize({ element });

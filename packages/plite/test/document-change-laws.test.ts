@@ -2,21 +2,21 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import fc from 'fast-check';
 
+import { DocumentChange } from '../src/core/change/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
 import {
-  ChangeSet,
-  DocumentChange,
-  IndexedDocument,
+  RootChange,
   insertNodeChange,
   insertTextChange,
-  type JsonEditorValue,
-  type JsonNode,
   moveNodeChange,
   type NodePropertyDelta,
   removeNodeChange,
   removeTextChange,
   setNodeChange,
   updateNodePropertiesChange,
-} from '../src/core/document-change';
+} from '../src/core/change/root-change';
+import type { JsonEditorValue, JsonNode } from '../src/core/change/tokens';
+import { createTestDocumentChange } from './support/document-change';
 
 type ModelParagraph = {
   children: [{ text: string }];
@@ -138,7 +138,7 @@ const jsonNodes = (nodes: readonly ModelSection[]) =>
   nodes as unknown as readonly JsonNode[];
 
 const index = (value: ModelValue, root: ModelRoot) =>
-  IndexedDocument.fromValue(jsonNodes(rootValue(value, root)));
+  DocumentIndex.fromValue(jsonNodes(rootValue(value, root)));
 
 const modulo = (value: number, length: number) => value % length;
 
@@ -260,7 +260,7 @@ const actionChange = (
   action: ModelAction
 ) => {
   const document = index(value, root);
-  let change: ChangeSet;
+  let change: RootChange;
 
   switch (action.kind) {
     case 'insert-section':
@@ -315,7 +315,7 @@ const actionChange = (
       break;
   }
 
-  return new DocumentChange(
+  return createTestDocumentChange(
     root === null ? { primary: change } : { roots: new Map([[root, change]]) }
   );
 };
@@ -460,7 +460,7 @@ describe('DocumentChange generated laws', () => {
         (rawActions) => {
           const origin = documentValue('model');
           let model = origin;
-          let composed = new DocumentChange();
+          let composed = DocumentChange.empty;
 
           for (const raw of rawActions) {
             const action = normalizeAction(model, null, raw);
@@ -532,15 +532,15 @@ describe('DocumentChange generated laws', () => {
           for (const root of lifecycleRoots) {
             const exists = Object.hasOwn(model.roots ?? {}, root);
             const change = exists
-              ? new DocumentChange({
+              ? createTestDocumentChange({
                   deleteRoots: [root],
                 })
-              : new DocumentChange({
+              : createTestDocumentChange({
                   roots: new Map([
                     [
                       root,
                       insertNodeChange(
-                        IndexedDocument.fromValue([]),
+                        DocumentIndex.fromValue([]),
                         [0],
                         section(`created-${root}`)
                       ),
@@ -710,7 +710,7 @@ describe('DocumentChange generated laws', () => {
             root: ModelRoot,
             delta: NodePropertyDelta
           ) =>
-            new DocumentChange(
+            createTestDocumentChange(
               root === null
                 ? {
                     primary: updateNodePropertiesChange(

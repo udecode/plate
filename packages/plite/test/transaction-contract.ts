@@ -36,8 +36,13 @@ import {
   type Element,
   type Range,
   SelectionApi,
+  type Value,
 } from '@platejs/plite';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
+import {
+  createTestDocumentChange,
+  getTestDocumentRootChange,
+} from './support/document-change';
 
 const runEditorTransaction = (
   editor: Parameters<typeof runInternalEditorTransaction>[0],
@@ -65,10 +70,7 @@ const installCommandExtension = <Input>(
     })
   );
 
-const paragraph = (
-  text: string,
-  props: Record<string, unknown> = {}
-): Element => ({
+const paragraph = (text: string, props: Record<string, unknown> = {}) => ({
   type: 'paragraph',
   ...props,
   children: [{ text }],
@@ -482,7 +484,7 @@ describe('plite transaction contract', () => {
     replaceChildren(editor, [paragraph('one')]);
 
     const observations: Array<{
-      paths: readonly number[][];
+      paths: readonly import('@platejs/plite').Path[];
       properties: boolean;
       ranges: readonly {
         after: readonly [number, number] | null;
@@ -507,7 +509,9 @@ describe('plite transaction contract', () => {
       { children: [paragraph('one')] },
       { children: [paragraph('one!')] }
     );
-    const unclassified = new DocumentChange({ primary: classified.primary });
+    const unclassified = createTestDocumentChange({
+      primary: getTestDocumentRootChange(classified),
+    });
 
     assert.equal(unclassified.primaryClassification, null);
 
@@ -539,7 +543,7 @@ describe('plite transaction contract', () => {
         paragraph(`row-${index}`)
       ),
     });
-    const paths: number[][] = [];
+    const paths: import('@platejs/plite').Path[] = [];
     const ranges: Array<{
       after: readonly [number, number] | null;
       before: readonly [number, number] | null;
@@ -1675,7 +1679,7 @@ describe('plite transaction contract', () => {
   });
 
   it('dispatches direct slice and fragment replacements once while callbacks stay primitive', () => {
-    const editor = createEditor({
+    const editor = createEditor<Value>({
       initialSelection: SelectionApi.text({
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 1 },

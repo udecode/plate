@@ -62,6 +62,11 @@ shape.
 
 When building or changing Plate registry items:
 
+- exclude `*-classic` variants, including `list-classic`, from proactive parity,
+  modernization, new variants, shared abstractions, polish, demos, and adoption
+  work; they are maintenance-only pending deprecation and may change only for a
+  user-facing regression, security/release blocker, or explicitly authorized
+  deprecation/removal
 - check `../shadcn` first
 - copy upstream file/layout/helper patterns when they fit
 - prefer upstream naming and dependency structure over Plate-specific novelty

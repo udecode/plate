@@ -338,7 +338,6 @@ export type PliteBrowserKernelInputIntent =
   | "clipboard"
   | "composition"
   | "delete"
-  | "format"
   | "history"
   | "insert-break"
   | "internal-control"
@@ -357,7 +356,6 @@ export type PliteBrowserKernelSelectionChangeOrigin =
 
 /** Editing command observed by the browser kernel trace. */
 export type PliteBrowserKernelCommand =
-  | { format: string; kind: "format" }
   | {
       direction: "backward" | "forward";
       kind: "delete";
@@ -381,15 +379,21 @@ export type PliteBrowserKernelCommand =
       reverse?: boolean;
     }
   | { kind: "select"; selection: PliteBrowserKernelRange }
-  | { kind: "select-all" }
-  | { blockType: string; kind: "set-block"; wrap?: string }
-  | { kind: "toggle-mark"; mark: string };
+  | { kind: "select-all" };
 
 /** Plain model range carried by a kernel trace command or snapshot. */
-export type PliteBrowserKernelRange = {
-  anchor: { offset: number; path: number[]; root?: string };
-  focus: { offset: number; path: number[]; root?: string };
-};
+export type PliteBrowserKernelRange = Readonly<{
+  anchor: Readonly<{
+    offset: number;
+    path: readonly number[];
+    root?: string;
+  }>;
+  focus: Readonly<{
+    offset: number;
+    path: readonly number[];
+    root?: string;
+  }>;
+}>;
 
 /** Static command metadata captured beside a kernel trace command. */
 export type PliteBrowserKernelCommandDefinition = Readonly<{

@@ -51,6 +51,8 @@ export const getSelectedDomFragment = (editor: BaseEditor): Descendant[] => {
       const results = editor
         .plugin(HtmlPlugin)
         .api.deserialize({ element: html });
+
+      if (!results) return;
       const [firstResult] = results;
 
       if (!firstResult) return;

@@ -93,16 +93,24 @@ export type EditorExtensionsFromOptions<TOptions> = TOptions extends {
   ? TExtensions
   : readonly [];
 
-type MutableJson<T> = T extends readonly (infer TItem)[]
-  ? MutableJson<TItem>[]
-  : T extends object
-    ? { -readonly [TKey in keyof T]: MutableJson<T[TKey]> }
-    : T;
+type ReadonlyJson<T> = T extends (...args: any[]) => unknown
+  ? T
+  : T extends string
+    ? string
+    : T extends number
+      ? number
+      : T extends boolean
+        ? boolean
+        : T extends readonly (infer TItem)[]
+          ? readonly ReadonlyJson<TItem>[]
+          : T extends object
+            ? { readonly [TKey in keyof T]: ReadonlyJson<T[TKey]> }
+            : T;
 
 type InitialValueFromOptions<TOptions> = TOptions extends {
   initialValue: infer TInitialValue;
 }
-  ? MutableJson<
+  ? ReadonlyJson<
       TInitialValue extends { children: infer TChildren }
         ? TChildren
         : TInitialValue
@@ -375,6 +383,15 @@ export function createEditor<
     extensions: TExtensions;
   }
 ): Editor<V, TExtensions>;
+
+export function createEditor<
+  const TOptions extends Omit<
+    CreateEditorOptions<any, readonly []>,
+    'extensions'
+  > & {
+    extensions?: never;
+  },
+>(options: TOptions): Editor<EditorValueFromOptions<TOptions>, readonly []>;
 
 export function createEditor<V extends Value = Value>(
   options?: Omit<CreateEditorOptions<V, readonly []>, 'extensions'> & {

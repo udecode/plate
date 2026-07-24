@@ -5,8 +5,8 @@ import {
 import {
   type DocumentChange,
   getInternalDocumentChangeClassification,
-  getInternalDocumentChangeSet,
-} from '../core/document-change';
+  getInternalDocumentRootChange,
+} from '../core/change/document-change';
 import { getExtensionRegistry } from '../core/extension-registry';
 import { toPublicRoot } from '../core/public-root';
 import {
@@ -230,7 +230,7 @@ export const correctDocument = (
       change: DocumentChange,
       changed?: EditorTransactionChanged
     ) => {
-      const rootChange = getInternalDocumentChangeSet(change, root);
+      const rootChange = getInternalDocumentRootChange(change, root);
       const classification = getInternalDocumentChangeClassification(
         change,
         root
@@ -301,7 +301,7 @@ export const correctDocument = (
       capturedChanges?.push(change);
 
       if (
-        !getInternalDocumentChangeSet(change, root) &&
+        !getInternalDocumentRootChange(change, root) &&
         !change.createRoots.has(root)
       ) {
         return;

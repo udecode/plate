@@ -7,8 +7,8 @@ import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -17,11 +17,11 @@ import {
   type Peer,
   paragraph,
   readPeerChildren,
-  redoYjsPeer,
-  redoYjsPeerAndSync,
+  redoHistoryPeer,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeer,
-  undoYjsPeerAndSync,
+  undoHistoryPeer,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const initialValue = (): Descendant[] => [paragraph('alphabeta')];
@@ -32,12 +32,12 @@ const createPeer = (
   clientId: string,
   seedUpdate?: Uint8Array,
   children: readonly Descendant[] = initialValue()
-): Peer => createYjsPeer({ children, clientId, seedUpdate });
+): Peer => createYjsHistoryPeer({ children, clientId, seedUpdate });
 
 const createPeers = (
   clientIds: readonly string[],
   children: readonly Descendant[] = initialValue()
-): Peer[] => createSeededYjsPeers({ children, clientIds });
+): Peer[] => createSeededYjsHistoryPeers({ children, clientIds });
 
 const splitParagraph = (peer: Peer): void => {
   peer.editor.update.nodes.split({
@@ -228,7 +228,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
 
     disconnectYjsPeer(a);
     splitHelloParagraph(a);
-    undoYjsPeer(a);
+    undoHistoryPeer(a);
     assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
 
     splitHelloParagraph(b);
@@ -247,7 +247,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
 
     disconnectYjsPeer(a);
     splitHelloParagraph(a);
-    undoYjsPeer(a);
+    undoHistoryPeer(a);
     assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
 
     appendExclamationToFirstParagraph(b);
@@ -258,7 +258,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTexts(b), ['Hello ', 'world!!']);
 
     connectYjsPeerAndSync(a, peers);
-    redoYjsPeerAndSync(a, peers);
+    redoHistoryPeerAndSync(a, peers);
 
     assertPeerTexts(peers, ['Hello ', 'world!!']);
   });
@@ -269,7 +269,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
 
     disconnectYjsPeer(a);
     splitHelloParagraph(a);
-    undoYjsPeer(a);
+    undoHistoryPeer(a);
     assert.deepEqual(getPeerTopLevelTexts(a), ['Hello world!']);
 
     connectYjsPeerAndSync(a, peers);
@@ -279,7 +279,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     syncConnectedPeers(peers);
     assertPeerTexts(peers, ['Hello world!', 'world! after']);
 
-    redoYjsPeerAndSync(a, peers);
+    redoHistoryPeerAndSync(a, peers);
 
     assertPeerTexts(peers, ['Hello ', 'world!', 'world! after']);
   });
@@ -296,10 +296,10 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!', 'abeta']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!abeta']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!', 'abeta']);
   });
 
@@ -309,22 +309,22 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     insertTextSplitAndInsertRightText(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['a', 'b']);
 
-    undoYjsPeer(peer);
-    undoYjsPeer(peer);
+    undoHistoryPeer(peer);
+    undoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['a']);
 
-    undoYjsPeer(peer);
+    undoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['']);
 
-    redoYjsPeer(peer);
+    redoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['a']);
 
-    redoYjsPeer(peer);
-    redoYjsPeer(peer);
+    redoHistoryPeer(peer);
+    redoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['a', 'b']);
   });
 
-  it('undoes a split after a prior merge without custom split-history replay', () => {
+  it('undoes a split after a prior merge through canonical replay', () => {
     const peer = createPeer('b', undefined, [
       paragraph('Hello world!'),
       paragraph('block 2'),
@@ -338,7 +338,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     });
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello wor', 'ld!block 2']);
 
-    undoYjsPeer(peer);
+    undoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!block 2']);
   });
 
@@ -361,7 +361,7 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     });
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello wor', 'ld!block 2']);
 
-    undoYjsPeer(peer);
+    undoHistoryPeer(peer);
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!block 2']);
   });
 
@@ -377,10 +377,10 @@ describe('@platejs/yjs split_node collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!', 'abeta']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!abeta']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alph!', 'abeta']);
   });
 });

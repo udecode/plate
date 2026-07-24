@@ -19,6 +19,7 @@ import {
   type Editor,
   type EditorUpdateTransaction,
   NodeApi,
+  type Path,
   type Range,
 } from '@platejs/plite';
 import { history } from '@platejs/plite-history';
@@ -41,7 +42,9 @@ import type {
   CustomValue,
 } from './custom-types.d';
 
-type YjsEditor = CustomEditor<readonly [ReturnType<typeof createYjsExtension>]>;
+type YjsEditor = CustomEditor<
+  readonly [ReturnType<typeof history>, ReturnType<typeof createYjsExtension>]
+>;
 
 type PeerId = 'a' | 'b' | 'c' | 'd';
 
@@ -72,7 +75,7 @@ type HocuspocusEventBinder = (
 ) => void;
 
 type TextEntry = {
-  path: number[];
+  path: Path;
   text: string;
 };
 
@@ -139,6 +142,7 @@ class HocuspocusProviderAdapter implements PliteHocuspocusProvider {
   status: YjsProviderStatus = 'connecting';
 
   constructor(options: {
+    autoConnect: boolean;
     clientId: number;
     name: string;
     token?: string;
@@ -149,6 +153,7 @@ class HocuspocusProviderAdapter implements PliteHocuspocusProvider {
     doc.clientID = options.clientId;
 
     this.hocuspocus = new HocuspocusProvider({
+      connect: options.autoConnect,
       document: doc,
       name: options.name,
       token: options.token,
@@ -156,6 +161,7 @@ class HocuspocusProviderAdapter implements PliteHocuspocusProvider {
     });
     this.doc = doc;
     this.awareness = this.hocuspocus.awareness as YjsAwarenessLike | undefined;
+    this.status = this.hocuspocus.status as YjsProviderStatus;
 
     this.hocuspocus.on(
       'status',
@@ -178,7 +184,11 @@ class HocuspocusProviderAdapter implements PliteHocuspocusProvider {
   }
 
   disconnect() {
-    return this.hocuspocus.disconnect();
+    const result = this.hocuspocus.disconnect();
+
+    this.status = 'disconnected';
+
+    return result;
   }
 
   off(event: YjsProviderEvent, handler: YjsProviderEventHandler) {
@@ -192,9 +202,11 @@ class HocuspocusProviderAdapter implements PliteHocuspocusProvider {
 
 const createProvider = (
   peer: PeerDefinition,
-  roomName: string
+  roomName: string,
+  autoConnect: boolean
 ): PliteHocuspocusProvider =>
   new HocuspocusProviderAdapter({
+    autoConnect,
     clientId: peer.clientId,
     name: roomName,
     token: DEFAULT_TOKEN,
@@ -225,6 +237,16 @@ const readInitialPeers = (): readonly PeerDefinition[] => {
   return PEERS.filter((peer) => peer.id === peerId);
 };
 
+const readInitialAutoConnect = () => {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+
+  return (
+    new URLSearchParams(window.location.search).get('connection') !== 'manual'
+  );
+};
+
 const isCustomText = (node: Descendant): node is CustomText => 'text' in node;
 
 const hasDescendantChildren = (
@@ -234,7 +256,7 @@ const hasDescendantChildren = (
 
 const findFirstTextEntryInNode = (
   node: Descendant,
-  path: number[]
+  path: Path
 ): TextEntry | null => {
   if (isCustomText(node)) {
     return { path, text: node.text };
@@ -263,7 +285,7 @@ const findFirstTextEntryInNode = (
 
 const findLastTextEntryInNode = (
   node: Descendant,
-  path: number[]
+  path: Path
 ): TextEntry | null => {
   if (isCustomText(node)) {
     return { path, text: node.text };
@@ -292,7 +314,7 @@ const findLastTextEntryInNode = (
 
 const findLastTextEntry = (
   nodes: readonly Descendant[],
-  basePath: number[] = []
+  basePath: Path = []
 ): TextEntry | null => {
   for (let index = nodes.length - 1; index >= 0; index--) {
     const node = nodes[index];
@@ -313,7 +335,7 @@ const findLastTextEntry = (
 
 const getTextEntryAtPath = (
   nodes: readonly Descendant[],
-  path: number[]
+  path: Path
 ): TextEntry | null => {
   let current: Descendant | undefined;
   let children: readonly Descendant[] = nodes;
@@ -952,7 +974,7 @@ const undoPeer = (peer: PeerDefinition, editor: YjsEditor) => {
   const previousValue = readEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  editor.update.yjs.undo();
+  editor.update.history.undo();
   syncSelectionAfterHistory(peer, editor, previousValue, previousSelection);
 };
 
@@ -960,7 +982,7 @@ const redoPeer = (peer: PeerDefinition, editor: YjsEditor) => {
   const previousValue = readEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  editor.update.yjs.redo();
+  editor.update.history.redo();
   syncSelectionAfterHistory(peer, editor, previousValue, previousSelection);
 };
 
@@ -1123,7 +1145,10 @@ const ProviderBackedPeer = ({
   peer: PeerDefinition;
   provider: PliteHocuspocusProvider;
 }) => {
-  const editor = usePliteEditor({
+  const editor = usePliteEditor<
+    CustomValue,
+    readonly [ReturnType<typeof history>, ReturnType<typeof createYjsExtension>]
+  >({
     extensions: [
       history(),
       createYjsExtension({
@@ -1400,13 +1425,17 @@ const ProviderBackedPeer = ({
 };
 
 const ProviderPeer = ({
+  autoConnect,
   peer,
   roomName,
 }: {
+  autoConnect: boolean;
   peer: PeerDefinition;
   roomName: string;
 }) => {
-  const [provider] = useState(() => createProvider(peer, roomName));
+  const [provider] = useState(() =>
+    createProvider(peer, roomName, autoConnect)
+  );
 
   useEffect(
     () => () => {
@@ -1419,6 +1448,7 @@ const ProviderPeer = ({
 };
 
 const YjsHocuspocusExample = () => {
+  const [autoConnect] = useState(readInitialAutoConnect);
   const [roomName] = useState(readInitialRoomName);
   const [peers] = useState(readInitialPeers);
 
@@ -1431,7 +1461,12 @@ const YjsHocuspocusExample = () => {
         )}
       >
         {peers.map((peer) => (
-          <ProviderPeer key={peer.id} peer={peer} roomName={roomName} />
+          <ProviderPeer
+            autoConnect={autoConnect}
+            key={peer.id}
+            peer={peer}
+            roomName={roomName}
+          />
         ))}
       </div>
     </main>

@@ -1,4 +1,4 @@
-import type { Path } from '../interfaces/path';
+import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { Range } from '../interfaces/range';
 
@@ -173,7 +173,7 @@ export const stripImplicitRangeRoots = (
 export const stripLocationRoots = <TLocation extends Path | Point | Range>(
   location: TLocation
 ): TLocation => {
-  if (Array.isArray(location)) {
+  if (PathApi.isPath(location)) {
     return location;
   }
 

@@ -4,6 +4,7 @@
 
 - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
 - Compile closed schemas from extension `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
+- Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
 - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
 - Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance
 - Add immutable `{ content, openStart, openEnd, roots? }` `ContentSlice` values with contextual `state.slice` fitting, closed `fragment.replace`, open `slice.replace`, and detached-parent `fitContent`
@@ -13,7 +14,9 @@
 - Dispatch command-backed updates through immutable transaction specs, including extension-aware `state.transaction(...)` builders and `tx.command`
 - Expose frozen snapshot identities through `snapshot.index.entries()`, `idAt()`, and `pathOf()` with bounded lazy structural mapping
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
+- Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+- Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
 - Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles

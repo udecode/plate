@@ -10,20 +10,7 @@ import {
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
 import type { EditableInputController } from './input-state';
 
-type DeferredInputRule = ({
-  data,
-  event,
-  inputType,
-  selection,
-}: {
-  data: unknown;
-  event?: InputEvent;
-  inputType: string;
-  selection: Range | null;
-}) => boolean;
-
 export const useRuntimeBrowserHandle = ({
-  applyInputRules,
   browserHandleNextId,
   browserHandleRangeAnchors,
   domPhaseScheduler,
@@ -36,7 +23,6 @@ export const useRuntimeBrowserHandle = ({
   scrollPathIntoView,
   setExplicitPartialDOMBackedSelection,
 }: {
-  applyInputRules: DeferredInputRule;
   browserHandleNextId: RefObject<number>;
   browserHandleRangeAnchors: RefObject<Map<string, Anchor<Range>>>;
   domPhaseScheduler: DOMPhaseScheduler;
@@ -64,7 +50,6 @@ export const useRuntimeBrowserHandle = ({
       editor,
       element: rootRef.current as PliteBrowserHandleElement,
       inputController,
-      applyInputRules,
       forceRender,
       flushPendingNativeTextInput,
       isPartialDOMBackedSelection,
@@ -72,7 +57,6 @@ export const useRuntimeBrowserHandle = ({
       setExplicitPartialDOMBackedSelection,
     });
   }, [
-    applyInputRules,
     browserHandleNextId,
     browserHandleRangeAnchors,
     domPhaseScheduler,

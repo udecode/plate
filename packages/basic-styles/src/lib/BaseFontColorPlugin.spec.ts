@@ -1,4 +1,4 @@
-import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { getRenderNodeStaticProps } from '@platejs/core/static/internal';
 import { KEYS } from '@platejs/utils';
 
@@ -24,13 +24,18 @@ describe('BaseFontColorPlugin', () => {
       'string'
     );
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<span style="color: rgb(255, 0, 0)">text</span>',
       })
     ).toMatchObject([
       {
-        [KEYS.color]: 'rgb(255, 0, 0)',
-        text: 'text',
+        children: [
+          {
+            [KEYS.color]: 'rgb(255, 0, 0)',
+            text: 'text',
+          },
+        ],
+        type: KEYS.p,
       },
     ]);
   });
@@ -50,6 +55,12 @@ describe('BaseFontColorPlugin', () => {
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
       [KEYS.color]: 'red',
+      text: 'text',
+    });
+
+    editor.update.color.clear();
+
+    expect(editor.read.children()[0]?.children[0]).toEqual({
       text: 'text',
     });
   });
@@ -93,12 +104,16 @@ describe('BaseFontColorPlugin', () => {
       }).attributes.style
     ).toEqual({ color: 'blue' });
 
-    const parsed = editor.plugin(HtmlPlugin).api.deserialize({
+    const parsed = editor.api.html.deserialize({
       element: '<span style="color: red">text</span>',
     });
 
-    expect(parsed).toMatchObject([{ ink: 'red', text: 'text' }]);
-    expect(parsed[0]).not.toHaveProperty('color');
+    expect(parsed).toEqual([
+      {
+        children: [{ ink: 'red', text: 'text' }],
+        type: KEYS.p,
+      },
+    ]);
 
     editor.update.color.set('blue');
 
@@ -107,5 +122,11 @@ describe('BaseFontColorPlugin', () => {
       text: 'text',
     });
     expect(editor.read.children()[0]?.children[0]).not.toHaveProperty('color');
+
+    editor.update.color.clear();
+
+    expect(editor.read.children()[0]?.children[0]).toEqual({
+      text: 'text',
+    });
   });
 });

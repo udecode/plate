@@ -188,7 +188,6 @@ export type YjsTx = {
   readonly pause: () => void;
   readonly reconcile: () => void;
   readonly reconnect: () => void;
-  readonly redo: () => void;
   readonly resume: () => void;
   /**
    * Permanently retire one crashed Y.Doc client generation from shared-effect
@@ -200,7 +199,6 @@ export type YjsTx = {
     range?: Range | null,
     data?: YjsRemoteCursorData | null
   ) => void;
-  readonly undo: () => void;
 };
 
 declare module '@platejs/plite' {

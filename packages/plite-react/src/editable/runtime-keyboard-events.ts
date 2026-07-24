@@ -109,7 +109,6 @@ export const shouldFlushPendingNativeTextInputForKeyDown = (
     event.key.length === 1 && WHITESPACE_KEY_RE.test(event.key);
   const isModelMutationBoundary =
     decision.intent === 'delete' ||
-    decision.intent === 'format' ||
     decision.intent === 'insert-break' ||
     decision.intent === 'model-selection-move';
 

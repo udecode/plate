@@ -9,7 +9,6 @@ import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { getPlateRuntime } from './compilePlateModel';
-import { getInjectedParserPluginProjections } from './getInjectedParserPluginProjections';
 import { getPluginOptionsStore } from './pluginOptionsStore';
 import { resolveAndSortPlugins, resolvePlugins } from './resolvePlugins';
 
@@ -90,6 +89,81 @@ describe('resolvePlugins', () => {
     expect(editor.api.methodB).toBeDefined();
     expect(editor.api.methodA()).toBe('A');
     expect(editor.api.methodB()).toBe('B');
+  });
+
+  it('compiles staged read, update, and editor-extension contributions', () => {
+    let extensionCalls = 0;
+    const Plugin = createBasePlugin({
+      key: 'unifiedRuntime',
+      options: { label: 'unified' },
+    })
+      .extend<{
+        api: { label: () => string };
+        read: { hasSelection: () => boolean };
+        selectors: { selected: () => boolean };
+      }>(({ getOptions }) => {
+        extensionCalls++;
+
+        return {
+          api: {
+            label: () => getOptions().label,
+          },
+          read: ({ state }) => ({
+            hasSelection: () => state.selection() !== null,
+          }),
+          selectors: {
+            selected: () => false,
+          },
+        };
+      })
+      .extend<{
+        update: { apiLabel: () => string; selectAndRead: () => boolean };
+      }>(({ api, read }) => {
+        extensionCalls++;
+        const hasSelection = read.hasSelection;
+
+        void hasSelection;
+
+        return {
+          extension: { priority: 101 },
+          update: ({ tx }) => ({
+            apiLabel: () => api.label(),
+            selectAndRead: () => {
+              tx.selection.set({ offset: 0, path: [0, 0] });
+
+              return tx.unifiedRuntime.hasSelection();
+            },
+          }),
+        };
+      });
+    const editor = createBaseEditor({
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+      plugins: [Plugin],
+    });
+
+    expect(extensionCalls).toBe(2);
+    expect(editor.plugin(Plugin).api.label()).toBe('unified');
+    expect(editor.plugin(Plugin).getOption('selected')).toBe(false);
+    expect(editor.read.unifiedRuntime.hasSelection()).toBe(false);
+    expect(editor.plugin(Plugin).read.hasSelection()).toBe(false);
+    editor.read((state) =>
+      state.transaction((tx) => {
+        expect(tx.unifiedRuntime.hasSelection()).toBe(false);
+        tx.selection.set({ offset: 0, path: [0, 0] });
+        expect(tx.unifiedRuntime.hasSelection()).toBe(true);
+      })
+    );
+    expect(editor.read.unifiedRuntime.hasSelection()).toBe(false);
+    expect(editor.update.unifiedRuntime.apiLabel()).toBe('unified');
+    const directRead = Reflect.get(
+      editor.update.unifiedRuntime,
+      'hasSelection'
+    );
+
+    expect(() => Reflect.apply(directRead, undefined, [])).toThrow('read-only');
+    expect(editor.update.unifiedRuntime.selectAndRead()).toBe(true);
+    expect(editor.plugin(Plugin).read.hasSelection()).toBe(true);
+    expect(editor.plugin(Plugin).update.selectAndRead()).toBe(true);
   });
 
   it('overwrite API methods with the same name', () => {
@@ -827,6 +901,24 @@ describe('applyPluginOverrides', () => {
       );
     });
 
+    it('rejects schema replacement through erased weak overrides', () => {
+      const Target = createBasePlugin({ key: 'weakSchemaTarget' });
+      const Contributor = createBasePlugin({
+        key: 'weakSchemaContributor',
+        override: {
+          plugins: {
+            [Target.key]: {
+              schema: { mark: property.boolean() },
+            } as any,
+          },
+        },
+      });
+
+      expect(() =>
+        createBaseEditor({ plugins: [Contributor, Target] })
+      ).toThrow('weak override for "weakSchemaTarget" cannot define "schema"');
+    });
+
     it('cannot disable a required dependency', () => {
       const Dependency = createBasePlugin({ key: 'weakRequiredDependency' });
       const Dependent = createBasePlugin({
@@ -867,115 +959,6 @@ describe('applyPluginOverrides', () => {
       });
 
       expect(editor.getPlugin(Target).enabled).toBe(true);
-    });
-  });
-
-  describe('targetPluginKeys', () => {
-    it('preserves __proto__ as an own null-prototype injection key', () => {
-      const Target = createBasePlugin({ key: '__proto__' });
-      const Injector = createBasePlugin({
-        inject: {
-          targetParserToInject: () => ({
-            parser: { format: 'application/x-proto-target' },
-          }),
-        },
-        key: 'protoInjector',
-        targetPluginKeys: [Target.key],
-      });
-      const editor = createBaseEditor({ plugins: [Target, Injector] });
-      const overlays = editor.getPlugin(Injector).inject!.parsers!;
-      const [projection] = getInjectedParserPluginProjections(
-        editor,
-        editor.getPlugin(Target)
-      );
-
-      expect(Object.getPrototypeOf(overlays)).toBeNull();
-      expect(Object.hasOwn(overlays, '__proto__')).toBe(true);
-      expect(Reflect.get(overlays, '__proto__')?.parser?.format).toBe(
-        'application/x-proto-target'
-      );
-      expect(projection?.parser.format).toBe('application/x-proto-target');
-    });
-
-    it('injects only installed optional targets and preserves explicit entries', () => {
-      const Plugin = createBasePlugin({
-        targetPluginKeys: ['plugin1', 'missingPlugin', 'plugin2'],
-        key: 'testPlugin',
-        inject: {
-          parsers: {
-            plugin1: {
-              parsers: {
-                html: {
-                  deserializer: {
-                    parse: () => {},
-                  },
-                },
-              },
-            },
-            plugin3: {
-              parsers: {
-                html: {
-                  deserializer: {
-                    parse: () => {},
-                  },
-                },
-              },
-            },
-          },
-          targetParserToInject: ({ targetPlugin: _targetPlugin }) => ({
-            parsers: {
-              html: {
-                deserializer: {
-                  parse: () => {},
-                },
-              },
-            },
-          }),
-        },
-      });
-      const editor = createBaseEditor({
-        plugins: [
-          createBasePlugin({ key: 'plugin1' }),
-          createBasePlugin({ key: 'plugin2' }),
-          Plugin,
-        ],
-      });
-      const resolvedPlugin = editor.getPlugin(Plugin);
-
-      expect(resolvedPlugin.inject?.parsers).toBeDefined();
-      expect(Object.keys(resolvedPlugin.inject!.parsers!)).toEqual([
-        'plugin1',
-        'plugin3',
-        'plugin2',
-      ]);
-      expect(resolvedPlugin.inject!.parsers!.missingPlugin).toBeUndefined();
-
-      // Check merged result for plugin1
-      expect(resolvedPlugin.inject!.parsers!.plugin1).toHaveProperty(
-        'parsers.html.deserializer.parse'
-      );
-      expect(
-        resolvedPlugin.inject!.parsers!.plugin1.parsers?.html?.deserializer!
-          .parse
-      ).toBeDefined();
-
-      // Check injected result for plugin2
-      expect(resolvedPlugin.inject!.parsers!.plugin2).toHaveProperty(
-        'parsers.html.deserializer.parse'
-      );
-      expect(
-        resolvedPlugin.inject!.parsers!.plugin2.parsers?.html?.deserializer!
-          .parse
-      ).toBeDefined();
-
-      // Check existing result for plugin3 is preserved
-      expect(resolvedPlugin.inject!.parsers!.plugin3).toHaveProperty(
-        'parsers.html.deserializer.parse'
-      );
-      expect(
-        resolvedPlugin.inject!.parsers!.plugin3.parsers?.html?.deserializer!
-          .parse
-      ).toBeDefined();
     });
   });
 

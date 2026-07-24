@@ -8,28 +8,21 @@ export const BaseBoldPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['STRONG', 'B'] },
-          {
-            validStyle: {
-              fontWeight: ['600', '700', 'bold'],
-            },
-          },
-        ],
-        query: ({ element }) =>
-          !someHtmlElement(
-            element,
-            (node) => node.style.fontWeight === 'normal'
-          ),
-      },
-    },
-  },
   render: { as: 'strong' },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) =>
+      someHtmlElement(element, (node) => node.style.fontWeight === 'normal')
+        ? undefined
+        : true,
+    encode: ({ value }) => (value ? { tag: 'strong' } : null),
+    match: [
+      { tag: ['strong', 'b'] },
+      { style: { fontWeight: ['600', '700', 'bold'] } },
+    ],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

@@ -61,17 +61,6 @@ export const BaseBlockquotePlugin = createBasePlugin({
       }),
     },
   }),
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validNodeName: 'BLOCKQUOTE',
-          },
-        ],
-      },
-    },
-  },
   render: { as: 'blockquote' },
   rules: {
     break: {
@@ -95,25 +84,30 @@ export const BaseBlockquotePlugin = createBasePlugin({
     },
   },
 })
+  .extendHtmlCodec(() => ({
+    decode: () => ({}),
+    encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
+    match: [{ tag: 'blockquote' }],
+  }))
   .extendTx(({ editor, type }) => (tx) => ({
     toggle: () => {
       tx.blocks.toggle(type, { wrap: true });
     },
     untab: () => {
-      const blocks = tx.nodes
-        .toArray<Element>({
+      const blocks = [
+        ...tx.nodes.toArray<Element>({
           at: tx.selection() ?? undefined,
           match: (node, path) =>
             ElementApi.isElement(node) &&
             !node.indent &&
             isLiftableBlockquoteChild(editor, node, path, type),
           mode: 'lowest',
-        })
-        .sort(
-          (a, b) =>
-            b[1].length - a[1].length ||
-            b[1].join('.').localeCompare(a[1].join('.'))
-        );
+        }),
+      ].sort(
+        (a, b) =>
+          b[1].length - a[1].length ||
+          b[1].join('.').localeCompare(a[1].join('.'))
+      );
 
       if (blocks.length === 0) return false;
 

@@ -10,24 +10,17 @@ export const BaseFontFamilyPlugin = createBasePlugin({
       styleKey: 'fontFamily',
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validStyle: {
-              fontFamily: '*',
-            },
-          },
-        ],
-        parse: ({ element, type }) => ({
-          [type]: element.style.fontFamily,
-        }),
-      },
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => element.style.fontFamily || undefined,
+    encode: ({ value }) => ({
+      style: { fontFamily: value },
+      tag: 'span',
+    }),
+    match: [{ style: { fontFamily: '*' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    set: (value: string) => {
+      tx.marks.add(type, value);
     },
-  },
-}).extendTx(({ type }) => (tx) => ({
-  set: (value: string) => {
-    tx.marks.add(type, value);
-  },
-}));
+  }));

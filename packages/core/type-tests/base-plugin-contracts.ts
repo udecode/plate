@@ -2,14 +2,21 @@
 import {
   HistoryPlugin,
   type ExtendConfig,
-  type ParserOptions,
+  type HtmlParserOptions,
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
   getEditorPlugin,
-  prepareInsertDataQuery,
+  prepareHtmlParserQuery,
 } from '@platejs/core';
-import { defineEditorExtension } from '@platejs/plite';
+import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
+import {
+  ContentSlice,
+  defineEditorExtension,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
 import { history } from '@platejs/plite-history';
 
 const baseSingleExtension = defineEditorExtension({
@@ -33,6 +40,351 @@ const BoldPlugin = createBasePlugin({
   .extendEditorApi(({ getOptions }) => ({
     toggleBold: () => getOptions().hotkey,
   }));
+
+const CodecContractPlugin = createBasePlugin({
+  key: 'codecContract',
+}).extendCodecs(({ editor, plugin }) => ({
+  'application/x-codec-contract': {
+    scope: 'document',
+    decode: ({ data, format, source, state }) => {
+      const exactData: string = data;
+      const exactEditorId: string = editor.id;
+      const exactFormat: string = format;
+      const exactPluginKey: 'codecContract' = plugin.key;
+      const exactSchema: object = state.schema;
+      const exactTypes: readonly string[] = source.types;
+
+      void exactData;
+      void exactEditorId;
+      void exactFormat;
+      void exactPluginKey;
+      void exactSchema;
+      void exactTypes;
+
+      return ContentSlice.closed([{ text: data }]);
+    },
+    encode: ({ format, slice, state }) => {
+      const exactFormat: string = format;
+      const exactOpenStart: number = slice.openStart;
+      const exactSchema: object = state.schema;
+
+      void exactFormat;
+      void exactOpenStart;
+      void exactSchema;
+
+      return 'encoded';
+    },
+  },
+}));
+
+const HtmlParagraphContractPlugin = createBasePlugin({
+  key: 'htmlParagraphContract',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+  type: 'html-paragraph-contract',
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => {
+    const readonlyElement: Readonly<HTMLElement> = element;
+
+    // @ts-expect-error Decode callbacks receive a read-only DOM view.
+    element.id = 'mutated';
+
+    void readonlyElement;
+
+    return {};
+  },
+  encode: ({ content, node }) => {
+    const configuredType: string = node.type;
+
+    // @ts-expect-error Terminal configuration can replace the authored type.
+    const staleAuthoredType: 'html-paragraph-contract' = node.type;
+
+    void configuredType;
+    void staleAuthoredType;
+
+    return { children: content, tag: 'p' };
+  },
+  match: [{ tag: 'p' }],
+}));
+
+void HtmlParagraphContractPlugin;
+
+HtmlParagraphContractPlugin.configure({
+  // @ts-expect-error Terminal configuration cannot replace authored schema.
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+});
+
+const assertSchemaCreationOwnership = () => {
+  const Base = createBasePlugin({ key: 'schemaCreationOnly' });
+
+  // @ts-expect-error Descriptor schema is immutable after creation.
+  Base.schema = null;
+  Base.extend({
+    // @ts-expect-error Static extensions cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+  Base.configure({
+    // @ts-expect-error Terminal configuration cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+
+  const Plate = toPlatePlugin(Base);
+
+  Plate.extend({
+    // @ts-expect-error Plate static extensions cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+  toPlatePlugin(Base, {
+    // @ts-expect-error Base-to-Plate conversion cannot declare schema.
+    schema: { mark: property.boolean() },
+  });
+};
+
+void assertSchemaCreationOwnership;
+
+const assertForeignHtmlTarget = () => {
+  const Owner = createBasePlugin({
+    key: 'foreignTargetOwner',
+    schema: { mark: property.boolean() },
+  });
+
+  // @ts-expect-error The descriptor overload requires a genuinely foreign key.
+  Owner.extendHtmlCodec(Owner, () => ({
+    decode: () => true,
+    decodeOnly: true,
+    match: [{ tag: 'strong' }],
+  }));
+};
+
+void assertForeignHtmlTarget;
+
+const HtmlBoldContractPlugin = createBasePlugin({
+  key: 'htmlBoldContract',
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => (element.tagName === 'STRONG' ? true : undefined),
+  encode: ({ node, value }) => {
+    const exactText: string = node.text;
+    const exactValue: boolean = value;
+
+    void exactText;
+    void exactValue;
+
+    return value ? { tag: 'strong' } : null;
+  },
+  match: [{ tag: ['strong', 'b'] }],
+}));
+
+void HtmlBoldContractPlugin;
+
+createBasePlugin({
+  key: 'invalidHtmlMarkOutput',
+  schema: { mark: property.boolean() },
+}).extendHtmlCodec(() => ({
+  decode: () => true,
+  // @ts-expect-error Mark encoders return a childless wrapper with a tag.
+  encode: () => ({ style: { fontWeight: 'bold' } }),
+  match: [{ tag: 'strong' }],
+}));
+
+const HtmlAlignContractPlugin = createBasePlugin({
+  key: 'htmlAlignContract',
+  schema: {
+    properties: [
+      schema.elementProperty('align', property.string(), {
+        target: target.type('html-paragraph-contract'),
+      }),
+    ],
+  },
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => element.style.textAlign || undefined,
+  encode: ({ node, value }) => {
+    const exactType: string = node.type;
+    const exactValue: string = value;
+
+    void exactType;
+    void exactValue;
+
+    return { style: { textAlign: value } };
+  },
+  match: [{ style: { textAlign: '*' } }],
+}));
+
+void HtmlAlignContractPlugin;
+
+createBasePlugin({
+  key: 'invalidHtmlPropertyOutput',
+  schema: {
+    properties: [
+      schema.elementProperty('align', property.string(), {
+        target: target.type('html-paragraph-contract'),
+      }),
+    ],
+  },
+  // @ts-expect-error Ordinary element-property encoders cannot replace the tag.
+}).extendHtmlCodec(() => ({
+  decode: () => 'left',
+  encode: () => ({ tag: 'p' }),
+  match: [{ style: { textAlign: '*' } }],
+}));
+
+const HtmlListContractPlugin = createBasePlugin({
+  key: 'htmlListContract',
+  schema: {
+    properties: [
+      schema.elementProperty('listStart', property.number(), {
+        target: target.type('html-paragraph-contract'),
+      }),
+      schema.elementProperty('listStyle', property.string(), {
+        target: target.type('html-paragraph-contract'),
+      }),
+    ],
+  },
+  targetPluginKeys: [HtmlParagraphContractPlugin.key],
+}).extendHtmlCodec(() => ({
+  createsElement: true,
+  decode: ({ element }) => ({
+    listStart: Number(element.getAttribute('start')) || undefined,
+    listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
+  }),
+  encode: ({ content, node }) => {
+    const exactStart: number | undefined = node.listStart;
+    const exactStyle: string | undefined = node.listStyle;
+    const configuredType: string = node.type;
+
+    void exactStart;
+    void exactStyle;
+    void configuredType;
+
+    // @ts-expect-error Runtime targetPluginKeys configuration can replace it.
+    const stalePrimaryType: 'html-paragraph-contract' = node.type;
+
+    void stalePrimaryType;
+
+    return {
+      children: [
+        {
+          children: content,
+          patchTarget: true,
+          tag: 'li',
+        },
+      ],
+      tag: 'ol',
+    };
+  },
+  match: [{ tag: ['ol', 'ul'] }],
+}));
+
+void HtmlListContractPlugin;
+
+const PrefixHtmlContractPlugin = createBasePlugin({
+  key: 'prefixHtmlContract',
+  schema: {
+    properties: [
+      schema.elementProperty(schema.key.prefix('data-'), property.string(), {
+        target: target.type('html-paragraph-contract'),
+      }),
+    ],
+  },
+});
+
+// @ts-expect-error HTML codecs require exact owned schema-property keys.
+PrefixHtmlContractPlugin.extendHtmlCodec(() => ({
+  decode: () => ({}),
+  decodeOnly: true,
+  match: [{ tag: 'p' }],
+}));
+
+const ConfiguredHtmlForeignTarget = createBasePlugin({
+  key: 'configuredHtmlForeignTarget',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: { variant: property.string() },
+    },
+  },
+}).configure({ type: 'configured-html-foreign-target' });
+
+const HtmlForeignContractPlugin = createBasePlugin({
+  key: 'htmlForeignContract',
+}).extendHtmlCodec(ConfiguredHtmlForeignTarget, () => ({
+  decode: ({ element }) => ({ variant: element.dataset.variant }),
+  encode: ({ content, node }) => {
+    const configuredType: string = node.type;
+    const exactVariant: string | undefined = node.variant;
+
+    // @ts-expect-error Key-based installation cannot prove one terminal type.
+    const staleDescriptorType: 'configured-html-foreign-target' = node.type;
+
+    void configuredType;
+    void exactVariant;
+    void staleDescriptorType;
+
+    return { children: content, tag: 'aside' };
+  },
+  match: [{ tag: 'aside' }],
+}));
+
+void HtmlForeignContractPlugin;
+
+createBasePlugin({ key: 'invalidForeignCreatesElement' }).extendHtmlCodec(
+  HtmlAlignContractPlugin,
+  () => ({
+    // @ts-expect-error Foreign property codecs cannot create element identity.
+    createsElement: true,
+    decode: () => 'left',
+    encode: () => ({ style: { textAlign: 'left' } }),
+    match: [{ tag: 'p' }],
+  })
+);
+
+createBasePlugin({ key: 'arrayCodecContract' }).extendCodecs(() => ({
+  'application/x-array-contract': {
+    // @ts-expect-error Codec decode returns an exact ContentSlice, never an array.
+    decode: () => [{ text: 'invalid' }],
+    scope: 'document',
+  },
+}));
+
+createBasePlugin({ key: 'identityCodecContract' }).extendCodecs(() => ({
+  'application/x-identity-contract': {
+    decode: () => null,
+    // @ts-expect-error Codec owner identity is inferred from the plugin.
+    owner: 'manual',
+    scope: 'document',
+  },
+}));
+
+createBasePlugin({ key: 'invalidGenericHtmlContract' }).extendCodecs(() => ({
+  // @ts-expect-error Generic product codecs cannot claim text/html.
+  'text/html': {
+    decode: () => null,
+    scope: 'document',
+  },
+}));
+
+const ConfiguredCodecContractPlugin = CodecContractPlugin.configure({});
+
+// @ts-expect-error Consumer configuration is terminal for codec authoring.
+ConfiguredCodecContractPlugin.extendCodecs(() => ({}));
+
+const ConfiguredHtmlContractPlugin = HtmlParagraphContractPlugin.configure({});
+
+// @ts-expect-error Consumer configuration is terminal for HTML codec authoring.
+ConfiguredHtmlContractPlugin.extendHtmlCodec(() => ({
+  decode: () => ({}),
+  decodeOnly: true,
+  match: [{ tag: 'p' }],
+}));
 
 type CalloutConfig = PluginConfig<
   'callout',
@@ -62,6 +414,75 @@ type ExtendedFullConfig = ExtendConfig<
   { extraSelector: () => 3 },
   { extraState: 4 }
 >;
+
+type UnifiedListRead = {
+  getPrevious: (type: 'bulleted' | 'numbered') => string;
+};
+
+type UnifiedListUpdate = {
+  toggle: (options: { type: 'bulleted' | 'numbered' }) => string;
+};
+
+const UnifiedListPlugin = createBasePlugin({
+  key: 'unifiedList',
+  options: {
+    prefix: 'list' as const,
+  },
+})
+  .extend<{ read: UnifiedListRead }>(({ getOptions }) => ({
+    read: ({ state }) => ({
+      getPrevious: (type) =>
+        `${getOptions().prefix}:${state.children().length}:${type}`,
+    }),
+  }))
+  .extend<{ update: UnifiedListUpdate }>(({ read }) => {
+    const readPrevious: string = read.getPrevious('bulleted');
+
+    void readPrevious;
+
+    return {
+      extension: {
+        priority: 101,
+      },
+      update: ({ tx }) => ({
+        toggle: (options) => tx.unifiedList.getPrevious(options.type),
+      }),
+    };
+  });
+
+const unifiedListEditor = createBaseEditor({
+  plugins: [UnifiedListPlugin],
+});
+const unifiedListRead: string =
+  unifiedListEditor.read.unifiedList.getPrevious('bulleted');
+const unifiedListUpdate: string = unifiedListEditor.update.unifiedList.toggle({
+  type: 'numbered',
+});
+unifiedListEditor.update((tx) => {
+  const activeRead: string = tx.unifiedList.getPrevious('bulleted');
+
+  void activeRead;
+});
+unifiedListEditor.read((state) =>
+  state.transaction((tx) => {
+    const specRead: string = tx.unifiedList.getPrevious('numbered');
+
+    void specRead;
+  })
+);
+// @ts-expect-error Read methods are not one-shot editor updates.
+unifiedListEditor.update.unifiedList.getPrevious('bulleted');
+const unifiedListPortal = unifiedListEditor.plugin(UnifiedListPlugin);
+const unifiedListPortalRead: string =
+  unifiedListPortal.read.getPrevious('bulleted');
+const unifiedListPortalUpdate: string = unifiedListPortal.update.toggle({
+  type: 'numbered',
+});
+
+void unifiedListPortalRead;
+void unifiedListPortalUpdate;
+void unifiedListRead;
+void unifiedListUpdate;
 
 const CalloutPlugin = createBasePlugin<CalloutConfig>({
   key: 'callout',
@@ -244,8 +665,8 @@ const InlineHistoryPlugin = createBasePlugin({
 const basePlateEditor = createBaseEditor({
   plugins: [BoldPlugin, ConfiguredCalloutPlugin, FactoryExtensionPlugin],
 });
-declare const parserOptions: ParserOptions;
-const queryBoldInsertData = prepareInsertDataQuery(basePlateEditor, BoldPlugin);
+declare const parserOptions: HtmlParserOptions;
+const queryBoldInsertData = prepareHtmlParserQuery(basePlateEditor, BoldPlugin);
 
 basePlateEditor.read((state) => queryBoldInsertData(state, parserOptions));
 

@@ -151,8 +151,8 @@ describe('BaseTablePlugin schema', () => {
         },
       ],
     });
-    const attributes = editor.read.schema.property({
-      key: 'attributes',
+    const colSpan = editor.read.schema.property({
+      key: 'colSpan',
       placement: 'element',
       type: KEYS.td,
     })?.value.validate;
@@ -167,8 +167,36 @@ describe('BaseTablePlugin schema', () => {
       type: KEYS.table,
     })?.value.validate;
 
-    expect(attributes?.({ colspan: '2', rowspan: '3' })).toBe(true);
-    expect(attributes?.({ colspan: 2 })).toBe(false);
+    expect(
+      editor.read.schema.property({
+        key: 'colSpan',
+        placement: 'element',
+        type: KEYS.td,
+      })?.value.kind
+    ).toBe('number');
+    expect(colSpan).toBeUndefined();
+    expect(() =>
+      editor.read.schema.validateDocument({
+        children: [
+          {
+            children: [
+              {
+                children: [{ ...cell(KEYS.td), colSpan: '2' }],
+                type: KEYS.tr,
+              },
+            ],
+            type: KEYS.table,
+          },
+        ],
+      })
+    ).toThrow(/colSpan.*number|number.*colSpan/i);
+    expect(
+      editor.read.schema.property({
+        key: 'attributes',
+        placement: 'element',
+        type: KEYS.td,
+      })
+    ).toBeNull();
     expect(borders?.({ bottom: { color: 'red', size: 1 } })).toBe(true);
     expect(borders?.({ bottom: { size: Number.POSITIVE_INFINITY } })).toBe(
       false

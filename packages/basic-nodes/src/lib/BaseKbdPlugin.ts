@@ -8,17 +8,16 @@ export const BaseKbdPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [{ validNodeName: ['KBD'] }],
-      },
-    },
-  },
   render: { as: 'kbd' },
   rules: { selection: { affinity: 'hard' } },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: () => true,
+    encode: ({ value }) => (value ? { tag: 'kbd' } : null),
+    match: [{ tag: 'kbd' }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

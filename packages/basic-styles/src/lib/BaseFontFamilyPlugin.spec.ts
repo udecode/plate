@@ -1,4 +1,4 @@
-import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { getRenderNodeStaticProps } from '@platejs/core/static/internal';
 import { KEYS } from '@platejs/utils';
 
@@ -22,13 +22,18 @@ describe('BaseFontFamilyPlugin', () => {
       'string'
     );
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<span style="font-family: Fira Code, monospace">text</span>',
       })
     ).toMatchObject([
       {
-        [KEYS.fontFamily]: '"Fira Code", monospace',
-        text: 'text',
+        children: [
+          {
+            [KEYS.fontFamily]: '"Fira Code", monospace',
+            text: 'text',
+          },
+        ],
+        type: KEYS.p,
       },
     ]);
   });
@@ -91,12 +96,16 @@ describe('BaseFontFamilyPlugin', () => {
       }).attributes.style
     ).toEqual({ fontFamily: 'monospace' });
 
-    const parsed = editor.plugin(HtmlPlugin).api.deserialize({
+    const parsed = editor.api.html.deserialize({
       element: '<span style="font-family: serif">text</span>',
     });
 
-    expect(parsed).toMatchObject([{ text: 'text', typeface: 'serif' }]);
-    expect(parsed[0]).not.toHaveProperty('fontFamily');
+    expect(parsed).toEqual([
+      {
+        children: [{ text: 'text', typeface: 'serif' }],
+        type: KEYS.p,
+      },
+    ]);
 
     editor.update.fontFamily.set('monospace');
 

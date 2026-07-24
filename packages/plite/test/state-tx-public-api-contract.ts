@@ -754,8 +754,8 @@ describe('state/tx public API contract', () => {
 
   it('reads fragments through the update transaction draft', () => {
     const editor = createSeededEditor();
-    let before = [] as Descendant[];
-    let after = [] as Descendant[];
+    let before: readonly Descendant[] = [];
+    let after: readonly Descendant[] = [];
 
     replaceEditorValue(editor, {
       children: [paragraph('one'), paragraph('two')],

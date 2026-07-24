@@ -57,7 +57,7 @@ const editorVariants = cva(
     'group/editor',
     'relative w-full cursor-text select-text overflow-x-hidden whitespace-break-spaces break-words',
     'rounded-md ring-offset-background focus-visible:outline-none',
-    '**:data-plite-placeholder:!top-1/2 **:data-plite-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100!',
+    '**:data-plite-placeholder:!top-1/2 **:data-plite-placeholder:-translate-y-1/2 placeholder:text-muted-foreground/80 **:data-plite-placeholder:text-muted-foreground/80 **:data-plite-placeholder:opacity-100! **:data-plite-drop-cursor:z-20 **:data-plite-drop-cursor:rounded-full **:data-plite-drop-cursor:bg-brand',
     '[&_strong]:font-bold'
   ),
   {

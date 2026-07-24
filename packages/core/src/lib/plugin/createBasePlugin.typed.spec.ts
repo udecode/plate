@@ -226,6 +226,14 @@ const assertTypedWeakPluginOverrides = () => {
     // @ts-expect-error erased weak overrides still cannot nest another override
     override: {},
   }) satisfies BasePluginOverride;
+  ({
+    // @ts-expect-error weak overrides cannot replace schema
+    schema: { mark: property.boolean() },
+  }) satisfies BasePluginOverride<TargetConfig>;
+  ({
+    // @ts-expect-error erased weak overrides cannot replace schema
+    schema: { mark: property.boolean() },
+  }) satisfies BasePluginOverride;
 };
 
 void assertTypedWeakPluginOverrides;

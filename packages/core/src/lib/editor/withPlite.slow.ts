@@ -25,7 +25,6 @@ import {
   HtmlPlugin,
   NodeIdPlugin,
   OverridePlugin,
-  ParserPlugin,
   extendBaseEditor,
 } from '../index';
 
@@ -37,7 +36,6 @@ const coreKeys = [
   HistoryPlugin.key,
   InputRulesPlugin.key,
   OverridePlugin.key,
-  ParserPlugin.key,
   HtmlPlugin.key,
   NodeIdPlugin.key,
   AffinityPlugin.key,
@@ -49,14 +47,11 @@ const coreKeys = [
 const TestBoldPlugin = createBasePlugin({
   key: 'bold',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [{ validNodeName: ['STRONG', 'B'] }],
-      },
-    },
-  },
-});
+}).extendHtmlCodec(() => ({
+  decode: () => true,
+  encode: ({ value }) => (value ? { tag: 'strong' } : null),
+  match: [{ tag: ['strong', 'b'] }],
+}));
 
 const TestItalicPlugin = createBasePlugin({
   key: 'italic',

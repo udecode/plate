@@ -83,10 +83,34 @@ const MEDIA_CONFIG: Record<
   },
 };
 
+type MediaPlugin =
+  | typeof BaseAudioPlugin
+  | typeof BaseFilePlugin
+  | typeof BaseImagePlugin
+  | typeof BaseVideoPlugin;
+
+function insertMedia(
+  editor: ReturnType<typeof useEditor>,
+  plugin: MediaPlugin,
+  input: { name?: string; url: string }
+) {
+  switch (plugin.key) {
+    case BaseAudioPlugin.key:
+      return editor.plugin(plugin).update.insert(input);
+    case BaseFilePlugin.key:
+      return editor.plugin(plugin).update.insert(input);
+    case BaseImagePlugin.key:
+      return editor.plugin(plugin).update.insert(input);
+    case BaseVideoPlugin.key:
+      return editor.plugin(plugin).update.insert(input);
+  }
+}
+
 export function MediaToolbarButton({
-  nodeType,
+  plugin,
   ...props
-}: DropdownMenuProps & { nodeType: string }) {
+}: DropdownMenuProps & { plugin: MediaPlugin }) {
+  const nodeType = plugin.key;
   const currentConfig = MEDIA_CONFIG[nodeType];
 
   const editor = useEditor();
@@ -157,7 +181,7 @@ export function MediaToolbarButton({
         <AlertDialogContent className="gap-6">
           <MediaUrlDialogContent
             currentConfig={currentConfig}
-            nodeType={nodeType}
+            plugin={plugin}
             setOpen={setDialogOpen}
           />
         </AlertDialogContent>
@@ -168,11 +192,11 @@ export function MediaToolbarButton({
 
 function MediaUrlDialogContent({
   currentConfig,
-  nodeType,
+  plugin,
   setOpen,
 }: {
   currentConfig: (typeof MEDIA_CONFIG)[string];
-  nodeType: string;
+  plugin: MediaPlugin;
   setOpen: (value: boolean) => void;
 }) {
   const editor = useEditor();
@@ -183,20 +207,12 @@ function MediaUrlDialogContent({
 
     setOpen(false);
     const input = {
-      name: nodeType === KEYS.file ? url.split('/').pop() : undefined,
+      name: plugin.key === KEYS.file ? url.split('/').pop() : undefined,
       url,
     };
 
-    if (nodeType === KEYS.audio) {
-      editor.plugin(BaseAudioPlugin).update.insert(input);
-    } else if (nodeType === KEYS.file) {
-      editor.plugin(BaseFilePlugin).update.insert(input);
-    } else if (nodeType === KEYS.img) {
-      editor.plugin(BaseImagePlugin).update.insert(input);
-    } else if (nodeType === KEYS.video) {
-      editor.plugin(BaseVideoPlugin).update.insert(input);
-    }
-  }, [url, editor, nodeType, setOpen]);
+    insertMedia(editor, plugin, input);
+  }, [url, editor, plugin, setOpen]);
 
   return (
     <>

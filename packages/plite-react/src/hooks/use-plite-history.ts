@@ -8,7 +8,7 @@ import {
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   failInvariant,
-  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRootKeys,
   runTrustedUpdate,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
@@ -75,11 +75,7 @@ const selectLastCommitSingleChangedRoot = (
 ): RootKey | null => {
   const commit = state.lastCommit();
   const roots = new Set<RootKey>([
-    ...(commit
-      ? [...getInternalDocumentChangeEntries(commit.changes)].map(
-          ([root]) => root
-        )
-      : []),
+    ...(commit ? getInternalDocumentChangeRootKeys(commit.changes) : []),
     ...(commit?.changes.createRoots ?? []),
     ...(commit?.changes.deleteRoots ?? []),
   ]);

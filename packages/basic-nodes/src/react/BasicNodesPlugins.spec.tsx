@@ -74,6 +74,26 @@ describe('basic node plugin composition', () => {
     });
   });
 
+  it('keeps root and descriptor updates on the same bold owner', () => {
+    const createEditor = () =>
+      createBaseEditor({
+        plugins: [BaseBoldPlugin],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+        initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+      });
+    const rootEditor = createEditor();
+    const portalEditor = createEditor();
+
+    rootEditor.update.bold.toggle();
+    portalEditor.plugin(BaseBoldPlugin).update.toggle();
+
+    expect(portalEditor.read.children()).toEqual(rootEditor.read.children());
+  });
+
   it('keeps explicit React plugin composition inference-complete', () => {
     const editor = createPlateEditor({
       plugins: [

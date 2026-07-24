@@ -9,7 +9,7 @@ import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import {
   CheckIcon,
   ChevronRightIcon,
-  Code2,
+  Code2Icon,
   Columns3Icon,
   FileCodeIcon,
   Heading1Icon,
@@ -40,119 +40,75 @@ import {
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
-export const turnIntoItems = [
-  {
-    icon: <PilcrowIcon />,
-    keywords: ['paragraph'],
-    label: 'Text',
-    value: KEYS.p,
-  },
-  {
-    icon: <Heading1Icon />,
-    keywords: ['title', 'h1'],
-    label: 'Heading 1',
-    value: 'h1',
-  },
-  {
-    icon: <Heading2Icon />,
-    keywords: ['subtitle', 'h2'],
-    label: 'Heading 2',
-    value: 'h2',
-  },
-  {
-    icon: <Heading3Icon />,
-    keywords: ['subtitle', 'h3'],
-    label: 'Heading 3',
-    value: 'h3',
-  },
-  {
-    icon: <Heading4Icon />,
-    keywords: ['subtitle', 'h4'],
-    label: 'Heading 4',
-    value: 'h4',
-  },
-  {
-    icon: <Heading5Icon />,
-    keywords: ['subtitle', 'h5'],
-    label: 'Heading 5',
-    value: 'h5',
-  },
-  {
-    icon: <Heading6Icon />,
-    keywords: ['subtitle', 'h6'],
-    label: 'Heading 6',
-    value: 'h6',
-  },
-  {
-    icon: <ListIcon />,
-    keywords: ['unordered', 'ul', '-'],
-    label: 'Bulleted list',
-    value: KEYS.ul,
-  },
-  {
-    icon: <ListOrderedIcon />,
-    keywords: ['ordered', 'ol', '1'],
-    label: 'Numbered list',
-    value: KEYS.ol,
-  },
-  {
-    icon: <SquareIcon />,
-    keywords: ['checklist', 'task', 'checkbox', '[]'],
-    label: 'To-do list',
-    value: KEYS.listTodo,
-  },
-  {
-    icon: <ChevronRightIcon />,
-    keywords: ['collapsible', 'expandable'],
-    label: 'Toggle list',
-    value: KEYS.toggle,
-  },
-  {
-    icon: <FileCodeIcon />,
-    keywords: ['```'],
-    label: 'Code',
-    value: KEYS.codeBlock,
-  },
-  {
-    icon: <Code2 />,
-    keywords: [
-      'code-drawing',
-      'diagram',
-      'plantuml',
-      'graphviz',
-      'flowchart',
-      'mermaid',
-    ],
-    label: 'Code Drawing',
-    value: KEYS.codeDrawing,
-  },
-  {
-    icon: <QuoteIcon />,
-    keywords: ['citation', 'blockquote', '>'],
-    label: 'Quote',
-    value: KEYS.blockquote,
-  },
-  {
-    icon: <Columns3Icon />,
-    label: '3 columns',
-    value: 'action_three_columns',
-  },
-];
+const ACTION_THREE_COLUMNS = 'action_three_columns';
+
+function getTurnIntoLabel(value: string) {
+  switch (value) {
+    case KEYS.ul:
+      return 'Bulleted list';
+    case KEYS.ol:
+      return 'Numbered list';
+    case KEYS.listTodo:
+      return 'To-do list';
+    case KEYS.h1:
+      return 'Heading 1';
+    case KEYS.h2:
+      return 'Heading 2';
+    case KEYS.h3:
+      return 'Heading 3';
+    case KEYS.h4:
+      return 'Heading 4';
+    case KEYS.h5:
+      return 'Heading 5';
+    case KEYS.h6:
+      return 'Heading 6';
+    case KEYS.toggle:
+      return 'Toggle list';
+    case KEYS.codeBlock:
+      return 'Code';
+    case KEYS.codeDrawing:
+      return 'Code Drawing';
+    case KEYS.blockquote:
+      return 'Quote';
+    case ACTION_THREE_COLUMNS:
+      return '3 columns';
+    default:
+      return 'Text';
+  }
+}
+
+function TurnIntoMenuItem({
+  children,
+  icon,
+  value,
+}: React.PropsWithChildren<{
+  icon: React.ReactNode;
+  value: string;
+}>) {
+  return (
+    <DropdownMenuRadioItem
+      className="min-w-[180px] pl-2 *:first:[span]:hidden"
+      value={value}
+    >
+      <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
+        <DropdownMenuItemIndicator>
+          <CheckIcon />
+        </DropdownMenuItemIndicator>
+      </span>
+      {icon}
+      {children}
+    </DropdownMenuRadioItem>
+  );
+}
 
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();
   const [open, setOpen] = React.useState(false);
-
-  const value = useSelectionFragmentProp({
-    defaultValue: KEYS.p,
-    getProp: (node) => getBlockType(node as Element),
-  });
-  const selectedValue = String(value ?? KEYS.p);
-  const selectedItem = React.useMemo(
-    () =>
-      turnIntoItems.find((item) => item.value === selectedValue) ??
-      turnIntoItems[0],
-    [selectedValue]
+  const selectedValue = String(
+    useSelectionFragmentProp({
+      defaultValue: KEYS.p,
+      getProp: (node) => getBlockType(node as Element),
+    }) ?? KEYS.p
   );
 
   return (
@@ -164,14 +120,14 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
           tooltip="Turn into"
           isDropdown
         >
-          {selectedItem.label}
+          {getTurnIntoLabel(selectedValue)}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         className="ignore-click-outside/toolbar min-w-0"
-        onCloseAutoFocus={(e) => {
-          e.preventDefault();
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
           editor.api.dom.focus();
         }}
         align="start"
@@ -183,21 +139,54 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
           }}
           label="Turn into"
         >
-          {turnIntoItems.map(({ icon, label, value: itemValue }) => (
-            <DropdownMenuRadioItem
-              key={itemValue}
-              className="min-w-[180px] pl-2 *:first:[span]:hidden"
-              value={itemValue}
-            >
-              <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
-                <DropdownMenuItemIndicator>
-                  <CheckIcon />
-                </DropdownMenuItemIndicator>
-              </span>
-              {icon}
-              {label}
-            </DropdownMenuRadioItem>
-          ))}
+          <TurnIntoMenuItem icon={<PilcrowIcon />} value={KEYS.p}>
+            Text
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Heading1Icon />} value={KEYS.h1}>
+            Heading 1
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Heading2Icon />} value={KEYS.h2}>
+            Heading 2
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Heading3Icon />} value={KEYS.h3}>
+            Heading 3
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Heading4Icon />} value={KEYS.h4}>
+            Heading 4
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Heading5Icon />} value={KEYS.h5}>
+            Heading 5
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Heading6Icon />} value={KEYS.h6}>
+            Heading 6
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<ListIcon />} value={KEYS.ul}>
+            Bulleted list
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<ListOrderedIcon />} value={KEYS.ol}>
+            Numbered list
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<SquareIcon />} value={KEYS.listTodo}>
+            To-do list
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<ChevronRightIcon />} value={KEYS.toggle}>
+            Toggle list
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<FileCodeIcon />} value={KEYS.codeBlock}>
+            Code
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<Code2Icon />} value={KEYS.codeDrawing}>
+            Code Drawing
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem icon={<QuoteIcon />} value={KEYS.blockquote}>
+            Quote
+          </TurnIntoMenuItem>
+          <TurnIntoMenuItem
+            icon={<Columns3Icon />}
+            value={ACTION_THREE_COLUMNS}
+          >
+            3 columns
+          </TurnIntoMenuItem>
         </ToolbarMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

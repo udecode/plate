@@ -6,6 +6,7 @@ import {
   type NodeEntry,
   type NodeMatch,
   type NodeProps,
+  type Path,
   type Value,
   ElementApi,
   NodeApi,
@@ -19,7 +20,7 @@ import cloneDeep from 'lodash/cloneDeep.js';
 import isEqual from 'lodash/isEqual.js';
 import { nanoid } from 'nanoid';
 import {
-  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRootKeys,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
 
@@ -118,7 +119,7 @@ const isBlockCandidate = (
   (isBlock ? isBlock(node) : (node as { inline?: boolean }).inline !== true);
 
 const shouldAssignNodeId = (
-  entry: [Descendant, number[]],
+  entry: readonly [Descendant, Path],
   options: NormalizeNodeIdRuntimeOptions = {}
 ) => {
   const {
@@ -167,7 +168,7 @@ const visitDocumentNodes = (
 const normalizeInsertedNodeIds = (
   input: {
     node: Descendant;
-    path: number[];
+    path: Path;
     root: string;
   },
   options: NodeIdOptions,
@@ -296,7 +297,7 @@ const normalizeInsertedNodeIds = (
 const normalizeSplitNodeIds = (
   input: {
     node: Descendant;
-    path: number[];
+    path: Path;
     root: string;
   },
   options: NodeIdOptions,
@@ -352,7 +353,7 @@ const normalizeSplitNodeIds = (
 
 type DocumentNodeEntry = {
   node: Descendant;
-  path: number[];
+  path: Path;
 };
 
 const collectDocumentNodeEntries = (
@@ -361,7 +362,7 @@ const collectDocumentNodeEntries = (
 ): DocumentNodeEntry[] => {
   const entries: DocumentNodeEntry[] = [];
 
-  const visit = (node: Descendant, path: number[]) => {
+  const visit = (node: Descendant, path: Path) => {
     entries.push({ node, path });
 
     if (ElementApi.isElement(node)) {
@@ -616,12 +617,12 @@ const normalizeNodeIdRuntime = <V extends Value>(
       }
 
       return nextNode;
-    }) as V;
+    }) as unknown as V;
 
     return valueChanged ? nextValue : value;
   }
 
-  const normalizeNode = (node: Descendant, path: number[]): Descendant => {
+  const normalizeNode = (node: Descendant, path: Path): Descendant => {
     let nextNode = node;
     let childrenChanged = false;
 
@@ -670,7 +671,7 @@ const normalizeNodeIdRuntime = <V extends Value>(
     }
 
     return nextNode;
-  }) as V;
+  }) as unknown as V;
 
   return valueChanged ? nextValue : value;
 };
@@ -718,7 +719,7 @@ export const NodeIdPlugin = createBasePlugin({
       const options = getOptions();
       const { idCreator } = options;
       const { idKey = 'id' } = options;
-      const updates: { at: number[]; props: Record<string, unknown> }[] = [];
+      const updates: { at: Path; props: Record<string, unknown> }[] = [];
       const isBlock = (node: Descendant) =>
         ElementApi.isElement(node) && tx.schema.isBlock(node);
       const applyUpdates = () => {
@@ -763,7 +764,7 @@ export const NodeIdPlugin = createBasePlugin({
         return;
       }
 
-      const addNodeId = (entry: [Descendant, number[]]) => {
+      const addNodeId = (entry: readonly [Descendant, Path]) => {
         const [node, path] = entry;
 
         if (shouldAssignNodeId(entry, { ...options, isBlock })) {
@@ -800,14 +801,12 @@ export const NodeIdPlugin = createBasePlugin({
         const { idKey = 'id' } = options;
         const runtimeOptions = { ...options, idKey };
         const roots = new Set([
-          ...[...getInternalDocumentChangeEntries(change)].map(
-            ([root]) => root
-          ),
+          ...getInternalDocumentChangeRootKeys(change),
           ...change.createRoots,
         ]);
         const updates: {
           node: Descendant;
-          path: number[];
+          path: Path;
           root: string;
         }[] = [];
 

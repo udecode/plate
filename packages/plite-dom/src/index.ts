@@ -99,18 +99,7 @@ export {
   normalizeDOMPoint,
 } from './utils/dom';
 
-export {
-  CAN_USE_DOM,
-  HAS_BEFORE_INPUT_SUPPORT,
-  IS_ANDROID,
-  IS_CHROME,
-  IS_FIREFOX,
-  IS_IOS,
-  IS_UC_MOBILE,
-  IS_WEBKIT,
-  IS_WECHATBROWSER,
-  isApplePlatform,
-} from './utils/environment';
+export { CAN_USE_DOM } from './utils/environment';
 export type {
   HotkeyMatchOptions,
   HotkeyPlatform,

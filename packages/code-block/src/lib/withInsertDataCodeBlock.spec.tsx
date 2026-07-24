@@ -5,20 +5,21 @@ import {
   createBaseEditor,
   createBasePlugin,
 } from '@platejs/core';
+import { ContentSlice } from '@platejs/plite';
 import { createDataTransfer, jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
 jsxt;
 
-const BaseCommentParserPlugin = createBasePlugin({
+const BaseCommentCodecPlugin = createBasePlugin({
   key: 'comment_parser',
-  parser: {
-    deserialize: () => [{ text: 'comment parser' }],
-    format: 'text/plain',
-    owns: [{ kind: 'schema' }],
+}).extendCodecs(() => ({
+  'text/plain': {
+    scope: 'document',
+    decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
   },
-});
+}));
 
 const createEditor = (input: TestEditor) =>
   createBaseEditor({
@@ -29,11 +30,7 @@ const createEditor = (input: TestEditor) =>
 
 const createEditorWithParser = (input: TestEditor) =>
   createBaseEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      BaseCodeBlockPlugin,
-      BaseCommentParserPlugin,
-    ],
+    plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin, BaseCommentCodecPlugin],
     selection: input.selection,
     initialValue: input.children,
   });
@@ -210,19 +207,19 @@ describe('when pasting text into a code block', () => {
       </editor>
     ) as TestEditor;
     const deserialize = mock(() => [{ text: 'mixed parser' }]);
-    const MixedSelectionParserPlugin = createBasePlugin({
+    const MixedSelectionCodecPlugin = createBasePlugin({
       key: 'mixed_selection_parser',
-      parser: {
-        deserialize,
-        format: 'text/plain',
-        owns: [{ kind: 'schema' }],
+    }).extendCodecs(() => ({
+      'text/plain': {
+        scope: 'document',
+        decode: () => ContentSlice.closed(deserialize()),
       },
-    });
+    }));
     const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseCodeBlockPlugin,
-        MixedSelectionParserPlugin,
+        MixedSelectionCodecPlugin,
       ],
       selection: input.selection,
       initialValue: input.children,

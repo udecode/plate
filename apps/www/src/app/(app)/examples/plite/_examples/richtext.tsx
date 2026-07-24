@@ -300,20 +300,16 @@ const clearRichTextFormatting = (editor: RichTextEditor) => {
   });
 };
 
-const toRichTextLeaf = (node: PliteText) => {
-  const leaf: RichTextText = { text: node.text };
-
-  for (const mark of TEXT_MARK_TYPES) {
-    if (node[mark]) {
-      leaf[mark] = true;
-    }
-  }
-
-  return leaf;
-};
+const toRichTextLeaf = (node: PliteText): RichTextText => ({
+  ...(node.bold ? { bold: true } : {}),
+  ...(node.code ? { code: true } : {}),
+  ...(node.italic ? { italic: true } : {}),
+  ...(node.underline ? { underline: true } : {}),
+  text: node.text,
+});
 
 const normalizeRichTextHtmlChildren = (
-  children: unknown[]
+  children: readonly unknown[]
 ): RichTextDescendant[] => children.flatMap(normalizeRichTextHtmlNode);
 
 const normalizeRichTextHtmlNode = (node: unknown): RichTextDescendant[] => {

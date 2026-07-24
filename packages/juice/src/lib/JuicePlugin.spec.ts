@@ -1,5 +1,4 @@
-import { createBaseEditor, prepareParserPluginContext } from '@platejs/core';
-import { KEYS } from '@platejs/utils';
+import { createBaseEditor, prepareHtmlPluginContext } from '@platejs/core';
 
 import { JuicePlugin } from './JuicePlugin';
 
@@ -8,13 +7,12 @@ describe('JuicePlugin', () => {
     const editor = createBaseEditor({
       plugins: [JuicePlugin],
     });
-    const createContext = prepareParserPluginContext(editor, JuicePlugin);
+    const createContext = prepareHtmlPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
-    const transformData =
-      JuicePlugin.inject?.parsers?.[KEYS.html]?.parser?.transformData;
+    const transformData = JuicePlugin.parsers.html?.transformData;
 
     if (!transformData) {
-      throw new Error('Missing HTML parser transformData');
+      throw new Error('Missing HTML transformData');
     }
 
     const dataTransfer = new DataTransfer();
@@ -37,13 +35,12 @@ describe('JuicePlugin', () => {
     const editor = createBaseEditor({
       plugins: [JuicePlugin],
     });
-    const createContext = prepareParserPluginContext(editor, JuicePlugin);
+    const createContext = prepareHtmlPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
-    const transformData =
-      JuicePlugin.inject?.parsers?.[KEYS.html]?.parser?.transformData;
+    const transformData = JuicePlugin.parsers.html?.transformData;
 
     if (!transformData) {
-      throw new Error('Missing HTML parser transformData');
+      throw new Error('Missing HTML transformData');
     }
 
     const dataTransfer = new DataTransfer();

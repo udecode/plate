@@ -31,6 +31,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
   ['Async Decorations', 'decorations-async'],
   ['Checklists', 'check-lists'],
   ['Code Highlighting', 'code-highlighting'],
+  ['Collaboration Demo', 'collaboration-demo'],
   ['Comment Mode', 'comment-mode'],
   ['Custom Placeholder', 'custom-placeholder'],
   ['Document State', 'document-state'],
@@ -68,6 +69,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
 
 export const HIDDEN_EXAMPLES = [
   'android-tests',
+  'collaboration-demo',
   'decorations-async',
   'dom-coverage-boundaries',
   'plate-schema-descriptors',

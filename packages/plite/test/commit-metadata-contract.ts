@@ -12,14 +12,17 @@ import {
 import {
   createEditor,
   DocumentChange,
-  type Element,
   defineEditorExtension,
   defineEffect,
   defineStateField,
   defineUpdateAnnotation,
+  type Editor,
+  type Element,
   type EditorUpdatePolicy,
   type EditorUpdateTag,
+  type SnapshotInput,
   type SnapshotIndex,
+  type Value,
 } from '@platejs/plite';
 
 import { createEditorCommit } from '../src/core/commit';
@@ -29,11 +32,19 @@ const paragraph = (text: string): Element => ({
   children: [{ text }],
 });
 
+const replaceSnapshot = editorReplace as unknown as <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
+  input: SnapshotInput
+) => void;
+
 describe('commit metadata contract', () => {
   it('captures update tags and selection before/after on text commits', () => {
     const editor = createEditor();
 
-    editorReplace(editor, {
+    replaceSnapshot(editor, {
       children: [paragraph('one')],
       selection: {
         kind: 'text' as const,
@@ -73,16 +84,18 @@ describe('commit metadata contract', () => {
     assert.equal(Object.isFrozen(commit.selectionAfter), true);
     assert.equal(Object.isFrozen(commit.selectionAfter?.focus), true);
     assert.equal(Object.isFrozen(commit.selectionAfter?.focus.path), true);
-    assert.throws(() => {
-      if (commit.selectionBefore) {
-        commit.selectionBefore.anchor.path[0] = 9;
-      }
-    });
-    assert.throws(() => {
-      if (commit.selectionAfter) {
-        commit.selectionAfter.focus.offset = 9;
-      }
-    });
+    assert.equal(
+      commit.selectionBefore
+        ? Reflect.set(commit.selectionBefore.anchor.path, 0, 9)
+        : true,
+      false
+    );
+    assert.equal(
+      commit.selectionAfter
+        ? Reflect.set(commit.selectionAfter.focus, 'offset', 9)
+        : true,
+      false
+    );
     assert.equal(commit.selectionChanged, true);
     assert.equal(commit.changed.has('document'), true);
     assert.equal(commit.changed.has('text'), true);
@@ -117,7 +130,7 @@ describe('commit metadata contract', () => {
     ] satisfies EditorUpdateTag[];
     const policy = { tags } satisfies EditorUpdatePolicy;
 
-    editorReplace(editor, {
+    replaceSnapshot(editor, {
       children: [paragraph('one')],
       selection: {
         kind: 'text' as const,
@@ -147,7 +160,7 @@ describe('commit metadata contract', () => {
       initialValue: [paragraph('one')],
     });
 
-    editorReplace(editor, {
+    replaceSnapshot(editor, {
       children: [paragraph('one')],
       selection: {
         kind: 'text' as const,
@@ -195,7 +208,7 @@ describe('commit metadata contract', () => {
     const editor = createEditor();
     const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
 
-    editorReplace(editor, {
+    replaceSnapshot(editor, {
       children: [paragraph('one')],
       selection: {
         kind: 'text' as const,
@@ -279,7 +292,7 @@ describe('commit metadata contract', () => {
   it('marks full-document replacement as broad runtime dirtiness', () => {
     const editor = createEditor();
 
-    editorReplace(editor, {
+    replaceSnapshot(editor, {
       children: [paragraph('one')],
       selection: null,
     });
@@ -378,7 +391,7 @@ describe('commit metadata contract', () => {
   it('keeps top-level split path impact scoped to shifted top-level runtime ids', () => {
     const editor = createEditor();
 
-    editorReplace(editor, {
+    replaceSnapshot(editor, {
       children: [
         paragraph('one'),
         {

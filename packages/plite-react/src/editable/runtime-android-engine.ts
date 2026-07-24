@@ -31,13 +31,16 @@ export const useRuntimeAndroidEngine = ({
   runtime: EditableDOMRuntime;
   scheduleOnDOMSelectionChange: RuntimeSelectionChangeHandler;
 }) => {
-  const inputManager = useAndroidInputManager({
-    inputController: runtime.inputController,
-    onDOMSelectionChange,
-    receivedUserInput: runtime.receivedUserInput,
-    scheduleTask: runtime.domPhaseScheduler.schedule,
-    scheduleOnDOMSelectionChange,
-  });
+  const inputManager = useAndroidInputManager(
+    {
+      inputController: runtime.inputController,
+      onDOMSelectionChange,
+      receivedUserInput: runtime.receivedUserInput,
+      scheduleTask: runtime.domPhaseScheduler.schedule,
+      scheduleOnDOMSelectionChange,
+    },
+    runtime
+  );
 
   usePublishedAndroidInputManager({ inputManager, runtime });
 };

@@ -46,7 +46,9 @@ import {
   defineEditorSchema,
   type Node,
   NodeApi,
+  type Path,
   PathApi,
+  type Point,
   property,
   schema,
 } from '@platejs/plite';
@@ -2201,14 +2203,14 @@ it('resolves nested list ancestry and terminal list-item paths', () => {
     selection: null,
   });
 
-  const isType = (path: number[], type: string) => {
+  const isType = (path: Path, type: string) => {
     const node = NodeApi.get(editor, path);
 
     return !editorIsEditor(node) && 'type' in node && node.type === type;
   };
-  const isList = (path: number[]) =>
+  const isList = (path: Path) =>
     isType(path, 'bulleted-list') || isType(path, 'numbered-list');
-  const listLevelPaths = (path: number[]) =>
+  const listLevelPaths = (path: Path) =>
     PathApi.levels(path).filter((levelPath) => isList(levelPath));
 
   const topListPath = [0, 0];
@@ -2575,7 +2577,7 @@ it('transaction queries see the live draft while ambient reads stay committed', 
         firstString: string;
         insertedPathExists: boolean;
         shiftedNodeString: string;
-        lastPoint: { path: number[]; offset: number };
+        lastPoint: Point;
       }
     | undefined;
 

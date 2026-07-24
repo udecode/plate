@@ -7,8 +7,8 @@ import {
   assertPeerTexts,
   clearYjsTrace,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -17,10 +17,10 @@ import {
   type Peer,
   paragraph,
   readPeerPliteValue,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeer,
-  undoYjsPeerAndSync,
+  undoHistoryPeer,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -41,14 +41,14 @@ const createPeer = (
   clientId: ClientId,
   children: readonly Descendant[] = initialValue()
 ): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children,
     clientId,
     numericClientId: clientIds[clientId],
   });
 
 const createPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: ids,
     numericClientIds: clientIds,
@@ -118,10 +118,10 @@ describe('@platejs/yjs canonical change collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta!', 'gamma']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta!', 'gamma']);
   });
 
@@ -149,10 +149,10 @@ describe('@platejs/yjs canonical change collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'ba', 'gamma']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'ba', 'gamma']);
   });
 
@@ -204,10 +204,10 @@ describe('@platejs/yjs canonical change collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'bravo', 'beta', 'gamma']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'bravo', 'beta', 'gamma']);
   });
 
@@ -280,22 +280,28 @@ describe('@platejs/yjs canonical change collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'bravo', 'gamma']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'bravo', 'gamma']);
   });
 
   it('preserves remote text when an offline replace_children is undone before reconnect', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
+    const paragraphNode = getVisibleYjsNodeAt(b, [0]);
+    const textNode = getVisibleYjsNodeAt(b, [0, 0]);
 
     disconnectYjsPeer(b);
     replaceFirstBlock(b);
+    assert.equal(getVisibleYjsNodeAt(b, [0]), paragraphNode);
+    assert.equal(getVisibleYjsNodeAt(b, [0, 0]), textNode);
     assert.deepEqual(getPeerTopLevelTexts(b), ['bravo', 'beta', 'gamma']);
 
-    undoYjsPeer(b);
+    undoHistoryPeer(b);
+    assert.equal(getVisibleYjsNodeAt(b, [0]), paragraphNode);
+    assert.equal(getVisibleYjsNodeAt(b, [0, 0]), textNode);
     assert.deepEqual(getPeerTopLevelTexts(b), ['alpha', 'beta', 'gamma']);
 
     appendRemoteAlpha(a);

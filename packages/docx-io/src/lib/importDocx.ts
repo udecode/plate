@@ -1,6 +1,6 @@
 import { cleanDocx } from '@platejs/docx';
 import mammoth from 'mammoth';
-import { type BaseEditor, HtmlPlugin } from '@platejs/core';
+import type { BaseEditor } from '@platejs/core';
 
 import {
   extractComments,
@@ -80,7 +80,15 @@ export async function importDocx(
   }
 
   // Deserialize HTML to Plate nodes
-  const nodes = editor.plugin(HtmlPlugin).api.deserialize({ element });
+  const nodes = editor.api.html.deserialize({ element });
+
+  if (!nodes) {
+    return {
+      comments: [],
+      nodes: [],
+      warnings: [...warnings, 'Failed to decode HTML'],
+    };
+  }
 
   // Extract comments
   const comments = extractComments(commentById, commentIds);

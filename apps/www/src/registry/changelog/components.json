@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "components": {
+    "collaboration-demo": [
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
+    "remote-cursor-overlay": [
+      "2026-07-24-collaboration-runtime",
+      "2025-11-20-biome-ultracite"
+    ],
     "markdown-kit": [
       "2026-07-24-compose-markdown-footnotes",
       "2026-04-23-redesign-blockquotes-container-blocks"
@@ -71,6 +79,54 @@
       "2026-07-23-terminal-plugin-configure",
       "2025-11-20-biome-ultracite"
     ],
+    "font-color-toolbar-button": [
+      "2026-07-24-configurable-color-controls",
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
+      "2025-11-20-biome-ultracite"
+    ],
+    "toolbar": [
+      "2026-07-24-configurable-color-controls",
+      "2025-11-20-biome-ultracite"
+    ],
+    "fixed-toolbar-buttons": [
+      "2026-07-24-configurable-color-controls",
+      "2026-07-24-feature-toolbar-plugin-portals"
+    ],
+    "table-node": [
+      "2026-07-24-configurable-color-controls",
+      "2026-07-22-plugin-portal-wiring",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "mark-toolbar-button": ["2026-07-24-feature-toolbar-plugin-portals"],
+    "font-size-toolbar-button": [
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2025-11-20-biome-ultracite"
+    ],
+    "media-toolbar-button": [
+      "2026-07-24-feature-toolbar-plugin-portals",
+      "2026-07-23-rich-media-caption-children",
+      "2025-11-20-biome-ultracite"
+    ],
+    "more-toolbar-button": ["2026-07-24-feature-toolbar-plugin-portals"],
+    "floating-toolbar-buttons": ["2026-07-24-feature-toolbar-plugin-portals"],
+    "installation-next-02-marks-demo": [
+      "2026-07-24-feature-toolbar-plugin-portals"
+    ],
+    "installation-next-03-elements-demo": [
+      "2026-07-24-feature-toolbar-plugin-portals"
+    ],
+    "installation-next-demo": ["2026-07-24-feature-toolbar-plugin-portals"],
+    "editor": [
+      "2026-07-24-own-editor-presentation",
+      "2026-06-15-editor-fix-preserved-space-wrapping",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
     "block-draggable": [
       "2026-07-24-scope-block-draggable-list-api",
       "2025-11-20-biome-ultracite"
@@ -120,10 +176,6 @@
       "2026-07-23-rich-media-caption-children",
       "2025-11-20-biome-ultracite"
     ],
-    "media-toolbar-button": [
-      "2026-07-23-rich-media-caption-children",
-      "2025-11-20-biome-ultracite"
-    ],
     "transforms": [
       "2026-07-23-scoped-media-inserts",
       "2026-07-13-use-installed-block-insert-commands",
@@ -143,13 +195,6 @@
       "2025-11-20-biome-ultracite"
     ],
     "footnote-node": ["2026-07-22-plugin-portal-wiring"],
-    "table-node": [
-      "2026-07-22-plugin-portal-wiring",
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "table-node-static": ["2026-07-22-plugin-portal-wiring"],
     "list-toolbar-button": ["2026-07-16-list-toolbar-wiring"],
     "date-node": [
@@ -159,11 +204,6 @@
       "2025-10-17-fix-react-decouple"
     ],
     "dnd-kit": ["2026-07-13-use-installed-block-insert-commands"],
-    "editor": [
-      "2026-06-15-editor-fix-preserved-space-wrapping",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "editor-static": ["2026-06-15-editor-fix-preserved-space-wrapping"],
     "code-block-node": [
       "2026-06-13-show-code-block-language-labels-read-only-mode",
@@ -262,11 +302,6 @@
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
       "2025-11-20-biome-ultracite"
     ],
-    "font-color-toolbar-button": [
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-03-19-improve-non-react-test-coverage-ci-workflow-hygiene",
-      "2025-11-20-biome-ultracite"
-    ],
     "code-drawing-base-kit": ["2026-01-28-add-code-drawing-node"],
     "code-drawing-demo": ["2026-01-28-add-code-drawing-node"],
     "block-context-menu": ["2026-01-28-add-code-drawing-node"],
@@ -328,14 +363,12 @@
     "emoji-toolbar-button": ["2025-11-20-biome-ultracite"],
     "fixed-toolbar": ["2025-11-20-biome-ultracite"],
     "floating-toolbar": ["2025-11-20-biome-ultracite"],
-    "font-size-toolbar-button": ["2025-11-20-biome-ultracite"],
     "link-toolbar": ["2025-11-20-biome-ultracite"],
     "list-classic-node": ["2025-11-20-biome-ultracite"],
     "list-classic-toolbar-button": ["2025-11-20-biome-ultracite"],
     "media-preview-dialog": ["2025-11-20-biome-ultracite"],
     "media-toolbar": ["2025-11-20-biome-ultracite"],
     "mode-toolbar-button": ["2025-11-20-biome-ultracite"],
-    "remote-cursor-overlay": ["2025-11-20-biome-ultracite"],
     "resize-handle": ["2025-11-20-biome-ultracite"],
     "select-editor": ["2025-11-20-biome-ultracite"],
     "table-toolbar-button": ["2025-11-20-biome-ultracite"],
@@ -349,8 +382,6 @@
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"
     ],
-    "toolbar": ["2025-11-20-biome-ultracite"],
-    "collaboration-demo": ["2025-11-20-biome-ultracite"],
     "controlled-demo": ["2025-11-20-biome-ultracite"],
     "image-pro-demo": ["2025-11-20-biome-ultracite"],
     "markdown-streaming-demo": ["2025-11-20-biome-ultracite"],

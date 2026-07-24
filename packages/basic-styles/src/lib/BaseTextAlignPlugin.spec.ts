@@ -1,8 +1,4 @@
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  HtmlPlugin,
-} from '@platejs/core';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
@@ -62,7 +58,7 @@ describe('BaseTextAlignPlugin', () => {
     });
 
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<p style="text-align: center">text</p>',
       })
     ).toMatchObject([
@@ -123,7 +119,7 @@ describe('BaseTextAlignPlugin', () => {
     });
 
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<p style="text-align: center">text</p>',
       })
     ).toMatchObject([

@@ -21,7 +21,7 @@ import type {
   SchemaTarget,
   Text,
 } from '@platejs/plite';
-import type { HostDataSource } from '@platejs/plite-dom';
+import type { TxReadMethod } from '@platejs/plite/internal';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 
@@ -160,37 +160,6 @@ export type InferPluginSchemaContribution<C extends AnyPluginConfig> = [
   ? EditorSchemaContribution
   : InferExactPluginSchemaContribution<C>;
 
-export type BaseDeserializer = object;
-
-export type BaseHtmlDeserializer = BaseDeserializer & {
-  /** List of HTML attribute names to store their values in `node.attributes`. */
-  attributeNames?: readonly string[];
-  rules?: readonly Readonly<{
-    /**
-     * Deserialize an element:
-     *
-     * - If this option (string) is in the element attribute names.
-     * - If this option (object) values match the element attributes.
-     */
-    validAttribute?:
-      | Readonly<Record<string, readonly string[] | string>>
-      | string;
-    /** Valid element `className`. */
-    validClassName?: string;
-    /** Valid element `nodeName`. Set '*' to allow any node name. */
-    validNodeName?: readonly string[] | string;
-    /**
-     * Valid element style values. Can be a list of string (only one match is
-     * needed).
-     */
-    validStyle?: Partial<
-      Record<keyof CSSStyleDeclaration, readonly string[] | string | undefined>
-    >;
-  }>[];
-  /** Whether or not to include deserialized children on this node */
-  withoutChildren?: boolean;
-};
-
 export type BaseInjectProps = {
   /**
    * Object whose keys are node values and values are classNames which will be
@@ -321,7 +290,7 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
       selection?: SelectionRules;
     };
     /** Pure declarative contribution to the editor schema. */
-    schema: InferPluginSchema<C>;
+    readonly schema: InferPluginSchema<C>;
     /** Document type/property key owned by this plugin. Defaults to `key`. */
     type: InferPluginDocumentType<C>;
     /** Selectors for the plugin. */
@@ -491,6 +460,8 @@ export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
   readonly installed: boolean;
   /** One-shot updates owned by the current plugin, without its key namespace. */
   update: InferOwnTx<C>;
+  /** State-bound reads owned by the current plugin. */
+  read: InferOwnState<C>;
   setOptions: (
     options:
       | ((state: Draft<Partial<InferOptions<C>>>) => void)
@@ -517,8 +488,6 @@ export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
     value: InferOptions<C>[K]
   ) => void;
 };
-
-export type BaseSerializer = AnyObject;
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
   nodeValue?: any;
@@ -781,13 +750,25 @@ export type InferState<P> = P extends { state?: infer State } ? State : {};
 
 export type InferTx<P> = P extends { tx: infer Tx } ? Tx : never;
 
+type OmitTxReadMethods<T> = {
+  [K in keyof T as T[K] extends TxReadMethod<(...args: any[]) => any>
+    ? never
+    : K]: T[K];
+};
+
 export type InferPluginTx<P extends AnyPluginConfig> =
-  InferTx<P> extends Record<P['key'], infer TTx> ? TTx : {};
+  InferTx<P> extends Record<P['key'], infer TTx> ? OmitTxReadMethods<TTx> : {};
 
 export type InferOwnTx<P extends AnyPluginConfig> =
   IsAny<InferTx<P>> extends true
     ? any
     : Omit<InferTx<P>, P['key']> & InferPluginTx<P>;
+
+export type InferPluginState<P extends AnyPluginConfig> =
+  InferState<P> extends Record<P['key'], infer TState> ? TState : {};
+
+export type InferOwnState<P extends AnyPluginConfig> =
+  IsAny<InferState<P>> extends true ? any : InferPluginState<P>;
 
 /**
  * Renders a component for Plite nodes declared by `schema.element` or
@@ -800,24 +781,34 @@ export type NodeComponent<T = any> = React.FC<T>;
 
 export type NodeComponents = Record<string, NodeComponent>;
 
-export type ParserOptions = Readonly<{
-  data: string;
-  format: string;
-  source: HostDataSource;
+type CodecDataSource = Readonly<{
+  files: Readonly<{
+    readonly [index: number]: File;
+    readonly length: number;
+    item: (index: number) => File | null;
+  }>;
+  getData: (format: string) => string;
+  types: readonly string[];
 }>;
 
-/** Immutable plugin-key/type mapping available during host parsing. */
-export type ParserPluginRegistry = Readonly<{
+export type HtmlParserOptions = Readonly<{
+  data: string;
+  format: string;
+  source: CodecDataSource;
+}>;
+
+/** Immutable plugin-key/type mapping available during HTML parsing. */
+export type HtmlPluginRegistry = Readonly<{
   getKey: (type: string) => string | undefined;
   getType: (key: string) => string;
   has: (key: string) => boolean;
 }>;
 
-/** Pure context supplied to parser and host deserializer callbacks. */
-export type ParserPluginContext<C extends AnyPluginConfig = PluginConfig> =
+/** Pure context supplied to HTML parser and node-codec callbacks. */
+export type HtmlPluginContext<C extends AnyPluginConfig = PluginConfig> =
   Readonly<{
     options: Readonly<InferOptions<C>>;
-    registry: ParserPluginRegistry;
+    registry: HtmlPluginRegistry;
     state: EditorCoreStateView;
     type: string;
   }>;

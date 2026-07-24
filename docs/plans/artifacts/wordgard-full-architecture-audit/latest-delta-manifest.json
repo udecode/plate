@@ -57,9 +57,7 @@
     },
     "history-readonly": {
       "summary": "Adds read-only command gating while retaining the same unversioned history architecture.",
-      "files": [
-        "src/history/history.ts"
-      ]
+      "files": ["src/history/history.ts"]
     },
     "native-dom-editor-runtime": {
       "summary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
@@ -166,12 +164,8 @@
       "cluster": "release-build-demo",
       "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "META-002"
-      ],
-      "baselineConceptIds": [
-        "META-002"
-      ],
+      "conceptIds": ["META-002"],
+      "baselineConceptIds": ["META-002"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -192,9 +186,7 @@
       "cluster": "release-build-demo",
       "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "META-002"
-      ],
+      "conceptIds": ["META-002"],
       "baselineConceptIds": [],
       "publicApi": {
         "added": [],
@@ -216,19 +208,11 @@
       "cluster": "release-build-demo",
       "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
       "review": "material-architecture-delta",
-      "conceptIds": [
-        "META-002",
-        "META-005"
-      ],
-      "baselineConceptIds": [
-        "META-002",
-        "META-005"
-      ],
+      "conceptIds": ["META-002", "META-005"],
+      "baselineConceptIds": ["META-002", "META-005"],
       "publicApi": {
         "added": [],
-        "removed": [
-          "variable:correction1"
-        ],
+        "removed": ["variable:correction1"],
         "beforeCount": 1,
         "afterCount": 0
       },
@@ -246,14 +230,8 @@
       "cluster": "release-build-demo",
       "clusterSummary": "Moves 0.1.0 to 0.3.1, fixes declaration tree-shaking/build behavior, and replaces the diagnostic demo with the real editor demo.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "META-001",
-        "META-002"
-      ],
-      "baselineConceptIds": [
-        "META-001",
-        "META-002"
-      ],
+      "conceptIds": ["META-001", "META-002"],
+      "baselineConceptIds": ["META-001", "META-002"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -313,12 +291,8 @@
       "cluster": "collaboration-corrections",
       "clusterSummary": "Adds correction-aware client/server transform, locked/open updates, and state-independent correction checks.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "HC-014"
-      ],
-      "baselineConceptIds": [
-        "HC-014"
-      ],
+      "conceptIds": ["HC-014"],
+      "baselineConceptIds": ["HC-014"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -482,10 +456,7 @@
         "DOC-034"
       ],
       "publicApi": {
-        "added": [
-          "method:ChangeSet.clip",
-          "method:ChangeSet.pad"
-        ],
+        "added": ["method:ChangeSet.clip", "method:ChangeSet.pad"],
         "removed": [],
         "beforeCount": 32,
         "afterCount": 34
@@ -535,13 +506,8 @@
         "DOC-032"
       ],
       "publicApi": {
-        "added": [
-          "get:BaseType.isSelectable",
-          "method:Plot.contentEq"
-        ],
-        "removed": [
-          "get:Leaf.Type.isSelectable"
-        ],
+        "added": ["get:BaseType.isSelectable", "method:Plot.contentEq"],
+        "removed": ["get:Leaf.Type.isSelectable"],
         "beforeCount": 156,
         "afterCount": 157
       },
@@ -597,16 +563,8 @@
       "cluster": "document-model-change-codecs",
       "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "DOC-003",
-        "DOC-029",
-        "DOC-030"
-      ],
-      "baselineConceptIds": [
-        "DOC-003",
-        "DOC-029",
-        "DOC-030"
-      ],
+      "conceptIds": ["DOC-003", "DOC-029", "DOC-030"],
+      "baselineConceptIds": ["DOC-003", "DOC-029", "DOC-030"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -627,18 +585,8 @@
       "cluster": "document-model-change-codecs",
       "clusterSummary": "Adds compact validated change/slice JSON, pad/clip, content equality, selectable/config-aware atoms, and parser fixes.",
       "review": "material-architecture-delta",
-      "conceptIds": [
-        "DOC-013",
-        "DOC-014",
-        "DOC-015",
-        "DOC-023"
-      ],
-      "baselineConceptIds": [
-        "DOC-013",
-        "DOC-014",
-        "DOC-015",
-        "DOC-023"
-      ],
+      "conceptIds": ["DOC-013", "DOC-014", "DOC-015", "DOC-023"],
+      "baselineConceptIds": ["DOC-013", "DOC-014", "DOC-015", "DOC-023"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -659,14 +607,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-005",
-        "VIEW-007"
-      ],
-      "baselineConceptIds": [
-        "VIEW-005",
-        "VIEW-007"
-      ],
+      "conceptIds": ["VIEW-005", "VIEW-007"],
+      "baselineConceptIds": ["VIEW-005", "VIEW-007"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -687,18 +629,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-018",
-        "VIEW-019",
-        "VIEW-020",
-        "VIEW-024"
-      ],
-      "baselineConceptIds": [
-        "VIEW-018",
-        "VIEW-019",
-        "VIEW-020",
-        "VIEW-024"
-      ],
+      "conceptIds": ["VIEW-018", "VIEW-019", "VIEW-020", "VIEW-024"],
+      "baselineConceptIds": ["VIEW-018", "VIEW-019", "VIEW-020", "VIEW-024"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -753,16 +685,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "material-architecture-delta",
-      "conceptIds": [
-        "VIEW-004",
-        "VIEW-006",
-        "VIEW-013"
-      ],
-      "baselineConceptIds": [
-        "VIEW-004",
-        "VIEW-006",
-        "VIEW-013"
-      ],
+      "conceptIds": ["VIEW-004", "VIEW-006", "VIEW-013"],
+      "baselineConceptIds": ["VIEW-004", "VIEW-006", "VIEW-013"],
       "publicApi": {
         "added": [
           "method:DOMObserver.onSelectionChange",
@@ -908,16 +832,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-009",
-        "VIEW-013",
-        "VIEW-014"
-      ],
-      "baselineConceptIds": [
-        "VIEW-009",
-        "VIEW-013",
-        "VIEW-014"
-      ],
+      "conceptIds": ["VIEW-009", "VIEW-013", "VIEW-014"],
+      "baselineConceptIds": ["VIEW-009", "VIEW-013", "VIEW-014"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -938,16 +854,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-014",
-        "VIEW-025",
-        "VIEW-027"
-      ],
-      "baselineConceptIds": [
-        "VIEW-014",
-        "VIEW-025",
-        "VIEW-027"
-      ],
+      "conceptIds": ["VIEW-014", "VIEW-025", "VIEW-027"],
+      "baselineConceptIds": ["VIEW-014", "VIEW-025", "VIEW-027"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -968,14 +876,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-025",
-        "VIEW-027"
-      ],
-      "baselineConceptIds": [
-        "VIEW-025",
-        "VIEW-027"
-      ],
+      "conceptIds": ["VIEW-025", "VIEW-027"],
+      "baselineConceptIds": ["VIEW-025", "VIEW-027"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -996,14 +898,8 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-006",
-        "VIEW-007"
-      ],
-      "baselineConceptIds": [
-        "VIEW-006",
-        "VIEW-007"
-      ],
+      "conceptIds": ["VIEW-006", "VIEW-007"],
+      "baselineConceptIds": ["VIEW-006", "VIEW-007"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -1119,10 +1015,7 @@
         "VIEW-027"
       ],
       "publicApi": {
-        "added": [
-          "declaration:Tooltip.get",
-          "declaration:Tooltip.get"
-        ],
+        "added": ["declaration:Tooltip.get", "declaration:Tooltip.get"],
         "removed": [],
         "beforeCount": 13,
         "afterCount": 15
@@ -1141,21 +1034,11 @@
       "cluster": "native-dom-editor-runtime",
       "clusterSummary": "Tracks native DOM input deltas and unflushed DOM/model mappings, improves selection/atom rendering, and adds synchronous transaction listeners.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-002",
-        "VIEW-003",
-        "VIEW-007"
-      ],
-      "baselineConceptIds": [
-        "VIEW-002",
-        "VIEW-003",
-        "VIEW-007"
-      ],
+      "conceptIds": ["VIEW-002", "VIEW-003", "VIEW-007"],
+      "baselineConceptIds": ["VIEW-002", "VIEW-003", "VIEW-007"],
       "publicApi": {
         "added": [],
-        "removed": [
-          "method:ViewState.mapPosPending"
-        ],
+        "removed": ["method:ViewState.mapPosPending"],
         "beforeCount": 20,
         "afterCount": 19
       },
@@ -1393,16 +1276,10 @@
       "cluster": "collaboration-corrections",
       "clusterSummary": "Adds correction-aware client/server transform, locked/open updates, and state-independent correction checks.",
       "review": "material-architecture-delta",
-      "conceptIds": [
-        "STATE-008"
-      ],
-      "baselineConceptIds": [
-        "STATE-008"
-      ],
+      "conceptIds": ["STATE-008"],
+      "baselineConceptIds": ["STATE-008"],
       "publicApi": {
-        "added": [
-          "method:Correction.check"
-        ],
+        "added": ["method:Correction.check"],
         "removed": [],
         "beforeCount": 7,
         "afterCount": 8
@@ -1505,16 +1382,8 @@
       "cluster": "state-selection-atomicity",
       "clusterSummary": "Makes atomicity configuration-aware, strengthens selection behavior, and adds transaction listener support.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "STATE-018",
-        "STATE-019",
-        "STATE-020"
-      ],
-      "baselineConceptIds": [
-        "STATE-018",
-        "STATE-019",
-        "STATE-020"
-      ],
+      "conceptIds": ["STATE-018", "STATE-019", "STATE-020"],
+      "baselineConceptIds": ["STATE-018", "STATE-019", "STATE-020"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -1575,14 +1444,8 @@
       "cluster": "table-readonly-corrections",
       "clusterSummary": "Removes state dependence from table correction and gates table UI/paste behavior under read-only state.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "TABLE-005",
-        "TABLE-006"
-      ],
-      "baselineConceptIds": [
-        "TABLE-005",
-        "TABLE-006"
-      ],
+      "conceptIds": ["TABLE-005", "TABLE-006"],
+      "baselineConceptIds": ["TABLE-005", "TABLE-006"],
       "publicApi": {
         "added": [],
         "removed": [],
@@ -1671,17 +1534,10 @@
       "cluster": "proof",
       "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "META-003"
-      ],
-      "baselineConceptIds": [
-        "META-003"
-      ],
+      "conceptIds": ["META-003"],
+      "baselineConceptIds": ["META-003"],
       "publicApi": {
-        "added": [
-          "function:rLetter",
-          "function:rWord"
-        ],
+        "added": ["function:rLetter", "function:rWord"],
         "removed": [],
         "beforeCount": 11,
         "afterCount": 13
@@ -1898,18 +1754,8 @@
       "cluster": "proof",
       "clusterSummary": "Expands change, collaboration, composition, coordinate, content, command, serialization, and native DOM-delta proof.",
       "review": "reviewed-no-target-change",
-      "conceptIds": [
-        "VIEW-005",
-        "VIEW-006",
-        "VIEW-007",
-        "VIEW-028"
-      ],
-      "baselineConceptIds": [
-        "VIEW-005",
-        "VIEW-006",
-        "VIEW-007",
-        "VIEW-028"
-      ],
+      "conceptIds": ["VIEW-005", "VIEW-006", "VIEW-007", "VIEW-028"],
+      "baselineConceptIds": ["VIEW-005", "VIEW-006", "VIEW-007", "VIEW-028"],
       "publicApi": {
         "added": [],
         "removed": [],

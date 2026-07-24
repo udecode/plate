@@ -1,9 +1,9 @@
 ---
-'@udecode/utils': major
+"@udecode/utils": major
 ---
 
-Remove unused handlers, encoding helpers, null checks, and obsolete type aliases
-
-Tighten URL validation, property merging, function binding, and live utility types
-
-Publish bundled declarations that resolve under NodeNext
+- Remove `getHandler`, `hexToBase64`, null-check helpers, and obsolete
+  optional/deep utility types
+- Tighten URL validation, property merging, function binding, and live utility
+  types
+- Publish bundled declarations that resolve under NodeNext

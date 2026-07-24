@@ -1,5 +1,12 @@
-import { type EditorCommit, type Range, RangeApi } from '@platejs/plite';
+import {
+  type EditorCommit,
+  type EditorSelection,
+  type Range,
+  RangeApi,
+  type Selection,
+} from '@platejs/plite';
 import type { EditableInputController } from './input-state';
+import { setEditableModelSelectionPreference } from './selection-controller';
 
 type SelectorListener = (change?: EditorCommit) => void;
 
@@ -19,6 +26,10 @@ type ScheduleDOMExport = (
   callback: () => void
 ) => CancelScheduledDOMExport | void;
 
+type SyncDOMSelectionToEditor = (options?: {
+  forceModelExport?: boolean;
+}) => void;
+
 export const shouldExportModelSelectionToDOM = (
   inputController: EditableInputController,
   {
@@ -26,7 +37,7 @@ export const shouldExportModelSelectionToDOM = (
     modelSelection,
   }: {
     commit?: EditorCommit;
-    modelSelection?: Range | null;
+    modelSelection?: Selection;
   } = {}
 ) => {
   if (
@@ -104,6 +115,7 @@ export const shouldSyncModelSelectionAfterCommit = (
 
 export const subscribeSelectionOnlyDOMExport = ({
   addSelectorEventListener,
+  getDOMSelectionProjection,
   getModelSelection = () => null,
   inputController,
   scheduleDOMExport,
@@ -111,17 +123,35 @@ export const subscribeSelectionOnlyDOMExport = ({
   syncDOMSelectionToEditor,
 }: {
   addSelectorEventListener: AddSelectorEventListener;
-  getModelSelection?: () => Range | null;
+  getDOMSelectionProjection?: (selection: EditorSelection) => Range | null;
+  getModelSelection?: () => Selection;
   inputController: EditableInputController;
   scheduleDOMExport: ScheduleDOMExport;
   shouldSkipDOMExport?: (
-    selection: Range | null,
+    selection: Selection,
     commit?: EditorCommit
   ) => boolean;
-  syncDOMSelectionToEditor: () => void;
+  syncDOMSelectionToEditor: SyncDOMSelectionToEditor;
 }) => {
   const pendingDOMExportCancels = new Set<CancelScheduledDOMExport>();
   let subscribed = true;
+  const readProjection = () => {
+    const modelSelection = getModelSelection();
+    const projectedSelection =
+      modelSelection && getDOMSelectionProjection
+        ? getDOMSelectionProjection(modelSelection)
+        : modelSelection;
+
+    return {
+      modelSelection,
+      projectedSelection,
+      requiresProjectedExport:
+        !!modelSelection &&
+        !!getDOMSelectionProjection &&
+        (!projectedSelection ||
+          !RangeApi.equals(modelSelection, projectedSelection)),
+    };
+  };
 
   const unsubscribeSelector = addSelectorEventListener(
     (commit) => {
@@ -130,13 +160,14 @@ export const subscribeSelectionOnlyDOMExport = ({
           return;
         }
 
-        const modelSelection = getModelSelection();
+        const { modelSelection, requiresProjectedExport } = readProjection();
 
         if (shouldSkipDOMExport?.(modelSelection, commit)) {
           return;
         }
 
         if (
+          !requiresProjectedExport &&
           !shouldExportModelSelectionToDOM(inputController, {
             commit,
             modelSelection,
@@ -145,7 +176,19 @@ export const subscribeSelectionOnlyDOMExport = ({
           return;
         }
 
-        syncDOMSelectionToEditor();
+        if (requiresProjectedExport) {
+          setEditableModelSelectionPreference({
+            inputController,
+            preferModelSelection: true,
+            reason: 'programmatic-export',
+            selectionSource: 'model-owned',
+          });
+          inputController.state.selectionChangeOrigin = 'programmatic-export';
+        }
+
+        syncDOMSelectionToEditor(
+          requiresProjectedExport ? { forceModelExport: true } : undefined
+        );
       };
 
       if (commit?.changed.hasAny('document')) {
@@ -179,7 +222,9 @@ export const subscribeSelectionOnlyDOMExport = ({
     {
       profileId: 'selection-dom-export',
       shouldUpdate: (commit) =>
-        shouldSyncModelSelectionAfterCommit(commit, inputController),
+        shouldSyncModelSelectionAfterCommit(commit, inputController) ||
+        (!!commit?.changed.hasAny('document') &&
+          readProjection().requiresProjectedExport),
     }
   );
 

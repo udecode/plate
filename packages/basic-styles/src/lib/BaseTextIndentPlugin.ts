@@ -10,6 +10,28 @@ import { KEYS } from '@platejs/utils';
 
 const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
 
+const parseTextIndent = (
+  element: Readonly<HTMLElement>,
+  offset: number,
+  unit: string
+) => {
+  const dataValue = element.dataset.textIndent;
+
+  if (dataValue) {
+    const value = Number(dataValue);
+
+    return Number.isFinite(value) && value !== 0 ? value : undefined;
+  }
+  const styleValue = element.style.textIndent;
+
+  if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) return;
+
+  const numericValue = unit ? styleValue.slice(0, -unit.length) : styleValue;
+  const value = Number(numericValue) / offset;
+
+  return Number.isFinite(value) && value !== 0 ? value : undefined;
+};
+
 export const BaseTextIndentPlugin = createBasePlugin({
   key: KEYS.textIndent,
   schema: ({ own, plugins, targetPluginKeys }) => ({
@@ -36,13 +58,33 @@ export const BaseTextIndentPlugin = createBasePlugin({
     unit: 'px',
   },
   targetPluginKeys: defaultTargetPluginKeys,
-}).extendTx(({ type }) => (tx) => ({
-  set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-    tx.nodes.set({ [type]: value }, options);
-  },
-  unset: (options?: NodeUnsetNodesOptions<Element>) => {
-    tx.nodes.unset(type, options);
-  },
-}));
+})
+  .extendHtmlCodec(({ getOptions }) => ({
+    decode: ({ element }) => {
+      const { offset, unit } = getOptions();
+
+      return parseTextIndent(element, offset, unit);
+    },
+    encode: ({ value }) => {
+      const { offset, unit } = getOptions();
+
+      return {
+        attributes: { 'data-text-indent': value },
+        style: { textIndent: value * offset + unit },
+      };
+    },
+    match: [
+      { attributes: { 'data-text-indent': true } },
+      { style: { textIndent: '*' } },
+    ],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    set: (value: number, options?: NodeSetNodesOptions<Element>) => {
+      tx.nodes.set({ [type]: value }, options);
+    },
+    unset: (options?: NodeUnsetNodesOptions<Element>) => {
+      tx.nodes.unset(type, options);
+    },
+  }));
 
 export type TextIndentConfig = InferConfig<typeof BaseTextIndentPlugin>;

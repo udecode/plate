@@ -5,67 +5,67 @@ import {
   insertText as editorInsertText,
   replace as editorReplace,
 } from '@platejs/plite/internal';
-import { EDITOR_TO_PENDING_SELECTION } from '@platejs/plite-dom/internal';
+import {
+  DOMRootRuntime,
+  EDITOR_TO_PENDING_SELECTION,
+} from '@platejs/plite-dom/internal';
 import { react } from '../src/plugin/with-react';
 
-const withNavigator = async (userAgent: string, run: () => Promise<void>) => {
-  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
-
-  Object.defineProperty(globalThis, 'navigator', {
-    configurable: true,
-    value: { userAgent },
+test('react() clears pending selection before mounted-root Android insertText bridge calls', () => {
+  const editor = createEditor({ extensions: [react()] });
+  const runtime = new DOMRootRuntime({
+    adapter: {},
+    editor,
+    getAndroidMutationHandler: () => null,
+    isAndroidMutationOwned: () => false,
+    isCanonicalTextMutation: () => false,
+    isComposing: () => false,
+    onRepair: () => {},
+    resolvePath: () => null,
+    testRootFacts: { platform: 'android' },
   });
+  const root = document.createElement('div');
+
+  document.body.append(root);
+  runtime.setRoot(root);
+  runtime.connect();
 
   try {
-    await run();
-  } finally {
-    if (descriptor) {
-      Object.defineProperty(globalThis, 'navigator', descriptor);
-    } else {
-      (globalThis as { navigator?: Navigator }).navigator = undefined;
-    }
-  }
-};
-
-test('react() clears pending selection before Android insertText bridge calls', async () => {
-  await withNavigator(
-    'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36',
-    async () => {
-      const editor = createEditor({ extensions: [react()] });
-
-      editorReplace(editor, {
-        children: [
-          {
-            type: 'paragraph',
-            children: [{ text: 'alpha' }],
-          },
-        ],
-        selection: {
-          kind: 'text',
-          anchor: { path: [0, 0], offset: 5 },
-          focus: { path: [0, 0], offset: 5 },
+    editorReplace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'alpha' }],
         },
-      });
-
-      EDITOR_TO_PENDING_SELECTION.set(editor, {
+      ],
+      selection: {
         kind: 'text',
-        anchor: { path: [0, 0], offset: 0 },
-        focus: { path: [0, 0], offset: 0 },
-      });
+        anchor: { path: [0, 0], offset: 5 },
+        focus: { path: [0, 0], offset: 5 },
+      },
+    });
 
-      editor.update(() => {
-        editorInsertText(editor, '!');
-      });
+    EDITOR_TO_PENDING_SELECTION.set(editor, {
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    });
 
-      assert.equal(EDITOR_TO_PENDING_SELECTION.has(editor), false);
-      assert.equal(
-        (
-          editor.read((state) => state.nodes.get([0, 0]))[0] as {
-            text: string;
-          }
-        ).text,
-        'alpha!'
-      );
-    }
-  );
+    editor.update(() => {
+      editorInsertText(editor, '!');
+    });
+
+    assert.equal(EDITOR_TO_PENDING_SELECTION.has(editor), false);
+    assert.equal(
+      (
+        editor.read((state) => state.nodes.get([0, 0]))[0] as {
+          text: string;
+        }
+      ).text,
+      'alpha!'
+    );
+  } finally {
+    runtime.destroy();
+    root.remove();
+  }
 });

@@ -1,4 +1,13 @@
-import { replace as editorReplace } from '@platejs/plite/internal';
+import {
+  defineEditorExtension,
+  defineValueCodec,
+  type Range,
+  SelectionApi,
+} from '@platejs/plite';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -12,12 +21,67 @@ import {
 } from '../src/editable/model-selection-dom-preference';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
 import { focusPliteEditable } from '../src/hooks/focus-plite-editable';
+import { ReactEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
 import { createPliteProjectionGraph } from '../src/projection-graph';
 import {
   createPliteViewSelection,
   writePliteViewSelection,
 } from '../src/view-selection';
+
+type FocusProjectionSelection = Range &
+  Readonly<{
+    kind: 'focus-projection';
+    modelOnly: boolean;
+  }>;
+
+declare module '@platejs/plite' {
+  interface EditorSelectionKindMap {
+    'focus-projection': FocusProjectionSelection;
+  }
+}
+
+const isFocusProjectionSelection = (
+  selection: unknown
+): selection is FocusProjectionSelection =>
+  SelectionApi.isSelection(selection) &&
+  selection.kind === 'focus-projection' &&
+  typeof (selection as FocusProjectionSelection).modelOnly === 'boolean';
+
+const FocusProjectionExtension = defineEditorExtension({
+  name: 'focus-projection-selection',
+  selections: [
+    {
+      codec: defineValueCodec<FocusProjectionSelection>({
+        decode(value) {
+          if (!isFocusProjectionSelection(value)) {
+            throw new Error('Invalid focus projection selection.');
+          }
+
+          return value;
+        },
+        encode: (selection) => selection,
+        version: 1,
+      }),
+      domRange: (selection) =>
+        selection.modelOnly
+          ? null
+          : Object.freeze({
+              anchor: selection.anchor,
+              focus: selection.anchor,
+            }),
+      kind: 'focus-projection',
+      map(selection, context) {
+        const range = context.mapRange(selection);
+
+        return range ? { ...selection, ...range } : null;
+      },
+      ranges: (selection) => [selection],
+      replacementRange: (selection) => selection,
+      validate: isFocusProjectionSelection,
+    },
+  ],
+});
 
 const createProjectedSelection = () => {
   const graph = createPliteProjectionGraph([
@@ -63,8 +127,37 @@ const createFocusableEditor = () => {
   return { editor, element, focus };
 };
 
+const createCustomSelectionEditor = (modelOnly: boolean) => {
+  const editor = createReactEditor({
+    extensions: [FocusProjectionExtension],
+  });
+  const element = document.createElement('div');
+  const text = document.createTextNode('focus');
+  const selection: FocusProjectionSelection = {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 5 },
+    kind: 'focus-projection',
+    modelOnly,
+  };
+
+  element.tabIndex = 0;
+  element.append(text);
+  document.body.appendChild(element);
+  EDITOR_TO_ELEMENT.set(editor, element);
+  EDITOR_TO_WINDOW.set(editor, window);
+  ELEMENT_TO_NODE.set(element, editor);
+  NODE_TO_ELEMENT.set(editor, element);
+  editorReplace(editor, {
+    children: [{ children: [{ text: 'focus' }], type: 'paragraph' }],
+    selection,
+  });
+
+  return { editor, element, selection, text };
+};
+
 afterEach(() => {
   document.body.textContent = '';
+  vi.restoreAllMocks();
 });
 
 describe('focusPliteEditable', () => {
@@ -97,6 +190,55 @@ describe('focusPliteEditable', () => {
 
     expect(focus).toHaveBeenCalledTimes(1);
     expect(element.ownerDocument.activeElement).toBe(element);
+  });
+
+  it('exports a custom selection through its DOM range projection', () => {
+    const { editor, element, selection, text } =
+      createCustomSelectionEditor(false);
+    const domRange = document.createRange();
+    const domSelection = document.getSelection();
+
+    if (!domSelection) {
+      throw new Error('Expected document selection');
+    }
+
+    domRange.setStart(text, 0);
+    domRange.setEnd(text, 0);
+    const resolveDOMRange = vi
+      .spyOn(ReactEditor, 'resolveDOMRange')
+      .mockReturnValue(domRange);
+
+    focusPliteEditable(editor);
+
+    expect(resolveDOMRange).toHaveBeenCalledWith(editor, {
+      anchor: selection.anchor,
+      focus: selection.anchor,
+    });
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(document.activeElement).toBe(element);
+    expect(domSelection.isCollapsed).toBe(true);
+    expect(domSelection.anchorNode).toBe(text);
+    expect(domSelection.anchorOffset).toBe(0);
+  });
+
+  it('clears native selection for a custom model-only projection', () => {
+    const { editor, element, selection, text } =
+      createCustomSelectionEditor(true);
+    const domSelection = document.getSelection();
+
+    if (!domSelection) {
+      throw new Error('Expected document selection');
+    }
+
+    domSelection.setBaseAndExtent(text, 0, text, 5);
+    const resolveDOMRange = vi.spyOn(ReactEditor, 'resolveDOMRange');
+
+    focusPliteEditable(editor);
+
+    expect(resolveDOMRange).not.toHaveBeenCalled();
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(document.activeElement).toBe(element);
+    expect(domSelection.rangeCount).toBe(0);
   });
 
   it('exports preferred DOM point during focus', () => {

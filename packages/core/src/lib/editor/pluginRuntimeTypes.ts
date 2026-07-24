@@ -5,6 +5,7 @@ import type {
   EditorSchemaProperty,
   EditorSchemaSource,
   EditorSchemaSourceProvider,
+  EditorStateView,
   EditorStateSchemaApi,
   EditorExtensionTypeProvider,
   EditorUpdateTransaction,
@@ -568,7 +569,7 @@ type InstalledPluginTx<P> =
         InferTxFromPluginConfig<InferencePluginConfig<P>>
       >;
 
-type InstalledPluginState<P> =
+export type InstalledPluginState<P> =
   IsAny<P> extends true
     ? Record<string, any>
     : MergeObjectIntersection<
@@ -601,6 +602,12 @@ export type PlatePluginExtensionEditor<P extends AnyPluginConfig> =
 
 export type PlatePluginTransaction<P extends AnyPluginConfig> =
   EditorUpdateTransaction<Value, readonly [PlatePluginTransactionExtension<P>]>;
+
+/** Installed state capabilities visible while a plugin constructs a read group. */
+export type PlatePluginReadState<P extends AnyPluginConfig> = EditorStateView<
+  Value,
+  readonly [PlatePluginTransactionExtension<P>]
+>;
 
 type PlateOwnInstalledExtension<P> = {
   name: 'plate';

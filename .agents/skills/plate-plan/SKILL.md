@@ -64,6 +64,16 @@ plan and repair the target before continuing.
   the current Plite shape.
 - Keep a Plate API only when it serves a distinct product job with a distinct
   namespace and adoption story.
+- Treat each independently installable registry item as its own copied-source
+  owner. Plan short presentation duplication across items instead of a shared
+  registry dependency unless the extracted item has an independent user job or
+  owns real behavior.
+- Exclude registry surfaces dedicated to `*-classic`, including
+  `list-classic`, from new parity, variant, abstraction, polish, demo, adoption,
+  and API work. They are maintenance-only pending deprecation: plan changes
+  only for a user-facing regression, security/release blocker, or explicitly
+  authorized deprecation/removal. Do not infer removal authority from the
+  planned deprecation.
 
 ## Hard Policy
 
@@ -73,6 +83,10 @@ plan and repair the target before continuing.
   cost after the target is chosen; never turn compatibility into a permanent
   compromised hybrid. No public aliases, runtime shims, dual signatures, or
   docs for old names.
+- Reject direction words repeated below a namespace that already establishes
+  the format and flow. Under `parsers.html`, plan `query`, `transformData`, and
+  `transformFragment` directly; do not preserve an `ingress`/`egress` bucket
+  without an independently consumed lifecycle.
 - A private bridge is exceptional. Name its owner, non-public proof, deletion
   trigger, and removal gate in the decision row.
 - Planning edits only planning, research, vision, behavior-law, migration, and

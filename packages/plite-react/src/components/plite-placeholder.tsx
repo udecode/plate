@@ -5,7 +5,7 @@ import React, {
   type ReactNode,
   type Ref,
 } from 'react';
-import { IS_WEBKIT } from '@platejs/plite-dom';
+import { useEditableDOMHostFact } from '../hooks/use-claim-editable-dom-commit';
 
 type VoidIntrinsicTag =
   | 'area'
@@ -47,16 +47,15 @@ const defaultPlaceholderStyle = {
   width: '100%',
   maxWidth: '100%',
   display: 'block',
-  opacity: '0.333',
   userSelect: 'none',
-  textDecoration: 'none',
-  WebkitUserModify: IS_WEBKIT ? 'inherit' : undefined,
 } satisfies CSSProperties;
 
 export const getPlitePlaceholderStyle = (
-  style?: CSSProperties
+  style?: CSSProperties,
+  webkit = false
 ): CSSProperties => ({
   ...defaultPlaceholderStyle,
+  WebkitUserModify: webkit ? 'inherit' : undefined,
   ...style,
 });
 
@@ -74,6 +73,10 @@ export const PlitePlaceholder = ({
   style,
 }: PlitePlaceholderProps) => {
   const Component = as as ElementType<PlitePlaceholderComponentProps>;
+  const webkit = useEditableDOMHostFact(
+    (runtime) => runtime.isWebKitHost,
+    false
+  );
 
   return (
     <Component
@@ -82,7 +85,7 @@ export const PlitePlaceholder = ({
       data-plite-placeholder
       dir={dir}
       ref={ref}
-      style={getPlitePlaceholderStyle(style)}
+      style={getPlitePlaceholderStyle(style, webkit)}
     >
       {children}
     </Component>

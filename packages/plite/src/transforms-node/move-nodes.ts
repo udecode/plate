@@ -44,7 +44,7 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
                     ? editorGetChildren(editor).length - 1
                     : (
                         getNode(editor, at.slice(0, -1) as Path)[0] as {
-                          children: unknown[];
+                          readonly children: readonly unknown[];
                         }
                       ).children.length - 1
                 ),

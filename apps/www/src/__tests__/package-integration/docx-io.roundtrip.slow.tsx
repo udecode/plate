@@ -9,7 +9,7 @@ import { cleanDocx } from '@platejs/docx';
 import { htmlToDocxBlob, preprocessMammothHtml } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
-import { createBaseEditor, HtmlPlugin, type Value } from 'platejs';
+import { createBaseEditor, type Value } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -41,9 +41,7 @@ const importDocxBuffer = async (
   const cleanedHtml = cleanDocx(preprocessedHtml, '');
   const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
 
-  return editor
-    .plugin(HtmlPlugin)
-    .api.deserialize({ element: doc.body }) as PliteNode[];
+  return editor.api.html.deserialize({ element: doc.body }) ?? [];
 };
 
 const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {

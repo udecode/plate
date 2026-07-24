@@ -24,7 +24,7 @@ import {
   defineEditorExtension as defineEditorExtensionCore,
   extendEditor as extendEditorCore,
 } from '../core/editor-extension';
-import type { DocumentChange } from '../core/document-change';
+import type { DocumentChange } from '../core/change/document-change';
 import {
   getEditorRuntime,
   getEditorRuntimeOwner,
@@ -77,7 +77,7 @@ import type {
   TextUnit,
   TextUnitAdjustment,
 } from '../types/types';
-import type { TxOnlyMethod } from '../core/tx-only';
+import type { TxOnlyMethod, TxReadMethod } from '../core/tx-only';
 import type {
   BlockDuplicateOptions,
   NodeInsertNodesOptions,
@@ -125,7 +125,7 @@ export type { Selection } from './selection';
  * The `Editor` interface exposes the runtime API of a Plite editor. Document
  * state is read through editor methods and mutated through `editor.update`.
  */
-export type Value = Element[];
+export type Value = readonly Element[];
 
 type ValueDescendant<V extends Value> = [SchemaDescendantInValue<V>] extends [
   never,
@@ -148,25 +148,25 @@ export type NamedRootKey<TRoot extends RootKey = RootKey> = TRoot extends 'main'
   ? never
   : TRoot;
 
-export type EditorDocumentValue<V extends Value = Value> = {
+export type EditorDocumentValue<V extends Value = Value> = Readonly<{
   children: V;
-  meta?: Record<string, unknown>;
-  roots?: Record<RootKey, V>;
-};
+  meta?: Readonly<Record<string, unknown>>;
+  roots?: Readonly<Record<RootKey, V>>;
+}>;
 
 /** Schema-owned structural document content, excluding state-field metadata. */
-export type EditorSchemaDocumentValue<V extends Value = Value> = {
+export type EditorSchemaDocumentValue<V extends Value = Value> = Readonly<{
   children: V;
-  roots?: Record<RootKey, V>;
-};
+  roots?: Readonly<Record<RootKey, V>>;
+}>;
 
 export type InitialValue<V extends Value = Value> =
   | V
-  | {
+  | Readonly<{
       children: V;
-      meta?: Record<string, unknown>;
-      roots?: Record<RootKey, V>;
-    };
+      meta?: Readonly<Record<string, unknown>>;
+      roots?: Readonly<Record<RootKey, V>>;
+    }>;
 
 /** A document location or a live node whose current location should be used. */
 export type NodeTarget<N extends Descendant = Descendant> = Location | N;
@@ -483,7 +483,7 @@ export type EditorFragmentReadOptions = {
 
 export type EditorStateFragmentApi<V extends Value = Value> = (
   options?: EditorFragmentReadOptions
-) => DescendantIn<V>[];
+) => readonly DescendantIn<V>[];
 
 export type EditorSliceReadOptions = Readonly<{
   at?: Range;
@@ -669,11 +669,11 @@ export type EditorStateNodesApi<V extends Value = Value> = {
   toArray: {
     <T extends Node = ValueNode<V>>(
       options?: EditorNodesReadOptions<T>
-    ): NodeEntry<T>[];
+    ): readonly NodeEntry<T>[];
     <T extends Node, R>(
       options: EditorNodesReadOptions<T> | undefined,
       map: (entry: NodeEntry<T>) => R
-    ): R[];
+    ): readonly R[];
   };
   next: <T extends Descendant = ValueDescendant<V>>(
     options?: WithNodeTarget<EditorNextOptions<T>, T>
@@ -701,7 +701,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       options?: NodeDuplicateOptions<T>
     ) => void;
     insert: <T extends ElementOrTextIn<V>>(
-      nodes: T | T[],
+      nodes: T | readonly T[],
       options?: WithNodeTarget<NodeInsertNodesOptions<T>, T>
     ) => void;
     lift: <T extends NodeIn<V>>(options?: {
@@ -732,11 +732,11 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       voids?: boolean;
     }) => void;
     replace: <T extends ElementOrTextIn<V>>(
-      nodes: T | T[],
+      nodes: T | readonly T[],
       options: EditorReplaceNodeOptions
     ) => void;
     replaceChildren: <T extends ElementOrTextIn<V>>(
-      children: T[],
+      children: readonly T[],
       options: EditorReplaceChildrenOptions
     ) => void;
     set: {
@@ -767,7 +767,7 @@ export type EditorTransactionNodesApi<V extends Value = Value> =
       options?: EditorBlockToggleOptions<DescendantIn<V>>
     ) => void;
     unset: <T extends NodeIn<V>>(
-      props: string | string[],
+      props: string | readonly string[],
       options?: {
         at?: NodeTarget<TargetDescendant<T>>;
         match?: NodeMatch<T>;
@@ -807,7 +807,7 @@ export type EditorTransactionBlocksApi<V extends Value = Value> = {
   ) => void;
   /** Insert block nodes after the block containing the target. */
   insertAfter: <T extends ElementIn<V>>(
-    nodes: T | T[],
+    nodes: T | readonly T[],
     options?: WithNodeTarget<NodeInsertNodesOptions<T>>
   ) => void;
   lift: EditorTransactionNodesApi<V>['lift'];
@@ -834,7 +834,7 @@ export type EditorStatePointsApi = {
 };
 
 export type EditorStateRangesApi = {
-  edges: (at: NodeTarget) => [Point, Point] | undefined;
+  edges: (at: NodeTarget) => readonly [Point, Point] | undefined;
   fromEntries: (entries: readonly NodeEntry[]) => Range | undefined;
   get: (at: NodeTarget, to?: Location) => Range | undefined;
   project: (range: Range) => readonly ProjectedRangeSegment[];
@@ -1033,7 +1033,7 @@ export type EditorStateRuntimeApi<V extends Value = Value> = {
   snapshot: () => EditorSnapshot<V>;
 };
 
-export type EditorElementBehavior = {
+export type EditorElementBehavior = Readonly<{
   atom: boolean;
   editableIsland: boolean;
   inline: boolean;
@@ -1043,7 +1043,7 @@ export type EditorElementBehavior = {
   readOnly: boolean;
   selectable: boolean;
   void: boolean;
-};
+}>;
 
 export type EditorElementSlicePolicy = Readonly<{
   preserveContext: boolean;
@@ -1166,7 +1166,9 @@ export type EditorRead<
   EditorReadMethods<V, TExtensions>;
 
 type EditorBivariantMethods<T> = {
-  [K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
+  [K in keyof T as T[K] extends
+    | TxOnlyMethod<(...args: any[]) => any>
+    | TxReadMethod<(...args: any[]) => any>
     ? never
     : K]: T[K] extends (...args: any[]) => any ? BivariantFunction<T[K]> : T[K];
 };
@@ -1234,9 +1236,15 @@ type EditorExtensionUpdateMethods<TGroups> = {
     : TGroups[K];
 };
 
+type EditorSpecBivariantMethods<T> = {
+  [K in keyof T as T[K] extends TxOnlyMethod<(...args: any[]) => any>
+    ? never
+    : K]: T[K] extends (...args: any[]) => any ? BivariantFunction<T[K]> : T[K];
+};
+
 type EditorExtensionSpecMethods<TGroups> = {
   [K in keyof TGroups]: TGroups[K] extends object
-    ? EditorBivariantMethods<TGroups[K]>
+    ? EditorSpecBivariantMethods<TGroups[K]>
     : TGroups[K];
 };
 
@@ -1425,7 +1433,7 @@ export type EditorQueryMiddlewareArgs<_V extends Value = Value> = {
 
 export type EditorQueryMiddlewareResult<V extends Value = Value> = {
   fragment: {
-    get: DescendantIn<V>[];
+    get: readonly DescendantIn<V>[];
   };
   marks: {
     get: EditorMarks<V> | null;
@@ -1455,7 +1463,7 @@ export type EditorQueryMiddlewareResult<V extends Value = Value> = {
     previous: NodeEntry<Node> | undefined;
     shouldMergeNodesRemovePrevNode: boolean;
     some: boolean;
-    toArray: NodeEntry<Node>[] | unknown[];
+    toArray: readonly NodeEntry<Node>[] | readonly unknown[];
     void: NodeEntry<Element> | undefined;
   };
   points: {
@@ -1470,7 +1478,7 @@ export type EditorQueryMiddlewareResult<V extends Value = Value> = {
     start: Point | undefined;
   };
   ranges: {
-    edges: [Point, Point] | undefined;
+    edges: readonly [Point, Point] | undefined;
     fromEntries: Range | undefined;
     get: Range | undefined;
     project: readonly ProjectedRangeSegment[];
@@ -1614,26 +1622,26 @@ export type SnapshotIndex = Readonly<{
   pathOf: (runtimeId: RuntimeId) => Path | null;
 }>;
 
-export type ProjectedRangeSegment = {
+export type ProjectedRangeSegment = Readonly<{
   path: Path;
   runtimeId: RuntimeId;
   start: number;
   end: number;
-};
+}>;
 
-export type EditorSnapshot<V extends Value = Value> = {
+export type EditorSnapshot<V extends Value = Value> = Readonly<{
   children: V;
   index: SnapshotIndex;
   selection: Selection;
   version: number;
-};
+}>;
 
-export type SnapshotInput<V extends Value = Value> = {
-  children: V | Descendant[];
-  meta?: Record<string, unknown>;
-  roots?: Record<RootKey, V | Descendant[]>;
+export type SnapshotInput<V extends Value = Value> = Readonly<{
+  children: V | readonly Descendant[];
+  meta?: Readonly<Record<string, unknown>>;
+  roots?: Readonly<Record<RootKey, V | readonly Descendant[]>>;
   selection?: SnapshotSelectionInput;
-};
+}>;
 
 export type SnapshotListener<V extends Value = Value> = (
   snapshot: EditorSnapshot<V>,
@@ -1762,7 +1770,12 @@ export type EditorCommand<
   }>;
   /** Build only the descriptor default without running installed handlers. */
   build: (
-    state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
+    state: TEditor extends BaseEditor<
+      infer V extends Value,
+      infer TExtensions extends readonly unknown[]
+    >
+      ? EditorStateView<V, TExtensions>
+      : EditorStateView,
     ...input: [Input] extends [void] ? [] | [input: Input] : [input: Input]
   ) => EditorCommandResult;
   /** Stable configuration and diagnostics identity. */
@@ -2547,7 +2560,7 @@ export type EditorTransactionChanged = {
   ) => readonly EditorTransactionTopLevelRange[];
 };
 
-export type EditorCommit<V extends Value = Value> = {
+export type EditorCommit<V extends Value = Value> = Readonly<{
   annotations: Readonly<Record<string, unknown>>;
   after: EditorSnapshot<V>;
   before: EditorSnapshot<V>;
@@ -2566,7 +2579,7 @@ export type EditorCommit<V extends Value = Value> = {
   selectionChanged: boolean;
   tags: readonly EditorUpdateTag[];
   version: number;
-};
+}>;
 
 export interface EditorAboveOptions<T extends Ancestor> {
   at?: Location;
@@ -2785,7 +2798,7 @@ export interface EditorStaticApi {
   /**
    * Get the start and end points of a location.
    */
-  edges: (editor: Editor, at: Location) => [Point, Point];
+  edges: (editor: Editor, at: Location) => readonly [Point, Point];
 
   /**
    * Get the latest committed transaction metadata.
@@ -2852,12 +2865,14 @@ export interface EditorStaticApi {
   fragment: <V extends Value>(
     editor: Editor<V>,
     at: Location
-  ) => DescendantIn<V>[];
+  ) => readonly DescendantIn<V>[];
 
   /**
    * Get the fragment at the current selection.
    */
-  getFragment: <V extends Value>(editor: Editor<V>) => DescendantIn<V>[];
+  getFragment: <V extends Value>(
+    editor: Editor<V>
+  ) => readonly DescendantIn<V>[];
 
   /**
    * Get the current immutable snapshot of editor state.

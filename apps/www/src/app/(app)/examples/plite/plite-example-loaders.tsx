@@ -21,6 +21,9 @@ export const pliteExampleComponents = {
   'code-highlighting': createPliteExampleLoader(
     () => import('./_examples/code-highlighting')
   ),
+  'collaboration-demo': createPliteExampleLoader(
+    () => import('@/registry/examples/collaboration-demo')
+  ),
   'comment-mode': createPliteExampleLoader(
     () => import('./_examples/comment-mode')
   ),

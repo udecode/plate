@@ -38,38 +38,43 @@ describe('table grid queries', () => {
   ];
 
   describe('getCellIndices', () => {
-    it('indexes cells from the supplied initial value before publication', () => {
+    it('derives cells from the immutable initial value', () => {
       const initialValue = structuredClone(value);
       const inputSnapshot = structuredClone(initialValue);
       const editor = createPlateEditor({
         nodeId: true,
-        plugins: getTestTablePlugins({
-          _cellIndices: { stale: { col: 9, row: 9 } },
-        }),
+        plugins: getTestTablePlugins(),
         initialValue,
       });
 
-      expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
-        c11: { col: 0, row: 0 },
-        c12: { col: 1, row: 0 },
-      });
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c11')
+      ).toEqual({ col: 0, row: 0 });
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+      ).toEqual({ col: 1, row: 0 });
       expect(initialValue).toEqual(inputSnapshot);
     });
 
-    it('does not index the synthetic detached root as a configured table', () => {
+    it('skips the synthetic root when the configured table type is root', () => {
       const initialValue = [{ ...structuredClone(value[0]), type: 'root' }];
       const editor = createPlateEditor({
         nodeId: true,
-        plugins: getTestTablePlugins(undefined, (plugin) =>
-          plugin.configure({ type: 'root' })
-        ),
+        plugins: [
+          BaseTablePlugin.configure({
+            options: { disableMerge: true },
+            type: 'root',
+          }),
+        ],
         initialValue,
       });
 
-      expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
-        c11: { col: 0, row: 0 },
-        c12: { col: 1, row: 0 },
-      });
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c11')
+      ).toEqual({ col: 0, row: 0 });
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+      ).toEqual({ col: 1, row: 0 });
     });
 
     it('indexes tables in element-owned content roots', () => {
@@ -106,13 +111,15 @@ describe('table grid queries', () => {
         },
       });
 
-      expect(editor.plugin(BaseTablePlugin).getOptions()._cellIndices).toEqual({
-        c11: { col: 0, row: 0 },
-        c12: { col: 1, row: 0 },
-      });
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c11')
+      ).toEqual({ col: 0, row: 0 });
+      expect(
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+      ).toEqual({ col: 1, row: 0 });
     });
 
-    it('computes and caches indices on the table plugin', () => {
+    it('derives stable indices through the canonical compiler', () => {
       const editor = createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
@@ -127,7 +134,7 @@ describe('table grid queries', () => {
         row: 0,
       });
       expect(
-        editor.plugin(BaseTablePlugin).getOptions()._cellIndices.c12
+        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
       ).toEqual({ col: 1, row: 0 });
       expect(editor.plugin(BaseTablePlugin).api.getCellIndices(cell)).toEqual({
         col: 1,
@@ -156,7 +163,7 @@ describe('table grid queries', () => {
         row: 0,
       });
       expect(warn).toHaveBeenCalledWith(
-        'No cell indices found for element. Make sure all table cells have an id.',
+        'No table grid entry found for element.',
         'TABLE_CELL_INDICES'
       );
     });
@@ -434,19 +441,19 @@ describe('table grid queries', () => {
         expect(result).toBe(6);
       });
 
-      it('returns the sum of colSpan values with colspan attribute of the first row elements', () => {
+      it('returns the sum of canonical colSpan values in the first row', () => {
         const tableNode: TTableElement = {
           children: [
             {
               children: [
                 {
-                  attributes: { colspan: '2' },
                   children: [{ text: '' }],
+                  colSpan: 2,
                   type: 'td',
                 },
                 {
-                  attributes: { colspan: '3' },
                   children: [{ text: '' }],
+                  colSpan: 3,
                   type: 'td',
                 },
                 { children: [{ text: '' }], type: 'td' },

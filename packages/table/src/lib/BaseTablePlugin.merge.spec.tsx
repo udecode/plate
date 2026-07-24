@@ -10,7 +10,7 @@ import type { TTableElement, TTableRowElement } from '@platejs/utils';
 import assert from 'node:assert/strict';
 
 describe('table merge', () => {
-  describe('deleteRowWhenExpanded', () => {
+  describe('removeRow with expanded selections', () => {
     it('removes every row covered by a selected rowspan cell', () => {
       const editor = createPlateEditor({
         nodeId: true,
@@ -86,7 +86,7 @@ describe('table merge', () => {
         initialValue: input.children,
       });
 
-    describe('getTableMergeGridByRange', () => {
+    describe('merged table range projection', () => {
       it('returns both cell entries and a table entry for format=all', () => {
         const input = (
           <editor>
@@ -192,7 +192,7 @@ describe('table merge', () => {
         initialValue: input.children,
       });
 
-    describe('insertTableMergeColumn', () => {
+    describe('insertColumn with spans', () => {
       it('treats a table path as insert-at-end using the last cell of the first row', () => {
         const input = (
           <editor>
@@ -233,12 +233,12 @@ describe('table merge', () => {
         expect(rows[1].children).toHaveLength(3);
       });
 
-      it('extends spanning cells and updates colspan attributes when inserting inside a merged span', () => {
+      it('extends spanning cells when inserting inside a merged span', () => {
         const input = (
           <editor>
             <htable>
               <htr>
-                <htd attributes={{ colspan: '2' }} colSpan={2}>
+                <htd colSpan={2}>
                   <hp>11</hp>
                 </htd>
               </htr>
@@ -267,7 +267,6 @@ describe('table merge', () => {
               {
                 children: [
                   {
-                    attributes: { colspan: '3' },
                     colSpan: 3,
                     type: 'td',
                   },
@@ -275,11 +274,7 @@ describe('table merge', () => {
                 type: 'tr',
               },
               {
-                children: [
-                  { type: 'td' },
-                  { colSpan: 1, rowSpan: 1, type: 'td' },
-                  { type: 'td' },
-                ],
+                children: [{ type: 'td' }, { type: 'td' }, { type: 'td' }],
                 type: 'tr',
               },
             ],
@@ -301,7 +296,7 @@ describe('table merge', () => {
         initialValue: input.children,
       });
 
-    describe('insertTableMergeRow', () => {
+    describe('insertRow with spans', () => {
       it('treats a table path as insert-at-end using the last row', () => {
         const input = (
           <editor>
@@ -338,12 +333,12 @@ describe('table merge', () => {
         expect(entry[0].children).toHaveLength(3);
       });
 
-      it('extends row-spanning cells and updates rowspan attributes when inserting inside a merged span', () => {
+      it('extends row-spanning cells when inserting inside a merged span', () => {
         const input = (
           <editor>
             <htable>
               <htr>
-                <htd attributes={{ rowspan: '2' }} rowSpan={2}>
+                <htd rowSpan={2}>
                   <hp>11</hp>
                 </htd>
                 <htd>
@@ -372,7 +367,6 @@ describe('table merge', () => {
               {
                 children: [
                   {
-                    attributes: { rowspan: '3' },
                     rowSpan: 3,
                     type: 'td',
                   },
@@ -381,7 +375,7 @@ describe('table merge', () => {
                 type: 'tr',
               },
               {
-                children: [{ colSpan: 1, rowSpan: 1, type: 'td' }],
+                children: [{ type: 'td' }],
                 type: 'tr',
               },
               {

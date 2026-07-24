@@ -17,6 +17,10 @@ const NON_SETTABLE_SELECTION_PROPERTIES = Object.getOwnPropertyNames(
   Object.prototype
 );
 
+type MutableRangeProperties = {
+  -readonly [K in keyof Range]?: Range[K];
+};
+
 export const writeSelection = <
   V extends Value,
   TExtensions extends readonly unknown[],
@@ -34,8 +38,8 @@ export const setSelection: SelectionMutationMethods['setSelection'] = (
   props
 ) => {
   const selection = getCurrentSelection(editor);
-  const oldProps: Partial<Range> = {};
-  const newProps: Partial<Range> = {};
+  const oldProps: MutableRangeProperties = {};
+  const newProps: MutableRangeProperties = {};
   const selectionRoot = getCurrentSelectionRoot(editor);
   const updateRoot = getEditorUpdateRoot(editor);
 

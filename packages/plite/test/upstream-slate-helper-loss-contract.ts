@@ -15,6 +15,7 @@ import {
   schema,
   SelectionApi,
   type Text,
+  type Value,
 } from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
@@ -44,8 +45,8 @@ const createSeededEditor = (
   children: Element[],
   selection: Range | null = null
 ) =>
-  createEditor({
-    extensions: [UpstreamHelperSchema],
+  createEditor<Value, readonly [typeof UpstreamHelperSchema]>({
+    extensions: [UpstreamHelperSchema] as const,
     initialSelection: selection ? SelectionApi.text(selection) : null,
     initialValue: children,
   });
@@ -275,20 +276,29 @@ describe('old Slate helper behavior through current Plite APIs', () => {
   it('keeps finder-style queries safe while strict get-style queries still fail loudly', () => {
     const editor = createSeededEditor([paragraph('one')]);
 
-    const result = editor.read((state) => ({
-      above: state.nodes.above({ at: [9, 9, 9], match: typeIs('paragraph') }),
-      block: state.nodes.block({ at: [9, 9, 9] }),
-      entries: state.nodes.toArray({ at: [9, 9, 9] }),
-      find: state.nodes.find({ at: [9, 9, 9], match: typeIs('paragraph') }),
-      fragment: state.fragment({
+    const result = {
+      above: editor.read.nodes.above({
+        at: [9, 9, 9],
+        match: typeIs('paragraph'),
+      }),
+      block: editor.read.nodes.block({ at: [9, 9, 9] }),
+      entries: editor.read.nodes.toArray({ at: [9, 9, 9] }),
+      find: editor.read.nodes.find({
+        at: [9, 9, 9],
+        match: typeIs('paragraph'),
+      }),
+      fragment: editor.read.fragment({
         at: {
           anchor: { path: [9, 0], offset: 0 },
           focus: { path: [9, 0], offset: 0 },
         },
       }),
-      some: state.nodes.some({ at: [9, 9, 9], match: typeIs('paragraph') }),
-      string: state.text.string([9, 9, 9]),
-    }));
+      some: editor.read.nodes.some({
+        at: [9, 9, 9],
+        match: typeIs('paragraph'),
+      }),
+      string: editor.read.text.string([9, 9, 9]),
+    };
 
     assert.deepEqual(result, {
       above: undefined,

@@ -39,28 +39,6 @@ export const BaseMediaEmbedPlugin = defineMediaPlugin(
     options: {
       transformUrl: parseIframeUrl,
     } as MediaPluginOptions,
-    parsers: {
-      html: {
-        deserializer: {
-          rules: [
-            {
-              validNodeName: 'IFRAME',
-            },
-          ],
-          parse: ({ element, type }) => {
-            const url = element.getAttribute('src');
-
-            if (url) {
-              return {
-                children: [{ text: '' }],
-                type,
-                url,
-              };
-            }
-          },
-        },
-      },
-    },
   }),
   (options, input) => {
     const transformedUrl = options.transformUrl?.(input.url) ?? input.url;
@@ -79,6 +57,77 @@ export const BaseMediaEmbedPlugin = defineMediaPlugin(
       url: normalized?.url ?? transformedUrl,
     };
   }
-);
+)
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => {
+      const iframe = element.querySelector<HTMLElement>(':scope > iframe');
+
+      if (!iframe) return;
+
+      const url = iframe.getAttribute('src');
+
+      if (!url) return;
+
+      const width = iframe.style.width || undefined;
+
+      return {
+        ...(width === undefined ? {} : { width }),
+        url,
+      };
+    },
+    encode: ({ content, node }) => {
+      if (
+        typeof node.url !== 'string' ||
+        node.url.length === 0 ||
+        node.isUpload !== undefined ||
+        node.name !== undefined ||
+        node.placeholderId !== undefined
+      ) {
+        return null;
+      }
+
+      return {
+        attributes: { class: 'plate-media-embed' },
+        children: [
+          {
+            attributes: {
+              allowfullscreen: true,
+              src: node.url,
+              title: 'Embedded media',
+            },
+            children: [],
+            style: {
+              width:
+                typeof node.width === 'number' ? `${node.width}px` : node.width,
+            },
+            tag: 'iframe',
+          },
+          { children: content, tag: 'figcaption' },
+        ],
+        tag: 'figure',
+      };
+    },
+    match: [{ className: 'plate-media-embed', tag: 'figure' }],
+    priority: 10,
+  }))
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => {
+      if (element.parentElement?.matches('figure.plate-media-embed')) return;
+
+      const url = element.getAttribute('src');
+
+      if (!url) return;
+
+      const width = element.style.width || undefined;
+
+      return {
+        children: [{ text: '' }],
+        ...(width === undefined ? {} : { width }),
+        url,
+      };
+    },
+    decodeOnly: true,
+    match: [{ tag: 'iframe' }],
+  }));
 
 export type MediaEmbedConfig = InferConfig<typeof BaseMediaEmbedPlugin>;

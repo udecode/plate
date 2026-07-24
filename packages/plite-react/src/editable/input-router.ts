@@ -13,18 +13,14 @@ import {
   useRef,
 } from 'react';
 import { type Path, type Range, RangeApi } from '@platejs/plite';
-import {
-  getSelection,
-  HAS_BEFORE_INPUT_SUPPORT,
-  isDOMElement,
-  isDOMText,
-} from '@platejs/plite-dom';
+import { getSelection, isDOMElement, isDOMText } from '@platejs/plite-dom';
 import {
   type DOMPhaseScheduler,
   EDITOR_TO_ELEMENT,
   NODE_TO_ELEMENT,
   setEditorDOMEditableElement,
   setEditorDOMRootElement,
+  supportsDOMBeforeInput,
 } from '@platejs/plite-dom/internal';
 import {
   getPliteNodeElementByPath,
@@ -1527,7 +1523,7 @@ export const useEditableReactBeforeInputHandler = ({
       // fall back to React's leaky polyfill instead just for it. It
       // only works for the `insertText` input type.
       if (
-        !HAS_BEFORE_INPUT_SUPPORT &&
+        !supportsDOMBeforeInput(event) &&
         !readOnly &&
         !(onBeforeInput?.(event) ?? event.defaultPrevented) &&
         ReactEditor.hasSelectableTarget(editor, event.target)

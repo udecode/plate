@@ -1,16 +1,17 @@
 import {
-  ChangeSet,
   createInternalDocumentChange,
   type DocumentChange,
   getInternalDocumentChangeEntries,
-  getInternalDocumentChangeSet,
-  type DocumentSlice,
-  IndexedDocument,
-  type JsonEditorValue,
-  type JsonNode,
+  getInternalDocumentRootChange,
   mapInternalDocumentChangePosition,
-  reconcileChildrenStep,
-} from './document-change';
+} from './change/document-change';
+import { DocumentIndex } from './change/document-index';
+import { RootChange, reconcileChildrenStep } from './change/root-change';
+import type {
+  JsonEditorValue,
+  JsonNode,
+  PreparedTokenSlice,
+} from './change/tokens';
 import {
   type ContentSlice,
   type Descendant,
@@ -501,8 +502,8 @@ const getPointAtTextOffset = (
 /** @internal Preserve one logical text point through canonical representation. */
 export const mapCanonicalRepresentationPoint = (
   editor: Editor,
-  beforeDocument: IndexedDocument,
-  afterDocument: IndexedDocument,
+  beforeDocument: DocumentIndex,
+  afterDocument: DocumentIndex,
   change: DocumentChange,
   root: string,
   point: Point,
@@ -591,8 +592,8 @@ type ChildWindow = {
 };
 
 type CanonicalRootDraft = {
-  change: ChangeSet;
-  document: IndexedDocument;
+  change: RootChange;
+  document: DocumentIndex;
 };
 
 declare const CANONICAL_FIT_PREPARATION: unique symbol;
@@ -605,7 +606,7 @@ export type CanonicalFitPreparation = Readonly<{
 type CanonicalFitPreparationDescriptor = Readonly<{
   currentSchema: () => object | null;
   forceRoots?: ReadonlySet<string>;
-  insert?: DocumentSlice;
+  insert?: PreparedTokenSlice;
   protectedInlineSpacerPaths?: ReadonlyMap<string, readonly Path[]>;
   schema: object | null;
   trustedNodes: WeakSet<object>;
@@ -735,7 +736,7 @@ export const prepareCanonicalRootFit = (
 /** @internal Bind a canonical slice proof to the exact lowerer insertion. */
 export const bindCanonicalFitPreparation = (
   preparation: CanonicalFitPreparation,
-  insert: DocumentSlice
+  insert: PreparedTokenSlice
 ): CanonicalFitPreparation => {
   const source = CANONICAL_FIT_PREPARATIONS.get(preparation);
 
@@ -968,7 +969,7 @@ export const constructCanonicalDocumentChange = (
   }> = {}
 ): DocumentChange => {
   const schema = options.schema ?? getEditorSchema(editor);
-  const changes = new Map<string, ChangeSet>();
+  const changes = new Map<string, RootChange>();
   const fitPreparation = options.fitPreparation
     ? CANONICAL_FIT_PREPARATIONS.get(options.fitPreparation)
     : undefined;
@@ -1024,12 +1025,12 @@ export const constructCanonicalDocumentChange = (
     if (change.deleteRoots.has(root)) continue;
 
     const current = getRootChildren(after, root);
-    const document = IndexedDocument.fromValue(current);
+    const document = DocumentIndex.fromValue(current);
     const draft: CanonicalRootDraft = {
-      change: ChangeSet.empty(document.length),
+      change: RootChange.empty(document.length),
       document,
     };
-    const rootChange = getInternalDocumentChangeSet(change, root);
+    const rootChange = getInternalDocumentRootChange(change, root);
     const windows = new Map<
       string,
       { path: readonly number[]; window: ChildWindow }

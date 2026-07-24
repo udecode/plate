@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { SelectionApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import {
@@ -21,7 +22,7 @@ const headingPlugins = [
 const headingKeys = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 
 describe('base heading plugins', () => {
-  it('registers every heading schema and parser', () => {
+  it('registers, decodes, and encodes every heading schema', () => {
     const editor = createBaseEditor({
       plugins: headingPlugins,
     });
@@ -41,9 +42,38 @@ describe('base heading plugins', () => {
         children: [{ text: '' }],
         type: resolvedPlugin.type,
       });
-      expect(resolvedPlugin.parsers.html?.deserializer?.rules).toEqual([
-        { validNodeName: `H${index + 1}` },
+      expect(
+        editor.api.html.deserialize({
+          element: `<h${index + 1}>Heading</h${index + 1}>`,
+        })
+      ).toEqual([
+        {
+          children: [{ text: 'Heading' }],
+          type: resolvedPlugin.type,
+        },
       ]);
+
+      const point = { offset: 0, path: [0, 0] };
+      const codecEditor = createBaseEditor({
+        plugins: [plugin],
+        selection: SelectionApi.node([0], { anchor: point, focus: point }),
+        initialValue: [
+          {
+            children: [{ text: 'Heading' }],
+            type: resolvedPlugin.type,
+          },
+        ],
+      });
+      const data = new DataTransfer();
+
+      codecEditor.api.clipboard.writeSelection(data);
+
+      const body = new DOMParser().parseFromString(
+        data.getData('text/html'),
+        'text/html'
+      ).body;
+
+      expect(body.querySelector(`h${index + 1}`)?.textContent).toBe('Heading');
     });
   });
 

@@ -18,7 +18,6 @@ import {
   SelectionApi,
   target,
   TextApi,
-  type Ancestor,
   type Descendant,
   type EditorNodesOptions,
   type EditorStateView,
@@ -111,19 +110,15 @@ export const BaseListItemPlugin = createBasePlugin({
       },
     };
   },
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'LI' }] } } },
   render: { as: 'li' },
-});
+}).extendHtmlCodec(() => ({
+  decode: () => ({}),
+  decodeOnly: true,
+  match: [{ tag: 'li' }],
+}));
 
 export const BaseBulletedListPlugin = createBasePlugin({
   key: KEYS.ulClassic,
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [{ validNodeName: 'UL' }],
-      },
-    },
-  },
   render: { as: 'ul' },
   schema: ({ plugins }) => {
     const listItemType = plugins.elementType(BaseListItemPlugin);
@@ -138,13 +133,20 @@ export const BaseBulletedListPlugin = createBasePlugin({
       },
     };
   },
-}).extendTx(({ editor, type }) => (tx) => ({
-  toggle: () => toggleList(editor, tx, { type }),
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: () => ({}),
+    decodeOnly: true,
+    match: [{ tag: 'ul' }],
+  }))
+  .extend(({ editor, type }) => ({
+    update: ({ tx }) => ({
+      toggle: () => toggleList(editor, tx, { type }),
+    }),
+  }));
 
 export const BaseNumberedListPlugin = createBasePlugin({
   key: KEYS.olClassic,
-  parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
   render: { as: 'ol' },
   schema: ({ plugins }) => {
     const listItemType = plugins.elementType(BaseListItemPlugin);
@@ -159,9 +161,17 @@ export const BaseNumberedListPlugin = createBasePlugin({
       },
     };
   },
-}).extendTx(({ editor, type }) => (tx) => ({
-  toggle: () => toggleList(editor, tx, { type }),
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: () => ({}),
+    decodeOnly: true,
+    match: [{ tag: 'ol' }],
+  }))
+  .extend(({ editor, type }) => ({
+    update: ({ tx }) => ({
+      toggle: () => toggleList(editor, tx, { type }),
+    }),
+  }));
 
 export const BaseTaskListPlugin = createBasePlugin({
   key: KEYS.taskList,
@@ -183,8 +193,10 @@ export const BaseTaskListPlugin = createBasePlugin({
       },
     };
   },
-}).extendTx(({ editor, type }) => (tx) => ({
-  toggle: (checked = false) => toggleList(editor, tx, { checked, type }),
+}).extend(({ editor, type }) => ({
+  update: ({ tx }) => ({
+    toggle: (checked = false) => toggleList(editor, tx, { checked, type }),
+  }),
 }));
 
 /** Enables support for bulleted, numbered and to-do lists. */
@@ -207,71 +219,77 @@ export const BaseTodoListPlugin = createBasePlugin({
     inheritCheckStateOnLineStartBreak: false,
   },
 })
-  .extendExtension(({ getOptions, type }) => ({
-    commands: ({ around }) => [
-      around(editorCommands.insertBreak, ({ state, next }) => {
-        let handled = false;
-        const prefix = state.transaction((tx) => {
-          const selection = tx.selection();
+  .extend(({ getOptions, type }) => ({
+    extension: {
+      commands: ({ around }) => [
+        around(editorCommands.insertBreak, ({ state, next }) => {
+          let handled = false;
+          const prefix = state.transaction((tx) => {
+            const selection = tx.selection();
 
-          if (!selection) return;
+            if (!selection) return;
 
-          const todoEntry = tx.nodes.above<Element>({
-            at: selection,
-            match: { type },
+            const todoEntry = tx.nodes.above<Element>({
+              at: selection,
+              match: { type },
+            });
+
+            if (!todoEntry) return;
+
+            const [todo, path] = todoEntry;
+            const {
+              inheritCheckStateOnLineEndBreak,
+              inheritCheckStateOnLineStartBreak,
+            } = getOptions();
+
+            if (!tx.selection.isCollapsed()) {
+              tx.text.delete();
+            }
+
+            const nextPath = PathApi.next(path);
+
+            if (tx.points.isStart(selection.focus, path)) {
+              tx.nodes.insert(
+                {
+                  checked: inheritCheckStateOnLineStartBreak
+                    ? todo.checked
+                    : false,
+                  children: [{ text: '' }],
+                  type,
+                },
+                { at: path }
+              );
+              handled = true;
+              return;
+            }
+            if (tx.points.isEnd(selection.focus, path)) {
+              tx.nodes.insert(
+                {
+                  checked: inheritCheckStateOnLineEndBreak
+                    ? todo.checked
+                    : false,
+                  children: [{ text: '', ...(tx.marks() || {}) }],
+                  type,
+                },
+                { at: nextPath }
+              );
+              tx.selection.set(nextPath);
+            } else {
+              tx.nodes.split();
+            }
+
+            handled = true;
           });
 
-          if (!todoEntry) return;
-
-          const [todo, path] = todoEntry;
-          const {
-            inheritCheckStateOnLineEndBreak,
-            inheritCheckStateOnLineStartBreak,
-          } = getOptions();
-
-          if (!tx.selection.isCollapsed()) {
-            tx.text.delete();
-          }
-
-          const nextPath = PathApi.next(path);
-
-          if (tx.points.isStart(selection.focus, path)) {
-            tx.nodes.insert(
-              {
-                checked: inheritCheckStateOnLineStartBreak
-                  ? todo.checked
-                  : false,
-                children: [{ text: '' }],
-                type,
-              },
-              { at: path }
-            );
-            handled = true;
-            return;
-          }
-          if (tx.points.isEnd(selection.focus, path)) {
-            tx.nodes.insert(
-              {
-                checked: inheritCheckStateOnLineEndBreak ? todo.checked : false,
-                children: [{ text: '', ...(tx.marks() || {}) }],
-                type,
-              },
-              { at: nextPath }
-            );
-            tx.selection.set(nextPath);
-          } else {
-            tx.nodes.split();
-          }
-
-          handled = true;
-        });
-
-        return handled ? prefix : next.after(prefix);
-      }),
-    ],
+          return handled ? prefix : next.after(prefix);
+        }),
+      ],
+    },
   }))
-  .extendTx(({ type }) => (tx) => ({
-    toggle: () => tx.nodes.toggle(type),
+  .extend(({ type }) => ({
+    update: ({ tx }) => ({
+      toggle: () => tx.nodes.toggle(type),
+    }),
   }));
 
 /**
@@ -1213,742 +1231,777 @@ export const BaseListPlugin = createBasePlugin({
     };
   },
 })
-  .extendTx<ListPluginTransaction>(({ editor, getOptions }) => (tx) => {
-    const moveListItems = ({
-      at = tx.selection() ?? undefined,
-      enableResetOnShiftTab,
-      increase = true,
-    }: {
-      at?: EditorNodesOptions<Element>['at'];
-      enableResetOnShiftTab?: boolean;
-      increase?: boolean;
-    } = {}) => {
-      const moveListItemDown = ({
-        list,
-        listItem,
+  .extend<{ update: ListPluginTransaction }>(({ editor, getOptions }) => ({
+    update: ({ tx }) => {
+      const moveListItems = ({
+        at = tx.selection() ?? undefined,
+        enableResetOnShiftTab,
+        increase = true,
       }: {
-        list: ElementEntry;
-        listItem: ElementEntry;
-      }) => {
-        const [listNode] = list;
-        const [, listItemPath] = listItem;
-        const previousListItemPath = PathApi.previous(listItemPath);
+        at?: EditorNodesOptions<Element>['at'];
+        enableResetOnShiftTab?: boolean;
+        increase?: boolean;
+      } = {}) => {
+        const moveListItemDown = ({
+          list,
+          listItem,
+        }: {
+          list: ElementEntry;
+          listItem: ElementEntry;
+        }) => {
+          const [listNode] = list;
+          const [, listItemPath] = listItem;
+          const previousListItemPath = PathApi.previous(listItemPath);
 
-        if (!previousListItemPath) return false;
+          if (!previousListItemPath) return false;
 
-        const previousSiblingItem = tx.nodes.get(previousListItemPath);
+          const previousSiblingItem = tx.nodes.get(previousListItemPath);
 
-        if (!previousSiblingItem) return false;
+          if (!previousSiblingItem) return false;
 
-        const [previousNode, previousPath] = previousSiblingItem;
+          const [previousNode, previousPath] = previousSiblingItem;
 
-        if (!ElementApi.isElement(previousNode)) return false;
+          if (!ElementApi.isElement(previousNode)) return false;
 
-        const sublist = previousNode.children.find(
-          (node): node is Element =>
-            ElementApi.isElement(node) &&
-            getListTypes(editor).includes(node.type)
-        );
-        const newPath = previousPath.concat(
-          sublist ? [1, sublist.children.length] : [1]
-        );
-
-        if (!sublist) {
-          tx.nodes.wrap(
-            { children: [], type: listNode.type },
-            { at: listItemPath }
+          const sublist = previousNode.children.find(
+            (node): node is Element =>
+              ElementApi.isElement(node) &&
+              getListTypes(editor).includes(node.type)
           );
+          const newPath = previousPath.concat(
+            sublist ? [1, sublist.children.length] : [1]
+          );
+
+          if (!sublist) {
+            tx.nodes.wrap(
+              { children: [], type: listNode.type },
+              { at: listItemPath }
+            );
+          }
+
+          tx.nodes.move({ at: listItemPath, to: newPath });
+
+          return true;
+        };
+        const lics = Array.from(
+          tx.nodes.entries<Element>({
+            at,
+            match: { type: editor.getType(KEYS.lic) },
+          })
+        );
+
+        if (lics.length === 0) return false;
+
+        const highestLicPaths: Path[] = [];
+
+        for (const [, licPath] of lics) {
+          const liPath = PathApi.parent(licPath);
+          const isNested = highestLicPaths.some((path) =>
+            PathApi.isAncestor(PathApi.parent(path), liPath)
+          );
+
+          if (!isNested) highestLicPaths.push(licPath);
         }
 
-        tx.nodes.move({ at: listItemPath, to: newPath });
+        const refs = highestLicPaths.map((path) =>
+          tx.refs.path(path, {
+            association: 'forward',
+            deletion: 'drop',
+          })
+        );
+        let moved = false;
+
+        for (const ref of increase ? refs : refs.reverse()) {
+          const contentPath = ref.resolve();
+
+          if (!contentPath) continue;
+
+          const listItem = tx.nodes.parent<Element>(contentPath);
+          const parentList = listItem
+            ? tx.nodes.parent<Element>(listItem[1])
+            : undefined;
+
+          if (!listItem || !parentList) continue;
+
+          const itemMoved = increase
+            ? moveListItemDown({ list: parentList, listItem })
+            : isListNested(editor, parentList[1], tx)
+              ? moveListItemUp(editor, tx, { list: parentList, listItem })
+              : enableResetOnShiftTab
+                ? removeFirstListItem(editor, tx, {
+                    list: parentList,
+                    listItem,
+                  })
+                : false;
+
+          moved = !!itemMoved || moved;
+        }
+
+        return moved;
+      };
+      const move = (increase: boolean) => {
+        const selection = tx.selection();
+
+        if (!selection) return false;
+
+        let at = selection;
+
+        if (!tx.selection.isCollapsed()) {
+          const { anchor, focus } = RangeApi.isBackward(selection)
+            ? {
+                anchor: { ...selection.focus },
+                focus: { ...selection.anchor },
+              }
+            : {
+                anchor: { ...selection.anchor },
+                focus: { ...selection.focus },
+              };
+          const unhangRange = tx.ranges.unhang({ anchor, focus });
+
+          if (unhangRange) {
+            at = SelectionApi.text(unhangRange);
+            tx.selection.set(at);
+          }
+        }
+
+        if (
+          !tx.nodes.some({
+            at,
+            match: { type: editor.getType(KEYS.li) },
+          })
+        ) {
+          return false;
+        }
+
+        moveListItems({
+          at,
+          enableResetOnShiftTab: getOptions().enableResetOnShiftTab,
+          increase,
+        });
 
         return true;
       };
-      const lics = Array.from(
-        tx.nodes.entries<Element>({
-          at,
-          match: { type: editor.getType(KEYS.lic) },
-        })
-      );
 
-      if (lics.length === 0) return false;
-
-      const highestLicPaths: Path[] = [];
-
-      for (const [, licPath] of lics) {
-        const liPath = PathApi.parent(licPath);
-        const isNested = highestLicPaths.some((path) =>
-          PathApi.isAncestor(PathApi.parent(path), liPath)
-        );
-
-        if (!isNested) highestLicPaths.push(licPath);
-      }
-
-      const refs = highestLicPaths.map((path) =>
-        tx.refs.path(path, {
-          association: 'forward',
-          deletion: 'drop',
-        })
-      );
-      let moved = false;
-
-      for (const ref of increase ? refs : refs.reverse()) {
-        const contentPath = ref.resolve();
-
-        if (!contentPath) continue;
-
-        const listItem = tx.nodes.parent<Element>(contentPath);
-        const parentList = listItem
-          ? tx.nodes.parent<Element>(listItem[1])
-          : undefined;
-
-        if (!listItem || !parentList) continue;
-
-        const itemMoved = increase
-          ? moveListItemDown({ list: parentList, listItem })
-          : isListNested(editor, parentList[1], tx)
-            ? moveListItemUp(editor, tx, { list: parentList, listItem })
-            : enableResetOnShiftTab
-              ? removeFirstListItem(editor, tx, {
-                  list: parentList,
-                  listItem,
-                })
-              : false;
-
-        moved = !!itemMoved || moved;
-      }
-
-      return moved;
-    };
-    const move = (increase: boolean) => {
-      const selection = tx.selection();
-
-      if (!selection) return false;
-
-      let at = selection;
-
-      if (!tx.selection.isCollapsed()) {
-        const { anchor, focus } = RangeApi.isBackward(selection)
-          ? {
-              anchor: { ...selection.focus },
-              focus: { ...selection.anchor },
-            }
-          : {
-              anchor: { ...selection.anchor },
-              focus: { ...selection.focus },
-            };
-        const unhangRange = tx.ranges.unhang({ anchor, focus });
-
-        if (unhangRange) {
-          at = SelectionApi.text(unhangRange);
-          tx.selection.set(at);
-        }
-      }
-
-      if (
-        !tx.nodes.some({
-          at,
-          match: { type: editor.getType(KEYS.li) },
-        })
-      ) {
-        return false;
-      }
-
-      moveListItems({
-        at,
-        enableResetOnShiftTab: getOptions().enableResetOnShiftTab,
-        increase,
-      });
-
-      return true;
-    };
-
-    return {
-      indent: () => move(true),
-      outdent: () => move(false),
-      toggle: (options) => toggleList(editor, tx, options),
-    };
-  })
-  .extendExtension(({ editor, getOptions }) => ({
-    priority: 100,
-    commands: ({ around }) => [
-      around(editorCommands.insertBreak, ({ state, next }) => {
-        let handled = false;
-        const prefix = state.transaction((tx) => {
-          const selection = tx.selection();
-
-          if (!selection) return;
-
-          const res = getListItemEntry(editor, { at: selection }, tx);
-
-          if (res) {
-            const block = tx.nodes.block();
-
-            if (
-              block &&
-              tx.nodes.isEmpty(block[0]) &&
-              moveListItemUp(editor, tx, res)
-            ) {
-              handled = true;
-              return;
-            }
-          }
-
-          const listItem = tx.nodes.above({
-            match: { type: editor.getType(KEYS.li) },
-          });
-
-          if (listItem && tx.text.string(listItem[1]) === '') {
-            tx.nodes.replace(
-              {
-                children: [{ text: '' }],
-                type: editor.getType(KEYS.p),
-              },
-              { at: listItem[1], select: true }
-            );
-            handled = true;
-            return;
-          }
-
-          const liType = editor.getType(KEYS.li);
-          const licType = editor.getType(KEYS.lic);
-          const licEntry = tx.nodes.above<Element>({
-            match: { type: licType },
-          });
-
-          if (!licEntry) return;
-
-          const [, contentPath] = licEntry;
-          const listItemEntry = tx.nodes.parent<Element>(contentPath);
-
-          if (!listItemEntry) return;
-
-          const [listItemNode, listItemPath] = listItemEntry;
-
-          if (listItemNode.type !== liType) return;
-
-          const taskProps =
-            'checked' in listItemNode ? { checked: false } : undefined;
-          const options = getOptions();
-
-          if (!tx.selection.isCollapsed()) {
-            tx.text.delete();
-          }
-
-          const isStart = tx.points.isStart(selection.focus, contentPath);
-          const isEnd = tx.points.isEnd(selection.focus, contentPath);
-          const nextContentPath = PathApi.next(contentPath);
-          const nextListItemPath = PathApi.next(listItemPath);
-
-          if (isStart) {
-            if (taskProps && options.inheritCheckStateOnLineStartBreak) {
-              taskProps.checked = listItemNode.checked as boolean;
-            }
-
-            tx.nodes.insert(
-              {
-                children: [{ children: [{ text: '' }], type: licType }],
-                ...taskProps,
-                type: liType,
-              },
-              { at: listItemPath }
-            );
-            handled = true;
-            return;
-          }
-
-          if (isEnd) {
-            if (taskProps && options.inheritCheckStateOnLineEndBreak) {
-              taskProps.checked = listItemNode.checked as boolean;
-            }
-
-            tx.nodes.insert(
-              {
-                children: [
-                  {
-                    children: [{ text: '', ...(tx.marks() || {}) }],
-                    type: licType,
-                  },
-                ],
-                ...taskProps,
-                type: liType,
-              },
-              { at: nextListItemPath }
-            );
-            tx.selection.set(nextListItemPath);
-          } else {
-            tx.nodes.split();
-            tx.nodes.wrap(
-              {
-                children: [],
-                ...taskProps,
-                type: liType,
-              },
-              { at: nextContentPath }
-            );
-            tx.nodes.move({
-              at: nextContentPath,
-              to: nextListItemPath,
-            });
-            tx.selection.set(nextListItemPath);
-            tx.selection.collapse({ edge: 'start' });
-          }
-
-          if (listItemNode.children.length > 1) {
-            tx.nodes.move({
-              at: nextContentPath,
-              to: nextListItemPath.concat(1),
-            });
-          }
-
-          handled = true;
-        });
-
-        return handled ? prefix : next.after(prefix);
-      }),
-    ],
+      return {
+        indent: () => move(true),
+        outdent: () => move(false),
+        toggle: (options) => toggleList(editor, tx, options),
+      };
+    },
   }))
-  .extendExtension(({ editor }) => ({
-    priority: 100,
-    commands: ({ around }) => [
-      around(editorCommands.delete, ({ input, state, next }) => {
-        if (input.direction !== 'backward') return next();
-
-        let handled = false;
-        const prefix = state.transaction((tx) => {
-          const selection = tx.selection();
-
-          if (!selection) return;
-
-          const res = getListItemEntry(editor, { at: selection }, tx);
-
-          if (
-            !res ||
-            !tx.selection.isAtBlockStart({
-              match: { type: editor.getType(KEYS.li) },
-            })
-          ) {
-            return;
-          }
-
-          const { list, listItem } = res;
-
-          if (
-            !PathApi.hasPrevious(listItem[1]) &&
-            isListNested(editor, list[1], tx)
-          ) {
-            const parentListItem = tx.nodes.parent<Element>(list[1]);
-            const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
-            const parentContent = parentListItem
-              ? tx.nodes.get<Element>([...parentListItem[1], 0])
-              : undefined;
-
-            if (parentListItem && currentContent && parentContent) {
-              const children = structuredClone(parentContent[0].children);
-
-              for (const child of currentContent[0].children) {
-                const previous = children.at(-1);
-
-                if (
-                  previous &&
-                  TextApi.isText(previous) &&
-                  TextApi.isText(child) &&
-                  TextApi.equals(previous, child, { loose: true })
-                ) {
-                  previous.text += child.text;
-                } else {
-                  children.push(structuredClone(child));
-                }
-              }
-
-              const [lastText, lastPath] = NodeApi.last(
-                { ...parentContent[0], children },
-                []
-              );
-              const point = {
-                offset: NodeApi.string(lastText).length,
-                path: [...parentContent[1], ...lastPath],
-              };
-
-              tx.nodes.replaceChildren(children, {
-                at: parentContent[1],
-                newSelection: { kind: 'text', anchor: point, focus: point },
-              });
-              tx.nodes.remove({ at: list[1] });
-              handled = true;
-              return;
-            }
-          }
-
-          if (removeFirstListItem(editor, tx, { list, listItem })) {
-            handled = true;
-            return;
-          }
-          if (removeListItem(editor, tx, { list, listItem })) {
-            handled = true;
-            return;
-          }
-
-          if (
-            !PathApi.hasPrevious(listItem[1]) &&
-            !isListNested(editor, list[1], tx)
-          ) {
-            unwrapList(editor, tx, { at: listItem[1] });
-            handled = true;
-            return;
-          }
-
-          if (PathApi.hasPrevious(listItem[1])) {
-            const previousListItem = tx.nodes.get<Element>(
-              PathApi.previous(listItem[1])
-            );
-            const previousContent = previousListItem
-              ? tx.nodes.get<Element>([...previousListItem[1], 0])
-              : undefined;
-            const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
-
-            if (previousContent && currentContent) {
-              const children = structuredClone(previousContent[0].children);
-              const [lastText, lastPath] = NodeApi.last(previousContent[0], []);
-              const point = {
-                offset: NodeApi.string(lastText).length,
-                path: [...previousContent[1], ...lastPath],
-              };
-
-              for (const child of currentContent[0].children) {
-                const previous = children.at(-1);
-
-                if (
-                  previous &&
-                  TextApi.isText(previous) &&
-                  TextApi.isText(child) &&
-                  TextApi.equals(previous, child, { loose: true })
-                ) {
-                  previous.text += child.text;
-                } else {
-                  children.push(structuredClone(child));
-                }
-              }
-
-              tx.nodes.replaceChildren(children, {
-                at: previousContent[1],
-                newSelection: { kind: 'text', anchor: point, focus: point },
-              });
-              tx.nodes.remove({ at: listItem[1] });
-              handled = true;
-            }
-          }
-        });
-
-        if (handled) return prefix;
-
-        return next.after(prefix);
-      }),
-    ],
-  }))
-  .extendExtension(({ editor }) => ({
-    priority: 100,
-    commands: ({ around }) => [
-      around(editorCommands.delete, ({ input, state, next }) => {
-        if (input.direction !== 'forward' || !state.selection.isAtBlockEnd()) {
-          return next();
-        }
-
-        let handled = false;
-        const prefix = state.transaction((tx) => {
-          const handleOutsideList = (): boolean => {
+  .extend(({ editor, getOptions }) => ({
+    extension: {
+      priority: 100,
+      commands: ({ around }) => [
+        around(editorCommands.insertBreak, ({ state, next }) => {
+          let handled = false;
+          const prefix = state.transaction((tx) => {
             const selection = tx.selection();
 
-            if (!selection) return false;
+            if (!selection) return;
 
-            const pointAfterSelection = tx.points.after(selection.focus);
+            const res = getListItemEntry(editor, { at: selection }, tx);
 
-            if (pointAfterSelection) {
-              // there is a block after it
-              const nextSiblingListRes = getListItemEntry(
-                editor,
-                { at: pointAfterSelection },
-                tx
-              );
+            if (res) {
+              const block = tx.nodes.block();
 
-              if (nextSiblingListRes) {
-                // the next block is a list
-                const { listItem } = nextSiblingListRes;
-                const parentBlockEntity = tx.nodes.block({
-                  at: selection.anchor,
-                });
-
-                if (
-                  parentBlockEntity &&
-                  !tx.text.string(parentBlockEntity[1])
-                ) {
-                  // the selected block is empty
-                  tx.nodes.remove();
-
-                  return true;
-                }
-                if (hasListChild(editor, listItem[0])) {
-                  // the next block has children, so we have to move the first item up
-                  const sublistRes = getListItemEntry(
-                    editor,
-                    { at: [...listItem[1], 1, 0, 0] },
-                    tx
-                  );
-
-                  if (sublistRes) moveListItemUp(editor, tx, sublistRes);
-                }
+              if (
+                block &&
+                tx.nodes.isEmpty(block[0]) &&
+                moveListItemUp(editor, tx, res)
+              ) {
+                handled = true;
+                return;
               }
             }
 
-            return false;
-          };
+            const listItem = tx.nodes.above({
+              match: { type: editor.getType(KEYS.li) },
+            });
 
-          const handleInsideList = (res: {
-            list: NodeEntry<Element>;
-            listItem: NodeEntry<Element>;
-          }): boolean => {
-            const { list, listItem } = res;
-            const listItemIndex = listItem[1].at(-1);
+            if (listItem && tx.text.string(listItem[1]) === '') {
+              tx.nodes.replace(
+                {
+                  children: [{ text: '' }],
+                  type: editor.getType(KEYS.p),
+                },
+                { at: listItem[1], select: true }
+              );
+              handled = true;
+              return;
+            }
 
-            if (listItemIndex === undefined) return false;
+            const liType = editor.getType(KEYS.li);
+            const licType = editor.getType(KEYS.lic);
+            const licEntry = tx.nodes.above<Element>({
+              match: { type: licType },
+            });
 
-            const mergeContent = (from: Element, to: NodeEntry<Element>) => {
-              const children = structuredClone(to[0].children);
+            if (!licEntry) return;
 
-              for (const child of from.children) {
-                const previous = children.at(-1);
+            const [, contentPath] = licEntry;
+            const listItemEntry = tx.nodes.parent<Element>(contentPath);
 
-                if (
-                  previous &&
-                  TextApi.isText(previous) &&
-                  TextApi.isText(child) &&
-                  TextApi.equals(previous, child, { loose: true })
-                ) {
-                  previous.text += child.text;
-                } else {
-                  children.push(structuredClone(child));
-                }
+            if (!listItemEntry) return;
+
+            const [listItemNode, listItemPath] = listItemEntry;
+
+            if (listItemNode.type !== liType) return;
+
+            const taskProps =
+              'checked' in listItemNode ? { checked: false } : undefined;
+            const options = getOptions();
+
+            if (!tx.selection.isCollapsed()) {
+              tx.text.delete();
+            }
+
+            const isStart = tx.points.isStart(selection.focus, contentPath);
+            const isEnd = tx.points.isEnd(selection.focus, contentPath);
+            const nextContentPath = PathApi.next(contentPath);
+            const nextListItemPath = PathApi.next(listItemPath);
+
+            if (isStart) {
+              if (taskProps && options.inheritCheckStateOnLineStartBreak) {
+                taskProps.checked = listItemNode.checked as boolean;
               }
 
-              tx.nodes.replaceChildren(children, { at: to[1] });
-            };
+              tx.nodes.insert(
+                {
+                  children: [{ children: [{ text: '' }], type: licType }],
+                  ...taskProps,
+                  type: liType,
+                },
+                { at: listItemPath }
+              );
+              handled = true;
+              return;
+            }
 
-            const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
-            const currentSublist = tx.nodes.get<Element>([...listItem[1], 1]);
+            if (isEnd) {
+              if (taskProps && options.inheritCheckStateOnLineEndBreak) {
+                taskProps.checked = listItemNode.checked as boolean;
+              }
 
-            if (currentContent && currentSublist) {
-              const firstChild = tx.nodes.get<Element>([
-                ...currentSublist[1],
-                0,
-              ]);
-              const firstChildContent = firstChild
-                ? tx.nodes.get<Element>([...firstChild[1], 0])
+              tx.nodes.insert(
+                {
+                  children: [
+                    {
+                      children: [{ text: '', ...(tx.marks() || {}) }],
+                      type: licType,
+                    },
+                  ],
+                  ...taskProps,
+                  type: liType,
+                },
+                { at: nextListItemPath }
+              );
+              tx.selection.set(nextListItemPath);
+            } else {
+              tx.nodes.split();
+              tx.nodes.wrap(
+                {
+                  children: [],
+                  ...taskProps,
+                  type: liType,
+                },
+                { at: nextContentPath }
+              );
+              tx.nodes.move({
+                at: nextContentPath,
+                to: nextListItemPath,
+              });
+              tx.selection.set(nextListItemPath);
+              tx.selection.collapse({ edge: 'start' });
+            }
+
+            if (listItemNode.children.length > 1) {
+              tx.nodes.move({
+                at: nextContentPath,
+                to: nextListItemPath.concat(1),
+              });
+            }
+
+            handled = true;
+          });
+
+          return handled ? prefix : next.after(prefix);
+        }),
+      ],
+    },
+  }))
+  .extend(({ editor }) => ({
+    extension: {
+      priority: 100,
+      commands: ({ around }) => [
+        around(editorCommands.delete, ({ input, state, next }) => {
+          if (input.direction !== 'backward') return next();
+
+          let handled = false;
+          const prefix = state.transaction((tx) => {
+            const selection = tx.selection();
+
+            if (!selection) return;
+
+            const res = getListItemEntry(editor, { at: selection }, tx);
+
+            if (
+              !res ||
+              !tx.selection.isAtBlockStart({
+                match: { type: editor.getType(KEYS.li) },
+              })
+            ) {
+              return;
+            }
+
+            const { list, listItem } = res;
+
+            if (
+              !PathApi.hasPrevious(listItem[1]) &&
+              isListNested(editor, list[1], tx)
+            ) {
+              const parentListItem = tx.nodes.parent<Element>(list[1]);
+              const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
+              const parentContent = parentListItem
+                ? tx.nodes.get<Element>([...parentListItem[1], 0])
                 : undefined;
 
-              if (firstChild && firstChildContent) {
-                mergeContent(firstChildContent[0], currentContent);
-
-                const childSublist = tx.nodes.get<Element>([
-                  ...firstChild[1],
-                  1,
-                ]);
-                const replacements = [
-                  ...(childSublist?.[0].children ?? []).flatMap((child) =>
-                    ElementApi.isElement(child) ? [child] : []
-                  ),
-                  ...currentSublist[0].children
-                    .slice(1)
-                    .flatMap((child) =>
-                      ElementApi.isElement(child) ? [child] : []
-                    ),
+              if (parentListItem && currentContent && parentContent) {
+                const children = [
+                  ...structuredClone(parentContent[0].children),
                 ];
 
-                if (replacements.length > 0) {
-                  tx.nodes.replaceChildren(replacements, {
-                    at: currentSublist[1],
-                  });
-                } else {
-                  tx.nodes.remove({ at: currentSublist[1] });
-                }
+                for (const child of currentContent[0].children) {
+                  const previous = children.at(-1);
 
-                return true;
-              }
-            }
-
-            if (currentContent) {
-              const pointAfterListItem = tx.points.after(listItem[1]);
-              const nextItem = pointAfterListItem
-                ? getListItemEntry(editor, { at: pointAfterListItem }, tx)
-                : undefined;
-              const nextContent = nextItem
-                ? tx.nodes.get<Element>([...nextItem.listItem[1], 0])
-                : undefined;
-              const nextSublist = nextItem
-                ? tx.nodes.get<Element>([...nextItem.listItem[1], 1])
-                : undefined;
-
-              if (
-                nextItem &&
-                nextContent &&
-                PathApi.equals(list[1], nextItem.list[1]) &&
-                !nextSublist
-              ) {
-                mergeContent(nextContent[0], currentContent);
-                tx.nodes.remove({ at: nextItem.listItem[1] });
-
-                return true;
-              }
-
-              if (
-                nextItem &&
-                nextContent &&
-                !PathApi.equals(list[1], nextItem.list[1])
-              ) {
-                mergeContent(nextContent[0], currentContent);
-
-                if (nextSublist) {
-                  const children = nextSublist[0].children.flatMap((child) =>
-                    ElementApi.isElement(child) ? [child] : []
-                  );
-
-                  tx.nodes.insert(children, {
-                    at: [...list[1], listItemIndex + 1],
-                  });
-                }
-
-                tx.nodes.remove({ at: nextItem.listItem[1] });
-
-                return true;
-              }
-            }
-
-            // if it has no children
-            if (!hasListChild(editor, listItem[0])) {
-              const liType = editor.getType(KEYS.li);
-              const _nodes = tx.nodes.entries({
-                at: listItem[1],
-                mode: 'lowest',
-                match: (node, path) => {
-                  if (path.length === 0) {
-                    return false;
+                  if (
+                    previous &&
+                    TextApi.isText(previous) &&
+                    TextApi.isText(child) &&
+                    TextApi.equals(previous, child, { loose: true })
+                  ) {
+                    children[children.length - 1] = {
+                      ...previous,
+                      text: previous.text + child.text,
+                    };
+                  } else {
+                    children.push(structuredClone(child));
                   }
+                }
 
-                  const isNodeLi =
-                    ElementApi.isElement(node) && node.type === liType;
-                  const isSiblingOfNodeLi =
-                    tx.nodes.get<Element>(PathApi.next(path))?.[0].type ===
-                    liType;
+                const [lastText, lastPath] = NodeApi.last(
+                  { ...parentContent[0], children },
+                  []
+                );
+                const point = {
+                  offset: NodeApi.string(lastText).length,
+                  path: [...parentContent[1], ...lastPath],
+                };
 
-                  return isNodeLi && isSiblingOfNodeLi;
-                },
-              });
-              const liWithSiblings = Array.from(_nodes, (entry) => entry[1])[0];
+                tx.nodes.replaceChildren(children, {
+                  at: parentContent[1],
+                  newSelection: { kind: 'text', anchor: point, focus: point },
+                });
+                tx.nodes.remove({ at: list[1] });
+                handled = true;
+                return;
+              }
+            }
 
-              if (!liWithSiblings) {
-                // there are no more list item in the list
-                const pointAfterListItem = tx.points.after(listItem[1]);
+            if (removeFirstListItem(editor, tx, { list, listItem })) {
+              handled = true;
+              return;
+            }
+            if (removeListItem(editor, tx, { list, listItem })) {
+              handled = true;
+              return;
+            }
 
-                if (pointAfterListItem) {
-                  // there is a block after it
-                  const nextSiblingListRes = getListItemEntry(
-                    editor,
-                    { at: pointAfterListItem },
-                    tx
-                  );
+            if (
+              !PathApi.hasPrevious(listItem[1]) &&
+              !isListNested(editor, list[1], tx)
+            ) {
+              unwrapList(editor, tx, { at: listItem[1] });
+              handled = true;
+              return;
+            }
 
-                  if (nextSiblingListRes) {
-                    // it is a list so we merge the lists
-                    const listRoot = getListRoot(editor, listItem[1], tx);
+            if (PathApi.hasPrevious(listItem[1])) {
+              const previousListItem = tx.nodes.get<Element>(
+                PathApi.previous(listItem[1])
+              );
+              const previousContent = previousListItem
+                ? tx.nodes.get<Element>([...previousListItem[1], 0])
+                : undefined;
+              const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
 
-                    if (!listRoot) return false;
+              if (previousContent && currentContent) {
+                const children = [
+                  ...structuredClone(previousContent[0].children),
+                ];
+                const [lastText, lastPath] = NodeApi.last(
+                  previousContent[0],
+                  []
+                );
+                const point = {
+                  offset: NodeApi.string(lastText).length,
+                  path: [...previousContent[1], ...lastPath],
+                };
 
-                    moveListItemsToList(editor, tx, {
-                      deleteFromList: true,
-                      fromList: nextSiblingListRes.list,
-                      toList: listRoot,
-                    });
+                for (const child of currentContent[0].children) {
+                  const previous = children.at(-1);
+
+                  if (
+                    previous &&
+                    TextApi.isText(previous) &&
+                    TextApi.isText(child) &&
+                    TextApi.equals(previous, child, { loose: true })
+                  ) {
+                    children[children.length - 1] = {
+                      ...previous,
+                      text: previous.text + child.text,
+                    };
+                  } else {
+                    children.push(structuredClone(child));
+                  }
+                }
+
+                tx.nodes.replaceChildren(children, {
+                  at: previousContent[1],
+                  newSelection: { kind: 'text', anchor: point, focus: point },
+                });
+                tx.nodes.remove({ at: listItem[1] });
+                handled = true;
+              }
+            }
+          });
+
+          if (handled) return prefix;
+
+          return next.after(prefix);
+        }),
+      ],
+    },
+  }))
+  .extend(({ editor }) => ({
+    extension: {
+      priority: 100,
+      commands: ({ around }) => [
+        around(editorCommands.delete, ({ input, state, next }) => {
+          if (
+            input.direction !== 'forward' ||
+            !state.selection.isAtBlockEnd()
+          ) {
+            return next();
+          }
+
+          let handled = false;
+          const prefix = state.transaction((tx) => {
+            const handleOutsideList = (): boolean => {
+              const selection = tx.selection();
+
+              if (!selection) return false;
+
+              const pointAfterSelection = tx.points.after(selection.focus);
+
+              if (pointAfterSelection) {
+                // there is a block after it
+                const nextSiblingListRes = getListItemEntry(
+                  editor,
+                  { at: pointAfterSelection },
+                  tx
+                );
+
+                if (nextSiblingListRes) {
+                  // the next block is a list
+                  const { listItem } = nextSiblingListRes;
+                  const parentBlockEntity = tx.nodes.block({
+                    at: selection.anchor,
+                  });
+
+                  if (
+                    parentBlockEntity &&
+                    !tx.text.string(parentBlockEntity[1])
+                  ) {
+                    // the selected block is empty
+                    tx.nodes.remove();
 
                     return true;
                   }
+                  if (hasListChild(editor, listItem[0])) {
+                    // the next block has children, so we have to move the first item up
+                    const sublistRes = getListItemEntry(
+                      editor,
+                      { at: [...listItem[1], 1, 0, 0] },
+                      tx
+                    );
+
+                    if (sublistRes) moveListItemUp(editor, tx, sublistRes);
+                  }
+                }
+              }
+
+              return false;
+            };
+
+            const handleInsideList = (res: {
+              list: NodeEntry<Element>;
+              listItem: NodeEntry<Element>;
+            }): boolean => {
+              const { list, listItem } = res;
+              const listItemIndex = listItem[1].at(-1);
+
+              if (listItemIndex === undefined) return false;
+
+              const mergeContent = (from: Element, to: NodeEntry<Element>) => {
+                const children = [...structuredClone(to[0].children)];
+
+                for (const child of from.children) {
+                  const previous = children.at(-1);
+
+                  if (
+                    previous &&
+                    TextApi.isText(previous) &&
+                    TextApi.isText(child) &&
+                    TextApi.equals(previous, child, { loose: true })
+                  ) {
+                    children[children.length - 1] = {
+                      ...previous,
+                      text: previous.text + child.text,
+                    };
+                  } else {
+                    children.push(structuredClone(child));
+                  }
+                }
+
+                tx.nodes.replaceChildren(children, { at: to[1] });
+              };
+
+              const currentContent = tx.nodes.get<Element>([...listItem[1], 0]);
+              const currentSublist = tx.nodes.get<Element>([...listItem[1], 1]);
+
+              if (currentContent && currentSublist) {
+                const firstChild = tx.nodes.get<Element>([
+                  ...currentSublist[1],
+                  0,
+                ]);
+                const firstChildContent = firstChild
+                  ? tx.nodes.get<Element>([...firstChild[1], 0])
+                  : undefined;
+
+                if (firstChild && firstChildContent) {
+                  mergeContent(firstChildContent[0], currentContent);
+
+                  const childSublist = tx.nodes.get<Element>([
+                    ...firstChild[1],
+                    1,
+                  ]);
+                  const replacements = [
+                    ...(childSublist?.[0].children ?? []).flatMap((child) =>
+                      ElementApi.isElement(child) ? [child] : []
+                    ),
+                    ...currentSublist[0].children
+                      .slice(1)
+                      .flatMap((child) =>
+                        ElementApi.isElement(child) ? [child] : []
+                      ),
+                  ];
+
+                  if (replacements.length > 0) {
+                    tx.nodes.replaceChildren(replacements, {
+                      at: currentSublist[1],
+                    });
+                  } else {
+                    tx.nodes.remove({ at: currentSublist[1] });
+                  }
+
+                  return true;
+                }
+              }
+
+              if (currentContent) {
+                const pointAfterListItem = tx.points.after(listItem[1]);
+                const nextItem = pointAfterListItem
+                  ? getListItemEntry(editor, { at: pointAfterListItem }, tx)
+                  : undefined;
+                const nextContent = nextItem
+                  ? tx.nodes.get<Element>([...nextItem.listItem[1], 0])
+                  : undefined;
+                const nextSublist = nextItem
+                  ? tx.nodes.get<Element>([...nextItem.listItem[1], 1])
+                  : undefined;
+
+                if (
+                  nextItem &&
+                  nextContent &&
+                  PathApi.equals(list[1], nextItem.list[1]) &&
+                  !nextSublist
+                ) {
+                  mergeContent(nextContent[0], currentContent);
+                  tx.nodes.remove({ at: nextItem.listItem[1] });
+
+                  return true;
+                }
+
+                if (
+                  nextItem &&
+                  nextContent &&
+                  !PathApi.equals(list[1], nextItem.list[1])
+                ) {
+                  mergeContent(nextContent[0], currentContent);
+
+                  if (nextSublist) {
+                    const children = nextSublist[0].children.flatMap((child) =>
+                      ElementApi.isElement(child) ? [child] : []
+                    );
+
+                    tx.nodes.insert(children, {
+                      at: [...list[1], listItemIndex + 1],
+                    });
+                  }
+
+                  tx.nodes.remove({ at: nextItem.listItem[1] });
+
+                  return true;
+                }
+              }
+
+              // if it has no children
+              if (!hasListChild(editor, listItem[0])) {
+                const liType = editor.getType(KEYS.li);
+                const _nodes = tx.nodes.entries({
+                  at: listItem[1],
+                  mode: 'lowest',
+                  match: (node, path) => {
+                    if (path.length === 0) {
+                      return false;
+                    }
+
+                    const isNodeLi =
+                      ElementApi.isElement(node) && node.type === liType;
+                    const isSiblingOfNodeLi =
+                      tx.nodes.get<Element>(PathApi.next(path))?.[0].type ===
+                      liType;
+
+                    return isNodeLi && isSiblingOfNodeLi;
+                  },
+                });
+                const liWithSiblings = Array.from(
+                  _nodes,
+                  (entry) => entry[1]
+                )[0];
+
+                if (!liWithSiblings) {
+                  // there are no more list item in the list
+                  const pointAfterListItem = tx.points.after(listItem[1]);
+
+                  if (pointAfterListItem) {
+                    // there is a block after it
+                    const nextSiblingListRes = getListItemEntry(
+                      editor,
+                      { at: pointAfterListItem },
+                      tx
+                    );
+
+                    if (nextSiblingListRes) {
+                      // it is a list so we merge the lists
+                      const listRoot = getListRoot(editor, listItem[1], tx);
+
+                      if (!listRoot) return false;
+
+                      moveListItemsToList(editor, tx, {
+                        deleteFromList: true,
+                        fromList: nextSiblingListRes.list,
+                        toList: listRoot,
+                      });
+
+                      return true;
+                    }
+                  }
+
+                  return false;
+                }
+
+                const siblingListItem = tx.nodes.get<Element>(
+                  PathApi.next(liWithSiblings)
+                );
+
+                if (!siblingListItem) return false;
+
+                const siblingList = tx.nodes.parent<Element>(
+                  siblingListItem[1]
+                );
+
+                if (
+                  siblingList &&
+                  removeListItem(editor, tx, {
+                    list: siblingList,
+                    listItem: siblingListItem,
+                    reverse: false,
+                  })
+                ) {
+                  return true;
                 }
 
                 return false;
               }
 
-              const siblingListItem = tx.nodes.get<Element>(
-                PathApi.next(liWithSiblings)
+              // if it has children
+              const nestedList = tx.nodes.get<Element>(
+                PathApi.next([...listItem[1], 0])
               );
 
-              if (!siblingListItem) return false;
+              if (!nestedList) return false;
 
-              const siblingList = tx.nodes.parent<Element>(siblingListItem[1]);
+              const nestedListItem = tx.nodes.get<Element>([
+                ...nestedList[1],
+                0,
+              ]);
+
+              if (!nestedListItem) return false;
 
               if (
-                siblingList &&
+                removeFirstListItem(editor, tx, {
+                  list: nestedList,
+                  listItem: nestedListItem,
+                })
+              ) {
+                return true;
+              }
+              if (
                 removeListItem(editor, tx, {
-                  list: siblingList,
-                  listItem: siblingListItem,
-                  reverse: false,
+                  list: nestedList,
+                  listItem: nestedListItem,
                 })
               ) {
                 return true;
               }
 
               return false;
+            };
+
+            const selection = tx.selection();
+
+            if (!selection) return;
+
+            const res = getListItemEntry(editor, { at: selection }, tx);
+
+            if (!res) {
+              handled = handleOutsideList();
+              return;
             }
 
-            // if it has children
-            const nestedList = tx.nodes.get<Element>(
-              PathApi.next([...listItem[1], 0])
-            );
+            handled = handleInsideList(res);
+          });
 
-            if (!nestedList) return false;
+          if (handled) return prefix;
 
-            const nestedListItem = tx.nodes.get<Element>([...nestedList[1], 0]);
-
-            if (!nestedListItem) return false;
-
-            if (
-              removeFirstListItem(editor, tx, {
-                list: nestedList,
-                listItem: nestedListItem,
-              })
-            ) {
-              return true;
-            }
-            if (
-              removeListItem(editor, tx, {
-                list: nestedList,
-                listItem: nestedListItem,
-              })
-            ) {
-              return true;
-            }
-
-            return false;
-          };
-
-          const selection = tx.selection();
-
-          if (!selection) return;
-
-          const res = getListItemEntry(editor, { at: selection }, tx);
-
-          if (!res) {
-            handled = handleOutsideList();
-            return;
-          }
-
-          handled = handleInsideList(res);
-        });
-
-        if (handled) return prefix;
-
-        return next.after(prefix);
-      }),
-    ],
+          return next.after(prefix);
+        }),
+      ],
+    },
   }))
-  .extendExtension(({ editor }) => {
+  .extend(({ editor }) => {
     const getHighestEmptyList = (
       {
         diffListPath,
@@ -2019,105 +2072,110 @@ export const BaseListPlugin = createBasePlugin({
     };
 
     return {
-      priority: 100,
-      commands: ({ around }) => [
-        around(editorCommands.deleteFragment, ({ input, state, next }) => {
-          const selection =
-            input.at === undefined
-              ? state.selection()
-              : state.ranges.get(input.at);
+      extension: {
+        priority: 100,
+        commands: ({ around }) => [
+          around(editorCommands.deleteFragment, ({ input, state, next }) => {
+            const selection =
+              input.at === undefined
+                ? state.selection()
+                : state.ranges.get(input.at);
 
-          if (!selection || !isAcrossListItems(selection, state)) {
-            return false;
-          }
-
-          const end = state.points.end(selection);
-          const liEnd = end
-            ? state.nodes.above<Element>({
-                at: end,
-                match: { type: editor.getType(KEYS.li) },
-              })
-            : undefined;
-          const liStartBeforeDelete = getLiStart(selection, state);
-
-          if (!liStartBeforeDelete || !liEnd) return false;
-
-          if (PathApi.isAncestor(liStartBeforeDelete[1], liEnd[1])) {
-            const startContent = state.nodes.get<Element>([
-              ...liStartBeforeDelete[1],
-              0,
-            ]);
-            const endContent = state.nodes.get<Element>([...liEnd[1], 0]);
-
-            if (startContent && endContent) {
-              const children = structuredClone(
-                startContent[0].children
-              ) as Descendant[];
-
-              for (const child of endContent[0].children as Descendant[]) {
-                const previous = children.at(-1);
-
-                if (
-                  previous &&
-                  TextApi.isText(previous) &&
-                  TextApi.isText(child) &&
-                  TextApi.equals(previous, child, { loose: true })
-                ) {
-                  previous.text += child.text;
-                } else {
-                  children.push(structuredClone(child));
-                }
-              }
-
-              const [lastText, lastPath] = NodeApi.last(
-                { ...startContent[0], children },
-                []
-              );
-              const point = {
-                offset: NodeApi.string(lastText).length,
-                path: [...startContent[1], ...lastPath],
-              };
-
-              return state.transaction((tx) => {
-                tx.nodes.replaceChildren(children, {
-                  at: startContent[1],
-                  newSelection: { kind: 'text', anchor: point, focus: point },
-                });
-                tx.nodes.remove({ at: PathApi.parent(liEnd[1]) });
-              });
+            if (!selection || !isAcrossListItems(selection, state)) {
+              return false;
             }
-          }
 
-          const liEndRuntimeId = !hasListChild(editor, liEnd[0])
-            ? state.runtime.idAt(liEnd[1])
-            : undefined;
-          const result = next();
+            const end = state.points.end(selection);
+            const liEnd = end
+              ? state.nodes.above<Element>({
+                  at: end,
+                  match: { type: editor.getType(KEYS.li) },
+                })
+              : undefined;
+            const liStartBeforeDelete = getLiStart(selection, state);
 
-          if (result === false || !liEndRuntimeId) return result;
+            if (!liStartBeforeDelete || !liEnd) return false;
 
-          return state.transaction.extend(result, (tx) => {
-            const liEndPath = tx.runtime.pathOf(liEndRuntimeId);
-            const nextSelection = tx.selection();
+            if (PathApi.isAncestor(liStartBeforeDelete[1], liEnd[1])) {
+              const startContent = state.nodes.get<Element>([
+                ...liStartBeforeDelete[1],
+                0,
+              ]);
+              const endContent = state.nodes.get<Element>([...liEnd[1], 0]);
 
-            if (!liEndPath || !nextSelection) return;
+              if (startContent && endContent) {
+                const children = [...structuredClone(startContent[0].children)];
 
-            const liStart = getLiStart(nextSelection, tx);
-            const listStart = liStart ? tx.nodes.parent(liStart[1]) : undefined;
-            const deletePath = getHighestEmptyList(
-              {
-                diffListPath: listStart?.[1],
-                liPath: liEndPath,
-              },
-              tx
-            );
+                for (const child of endContent[0].children) {
+                  const previous = children.at(-1);
 
-            if (deletePath) tx.nodes.remove({ at: deletePath });
-          });
-        }),
-      ],
+                  if (
+                    previous &&
+                    TextApi.isText(previous) &&
+                    TextApi.isText(child) &&
+                    TextApi.equals(previous, child, { loose: true })
+                  ) {
+                    children[children.length - 1] = {
+                      ...previous,
+                      text: previous.text + child.text,
+                    };
+                  } else {
+                    children.push(structuredClone(child));
+                  }
+                }
+
+                const [lastText, lastPath] = NodeApi.last(
+                  { ...startContent[0], children },
+                  []
+                );
+                const point = {
+                  offset: NodeApi.string(lastText).length,
+                  path: [...startContent[1], ...lastPath],
+                };
+
+                return state.transaction((tx) => {
+                  tx.nodes.replaceChildren(children, {
+                    at: startContent[1],
+                    newSelection: { kind: 'text', anchor: point, focus: point },
+                  });
+                  tx.nodes.remove({ at: PathApi.parent(liEnd[1]) });
+                });
+              }
+            }
+
+            const liEndRuntimeId = !hasListChild(editor, liEnd[0])
+              ? state.runtime.idAt(liEnd[1])
+              : undefined;
+            const result = next();
+
+            if (result === false || !liEndRuntimeId) return result;
+
+            return state.transaction.extend(result, (tx) => {
+              const liEndPath = tx.runtime.pathOf(liEndRuntimeId);
+              const nextSelection = tx.selection();
+
+              if (!liEndPath || !nextSelection) return;
+
+              const liStart = getLiStart(nextSelection, tx);
+              const listStart = liStart
+                ? tx.nodes.parent(liStart[1])
+                : undefined;
+              const deletePath = getHighestEmptyList(
+                {
+                  diffListPath: listStart?.[1],
+                  liPath: liEndPath,
+                },
+                tx
+              );
+
+              if (deletePath) tx.nodes.remove({ at: deletePath });
+            });
+          }),
+        ],
+      },
     };
   })
-  .extendExtension(({ editor }) => {
+  .extend(({ editor }) => {
     const listItemType = editor.getType(KEYS.li);
     const listItemContentType = editor.getType(KEYS.lic);
     const { validLiChildren } = editor.plugin(BaseListItemPlugin).getOptions();
@@ -2294,7 +2352,7 @@ export const BaseListPlugin = createBasePlugin({
 
       return (
         isFragmentOnlyListRoot &&
-        [...NodeApi.nodes({ children: fragment } as Ancestor)]
+        [...NodeApi.nodes({ children: fragment, type: 'fragment' })]
           .filter((entry): entry is ElementEntry =>
             ElementApi.isElement(entry[0])
           )
@@ -2342,222 +2400,226 @@ export const BaseListPlugin = createBasePlugin({
     };
 
     return {
-      commands: ({ around }) => [
-        around(editorCommands.replaceSlice, ({ input, state, next }) => {
-          const { slice } = input;
-          const fragment = [...slice.content].map(preparePastedNode);
-          const selection = state.selection();
-          const insertionPoint = selection
-            ? RangeApi.edges(selection)[0]
-            : undefined;
-          const liEntry = state.nodes.above<Element>({
-            at: insertionPoint,
-            match: { type: listItemType },
-            mode: 'lowest',
-          });
-
-          // not inserting into a list item, delegate to other plugins
-          if (!liEntry) return next();
-
-          if (
-            selection &&
-            RangeApi.isExpanded(selection) &&
-            isListRoot(editor, fragment[0])
-          ) {
-            const [start, end] = RangeApi.edges(selection);
-            const startLi = state.nodes.above<Element>({
-              at: start,
-              match: { type: listItemType },
-              mode: 'lowest',
-            });
-            const endLi = state.nodes.above<Element>({
-              at: end,
-              match: { type: listItemType },
-              mode: 'lowest',
-            });
-            const startList = startLi
-              ? state.nodes.parent<Element>(startLi[1])
+      extension: {
+        commands: ({ around }) => [
+          around(editorCommands.replaceSlice, ({ input, state, next }) => {
+            const { slice } = input;
+            const fragment = [...slice.content].map(preparePastedNode);
+            const selection = state.selection();
+            const insertionPoint = selection
+              ? RangeApi.edges(selection)[0]
               : undefined;
-            const startIndex = startLi?.[1].at(-1);
-            const endIndex = endLi?.[1].at(-1);
+            const liEntry = state.nodes.above<Element>({
+              at: insertionPoint,
+              match: { type: listItemType },
+              mode: 'lowest',
+            });
+
+            // not inserting into a list item, delegate to other plugins
+            if (!liEntry) return next();
 
             if (
-              startLi &&
-              endLi &&
-              startList &&
-              startIndex !== undefined &&
-              endIndex !== undefined &&
-              startIndex !== endIndex &&
-              PathApi.equals(startList[1], PathApi.parent(endLi[1]))
+              selection &&
+              RangeApi.isExpanded(selection) &&
+              isListRoot(editor, fragment[0])
             ) {
-              const prefix = sliceElementAtPoint(
-                startLi[0],
-                start.path.slice(startLi[1].length),
-                start.offset,
-                'before'
-              );
-              const suffix = sliceElementAtPoint(
-                endLi[0],
-                end.path.slice(endLi[1].length),
-                end.offset,
-                'after'
-              );
-              const pastedItems = fragment.flatMap(trimList);
-              const lastPastedItem = pastedItems.at(-1);
-
-              if (!lastPastedItem) return next();
-
-              const replacements = [
-                ...(NodeApi.string(prefix) ? [prefix] : []),
-                ...pastedItems,
-                ...(NodeApi.string(suffix) ? [suffix] : []),
-              ];
-              const pastedEndIndex =
-                startIndex +
-                (NodeApi.string(prefix) ? 1 : 0) +
-                pastedItems.length -
-                1;
-              const [lastText, lastPath] = NodeApi.last(lastPastedItem, []);
-              const point = {
-                offset: NodeApi.string(lastText).length,
-                path: [...startList[1], pastedEndIndex, ...lastPath],
-              };
-
-              return state.transaction((tx) => {
-                tx.nodes.replaceChildren(replacements, {
-                  at: startList[1],
-                  count: endIndex - startIndex + 1,
-                  index: startIndex,
-                  newSelection: { kind: 'text', anchor: point, focus: point },
-                });
+              const [start, end] = RangeApi.edges(selection);
+              const startLi = state.nodes.above<Element>({
+                at: start,
+                match: { type: listItemType },
+                mode: 'lowest',
               });
-            }
-          }
+              const endLi = state.nodes.above<Element>({
+                at: end,
+                match: { type: listItemType },
+                mode: 'lowest',
+              });
+              const startList = startLi
+                ? state.nodes.parent<Element>(startLi[1])
+                : undefined;
+              const startIndex = startLi?.[1].at(-1);
+              const endIndex = endLi?.[1].at(-1);
 
-          const licEntry = state.nodes.above<Element>({
-            at: insertionPoint,
-            match: { type: listItemContentType },
-            mode: 'lowest',
-          });
+              if (
+                startLi &&
+                endLi &&
+                startList &&
+                startIndex !== undefined &&
+                endIndex !== undefined &&
+                startIndex !== endIndex &&
+                PathApi.equals(startList[1], PathApi.parent(endLi[1]))
+              ) {
+                const prefix = sliceElementAtPoint(
+                  startLi[0],
+                  start.path.slice(startLi[1].length),
+                  start.offset,
+                  'before'
+                );
+                const suffix = sliceElementAtPoint(
+                  endLi[0],
+                  end.path.slice(endLi[1].length),
+                  end.offset,
+                  'after'
+                );
+                const pastedItems = fragment.flatMap(trimList);
+                const lastPastedItem = pastedItems.at(-1);
 
-          if (!licEntry) return next();
+                if (!lastPastedItem) return next();
 
-          const licStart = state.points.start(licEntry[1]);
-          const licEnd = state.points.end(licEntry[1]);
-          const [selectionStart, selectionEnd] = selection
-            ? RangeApi.edges(selection)
-            : [];
-          const isEmptyNode =
-            !NodeApi.string(licEntry[0]) ||
-            (!!licStart &&
-              !!licEnd &&
-              !!selectionStart &&
-              !!selectionEnd &&
-              PointApi.compare(selectionStart, licStart) <= 0 &&
-              PointApi.compare(selectionEnd, licEnd) >= 0);
-          const { listItemNodes, sublists, textNodes } =
-            getTextAndListItemNodes(fragment, liEntry, isEmptyNode);
-          const continuation = {
-            ...input,
-            slice: ContentSlice.withContent(slice, textNodes, {
-              open: 'closed',
-            }),
-          };
-          const delegated =
-            selection &&
-            RangeApi.isExpanded(selection) &&
-            !isListRoot(editor, fragment[0])
-              ? next.after(
-                  state.transaction((tx) => {
-                    tx.fragment.delete();
-                  }),
-                  continuation
-                )
-              : next(continuation);
+                const replacements = [
+                  ...(NodeApi.string(prefix) ? [prefix] : []),
+                  ...pastedItems,
+                  ...(NodeApi.string(suffix) ? [suffix] : []),
+                ];
+                const pastedEndIndex =
+                  startIndex +
+                  (NodeApi.string(prefix) ? 1 : 0) +
+                  pastedItems.length -
+                  1;
+                const [lastText, lastPath] = NodeApi.last(lastPastedItem, []);
+                const point = {
+                  offset: NodeApi.string(lastText).length,
+                  path: [...startList[1], pastedEndIndex, ...lastPath],
+                };
 
-          if (delegated === false) return false;
-
-          return state.transaction.extend(delegated, (tx) => {
-            const nextLiEntry = tx.nodes.get<Element>(liEntry[1]);
-
-            if (!nextLiEntry) return;
-
-            const [, liPath] = nextLiEntry;
-
-            if (sublists.length > 0) {
-              const li = tx.nodes.get<Element>(liPath)?.[0];
-              const currentSublist = li?.children[1];
-
-              if (ElementApi.isElement(currentSublist)) {
-                tx.nodes.insert(sublists[0].children as Element[], {
-                  at: [...liPath, 1, 0],
-                  select: true,
-                });
-              } else {
-                tx.nodes.insert(sublists, {
-                  at: [...liPath, 1],
-                  select: true,
+                return state.transaction((tx) => {
+                  tx.nodes.replaceChildren(replacements, {
+                    at: startList[1],
+                    count: endIndex - startIndex + 1,
+                    index: startIndex,
+                    newSelection: { kind: 'text', anchor: point, focus: point },
+                  });
                 });
               }
             }
 
-            tx.nodes.insert(listItemNodes, {
-              at: PathApi.next(liPath),
-              select: true,
+            const licEntry = state.nodes.above<Element>({
+              at: insertionPoint,
+              match: { type: listItemContentType },
+              mode: 'lowest',
             });
-          });
-        }),
-      ],
+
+            if (!licEntry) return next();
+
+            const licStart = state.points.start(licEntry[1]);
+            const licEnd = state.points.end(licEntry[1]);
+            const [selectionStart, selectionEnd] = selection
+              ? RangeApi.edges(selection)
+              : [];
+            const isEmptyNode =
+              !NodeApi.string(licEntry[0]) ||
+              (!!licStart &&
+                !!licEnd &&
+                !!selectionStart &&
+                !!selectionEnd &&
+                PointApi.compare(selectionStart, licStart) <= 0 &&
+                PointApi.compare(selectionEnd, licEnd) >= 0);
+            const { listItemNodes, sublists, textNodes } =
+              getTextAndListItemNodes(fragment, liEntry, isEmptyNode);
+            const continuation = {
+              ...input,
+              slice: ContentSlice.withContent(slice, textNodes, {
+                open: 'closed',
+              }),
+            };
+            const delegated =
+              selection &&
+              RangeApi.isExpanded(selection) &&
+              !isListRoot(editor, fragment[0])
+                ? next.after(
+                    state.transaction((tx) => {
+                      tx.fragment.delete();
+                    }),
+                    continuation
+                  )
+                : next(continuation);
+
+            if (delegated === false) return false;
+
+            return state.transaction.extend(delegated, (tx) => {
+              const nextLiEntry = tx.nodes.get<Element>(liEntry[1]);
+
+              if (!nextLiEntry) return;
+
+              const [, liPath] = nextLiEntry;
+
+              if (sublists.length > 0) {
+                const li = tx.nodes.get<Element>(liPath)?.[0];
+                const currentSublist = li?.children[1];
+
+                if (ElementApi.isElement(currentSublist)) {
+                  tx.nodes.insert(sublists[0].children as Element[], {
+                    at: [...liPath, 1, 0],
+                    select: true,
+                  });
+                } else {
+                  tx.nodes.insert(sublists, {
+                    at: [...liPath, 1],
+                    select: true,
+                  });
+                }
+              }
+
+              tx.nodes.insert(listItemNodes, {
+                at: PathApi.next(liPath),
+                select: true,
+              });
+            });
+          }),
+        ],
+      },
     };
   })
-  .extendExtension(({ editor }) => ({
-    corrections: [
-      {
-        event: 'content',
-        correct({ entry: [node, path], tx }) {
-          if (!ElementApi.isElement(node)) {
-            return;
-          }
-
-          const mergeAdjacentList = (
-            fromList: ElementEntry,
-            toList: ElementEntry
-          ) => {
-            const fromPath = fromList[1];
-
-            if (fromList[0].children.length === 0) {
-              tx.nodes.remove({ at: fromPath });
+  .extend(({ editor }) => ({
+    extension: {
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry: [node, path], tx }) {
+            if (!ElementApi.isElement(node)) {
               return;
             }
 
-            tx.nodes.move({
-              at: [...fromPath, 0],
-              to: [...toList[1], toList[0].children.length],
-            });
-          };
-          const listTypes = getListTypes(editor);
+            const mergeAdjacentList = (
+              fromList: ElementEntry,
+              toList: ElementEntry
+            ) => {
+              const fromPath = fromList[1];
 
-          if (listTypes.includes(node.type)) {
-            const nextPath = PathApi.next(path);
-            const nextNode = tx.nodes.get<Element>(nextPath);
-
-            if (nextNode?.[0].type === node.type) {
-              mergeAdjacentList(nextNode, [node, path]);
-              return;
-            }
-
-            if (PathApi.hasPrevious(path)) {
-              const prevNode = tx.nodes.get<Element>(PathApi.previous(path));
-
-              if (prevNode?.[0].type === node.type) {
-                mergeAdjacentList([node, path], prevNode);
+              if (fromList[0].children.length === 0) {
+                tx.nodes.remove({ at: fromPath });
                 return;
               }
+
+              tx.nodes.move({
+                at: [...fromPath, 0],
+                to: [...toList[1], toList[0].children.length],
+              });
+            };
+            const listTypes = getListTypes(editor);
+
+            if (listTypes.includes(node.type)) {
+              const nextPath = PathApi.next(path);
+              const nextNode = tx.nodes.get<Element>(nextPath);
+
+              if (nextNode?.[0].type === node.type) {
+                mergeAdjacentList(nextNode, [node, path]);
+                return;
+              }
+
+              if (PathApi.hasPrevious(path)) {
+                const prevNode = tx.nodes.get<Element>(PathApi.previous(path));
+
+                if (prevNode?.[0].type === node.type) {
+                  mergeAdjacentList([node, path], prevNode);
+                  return;
+                }
+              }
             }
-          }
+          },
         },
-      },
-    ],
+      ],
+    },
   }));
 
 export type ListConfig = InferConfig<typeof BaseListPlugin>;

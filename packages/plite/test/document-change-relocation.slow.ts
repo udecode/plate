@@ -1,12 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  ChangeSet,
-  DocumentSlice,
-  getChangeSetRelocations,
-  IndexedDocument,
-} from '../src/core/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
+import { getRootChangeRelocations } from '../src/core/change/mapping';
+import { RootChange } from '../src/core/change/root-change';
+import { PreparedTokenSlice } from '../src/core/change/tokens';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -15,19 +13,19 @@ const paragraph = (text: string) => ({
 
 describe('DocumentChange relocation scaling', () => {
   it('bounds a disjoint 2,000-node candidate scan', () => {
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       Array.from({ length: 2000 }, (_, index) => paragraph(`before-${index}`))
     );
-    const after = IndexedDocument.fromValue(
+    const after = DocumentIndex.fromValue(
       Array.from({ length: 2000 }, (_, index) => paragraph(`after-${index}`))
     );
-    const change = ChangeSet.create(before, {
+    const change = RootChange.create(before, {
       from: 0,
-      insert: DocumentSlice.fromNodes(after.value),
+      insert: PreparedTokenSlice.fromNodes(after.value),
       to: before.length,
     });
     const startedAt = performance.now();
-    const relocations = getChangeSetRelocations(change, before, after);
+    const relocations = getRootChangeRelocations(change, before, after);
     const duration = performance.now() - startedAt;
 
     assert.deepEqual(relocations, []);
@@ -38,18 +36,18 @@ describe('DocumentChange relocation scaling', () => {
   });
 
   it('bounds maximal selection for 10,000 unique relocations', () => {
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       Array.from({ length: 10_000 }, (_, index) => paragraph(String(index)))
     );
-    const after = IndexedDocument.fromValue(
+    const after = DocumentIndex.fromValue(
       Array.from({ length: 10_000 }, (_, index) => ({
         children: [paragraph(String(index))],
         type: 'quote',
       }))
     );
-    const change = ChangeSet.between(before, after);
+    const change = RootChange.between(before, after);
     const startedAt = performance.now();
-    const relocations = getChangeSetRelocations(change, before, after);
+    const relocations = getRootChangeRelocations(change, before, after);
     const duration = performance.now() - startedAt;
 
     assert.equal(relocations.length, 10_000);

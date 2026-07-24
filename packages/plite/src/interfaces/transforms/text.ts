@@ -1,4 +1,4 @@
-import type { Editor, Location, Value } from '../../index';
+import type { Editor, Location, Path, Value } from '../../index';
 import type { TextUnit } from '../../types/types';
 
 export interface TextDeleteOptions {
@@ -35,7 +35,7 @@ export interface TextInsertTextOptions {
 }
 
 export interface TextRemoveTextOptions {
-  at?: { path: number[]; offset: number };
+  at?: { path: Path; offset: number };
 }
 
 export interface TextMutationMethods<V extends Value = Value> {

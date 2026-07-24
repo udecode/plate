@@ -1,3 +1,5 @@
+import type { Path } from '@platejs/plite';
+
 import type {
   PlitePageLayoutFragment,
   PlitePageLayoutGeometry,
@@ -11,14 +13,14 @@ type PageFragmentIndex = Pick<
 >;
 
 export type PagedEditablePageMountItem = {
-  fragmentPaths: readonly number[][];
+  fragmentPaths: readonly Path[];
   index: number;
   key: string;
   pageIndexes: readonly number[];
   size: number;
   start: number;
   topLevelIndexes: readonly number[];
-  unitPaths: readonly number[][];
+  unitPaths: readonly Path[];
 };
 
 export type PagedEditablePageMountPlan = {

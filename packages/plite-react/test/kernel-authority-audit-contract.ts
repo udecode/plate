@@ -580,15 +580,15 @@ test('root runtime cells are owned by EditableDOMRuntime', () => {
   expectSourceOwnershipInventory(/\buseRef\(/g, rootRuntimeStateFiles, {});
 
   expectSourceOwnershipInventory(
-    /\bcreateEditableInputControllerState\(\)/g,
+    /\bcreateEditableInputControllerState\(/g,
     rootRuntimeStateFiles,
     {
       'packages/plite-react/src/editable/editable-dom-runtime.ts': {
         count: 1,
         next: 'root-runtime',
-        owner: 'Editable DOM runtime',
+        owner: 'DOM input runtime adapter',
         rationale:
-          'The per-root runtime owns the input controller and its mutable state.',
+          'The React adapter binds controller access to the renderer-neutral per-root input runtime.',
       },
     }
   );
@@ -622,6 +622,35 @@ test('root runtime cells are owned by EditableDOMRuntime', () => {
   );
 });
 
+test('renderer-neutral input decisions and edit epochs are DOM-owned', () => {
+  const allDOMSourceFiles = collectSourceFiles(pliteDomRoot);
+  const allReactSourceFiles = collectSourceFiles(pliteReactRoot);
+  const inputSourceFiles = [...allDOMSourceFiles, ...allReactSourceFiles];
+
+  expect(
+    getMatchesByFiles(
+      /\bprepare(?:BeforeInput|Clipboard|Composition|FocusMouse|Input|KeyDown)Decision\b/g,
+      inputSourceFiles
+    )
+  ).toEqual({
+    'packages/plite-dom/src/plugin/dom-input-runtime.ts': 6,
+    'packages/plite-react/src/editable/editing-kernel.ts': 6,
+  });
+  expect(
+    getMatchesByFiles(
+      /commandKey: .*?(?:delete-both|delete-fragment|insert-break|delete):/g,
+      inputSourceFiles
+    )
+  ).toEqual({
+    'packages/plite-dom/src/plugin/dom-input-runtime.ts': 4,
+  });
+  expect(
+    allReactSourceFiles.some((file) =>
+      file.endsWith('/editable/editing-epoch-kernel.ts')
+    )
+  ).toBe(false);
+});
+
 test('each mounted root runtime owns the only DOM phase scheduler instance', () => {
   const allSourceFiles = collectSourceFiles(pliteReactRoot);
   const allDOMSourceFiles = collectSourceFiles(pliteDomRoot);
@@ -631,8 +660,12 @@ test('each mounted root runtime owns the only DOM phase scheduler instance', () 
 
   expect(
     getMatchesByFiles(/\bcreateDOMPhaseScheduler\(/g, allSourceFiles)
+  ).toEqual({});
+  expect(
+    getMatchesByFiles(/\bcreateDOMPhaseScheduler\(/g, allDOMSourceFiles)
   ).toEqual({
-    'packages/plite-react/src/editable/editable-dom-runtime.ts': 1,
+    'packages/plite-dom/src/plugin/dom-phase-scheduler.ts': 1,
+    'packages/plite-dom/src/plugin/dom-root-runtime.ts': 1,
   });
   expect(
     getMatchesByFiles(
@@ -664,7 +697,6 @@ test('all source timing primitives are scheduler internals or named semantic tim
   ).toEqual({
     'packages/plite-react/src/components/editable-rendered-element.tsx': 1,
     'packages/plite-react/src/components/editable-text-blocks.tsx': 2,
-    'packages/plite-react/src/components/plite-void-shell.tsx': 1,
     'packages/plite-react/src/hooks/use-plite-annotation-store.tsx': 1,
     'packages/plite-react/src/hooks/use-plite-decoration-source.ts': 1,
     'packages/plite-react/src/hooks/use-plite-widget-store.tsx': 1,
@@ -679,17 +711,21 @@ test('all source timing primitives are scheduler internals or named semantic tim
 });
 
 test('DOM sync tokens and model selection preferences belong to the root runtime lifecycle', () => {
-  const allSourceFiles = collectSourceFiles(pliteReactRoot);
+  const allDOMSourceFiles = collectSourceFiles(pliteDomRoot);
+  const allReactSourceFiles = collectSourceFiles(pliteReactRoot);
 
   expect(
-    getMatchesByFiles(/\bnew DOMSyncMutationOwnership\(/g, allSourceFiles)
+    getMatchesByFiles(/\bnew DOMSyncMutationOwnership\(/g, allReactSourceFiles)
+  ).toEqual({});
+  expect(
+    getMatchesByFiles(/\bnew DOMSyncMutationOwnership\(/g, allDOMSourceFiles)
   ).toEqual({
-    'packages/plite-react/src/editable/editable-dom-runtime.ts': 1,
+    'packages/plite-dom/src/plugin/dom-root-runtime.ts': 1,
   });
   expect(
     getMatchesByFiles(
       /\bMODEL_SELECTION_DOM_PREFERENCE_TTL_MS\b/g,
-      allSourceFiles
+      allReactSourceFiles
     )
   ).toEqual({
     'packages/plite-react/src/editable/editable-dom-runtime.ts': 3,
@@ -697,22 +733,29 @@ test('DOM sync tokens and model selection preferences belong to the root runtime
   expect(
     getMatchesByFiles(
       /\b(?:DOM_SYNC_MUTATION_TOKENS|PENDING_DOM_SYNC_MUTATION_TOKENS|MODEL_SELECTION_DOM_PREFERENCES)\b/g,
-      allSourceFiles
+      allReactSourceFiles
     )
   ).toEqual({});
 });
 
 test('one private root runtime owns DOM mutation observation', () => {
-  const allSourceFiles = collectSourceFiles(pliteReactRoot);
+  const allDOMSourceFiles = collectSourceFiles(pliteDomRoot);
+  const allReactSourceFiles = collectSourceFiles(pliteReactRoot);
 
   expect(
-    getMatchesByFiles(/\bnew MutationObserverConstructor\(/g, allSourceFiles)
+    getMatchesByFiles(
+      /\bnew MutationObserverConstructor\(/g,
+      allReactSourceFiles
+    )
+  ).toEqual({});
+  expect(
+    getMatchesByFiles(/\bnew MutationObserverConstructor\(/g, allDOMSourceFiles)
   ).toEqual({
-    'packages/plite-react/src/editable/dom-integrity-observer.ts': 1,
+    'packages/plite-dom/src/plugin/dom-integrity-observer.ts': 1,
   });
-  expect(getMatchesByFiles(/\buseMutationObserver\(/g, allSourceFiles)).toEqual(
-    {}
-  );
+  expect(
+    getMatchesByFiles(/\buseMutationObserver\(/g, allReactSourceFiles)
+  ).toEqual({});
 });
 
 test('EditableDOMRoot event-worker imports have an explicit event-runtime inventory', () => {

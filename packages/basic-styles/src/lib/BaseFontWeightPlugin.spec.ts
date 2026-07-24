@@ -1,4 +1,4 @@
-import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { getRenderNodeStaticProps } from '@platejs/core/static/internal';
 import { KEYS } from '@platejs/utils';
 
@@ -22,13 +22,18 @@ describe('BaseFontWeightPlugin', () => {
       'string'
     );
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<span style="font-weight: 700">text</span>',
       })
     ).toMatchObject([
       {
-        [KEYS.fontWeight]: '700',
-        text: 'text',
+        children: [
+          {
+            [KEYS.fontWeight]: '700',
+            text: 'text',
+          },
+        ],
+        type: KEYS.p,
       },
     ]);
   });
@@ -91,12 +96,16 @@ describe('BaseFontWeightPlugin', () => {
       }).attributes.style
     ).toEqual({ fontWeight: '700' });
 
-    const parsed = editor.plugin(HtmlPlugin).api.deserialize({
+    const parsed = editor.api.html.deserialize({
       element: '<span style="font-weight: 700">text</span>',
     });
 
-    expect(parsed).toMatchObject([{ emphasisWeight: '700', text: 'text' }]);
-    expect(parsed[0]).not.toHaveProperty('fontWeight');
+    expect(parsed).toEqual([
+      {
+        children: [{ emphasisWeight: '700', text: 'text' }],
+        type: KEYS.p,
+      },
+    ]);
 
     editor.update.fontWeight.set('700');
 

@@ -6,7 +6,24 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 import type { Element } from '@platejs/plite';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
-import { CheckIcon, ListIcon, ListOrderedIcon, SquareIcon } from 'lucide-react';
+import {
+  CheckIcon,
+  ChevronRightIcon,
+  Code2Icon,
+  Columns3Icon,
+  FileCodeIcon,
+  Heading1Icon,
+  Heading2Icon,
+  Heading3Icon,
+  Heading4Icon,
+  Heading5Icon,
+  Heading6Icon,
+  ListIcon,
+  ListOrderedIcon,
+  PilcrowIcon,
+  QuoteIcon,
+  SquareIcon,
+} from 'lucide-react';
 import { KEYS } from 'platejs';
 import { useEditor, useSelectionFragmentProp } from 'platejs/react';
 
@@ -22,33 +39,84 @@ import {
 } from '@/registry/components/editor/transforms-classic';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
-import { turnIntoItems as baseTurnIntoItems } from './turn-into-toolbar-button';
 
-// Map standard list items to classic versions
-const listItemsMap: Record<string, (typeof baseTurnIntoItems)[number]> = {
-  [KEYS.listTodo]: {
-    icon: <SquareIcon />,
-    keywords: ['checklist', 'task', 'checkbox', '[]'],
-    label: 'To-do list',
-    value: KEYS.taskList,
+const turnIntoItems = [
+  {
+    icon: <PilcrowIcon />,
+    label: 'Text',
+    value: KEYS.p,
   },
-  [KEYS.ol]: {
-    icon: <ListOrderedIcon />,
-    keywords: ['ordered', 'ol', '1'],
-    label: 'Numbered list',
-    value: KEYS.olClassic,
+  {
+    icon: <Heading1Icon />,
+    label: 'Heading 1',
+    value: KEYS.h1,
   },
-  [KEYS.ul]: {
+  {
+    icon: <Heading2Icon />,
+    label: 'Heading 2',
+    value: KEYS.h2,
+  },
+  {
+    icon: <Heading3Icon />,
+    label: 'Heading 3',
+    value: KEYS.h3,
+  },
+  {
+    icon: <Heading4Icon />,
+    label: 'Heading 4',
+    value: KEYS.h4,
+  },
+  {
+    icon: <Heading5Icon />,
+    label: 'Heading 5',
+    value: KEYS.h5,
+  },
+  {
+    icon: <Heading6Icon />,
+    label: 'Heading 6',
+    value: KEYS.h6,
+  },
+  {
     icon: <ListIcon />,
-    keywords: ['unordered', 'ul', '-'],
     label: 'Bulleted list',
     value: KEYS.ulClassic,
   },
-};
-
-const turnIntoItems = baseTurnIntoItems.map((item) =>
-  item.value in listItemsMap ? listItemsMap[item.value] : item
-);
+  {
+    icon: <ListOrderedIcon />,
+    label: 'Numbered list',
+    value: KEYS.olClassic,
+  },
+  {
+    icon: <SquareIcon />,
+    label: 'To-do list',
+    value: KEYS.taskList,
+  },
+  {
+    icon: <ChevronRightIcon />,
+    label: 'Toggle list',
+    value: KEYS.toggle,
+  },
+  {
+    icon: <FileCodeIcon />,
+    label: 'Code',
+    value: KEYS.codeBlock,
+  },
+  {
+    icon: <Code2Icon />,
+    label: 'Code Drawing',
+    value: KEYS.codeDrawing,
+  },
+  {
+    icon: <QuoteIcon />,
+    label: 'Quote',
+    value: KEYS.blockquote,
+  },
+  {
+    icon: <Columns3Icon />,
+    label: '3 columns',
+    value: 'action_three_columns',
+  },
+];
 
 export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   const editor = useEditor();

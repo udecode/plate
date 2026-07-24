@@ -1,0 +1,621 @@
+/** @jsx jsxt */
+
+import type React from 'react';
+
+import {
+  createPlateEditor,
+  createPlatePlugin,
+  type PlateEditor,
+} from '@platejs/core/react';
+import type { Element, Location, Range, Value } from '@platejs/plite';
+import { defineEditorExtension, NodeApi, schema } from '@platejs/plite';
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+
+import { BaseTablePlugin } from '../lib/BaseTablePlugin';
+import { TablePlugin } from './TablePlugin';
+
+jsxt;
+
+const createTableEditor = (
+  input: TestEditor,
+  { nodeId = true }: { nodeId?: boolean } = {}
+) => {
+  const editor = createPlateEditor({
+    nodeId: nodeId
+      ? true
+      : {
+          initialValueIds: false,
+          match: () => false,
+        },
+    plugins: [TablePlugin],
+    selection: input.selection,
+    initialValue: input.children,
+  });
+  const selection = editor.read.selection();
+  const tableSelection =
+    selection &&
+    editor.plugin(BaseTablePlugin).api.createCellSelection(selection);
+
+  if (!tableSelection) throw new Error('Expected table-cell selection');
+
+  editor.update.selection.set(tableSelection);
+
+  return editor;
+};
+
+const createCrossTableEditor = () =>
+  createTableEditor(
+    (
+      <editor>
+        <htable id="source">
+          <htr>
+            <htd id="s1">
+              <hp>
+                <anchor />A
+              </hp>
+            </htd>
+            <htd id="s2">
+              <hp>
+                B<focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+        <htable id="target">
+          <htr>
+            <htd id="t1">
+              <hp>X</hp>
+            </htd>
+            <htd id="t2">
+              <hp>Y</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor
+  );
+
+const createOverlappingTableEditor = () =>
+  createTableEditor(
+    (
+      <editor>
+        <htable id="table">
+          <htr>
+            <htd id="c1">
+              <hp>
+                <anchor />A
+              </hp>
+            </htd>
+            <htd id="c2">
+              <hp>
+                B<focus />
+              </hp>
+            </htd>
+            <htd id="c3">
+              <hp>C</hp>
+            </htd>
+          </htr>
+        </htable>
+      </editor>
+    ) as TestEditor
+  );
+
+const createMalformedTargetEditor = (
+  target: 'duplicate-cell-id' | 'missing-cell-id'
+) =>
+  createTableEditor(
+    (
+      <editor>
+        <htable id="source">
+          <htr>
+            <htd id="s1">
+              <hp>
+                <anchor />A
+              </hp>
+            </htd>
+            <htd id="s2">
+              <hp>
+                B<focus />
+              </hp>
+            </htd>
+          </htr>
+        </htable>
+        {target === 'duplicate-cell-id' ? (
+          <htable id="target">
+            <htr>
+              <htd id="duplicate">
+                <hp>X</hp>
+              </htd>
+              <htd id="duplicate">
+                <hp>Y</hp>
+              </htd>
+            </htr>
+          </htable>
+        ) : (
+          <htable id="target">
+            <htr>
+              <htd>
+                <hp>X</hp>
+              </htd>
+              <htd>
+                <hp>Y</hp>
+              </htd>
+            </htr>
+          </htable>
+        )}
+      </editor>
+    ) as TestEditor,
+    { nodeId: false }
+  );
+
+const rootTable = (
+  id: string,
+  prefix: string,
+  values: readonly [string, string]
+): Element => ({
+  children: [
+    {
+      children: values.map((text, index) => ({
+        children: [{ children: [{ text }], type: 'p' }],
+        id: `${prefix}${index + 1}`,
+        type: 'td',
+      })),
+      id: `${prefix}-row`,
+      type: 'tr',
+    },
+  ],
+  id,
+  type: 'table',
+});
+
+const rootPoint = (root: string | undefined, cell: number) => ({
+  offset: 0,
+  path: [0, 0, cell, 0, 0],
+  ...(root === undefined ? {} : { root }),
+});
+
+const createRootMoveEditor = (
+  direction: 'named-to-primary' | 'primary-to-named'
+) => {
+  const RootHolderPlugin = createPlatePlugin({
+    key: 'tableDropRootHolder',
+    schema: {
+      element: {
+        contentRoots: {
+          body: {
+            content: schema.content.type('table', {
+              default: { type: 'table' },
+              min: 1,
+            }),
+            ownership: 'exclusive',
+          },
+        },
+        topLevel: true,
+        void: 'block',
+      },
+    },
+  });
+  const sourceRoot = direction === 'primary-to-named' ? undefined : 'side';
+  const targetRoot = direction === 'primary-to-named' ? 'side' : undefined;
+  const sourceTable = rootTable('source', 's', ['A', 'B']);
+  const targetTable = rootTable('target', 't', ['X', 'Y']);
+  const children: Value = [
+    sourceRoot === undefined ? sourceTable : targetTable,
+    {
+      childRoots: { body: 'side' },
+      children: [{ text: '' }],
+      type: 'tableDropRootHolder',
+    },
+  ];
+  const roots = {
+    side: [sourceRoot === 'side' ? sourceTable : targetTable],
+  };
+  const sourceRange: Range = {
+    anchor: rootPoint(sourceRoot, 0),
+    focus: rootPoint(sourceRoot, 1),
+  };
+  const editor = createPlateEditor({
+    nodeId: true,
+    plugins: [TablePlugin, RootHolderPlugin],
+    initialValue: { children, roots },
+  });
+  const tableSelection = editor
+    .plugin(BaseTablePlugin)
+    .api.createCellSelection(sourceRange);
+
+  if (!tableSelection) throw new Error('Expected root-aware cell selection');
+
+  editor.update.selection.set(tableSelection);
+
+  return {
+    editor,
+    source: rootPoint(sourceRoot, 0),
+    sourceRoot,
+    target: rootPoint(targetRoot, 0),
+    targetRoot,
+  };
+};
+
+type TableEditor = PlateEditor<any, any>;
+
+type TestDragEvent = React.DragEvent & {
+  preventDefault: AnyTestMock;
+  stopPropagation: AnyTestMock;
+};
+
+const createDragEvent = (
+  dataTransfer: DataTransfer,
+  modifiers: Partial<
+    Pick<React.DragEvent, 'altKey' | 'ctrlKey' | 'metaKey'>
+  > & {
+    dragCellId?: string;
+  } = {}
+) =>
+  ({
+    altKey: false,
+    ctrlKey: false,
+    dataTransfer,
+    metaKey: false,
+    preventDefault: mock(),
+    stopPropagation: mock(),
+    target: modifiers.dragCellId
+      ? {
+          closest: (selector: string) =>
+            selector === '[data-table-cell-drag-handle="true"]'
+              ? {
+                  getAttribute: (attribute: string) =>
+                    attribute === 'data-table-cell-drag-for'
+                      ? modifiers.dragCellId
+                      : null,
+                }
+              : null,
+        }
+      : null,
+    ...modifiers,
+  }) as unknown as TestDragEvent;
+
+const rangeAt = (editor: TableEditor, at: Location) => {
+  const range = editor.read.ranges.get(at);
+
+  if (!range) throw new Error(`Expected range at ${JSON.stringify(at)}`);
+
+  return range;
+};
+
+const installEventRangeApi = (
+  editor: TableEditor,
+  locations: readonly Location[]
+) => {
+  const eventRanges = locations.map((at) => rangeAt(editor, at));
+  const warn = mock();
+
+  editor.extend(
+    defineEditorExtension({
+      api: {
+        debug: { warn },
+        dom: {
+          resolveEventRange: () => eventRanges.shift() ?? null,
+        },
+      },
+      name: 'test:table-drop-event-range',
+    })
+  );
+
+  return warn;
+};
+
+const runHandler = (
+  editor: TableEditor,
+  key: 'onDragEnd' | 'onDragStart' | 'onDrop' | 'onMouseUp',
+  event: React.SyntheticEvent
+) => {
+  const handler = (editor.getPlugin(TablePlugin) as any).handlers?.[key];
+
+  if (!handler) throw new Error(`Expected TablePlugin ${key} handler`);
+
+  return handler({ editor, event });
+};
+
+const installDOMSelectionApi = (
+  editor: TableEditor,
+  range: Range | null,
+  {
+    collapsed = false,
+    rangeCount = 1,
+  }: {
+    collapsed?: boolean;
+    rangeCount?: number;
+  } = {}
+) => {
+  const domSelection = {
+    isCollapsed: collapsed,
+    rangeCount,
+  } as unknown as globalThis.Selection;
+
+  editor.extend(
+    defineEditorExtension({
+      api: {
+        dom: {
+          findDocumentOrShadowRoot: () =>
+            ({
+              getSelection: () => domSelection,
+            }) as unknown as Document,
+          resolvePliteRange: () => range,
+        },
+      },
+      name: 'test:table-native-selection',
+    })
+  );
+};
+
+const readTable = (editor: TableEditor, index: number) => {
+  const table = editor.read.children()[index] as Element;
+
+  return table.children.map((row) =>
+    (row as Element).children.map((cell) => NodeApi.string(cell))
+  );
+};
+
+const readRootTable = (editor: TableEditor, root?: string) => {
+  const value = editor.read.value();
+  const table = (
+    root === undefined ? value.children[0] : value.roots?.[root]?.[0]
+  ) as Element;
+
+  return table.children.map((row) =>
+    (row as Element).children.map((cell) => NodeApi.string(cell))
+  );
+};
+
+const dragSelectedCells = (
+  editor: TableEditor,
+  {
+    copy = false,
+    target,
+    trackCommits = false,
+  }: {
+    copy?: boolean;
+    target: Location;
+    trackCommits?: boolean;
+  }
+) => {
+  const sourceCellId = editor.plugin(BaseTablePlugin).api.getSelection()
+    ?.cellIds[0];
+
+  if (!sourceCellId) throw new Error('Expected source cell id');
+
+  const dataTransfer = {
+    dropEffect: 'move',
+    setData: mock(),
+    types: ['application/x-plate-table-cell-selection'],
+  } as unknown as DataTransfer;
+  const dragStart = createDragEvent(dataTransfer, {
+    dragCellId: sourceCellId,
+  });
+  const drop = createDragEvent(dataTransfer, copy ? { altKey: true } : {});
+
+  const warn = installEventRangeApi(editor, [target]);
+  const commits: unknown[] = [];
+  const unsubscribe = trackCommits
+    ? editor.subscribeCommit((commit) => commits.push(commit))
+    : undefined;
+
+  const dragStartResult = runHandler(
+    editor,
+    'onDragStart',
+    dragStart
+  ) as unknown;
+  const dropResult = runHandler(editor, 'onDrop', drop) as unknown;
+
+  unsubscribe?.();
+  expect(dragStartResult).toBeUndefined();
+  expect(dropResult).toBe(true);
+  expect(drop.preventDefault).toHaveBeenCalledTimes(1);
+  expect(drop.stopPropagation).toHaveBeenCalledTimes(1);
+
+  return { commits, dragStart, drop, warn };
+};
+
+describe('TablePlugin table drag/drop', () => {
+  it('promotes a native multi-cell range when the DOM collapsed flag is stale', () => {
+    const editor = createCrossTableEditor();
+    const range = {
+      anchor: { offset: 1, path: [0, 0, 1, 0, 0] },
+      focus: { offset: 0, path: [0, 0, 0, 0, 0] },
+    };
+
+    editor.update.selection.set(range);
+    installDOMSelectionApi(editor, range, { collapsed: true });
+
+    const result = runHandler(editor, 'onMouseUp', {} as React.SyntheticEvent);
+
+    expect(result).toBe(true);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: range.anchor,
+      focus: range.focus,
+      kind: 'table-cell',
+    });
+    expect(editor.read.selection.ranges()).toHaveLength(2);
+  });
+
+  it('leaves native text selection inside one table cell to the Plite runtime', () => {
+    const editor = createCrossTableEditor();
+    const range = {
+      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+      focus: { offset: 1, path: [0, 0, 0, 0, 0] },
+    };
+
+    editor.update.selection.set(range);
+    installDOMSelectionApi(editor, range);
+
+    const result = runHandler(editor, 'onMouseUp', {} as React.SyntheticEvent);
+
+    expect(result).toBeUndefined();
+    expect(editor.read.selection()).toMatchObject({
+      anchor: range.anchor,
+      focus: range.focus,
+      kind: 'text',
+    });
+  });
+
+  it('moves selected cells across tables in one commit', () => {
+    const editor = createCrossTableEditor();
+
+    const { commits } = dragSelectedCells(editor, {
+      target: [1, 0, 0],
+      trackCommits: true,
+    });
+
+    expect(readTable(editor, 0)).toEqual([['', '']]);
+    expect(readTable(editor, 1)).toEqual([['A', 'B']]);
+    expect(commits).toHaveLength(1);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: { path: [1, 0, 0, 0, 0] },
+      focus: { path: [1, 0, 1, 0, 0] },
+      kind: 'table-cell',
+    });
+    expect(editor.read.history.undos()).toHaveLength(1);
+
+    editor.update.history.undo();
+    expect(readTable(editor, 0)).toEqual([['A', 'B']]);
+    expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
+
+    editor.update.history.redo();
+    expect(readTable(editor, 0)).toEqual([['', '']]);
+    expect(readTable(editor, 1)).toEqual([['A', 'B']]);
+  });
+
+  it('moves one structurally selected cell', () => {
+    const editor = createCrossTableEditor();
+    const point = { offset: 0, path: [0, 0, 0, 0, 0] };
+
+    editor.update.selection.set({ anchor: point, focus: point });
+    expect(
+      editor.plugin(BaseTablePlugin).api.getSelection()?.anchors
+    ).toHaveLength(1);
+
+    dragSelectedCells(editor, {
+      target: [1, 0, 0],
+    });
+
+    expect(readTable(editor, 0)).toEqual([['', 'B']]);
+    expect(readTable(editor, 1)).toEqual([['A', 'Y']]);
+  });
+
+  it('copies without clearing the source cells', () => {
+    const editor = createCrossTableEditor();
+
+    dragSelectedCells(editor, {
+      copy: true,
+      target: [1, 0, 0],
+    });
+
+    expect(readTable(editor, 0)).toEqual([['A', 'B']]);
+    expect(readTable(editor, 1)).toEqual([['A', 'B']]);
+  });
+
+  it('moves an overlapping selection without clearing its destination', () => {
+    const editor = createOverlappingTableEditor();
+
+    dragSelectedCells(editor, {
+      target: [0, 0, 1],
+    });
+
+    expect(readTable(editor, 0)).toEqual([['', 'A', 'B']]);
+  });
+
+  it.each([
+    'primary-to-named',
+    'named-to-primary',
+  ] as const)('moves selected cells %s in one root-aware commit', (direction) => {
+    const { editor, sourceRoot, target, targetRoot } =
+      createRootMoveEditor(direction);
+    const { commits } = dragSelectedCells(editor, {
+      target,
+      trackCommits: true,
+    });
+
+    expect(readRootTable(editor, sourceRoot)).toEqual([['', '']]);
+    expect(readRootTable(editor, targetRoot)).toEqual([['A', 'B']]);
+    expect(commits).toHaveLength(1);
+    expect(editor.read.selection()).toMatchObject({
+      anchor: {
+        path: [0, 0, 0, 0, 0],
+        ...(targetRoot === undefined ? {} : { root: targetRoot }),
+      },
+      focus: {
+        path: [0, 0, 1, 0, 0],
+        ...(targetRoot === undefined ? {} : { root: targetRoot }),
+      },
+      kind: 'table-cell',
+    });
+  });
+
+  it.each([
+    'missing-cell-id',
+    'duplicate-cell-id',
+  ] as const)('rejects a target with %s without committing', (target) => {
+    const editor = createMalformedTargetEditor(target);
+
+    const { commits, warn } = dragSelectedCells(editor, {
+      target: [1, 0, 0],
+      trackCommits: true,
+    });
+
+    expect(readTable(editor, 0)).toEqual([['A', 'B']]);
+    expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
+    expect(commits).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(
+      'Table drag/drop rejected before mutation.',
+      'TABLE_MUTATION_DIAGNOSTIC',
+      {
+        kind: 'stale-drag',
+        reason: target === 'missing-cell-id' ? 'missing-id' : 'duplicate-id',
+      }
+    );
+  });
+
+  it('does not apply a stale capture to an unmarked drop', () => {
+    const editor = createCrossTableEditor();
+    const internalTransfer = {
+      dropEffect: 'move',
+      setData: mock(),
+      types: ['application/x-plate-table-cell-selection'],
+    } as unknown as DataTransfer;
+    const externalTransfer = {
+      dropEffect: 'move',
+      types: ['text/plain'],
+    } as unknown as DataTransfer;
+    const dragStart = createDragEvent(internalTransfer, { dragCellId: 's1' });
+    const drop = createDragEvent(externalTransfer);
+
+    installEventRangeApi(editor, [[1, 0, 0]]);
+
+    runHandler(editor, 'onDragStart', dragStart);
+
+    expect(runHandler(editor, 'onDrop', drop)).toBeUndefined();
+    expect(readTable(editor, 0)).toEqual([['A', 'B']]);
+    expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
+  });
+
+  it('clears a canceled drag capture on drag end', () => {
+    const editor = createCrossTableEditor();
+    const dataTransfer = {
+      dropEffect: 'move',
+      setData: mock(),
+      types: ['application/x-plate-table-cell-selection'],
+    } as unknown as DataTransfer;
+    const dragStart = createDragEvent(dataTransfer, { dragCellId: 's1' });
+    const dragEnd = createDragEvent(dataTransfer);
+    const drop = createDragEvent(dataTransfer);
+
+    installEventRangeApi(editor, [[1, 0, 0]]);
+
+    runHandler(editor, 'onDragStart', dragStart);
+    runHandler(editor, 'onDragEnd', dragEnd);
+
+    expect(runHandler(editor, 'onDrop', drop)).toBeUndefined();
+    expect(readTable(editor, 0)).toEqual([['A', 'B']]);
+    expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
+  });
+});

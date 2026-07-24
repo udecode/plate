@@ -75,9 +75,8 @@ import {
 } from "@platejs/plite-dom";
 ```
 
-Environment flags include `CAN_USE_DOM`, `HAS_BEFORE_INPUT_SUPPORT`,
-`IS_ANDROID`, `IS_CHROME`, `IS_FIREFOX`, `IS_IOS`, `IS_UC_MOBILE`, `IS_WEBKIT`,
-and `IS_WECHATBROWSER`.
+`CAN_USE_DOM` guards SSR-only initialization. Mounted DOM adapters resolve
+browser behavior from their own root.
 
 Decoration helpers include `isElementDecorationsEqual`,
 `isTextDecorationsEqual`, and `splitDecorationsByChild`.

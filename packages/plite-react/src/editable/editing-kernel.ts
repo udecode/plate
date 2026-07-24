@@ -15,6 +15,7 @@ import {
 } from '@platejs/plite';
 import { toInternalRoot } from './runtime-editor-api';
 import { Hotkeys } from '@platejs/plite-dom';
+import { DOMRootRuntime } from '@platejs/plite-dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { readPliteViewSelection } from '../view-selection';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
@@ -23,7 +24,7 @@ import type { EditableCommand } from './editable-command-types';
 import {
   closeEditableEditingEpochAfterTrace,
   getEditableEditingEpochForTrace,
-} from './editing-epoch-kernel';
+} from './editing-epoch-adapter';
 import { getHistoryDirectionFromNativeEvent } from './history-keyboard';
 import {
   classifyBeforeInputIntent,
@@ -112,11 +113,6 @@ const defineEditableCommand = <TKind extends EditableCommandKind>(
 ) => Object.freeze(definition);
 
 export const EDITABLE_COMMAND_DEFINITIONS = {
-  format: defineEditableCommand({
-    inputFamilies: ['beforeinput', 'keydown'],
-    kind: 'format',
-    modelOwned: false,
-  }),
   delete: defineEditableCommand({
     inputFamilies: ['beforeinput', 'keydown'],
     kind: 'delete',
@@ -171,16 +167,6 @@ export const EDITABLE_COMMAND_DEFINITIONS = {
     inputFamilies: ['keydown'],
     kind: 'select-all',
     modelOwned: true,
-  }),
-  'set-block': defineEditableCommand({
-    inputFamilies: ['keydown'],
-    kind: 'set-block',
-    modelOwned: false,
-  }),
-  'toggle-mark': defineEditableCommand({
-    inputFamilies: ['keydown'],
-    kind: 'toggle-mark',
-    modelOwned: false,
   }),
 } satisfies {
   [K in EditableCommandKind]: EditableCommandDefinition<K>;
@@ -443,33 +429,9 @@ export type EditableKernelTraceInput = Omit<
 
 export const EDITABLE_KERNEL_TRACE_LIMIT = 200;
 
-const EDITOR_TO_KERNEL_TRACE = new WeakMap<
-  Editor,
-  EditableKernelTraceEntry[]
->();
-const EDITOR_TO_CURRENT_EVENT_FRAME = new WeakMap<Editor, EditableEventFrame>();
-const EDITOR_TO_NEXT_EVENT_FRAME_ID = new WeakMap<Editor, number>();
-
 export const mapSelectionSourceToKernelState = (
   source: SelectionSource
-): EditableKernelState => {
-  switch (source) {
-    case 'app-owned':
-      return 'app-owned';
-    case 'composition-owned':
-      return 'composition';
-    case 'dom-current':
-      return 'dom-selection';
-    case 'internal-control':
-      return 'internal-control';
-    case 'model-owned':
-      return 'model-owned';
-    case 'partial-dom-backed':
-      return 'partial-dom-backed';
-    case 'unknown':
-      return 'idle';
-  }
-};
+): EditableKernelState => DOMRootRuntime.resolveInputKernelState(source);
 
 export const getEditableSelectionChangeOwnership = ({
   selectionChangeOrigin,
@@ -477,50 +439,41 @@ export const getEditableSelectionChangeOwnership = ({
 }: {
   selectionChangeOrigin: SelectionChangeOrigin;
   selectionSource: SelectionSource;
-}): EditableOwnership => {
-  if (selectionChangeOrigin === 'native-user') {
-    return 'native-allowed';
-  }
-
-  if (selectionChangeOrigin === 'browser-handle') {
-    return 'native-allowed';
-  }
-
-  if (
-    selectionChangeOrigin === 'programmatic-export' ||
-    selectionChangeOrigin === 'repair-induced'
-  ) {
-    return 'model-owned';
-  }
-
-  return selectionSource === 'dom-current' ? 'native-allowed' : 'no-op';
-};
+}): EditableOwnership =>
+  DOMRootRuntime.resolveInputSelectionChangeOwnership({
+    selectionChangeOrigin,
+    selectionSource,
+  });
 
 export const getEditableKernelTrace = (
   editor: Editor
 ): readonly EditableKernelTraceEntry[] =>
-  EDITOR_TO_KERNEL_TRACE.get(editor) ?? [];
+  DOMRootRuntime.resolveInputRuntime(
+    editor
+  ).getTrace<EditableKernelTraceEntry>();
 
 export const clearEditableKernelTrace = (editor: Editor) => {
-  EDITOR_TO_KERNEL_TRACE.delete(editor);
+  DOMRootRuntime.resolveInputRuntime(editor).clearTrace();
 };
 
 export const getCurrentEditableEventFrame = (
   editor: Editor
 ): EditableEventFrame | null =>
-  EDITOR_TO_CURRENT_EVENT_FRAME.get(editor) ?? null;
+  DOMRootRuntime.resolveInputRuntime(editor).currentFrame<
+    InputIntent,
+    Range | null
+  >();
 
 export const beginEditableEventFrame = (
   editor: Editor,
   input: EditableEventFrameInput
 ): EditableEventFrame => {
-  const id = EDITOR_TO_NEXT_EVENT_FRAME_ID.get(editor) ?? 1;
-  const frame: EditableEventFrame = {
-    active: true,
+  const inputRuntime = DOMRootRuntime.resolveInputRuntime(editor);
+
+  return inputRuntime.beginFrame({
     commitEpoch: input.commitEpoch ?? null,
     eventFamily: input.eventFamily,
     focusOwner: input.focusOwner ?? 'unknown',
-    id,
     inputIntent: input.inputIntent ?? null,
     lifecyclePhase: input.lifecyclePhase ?? 'event',
     modelSelectionBefore:
@@ -531,28 +484,16 @@ export const beginEditableEventFrame = (
     startedAt: input.startedAt ?? Date.now(),
     targetOwner: input.targetOwner ?? 'unknown',
     viewEpoch: input.viewEpoch ?? null,
-  };
-
-  EDITOR_TO_CURRENT_EVENT_FRAME.set(editor, frame);
-  EDITOR_TO_NEXT_EVENT_FRAME_ID.set(editor, id + 1);
-
-  return frame;
+  });
 };
 
 export const endEditableEventFrame = (
   editor: Editor
-): EditableEventFrame | null => {
-  const frame = getCurrentEditableEventFrame(editor);
-
-  if (!frame) {
-    return null;
-  }
-
-  const inactiveFrame = { ...frame, active: false };
-  EDITOR_TO_CURRENT_EVENT_FRAME.set(editor, inactiveFrame);
-
-  return inactiveFrame;
-};
+): EditableEventFrame | null =>
+  DOMRootRuntime.resolveInputRuntime(editor).endFrame<
+    InputIntent,
+    Range | null
+  >();
 
 export const recordEditableKernelTrace = ({
   editor,
@@ -562,13 +503,7 @@ export const recordEditableKernelTrace = ({
   trace: EditableKernelTraceInput;
 }) => {
   const entry = createEditableKernelTraceEntry({ editor, trace });
-  const traces = EDITOR_TO_KERNEL_TRACE.get(editor) ?? [];
-
-  traces.push(entry);
-  if (traces.length > EDITABLE_KERNEL_TRACE_LIMIT) {
-    traces.splice(0, traces.length - EDITABLE_KERNEL_TRACE_LIMIT);
-  }
-  EDITOR_TO_KERNEL_TRACE.set(editor, traces);
+  DOMRootRuntime.resolveInputRuntime(editor).recordTrace(entry);
   closeEditableEditingEpochAfterTrace(editor, {
     command: entry.command,
     epochId: entry.epochId,
@@ -604,80 +539,20 @@ export const getEditableKernelTransition = ({
 > & {
   selectionChangeOrigin?: SelectionChangeOrigin;
   selectionPolicy?: EditableSelectionPolicy;
-}): EditableKernelTransition => {
-  if (command && nativeAllowed) {
-    return {
-      allowed: false,
-      reason: 'command cannot be native-owned',
-    };
-  }
-
-  if (nativeAllowed && ownership !== 'native-allowed') {
-    return {
-      allowed: false,
-      reason: 'nativeAllowed requires native ownership',
-    };
-  }
-
-  if (nativeAllowed && repairPolicy.kind !== 'none') {
-    return {
-      allowed: false,
-      reason: 'native-owned events cannot schedule model repair',
-    };
-  }
-
-  if (
-    targetOwner === 'internal-control' &&
-    ownership === 'model-owned' &&
-    command?.kind !== 'history'
-  ) {
-    return {
-      allowed: false,
-      reason: 'internal controls cannot dispatch model commands',
-    };
-  }
-
-  if (eventFamily === 'repair' && stateAfter === 'dom-selection') {
-    return {
-      allowed: false,
-      reason: 'repair cannot hand authority back to stale DOM selection',
-    };
-  }
-
-  if (eventFamily === 'repair' && selectionPolicy?.kind === 'import-dom') {
-    return {
-      allowed: false,
-      reason: 'repair cannot import DOM selection',
-    };
-  }
-
-  if (
-    selectionPolicy?.kind === 'import-dom' &&
-    (!frame || frame.lifecyclePhase !== 'event')
-  ) {
-    return {
-      allowed: false,
-      reason: 'selection import requires event lifecycle frame',
-    };
-  }
-
-  if (
-    eventFamily === 'selectionchange' &&
-    nativeAllowed &&
-    (selectionChangeOrigin === 'programmatic-export' ||
-      selectionChangeOrigin === 'repair-induced')
-  ) {
-    return {
-      allowed: false,
-      reason: 'programmatic selectionchange cannot re-import as native intent',
-    };
-  }
-
-  return {
-    allowed: true,
-    reason: null,
-  };
-};
+}): EditableKernelTransition =>
+  DOMRootRuntime.resolveInputTransition({
+    commandKind: command?.kind ?? null,
+    commandPresent: command !== null,
+    eventFamily,
+    frameLifecyclePhase: frame?.lifecyclePhase ?? null,
+    nativeAllowed,
+    ownership,
+    repairPolicy,
+    selectionChangeOrigin,
+    selectionPolicy,
+    stateAfter,
+    targetOwner,
+  });
 
 const shouldAssertEditableKernelTransitions = () =>
   (globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env
@@ -720,50 +595,18 @@ export const getEditableSelectionPolicy = ({
 }: Pick<
   EditableKernelTraceEntry,
   'eventFamily' | 'ownership' | 'selectionSource' | 'targetOwner'
->): EditableSelectionPolicy => {
-  if (targetOwner === 'internal-control') {
-    return { kind: 'none', reason: 'internal-control' };
-  }
-
-  if (selectionSource === 'partial-dom-backed') {
-    return { kind: 'partial-dom', reason: 'partial-dom-backed' };
-  }
-
-  if (eventFamily === 'selectionchange' && ownership === 'native-allowed') {
-    return { kind: 'import-dom', reason: 'native-selection' };
-  }
-
-  if (ownership === 'model-owned') {
-    return { kind: 'preserve-model', reason: 'model-owned' };
-  }
-
-  return { kind: 'none', reason: 'not-requested' };
-};
+>): EditableSelectionPolicy =>
+  DOMRootRuntime.resolveInputSelectionPolicy({
+    eventFamily,
+    ownership,
+    selectionSource,
+    targetOwner,
+  });
 
 export const getEditableRepairPolicy = ({
   repair,
-}: Pick<EditableKernelTraceEntry, 'repair'>): EditableRepairPolicy => {
-  if (!repair || repair.kind === 'none' || repair.kind === 'skip-dom-sync') {
-    return { kind: 'none', reason: 'not-requested' };
-  }
-
-  if (repair.kind === 'force-render') {
-    return { kind: 'force-render', reason: 'force-render' };
-  }
-
-  if (repair.kind === 'sync-selection') {
-    return { kind: 'sync-selection', reason: 'sync-selection' };
-  }
-
-  if (repair.kind === 'repair-caret-after-text-insert') {
-    return {
-      kind: 'repair-caret',
-      reason: 'repair-caret-after-text-insert',
-    };
-  }
-
-  return { kind: 'repair-caret', reason: 'repair-caret' };
-};
+}: Pick<EditableKernelTraceEntry, 'repair'>): EditableRepairPolicy =>
+  DOMRootRuntime.resolveInputRepairPolicy(repair?.kind ?? null);
 
 export const createEditableKernelTraceEntry = ({
   editor,
@@ -911,30 +754,6 @@ const getBeforeInputDeleteCommand = ({
   }
 };
 
-const getBeforeInputFormatCommand = (
-  inputType: string
-): EditableCommand | null => {
-  switch (inputType) {
-    case 'formatBold':
-      return { format: 'bold', kind: 'format' };
-    case 'formatItalic':
-      return { format: 'italic', kind: 'format' };
-    case 'formatUnderline':
-      return { format: 'underline', kind: 'format' };
-    case 'formatStrikeThrough':
-      return { format: 'strikethrough', kind: 'format' };
-    default:
-      return inputType.startsWith('format')
-        ? {
-            format:
-              inputType.charAt('format'.length).toLowerCase() +
-              inputType.slice('format'.length + 1),
-            kind: 'format',
-          }
-        : null;
-  }
-};
-
 export const getEditableCommandFromBeforeInputType = ({
   data,
   inputType,
@@ -950,9 +769,7 @@ export const getEditableCommandFromBeforeInputType = ({
   if (inputType === 'historyRedo') {
     return { direction: 'redo', kind: 'history' };
   }
-  if (inputType.startsWith('format')) {
-    return getBeforeInputFormatCommand(inputType);
-  }
+  if (inputType.startsWith('format')) return null;
   if (inputType.startsWith('delete')) {
     return getBeforeInputDeleteCommand({ inputType, selection });
   }
@@ -1011,12 +828,6 @@ export const getEditableCommandFromKeyDown = ({
   }
   if (isSelectAllHotkey(nativeEvent)) {
     return { kind: 'select-all' };
-  }
-  if (Hotkeys.isBold(nativeEvent)) {
-    return { format: 'bold', kind: 'format' };
-  }
-  if (Hotkeys.isItalic(nativeEvent)) {
-    return { format: 'italic', kind: 'format' };
   }
   if (Hotkeys.isSoftBreak(nativeEvent)) {
     return { kind: 'insert-break', variant: 'soft' };
@@ -1204,82 +1015,20 @@ export const prepareEditableKeyDownKernel = ({
       ? 'editor'
       : 'unknown';
   const hasModelOnlySelection = SelectionApi.isNode(selectionBefore);
-  const shouldPreserveProjectedViewSelection =
-    !internalTarget &&
-    intent !== 'composition' &&
-    readPliteViewSelection(editor) !== null;
-  const ownership: EditableOwnership =
-    intent === 'internal-control'
-      ? 'app-owned'
-      : intent === 'composition'
-        ? 'native-allowed'
-        : intent === 'native-selection-move'
-          ? hasModelOnlySelection
-            ? 'model-owned'
-            : 'native-allowed'
-          : intent
-            ? 'model-owned'
-            : 'no-op';
 
-  const shouldForceDOMImport =
-    intent === 'delete' ||
-    intent === 'format' ||
-    intent === 'insert-break' ||
-    intent === 'model-selection-move';
-  const authoritativeModelSelection = hasAuthoritativeModelSelection({
-    inputController,
-  });
-  const shouldPreserveModelSelection =
-    hasModelOnlySelection ||
-    intent === 'history' ||
-    (authoritativeModelSelection &&
-      (ownership === 'model-owned' ||
-        intent === 'text-insert' ||
-        intent === null));
-  const shouldApplyForcedDOMImport =
-    shouldForceDOMImport && !shouldPreserveModelSelection;
-
-  return {
+  return DOMRootRuntime.resolveInputRuntime(editor).prepareKeyDownDecision({
+    authoritativeModelSelection: hasAuthoritativeModelSelection({
+      inputController,
+    }),
     command,
+    hasModelOnlySelection,
+    hasProjectedViewSelection: readPliteViewSelection(editor) !== null,
     intent,
     internalTarget,
-    nativeAllowed: ownership === 'native-allowed',
-    ownership,
     selectionBefore,
-    selectionPolicy: internalTarget
-      ? { kind: 'none', reason: 'internal-control' }
-      : intent === 'composition'
-        ? { kind: 'none', reason: 'not-requested' }
-        : shouldPreserveProjectedViewSelection || shouldPreserveModelSelection
-          ? { kind: 'preserve-model', reason: 'model-owned' }
-          : {
-              kind: 'import-dom',
-              reason: shouldApplyForcedDOMImport
-                ? 'unknown-selection'
-                : 'native-selection',
-            },
-    selectionSourceTransition:
-      intent === 'native-selection-move' &&
-      ownership === 'native-allowed' &&
-      !shouldPreserveProjectedViewSelection
-        ? {
-            preferModelSelection: false,
-            reason: 'native-selection-move',
-            selectionSource: 'dom-current',
-          }
-        : intent === 'history' && shouldPreserveModelSelection
-          ? {
-              preferModelSelection: true,
-              reason: 'model-command',
-              selectionSource: 'model-owned',
-            }
-          : null,
-    shouldForceDOMImport: shouldApplyForcedDOMImport,
-    stateBefore: mapSelectionSourceToKernelState(
-      inputController.state.selectionSource
-    ),
+    selectionSource: inputController.state.selectionSource,
     targetOwner,
-  };
+  });
 };
 
 export const prepareEditableBeforeInputKernel = ({
@@ -1303,46 +1052,23 @@ export const prepareEditableBeforeInputKernel = ({
     : ReactEditor.hasEditableTarget(editor, event.target)
       ? 'editor'
       : 'unknown';
-  const ownership: EditableOwnership =
-    intent === 'internal-control'
-      ? 'app-owned'
-      : intent === 'native-selection-move'
-        ? 'native-allowed'
-        : intent
-          ? 'model-owned'
-          : 'no-op';
-  const shouldPreserveProjectedViewSelection =
-    targetOwner !== 'internal-control' &&
-    ownership === 'model-owned' &&
-    readPliteViewSelection(editor) !== null;
-  const shouldPreserveModelSelection =
-    ownership === 'model-owned' &&
-    hasAuthoritativeModelSelection({ inputController });
 
-  return {
+  return DOMRootRuntime.resolveInputRuntime(editor).prepareBeforeInputDecision({
+    authoritativeModelSelection: hasAuthoritativeModelSelection({
+      inputController,
+    }),
     command: getEditableCommandFromBeforeInput({
       event,
       selection: selectionBefore,
     }),
+    formatInput: event.inputType.startsWith('format'),
+    hasProjectedViewSelection: readPliteViewSelection(editor) !== null,
     intent,
     internalTarget,
-    nativeAllowed: ownership === 'native-allowed',
-    ownership,
     selectionBefore,
-    selectionPolicy:
-      targetOwner === 'internal-control'
-        ? { kind: 'none', reason: 'internal-control' }
-        : shouldPreserveProjectedViewSelection || shouldPreserveModelSelection
-          ? { kind: 'preserve-model', reason: 'model-owned' }
-          : ownership === 'model-owned'
-            ? { kind: 'import-dom', reason: 'unknown-selection' }
-            : { kind: 'none', reason: 'not-requested' },
-    selectionSourceTransition: null,
-    stateBefore: mapSelectionSourceToKernelState(
-      inputController.state.selectionSource
-    ),
+    selectionSource: inputController.state.selectionSource,
     targetOwner,
-  };
+  });
 };
 
 export const prepareEditableClipboardKernel = ({
@@ -1364,20 +1090,14 @@ export const prepareEditableClipboardKernel = ({
     : ReactEditor.hasEditableTarget(editor, event.target)
       ? 'editor'
       : 'unknown';
-  const ownership: EditableOwnership =
-    intent === 'internal-control' ? 'app-owned' : 'model-owned';
 
-  return {
+  return DOMRootRuntime.resolveInputRuntime(editor).prepareClipboardDecision({
     intent,
     internalTarget,
-    nativeAllowed: false,
-    ownership,
     selectionBefore: readLiveSelection(editor),
-    stateBefore: mapSelectionSourceToKernelState(
-      inputController.state.selectionSource
-    ),
+    selectionSource: inputController.state.selectionSource,
     targetOwner,
-  };
+  });
 };
 
 export const prepareEditableCompositionKernel = ({
@@ -1399,24 +1119,14 @@ export const prepareEditableCompositionKernel = ({
     : ReactEditor.hasEditableTarget(editor, event.target)
       ? 'editor'
       : 'unknown';
-  const ownership: EditableOwnership =
-    intent === 'internal-control' ? 'app-owned' : 'native-allowed';
 
-  return {
+  return DOMRootRuntime.resolveInputRuntime(editor).prepareCompositionDecision({
     intent,
     internalTarget,
-    nativeAllowed: ownership === 'native-allowed',
-    ownership,
-    repairPolicy: { kind: 'none', reason: 'not-requested' },
     selectionBefore: readLiveSelection(editor),
-    selectionPolicy: internalTarget
-      ? { kind: 'none', reason: 'internal-control' }
-      : { kind: 'none', reason: 'not-requested' },
-    stateBefore: mapSelectionSourceToKernelState(
-      inputController.state.selectionSource
-    ),
+    selectionSource: inputController.state.selectionSource,
     targetOwner,
-  };
+  });
 };
 
 export const prepareEditableFocusMouseKernel = ({
@@ -1436,23 +1146,13 @@ export const prepareEditableFocusMouseKernel = ({
       : ReactEditor.hasTarget(editor, event.target)
         ? 'app-owned'
         : 'unknown';
-  const ownership: EditableOwnership = internalTarget
-    ? 'app-owned'
-    : targetOwner === 'editor'
-      ? 'native-allowed'
-      : 'no-op';
 
-  return {
-    intent: null,
+  return DOMRootRuntime.resolveInputRuntime(editor).prepareFocusMouseDecision({
     internalTarget,
-    nativeAllowed: ownership === 'native-allowed',
-    ownership,
     selectionBefore: readLiveSelection(editor),
-    stateBefore: mapSelectionSourceToKernelState(
-      inputController.state.selectionSource
-    ),
+    selectionSource: inputController.state.selectionSource,
     targetOwner,
-  };
+  });
 };
 
 export const prepareEditableInputKernel = ({
@@ -1473,22 +1173,12 @@ export const prepareEditableInputKernel = ({
     : ReactEditor.hasEditableTarget(editor, event.target)
       ? 'editor'
       : 'unknown';
-  const ownership: EditableOwnership =
-    intent === 'internal-control'
-      ? 'app-owned'
-      : intent
-        ? 'model-owned'
-        : 'deferred';
 
-  return {
+  return DOMRootRuntime.resolveInputRuntime(editor).prepareInputDecision({
     intent,
     internalTarget,
-    nativeAllowed: false,
-    ownership,
     selectionBefore: readLiveSelection(editor),
-    stateBefore: mapSelectionSourceToKernelState(
-      inputController.state.selectionSource
-    ),
+    selectionSource: inputController.state.selectionSource,
     targetOwner,
-  };
+  });
 };

@@ -28,7 +28,7 @@ import { moveNodes } from './move-nodes';
 import { removeNodes } from './remove-nodes';
 import { matchPath } from '../utils/match-path';
 
-const getChildren = (editor: Editor, node: Ancestor): Descendant[] =>
+const getChildren = (editor: Editor, node: Ancestor): readonly Descendant[] =>
   NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
 
 const comparePoints = (left: Point, right: Point) => {

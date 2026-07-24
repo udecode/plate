@@ -1,11 +1,9 @@
 import type { Element, RootKey } from '../interfaces';
 import { ElementApi } from '../interfaces';
-import {
-  type ChangeSet,
-  getChangeSetRelocations,
-  type IndexedDocument,
-  type JsonNode,
-} from './document-change';
+import type { RootChange } from './change/root-change';
+import { getRootChangeRelocations } from './change/mapping';
+import type { DocumentIndex } from './change/document-index';
+import type { JsonNode } from './change/tokens';
 import { profileCoreDuration } from './profiling';
 import {
   appendCanonicalDocumentPathMapping,
@@ -362,7 +360,7 @@ const schemaIndexKey = (schema: CompiledEditorSchema) =>
 const cacheIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  document: IndexedDocument,
+  document: DocumentIndex,
   index: ElementOwnedRootIndex
 ) => {
   let bySchema = schemaIndexes.get(document.value);
@@ -386,7 +384,7 @@ const cacheIndex = (
 export const getElementOwnedRootIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  document: IndexedDocument
+  document: DocumentIndex
 ) =>
   schemaIndexes.get(document.value)?.get(schemaIndexKey(schema))?.get(root) ??
   null;
@@ -614,7 +612,7 @@ const visitOwnerDeclarations = (
 };
 
 const changedNodes = (
-  document: IndexedDocument,
+  document: DocumentIndex,
   from: number,
   to: number,
   metrics?: {
@@ -690,7 +688,7 @@ const changedNodes = (
 
 /** @internal Inspect changed-owner selection and its prefix-index work. */
 export const inspectElementOwnedRootChangedNodes = (
-  document: IndexedDocument,
+  document: DocumentIndex,
   from: number,
   to: number
 ) => {
@@ -703,7 +701,7 @@ export const inspectElementOwnedRootChangedNodes = (
 const buildIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  document: IndexedDocument,
+  document: DocumentIndex,
   dirty: boolean
 ) =>
   profileCoreDuration('schema-root-ownership-index-build', () => {
@@ -738,7 +736,7 @@ const buildIndex = (
 export const ensureElementOwnedRootIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  document: IndexedDocument
+  document: DocumentIndex
 ) =>
   getElementOwnedRootIndex(schema, root, document) ??
   buildIndex(schema, root, document, false);
@@ -778,9 +776,9 @@ const ownerDeclarationIdentityEqual = (
 
 const transferChangedOwnerIdentities = (
   schema: CompiledEditorSchema,
-  before: IndexedDocument,
-  after: IndexedDocument,
-  change: ChangeSet,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange,
   ranges: readonly Readonly<{
     fromBefore: number;
     toBefore: number;
@@ -846,9 +844,9 @@ const transferChangedOwnerIdentities = (
 export const rebaseElementOwnedRootIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  change: ChangeSet | undefined,
-  before: IndexedDocument,
-  after: IndexedDocument
+  change: RootChange | undefined,
+  before: DocumentIndex,
+  after: DocumentIndex
 ) => {
   const cached = getElementOwnedRootIndex(schema, root, after);
 
@@ -865,7 +863,7 @@ export const rebaseElementOwnedRootIndex = (
     const previous = getElementOwnedRootIndex(schema, root, before);
 
     if (!previous) return buildIndex(schema, root, after, true);
-    const relocations = getChangeSetRelocations(change, before, after);
+    const relocations = getRootChangeRelocations(change, before, after);
     let pathMappings: MutableIndex['pathMappings'] = null;
 
     for (const [pathOrigin, mapping] of persistentMapEntries(
@@ -1050,7 +1048,7 @@ export const getElementOwnedRootPathMappingStats = (
 export const sealElementOwnedRootIndex = (
   schema: CompiledEditorSchema,
   root: RootKey,
-  document: IndexedDocument
+  document: DocumentIndex
 ) => {
   const index = getElementOwnedRootIndex(schema, root, document);
 

@@ -83,6 +83,19 @@ const withDom = (run: (document: Document) => void) => {
 };
 
 const createRecordingScheduler = ({ run = false } = {}) => {
+  const callbacksByKey = new Map<
+    string,
+    {
+      callback: (frameTime?: number) => void;
+      cancelled: boolean;
+      label: string;
+    }
+  >();
+  const callbacks: Array<{
+    callback: (frameTime?: number) => void;
+    cancelled: boolean;
+    label: string;
+  }> = [];
   const tasks: Array<{
     label: string;
     options: Parameters<DOMPhaseScheduler['schedule']>[3];
@@ -101,13 +114,27 @@ const createRecordingScheduler = ({ run = false } = {}) => {
     pending: () => tasks.length,
     schedule: (phase, label, callback, options) => {
       tasks.push({ label, options, phase });
+      const scheduled = { callback, cancelled: false, label };
+
+      if (options?.key) {
+        const existing = callbacksByKey.get(options.key);
+
+        if (existing) existing.cancelled = true;
+        callbacksByKey.set(options.key, scheduled);
+      }
+      callbacks.push(scheduled);
       if (run) callback();
 
-      return () => {};
+      return () => {
+        scheduled.cancelled = true;
+        if (options?.key && callbacksByKey.get(options.key) === scheduled) {
+          callbacksByKey.delete(options.key);
+        }
+      };
     },
   };
 
-  return { scheduler, tasks };
+  return { callbacks, scheduler, tasks };
 };
 
 const mountEditorRoot = (
@@ -465,6 +492,218 @@ describe('DOM coverage boundaries', () => {
         },
       ]);
       uninstall();
+    });
+  });
+
+  test('settles focus without stealing it or reviving a replaced root', () => {
+    withDom((document) => {
+      const editor = createEditor({ extensions: [dom()] });
+      const root = mountEditorRoot(editor, document);
+      const button = document.createElement('button');
+
+      document.body.appendChild(button);
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'focus' }],
+          },
+        ] satisfies Descendant[],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 2 },
+        },
+      });
+      IS_FOCUSED.delete(editor);
+      IS_NODE_MAP_DIRTY.delete(editor);
+      const textDOM = createTextDOM(document, 'focus');
+
+      root.appendChild(textDOM);
+      const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
+
+      bindDOMNode(editor, textNode as Descendant, textDOM);
+      const { callbacks, scheduler } = createRecordingScheduler();
+      const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
+
+      try {
+        editor.api.dom.focus({ retries: 1 });
+        const firstSettle = callbacks.find(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+
+        expect(firstSettle).toBeDefined();
+        button.focus();
+        firstSettle!.callback();
+        expect(document.activeElement).toBe(button);
+
+        editor.api.dom.focus({ retries: 1 });
+        const secondSettle = callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+
+        expect(firstSettle!.cancelled).toBe(true);
+        root.blur();
+        expect(document.activeElement).toBe(document.body);
+        secondSettle!.callback();
+        expect(document.activeElement).toBe(root);
+
+        editor.api.dom.focus({ retries: 1 });
+        const replacedRootSettle = callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+        const replacement = mountEditorRoot(editor, document);
+
+        root.remove();
+        replacedRootSettle!.callback();
+        expect(document.activeElement).not.toBe(root);
+        expect(document.activeElement).not.toBe(replacement);
+      } finally {
+        uninstall();
+      }
+    });
+  });
+
+  test('does not let an earlier editor repair reclaim shared document focus', () => {
+    withDom((document) => {
+      const firstEditor = createEditor({ extensions: [dom()] });
+      const secondEditor = createEditor({ extensions: [dom()] });
+      const firstRoot = mountEditorRoot(firstEditor, document);
+      const secondRoot = mountEditorRoot(secondEditor, document);
+      const mountText = (editor: DOMTestEditor, root: HTMLElement) => {
+        editorReplace(editor, {
+          children: [
+            {
+              type: 'paragraph',
+              children: [{ text: 'focus' }],
+            },
+          ] satisfies Descendant[],
+          selection: {
+            kind: 'text',
+            anchor: { path: [0, 0], offset: 2 },
+            focus: { path: [0, 0], offset: 2 },
+          },
+        });
+        IS_FOCUSED.delete(editor);
+        IS_NODE_MAP_DIRTY.delete(editor);
+        const textDOM = createTextDOM(document, 'focus');
+
+        root.appendChild(textDOM);
+        const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
+
+        bindDOMNode(editor, textNode as Descendant, textDOM);
+      };
+
+      mountText(firstEditor, firstRoot);
+      mountText(secondEditor, secondRoot);
+      const firstSchedule = createRecordingScheduler();
+      const secondSchedule = createRecordingScheduler();
+      const uninstallFirst = installEditorDOMPhaseScheduler(
+        firstEditor,
+        firstRoot,
+        firstSchedule.scheduler
+      );
+      const uninstallSecond = installEditorDOMPhaseScheduler(
+        secondEditor,
+        secondRoot,
+        secondSchedule.scheduler
+      );
+
+      try {
+        firstRoot.focus();
+        IS_NODE_MAP_DIRTY.set(firstEditor, true);
+        firstEditor.api.dom.focus({ retries: 1 });
+        const firstRetry = firstSchedule.callbacks.find(
+          ({ label }) => label === 'dom-editor-focus-retry'
+        );
+
+        IS_NODE_MAP_DIRTY.delete(firstEditor);
+        secondEditor.api.dom.focus({ retries: 1 });
+        expect(document.activeElement).toBe(secondRoot);
+        expect(firstRetry?.cancelled).toBe(false);
+        firstRetry!.callback();
+        expect(document.activeElement).toBe(secondRoot);
+
+        firstEditor.api.dom.focus({ retries: 1 });
+        const firstSettle = firstSchedule.callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+
+        secondEditor.api.dom.focus({ retries: 1 });
+        expect(document.activeElement).toBe(secondRoot);
+
+        secondRoot.remove();
+        expect(document.activeElement).toBe(document.body);
+        expect(firstSettle?.cancelled).toBe(false);
+        firstSettle!.callback();
+        expect(document.activeElement).toBe(document.body);
+      } finally {
+        uninstallFirst();
+        uninstallSecond();
+      }
+    });
+  });
+
+  test('settles a shadow-root host loss without stealing sibling focus', () => {
+    withDom((document) => {
+      const editor = createEditor({ extensions: [dom()] });
+      const host = document.createElement('div');
+      const shadowRoot = host.attachShadow({ mode: 'open' });
+      const root = document.createElement('div');
+      const button = document.createElement('button');
+
+      host.tabIndex = 0;
+      document.body.append(host, button);
+      shadowRoot.appendChild(root);
+      mountEditorRoot(editor, document, root);
+      editorReplace(editor, {
+        children: [
+          {
+            type: 'paragraph',
+            children: [{ text: 'shadow focus' }],
+          },
+        ] satisfies Descendant[],
+        selection: {
+          kind: 'text',
+          anchor: { path: [0, 0], offset: 2 },
+          focus: { path: [0, 0], offset: 2 },
+        },
+      });
+      IS_FOCUSED.delete(editor);
+      IS_NODE_MAP_DIRTY.delete(editor);
+      const textDOM = createTextDOM(document, 'shadow focus');
+
+      root.appendChild(textDOM);
+      const [textNode] = editor.read((state) => state.nodes.get([0, 0]));
+
+      bindDOMNode(editor, textNode as Descendant, textDOM);
+      const { callbacks, scheduler } = createRecordingScheduler();
+      const uninstall = installEditorDOMPhaseScheduler(editor, root, scheduler);
+
+      try {
+        editor.api.dom.focus({ retries: 1 });
+        const hostSettle = callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+
+        host.focus();
+        expect(document.activeElement).toBe(host);
+        expect(shadowRoot.activeElement).toBeNull();
+        hostSettle!.callback();
+        expect(shadowRoot.activeElement).toBe(root);
+
+        editor.api.dom.focus({ retries: 1 });
+        const siblingSettle = callbacks.findLast(
+          ({ label }) => label === 'dom-editor-focus-settle-timeout'
+        );
+
+        button.focus();
+        siblingSettle!.callback();
+        expect(document.activeElement).toBe(button);
+        expect(shadowRoot.activeElement).toBeNull();
+      } finally {
+        uninstall();
+      }
     });
   });
 

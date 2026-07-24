@@ -242,6 +242,25 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   type. Omit the generic when the complete contract can be inferred. If a
   builder generic cannot contextually type the inline callback in this shape,
   repair the Core builder signature instead of adding a call-site workaround.
+- Treat a plugin chain as a typed capability dependency graph. When a later
+  API, tx, extension, handler, or required dependent needs an earlier
+  capability, add an earlier `.extendApi()` or `.extendTx()` stage and consume
+  its accumulated inferred surface. Multiple ordered builder stages in one
+  plugin are the preferred composition shape, not fragmentation.
+- Stage only an honest scoped capability that consumers, required dependents,
+  or durable plugin operations should discover. Do not publish a private
+  implementation fragment merely to share it between stages. Keep it lexical,
+  keep a shared pure domain algorithm private, coalesce stages, or record the
+  missing builder capability.
+- Later API/tx factories may destructure the accumulated `api`.
+  `extendExtension` is assembled before API publication, so extension runtime
+  callbacks must retain the typed context and read `context.api` lazily.
+  Eagerly destructuring `api` in that factory can capture the pre-publication
+  empty value.
+- Inside a later tx method, call an earlier staged mutation through the same
+  active transaction: `tx[plugin.key].method(...)`. A portal one-shot,
+  `context.update`, or `editor.update.*` would reopen/nest the transaction and
+  is not capability composition.
 - When colocation makes a helper obsolete, delete its file and barrel export.
   Do not preserve a helper export, forwarding wrapper, alias, or old filename
   for compatibility. Route a genuine public API fork through `best-api`, then
@@ -356,6 +375,17 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   body inside the owning plugin tx group, command, correction, or middleware
   callback and capture `tx`, `api`, options, editor, and type from that builder
   context.
+- New scoped methods and surviving functions take domain inputs by default.
+  Do not thread `editor`, `api`, `read`, `tx`, `getOptions`, resolved plugin
+  option values, or resolved plugin type through a helper graph. Operation
+  options remain valid domain input. Keep one-use machinery lexical; if later
+  plugin stages or dependents need an honest capability, publish it in an
+  earlier builder stage.
+- Before keeping a state/read-view parameter, try the active tx stage or
+  callback owner. An explicit active-state boundary survives only when the same
+  public query must observe an uncommitted transaction snapshot. Require
+  focused proof and never fall back to stale `editor.read` merely to clean the
+  signature.
 - A separate transaction-accepting function is allowed only for a real
   cross-plugin or transaction-composition algorithm that the owning scoped tx
   group cannot express. Multiple call sites alone are not reuse evidence: the
@@ -407,10 +437,11 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   `{ key: KEYS.foo }` needs a concrete owner reason: plugin self-definition
   cycle, React hook/component imported by the plugin itself, non-React layer
   that must not import a React plugin, or intentionally decoupled cross-package
-  code. For plugin-owned helper graphs, do not look the plugin up by key; pass
-  `api`, `getOption`, `getOptions`, `setOption`, or `tx` from the plugin
-  extension context, or make the helper a thin wrapper around the typed plugin
-  API/tx group.
+  code. For plugin-owned behavior, do not look the plugin up by key and do not
+  pass `api`, option accessors, or `tx` into another helper merely to preserve
+  an extraction. Inline one-use machinery or stage the reusable capability in
+  the owning plugin chain. Only a proven cross-owner algorithm keeps explicit
+  plumbing.
 - If the correct answer needs missing substrate, stop and name the exact
   `Plite gap` or `Plate gap` instead of inventing a local workaround.
 - Implementation topology is not frozen in review mode. Rename, move, merge,
@@ -637,6 +668,14 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   the callback so it captures `tx`; pass `tx` to another function only when a
   proven shared or independent owner survives. Do not scatter local
   `editor.update` calls inside the callback.
+- plugin-owned functions whose signatures carry `editor`, `api`, `read`, `tx`,
+  option accessors/resolved plugin option values, or resolved plugin type
+  instead of domain inputs. Operation options are not plumbing. Review the full
+  owner chain for an earlier honest staged API/tx capability before accepting
+  the helper.
+- later tx stages that call an earlier method through a portal one-shot,
+  `context.update`, or `editor.update.*` instead of the active
+  `tx[plugin.key]` group.
 - nested `editor.update.*` calls inside any `editor.update` callback,
   especially `editor.update.withoutNormalizing(() => { editor.update.* })`.
   The owning API should pass `({ tx })`, and the callback must mutate through
@@ -757,9 +796,12 @@ Rules:
   checkbox per reviewed file in the autogoal plan.
 - Treat every production file under `transforms/`, `queries/`, `utils/`,
   `helpers/`, and similar helper folders, plus every standalone production
-  function that accepts `tx`, as a mandatory owner-topology row. Package review
-  cannot close from a few representative helpers. Inline/delete each
-  single-owner row or record concrete multiple-consumer/independent-boundary
+  function that accepts `editor`, `api`, `read`, `tx`, option accessors/resolved
+  plugin option values, or resolved plugin type, as a mandatory owner-topology
+  row. Operation options are domain inputs and do not trigger this row. Package
+  review cannot close from a few representative helpers. Inline/delete each
+  single-owner row, replace plugin-owned plumbing with an earlier honest staged
+  capability, or record concrete multiple-consumer/independent-boundary
   evidence.
 - Manifest inputs:
   - `packages/<name>/src/**/*.{ts,tsx,mts,cts}`;
@@ -784,6 +826,12 @@ Rules:
   - no type regression;
   - inline inference is preserved, with no fake explicit callback annotations,
     `as any`, or local helper types hiding weak owner types;
+  - no plugin-owned helper threads editor/runtime plumbing that an earlier
+    inferred API/tx stage can own;
+  - staged tx-to-tx reuse stays on the active `tx[plugin.key]` group and has
+    compile/runtime proof;
+  - an extension that consumes staged API has runtime proof for lazy
+    `context.api` publication;
   - no legacy compat alias, shim, old command fallback, or duplicate wrapper
     around Plite APIs remains;
   - Plite/Plate ownership is correct;

@@ -8,24 +8,18 @@ export const BaseItalicPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['EM', 'I'] },
-          { validStyle: { fontStyle: 'italic' } },
-        ],
-        query: ({ element }) =>
-          !someHtmlElement(
-            element,
-            (node) => node.style.fontStyle === 'normal'
-          ),
-      },
-    },
-  },
   render: { as: 'em' },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) =>
+      someHtmlElement(element, (node) => node.style.fontStyle === 'normal')
+        ? undefined
+        : true,
+    encode: ({ value }) => (value ? { tag: 'em' } : null),
+    match: [{ tag: ['em', 'i'] }, { style: { fontStyle: 'italic' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

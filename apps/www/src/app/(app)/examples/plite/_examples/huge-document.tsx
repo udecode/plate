@@ -145,7 +145,7 @@ const getNumericDocumentSeed = (seed: string) =>
       );
 
 const generateInitialValue = (blocks: number, seed: string) => {
-  const initialValue: Value = [];
+  const initialValue: Value[number][] = [];
   faker.seed(getNumericDocumentSeed(seed));
 
   for (let i = 0; i < blocks; i++) {

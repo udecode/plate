@@ -8,4 +8,5 @@
 - Publish immutable lazy-mapped branches with configurable depth
 - Store fitted slice replacements as one canonical undo/redo batch
 - Rebase saved selections through skipped changes against each batch's source and target documents
+- Canonicalize text-only inverse batches before mapping skipped text changes so concurrent boundary inserts survive undo and redo
 - Add typed undo, redo, state-aware batching, history skipping, state reads, and redo-branch disposal

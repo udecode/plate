@@ -16,8 +16,11 @@ export type ElementStoreState = {
 };
 
 type ElementContextValue = Nullable<ElementStoreState> & {
-  parent: ElementContextValue | null;
   scope?: string;
+};
+
+type RenderElementContextValue = ElementContextValue & {
+  parent: RenderElementContextValue | null;
 };
 
 type ElementStoreContextValue = {
@@ -49,10 +52,12 @@ const { elementStore, useElementStore: useElementStoreAtom } = createAtomStore(
 
 export { elementStore };
 
-const ElementContext = React.createContext<ElementContextValue | null>(null);
 const ElementStoreContext =
   React.createContext<ElementStoreContextValue | null>(null);
-let currentElementContext: ElementContextValue | null = null;
+let currentElementContext: RenderElementContextValue | null = null;
+
+const subscribeToEmptyElementRuntime = () => () => {};
+const getEmptyElementRuntimeState = () => initialState;
 
 const syncElementStore = (
   store: ReturnType<typeof createStore>,
@@ -124,31 +129,13 @@ const createElementRuntimeStore = (
   };
 };
 
-const findElementContext = (
-  context: ElementContextValue | null,
-  scope?: string
-) => {
-  if (!context) return null;
-  if (!scope) return context;
-
-  let current: ElementContextValue | null = context;
-
-  while (current) {
-    if (current.scope === scope) return current;
-
-    current = current.parent;
-  }
-
-  return context;
-};
-
-const findMatchingElementContext = (
-  context: ElementContextValue | null,
+const findMatchingRenderElementContext = (
+  context: RenderElementContextValue | null,
   scope?: string
 ) => {
   if (!context || !scope) return context;
 
-  let current: ElementContextValue | null = context;
+  let current: RenderElementContextValue | null = context;
 
   while (current) {
     if (current.scope === scope) return current;
@@ -160,11 +147,11 @@ const findMatchingElementContext = (
 };
 
 export const runElementContext = <T,>(
-  context: Omit<ElementContextValue, 'parent'>,
+  context: ElementContextValue,
   callback: () => T
 ): T => {
   const previousContext = currentElementContext;
-  const nextContext = {} as ElementContextValue;
+  const nextContext = {} as RenderElementContextValue;
 
   Object.defineProperties(
     nextContext,
@@ -181,23 +168,41 @@ export const runElementContext = <T,>(
 };
 
 export const useElementContext = (scope?: string) => {
-  const context = React.useContext(ElementContext);
-  const renderContext = findMatchingElementContext(
+  const nearestStoreContext = React.useContext(ElementStoreContext);
+  const renderContext = findMatchingRenderElementContext(
     currentElementContext,
     scope
+  );
+  let matchingStoreContext = nearestStoreContext;
+
+  if (scope) {
+    matchingStoreContext = null;
+
+    let current = nearestStoreContext;
+
+    while (current) {
+      if (current.scope === scope) {
+        matchingStoreContext = current;
+        break;
+      }
+
+      current = current.parent;
+    }
+  }
+  const providerState = React.useSyncExternalStore(
+    matchingStoreContext?.runtime.subscribe ?? subscribeToEmptyElementRuntime,
+    matchingStoreContext?.runtime.getState ?? getEmptyElementRuntimeState,
+    matchingStoreContext?.runtime.getState ?? getEmptyElementRuntimeState
   );
 
   if (renderContext) return renderContext;
 
-  const providerContext = findMatchingElementContext(context, scope);
+  if (!matchingStoreContext) return null;
 
-  if (providerContext) return providerContext;
-
-  if (scope) return null;
-
-  if (currentElementContext) return currentElementContext;
-
-  return findElementContext(context);
+  return {
+    ...providerState,
+    scope: matchingStoreContext.scope,
+  };
 };
 
 export const useElementStoreContext = (scope?: string) => {
@@ -249,19 +254,7 @@ export function ElementProvider({
       path: elementPath,
     })
   );
-
-  const parent = React.useContext(ElementContext);
   const parentStore = React.useContext(ElementStoreContext);
-  const contextValue = React.useMemo<ElementContextValue>(
-    () => ({
-      element,
-      entry,
-      parent,
-      path: elementPath,
-      scope,
-    }),
-    [element, elementPath, entry, parent, scope]
-  );
   const storeContextValue = React.useMemo<ElementStoreContextValue>(
     () =>
       ({
@@ -285,9 +278,7 @@ export function ElementProvider({
 
   return (
     <ElementStoreContext.Provider value={storeContextValue}>
-      <ElementContext.Provider value={contextValue}>
-        {children}
-      </ElementContext.Provider>
+      {children}
     </ElementStoreContext.Provider>
   );
 }

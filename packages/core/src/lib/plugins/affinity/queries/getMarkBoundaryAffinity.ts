@@ -1,7 +1,7 @@
 import type { EditorStateView, Element, Text } from '@platejs/plite';
 
 import { NodeApi } from '@platejs/plite';
-import { IS_FIREFOX } from '@platejs/plite-dom';
+import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
 import isEqual from 'lodash/isEqual.js';
 
 import type { BaseEditor } from '../../../editor';
@@ -54,7 +54,7 @@ export const getMarkBoundaryAffinity = (
     return 'forward';
 
   if (
-    IS_FIREFOX &&
+    findEditorDOMRootRuntime(editor)?.isGeckoHost &&
     selectionDirection === 'forward' &&
     marksDirection !== 'backward'
   )

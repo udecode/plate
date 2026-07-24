@@ -46,7 +46,7 @@ editor.update({ history: 'skip' }).text.insert('draft')
 Use `History.isHistory(value)` when library code needs to validate an unknown
 history value.
 
-Persist and restore validated history with version 3 JSON. The envelope
+Persist and restore validated history with version 4 JSON. The envelope
 includes the editor's schema identity, so decoding fails before batch data is
 read when the installed schema does not match.
 

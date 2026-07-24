@@ -5,8 +5,9 @@ description: "Connect a Plite editor to Yjs document meta, awareness, and provid
 
 `@platejs/yjs` connects a Plite editor to a Yjs document. Use it when your app
 owns the collaboration transport and wants Plite document changes, selection state,
-awareness, provider lifecycle, and undo/redo coordination to share one Yjs
-source of truth.
+awareness, and provider lifecycle to share one Yjs source of truth. Plite
+History owns undo and redo; canonical history replay uses the same Yjs bridge
+as every editor change.
 
 ## Install
 
@@ -102,10 +103,10 @@ const editor = createEditor({
 ```
 
 One Plite commit that changes several roots becomes one Yjs transaction and one
-Yjs-aware undo step. Remote batches fit the complete document through the
+Plite history batch. Remote batches fit the complete document through the
 compiled schema, including shared and exclusive content-root ownership.
-Awareness selections carry their root key; ranges whose anchor and focus belong
-to different roots are rejected.
+Awareness selections carry their root key; ranges whose anchor and focus
+belong to different roots are rejected.
 
 ## Shared Effects
 
@@ -205,8 +206,8 @@ content or root metadata takes an explicit traced full-diff fallback.
 Outbound commits lower `commit.changes` directly into affected Yjs regions.
 Compatible nodes and uniquely derived relocated subtrees keep their Yjs node
 identities; structural regions use the canonical change as their only
-execution authority. Split undo metadata is derived from classified changed
-paths and the commit snapshots.
+execution authority. Canonical split changes lower through bounded affected
+ranges.
 
 ## React Hooks
 
@@ -237,12 +238,29 @@ outside the Plite package.
 ## Proof
 
 The package is covered by change, selection, awareness, provider, React, and
-structural soak contracts under `packages/yjs/test`. The Hocuspocus
-example is covered by the production soak proof script:
+structural soak contracts under `packages/yjs/test`.
 
 ```sh
-PRODUCTION_SOAK_FAIL_ON_ISSUES=1 bun scripts/proof/yjs-hocuspocus-production-soak.mjs
+pnpm --filter @platejs/yjs test
 ```
+
+Run the focused Chromium rows for editor convergence, the Plate collaboration
+example, and the app-owned Hocuspocus boundary:
+
+```sh
+pnpm --filter plite test:plite-browser:chromium \
+  tests/plite-browser/donor/examples/yjs-collaboration.test.ts \
+  tests/plite-browser/donor/examples/collaboration-demo.test.ts \
+  tests/plite-browser/donor/examples/yjs-hocuspocus.test.ts
+```
+
+The collaboration row covers remote edits, offline work, reconnect, and
+Plite History undo/redo. The Plate collaboration example covers independent
+providers, cursor rendering, schema recovery, mobile layout, and teardown. The
+Hocuspocus row creates distinct provider-backed pages in manual-connect mode and
+proves that unsynced documents reject local publication. It does not test a
+production Hocuspocus server, authentication, persistence, or deployment
+availability; those remain host-app infrastructure.
 
 ## Related Docs
 

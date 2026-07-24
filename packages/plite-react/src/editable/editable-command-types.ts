@@ -1,7 +1,6 @@
 import type { Range } from '@platejs/plite';
 
 export type EditableCommand =
-  | { kind: 'format'; format: string }
   | {
       kind: 'delete';
       direction: 'backward' | 'forward';
@@ -25,6 +24,4 @@ export type EditableCommand =
       reverse?: boolean;
     }
   | { kind: 'select'; selection: Range }
-  | { kind: 'select-all' }
-  | { kind: 'set-block'; blockType: string; wrap?: string }
-  | { kind: 'toggle-mark'; mark: string };
+  | { kind: 'select-all' };

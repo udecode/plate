@@ -1,6 +1,5 @@
 import { Hotkeys, isHotkey, type KeyboardEventLike } from '../src/index';
-
-const MAC_OS_X_USER_AGENT = /Mac OS X/;
+import { JSDOM } from 'jsdom';
 
 const event = ({
   altKey = false,
@@ -93,13 +92,11 @@ describe('plite-dom hotkeys', () => {
         event({ ctrlKey: true, key: 'ArrowLeft', shiftKey: true })
       )
     ).toBe(true);
-    if (!MAC_OS_X_USER_AGENT.test(globalThis.navigator?.userAgent ?? '')) {
-      expect(
-        Hotkeys.isExtendWordForward(
-          event({ altKey: true, key: 'ArrowRight', shiftKey: true })
-        )
-      ).toBe(false);
-    }
+    expect(
+      Hotkeys.isExtendWordForward(
+        event({ altKey: true, key: 'ArrowRight', shiftKey: true })
+      )
+    ).toBe(false);
     expect(
       isHotkey(
         'opt+shift+right',
@@ -149,6 +146,28 @@ describe('plite-dom hotkeys', () => {
     expect(isHotkey('shift?+delete', event({ key: 'Delete' }))).toBe(true);
     expect(
       isHotkey('shift?+delete', event({ key: 'Delete', shiftKey: true }))
+    ).toBe(true);
+  });
+
+  test('keeps product formatting predicates out of the Plite substrate', () => {
+    expect(Hotkeys).not.toHaveProperty('isBold');
+    expect(Hotkeys).not.toHaveProperty('isItalic');
+  });
+
+  test('matches named physical keys and optional modifier checks', () => {
+    expect(
+      isHotkey(
+        'mod+period',
+        { platform: 'other' },
+        event({ code: 'Period', ctrlKey: true, key: '.' })
+      )
+    ).toBe(true);
+    expect(
+      isHotkey(
+        'period',
+        { ignoreModifiers: true, platform: 'other' },
+        event({ code: 'Period', ctrlKey: true, key: '.' })
+      )
     ).toBe(true);
   });
 
@@ -305,6 +324,60 @@ describe('plite-dom hotkeys', () => {
         event({ key: 's', metaKey: true })
       )
     ).toBe(false);
+  });
+
+  test('resolves semantic hotkeys from each event realm', () => {
+    const createRealmEvent = ({
+      init,
+      platform,
+      userAgent,
+    }: {
+      init: KeyboardEventInit;
+      platform: string;
+      userAgent: string;
+    }) => {
+      const dom = new JSDOM('<!doctype html><button>target</button>');
+      const button = dom.window.document.querySelector('button')!;
+      let result = false;
+
+      Object.defineProperty(dom.window.navigator, 'platform', {
+        configurable: true,
+        value: platform,
+      });
+      Object.defineProperty(dom.window.navigator, 'userAgent', {
+        configurable: true,
+        value: userAgent,
+      });
+      button.addEventListener('keydown', (event) => {
+        result = Hotkeys.isUndo(event);
+      });
+      button.dispatchEvent(
+        new dom.window.KeyboardEvent('keydown', {
+          bubbles: true,
+          key: 'z',
+          ...init,
+        })
+      );
+
+      return result;
+    };
+
+    expect(
+      createRealmEvent({
+        init: { metaKey: true },
+        platform: 'MacIntel',
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Safari/605.1.15',
+      })
+    ).toBe(true);
+    expect(
+      createRealmEvent({
+        init: { ctrlKey: true },
+        platform: 'Win32',
+        userAgent:
+          'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',
+      })
+    ).toBe(true);
   });
 
   test('supports modifier-only keydown checks', () => {

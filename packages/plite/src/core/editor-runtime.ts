@@ -38,7 +38,7 @@ import type {
   Value,
 } from '../interfaces/editor';
 import type { InternalEditorSchemaApi } from './editor-schema';
-import type { DocumentChange } from './document-change';
+import type { DocumentChange } from './change/document-change';
 import type { InternalEditorUpdateOptions } from './update-policy';
 
 type BindEditorMethod<T> = T extends (

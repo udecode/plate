@@ -158,25 +158,25 @@ describe('table merge slow contracts', () => {
             <editor>
               <htable>
                 <htr>
-                  <htd colSpan={1} rowSpan={1}>
+                  <htd>
                     <hp>
                       merged
                       <cursor />
                     </hp>
                   </htd>
-                  <htd colSpan={1} rowSpan={1}>
+                  <htd>
                     <hp>
                       <htext />
                     </hp>
                   </htd>
                 </htr>
                 <htr>
-                  <htd colSpan={1} rowSpan={1}>
+                  <htd>
                     <hp>
                       <htext />
                     </hp>
                   </htd>
-                  <htd colSpan={1} rowSpan={1}>
+                  <htd>
                     <hp>
                       <htext />
                     </hp>
@@ -232,7 +232,7 @@ describe('table merge slow contracts', () => {
         });
       });
 
-      describe('deleteRowWhenExpanded', () => {
+      describe('removeRow with expanded selections', () => {
         it('deletes a fully selected row and collapses the selection to the next row', () => {
           const input = (
             <editor>
@@ -328,7 +328,7 @@ describe('table merge slow contracts', () => {
         });
       });
 
-      describe('deleteColumnWhenExpanded', () => {
+      describe('removeColumn with expanded selections', () => {
         it('deletes a fully selected column and keeps the remaining column selected', () => {
           const input = (
             <editor>
@@ -442,7 +442,7 @@ describe('table merge slow contracts', () => {
         initialValue: input.children,
       });
 
-    describe('deleteTableMergeColumn', () => {
+    describe('removeColumn with spans', () => {
       it('deletes a selected column spanning every row', () => {
         const input = (
           <editor>
@@ -488,7 +488,7 @@ describe('table merge slow contracts', () => {
           <editor>
             <htable colSizes={[40, 60]}>
               <htr>
-                <htd attributes={{ colspan: '2' }} colSpan={2}>
+                <htd colSpan={2}>
                   <hp>11</hp>
                 </htd>
               </htr>
@@ -519,8 +519,6 @@ describe('table merge slow contracts', () => {
               {
                 children: [
                   {
-                    attributes: { colspan: '1' },
-                    colSpan: 1,
                     type: 'td',
                   },
                 ],
@@ -594,7 +592,7 @@ describe('table merge slow contracts', () => {
         initialValue: input.children,
       });
 
-    describe('deleteTableMergeRow', () => {
+    describe('removeRow with spans', () => {
       it('moves row-spanning cells into the next remaining row', () => {
         const input = (
           <editor>
@@ -639,7 +637,6 @@ describe('table merge slow contracts', () => {
                   { children: [{ children: [{ text: '21' }] }], type: 'td' },
                   {
                     children: [{ children: [{ text: '12' }] }],
-                    rowSpan: 1,
                     type: 'td',
                   },
                 ],
@@ -663,7 +660,7 @@ describe('table merge slow contracts', () => {
           <editor>
             <htable>
               <htr>
-                <htd attributes={{ rowspan: '2' }} rowSpan={2}>
+                <htd rowSpan={2}>
                   <hp>11</hp>
                 </htd>
                 <htd>
@@ -700,9 +697,7 @@ describe('table merge slow contracts', () => {
               {
                 children: [
                   {
-                    attributes: { rowspan: '1' },
                     children: [{ children: [{ text: '11' }] }],
-                    rowSpan: 1,
                     type: 'td',
                   },
                   { children: [{ children: [{ text: '12' }] }], type: 'td' },
@@ -744,7 +739,7 @@ describe('table merge slow contracts', () => {
                     <cursor />
                   </hp>
                 </htd>
-                <htd attributes={{ rowspan: '2' }} rowSpan={2}>
+                <htd rowSpan={2}>
                   <hp>11</hp>
                 </htd>
                 <htd>
@@ -782,9 +777,7 @@ describe('table merge slow contracts', () => {
                 children: [
                   { children: [{ children: [{ text: '20' }] }], type: 'td' },
                   {
-                    attributes: { rowspan: '1' },
                     children: [{ children: [{ text: '11' }] }],
-                    rowSpan: 1,
                     type: 'td',
                   },
                   { children: [{ children: [{ text: '22' }] }], type: 'td' },
@@ -797,7 +790,7 @@ describe('table merge slow contracts', () => {
         ]);
       });
 
-      it('replaces the table with the default block when its only row is deleted', () => {
+      it('keeps the last remaining row intact', () => {
         const input = (
           <editor>
             <htable>
@@ -817,15 +810,7 @@ describe('table merge slow contracts', () => {
 
         editor.update.table.removeRow();
 
-        expect(editor.read.children()).toMatchObject(
-          (
-            <editor>
-              <hp>
-                <htext />
-              </hp>
-            </editor>
-          ).children
-        );
+        expect(editor.read.children()).toMatchObject(input.children);
       });
     });
   }

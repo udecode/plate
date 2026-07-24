@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 import { isRecord } from '../src/core/record';
-import { SUPPORTED_YJS_UNDO_MANAGER_VERSION } from '../src/core/undo-manager-adapter';
 
 type JsonRecord = Readonly<Record<string, unknown>>;
 
@@ -143,6 +142,19 @@ const readPackageJson = (path: string): PackageJson => {
 const yjsCollaborationBenchmarkPath =
   '../../../scripts/benchmarks/core/current/yjs-collaboration.mjs';
 const benchmarkStatsPath = '../../../scripts/benchmarks/shared/stats.mjs';
+const publicYjsDocsPath = '../../../content/docs/plite/libraries/plite-yjs.mdx';
+const manualYjsSoakRunnerSignals = [
+  'scripts/proof/yjs-collaboration-soak.mjs',
+  'scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs',
+  'scripts/proof/persistent-browser-soak.mjs',
+  'scripts/proof/yjs-hocuspocus-production-soak.mjs',
+];
+const yjsSoakScriptAliases = [
+  'test:yjs-collaboration-soak',
+  'test:yjs-hocuspocus-persistent-room-soak',
+  'test:persistent-soak',
+  'test:yjs-hocuspocus-production-soak',
+];
 
 const readTsConfigJson = (path: string): TsConfigJson => {
   const record = readJsonRecord(path);
@@ -158,20 +170,14 @@ const readTsConfigJson = (path: string): TsConfigJson => {
 };
 
 describe('@platejs/yjs package config contract', () => {
-  it('pins Yjs to the audited UndoManager stack contract version', () => {
+  it('uses the public Yjs API compatibility range', () => {
     const rootPackage = readPackageJson('../../../package.json');
     const yjsPackage = readPackageJson('../package.json');
 
     assert.equal(rootPackage.devDependencies?.yjs, undefined);
     assert.equal(yjsPackage.dependencies?.yjs, undefined);
-    assert.equal(
-      yjsPackage.devDependencies?.yjs,
-      SUPPORTED_YJS_UNDO_MANAGER_VERSION
-    );
-    assert.equal(
-      yjsPackage.peerDependencies?.yjs,
-      SUPPORTED_YJS_UNDO_MANAGER_VERSION
-    );
+    assert.equal(yjsPackage.devDependencies?.yjs, '13.6.30');
+    assert.equal(yjsPackage.peerDependencies?.yjs, '>=13.6.30');
   });
 
   it('does not resolve site Yjs imports through package-local node_modules', () => {
@@ -209,38 +215,46 @@ describe('@platejs/yjs package config contract', () => {
     }
   });
 
-  it('keeps restored long-running Yjs soak scripts manual-only', () => {
+  it('does not publish archived Yjs soak aliases', () => {
     const rootPackage = readPackageJson('../../../package.json');
     const scripts = rootPackage.scripts ?? {};
 
-    assert.equal(scripts['test:yjs-collaboration-soak'], undefined);
-    assert.equal(
-      scripts['test:yjs-hocuspocus-persistent-room-soak'],
-      undefined
-    );
-    assert.equal(scripts['test:persistent-soak'], undefined);
-    assert.equal(scripts['test:yjs-hocuspocus-production-soak'], undefined);
+    for (const alias of yjsSoakScriptAliases) {
+      assert.equal(scripts[alias], undefined);
+    }
 
     for (const script of Object.values(scripts)) {
-      assert.equal(
-        script.includes('scripts/proof/yjs-collaboration-soak.mjs'),
-        false
-      );
-      assert.equal(
-        script.includes(
-          'scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs'
-        ),
-        false
-      );
-      assert.equal(
-        script.includes('scripts/proof/persistent-browser-soak.mjs'),
-        false
-      );
-      assert.equal(
-        script.includes('scripts/proof/yjs-hocuspocus-production-soak.mjs'),
-        false
-      );
+      for (const signal of manualYjsSoakRunnerSignals) {
+        assert.equal(script.includes(signal), false);
+      }
     }
+  });
+
+  it('documents only executable Yjs proof owners', () => {
+    const docs = readFileSync(
+      new URL(publicYjsDocsPath, import.meta.url),
+      'utf8'
+    );
+    const pliteApp = readPackageJson('../../../apps/plite/package.json');
+    const yjsPackage = readPackageJson('../package.json');
+
+    for (const signal of [
+      ...manualYjsSoakRunnerSignals,
+      ...yjsSoakScriptAliases,
+    ]) {
+      assert.equal(docs.includes(signal), false);
+    }
+
+    assert.equal(
+      yjsPackage.scripts?.test,
+      "bun test --preload ../../config/plite-source-test-setup.ts ./src ./test --path-ignore-patterns ''"
+    );
+    assert.equal(
+      pliteApp.scripts?.['test:plite-browser:chromium'],
+      'node scripts/run-plite-browser.mjs chromium'
+    );
+    assert.match(docs, /pnpm --filter @platejs\/yjs test/);
+    assert.match(docs, /pnpm --filter plite test:plite-browser:chromium/);
   });
 
   it('keeps fast checks free of long-running proof gates', () => {

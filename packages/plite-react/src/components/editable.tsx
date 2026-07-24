@@ -1,4 +1,9 @@
-import React, { useCallback, useMemo, useRef } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 import {
   NodeApi,
   type Path,
@@ -6,13 +11,7 @@ import {
   RangeApi,
   type RuntimeId,
 } from '@platejs/plite';
-import {
-  CAN_USE_DOM,
-  type DOMRange,
-  HAS_BEFORE_INPUT_SUPPORT,
-  IS_ANDROID,
-  isDOMNode,
-} from '@platejs/plite-dom';
+import { type DOMRange, isDOMNode } from '@platejs/plite-dom';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 import type { MountedTopLevelRange } from '../dom-strategy/dom-strategy-commands';
 import type {
@@ -27,7 +26,10 @@ import {
 } from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readLiveSelection } from '../editable/runtime-selection-state';
-import { EditableDOMRuntimeContext } from '../hooks/use-claim-editable-dom-commit';
+import {
+  EditableDOMRuntimeContext,
+  useEditableDOMHostFact,
+} from '../hooks/use-claim-editable-dom-commit';
 import { useEditor } from '../hooks/use-editor';
 import { ComposingContext } from '../hooks/use-editor-composing';
 import { ReadOnlyContext } from '../hooks/use-editor-read-only';
@@ -199,6 +201,9 @@ type DropCursorRect = {
 };
 
 const DROP_CURSOR_THICKNESS = 2;
+const subscribeHydration = () => () => {};
+const getClientHydrationSnapshot = () => true;
+const getServerHydrationSnapshot = () => false;
 
 const getDropCursorTargetElement = (target: EventTarget | null) => {
   if (!isDOMNode(target)) {
@@ -325,8 +330,6 @@ const updateEditableDropCursor = (
     rootElement.appendChild(cursor);
   }
 
-  cursor.style.background = '#2563eb';
-  cursor.style.borderRadius = `${DROP_CURSOR_THICKNESS}px`;
   cursor.style.display = 'block';
   cursor.style.height = `${rect.height}px`;
   cursor.style.left = `${rect.left}px`;
@@ -335,7 +338,6 @@ const updateEditableDropCursor = (
   cursor.style.position = 'absolute';
   cursor.style.top = `${rect.top}px`;
   cursor.style.width = `${rect.width}px`;
-  cursor.style.zIndex = '2';
 };
 
 export type EditableHandlerResult = boolean | EditableRepairRequest | void;
@@ -428,6 +430,17 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
     runtime,
     partialDOMBackedSelection,
   } = rootRuntime;
+  const supportsBeforeInput = useSyncExternalStore(
+    runtime.subscribeHostFacts,
+    () => runtime.supportsBeforeInput,
+    () => false
+  );
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    getClientHydrationSnapshot,
+    getServerHydrationSnapshot
+  );
+  const replacementInputFeaturesAllowed = !hydrated || supportsBeforeInput;
   const rootInteraction = useRootInteractionController({
     disabled: readOnly,
     editor,
@@ -597,12 +610,12 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
               translate="no"
               {...attributes}
               autoCapitalize={
-                HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
+                replacementInputFeaturesAllowed
                   ? attributes.autoCapitalize
                   : 'false'
               }
               autoCorrect={
-                HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
+                replacementInputFeaturesAllowed
                   ? attributes.autoCorrect
                   : 'false'
               }
@@ -616,13 +629,11 @@ export const EditableDOMRoot = (props: EditableDOMRootProps) => {
               data-plite-root={editorRoot}
               {...editableEventBindingsWithDropCursor}
               {...rootInteractionEventBindings}
-              // Browsers without `beforeinput` need a separate replacement-input
-              // implementation. During SSR, pass through consumer props to avoid a
-              // hydration mismatch; in the browser, default to a falsy value.
+              // Keep server markup and the first client render identical. Once
+              // hydration completes, mounted-root facts can disable replacement
+              // features in browsers without `beforeinput`.
               spellCheck={
-                HAS_BEFORE_INPUT_SUPPORT || !CAN_USE_DOM
-                  ? attributes.spellCheck
-                  : false
+                replacementInputFeaturesAllowed ? attributes.spellCheck : false
               }
               style={{
                 ...(disableDefaultStyles
@@ -678,14 +689,21 @@ export type RenderPlaceholderProps = {
 export const DefaultPlaceholder = ({
   attributes,
   children,
-}: RenderPlaceholderProps) => (
-  // COMPAT: Artificially add a line-break to the end on the placeholder element
-  // to prevent Android IMEs to pick up its content in autocorrect and to auto-capitalize the first letter
-  <span {...attributes}>
-    {children}
-    {IS_ANDROID && <br />}
-  </span>
-);
+}: RenderPlaceholderProps) => {
+  const isAndroid = useEditableDOMHostFact(
+    (runtime) => runtime.isAndroidHost,
+    false
+  );
+
+  return (
+    // COMPAT: Artificially add a line-break to the end on the placeholder element
+    // to prevent Android IMEs to pick up its content in autocorrect and to auto-capitalize the first letter
+    <span {...attributes}>
+      {children}
+      {isAndroid && <br />}
+    </span>
+  );
+};
 
 type ScrollRect = {
   bottom: number;

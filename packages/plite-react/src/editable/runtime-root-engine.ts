@@ -1,7 +1,6 @@
 import {
   type ComponentPropsWithRef,
   type ForwardedRef,
-  useCallback,
   useEffect,
   useMemo,
 } from 'react';
@@ -199,10 +198,7 @@ export const useEditableRootRuntime = ({
       syncDOMSelectionToEditor,
     ]
   );
-  const applyInputRules = useCallback(() => false, []);
-
   const eventRuntime = useEditableEventRuntime({
-    applyInputRules,
     callbacks,
     deferNativeTextInputRepair,
     onDOMBeforeInput,

@@ -22,10 +22,6 @@ import { readRuntimeNode } from '../editable/runtime-live-state';
 import { useEditor } from '../hooks/use-editor';
 import { useEditorSelector } from '../hooks/use-editor-selector';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
-import {
-  classifySegmentKind,
-  type DOMStrategySegmentKind,
-} from './classify-segment-kind';
 
 const isText = (
   value: Descendant
@@ -46,7 +42,6 @@ const truncate = (value: string, limit: number) =>
 const MAX_PREVIEW_LINES = 3;
 
 type SegmentPreview = {
-  kind: DOMStrategySegmentKind;
   lines: readonly string[];
 };
 
@@ -75,7 +70,6 @@ const sameSegmentPreview = (
   right: SegmentPreview
 ) =>
   left != null &&
-  left.kind === right.kind &&
   left.lines.length === right.lines.length &&
   left.lines.every((line, index) => line === right.lines[index]);
 
@@ -198,7 +192,6 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     const selectPreview = React.useCallback(
       (editorValue: EditorType): SegmentPreview => {
         const lines: string[] = [];
-        const nodes: Descendant[] = [];
 
         previewRuntimeIds.forEach((runtimeId) => {
           const snapshot = editorGetSnapshot(editorValue);
@@ -218,7 +211,6 @@ export const DOMStrategySegmentPlaceholder = React.memo(
             return;
           }
 
-          nodes.push(node);
           lines.push(
             truncate(
               getDescendantText(node).replace(/\uFEFF/g, ''),
@@ -228,7 +220,6 @@ export const DOMStrategySegmentPlaceholder = React.memo(
         });
 
         return {
-          kind: classifySegmentKind(nodes),
           lines,
         };
       },
@@ -296,7 +287,6 @@ export const DOMStrategySegmentPlaceholder = React.memo(
         contentEditable={false}
         data-plite-dom-coverage-boundary={boundaryId}
         data-plite-dom-coverage-edge="owner"
-        data-plite-dom-strategy-kind={preview.kind}
         data-plite-dom-strategy-placeholder="true"
         data-plite-dom-strategy-segment={dataSegment ?? String(segmentIndex)}
         onKeyDown={handleKeyDown}

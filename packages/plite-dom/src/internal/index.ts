@@ -49,6 +49,36 @@ export {
   installEditorDOMPhaseScheduler,
   scheduleEditorDOMPhase,
 } from '../plugin/dom-phase-scheduler';
+export {
+  DOMIntegrityObserver,
+  type DOMIntegrityDiagnostics,
+  type DOMIntegrityMutationEvidence,
+  type DOMIntegrityMutationOwner,
+  type DOMIntegrityObserverOptions,
+  type DOMIntegrityRepairEvidence,
+} from '../plugin/dom-integrity-observer';
+export {
+  DOMRootRuntime,
+  type DOMRootRuntimeOptions,
+  findEditorDOMRootRuntime,
+  findDOMRootRuntime,
+} from '../plugin/dom-root-runtime';
+export {
+  getDOMHostLanguage,
+  hasDOMHostQuirk,
+  isAndroidDOMHost,
+  isBlinkDOMHost,
+  isGeckoDOMHost,
+  isWebKitDOMHost,
+  supportsDOMBeforeInput,
+  usesAppleDOMHotkeys,
+} from '../utils/environment';
+export { createCompiledHotkeyMatcher } from '../utils/hotkey-match';
+export {
+  DOMSyncMutationOwnership,
+  isDOMSyncMutation,
+  markDOMSyncMutationTarget,
+} from '../plugin/dom-sync-mutation-ownership';
 export { parseDOMClipboardHtml } from '../plugin/dom-html';
 export type {
   DOMPhase,

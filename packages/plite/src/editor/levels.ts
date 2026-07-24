@@ -29,7 +29,7 @@ export function* levels<T extends Node>(
     const isVoid = !voids && NodeApi.isElement(n) && editorIsVoid(editor, n);
 
     if (match(n, p)) {
-      levels.push([n, p] as NodeEntry<T>);
+      levels.push([n, p] as unknown as NodeEntry<T>);
     }
 
     if (isVoid) {

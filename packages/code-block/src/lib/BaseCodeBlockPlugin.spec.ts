@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { createBaseEditor } from '@platejs/core';
 import { pipeDecorate } from '@platejs/core/static/internal';
-import type { DecoratedRange, Element, NodeEntry } from '@platejs/plite';
+import {
+  type DecoratedRange,
+  type Element,
+  type NodeEntry,
+  SelectionApi,
+} from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import { KEYS, NODES } from '@platejs/utils';
 import { createLowlight } from 'lowlight';
@@ -103,6 +108,77 @@ describe('BaseCodeBlockPlugin', () => {
       children: [{ children: [{ text: '' }], type: 'code_line' }],
       type: 'code_block',
     });
+  });
+
+  it('decodes and encodes code lines through the compiled HTML codec', () => {
+    const point = { offset: 0, path: [0, 0, 0] };
+    const editor = createBaseEditor({
+      plugins: [BaseCodeBlockPlugin],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      initialValue: [
+        {
+          children: [
+            { children: [{ text: 'const a = 1;' }], type: NODES.codeLine },
+            { children: [{ text: '' }], type: NODES.codeLine },
+            { children: [{ text: 'const b = 2;' }], type: NODES.codeLine },
+            { children: [{ text: '' }], type: NODES.codeLine },
+          ],
+          lang: 'typescript',
+          type: NODES.codeBlock,
+        },
+      ],
+    });
+    const data = new DataTransfer();
+
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<pre><select>TypeScript</select>const a = 1;\n\nconst b = 2;</pre>',
+      })
+    ).toEqual([
+      {
+        children: [
+          { children: [{ text: 'const a = 1;' }], type: NODES.codeLine },
+          { children: [{ text: '' }], type: NODES.codeLine },
+          { children: [{ text: 'const b = 2;' }], type: NODES.codeLine },
+        ],
+        type: NODES.codeBlock,
+      },
+    ]);
+
+    editor.api.clipboard.writeSelection(data);
+
+    const body = new DOMParser().parseFromString(
+      data.getData('text/html'),
+      'text/html'
+    ).body;
+    const pre = body.querySelector('pre[data-language="typescript"]');
+
+    if (!(pre instanceof HTMLElement)) {
+      throw new TypeError('Expected an encoded code block.');
+    }
+
+    expect(
+      Array.from(pre.querySelectorAll('code > span[data-code-line]')).map(
+        (line) => line.textContent
+      )
+    ).toEqual(['const a = 1;', '', 'const b = 2;', '']);
+    expect(
+      Array.from(pre.querySelectorAll('code > span[data-code-line]')).map(
+        (line) => ({
+          display: (line as HTMLElement).style.display,
+          minHeight: (line as HTMLElement).style.minHeight,
+        })
+      )
+    ).toEqual([
+      { display: 'block', minHeight: '1em' },
+      { display: 'block', minHeight: '1em' },
+      { display: 'block', minHeight: '1em' },
+      { display: 'block', minHeight: '1em' },
+    ]);
+    expect(editor.api.html.deserialize({ element: pre })).toEqual([
+      ...editor.read.children(),
+    ]);
   });
 
   it('initializes code-block decorations and returns cached code-line ranges', () => {

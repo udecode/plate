@@ -45,7 +45,7 @@ export const cleanDocx = (html: string, rtf: string): string => {
   cleanDocxListElements(body);
   copyBlockMarksToSpanChild(body);
 
-  // Prevent deserializeHtml from collapsing whitespace
+  // Preserve whitespace during HTML decoding.
   const preformattedWrapper = document.createElement('div');
   preformattedWrapper.style.whiteSpace = 'pre-wrap';
   preformattedWrapper.innerHTML = body.innerHTML;

@@ -8,11 +8,14 @@ import {
 } from '@platejs/plite';
 import type { DOMRange } from '@platejs/plite-dom';
 import {
-  createDOMPhaseScheduler,
+  DOMRootRuntime,
+  type DOMRootRuntimeOptions,
   type DOMPhaseScheduler,
-  type DOMPhaseSchedulerDiagnostics,
-  installEditorDOMPhaseScheduler,
+  type DOMIntegrityMutationOwner,
+  type DOMIntegrityRepairEvidence,
+  findDOMRootRuntime,
   IS_COMPOSING,
+  IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
 import type { EditableDOMStrategyRuntime } from '../components/editable';
 import { isSelectionPartialDOMBacked } from '../dom-strategy/dom-strategy-commands';
@@ -20,13 +23,7 @@ import type { AndroidInputManager } from '../hooks/android-input-manager/android
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { isRangeAcrossContentRootOwners } from './content-root-owners';
-import {
-  DOMIntegrityObserver,
-  type DOMIntegrityMutationOwner,
-  type DOMIntegrityRepairEvidence,
-} from './dom-integrity-observer';
 import type { DOMRepairQueue } from './dom-repair-queue';
-import { DOMSyncMutationOwnership } from './dom-sync-mutation-ownership';
 import {
   createEditableInputController,
   createEditableInputControllerState,
@@ -57,7 +54,6 @@ const EDITABLE_RUNTIMES_BY_EDITOR_API = new WeakMap<
   object,
   Set<EditableDOMRuntime>
 >();
-const EDITABLE_RUNTIME_BY_ROOT = new WeakMap<HTMLElement, EditableDOMRuntime>();
 const EDITABLE_FOCUS_SUBSCRIBERS_BY_RUNTIME = new WeakMap<
   object,
   Set<() => void>
@@ -123,28 +119,13 @@ export const isEditableDOMSelectionPartial = ({
   );
 };
 
-const asElement = (node: Node): Element | null =>
-  node.nodeType === ELEMENT_NODE ? (node as Element) : node.parentElement;
-
 /** Resolve the mounted root runtime that owns a DOM interaction target. */
 export const findMountedEditableDOMRuntime = (
   node: Node
 ): EditableDOMRuntime | null => {
-  let element = asElement(node);
+  const adapter = findDOMRootRuntime(node)?.adapter;
 
-  while (element) {
-    const runtime = EDITABLE_RUNTIME_BY_ROOT.get(element as HTMLElement);
-
-    if (runtime) return runtime;
-
-    const rootNode = element.getRootNode();
-
-    element =
-      element.parentElement ??
-      ('host' in rootNode ? (rootNode.host as Element) : null);
-  }
-
-  return null;
+  return adapter instanceof EditableDOMRuntime ? adapter : null;
 };
 
 /** Resolve the connected runtime for a mounted React editor view. */
@@ -199,16 +180,6 @@ type EditableDOMRuntimeUpdate = {
   readOnly: boolean;
 };
 
-const EMPTY_SCHEDULER_DIAGNOSTICS: DOMPhaseSchedulerDiagnostics = Object.freeze(
-  {
-    flushes: 0,
-    lastFlushPhases: Object.freeze([]),
-    loopLimitHits: 0,
-    loopRestarts: 0,
-    maxObservedPasses: 0,
-  }
-);
-
 /** Private imperative owner for one mounted editable root. */
 export class EditableDOMRuntime {
   readonly androidInputManagerRef: MutableCell<
@@ -224,13 +195,11 @@ export class EditableDOMRuntime {
 
   readonly domPhaseScheduler: DOMPhaseScheduler;
 
-  readonly domIntegrityObserver: DOMIntegrityObserver;
+  readonly domInputRuntime: DOMRootRuntime<HTMLDivElement>['domInputRuntime'];
 
   readonly domRepairQueueRef: MutableCell<DOMRepairQueue | null> = {
     current: null,
   };
-
-  readonly domSyncMutationOwnership: DOMSyncMutationOwnership;
 
   readonly handledDOMBeforeInputRef: MutableCell<boolean> = { current: false };
 
@@ -240,11 +209,7 @@ export class EditableDOMRuntime {
 
   readonly receivedUserInput: MutableCell<boolean> = { current: false };
 
-  readonly rootRef: MutableCell<HTMLDivElement | null> = { current: null };
-
-  connected = false;
-
-  private readonly disposables = new Map<string, () => void>();
+  readonly rootRef: MutableCell<HTMLDivElement | null>;
 
   private domStrategyRuntimeValue: EditableDOMStrategyRuntime | null;
 
@@ -277,9 +242,7 @@ export class EditableDOMRuntime {
 
   private scheduleOnDOMSelectionChange: CancelableCallback | null = null;
 
-  private schedulerImplementation: DOMPhaseScheduler | null;
-
-  private uninstallDOMPhaseScheduler: (() => void) | null = null;
+  private readonly rootRuntime: DOMRootRuntime<HTMLDivElement>;
 
   private cancelUserInputFrameTask: (() => void) | null = null;
 
@@ -295,25 +258,27 @@ export class EditableDOMRuntime {
     onComposingChange = () => {},
     onPartialDOMBackedSelectionChange = () => {},
     readOnly = false,
-  }: Partial<EditableDOMRuntimeUpdate> & { editor: ReactRuntimeEditor }) {
+    testRootFacts,
+  }: Partial<EditableDOMRuntimeUpdate> & {
+    editor: ReactRuntimeEditor;
+    testRootFacts?: DOMRootRuntimeOptions<HTMLDivElement>['testRootFacts'];
+  }) {
     this.domStrategyRuntimeValue = domStrategyRuntime;
     this.editorValue = editor;
     this.onComposingChange = onComposingChange;
     this.onPartialDOMBackedSelectionChange = onPartialDOMBackedSelectionChange;
     this.readOnlyValue = readOnly;
-    this.schedulerImplementation = this.createScheduler();
-    this.domSyncMutationOwnership = new DOMSyncMutationOwnership(
-      (phase, label, callback, options) =>
-        this.schedulerImplementation?.schedule(
-          phase,
-          label,
-          callback,
-          options
-        ) ?? (() => {})
-    );
-    this.domIntegrityObserver = new DOMIntegrityObserver({
-      consumeOwnedMutation: (mutation) =>
-        this.domSyncMutationOwnership.consume(mutation),
+    this.rootRuntime = new DOMRootRuntime({
+      adapter: this,
+      afterRootMount: () => this.attachNativeInputListeners(),
+      beforeRootTeardown: () =>
+        runAllRuntimeSteps([
+          () => this.androidInputManagerRef.current?.prepareDOMTeardown(),
+          () => this.resetSchedulerBackedInputState(),
+          () => this.detachNativeInputListeners(),
+          () => this.clearModelSelectionDOMPreference(),
+        ]),
+      editor,
       getAndroidMutationHandler: () =>
         this.androidInputManagerRef.current?.handleDomMutations ?? null,
       isAndroidMutationOwned: () => {
@@ -350,6 +315,21 @@ export class EditableDOMRuntime {
         );
       },
       isComposing: () => this.state.isComposing,
+      onDestroy: () => {
+        const rangeAnchors = [
+          ...this.browserHandleRangeAnchors.current.values(),
+        ];
+
+        this.browserHandleRangeAnchors.current.clear();
+        runAllRuntimeSteps([
+          () =>
+            runAllRuntimeSteps(
+              rangeAnchors.map((rangeAnchor) => () => rangeAnchor.release())
+            ),
+          () => this.clearVerticalGoal(),
+          () => this.disconnectVerticalGoalOwner(),
+        ]);
+      },
       onRepair: (evidence) => this.integrityRepairHandler(evidence),
       resolvePath: (mutation) => {
         const targetElement =
@@ -374,49 +354,25 @@ export class EditableDOMRuntime {
 
         return pliteElement?.getAttribute('data-plite-path') ?? null;
       },
-      schedule: (callback, options) =>
-        this.schedulerImplementation?.schedule(
-          'dom-write',
-          'dom-integrity-repair',
-          callback,
-          options
-        ) ?? (() => {}),
+      testRootFacts,
     });
-    this.domPhaseScheduler = {
-      destroy: () => this.destroyScheduler(),
-      diagnostics: () =>
-        this.schedulerImplementation?.diagnostics() ??
-        EMPTY_SCHEDULER_DIAGNOSTICS,
-      flush: () => this.schedulerImplementation?.flush(),
-      pending: () => this.schedulerImplementation?.pending() ?? 0,
-      schedule: (phase, label, callback, options) => {
-        const scheduledCallback =
-          phase === 'dom-write'
-            ? (frameTime?: number) =>
-                this.domIntegrityObserver.runOwned('scheduler', () =>
-                  callback(frameTime)
-                )
-            : callback;
-
-        return (
-          this.schedulerImplementation?.schedule(
-            phase,
-            label,
-            scheduledCallback,
-            options
-          ) ?? (() => {})
-        );
-      },
-    };
+    this.rootRef = this.rootRuntime.rootRef;
+    this.domInputRuntime = this.rootRuntime.domInputRuntime;
+    this.domPhaseScheduler = this.rootRuntime.domPhaseScheduler;
     this.inputController = createEditableInputController({
+      domInputRuntime: this.domInputRuntime,
       preferModelSelectionForInputRef: { current: false },
       scheduleTask: this.domPhaseScheduler.schedule,
-      state: createEditableInputControllerState(),
+      state: createEditableInputControllerState(this.domInputRuntime),
     });
   }
 
   get domStrategyRuntime() {
     return this.domStrategyRuntimeValue;
+  }
+
+  get connected() {
+    return this.rootRuntime.connected;
   }
 
   get editor() {
@@ -431,8 +387,43 @@ export class EditableDOMRuntime {
     return this.inputController.state;
   }
 
+  get hostLanguage() {
+    return this.rootRuntime.hostLanguage;
+  }
+
+  get isAndroidHost() {
+    return this.rootRuntime.isAndroidHost;
+  }
+
+  get isAppleHost() {
+    return this.rootRuntime.isAppleHost;
+  }
+
+  get isBlinkHost() {
+    return this.rootRuntime.isBlinkHost;
+  }
+
+  get isGeckoHost() {
+    return this.rootRuntime.isGeckoHost;
+  }
+
+  get isWebKitHost() {
+    return this.rootRuntime.isWebKitHost;
+  }
+
+  get supportsBeforeInput() {
+    return this.rootRuntime.supportsBeforeInput;
+  }
+
+  hasHostQuirk(quirk: Parameters<DOMRootRuntime['hasHostQuirk']>[0]) {
+    return this.rootRuntime.hasHostQuirk(quirk);
+  }
+
+  readonly subscribeHostFacts = (listener: () => void) =>
+    this.rootRuntime.subscribeHostFacts(listener);
+
   domIntegrityDiagnostics() {
-    return this.domIntegrityObserver.diagnostics();
+    return this.rootRuntime.diagnostics();
   }
 
   readonly isPartialDOMBackedSelection = (selection: Range | null) =>
@@ -589,105 +580,50 @@ export class EditableDOMRuntime {
 
   connect() {
     this.connectVerticalGoalOwner();
-    if (!this.schedulerImplementation) {
-      this.schedulerImplementation = this.createScheduler();
+    try {
+      this.rootRuntime.connect();
+    } catch (error) {
+      this.disconnectVerticalGoalOwner();
+      throw error;
     }
-
-    this.connected = true;
-    this.installDOMPhaseScheduler();
-    this.registerRootOwner();
-    this.domSyncMutationOwnership.connect(this.rootRef.current);
-    this.attachNativeInputListeners();
-    this.domIntegrityObserver.connect(this.rootRef.current);
 
     return () => this.destroy();
   }
 
   destroy() {
-    const disposables = [...this.disposables];
-    const rangeAnchors = [...this.browserHandleRangeAnchors.current.values()];
-
-    this.connected = false;
-    this.disposables.clear();
-    this.browserHandleRangeAnchors.current.clear();
-    runAllRuntimeSteps([
-      () => this.androidInputManagerRef.current?.prepareDOMTeardown(),
-      () => this.unregisterRootOwner(),
-      () => this.detachNativeInputListeners(),
-      () => this.resetSchedulerBackedInputState(),
-      () => this.clearModelSelectionDOMPreference(),
-      () => this.domIntegrityObserver.destroy(),
-      () => this.domSyncMutationOwnership.destroy(),
-      () => runAllRuntimeSteps(disposables.map(([, dispose]) => dispose)),
-      () =>
-        runAllRuntimeSteps(
-          rangeAnchors.map((rangeAnchor) => () => rangeAnchor.release())
-        ),
-      () => this.clearVerticalGoal(),
-      () => this.disconnectVerticalGoalOwner(),
-      () => this.destroyScheduler(),
-    ]);
+    this.rootRuntime.destroy();
   }
 
   installDisposable(key: string, dispose: () => void) {
-    this.releaseDisposable(key);
-    this.disposables.set(key, dispose);
-
-    return () => {
-      if (this.disposables.get(key) !== dispose) return;
-
-      this.disposables.delete(key);
-      dispose();
-    };
+    return this.rootRuntime.installDisposable(key, dispose);
   }
 
   prepareReactCommit() {
-    this.domIntegrityObserver.pauseForReactCommit();
+    this.rootRuntime.prepareHostCommit();
   }
 
   completeReactCommit() {
-    this.domIntegrityObserver.resumeAfterReactCommit();
+    this.rootRuntime.completeHostCommit();
+    IS_NODE_MAP_DIRTY.set(this.editorValue, false);
   }
 
   claimReactCommit() {
-    this.domIntegrityObserver.discardPending('react');
+    this.rootRuntime.claimHostCommit();
   }
 
   runOwnedDOMMutation<T>(
     owner: DOMIntegrityMutationOwner,
     callback: () => T
   ): T {
-    return this.domIntegrityObserver.runOwned(owner, callback);
+    return this.rootRuntime.runOwnedDOMMutation(owner, callback);
   }
 
   releaseDisposable(key: string) {
-    const dispose = this.disposables.get(key);
-
-    if (!dispose) return;
-
-    this.disposables.delete(key);
-    dispose();
+    this.rootRuntime.releaseDisposable(key);
   }
 
   setRoot(node: HTMLDivElement | null) {
-    if (this.rootRef.current === node) return;
-
-    runAllRuntimeSteps([
-      () => this.androidInputManagerRef.current?.prepareDOMTeardown(),
-      () => this.unregisterRootOwner(),
-      () => this.resetSchedulerBackedInputState(),
-      () => this.destroyScheduler(),
-      () => this.detachNativeInputListeners(),
-      () => this.clearModelSelectionDOMPreference(),
-      () => {
-        this.rootRef.current = node;
-      },
-      () => this.installDOMPhaseScheduler(),
-      () => this.registerRootOwner(),
-      () => this.domSyncMutationOwnership.setRoot(node),
-      () => this.domIntegrityObserver.setRoot(node),
-      () => this.attachNativeInputListeners(),
-    ]);
+    this.rootRuntime.setRoot(node);
   }
 
   updateDOMIntegrityRepairHandler(
@@ -839,12 +775,6 @@ export class EditableDOMRuntime {
     ]);
   }
 
-  private createScheduler() {
-    return createDOMPhaseScheduler({
-      getWindow: () => this.rootRef.current?.ownerDocument.defaultView,
-    });
-  }
-
   private hasSiblingCompositionOwner() {
     return [
       ...(EDITABLE_RUNTIMES_BY_EDITOR_API.get(this.editorValue.api) ?? []),
@@ -854,28 +784,6 @@ export class EditableDOMRuntime {
         runtime.connected &&
         runtime.inputController.state.isComposing
     );
-  }
-
-  private installDOMPhaseScheduler() {
-    const root = this.rootRef.current;
-
-    if (!this.connected || !root) return;
-    if (!this.schedulerImplementation) {
-      this.schedulerImplementation = this.createScheduler();
-    }
-
-    this.uninstallDOMPhaseScheduler?.();
-    this.uninstallDOMPhaseScheduler = installEditorDOMPhaseScheduler(
-      this.editorValue,
-      root,
-      this.domPhaseScheduler
-    );
-  }
-
-  private registerRootOwner() {
-    const root = this.rootRef.current;
-
-    if (this.connected && root) EDITABLE_RUNTIME_BY_ROOT.set(root, this);
   }
 
   private scheduleModelSelectionDOMPreferenceDelete(
@@ -896,14 +804,6 @@ export class EditableDOMRuntime {
     );
   }
 
-  private unregisterRootOwner() {
-    const root = this.rootRef.current;
-
-    if (root && EDITABLE_RUNTIME_BY_ROOT.get(root) === this) {
-      EDITABLE_RUNTIME_BY_ROOT.delete(root);
-    }
-  }
-
   private disconnectVerticalGoalOwner() {
     const owner = this.verticalGoalOwner;
 
@@ -916,15 +816,6 @@ export class EditableDOMRuntime {
       EDITABLE_RUNTIMES_BY_EDITOR_API.delete(owner);
     }
     this.verticalGoalOwner = null;
-  }
-
-  private destroyScheduler() {
-    const uninstall = this.uninstallDOMPhaseScheduler;
-    const scheduler = this.schedulerImplementation;
-
-    this.uninstallDOMPhaseScheduler = null;
-    this.schedulerImplementation = null;
-    runAllRuntimeSteps([() => uninstall?.(), () => scheduler?.destroy()]);
   }
 
   private detachNativeInputListeners() {

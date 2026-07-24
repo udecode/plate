@@ -1,9 +1,64 @@
-import { createBaseEditor, prepareParserPluginContext } from '@platejs/core';
-import { ElementApi } from '@platejs/plite';
+import {
+  BaseParagraphPlugin,
+  createBaseEditor,
+  createBasePlugin,
+} from '@platejs/core';
+import { ElementApi, schema } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
 import * as csv from '../index';
 import { deserializeCsv } from './deserializer/utils/deserializeCsv';
 import { CsvPlugin } from './CsvPlugin';
+
+const TestTableCellPlugin = createBasePlugin({
+  key: KEYS.td,
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        min: 1,
+      }),
+      topLevel: false,
+    },
+  }),
+});
+const TestTableHeaderPlugin = createBasePlugin({
+  key: KEYS.th,
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        min: 1,
+      }),
+      topLevel: false,
+    },
+  }),
+});
+const TestTableRowPlugin = createBasePlugin({
+  dependencies: [TestTableCellPlugin, TestTableHeaderPlugin],
+  key: KEYS.tr,
+  schema: ({ plugins }) => ({
+    element: {
+      content: schema.content.types(
+        plugins.elementTypes([TestTableCellPlugin, TestTableHeaderPlugin]),
+        { default: { type: plugins.elementType(TestTableCellPlugin) }, min: 1 }
+      ),
+      topLevel: false,
+    },
+  }),
+});
+const TestTablePlugin = createBasePlugin({
+  dependencies: [TestTableRowPlugin],
+  key: KEYS.table,
+  schema: ({ plugins }) => ({
+    element: {
+      content: schema.content.type(plugins.elementType(TestTableRowPlugin), {
+        default: { type: plugins.elementType(TestTableRowPlugin) },
+        min: 1,
+      }),
+    },
+  }),
+});
 
 const getCellTypes = (
   editor: Parameters<typeof deserializeCsv>[0],
@@ -23,23 +78,15 @@ const getCellTypes = (
 };
 
 describe('CsvPlugin', () => {
-  it('exposes the default options, bound csv api, and plain-text parser contract', () => {
+  it('exposes the default options, bound csv api, and plain-text codec', () => {
     const editor = createBaseEditor({
-      plugins: [CsvPlugin],
+      plugins: [CsvPlugin, TestTablePlugin],
     });
     const plugin = editor.getPlugin(CsvPlugin);
     const data = 'name,age\nAda,36';
     const dataTransfer = new DataTransfer();
-    const createContext = prepareParserPluginContext(editor, CsvPlugin);
-    const parserOptions = {
-      data,
-      format: 'text/plain',
-      source: {
-        files: dataTransfer.files,
-        getData: (format: string) => dataTransfer.getData(format),
-        types: [...dataTransfer.types],
-      },
-    };
+
+    dataTransfer.setData('text/plain', data);
 
     expect(editor.plugin(CsvPlugin).getOptions()).toMatchObject({
       errorTolerance: 0.25,
@@ -47,21 +94,21 @@ describe('CsvPlugin', () => {
         header: true,
       },
     });
-    expect(Reflect.get(editor.api, 'csv')).toBeUndefined();
+    expect(typeof editor.api.csv.deserialize).toBe('function');
     expect(typeof editor.plugin(CsvPlugin).api.deserialize).toBe('function');
-    expect('deserializeCsvWithParserContext' in csv).toBe(false);
-    expect(plugin.parser?.format).toBe('text/plain');
-    expect(
-      editor.read((state) =>
-        plugin.parser?.deserialize?.({
-          ...createContext(state),
-          ...parserOptions,
-        })
-      )
-    ).toEqual(deserializeCsv(editor, { data }));
+    expect('deserializeCsvWithContext' in csv).toBe(false);
+    expect('parser' in plugin).toBe(false);
+    expect(editor.api.clipboard.insertData(dataTransfer)).toBe(true);
+    const expected = deserializeCsv(editor, { data });
+
+    expect(expected).toBeDefined();
+    if (!expected) return;
+    expect(editor.read.children()).toEqual(
+      expected as ReturnType<typeof editor.read.children>
+    );
   });
 
-  it('reads live parser options without changing document schema identity', () => {
+  it('reads live codec options without changing document schema identity', () => {
     const editor = createBaseEditor({
       plugins: [CsvPlugin],
     });

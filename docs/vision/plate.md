@@ -51,6 +51,22 @@ Current priorities:
 - Plugin authoring keeps one-owner behavior colocated and inferred. Public
   builders, configuration paths, and contribution namespaces each need a
   distinct user job; current assembly machinery is evidence, not doctrine.
+- Builder consolidation targets the fewest inference-preserving, semantically
+  distinct authoring stages, not the fewest method names. Before merging,
+  overloading, renaming, or deleting a builder, prove the surviving path widens
+  every affected type accumulator across repeated calls, named groups,
+  dependencies, plugin conversion, terminal configuration, root/portal
+  projection, and declaration emit. If it only carries a type through, fix the
+  owning generic or keep the stage; callback annotations, casts, and `any` are
+  not parity.
+- Plugin schema is creation-owned. Declare it in the plugin constructor, using
+  a schema factory over typed options for authored variability; neither
+  `.extend()` nor terminal `.configure()` replaces it. Schema-derived callbacks
+  may belong to that plugin or a foreign contributor, and TypeScript cannot
+  retroactively re-typecheck either. Preserve unrelated authoring and
+  configuration. Values resolved only after configuration, such as a
+  configured node type, stay truthfully broad in the author callback and exact
+  at runtime.
 - Classify behavior before exposing composition: invariants stay in their
   owner, parameters stay in `options`, substitutable capabilities may become
   ordinary plugins, and product policy stays app- or kit-owned.
@@ -93,10 +109,10 @@ Current priorities:
   another independently optional peer merely to adapt it. Prove adapting-only,
   target-only, both, and both with explicit target configuration. Bare-key use
   is intentionally erased; exact target-option inference requires importing
-  the descriptor or config type. Keep component replacement and
-  `inject.parsers` as distinct contribution paths. Do not add a central key
-  registry, ancestor reach-through methods, recursive child registries, or
-  add/replace verbs.
+  the descriptor or config type. Keep component replacement and typed
+  `.extendHtmlCodec(TargetPlugin, ...)` contributions as distinct paths. Do not
+  add a central key registry, ancestor reach-through methods, recursive child
+  registries, or add/replace verbs.
 - Resolve peer conflicts at the smallest behavior surface. Remove or replace
   one conflicting shortcut, handler, parser, or render contribution instead of
   disabling its whole plugin. Required dependencies cannot be disabled, and
@@ -113,10 +129,27 @@ Current priorities:
   `editor.plugin(Plugin).installed` before using that portal. Disabled plugins
   count as absent. Do not infer plugin availability from root `editor.api`,
   node types, schema properties, caches, or caught access errors.
+- Keep operation hooks flat when their parent namespace already fixes format
+  and flow. `parsers.html` directly owns `query`, `transformData`, and
+  `transformFragment`; an `ingress`/`egress` bucket needs a distinct
+  independently consumed lifecycle.
 - Multiple callers of one plugin operation reuse its plugin-owned API; they do
   not justify a parallel raw helper. Keep the algorithm in the plugin.
   Standalone functions need a real cross-plugin, cross-layer, or
   transaction-composition job that one plugin cannot own honestly.
+- Express intra-plugin capability dependencies through ordered builder stages.
+  An earlier `.extendApi()` or `.extendTx()` publishes the smallest honest
+  capability; later stages and required dependents consume the accumulated
+  inferred surface. New scoped methods take domain inputs instead of threading
+  `editor`, `api`, `read`, `tx`, resolved plugin option values, or resolved
+  plugin types through helper signatures; operation options remain valid
+  domain input. A later tx stage reuses an earlier mutation through the active
+  `tx[plugin.key]` group, never a portal one-shot that opens another
+  transaction. Do not publish a private implementation fragment merely to
+  share it between stages: keep it lexical/private, coalesce stages, or name a
+  builder gap. Keep an explicit active-state boundary only when uncommitted
+  transaction semantics require it, and prove that case rather than falling
+  back to stale `editor.read`.
 - React files follow durable families rather than individual symbols or
   implementation kinds. Keep a component family in one `<Family>.tsx` file,
   including its family-only hooks, store, state, controller, lifecycle,
@@ -129,6 +162,16 @@ Current priorities:
 - Keep feature-package React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.
+- Treat each independently installable registry item as a source-distribution
+  owner. Keep its copied UI self-contained. Short repeated presentation JSX is
+  cheaper than another shared registry file/dependency; extract only for an
+  independently useful registry item or real behavior owner.
+- Registry surfaces dedicated to `*-classic`, including `list-classic`, are
+  maintenance-only pending deprecation. Do not add parity work, new variants,
+  shared abstractions, polish, demos, adoption, or API investment. Touch them
+  only for a user-facing regression, security or release blocker, or an
+  explicitly authorized deprecation/removal. New work targets the modern
+  registry surface; planned deprecation alone does not authorize deletion.
 - Preferred extension path is npm package distribution plus local app
   composition and registry usage for development.
 - If you build a plugin or component pack, host and maintain it in your own

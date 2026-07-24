@@ -5,8 +5,8 @@ import * as Y from 'yjs';
 
 import type { Peer } from './support/collaboration';
 import {
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   FakeAwareness,
   getPeerTopLevelTexts,
   isYjsPeerConnected,
@@ -14,10 +14,10 @@ import {
   readPeerChildren,
   readPeerPliteValue,
   reconcileYjsPeer,
-  redoYjsPeer,
+  redoHistoryPeer,
   runYjsUpdate,
   syncConnectedPeers,
-  undoYjsPeer,
+  undoHistoryPeer,
 } from './support/collaboration';
 
 const peerIds = ['a', 'b', 'c', 'd'] as const;
@@ -56,7 +56,7 @@ const replacementTexts: Readonly<Record<PeerId, string>> = {
 const initialValue = (): Descendant[] => [paragraph('Hello world!')];
 
 const createPeers = (): SoakPeers => {
-  const peers = createSeededYjsPeers({
+  const peers = createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: [...peerIds],
     numericClientIds: clientIds,
@@ -72,7 +72,7 @@ const createPeers = (): SoakPeers => {
 };
 
 const createAwarePeers = (): SoakPeers => {
-  const first = createYjsPeer({
+  const first = createYjsHistoryPeer({
     awareness: new FakeAwareness(clientIds.a),
     children: initialValue(),
     clientId: 'a',
@@ -81,21 +81,21 @@ const createAwarePeers = (): SoakPeers => {
   const seedUpdate = Y.encodeStateAsUpdate(first.doc);
   const peers = {
     a: first,
-    b: createYjsPeer({
+    b: createYjsHistoryPeer({
       awareness: new FakeAwareness(clientIds.b),
       children: initialValue(),
       clientId: 'b',
       numericClientId: clientIds.b,
       seedUpdate,
     }),
-    c: createYjsPeer({
+    c: createYjsHistoryPeer({
       awareness: new FakeAwareness(clientIds.c),
       children: initialValue(),
       clientId: 'c',
       numericClientId: clientIds.c,
       seedUpdate,
     }),
-    d: createYjsPeer({
+    d: createYjsHistoryPeer({
       awareness: new FakeAwareness(clientIds.d),
       children: initialValue(),
       clientId: 'd',
@@ -612,11 +612,11 @@ const reconcilePeer = (peer: Peer): void => {
 };
 
 const undoPeer = (peer: Peer): void => {
-  undoYjsPeer(peer);
+  undoHistoryPeer(peer);
 };
 
 const redoPeer = (peer: Peer): void => {
-  redoYjsPeer(peer);
+  redoHistoryPeer(peer);
 };
 
 const toggleFirstBlockBold = (peer: Peer): void => {

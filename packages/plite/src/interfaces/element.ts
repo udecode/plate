@@ -9,9 +9,9 @@ import type { BaseEditor } from './editor';
  */
 
 export interface BaseElement {
-  children: Descendant[];
-  type: string;
-  [key: string]: unknown;
+  readonly children: readonly Descendant[];
+  readonly type: string;
+  readonly [key: string]: unknown;
 }
 
 export type Element = BaseElement;
@@ -66,7 +66,7 @@ export interface ElementInterface {
   isElementList: <T extends Element = Element>(
     value: unknown,
     options?: ElementIsElementOptions
-  ) => value is T[];
+  ) => value is readonly T[];
 
   /**
    * Check if a set of props is a partial of Element.
@@ -133,7 +133,7 @@ export const ElementApi: Readonly<ElementInterface> = Object.freeze({
   isElementList<T extends Element = Element>(
     value: unknown,
     { deep = false }: ElementIsElementOptions = {}
-  ): value is T[] {
+  ): value is readonly T[] {
     return (
       Array.isArray(value) &&
       value.every((val) => ElementApi.isElement(val, { deep }))
@@ -173,4 +173,4 @@ export const ElementApi: Readonly<ElementInterface> = Object.freeze({
  * `ElementEntry` objects refer to an `Element` and the `Path` where it can be
  * found inside a root node.
  */
-export type ElementEntry<N = Element> = [ElementOf<N>, Path];
+export type ElementEntry<N = Element> = readonly [ElementOf<N>, Path];

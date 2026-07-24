@@ -6,7 +6,7 @@ import {
   type Value,
 } from '@platejs/plite';
 import {
-  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRootKeys,
   getRangeRoot as getRangeRootMeta,
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
@@ -47,9 +47,7 @@ export const getRangeRootOrMain = (range: Selection): string =>
 
 const getBatchRoots = <V extends Value>(batch: Batch<V>) =>
   new Set([
-    ...[...getInternalDocumentChangeEntries(batch.change)].map(
-      ([root]) => root
-    ),
+    ...getInternalDocumentChangeRootKeys(batch.change),
     ...batch.change.createRoots,
     ...batch.change.deleteRoots,
   ]);

@@ -287,9 +287,10 @@ describe('projected editable commands', () => {
     });
     expect(readPliteViewSelection(editor)).toBe(null);
     const commit = editorGetLastCommit(editor);
+    const change = commit?.changes.toJSON();
 
-    expect(commit?.changes.primary).not.toBeNull();
-    expect(commit?.changes.roots.size).toBe(1);
+    expect(change?.primary).toBeDefined();
+    expect(Object.keys(change?.roots ?? {})).toHaveLength(1);
     expect(commit?.changed.has('text')).toBe(true);
     expect(commit?.changed.has('text', SHARED_ROOT)).toBe(true);
   });
@@ -1115,9 +1116,10 @@ describe('projected editable commands', () => {
       focus: { path: [0, 0], offset: 0 },
     });
     const commit = editorGetLastCommit(editor);
+    const change = commit?.changes.toJSON();
 
-    expect(commit!.changes.primary).not.toBeNull();
-    expect(commit?.changes.roots.size).toBe(0);
+    expect(change?.primary).toBeDefined();
+    expect(Object.keys(change?.roots ?? {})).toHaveLength(0);
     expect(commit?.changed.has('structure')).toBe(true);
   });
 

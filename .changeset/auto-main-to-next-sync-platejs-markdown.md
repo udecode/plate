@@ -3,4 +3,4 @@
 ---
 
 - Preserve exact node inference for built-in Markdown rules while keeping custom rule keys type-safe and open
-- Register Markdown parsing and serialization as schema-wide Plite DOM host codecs over immutable slices
+- Author Markdown parsing and serialization through one schema-wide `.extendCodecs()` declaration over immutable slices

@@ -170,6 +170,14 @@ Plate registry sources to inspect first:
 
 Do not run `build:registry`. Do not edit generated registry output.
 
+Treat `*-classic` registry components, including `list-classic`, as
+maintenance-only pending deprecation. Inventory an in-scope classic row so it
+is not silently lost, but classify proactive parity, modernization, polish,
+new variants, shared abstractions, demos, and adoption as `N/A`. Sync it only
+for an explicitly accepted user-facing regression, security/release blocker,
+or deprecation/removal row. Planned deprecation does not authorize deleting a
+downstream copy.
+
 ## Target Mapping
 
 Read target config before path assumptions:

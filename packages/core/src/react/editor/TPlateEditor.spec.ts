@@ -143,22 +143,17 @@ describe('PlateEditor', () => {
     const BoldPlugin = createBasePlugin({
       key: 'bold',
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-      parsers: {
-        html: {
-          deserializer: {
-            rules: [
-              { validNodeName: ['STRONG', 'B'] },
-              { validStyle: { fontWeight: ['600', '700', 'bold'] } },
-            ],
-            query: ({ element }) =>
-              !someHtmlElement(
-                element,
-                (node) => node.style.fontWeight === 'normal'
-              ),
-          },
-        },
-      },
-    });
+    }).extendHtmlCodec(() => ({
+      decode: ({ element }) =>
+        someHtmlElement(element, (node) => node.style.fontWeight === 'normal')
+          ? undefined
+          : true,
+      encode: ({ value }) => (value ? { tag: 'strong' } : null),
+      match: [
+        { tag: ['strong', 'b'] },
+        { style: { fontWeight: ['600', '700', 'bold'] } },
+      ],
+    }));
 
     it('supports specific plugin generics on createPlateEditor', () => {
       const editor = createPlateEditor<Value, readonly [typeof BoldPlugin]>({

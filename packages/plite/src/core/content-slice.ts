@@ -5,7 +5,7 @@ import type {
   Value,
 } from '../interfaces';
 import { ElementApi } from '../interfaces';
-import { DocumentSlice, type JsonNode } from './document-change';
+import { PreparedTokenSlice, type JsonNode } from './change/tokens';
 import {
   getEditorJsonArrayItems,
   getEditorJsonRecordEntries,
@@ -21,8 +21,8 @@ type PreparedSlice = Readonly<{
 
 const trustedSlices = new WeakMap<object, PreparedSlice>();
 const canonicalContentAuthorities = new WeakMap<object, object>();
-const encodedSlices = new WeakMap<object, DocumentSlice>();
-const encodedContent = new WeakMap<object, DocumentSlice>();
+const encodedSlices = new WeakMap<object, PreparedTokenSlice>();
+const encodedContent = new WeakMap<object, PreparedTokenSlice>();
 
 const assertOpenDepth = (
   content: readonly Descendant[],
@@ -395,9 +395,13 @@ export const encodeContentSliceContent = (slice: ContentSliceValue) => {
 
   if (!fullEncoded) {
     fullEncoded = prepared.detached
-      ? DocumentSlice.fromPreparedNodes(value.content as readonly JsonNode[])
-      : DocumentSlice.fromJSON(
-          DocumentSlice.fromNodes(value.content as readonly JsonNode[]).toJSON()
+      ? PreparedTokenSlice.fromPreparedNodes(
+          value.content as readonly JsonNode[]
+        )
+      : PreparedTokenSlice.fromJSON(
+          PreparedTokenSlice.fromNodes(
+            value.content as readonly JsonNode[]
+          ).toJSON()
         );
     encodedContent.set(value.content, fullEncoded);
   }

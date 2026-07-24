@@ -10,7 +10,7 @@ import type {
   Value,
 } from '../interfaces/editor';
 import { getExtensionRegistry } from './extension-registry';
-import { getInternalDocumentChangeEntries } from './document-change';
+import { getInternalDocumentChangeEntries } from './change/document-change';
 import { toInternalRoot } from './public-root';
 import { getInstalledStateField } from './state-fields';
 

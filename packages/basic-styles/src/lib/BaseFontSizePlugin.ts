@@ -10,24 +10,17 @@ export const BaseFontSizePlugin = createBasePlugin({
       styleKey: 'fontSize',
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validStyle: {
-              fontSize: '*',
-            },
-          },
-        ],
-        parse: ({ element, type }) => ({
-          [type]: element.style.fontSize,
-        }),
-      },
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => element.style.fontSize || undefined,
+    encode: ({ value }) => ({
+      style: { fontSize: value },
+      tag: 'span',
+    }),
+    match: [{ style: { fontSize: '*' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    set: (value: string) => {
+      tx.marks.add(type, value);
     },
-  },
-}).extendTx(({ type }) => (tx) => ({
-  set: (value: string) => {
-    tx.marks.add(type, value);
-  },
-}));
+  }));

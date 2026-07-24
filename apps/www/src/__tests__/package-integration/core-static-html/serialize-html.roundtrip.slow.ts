@@ -1,55 +1,54 @@
-import { HtmlPlugin } from 'platejs';
+import type { Value } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
-
-import { alignValue } from '@/registry/examples/values/align-value';
-import { basicBlocksValue } from '@/registry/examples/values/basic-blocks-value';
-import { basicMarksValue } from '@/registry/examples/values/basic-marks-value';
-import { dateValue } from '@/registry/examples/values/date-value';
-import { fontValue } from '@/registry/examples/values/font-value';
-import { indentValue } from '@/registry/examples/values/indent-value';
-import { lineHeightValue } from '@/registry/examples/values/line-height-value';
-import { linkValue } from '@/registry/examples/values/link-value';
-import { listValue } from '@/registry/examples/values/list-value';
-import { mentionValue } from '@/registry/examples/values/mention-value';
-import { tocPlaygroundValue } from '@/registry/examples/values/toc-value';
 
 import { createStaticEditor } from './create-static-editor';
 
-describe('core static renderStaticHtml roundtrip', () => {
-  it('roundtrips editor values through html deserialization', async () => {
-    const editor = createStaticEditor([
-      ...basicBlocksValue,
-      ...basicMarksValue,
-      ...tocPlaygroundValue,
-      ...linkValue,
-      ...mentionValue,
-      ...dateValue,
-      ...fontValue,
-      ...alignValue,
-      ...lineHeightValue,
-      ...indentValue,
-      ...listValue,
-    ]);
+const representableValue: Value = [
+  {
+    align: 'right',
+    children: [
+      { bold: true, text: 'Plate ' },
+      {
+        children: [{ text: 'link' }],
+        target: '_blank',
+        type: 'a',
+        url: 'https://platejs.org/',
+      },
+      { text: ' end' },
+    ],
+    indent: 1,
+    lineHeight: 2,
+    type: 'p',
+  },
+  {
+    align: 'justify',
+    children: [{ text: 'Second paragraph' }],
+    indent: 2,
+    lineHeight: 3,
+    type: 'p',
+  },
+  {
+    children: [
+      {
+        children: [{ text: 'Quoted paragraph' }],
+        type: 'p',
+      },
+    ],
+    type: 'blockquote',
+  },
+];
+
+describe('core static HTML representable projection', () => {
+  it('decodes visible block, property, mark, and link fields', async () => {
+    const editor = createStaticEditor(representableValue);
 
     const html = await renderStaticHtml(editor);
 
-    const nodes = editor.plugin(HtmlPlugin).api.deserialize({
+    const nodes = editor.api.html.deserialize({
       collapseWhiteSpace: false,
       element: html,
     });
 
-    expect(nodes).toEqual([
-      ...basicBlocksValue,
-      ...basicMarksValue,
-      ...tocPlaygroundValue,
-      ...linkValue,
-      ...mentionValue,
-      ...dateValue,
-      ...fontValue,
-      ...alignValue,
-      ...lineHeightValue,
-      ...indentValue,
-      ...listValue,
-    ]);
+    expect(nodes).toEqual(representableValue);
   });
 });

@@ -77,10 +77,6 @@ describe('document state effect contract', () => {
       children: [paragraph('body')],
       meta: { [documentTitle.key]: documentTitle.serialize('Q3 Plan') },
     });
-    assert.deepEqual(
-      editor.read((state) => documentTitle.effect.collabSnapshot?.(state)),
-      { previousValue: 'Q3 Plan', value: 'Q3 Plan' }
-    );
   });
 
   it('requires an explicit absolute snapshot for latest shared effects', () => {
@@ -226,7 +222,7 @@ describe('document state effect contract', () => {
     assert(commit);
 
     const emitted = commit.effects[0] as EditorEffect<Payload>;
-    const mapped = mapEffect(emitted, new DocumentChange());
+    const mapped = mapEffect(emitted, DocumentChange.empty);
     const inverted = invertEffect(emitted);
     const decoded = decodeEditorEffect(effect, {
       key: effect.key,

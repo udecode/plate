@@ -6,11 +6,14 @@ import type {
   DropdownMenuItemProps,
   DropdownMenuProps,
 } from '@radix-ui/react-dropdown-menu';
+import {
+  FontBackgroundColorPlugin,
+  FontColorPlugin,
+} from '@platejs/basic-styles/react';
 
 import { useComposedRef } from '@udecode/cn';
 import debounce from 'lodash/debounce.js';
 import { CheckIcon, EraserIcon, PlusIcon } from 'lucide-react';
-import { type Text, TextApi } from 'platejs';
 import { type PlateEditor, useEditor, useEditorSelector } from 'platejs/react';
 
 import { buttonVariants } from '@/components/ui/button';
@@ -30,7 +33,8 @@ import { cn } from '@/lib/utils';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
-const MAX_CUSTOM_COLORS = 19;
+const COLOR_GRID_COLUMNS = 10;
+const MAX_RECENT_COLORS = 19;
 const HEX_COLOR_RE = /^#[\da-f]{6}$/i;
 
 function normalizeColor(color: string): string {
@@ -51,140 +55,174 @@ function computeIsBrightColor(hex: string): boolean {
   return (r * 299 + g * 587 + b * 114) / 1000 > 130;
 }
 
-function getEditorColorMarks(editor: PlateEditor, nodeType: string): string[] {
-  const usedColors = new Set<string>();
+function normalizeRecentColors(colors: readonly string[]): string[] {
+  return colors.reduce<string[]>((result, color) => {
+    const normalized = normalizeColor(color);
 
-  const entries = editor.read.nodes.toArray<Text>({
-    at: [],
-    match: TextApi.isText,
-    mode: 'all',
-  });
+    if (
+      isValidHexColor(normalized) &&
+      !result.includes(normalized) &&
+      result.length < MAX_RECENT_COLORS
+    ) {
+      result.push(normalized);
+    }
 
-  for (const [node] of entries) {
-    const color = node[nodeType];
-
-    if (typeof color !== 'string') continue;
-
-    usedColors.add(normalizeColor(color));
-  }
-
-  return Array.from(usedColors);
+    return result;
+  }, []);
 }
+
+function getNextRecentColors(
+  color: string,
+  recentColors: readonly string[]
+): string[] {
+  return normalizeRecentColors([
+    normalizeColor(color),
+    ...recentColors.filter(
+      (recentColor) => normalizeColor(recentColor) !== normalizeColor(color)
+    ),
+  ]);
+}
+
+type ColorPlugin = typeof FontBackgroundColorPlugin | typeof FontColorPlugin;
+
+function setColor(editor: PlateEditor, plugin: ColorPlugin, value: string) {
+  switch (plugin.key) {
+    case FontBackgroundColorPlugin.key:
+      return editor.plugin(plugin).update.set(value);
+    case FontColorPlugin.key:
+      return editor.plugin(plugin).update.set(value);
+  }
+}
+
+function clearColor(editor: PlateEditor, plugin: ColorPlugin) {
+  switch (plugin.key) {
+    case FontBackgroundColorPlugin.key:
+      return editor.plugin(plugin).update.clear();
+    case FontColorPlugin.key:
+      return editor.plugin(plugin).update.clear();
+  }
+}
+
+export type ColorOption = {
+  isBrightColor: boolean;
+  name: string;
+  value: string;
+};
 
 export function FontColorToolbarButton({
   children,
-  nodeType,
+  colors,
+  onRecentColorsChange,
+  plugin,
+  recentColors,
   tooltip,
+  ...menuProps
 }: {
-  nodeType: string;
+  colors: readonly ColorOption[];
+  onRecentColorsChange?: (colors: string[]) => void;
+  plugin: ColorPlugin;
+  recentColors?: readonly string[];
   tooltip?: string;
 } & DropdownMenuProps) {
   const editor = useEditor();
+  const { type } = editor.plugin(plugin);
 
   const selectionDefined = useEditorSelector(
     (editor) => !!editor.read.selection()
   );
 
   const color = useEditorSelector(
-    (editor) => editor.read.marks()?.[nodeType] as string
+    (editor) => editor.read.marks()?.[type] as string
   );
 
   const [selectedColor, setSelectedColor] = React.useState<string>();
   const [updatedColor, setUpdatedColor] = React.useState<string>();
   const [open, setOpen] = React.useState(false);
-  const [colorsQueue, setColorsQueue] = React.useState<string[]>([]);
+  const [localRecentColors, setLocalRecentColors] = React.useState<string[]>(
+    []
+  );
 
-  const recordColorUsage = React.useCallback((color: string) => {
-    const normalized = normalizeColor(color);
+  const normalizedRecentColors = React.useMemo(
+    () => normalizeRecentColors(recentColors ?? localRecentColors),
+    [localRecentColors, recentColors]
+  );
 
-    if (!isValidHexColor(normalized)) return;
-
-    setColorsQueue((prev) => {
-      const filtered = prev
-        .filter((c) => c !== normalized)
-        .filter(
-          (c) => !DEFAULT_COLORS.some((dc) => normalizeColor(dc.value) === c)
+  const recentColorOptions = React.useMemo(
+    () =>
+      normalizedRecentColors.map((recentColor) => {
+        const paletteColor = colors.find(
+          ({ value }) => normalizeColor(value) === recentColor
         );
 
-      return [normalized, ...filtered].slice(0, 30);
-    });
-  }, []);
-
-  const appendColors = React.useCallback((colors: string[]) => {
-    setColorsQueue((prev) => {
-      const normalized = colors.map(normalizeColor).filter(isValidHexColor);
-      const existingSet = new Set(prev);
-      const newColors = normalized
-        .filter((c) => !existingSet.has(c))
-        .filter(
-          (c) => !DEFAULT_COLORS.some((dc) => normalizeColor(dc.value) === c)
+        return (
+          paletteColor ?? {
+            isBrightColor: computeIsBrightColor(recentColor),
+            name: recentColor,
+            value: recentColor,
+          }
         );
+      }),
+    [colors, normalizedRecentColors]
+  );
 
-      return [...newColors, ...prev].slice(0, 30);
-    });
-  }, []);
+  const recordRecentColor = React.useCallback(
+    (value: string) => {
+      const nextRecentColors = getNextRecentColors(
+        value,
+        normalizedRecentColors
+      );
+
+      if (recentColors === undefined) {
+        setLocalRecentColors(nextRecentColors);
+      }
+      onRecentColorsChange?.(nextRecentColors);
+    },
+    [normalizedRecentColors, onRecentColorsChange, recentColors]
+  );
 
   const onToggle = React.useCallback(
     (value = !open) => {
       setOpen(value);
 
-      if (value) {
-        const colorUsed = getEditorColorMarks(editor, nodeType);
-        appendColors(colorUsed);
-
-        if (selectedColor) {
-          recordColorUsage(normalizeColor(selectedColor));
-        }
-      }
       if (!value) {
         setUpdatedColor(undefined);
-
-        if (editor.read.selection()) {
-          setTimeout(() => {
-            editor.api.dom.focus();
-          }, 100);
-        }
       }
     },
-    [open, editor, nodeType, appendColors, selectedColor, recordColorUsage]
+    [open]
   );
 
   const updateColor = React.useCallback(
     (value: string) => {
       const selection = editor.read.selection();
+      const normalized = normalizeColor(value);
 
-      if (!selection) return;
+      if (!selection || !isValidHexColor(normalized)) return;
 
-      setSelectedColor(value);
-      setUpdatedColor(value);
+      setSelectedColor(normalized);
+      setUpdatedColor(normalized);
 
-      editor.update((tx) => {
-        tx.selection.set(selection);
-        tx.marks.add(nodeType, value);
-      });
+      setColor(editor, plugin, normalized);
+      recordRecentColor(normalized);
     },
-    [editor, nodeType]
+    [editor, plugin, recordRecentColor]
   );
 
   const updateColorAndClose = React.useCallback(
     (value: string) => {
       updateColor(value);
-      onToggle();
+      onToggle(false);
     },
     [onToggle, updateColor]
   );
 
-  const clearColor = React.useCallback(() => {
+  const clearCurrentColor = React.useCallback(() => {
     const selection = editor.read.selection();
 
     if (!selection) return;
 
-    editor.update((tx) => {
-      tx.selection.set(selection);
-      tx.marks.remove(nodeType);
-    });
-    onToggle();
-  }, [editor, onToggle, nodeType]);
+    clearColor(editor, plugin);
+    onToggle(false);
+  }, [editor, onToggle, plugin]);
 
   React.useEffect(() => {
     if (selectionDefined) {
@@ -194,21 +232,25 @@ export function FontColorToolbarButton({
   }, [color, selectionDefined]);
 
   return (
-    <DropdownMenu modal onOpenChange={onToggle} open={open}>
+    <DropdownMenu {...menuProps} modal onOpenChange={onToggle} open={open}>
       <DropdownMenuTrigger asChild>
         <ToolbarButton pressed={open} tooltip={tooltip}>
           {children}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent
+        align="start"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          editor.api.dom.focus();
+        }}
+      >
         <ColorPicker
-          clearColor={clearColor}
+          clearColor={clearCurrentColor}
           color={selectedColor || color}
-          colors={DEFAULT_COLORS}
-          colorsQueue={colorsQueue}
-          customColors={DEFAULT_CUSTOM_COLORS}
-          recordColorUsage={recordColorUsage}
+          colors={colors}
+          recentColors={recentColorOptions}
           updateColor={updateColorAndClose}
           updateCustomColor={updateColor}
           updatedColor={updatedColor}
@@ -223,19 +265,15 @@ function PureColorPicker({
   clearColor,
   color,
   colors,
-  colorsQueue,
-  customColors,
-  recordColorUsage,
+  recentColors,
   updateColor,
   updateCustomColor,
   updatedColor,
   ...props
 }: React.ComponentProps<'div'> & {
-  colors: TColor[];
-  colorsQueue: string[];
-  customColors: TColor[];
+  colors: readonly ColorOption[];
+  recentColors: readonly ColorOption[];
   clearColor: () => void;
-  recordColorUsage: (color: string) => void;
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
   color?: string;
@@ -243,30 +281,28 @@ function PureColorPicker({
 }) {
   return (
     <div className={cn('flex flex-col', className)} {...props}>
-      <ToolbarMenuGroup label="Custom Colors">
+      <ToolbarMenuGroup label="Recent Colors">
         <ColorCustom
           className="px-2"
           color={color}
-          colors={colors}
-          colorsQueue={colorsQueue}
-          customColors={customColors}
-          recordColorUsage={recordColorUsage}
+          recentColors={recentColors}
           updateColor={updateColor}
           updateCustomColor={updateCustomColor}
           updatedColor={updatedColor}
         />
       </ToolbarMenuGroup>
-      <ToolbarMenuGroup label="Default Colors">
+      <ToolbarMenuGroup label="Colors">
         <ColorDropdownMenuItems
           className="px-2"
           color={color}
           colors={colors}
+          label="Colors"
           updateColor={updateColor}
         />
       </ToolbarMenuGroup>
       {color && (
         <ToolbarMenuGroup>
-          <DropdownMenuItem className="p-2" onClick={clearColor}>
+          <DropdownMenuItem className="p-2" onSelect={clearColor}>
             <EraserIcon />
             <span>Clear</span>
           </DropdownMenuItem>
@@ -281,27 +317,20 @@ const ColorPicker = React.memo(
   (prev, next) =>
     prev.color === next.color &&
     prev.colors === next.colors &&
-    prev.colorsQueue === next.colorsQueue &&
-    prev.customColors === next.customColors &&
+    prev.recentColors === next.recentColors &&
     prev.updatedColor === next.updatedColor
 );
 
 function ColorCustom({
   className,
   color,
-  colors,
-  colorsQueue,
-  customColors,
-  recordColorUsage,
+  recentColors,
   updateColor,
   updateCustomColor,
   updatedColor,
   ...props
 }: {
-  colors: TColor[];
-  colorsQueue: string[];
-  customColors: TColor[];
-  recordColorUsage: (color: string) => void;
+  recentColors: readonly ColorOption[];
   updateColor: (color: string) => void;
   updateCustomColor: (color: string) => void;
   color?: string;
@@ -309,71 +338,26 @@ function ColorCustom({
 } & React.ComponentPropsWithoutRef<'div'>) {
   const [value, setValue] = React.useState<string>(color || '#000000');
 
-  const fullCustomColors = React.useMemo(
-    () =>
-      colorsQueue
-        .filter((c) => normalizeColor(c) !== normalizeColor(updatedColor || ''))
-        .filter(
-          (c) =>
-            !DEFAULT_COLORS.some(
-              (dc) => normalizeColor(dc.value) === normalizeColor(c)
-            )
-        )
-        .filter(
-          (c) =>
-            !DEFAULT_CUSTOM_COLORS.some(
-              (dc) => normalizeColor(dc.value) === normalizeColor(c)
-            )
-        )
-        .map((c) => ({
-          isBrightColor: computeIsBrightColor(c),
-          name: c,
-          value: c,
-        }))
-        .slice(
-          0,
-          MAX_CUSTOM_COLORS - customColors.length - (updatedColor ? 1 : 0)
-        ),
-    [colorsQueue, customColors, updatedColor]
-  );
-
-  const isColorInCollections = React.useCallback(
-    (targetColor: string) =>
-      colors.some(
-        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
-      ) ||
-      customColors.some(
-        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
-      ) ||
-      fullCustomColors.some(
-        (c) => normalizeColor(c.value) === normalizeColor(targetColor)
-      ),
-    [colors, customColors, fullCustomColors]
-  );
-
-  const customColor = React.useMemo(() => {
-    if (!updatedColor || isColorInCollections(updatedColor)) {
-      return null;
+  const computedColors = React.useMemo(() => {
+    if (
+      !updatedColor ||
+      !isValidHexColor(updatedColor) ||
+      recentColors.some(
+        ({ value }) => normalizeColor(value) === normalizeColor(updatedColor)
+      )
+    ) {
+      return recentColors;
     }
 
-    return updatedColor;
-  }, [isColorInCollections, updatedColor]);
-
-  const computedColors = React.useMemo(
-    () =>
-      customColor
-        ? [
-            ...customColors,
-            {
-              isBrightColor: computeIsBrightColor(customColor),
-              name: customColor,
-              value: customColor,
-            },
-            ...fullCustomColors,
-          ]
-        : [...customColors, ...fullCustomColors],
-    [customColor, fullCustomColors, customColors]
-  );
+    return [
+      {
+        isBrightColor: computeIsBrightColor(updatedColor),
+        name: updatedColor,
+        value: updatedColor,
+      },
+      ...recentColors,
+    ].slice(0, MAX_RECENT_COLORS);
+  }, [recentColors, updatedColor]);
 
   const updateCustomColorDebounced = React.useMemo(
     () => debounce((value: string) => updateCustomColor(value), 100),
@@ -392,10 +376,8 @@ function ColorCustom({
       <ColorDropdownMenuItems
         color={color}
         colors={computedColors}
-        updateColor={(c) => {
-          updateColor(c);
-          recordColorUsage(normalizeColor(c));
-        }}
+        label="Recent Colors"
+        updateColor={updateColor}
       >
         <ColorInput
           className="col-start-10"
@@ -406,6 +388,7 @@ function ColorCustom({
           value={value}
         >
           <DropdownMenuItem
+            aria-label="Custom color"
             className={cn(
               buttonVariants({
                 size: 'icon',
@@ -413,11 +396,11 @@ function ColorCustom({
               }),
               'flex size-8 items-center justify-center rounded-full'
             )}
-            onSelect={(e) => {
-              e.preventDefault();
+            onSelect={(event) => {
+              event.preventDefault();
             }}
+            role="gridcell"
           >
-            <span className="sr-only">Custom</span>
             <PlusIcon />
           </DropdownMenuItem>
         </ColorInput>
@@ -435,7 +418,10 @@ function ColorInput({
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   return (
-    <div className={cn('flex flex-col items-center', className)}>
+    <div
+      className={cn('flex flex-col items-center', className)}
+      role="presentation"
+    >
       {React.Children.map(children, (child) => {
         if (!child) return child;
 
@@ -459,29 +445,28 @@ function ColorInput({
   );
 }
 
-type TColor = {
-  isBrightColor: boolean;
-  name: string;
-  value: string;
-};
-
-function ColorDropdownMenuItem({
-  className,
-  isBrightColor,
-  isSelected,
-  name,
-  updateColor,
-  value,
-  ...props
-}: {
-  isBrightColor: boolean;
-  isSelected: boolean;
-  value: string;
-  updateColor: (color: string) => void;
-  name?: string;
-} & DropdownMenuItemProps) {
+const ColorDropdownMenuItem = React.forwardRef(function ColorDropdownMenuItem(
+  {
+    className,
+    isBrightColor,
+    isSelected,
+    name,
+    updateColor,
+    value,
+    ...props
+  }: {
+    isBrightColor: boolean;
+    isSelected: boolean;
+    value: string;
+    updateColor: (color: string) => void;
+    name?: string;
+  } & DropdownMenuItemProps,
+  ref: React.ForwardedRef<HTMLDivElement>
+) {
   const content = (
     <DropdownMenuItem
+      aria-label={name ?? value}
+      aria-selected={isSelected}
       className={cn(
         buttonVariants({
           size: 'icon',
@@ -491,9 +476,11 @@ function ColorDropdownMenuItem({
         !isBrightColor && 'border-transparent text-white',
         className
       )}
+      ref={ref}
+      role="gridcell"
       style={{ backgroundColor: value }}
-      onSelect={(e) => {
-        e.preventDefault();
+      onSelect={(event) => {
+        event.preventDefault();
         updateColor(value);
       }}
       {...props}
@@ -504,53 +491,138 @@ function ColorDropdownMenuItem({
 
   return name ? (
     <Tooltip>
-      <TooltipTrigger>{content}</TooltipTrigger>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
       <TooltipContent className="mb-1 capitalize">{name}</TooltipContent>
     </Tooltip>
   ) : (
     content
   );
-}
+});
 
 export function ColorDropdownMenuItems({
+  children,
   className,
   color,
   colors,
+  label = 'Colors',
   updateColor,
   ...props
 }: {
-  colors: TColor[];
+  colors: readonly ColorOption[];
+  label?: string;
   updateColor: (color: string) => void;
   color?: string;
 } & React.ComponentProps<'div'>) {
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const itemRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+
+  const focusItem = React.useCallback(
+    (index: number) => {
+      if (colors.length === 0) return;
+
+      const nextIndex = Math.max(0, Math.min(index, colors.length - 1));
+
+      setActiveIndex(nextIndex);
+      itemRefs.current[nextIndex]?.focus();
+    },
+    [colors.length]
+  );
+
+  const colorRows = React.useMemo(
+    () =>
+      Array.from(
+        { length: Math.ceil(colors.length / COLOR_GRID_COLUMNS) },
+        (_, rowIndex) =>
+          colors.slice(
+            rowIndex * COLOR_GRID_COLUMNS,
+            (rowIndex + 1) * COLOR_GRID_COLUMNS
+          )
+      ),
+    [colors]
+  );
+
   return (
     <div
+      aria-colcount={COLOR_GRID_COLUMNS}
+      aria-label={label}
+      aria-rowcount={colorRows.length + (children ? 1 : 0)}
       className={cn(
         'grid grid-cols-[repeat(10,1fr)] place-items-center gap-x-1',
         className
       )}
+      role="grid"
       {...props}
     >
       <TooltipProvider>
-        {colors.map(({ isBrightColor, name, value }) => (
-          <ColorDropdownMenuItem
-            name={name}
-            key={name ?? value}
-            value={value}
-            isBrightColor={isBrightColor}
-            isSelected={
-              !!color && normalizeColor(color) === normalizeColor(value)
-            }
-            updateColor={updateColor}
-          />
+        {colorRows.map((row, rowIndex) => (
+          <div className="contents" key={`row-${rowIndex}`} role="row">
+            {row.map(({ isBrightColor, name, value }, columnIndex) => {
+              const index = rowIndex * COLOR_GRID_COLUMNS + columnIndex;
+
+              return (
+                <ColorDropdownMenuItem
+                  name={name}
+                  key={name ?? value}
+                  value={value}
+                  isBrightColor={isBrightColor}
+                  isSelected={
+                    !!color && normalizeColor(color) === normalizeColor(value)
+                  }
+                  onFocus={() => {
+                    setActiveIndex(index);
+                  }}
+                  onKeyDown={(event) => {
+                    let nextIndex: number | undefined;
+
+                    switch (event.key) {
+                      case 'ArrowDown':
+                        nextIndex = index + COLOR_GRID_COLUMNS;
+                        break;
+                      case 'ArrowLeft':
+                        nextIndex = index - 1;
+                        break;
+                      case 'ArrowRight':
+                        nextIndex = index + 1;
+                        break;
+                      case 'ArrowUp':
+                        nextIndex = index - COLOR_GRID_COLUMNS;
+                        break;
+                      case 'End':
+                        nextIndex = colors.length - 1;
+                        break;
+                      case 'Home':
+                        nextIndex = 0;
+                        break;
+                    }
+
+                    if (nextIndex === undefined) return;
+                    if (nextIndex < 0 || nextIndex >= colors.length) return;
+
+                    event.preventDefault();
+                    event.stopPropagation();
+                    focusItem(nextIndex);
+                  }}
+                  ref={(element) => {
+                    itemRefs.current[index] = element;
+                  }}
+                  tabIndex={index === activeIndex ? 0 : -1}
+                  updateColor={updateColor}
+                />
+              );
+            })}
+          </div>
         ))}
-        {props.children}
+        {children ? (
+          <div className="contents" role="row">
+            {children}
+          </div>
+        ) : null}
       </TooltipProvider>
     </div>
   );
 }
 
-export const DEFAULT_COLORS = [
+export const DEFAULT_COLORS: readonly ColorOption[] = [
   {
     isBrightColor: false,
     name: 'black',
@@ -951,34 +1023,6 @@ export const DEFAULT_COLORS = [
     isBrightColor: false,
     name: 'dark purple 3',
     value: '#1F124D',
-  },
-  {
-    isBrightColor: false,
-    name: 'dark magenta 3',
-    value: '#4C1130',
-  },
-];
-
-const DEFAULT_CUSTOM_COLORS = [
-  {
-    isBrightColor: false,
-    name: 'dark orange 3',
-    value: '#783F04',
-  },
-  {
-    isBrightColor: false,
-    name: 'dark grey 3',
-    value: '#666666',
-  },
-  {
-    isBrightColor: false,
-    name: 'dark grey 2',
-    value: '#999999',
-  },
-  {
-    isBrightColor: false,
-    name: 'light cornflower blue 1',
-    value: '#6C9EEB',
   },
   {
     isBrightColor: false,

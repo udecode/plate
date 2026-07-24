@@ -10,7 +10,6 @@ import {
   getPlateModelPublication,
   getResolvedPluginTargetBinding,
 } from './compilePlateModel';
-import { prepareParserRegistry } from './prepareParserRegistry';
 
 const createElementPlugin = (key: string, type = key) =>
   createBasePlugin({
@@ -106,7 +105,7 @@ describe('compilePlateModel', () => {
     );
   });
 
-  it('publishes semantic and parser projections from one descriptor', () => {
+  it('publishes semantic schema projections from one descriptor', () => {
     const BlockPlugin = createElementPlugin('modelBlock', 'model-block');
     const MarkPlugin = createBasePlugin({
       key: 'modelMark',
@@ -137,12 +136,6 @@ describe('compilePlateModel', () => {
       plugins: [BlockPlugin, MarkPlugin, PropertyPlugin],
     });
     const model = getPlateModelPublication(editor)!.model;
-    const parserByKey = Object.fromEntries(
-      prepareParserRegistry(editor).plugins.map((plugin) => [
-        plugin.key,
-        plugin,
-      ])
-    );
 
     expect(model.byKey.modelBlock).toMatchObject({
       elementType: 'model-block',
@@ -167,14 +160,6 @@ describe('compilePlateModel', () => {
         (declaration) => declaration.key === 'model-property'
       )
     );
-    expect(parserByKey.modelBlock).toMatchObject({
-      isElement: true,
-      isLeaf: false,
-    });
-    expect(parserByKey.modelMark).toMatchObject({
-      isElement: false,
-      isLeaf: true,
-    });
   });
 
   it('accepts installed plugin descriptors as typed schema handles', () => {

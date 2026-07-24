@@ -2,7 +2,6 @@ import type React from 'react';
 
 import type {
   DecoratedRange,
-  Descendant,
   EditorClipboardMiddlewareMap,
   Element,
   EditorNodeChangeContext,
@@ -25,19 +24,20 @@ import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type {
   AnyPluginConfig,
-  BaseDeserializer,
-  BaseHtmlDeserializer,
   BaseInjectProps,
   PluginBase,
   PluginBaseContext,
-  BaseSerializer,
   BaseTransformOptions,
   BasePluginOverride,
   EditableProps,
   AnyPluginTx,
+  ExtendForeignHtmlCodec,
+  ExtendHtmlCodec,
+  ForeignHtmlCodecTarget,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   HandlerReturnType,
+  HtmlParser,
   InferApi,
   InferDependencies,
   InferEnabled,
@@ -53,7 +53,6 @@ import type {
   MatchRules,
   NodeComponent,
   NodeComponents,
-  Parser,
   PlatePluginExtensionEditor,
   PlatePluginTxGroup,
   PlatePluginTxGroups,
@@ -86,14 +85,6 @@ export type AnyPlatePlugin = PlatePlugin<AnyPluginConfig>;
 export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { entry: NodeEntry }
 ) => DecoratedRange[] | undefined;
-
-export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseDeserializer & {
-    parse?: (
-      options: PlatePluginContext<C> & { element: any }
-    ) => Partial<Descendant> | undefined | void;
-    query?: (options: PlatePluginContext<C> & { element: any }) => boolean;
-  };
 
 export type EditableSiblingComponent = (
   editableProps: EditableProps
@@ -175,39 +166,6 @@ export type ExtendPlateEditorExtension<
 > = (
   ctx: PlatePluginContext<InferPluginBehaviorConfig<C>>
 ) => ContextualPlateEditorExtensionInput<C> | undefined;
-
-export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseHtmlDeserializer & {
-    parse?: (
-      options: PlatePluginContext<C> & {
-        element: HTMLElement;
-        node: AnyObject;
-      }
-    ) => Partial<Descendant> | undefined | void;
-    query?: (
-      options: PlatePluginContext<C> & { element: HTMLElement }
-    ) => boolean;
-  };
-
-export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: React.FC<PlateElementProps<Element, C> & PlateLeafProps<Text, C>>;
-  query?: (options: PlateElementProps) => boolean;
-};
-
-/** Parser-only projection contributed to another installed React plugin. */
-export type PlateParserPluginProjection<
-  C extends AnyPluginConfig = AnyPluginConfig,
-> = {
-  parser?: Nullable<Parser<WithAnyKey<C>>>;
-  parsers?: PlatePlugin<C>['parsers'];
-};
-
-// -----------------------------------------------------------------------------
-
-export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: (options: PlatePluginContext<C> & { node: Descendant }) => string;
-  query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
-};
 
 export type InferConfig<P> = P extends {
   readonly __config: infer C extends AnyPluginConfig;
@@ -329,12 +287,6 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       /** Plugin injection. */
       inject: Nullable<{
         nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-        /** Parser projections contributed to installed plugins by key. */
-        parsers?: Record<string, PlateParserPluginProjection>;
-        /** Dynamic parser projection contributed to each targeted plugin. */
-        targetParserToInject?: (
-          ctx: PlatePluginContext<C> & { targetPlugin: string }
-        ) => PlateParserPluginProjection;
       }>;
       override: {
         /** Replace plugin {@link NodeComponent} by key. */
@@ -347,30 +299,9 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          */
         plugins?: Record<string, BasePluginOverride>;
       };
-      /** @see {@link Parser} */
-      parser: Nullable<Parser<WithAnyKey<C>>>;
-      parsers:
-        | (Record<
-            string,
-            {
-              /** @see {@link Deserializer} */
-              deserializer?: Deserializer<WithAnyKey<C>>;
-              /** @see {@link Serializer} */
-              serializer?: Serializer<WithAnyKey<C>>;
-            }
-          > & { html?: never; htmlReact?: never })
-        | {
-            html?: Nullable<{
-              /** @see {@link HtmlDeserializer} */
-              deserializer?: HtmlDeserializer<WithAnyKey<C>>;
-              /** @see {@link HtmlSerializer} */
-              serializer?: HtmlSerializer<WithAnyKey<C>>;
-            }>;
-            htmlReact?: Nullable<{
-              /** Function to deserialize HTML to Plite nodes using React. */
-              serializer?: HtmlReactSerializer<WithAnyKey<C>>;
-            }>;
-          };
+      parsers: {
+        html?: Nullable<HtmlParser<WithAnyKey<C>>>;
+      };
       render: Nullable<{
         /**
          * When other plugins' node components are rendered, this function can
@@ -556,12 +487,12 @@ type RuntimePlatePluginConfig<
     InferPluginApi<C>,
     InferEnabled<C>
   >,
-  'dependencies' | 'parser' | 'parsers' | 'render' | 'schema' | 'type'
+  'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
   render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'isDecoration'> | null;
 };
 
-type StaticPlatePluginConfig<
+type StaticPlatePluginConfigBase<
   C extends AnyPluginConfig,
   EO = {},
   EA = {},
@@ -584,6 +515,26 @@ type StaticPlatePluginConfig<
   >,
   'dependencies'
 >;
+
+type StaticPlatePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+  Enabled extends boolean = InferEnabled<C>,
+> = Omit<StaticPlatePluginConfigBase<C, EO, EA, ES, Enabled>, 'schema'> & {
+  schema?: never;
+};
+
+type TerminalPlatePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+  Enabled extends boolean = InferEnabled<C>,
+> = Omit<StaticPlatePluginConfig<C, EO, EA, ES, Enabled>, 'schema'> & {
+  schema?: never;
+};
 
 type ContextualPlatePluginConfig<C extends AnyPluginConfig> = Pick<
   RuntimePlatePluginConfig<C>,
@@ -627,6 +578,8 @@ type PlatePluginAuthoringMethod =
   | 'configure'
   | 'extend'
   | 'extendApi'
+  | 'extendCodecs'
+  | 'extendHtmlCodec'
   | 'extendEditorApi'
   | 'extendExtension'
   | 'extendSelectors'
@@ -691,12 +644,15 @@ type ConfiguredPlatePluginEnabled<
 >;
 
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __apiExtensions: BasePlugin<C>['__apiExtensions'];
+  __codecExtensions: BasePlugin<C>['__codecExtensions'];
+  __htmlCodecExtensions: BasePlugin<C>['__htmlCodecExtensions'];
   __configurationLayers: BasePlugin<C>['__configurationLayers'];
   /** @internal Root editor API declarations carried by this descriptor. */
   __editorApi: BasePlugin<C>['__editorApi'];
   __editorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __readExtensions: BasePlugin<C>['__readExtensions'];
   __selectorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __txExtensions: PlateExtendTxGroups<AnyPluginConfig>[];
   clone: () => PlatePlugin<C>;
@@ -725,7 +681,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      StaticPlatePluginConfig<C, {}, {}, {}, Enabled> & {
+      TerminalPlatePluginConfig<C, {}, {}, {}, Enabled> & {
         enabled: Enabled;
         type: TType;
       },
@@ -738,7 +694,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      StaticPlatePluginConfig<C> & { type: TType },
+      TerminalPlatePluginConfig<C> & { type: TType },
       TShortcuts
     >
   ): ConfiguredPlatePluginType<C, TType>;
@@ -748,7 +704,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      StaticPlatePluginConfig<C, {}, {}, {}, Enabled> & {
+      TerminalPlatePluginConfig<C, {}, {}, {}, Enabled> & {
         enabled: Enabled;
       },
       TShortcuts
@@ -757,7 +713,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   configure<const TShortcuts extends PlateShortcutRecord = {}>(
     config: WithValidatedPlateShortcuts<
       C,
-      StaticPlatePluginConfig<C>,
+      TerminalPlatePluginConfig<C>,
       TShortcuts
     >
   ): ConfiguredPlatePlugin<C>;
@@ -799,6 +755,18 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       TShortcuts
     >
   ): ExtendedPlatePlugin<C, EO, EA, ES, Enabled>;
+  extendCodecs(
+    extension: Parameters<BasePlugin<C>['extendCodecs']>[0]
+  ): PlatePlugin<C>;
+  extendHtmlCodec(extension: ExtendHtmlCodec<C>): PlatePlugin<C>;
+  extendHtmlCodec<
+    const TTarget extends PluginReference & {
+      readonly __config: AnyPluginConfig;
+    },
+  >(
+    target: ForeignHtmlCodecTarget<C, TTarget>,
+    extension: ExtendForeignHtmlCodec<C, InferConfig<TTarget>>
+  ): PlatePlugin<C>;
   /**
    * Adds feature API methods published at `editor.api[plugin.key]`.
    * `editor.plugin(plugin).api` exposes the same immutable API for generic code.
@@ -1011,12 +979,6 @@ export interface RenderNodeWrapperProps<C extends AnyPluginConfig = any>
   extends PlateElementProps<Element, C> {
   key: string;
 }
-
-export type Serializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseSerializer & {
-    parser?: (options: PlatePluginContext<C> & { node: Descendant }) => any;
-    query?: (options: PlatePluginContext<C> & { node: Descendant }) => boolean;
-  };
 
 type ShortcutOptions = HotkeysOptions & {
   keys?: Keys | null;

@@ -20,7 +20,7 @@ import {
 import type { Editor, Value } from '../interfaces/editor';
 import type { NodeMatchPredicate } from '../interfaces/node';
 import { type Node, NodeApi } from '../interfaces/node';
-import { PathApi } from '../interfaces/path';
+import { type Path, PathApi } from '../interfaces/path';
 import { type Range, RangeApi } from '../interfaces/range';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { select } from '../transforms-selection/select';
@@ -29,7 +29,7 @@ import { normalizeNodeMatch } from '../utils/node-match';
 import { matchPath } from '../utils/match-path';
 type SetNodeUpdate = {
   newProperties: Record<string, unknown>;
-  path: number[];
+  path: Path;
   properties: Record<string, unknown>;
 };
 

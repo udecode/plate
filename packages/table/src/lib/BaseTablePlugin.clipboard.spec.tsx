@@ -3,7 +3,6 @@
 import { BaseTablePlugin } from './BaseTablePlugin';
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 import { createPlateEditor } from '@platejs/core/react';
-import { defineEditorExtension } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 
@@ -182,28 +181,13 @@ describe('table clipboard', () => {
   {
     jsxt;
 
-    const createTableEditor = (
-      input: TestEditor,
-      writeSelection?: (data: Pick<DataTransfer, 'setData'>) => void
-    ) => {
-      const editor = createPlateEditor({
+    const createTableEditor = (input: TestEditor) =>
+      createPlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins(),
         selection: input.selection,
         initialValue: input.children,
       });
-
-      if (writeSelection) {
-        editor.extend(
-          defineEditorExtension({
-            api: { clipboard: { writeSelection } },
-            name: 'table-write-selection-test',
-          })
-        );
-      }
-
-      return editor;
-    };
 
     const createClipboard = () => {
       const dataMap = new Map<string, string>();
@@ -263,7 +247,7 @@ describe('table clipboard', () => {
         expect(values.size).toBe(0);
       });
 
-      it('adds csv, tsv, and plain text to the standard clipboard formats', () => {
+      it('writes the complete selected table to every clipboard format', () => {
         const input = (
           <editor>
             <htable>
@@ -293,29 +277,108 @@ describe('table clipboard', () => {
           </editor>
         ) as TestEditor;
         const { clipboard, values } = createClipboard();
-        const writeSelection = mock((data: Pick<DataTransfer, 'setData'>) => {
-          data.setData(
-            'text/html',
-            '<table data-plite-fragment="standard fragment" data-plite-fragment-format="x-plite-fragment">standard html</table>'
-          );
-          data.setData('application/x-plite-fragment', 'standard fragment');
-        });
-        const editor = createTableEditor(input, writeSelection);
+        const editor = createTableEditor(input);
 
         expect(
           editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
         ).toBe(true);
-        expect(writeSelection).toHaveBeenCalledTimes(1);
         expect(values.get('text/csv')).toBe('11,12\n21,22\n');
         expect(values.get('text/tsv')).toBe('11\t12\n21\t22\n');
         expect(values.get('text/plain')).toBe('11\t12\n21\t22\n');
-        expect(values.get('text/html')).toBe(
-          '<table data-plite-fragment="standard fragment" data-plite-fragment-format="x-plite-fragment">standard html</table>'
+        expect(values.get('text/html')).toContain(
+          'data-plite-fragment-format="x-plite-fragment"'
         );
-        expect(values.get('application/x-plite-fragment')).toBe(
-          'standard fragment'
+        expect(values.get('text/html')).toContain('<table');
+        expect(values.get('text/html')).toContain('11');
+        expect(values.get('text/html')).toContain('12');
+        expect(values.get('text/html')).toContain('21');
+        expect(values.get('text/html')).toContain('22');
+
+        const encoded = values.get('application/x-plite-fragment');
+
+        expect(encoded).toBeTruthy();
+
+        const envelope = JSON.parse(decodeURIComponent(atob(encoded!))) as {
+          slice: {
+            content: Array<{
+              children: Array<{
+                children: Array<{
+                  children: unknown[];
+                }>;
+              }>;
+            }>;
+            openEnd: number;
+            openStart: number;
+          };
+          version: number;
+        };
+        const readText = (value: unknown): string => {
+          if (!value || typeof value !== 'object') return '';
+
+          const record = value as {
+            children?: unknown[];
+            text?: unknown;
+          };
+
+          if (typeof record.text === 'string') return record.text;
+
+          return (record.children ?? []).map(readText).join('');
+        };
+        const copiedCells = envelope.slice.content[0]!.children.flatMap(
+          (row) => row.children
         );
+
+        expect(envelope.version).toBe(1);
+        expect(envelope.slice.openStart).toBe(0);
+        expect(envelope.slice.openEnd).toBe(0);
+        expect(copiedCells.map(readText)).toEqual(['11', '12', '21', '22']);
         expect(values.has('application/x-slate-fragment')).toBe(false);
+      });
+
+      it('quotes CSV fields while leaving TSV and plain text literal', () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    {'left,right'}
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>{'say "hi"'}</hp>
+                </htd>
+              </htr>
+              <htr>
+                <htd>
+                  <hp>{'line 1\nline 2'}</hp>
+                </htd>
+                <htd>
+                  <hp>
+                    {'carriage\rreturn'}
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const { clipboard, values } = createClipboard();
+        const editor = createTableEditor(input);
+
+        expect(
+          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
+        ).toBe(true);
+        expect(values.get('text/csv')).toBe(
+          '"left,right","say ""hi"""\n"line 1\nline 2","carriage\rreturn"\n'
+        );
+        expect(values.get('text/tsv')).toBe(
+          'left,right\tsay "hi"\nline 1\nline 2\tcarriage\rreturn\n'
+        );
+        expect(values.get('text/plain')).toBe(
+          'left,right\tsay "hi"\nline 1\nline 2\tcarriage\rreturn\n'
+        );
       });
     });
   }

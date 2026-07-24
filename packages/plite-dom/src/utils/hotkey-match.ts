@@ -1,8 +1,9 @@
-import { IS_APPLE } from './environment';
+import { usesAppleDOMHotkeys } from './environment';
 
 export type HotkeyPlatform = 'apple' | 'other' | 'windows';
 
 export type HotkeyMatchOptions = {
+  ignoreModifiers?: boolean;
   platform?: HotkeyPlatform;
 };
 
@@ -85,7 +86,7 @@ const MODIFIER_TOKEN_NAMES: Record<string, ModifierKey | 'mod'> = {
 const SINGLE_LETTER_RE = /^[a-z]$/i;
 
 const isApplePlatform = (platform: HotkeyPlatform | undefined) =>
-  platform ? platform === 'apple' : IS_APPLE;
+  platform === 'apple';
 
 const resolveModifier = (
   value: string,
@@ -177,14 +178,16 @@ const isSingleLetter = (value: string) => SINGLE_LETTER_RE.test(value);
 
 const matchKey = (event: KeyboardEventLike, expectedKey: string) => {
   const actualKey = event.key;
+  const expectedLower = expectedKey.toLowerCase();
 
   if (
     typeof actualKey === 'string' &&
-    actualKey.toLowerCase() === expectedKey.toLowerCase()
+    actualKey.toLowerCase() === expectedLower
   ) {
     return true;
   }
 
+  if (event.code?.toLowerCase() === expectedLower) return true;
   if (!isSingleLetter(expectedKey)) return false;
   if (typeof actualKey === 'string' && isAscii(actualKey)) return false;
 
@@ -195,7 +198,15 @@ const isAltGraphEvent = (event: KeyboardEventLike) =>
   typeof event.getModifierState === 'function' &&
   event.getModifierState('AltGraph');
 
-const matchHotkey = (compiled: CompiledHotkey, event: KeyboardEventLike) => {
+const matchHotkey = (
+  compiled: CompiledHotkey,
+  event: KeyboardEventLike,
+  ignoreModifiers: boolean
+) => {
+  if (ignoreModifiers) {
+    return matchKey(event, compiled.key);
+  }
+
   if (
     compiled.altKey === true &&
     compiled.ctrlKey === true &&
@@ -222,7 +233,9 @@ export const createCompiledHotkeyMatcher = (
   );
 
   return (event: KeyboardEventLike) =>
-    compiled.some((entry) => matchHotkey(entry, event));
+    compiled.some((entry) =>
+      matchHotkey(entry, event, options?.ignoreModifiers ?? false)
+    );
 };
 
 const MATCHER_CACHE = new Map<string, HotkeyMatcher>();
@@ -267,7 +280,12 @@ export function isHotkey(
     throw new TypeError('isHotkey requires a keyboard event');
   }
 
-  const matcher = getCachedHotkeyMatcher(hotkey, options);
+  const matcher = getCachedHotkeyMatcher(
+    hotkey,
+    options ?? {
+      platform: usesAppleDOMHotkeys(targetEvent) ? 'apple' : 'other',
+    }
+  );
 
   return matcher(targetEvent);
 }

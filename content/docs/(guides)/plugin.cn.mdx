@@ -149,37 +149,45 @@ const ExamplePlugin = createPlatePlugin({
 您可能希望向具有特定属性的任何节点注入类名或CSS属性。例如，以下插件为具有`align`属性的段落设置`textAlign` CSS属性。
 
 ```ts showLineNumbers
-import { KEYS } from 'platejs';
+import { KEYS, property, target } from 'platejs';
 
 const TextAlignPlugin = createPlatePlugin({
   key: 'align',
-  targetPluginKeys: [KEYS.p],
+  schema: ({ own, plugins, targetPluginKeys }) => ({
+    properties: [
+      own.elementProperty(property.string(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  }),
   inject: {
+    isBlock: true,
     nodeProps: {
       defaultNodeValue: 'start',
-      nodeKey: 'align',
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
-    // 这将注入到每个已安装且已启用的目标中。本例中，ParagraphPlugin 能够反序列化 `textAlign` 样式。
-    targetParserToInject: ({ editor, plugin }) => ({
-      parsers: {
-        html: {
-          deserializer: {
-            parse: ({ element, node }) => {
-              if (element.style.textAlign) {
-                node[editor.getType('align')] = element.style.textAlign;
-              }
-            },
-          },
-        },
-      },
-    }),
   },
-});
+  targetPluginKeys: [KEYS.p],
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => element.style.textAlign || undefined,
+  encode: ({ value }) => ({ style: { textAlign: value } }),
+  match: [
+    {
+      style: {
+        textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      },
+    },
+  ],
+}));
 ```
 
-受上述插件影响的段落节点示例如下：
+`inject.nodeProps` 负责渲染，`.extendHtmlCodec()` 负责双向 HTML 声明。
+两者都使用插件解析后的 `type`，因此最终的 `.configure({ type })` 可以修改存储
+属性，而不需要在 codec 中重复 key。
+
+受该插件影响的段落节点如下：
 
 ```ts showLineNumbers {3}
 {
@@ -346,27 +354,27 @@ const LowPriorityPlugin = createPlatePlugin({
 
 这在需要确保某些插件先于其他插件初始化或运行时特别有用。
 
-### 自定义解析器
+### HTML 输入钩子
 
-`parsers`属性接受字符串键来构建自己的解析器：
+使用 `parsers.html` 下的扁平钩子决定插件是否参与 HTML 输入、转换源字符串，
+或转换已解码的 fragment。
 
 ```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+const HtmlCleanupPlugin = createPlatePlugin({
+  key: 'htmlCleanup',
   parsers: {
-    myCustomParser: {
-      deserializer: {
-        parse: // ...
-      },
-      serializer: {
-        parse: // ...
-      }
+    html: {
+      query: ({ data, format }) =>
+        format === 'text/html' && data.includes('<!--StartFragment-->'),
+      transformData: ({ data }) =>
+        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
     },
   },
 });
 ```
 
-核心插件包含`html`和`htmlReact`解析器。
+`query`、`transformData` 和 `transformFragment` 都直接位于
+`parsers.html` 下。节点级 HTML 转换与这些完整输入钩子分开。
 
 ## 类型化插件
 

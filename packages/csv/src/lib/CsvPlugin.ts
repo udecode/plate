@@ -1,11 +1,12 @@
 import type { InferConfig } from '@platejs/core';
 import { createBasePlugin } from '@platejs/core';
+import { ContentSlice } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { bindFirst } from '@udecode/utils';
 import type { ParseConfig } from 'papaparse';
 
 import { deserializeCsv } from './deserializer/utils';
-import { deserializeCsvWithParserContext } from './internal/deserializeCsv';
+import { deserializeCsvWithContext } from './internal/deserializeCsv';
 
 export type CsvParseOptions = ParseConfig;
 
@@ -36,13 +37,22 @@ export const CsvPlugin = createBasePlugin({
   .extendApi(({ editor }) => ({
     deserialize: bindFirst(deserializeCsv, editor),
   }))
-  .extend({
-    parser: {
-      format: 'text/plain',
-      deserialize: (context) =>
-        deserializeCsvWithParserContext(context, { data: context.data }),
-      owns: [{ kind: 'schema' }],
+  .extendCodecs(({ editor, plugin }) => ({
+    'text/plain': {
+      priority: 20,
+      scope: 'document',
+      decode: ({ data }) => {
+        const content = deserializeCsvWithContext(
+          {
+            getType: (key) => editor.getType(key),
+            options: editor.plugin(plugin).getOptions(),
+          },
+          { data }
+        );
+
+        return content ? ContentSlice.closed(content) : null;
+      },
     },
-  });
+  }));
 
 export type CsvConfig = InferConfig<typeof CsvPlugin>;

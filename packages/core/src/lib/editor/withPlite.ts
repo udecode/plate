@@ -26,6 +26,7 @@ import {
 } from '@platejs/plite/internal';
 
 import type { NoInfer } from '../../internal/types';
+import { compilePlateCodecs } from '../../internal/plugin/compilePlateCodecs';
 import {
   attachPlateModelPublication,
   clearPlateModelPublication,
@@ -116,7 +117,7 @@ const normalizeBaseInitialValue = <V extends Value>(
     }
 
     return (
-      Array.isArray(value) ? { children: value as V } : value
+      Array.isArray(value) ? { children: value as unknown as V } : value
     ) as EditorDocumentValue<V>;
   }
 
@@ -132,7 +133,7 @@ const normalizeBaseInitialValue = <V extends Value>(
 
   return {
     ...currentValue,
-    children: [defaultChild] as V,
+    children: [defaultChild] as unknown as V,
   };
 };
 
@@ -358,13 +359,12 @@ const createPlateSchemaExtensions = (
         version: identityOptions.version,
       })
     : defineEditorSchema(definition);
-  const { extensionGroups, runtime } = withCompiledPlateModelCandidate(
-    editor,
-    model,
-    () => {
+  const { codecExtension, extensionGroups, runtime } =
+    withCompiledPlateModelCandidate(editor, model, () => {
       const runtime = createPlateRuntimeExtension(editor, pluginList);
 
       return {
+        codecExtension: compilePlateCodecs(editor, model, pluginList),
         extensionGroups: groupPlateEditorExtensions(
           pluginList.flatMap((plugin) =>
             resolvePlateEditorExtensions(editor, plugin)
@@ -372,8 +372,7 @@ const createPlateSchemaExtensions = (
         ),
         runtime,
       };
-    }
-  );
+    });
   let publication: ReturnType<typeof createPlateModelPublication> | undefined;
   const publishModel: EditorExtensionApiFactory = (
     _editor,
@@ -405,6 +404,7 @@ const createPlateSchemaExtensions = (
       identity,
       modelExtension,
       runtime.extension,
+      ...(codecExtension ? [codecExtension] : []),
     ]),
   });
 };

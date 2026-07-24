@@ -420,7 +420,14 @@ describe('slice fitter generated model laws', () => {
           const rawChildren = rootChildren(raw, root);
           const rawText = textAt(rawChildren, target.path);
 
-          rawText.text = `${rawText.text.slice(0, start)}${replacement}${rawText.text.slice(end)}`;
+          assert.equal(
+            Reflect.set(
+              rawText,
+              'text',
+              `${rawText.text.slice(0, start)}${replacement}${rawText.text.slice(end)}`
+            ),
+            true
+          );
 
           const canonical = canonicalizeRootChildren(
             editor,

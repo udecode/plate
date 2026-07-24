@@ -72,6 +72,9 @@ const expectImageDropCursorAligned = async ({
   verticalEdge: BlockDropCursorEdge;
 }) => {
   await expect(cursor).toBeVisible();
+  await expect(cursor).toHaveCSS('background-color', 'rgb(37, 99, 235)');
+  await expect(cursor).toHaveCSS('border-radius', '2px');
+  await expect(cursor).toHaveCSS('z-index', '2');
 
   const [cursorBox, voidBox] = await Promise.all([
     cursor.boundingBox(),

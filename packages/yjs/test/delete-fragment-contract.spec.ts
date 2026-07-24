@@ -6,17 +6,17 @@ import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
   type Peer,
   paragraph,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -34,14 +34,14 @@ const initialValue = (): Descendant[] => [
 ];
 
 const createPeer = (clientId: ClientId): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children: initialValue(),
     clientId,
     numericClientId: clientIds[clientId],
   });
 
 const createPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: ids,
     numericClientIds: clientIds,
@@ -117,10 +117,10 @@ describe('@platejs/yjs delete_fragment collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['almma!']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha', 'beta', 'gamma!']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['almma!']);
   });
 });

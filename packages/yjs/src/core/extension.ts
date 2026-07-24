@@ -57,14 +57,12 @@ const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
     pause: () => getController().tx().pause(),
     reconcile: () => getController().tx().reconcile(),
     reconnect: () => getController().tx().reconnect(),
-    redo: () => getController().tx().redo(),
     resume: () => getController().tx().resume(),
     retireSharedEffectPeer: (peerId) =>
       getController().tx().retireSharedEffectPeer(peerId),
     sendCursorData: (data) => getController().tx().sendCursorData(data),
     sendSelection: (range, data) =>
       getController().tx().sendSelection(range, data),
-    undo: () => getController().tx().undo(),
   });
 
 const canonicalizeRootContent = (
@@ -141,16 +139,11 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
 
       const controller = (() => {
         try {
-          return new YjsController(
-            owner,
-            options,
-            {
-              canonicalize: (root, children) =>
-                canonicalizeRootContent(owner, root, children),
-              emptyValueFor,
-            },
-            previousActiveController
-          );
+          return new YjsController(owner, options, {
+            canonicalize: (root, children) =>
+              canonicalizeRootContent(owner, root, children),
+            emptyValueFor,
+          });
         } catch (error) {
           activationErrors.set(owner, error);
           throw error;

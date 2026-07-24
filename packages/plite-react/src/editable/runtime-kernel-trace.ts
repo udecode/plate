@@ -6,7 +6,7 @@ import {
   beginEditableEditingEpoch,
   beginOrJoinEditableEditingEpoch,
   isEditableEditingEpochCommand,
-} from './editing-epoch-kernel';
+} from './editing-epoch-adapter';
 import {
   beginEditableEventFrame,
   createEditableKernelResult,

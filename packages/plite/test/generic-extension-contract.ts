@@ -9,16 +9,16 @@ import {
 import type { EditorImmutableConfig } from '../src/interfaces/editor';
 
 type CustomText = {
-  text: string;
-  bold?: true;
+  readonly bold?: true;
+  readonly text: string;
 };
 
 type ParagraphElement = {
-  type: 'paragraph';
-  children: CustomText[];
+  readonly children: readonly CustomText[];
+  readonly type: 'paragraph';
 };
 
-type CustomValue = ParagraphElement[];
+type CustomValue = readonly ParagraphElement[];
 
 type CustomEditor = Editor<CustomValue>;
 
@@ -91,7 +91,10 @@ defineEditorExtension<CustomEditor>()({
   register() {},
 });
 
-const editor = createEditor({ extensions: [extension] as const, initialValue });
+const editor = createEditor<CustomValue, readonly [typeof extension]>({
+  extensions: [extension] as const,
+  initialValue,
+});
 const value: Readonly<CustomValue> = editor.read((state) => state.children());
 
 void value;

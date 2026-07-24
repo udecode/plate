@@ -1,10 +1,12 @@
 import {
+  ContentSlice,
   defineEditorExtension,
   editorCommands,
   property,
   schema,
   target,
 } from '@platejs/plite';
+import { writeHostFragmentData } from '@platejs/plite-dom';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import {
@@ -12,7 +14,7 @@ import {
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
-  prepareParserPluginContext,
+  prepareHtmlPluginContext,
 } from '../index';
 import { getEditorPlugin } from './getEditorPlugin';
 
@@ -33,6 +35,123 @@ const resolveEditorExtensions = (plugin: AnyBasePlugin) => {
 };
 
 describe('createBasePlugin', () => {
+  it('authors one inferred MIME codec before terminal configuration', () => {
+    const descriptor = createBasePlugin({ key: 'records' });
+
+    expect(typeof (descriptor as any).extendCodecs).toBe('function');
+
+    const RecordsPlugin = descriptor.extendCodecs(
+      ({ editor: _editor, plugin }) => ({
+        'application/x-plate-records': {
+          decode: ({ data, source, state }) => {
+            data satisfies string;
+            source.types satisfies readonly string[];
+            state.schema satisfies object;
+
+            return ContentSlice.closed([
+              {
+                children: [{ text: data }],
+                type: 'p',
+              },
+            ]);
+          },
+          encode: ({ slice, state }) => {
+            slice.openStart satisfies number;
+            state.schema satisfies object;
+
+            return `${plugin.key}:${slice.content.length}`;
+          },
+          scope: 'document',
+        },
+      })
+    );
+    const editor = createBaseEditor({ plugins: [RecordsPlugin] });
+    const output: Record<string, string> = {};
+
+    const formats = writeHostFragmentData(
+      editor,
+      {
+        setData: (format, value) => {
+          output[format] = value;
+        },
+      },
+      ContentSlice.closed([
+        {
+          children: [{ text: 'value' }],
+          type: 'p',
+        },
+      ])
+    );
+
+    expect(formats).toEqual(['application/x-plate-records', 'text/html']);
+    expect(output).toEqual({
+      'application/x-plate-records': 'records:1',
+      'text/html': '<p>value</p>',
+    });
+  });
+
+  it('authors self and foreign HTML codecs before terminal configuration', () => {
+    const TargetPlugin = createBasePlugin({
+      key: 'htmlTarget',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    });
+    const selfExtension = () => ({
+      decode: () => ({}),
+      decodeOnly: true as const,
+      match: [{ tag: 'section' }] as const,
+    });
+    const foreignExtension = () => ({
+      decode: () => ({}),
+      decodeOnly: true as const,
+      match: [{ tag: 'article' }] as const,
+    });
+    const plugin = createBasePlugin({
+      key: 'htmlOwner',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    })
+      .extendHtmlCodec(selfExtension)
+      .extendHtmlCodec(TargetPlugin, foreignExtension);
+
+    expect(plugin.__htmlCodecExtensions).toEqual([
+      { extension: expect.any(Function), targetKey: null },
+      {
+        extension: expect.any(Function),
+        targetKey: 'htmlTarget',
+      },
+    ]);
+    expect(
+      plugin.__htmlCodecExtensions.every((extension) =>
+        Object.isFrozen(extension)
+      )
+    ).toBe(true);
+    expect(() => (plugin.extendHtmlCodec as any)({}, foreignExtension)).toThrow(
+      'requires a plugin descriptor target'
+    );
+    expect(() =>
+      (plugin.extendHtmlCodec as any)(plugin, foreignExtension)
+    ).toThrow('requires a different plugin descriptor target');
+    expect(() =>
+      (plugin.configure as any)({
+        schema: {
+          element: {
+            content: schema.content.text({ default: 'text', min: 1 }),
+          },
+        },
+      })
+    ).toThrow('cannot define schema through .configure()');
+    expect(
+      (plugin.configure as any)({ type: 'configured-html-owner' }).type
+    ).toBe('configured-html-owner');
+  });
+
   it('freezes compile-time target keys', () => {
     const plugin = createBasePlugin({
       key: 'no-config',
@@ -41,6 +160,51 @@ describe('createBasePlugin', () => {
 
     expect(plugin.targetPluginKeys).toEqual(['paragraph']);
     expect(Object.isFrozen(plugin.targetPluginKeys)).toBe(true);
+  });
+
+  it('keeps schema creation-owned across static and contextual layers', () => {
+    const plugin = createBasePlugin({ key: 'creationOwnedSchema' });
+
+    expect(() =>
+      (plugin.extend as any)({
+        schema: { mark: property.boolean() },
+      })
+    ).toThrow('cannot define schema through .extend()');
+    expect(() =>
+      (plugin.configure as any)({
+        schema: { mark: property.boolean() },
+      })
+    ).toThrow('cannot define schema through .configure()');
+
+    const contextual = (plugin.extend as any)(() => ({
+      schema: { mark: property.boolean() },
+    }));
+
+    expect(() => createBaseEditor({ plugins: [contextual] })).toThrow(
+      'extension callbacks cannot define `schema`'
+    );
+  });
+
+  it('locks the authored schema on every descriptor', () => {
+    const plugin = createBasePlugin({
+      key: 'lockedSchema',
+      schema: { mark: property.boolean() },
+    });
+
+    expect(Object.getOwnPropertyDescriptor(plugin, 'schema')).toMatchObject({
+      configurable: false,
+      writable: false,
+    });
+    expect(() => {
+      (plugin as any).schema = { mark: property.string() };
+    }).toThrow();
+    expect(plugin.schema).toEqual({ mark: property.boolean() });
+    expect(
+      Object.getOwnPropertyDescriptor(plugin.clone(), 'schema')
+    ).toMatchObject({
+      configurable: false,
+      writable: false,
+    });
   });
 
   it('preserves inline property validators through plugin resolution', () => {
@@ -575,7 +739,33 @@ describe('createBasePlugin', () => {
           options: { optionB: 30 },
         })
       ).toThrow('already configured');
+      expect(() =>
+        (configured.extendCodecs as any)(() => ({
+          'application/x-late': {
+            scope: 'document',
+            decode: () => null,
+          },
+        }))
+      ).toThrow('already configured');
+      expect(() =>
+        (configured.extendHtmlCodec as any)(() => ({
+          decode: () => ({}),
+          decodeOnly: true,
+          match: [{ tag: 'p' }],
+        }))
+      ).toThrow('already configured');
       expect(() => (configured.clone as any)()).toThrow('already configured');
+    });
+
+    it('rejects codecs in the base plugin object', () => {
+      expect(() =>
+        (createBasePlugin as any)({
+          codecs: {},
+          key: 'invalid-codecs',
+        })
+      ).toThrow(
+        'Plate plugin `codecs` configuration is unsupported. Use `.extendCodecs()`.'
+      );
     });
 
     it('rejects model fields from untyped configure callbacks', () => {
@@ -588,16 +778,9 @@ describe('createBasePlugin', () => {
       );
     });
 
-    it('reads the declared type inside parser callbacks', () => {
+    it('reads the declared type inside parser contexts', () => {
       const TableCellPlugin = createBasePlugin({
         key: 'td',
-        parsers: {
-          html: {
-            deserializer: {
-              parse: ({ type }) => ({ type }),
-            },
-          },
-        },
         type: 'custom-td',
       });
 
@@ -605,34 +788,28 @@ describe('createBasePlugin', () => {
         plugins: [TableCellPlugin],
       });
       const resolvedPlugin = editor.getPlugin(TableCellPlugin);
-      const createContext = prepareParserPluginContext(editor, resolvedPlugin);
-      const parsedNode = editor.read((state) =>
-        resolvedPlugin.parsers?.html?.deserializer?.parse?.({
-          ...createContext(state),
-          element: document.createElement('td'),
-          node: {},
-        })
-      );
+      const createContext = prepareHtmlPluginContext(editor, resolvedPlugin);
+      const context = editor.read((state) => createContext(state));
 
-      expect(parsedNode).toEqual({ type: 'custom-td' });
+      expect(context.type).toBe('custom-td');
     });
 
     it('snapshots current runtime options for each parser invocation', () => {
       const callback = () => 'runtime';
-      const ParserOptionsPlugin = createBasePlugin({
+      const HtmlParserOptionsPlugin = createBasePlugin({
         key: 'parserOptions',
         options: { callback, label: 'one' },
       });
       const editor = createBaseEditor({
-        plugins: [ParserOptionsPlugin],
+        plugins: [HtmlParserOptionsPlugin],
       });
-      const createContext = prepareParserPluginContext(
+      const createContext = prepareHtmlPluginContext(
         editor,
-        ParserOptionsPlugin
+        HtmlParserOptionsPlugin
       );
       const before = editor.read((state) => createContext(state));
 
-      editor.plugin(ParserOptionsPlugin).setOption('label', 'two');
+      editor.plugin(HtmlParserOptionsPlugin).setOption('label', 'two');
 
       const after = editor.read((state) => createContext(state));
 
@@ -669,10 +846,7 @@ describe('createBasePlugin', () => {
         key: 'a',
         parsers: {
           html: {
-            deserializer: {
-              parse: () => ({ href: true }),
-              withoutChildren: false,
-            },
+            transformData: ({ data }) => `base:${data}`,
           },
         },
       });
@@ -682,10 +856,7 @@ describe('createBasePlugin', () => {
           linkPlugin.extend({
             parsers: {
               html: {
-                deserializer: {
-                  withoutChildren: true,
-                  parse: () => ({ test: true }),
-                },
+                transformData: ({ data }) => `configured:${data}`,
               },
             },
           }),
@@ -693,20 +864,22 @@ describe('createBasePlugin', () => {
       });
 
       const plugin = editor.getPlugin(linkPlugin);
-      const createContext = prepareParserPluginContext(editor, plugin);
+      const createContext = prepareHtmlPluginContext(editor, plugin);
 
       expect(
         editor.read((state) =>
-          plugin.parsers.html?.deserializer?.parse?.({
+          plugin.parsers.html?.transformData?.({
             ...createContext(state),
-            element: document.createElement('a'),
-            node: {},
+            data: 'value',
+            format: 'text/html',
+            source: {
+              files: { item: () => null, length: 0 },
+              getData: () => '',
+              types: [],
+            },
           })
         )
-      ).toEqual({
-        test: true,
-      });
-      expect(plugin.parsers.html?.deserializer?.withoutChildren).toBe(true);
+      ).toBe('configured:value');
     });
   });
 });

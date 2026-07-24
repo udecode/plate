@@ -10,6 +10,14 @@ import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
 jsxt;
 
+const createCellSelectionEditor = (input: TestEditor, disableMerge: boolean) =>
+  createPlateEditor({
+    nodeId: true,
+    plugins: getTestTablePlugins({ disableMerge }),
+    selection: input.selection,
+    initialValue: input.children,
+  });
+
 describe('BaseTablePlugin deletion', () => {
   describe('cell boundaries', () => {
     it('blocks Backspace at the start of the current cell', () => {
@@ -126,7 +134,7 @@ describe('BaseTablePlugin deletion', () => {
       { disableMerge: true },
       { disableMerge: false },
     ])('with disableMerge: $disableMerge', ({ disableMerge }) => {
-      let editor: ReturnType<typeof createPlateEditor>;
+      let editor: ReturnType<typeof createCellSelectionEditor>;
       let output: TestEditor;
 
       beforeEach(() => {
@@ -188,12 +196,7 @@ describe('BaseTablePlugin deletion', () => {
           </editor>
         ) as TestEditor;
 
-        editor = createPlateEditor({
-          nodeId: true,
-          plugins: getTestTablePlugins({ disableMerge }),
-          selection: input.selection,
-          initialValue: input.children,
-        });
+        editor = createCellSelectionEditor(input, disableMerge);
 
         editor.update.fragment.delete();
       });
@@ -202,8 +205,12 @@ describe('BaseTablePlugin deletion', () => {
         expect(editor.read.children()).toMatchObject(output.children!);
       });
 
-      it('set the selection to the last cell', () => {
-        expect(editor.read.selection()).toEqual(output.selection!);
+      it('preserves the structural cell selection', () => {
+        expect(editor.read.selection()).toMatchObject({
+          ...output.selection!,
+          kind: 'table-cell',
+        });
+        expect(editor.read.selection.ranges()).toHaveLength(2);
       });
     });
   });

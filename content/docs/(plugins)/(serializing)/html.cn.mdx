@@ -172,10 +172,9 @@ HTML反序列化器允许将HTML内容（字符串或DOM元素）转换回Plate�
 
 ### 基础用法
 
-在客户端Plate编辑器上下文中使用 `HtmlPlugin` API。
+在客户端 Plate 编辑器中调用根级 HTML API。
 
 ```tsx title="components/my-html-importer.tsx"
-import { HtmlPlugin } from 'platejs';
 import { usePlateEditor } from 'platejs/react';
 // 导入表示HTML内容所需的所有Plate插件
 import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
@@ -190,12 +189,11 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   });
 
   const handleImport = () => {
-    const plateValue = editor
-      .plugin(HtmlPlugin)
-      .api.deserialize({ element: htmlString });
-    editor.update((tx) => {
-      tx.value.replace({ children: plateValue });
-    });
+    const value = editor.api.html.deserialize({ element: htmlString });
+
+    if (!value) return;
+
+    editor.update.value.replace({ children: value });
   };
 
   // ... 渲染编辑器及触发handleImport的按钮 ...
@@ -207,9 +205,10 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   使用 `editor.api.html.deserialize` 的HTML反序列化通常是客户端操作，因为它使用已编译的 Plate plugin model。
 </Callout>
 
-### 插件反序列化规则概览
+### 插件 HTML Codec 概览
 
-每个Plate插件可以定义规则，说明在反序列化期间如何解释特定的HTML标签、样式和属性。下表是常见HTML结构及通常负责它们的Plate插件的摘要。
+每个 Plate 插件拥有其 schema 声明对应的 HTML 标签、样式和属性。
+同一个 `.extendHtmlCodec()` 声明同时负责 decode 和 encode。
 
 | HTML元素/样式                                       | Plate插件（典型）  | 备注                                                                    |
 | :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
@@ -223,10 +222,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转换为`kbd: true`标记。                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | 转换为段落元素。                                           |
 | `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | 转换为对应的标题元素（`h1` - `h6`）。                |
-| `<ul>`                                                     | [`ListPlugin` (经典)](/docs/list-classic)            | 转换为无序列表（`ul`类型）。项目变为`li`。               |
-| `<ol>`                                                     | [`ListPlugin` (经典)](/docs/list-classic)            | 转换为有序列表（`ol`类型）。项目变为`li`。                 |
-| `<li>` (在`<ul>`或`<ol>`中)                           | [`ListPlugin` (经典)](/docs/list-classic)            | 转换为列表项（`li`类型），带有`lic`（列表项内容）子项。 |
-| `<li>` (带`aria-level`缩进)                      | [`ListPlugin`](/docs/list)      | 转换为带`indent`和`listStyleType`属性的段落。           |
+| `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | 转换为带 `indent` 和 `listStyleType` 属性的块。 |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | 转换为blockquote元素。                                          |
 | `<pre>` (通常内部有`<code>`)                       | [`CodeBlockPlugin`](/docs/code-block)       | 转换为`code_block`元素。内容分割为`code_line`。        |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | 转换为水平线元素。                                     |
@@ -237,7 +233,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 | `<tr>`                                                     | [`TablePlugin`](/docs/table)           | 转换为`tr`（表格行）元素。                                    |
 | `<td>`                                                     | [`TablePlugin`](/docs/table)           | 转换为`td`（表格单元格）元素。                                   |
 | `<th>`                                                     | [`TablePlugin`](/docs/table)           | 转换为`th`（表格标题单元格）元素。                            |
-| `style="background-color: ..."`                          | [`FontColorPlugin`](/docs/font)    | 转换为`backgroundColor`标记。（插件名称可能看似相反） |
+| `style="background-color: ..."`                          | [`FontBackgroundColorPlugin`](/docs/font)    | 转换为`backgroundColor`标记。 |
 | `style="color: ..."`                                     | [`FontColorPlugin`](/docs/font)       | 转换为`color`标记。                                                |
 | `style="font-family: ..."`                               | [`FontFamilyPlugin`](/docs/font)      | 转换为`fontFamily`标记。                                           |
 | `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | 转换为`fontSize`标记。                                             |
@@ -250,96 +246,73 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   确切的Plate类型（例如`ParagraphPlugin.key`与`'p'`）取决于插件的配置方式。表格显示典型关联。确保编辑器包含对应的Plate插件以使这些规则生效。
 </Callout>
 
-### 插件中的反序列化属性
+### `.extendHtmlCodec()`
 
-插件可以在其`parsers.html.deserializer`配置中定义如何处理HTML反序列化：
+包作者在应用最终调用 `.configure()` 之前，用 `.extendHtmlCodec()`
+声明节点级 HTML 含义：
 
--   **`parse`**: 函数`({ editor, element, getOptions, ... }) => Partial<PliteNode>`，接收HTML元素并返回部分Plate节点。这是主要转换逻辑所在。
--   **`query`**: 可选函数`({ element, getOptions }) => boolean`，确定是否应考虑当前HTML元素的反序列化规则。
--   **`rules`**: 规则对象数组，每个定义匹配HTML元素的条件：
-    -   `validNodeName`: 字符串或字符串数组，用于匹配HTML标签名（例如`'P'`, `['STRONG', 'B']`）。
-    -   `validAttribute`: 对象或对象数组，指定必需的属性名和/或值（例如`{ align: ['left', 'center'] }`）。
-    -   `validClassName`: 字符串或字符串数组，用于匹配CSS类名。
-    -   `validStyle`: 对象或对象数组，指定必需的CSS样式属性和/或值（例如`{ fontWeight: ['600', '700', 'bold'] }`）。
--   **`isElement`**: 布尔值，`true`表示插件将HTML元素反序列化为Plate Element节点。
--   **`isLeaf`**: 布尔值，`true`表示插件将HTML元素或样式反序列化为Text节点上的Plate Leaf（标记）。
--   **`attributeNames`**: HTML属性名数组，其值应保留在结果Plate节点的`node.attributes`属性上。
--   **`withoutChildren`**: 布尔值，如果`true`，HTML元素的子节点不会被`convertHtmlAttributes`处理。
+- `match` 是非空的标签、class、attribute 或 style matcher 数组。
+- `decode` 只返回插件拥有的值或属性。Element codec 不返回 `type`；
+  Plate 使用已安装插件解析后的类型。
+- `encode` 为 mark 返回 wrapper，为 element 返回完整 node spec，
+  为 element property 返回 attribute/style patch。
+- 仅导入的映射显式设置 `decodeOnly: true`。
+- `priority` 处理有意的重叠。相同优先级的排他声明会让 model 编译失败，
+  不依赖插件数组顺序。
 
-### 自定义反序列化行为
+下面的 element codec 把 `<aside>` 映射为 callout，并保留应用配置的存储类型：
 
-可以扩展插件以修改其HTML解析逻辑。这对于支持非标准HTML属性或结构非常有用。
+```tsx title="lib/callout-plugin.ts"
+import { property, schema } from 'platejs';
+import { createPlatePlugin } from 'platejs/react';
 
-```tsx title="lib/custom-code-block-plugin.ts"
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { CodeLinePlugin } from '@platejs/code-block'; // 如果需要基础
+const CalloutPlugin = createPlatePlugin({
+  key: 'callout',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: {
+        variant: property.string(),
+      },
+    },
+  },
+  type: 'callout',
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => ({
+    variant: element.dataset.variant || undefined,
+  }),
+  encode: ({ content, node }) => ({
+    attributes: { 'data-variant': node.variant },
+    children: content,
+    tag: 'aside',
+  }),
+  match: [{ tag: 'aside' }],
+}));
 
-const MyCustomCodeBlockPlugin = CodeBlockPlugin.configure({
+export const NotePlugin = CalloutPlugin.configure({ type: 'note' });
+```
+
+`NotePlugin` 将 `<aside>` 解码为 `note` element，因为 codec 指向已安装的
+descriptor，而不是硬编码的类型字符串。
+
+### 完整输入 HTML 钩子
+
+需要整个输入 payload 时，使用扁平的 `parsers.html.query`、
+`transformData` 和 `transformFragment`。这些钩子在节点 decode 前后运行，
+不声明节点 matcher。
+
+```ts title="lib/html-cleanup-plugin.ts"
+const HtmlCleanupPlugin = createPlatePlugin({
+  key: 'htmlCleanup',
   parsers: {
     html: {
-      deserializer: {
-        // 继承大多数规则和属性，然后覆盖或添加
-        ...CodeBlockPlugin.parsers.html.deserializer,
-        parse: ({ element, editor }) => { // 可能需要editor用于getType
-          const language = element.getAttribute('data-custom-lang') || element.className.match(/language-(?<lang>[^\s]+)/)?.groups?.lang;
-          const textContent = element.textContent || '';
-          const lines = textContent.split('\n');
-
-          return {
-            type: CodeBlockPlugin.key, // 或editor.getType(CodeBlockPlugin.key)
-            lang: language,
-            code: textContent, // 示例：存储完整代码字符串
-            children: lines.map((line) => ({
-              type: editor.getType(CodeLinePlugin.key),
-              children: [{ text: line }],
-            })),
-          };
-        },
-        rules: [
-          // 如果需要，继承现有规则
-          ...(CodeBlockPlugin.parsers.html.deserializer.rules || []),
-          // 添加基于自定义属性的新规则
-          { validAttribute: { 'data-custom-lang': true } },
-        ],
-      },
+      query: ({ source }) => source.types.includes('text/html'),
+      transformData: ({ data }) =>
+        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
     },
   },
 });
-
-// 然后在编辑器配置中使用MyCustomCodeBlockPlugin。
 ```
-此示例自定义`CodeBlockPlugin`以查找`data-custom-lang`属性或`language-*`类来确定代码语言。
-
-### 高级反序列化示例（`ListPlugin`）
-
-`ListPlugin`展示了一个更复杂的反序列化场景，它将HTML列表结构（`<li>`元素）转换为Plate中的缩进段落，使用`aria-level`确定缩进。
-
-以下是其反序列化逻辑的概念性展示：
-
-```ts
-// 来自ListPlugin的简化概念
-export const ListPluginConfig = {
-  // ... 其他配置 ...
-  parsers: {
-    html: {
-      deserializer: {
-        isElement: true,
-        // query: ({ element }) => hasListAncestor(element), // 示例条件
-        parse: ({ editor, element }) => ({
-          type: 'p', // 将<li>转换为<p>
-          indent: Number(element.getAttribute('aria-level') || '1'),
-          listStyleType: element.style.listStyleType || undefined,
-          // 子节点在此节点创建后由Plate的默认反序列化器处理
-        }),
-        rules: [
-          { validNodeName: 'LI' }, // 仅适用于<li>元素
-        ],
-      },
-    },
-  },
-};
-```
-这展示了插件如何完全将HTML结构重新解释为不同的Plate表示。
 
 </Steps>
 
@@ -389,29 +362,27 @@ export const ListPluginConfig = {
 
 将 HTML 字符串或 `HTMLElement` 解析为 Plate `Value`（`Descendant` 节点数组）。这通常在客户端与完全配置的 Plate 编辑器一起使用。
 
-<API name="deserializeHtml">
+<API name="editor.api.html.deserialize">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    客户端 Plate 编辑器实例。
-  </APIItem>
-  <APIItem name="options" type="DeserializeHtmlOptions">
+  <APIItem
+    name="options"
+    type="{ element: HTMLElement | string; collapseWhiteSpace?: boolean }"
+  >
     反序列化选项。
   </APIItem>
 </APIParameters>
-<APIOptions type="DeserializeHtmlOptions">
+<APIOptions>
   <APIItem name="element" type="HTMLElement | string">
     要反序列化的 HTML 字符串或 `HTMLElement`。
   </APIItem>
   <APIItem name="collapseWhiteSpace" type="boolean" optional>
     如果为 `true`（默认值），则像浏览器处理 HTML 中的空白一样折叠文本节点中的空白。设置为 `false` 以保留所有空白。默认值：`true`。
   </APIItem>
-  <APIItem name="stripWhitespace" type="boolean" optional>
-    **已弃用。** 使用 `collapseWhiteSpace`。如果为 `true`，则修剪前导/尾随空白并折叠空白序列。默认值：`true`。
-  </APIItem>
 </APIOptions>
 <APIReturns>
-  <APIItem type="Descendant[]">
-    反序列化的 Plate `Value`。
+  <APIItem type="Descendant[] | null">
+    反序列化的 Plate `Value`；当编译后的 HTML decoder 拒绝无效或不支持的
+    结果时返回 `null`。
   </APIItem>
 </APIReturns>
 </API>

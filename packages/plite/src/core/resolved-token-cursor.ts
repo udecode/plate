@@ -1,4 +1,4 @@
-import type { JsonNode } from './document-change';
+import type { JsonNode } from './change/tokens';
 
 type NodeKind = 'element' | 'text';
 

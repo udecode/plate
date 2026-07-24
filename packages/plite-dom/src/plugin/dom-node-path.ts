@@ -113,7 +113,7 @@ export const resolvePliteNodePath = <V extends Value>(
     return runtimePath;
   }
 
-  const path: Path = [];
+  const path: number[] = [];
   let child = node;
 
   while (true) {

@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from 'react';
-import { IS_ANDROID } from '@platejs/plite-dom';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import { EDITOR_TO_SCHEDULE_FLUSH } from '@platejs/plite-dom/internal';
+import type { EditableDOMRuntime } from '../../editable/editable-dom-runtime';
 import type { ReactRuntimeEditor } from '../../plugin/react-editor';
 import { useEditor } from '../use-editor';
 import { useIsomorphicLayoutEffect } from '../use-isomorphic-layout-effect';
@@ -22,7 +22,8 @@ export const useAndroidInputManagerForEditor = (
     receivedUserInput,
     scheduleOnDOMSelectionChange,
     scheduleTask,
-  }: UseAndroidInputManagerOptions
+  }: UseAndroidInputManagerOptions,
+  enabled = true
 ) => {
   const inputManager = useMemo(
     () =>
@@ -45,6 +46,8 @@ export const useAndroidInputManagerForEditor = (
   );
 
   useIsomorphicLayoutEffect(() => {
+    if (!enabled) return;
+
     EDITOR_TO_SCHEDULE_FLUSH.set(editor, inputManager.scheduleFlush);
 
     return () => {
@@ -53,23 +56,25 @@ export const useAndroidInputManagerForEditor = (
         EDITOR_TO_SCHEDULE_FLUSH.delete(editor);
       }
     };
-  }, [editor, inputManager]);
+  }, [editor, enabled, inputManager]);
 
   useEffect(() => {
-    inputManager.flush();
-  });
+    if (enabled) inputManager.flush();
+  }, [enabled, inputManager]);
 
-  return inputManager;
+  return enabled ? inputManager : null;
 };
 
-export const useAndroidInputManager = IS_ANDROID
-  ? (options: UseAndroidInputManagerOptions) => {
-      if (!IS_ANDROID) {
-        return null;
-      }
+export const useAndroidInputManager = (
+  options: UseAndroidInputManagerOptions,
+  runtime: EditableDOMRuntime
+) => {
+  const editor = useEditor<ReactRuntimeEditor>();
+  const enabled = useSyncExternalStore(
+    runtime.subscribeHostFacts,
+    () => runtime.isAndroidHost,
+    () => false
+  );
 
-      const editor = useEditor<ReactRuntimeEditor>();
-
-      return useAndroidInputManagerForEditor(editor, options);
-    }
-  : () => null;
+  return useAndroidInputManagerForEditor(editor, options, enabled);
+};

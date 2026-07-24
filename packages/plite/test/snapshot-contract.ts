@@ -51,7 +51,9 @@ import {
 
 type NestedTextElement = {
   a?: boolean;
-  children: { children: { text: string }[] }[];
+  readonly children: readonly {
+    readonly children: readonly { readonly text: string }[];
+  }[];
   type: string;
 };
 

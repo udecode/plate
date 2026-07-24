@@ -32,7 +32,7 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
-插件拥有的值，用于 schema 工厂、parser、host codec 与运行时行为。包作者通过
+插件拥有的值，用于 schema 工厂、parser、codec 与运行时行为。包作者通过
 `create*Plugin()` 或 `.extend()` 声明默认值；应用用户通过一次最终
 `.configure({ options: { ... } })` 设置描述符值；通过
 `editor.plugin(MyPlugin).getOptions()`、`.setOption()` 或 `.setOptions()`
@@ -124,12 +124,6 @@ Plate 用于向任何节点组件注入 props 的属性。
 </APISubListItem>
 <APISubListItem parent="inject" name="maxLevel" type="number" optional>
 节点属性注入的最大嵌套层级。超过此层级的节点不会接收注入的 props。
-</APISubListItem>
-<APISubListItem parent="inject" name="parsers" type="Record<string, ParserPluginProjection>" optional>
-按 key 向已安装插件贡献仅包含 parser 的投影。
-</APISubListItem>
-<APISubListItem parent="inject" name="targetParserToInject" type="function" optional>
-为 `targetPluginKeys` 中每个已安装且已启用的目标返回仅包含 parser 的投影。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -256,19 +250,13 @@ helper。
 </APISubList>
 </APIItem>
 
-<APIItem name="parser" type="Nullable<Parser<WithAnyKey<C>>>">
-  定义插件如何解析内容。
-</APIItem>
-
 <APIItem name="parsers" type="object">
-定义各种格式的序列化和反序列化器。
+定义完整输入的 HTML 解析行为。
 
 <APISubList>
-<APISubListItem parent="parsers" name="html" type="Nullable<{ deserializer?: HtmlDeserializer<WithAnyKey<C>>; serializer?: HtmlSerializer<WithAnyKey<C>> }>" optional>
-HTML 解析器配置。
-</APISubListItem>
-<APISubListItem parent="parsers" name="htmlReact" type="Nullable<{ serializer?: HtmlReactSerializer<WithAnyKey<C>> }>" optional>
-HTML React 序列化器配置。
+<APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyKey<C>>>" optional>
+完整输入 HTML 钩子。`query`、`transformData` 和 `transformFragment`
+是扁平的同级字段。节点、mark 和 property 映射使用 `.extendHtmlCodec()`。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -434,6 +422,25 @@ H1Plugin.configure({
     | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
 ) => PlatePlugin;
 ```
+
+</APIItem>
+
+<APIItem name="extendHtmlCodec" type="function">
+声明插件双向的 HTML element、mark 或 property 映射。Self overload 从拥有该
+descriptor 的 schema 声明推断目标。只有 extension 确实拥有另一个插件的 HTML
+映射时，才传入不同的类型化插件 descriptor。
+
+```ts
+extendHtmlCodec(extension: ExtendHtmlCodec<C>): BasePlugin<C>;
+
+extendHtmlCodec<TTarget extends PluginReference>(
+  target: ForeignHtmlCodecTarget<C, TTarget>,
+  extension: ExtendForeignHtmlCodec<C, InferConfig<TTarget>>
+): BasePlugin<C>;
+```
+
+包作者在最终 `.configure()` 之前调用 `.extendHtmlCodec()`。Element decoder
+只返回自己拥有的属性，不返回 `type`；runtime 使用已安装目标解析后的类型。
 
 </APIItem>
 

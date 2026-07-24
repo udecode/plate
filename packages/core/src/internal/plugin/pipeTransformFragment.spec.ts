@@ -3,9 +3,9 @@ import type { Descendant } from '@platejs/plite';
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformFragment } from './pipeTransformFragment';
-import { prepareParserRegistry } from './prepareParserRegistry';
+import { prepareHtmlRegistry } from './prepareHtmlRegistry';
 
-const createParserEditor = (
+const createHtmlEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
 ) =>
   createBaseEditor({
@@ -18,38 +18,42 @@ const createParagraph = (text: string): Descendant => ({
 });
 
 describe('pipeTransformFragment', () => {
-  it('pipes transformed fragments through parser plugins in order', () => {
+  it('pipes transformed fragments through HTML plugins in order', () => {
     const calls: string[] = [];
 
     const firstPlugin = createBasePlugin({
       key: 'first',
-      parser: {
-        transformFragment: ({ fragment }) => {
-          calls.push(`first:${fragment.length}`);
-          return [...fragment, createParagraph('second')];
+      parsers: {
+        html: {
+          transformFragment: ({ fragment }) => {
+            calls.push(`first:${fragment.length}`);
+            return [...fragment, createParagraph('second')];
+          },
         },
       },
     });
 
     const secondPlugin = createBasePlugin({
       key: 'second',
-      parser: {
-        transformFragment: ({ fragment }) => {
-          calls.push(`second:${fragment.length}`);
+      parsers: {
+        html: {
+          transformFragment: ({ fragment }) => {
+            calls.push(`second:${fragment.length}`);
 
-          return fragment.map((node, index) =>
-            index === 0 ? createParagraph('first-updated') : node
-          );
+            return fragment.map((node, index) =>
+              index === 0 ? createParagraph('first-updated') : node
+            );
+          },
         },
       },
     });
 
-    const editor = createParserEditor([firstPlugin, secondPlugin]);
+    const editor = createHtmlEditor([firstPlugin, secondPlugin]);
 
     const result = editor.read((state) =>
-      pipeTransformFragment(state, prepareParserRegistry(editor).plugins, {
+      pipeTransformFragment(state, prepareHtmlRegistry(editor).plugins, {
         data: '',
-        format: 'text/plain',
+        format: 'text/html',
         fragment: [createParagraph('first')],
         source: { files: [] as any, getData: () => '', types: [] },
       })

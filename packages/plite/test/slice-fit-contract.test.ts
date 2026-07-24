@@ -27,13 +27,14 @@ import {
   encodeContentSliceContent,
   isDetachedContentSlice,
 } from '../src/core/content-slice';
+import { getInternalDocumentChangeEntries } from '../src/core/change/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
+import { RootChange } from '../src/core/change/root-change';
 import {
-  ChangeSet,
-  DocumentSlice,
-  getInternalDocumentChangeEntries,
+  PreparedTokenSlice,
   hasMaterializedDocumentSliceTokens,
-  IndexedDocument,
-} from '../src/core/document-change';
+} from '../src/core/change/tokens';
+import { createTestDocumentChange } from './support/document-change';
 
 const paragraph = (text: string, children?: Descendant[]) => ({
   type: 'paragraph',
@@ -890,7 +891,9 @@ describe('contextual schema slice fitting', () => {
     assert.ok(fitted);
     const semanticInsert = [...getInternalDocumentChangeEntries(fitted.changes)]
       .flatMap(([, change]) => change.data)
-      .find((data): data is DocumentSlice => data instanceof DocumentSlice);
+      .find(
+        (data): data is PreparedTokenSlice => data instanceof PreparedTokenSlice
+      );
 
     assert.ok(semanticInsert);
     assert.equal(hasMaterializedDocumentSliceTokens(fullInsert), false);
@@ -962,7 +965,9 @@ describe('contextual schema slice fitting', () => {
     assert.ok(commit);
     const semanticInsert = [...getInternalDocumentChangeEntries(commit.changes)]
       .flatMap(([, change]) => change.data)
-      .find((data): data is DocumentSlice => data instanceof DocumentSlice);
+      .find(
+        (data): data is PreparedTokenSlice => data instanceof PreparedTokenSlice
+      );
 
     assert.ok(semanticInsert);
     assert.equal(hasMaterializedDocumentSliceTokens(fullInsert), false);
@@ -1333,9 +1338,9 @@ describe('contextual schema slice fitting', () => {
     );
     const insert = encodeContentSlice(prepared.slice);
     const before = { children: [paragraph('')] };
-    const document = IndexedDocument.fromValue(before.children);
-    const change = new DocumentChange({
-      primary: ChangeSet.create(document, {
+    const document = DocumentIndex.fromValue(before.children);
+    const change = createTestDocumentChange({
+      primary: RootChange.create(document, {
         from: 0,
         insert,
         to: document.length,

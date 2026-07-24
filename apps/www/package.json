@@ -19,6 +19,7 @@
     "lint:fix": "pnpm lint --fix",
     "perf:editor": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-editor-perf.mts",
     "perf:editor:public": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-editor-perf.mts --preset public-slate-vs-plate --summary-out .tmp/editor-perf-public-summary.json",
+    "perf:table": "tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/run-table-perf.mts",
     "postinstall": "fumadocs-mdx",
     "preview": "next build && next start",
     "r": "concurrently \"pnpm build:registry\" \"pnpm build:tw\"",

@@ -7,6 +7,7 @@ import {
   createBasePlugin,
 } from '@platejs/core';
 import {
+  ContentSlice,
   defineEditorExtension,
   DocumentChange,
   property,
@@ -86,14 +87,14 @@ describe('CodeBlockPlugin', () => {
           CodeBlockPlugin,
           createBasePlugin({
             key: 'a',
-            parser: {
-              format: 'text/plain',
-              owns: [{ kind: 'schema' }],
-              deserialize() {
-                return [{ text: 'test' }];
+          }).extendCodecs(() => ({
+            'text/plain': {
+              scope: 'document',
+              decode() {
+                return ContentSlice.closed([{ text: 'test' }]);
               },
             },
-          }),
+          })),
         ],
         selection: input.selection,
         initialValue: input.children,

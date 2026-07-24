@@ -140,8 +140,8 @@ export interface NodeTextsOptions {
  * A code-unit text match inside the concatenated text for one text run.
  */
 export interface NodeTextRangeMatch {
-  end: number;
-  start: number;
+  readonly end: number;
+  readonly start: number;
 }
 
 /**
@@ -149,10 +149,10 @@ export interface NodeTextRangeMatch {
  * but not a live editor object.
  */
 export interface NodeTextRangeRoot {
-  children: Descendant[];
+  readonly children: readonly Descendant[];
 }
 
-export type NodeTextRangeEntry = [Node | NodeTextRangeRoot, Path];
+export type NodeTextRangeEntry = readonly [Node | NodeTextRangeRoot, Path];
 
 /**
  * Match text inside a Plite node. String queries are literal, regular
@@ -255,7 +255,7 @@ export interface NodeInterface {
   fragment: <T extends Ancestor = AnyExtensionEditor>(
     root: T,
     range: Range
-  ) => Descendant[];
+  ) => readonly Descendant[];
 
   /**
    * Find ranges for a text query inside text leaves or text-only ancestor
@@ -266,7 +266,7 @@ export interface NodeInterface {
     root: Node | NodeTextRangeRoot,
     query: NodeTextRangeQuery,
     options?: NodeFindTextRangesOptions
-  ) => Range[];
+  ) => readonly Range[];
 
   /**
    * Get the descendant node referred to by a specific path. If the path is an
@@ -312,7 +312,10 @@ export interface NodeInterface {
   /**
    * Check if a value is a list of `Node` objects.
    */
-  isNodeList: (value: unknown, options?: NodeIsNodeOptions) => value is Node[];
+  isNodeList: (
+    value: unknown,
+    options?: NodeIsNodeOptions
+  ) => value is readonly Node[];
 
   /**
    * Check if a node is an `Text` object.
@@ -384,7 +387,7 @@ export interface NodeInterface {
   ) => Generator<NodeEntry<Text>, void, undefined>;
 }
 
-const getAncestorChildren = (node: Ancestor): Descendant[] => {
+const getAncestorChildren = (node: Ancestor): readonly Descendant[] => {
   if (hasEditorRuntime(node)) return editorGetChildren(node);
   if (NodeApi.isEditor(node)) return [...node.read.children()];
 
@@ -472,7 +475,7 @@ const getRangeFragmentChildren = (
 
 const getTextRangeChildren = (
   node: Ancestor | NodeTextRangeRoot
-): Descendant[] => getAncestorChildren(node as Ancestor);
+): readonly Descendant[] => getAncestorChildren(node as Ancestor);
 
 const getStringMatches = (
   text: string,
@@ -1127,7 +1130,7 @@ export type Ancestor = AnyExtensionEditor | Element;
  * node in the document.
  */
 
-export type NodeEntry<T = Node> = [T, Path];
+export type NodeEntry<T = Node> = readonly [T, Path];
 
 export type AncestorEntry<N = Node> = NodeEntry<AncestorOf<N>>;
 

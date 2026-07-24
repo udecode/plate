@@ -2,10 +2,11 @@
 
 Yjs collaboration bindings for Plate and Plite editors.
 
-`@platejs/yjs` maps Plite document changes, selection state, awareness, provider
-lifecycle, and undo/redo coordination onto a Yjs document. Provider packages
-stay at the application edge: wrap your Hocuspocus, WebSocket, WebRTC, or
-custom provider as a `YjsProviderLike`.
+`@platejs/yjs` maps Plite document changes, selection state, awareness, and
+provider lifecycle onto a Yjs document. Plite History owns undo and redo; its
+canonical replay lowers through the same Yjs bridge as any editor change.
+Provider packages stay at the application edge: wrap your Hocuspocus,
+WebSocket, WebRTC, or custom provider as a `YjsProviderLike`.
 
 ## Plate
 
@@ -157,7 +158,7 @@ ownership transfer requires an explicit host-fenced document migration.
 ## Boundaries
 
 - `@platejs/yjs` owns the Plite/Yjs adapter, awareness model, provider lifecycle
-  bridge, document-change lowering, and Yjs-aware undo/redo coordination.
+  bridge, and document-change lowering.
 - Remote Yjs event batches compile against a cached document mirror into
   disjoint root-scoped `DocumentChange` ranges. Routine imports decode only
   the touched top-level nodes; unsupported virtual projections and root
@@ -165,8 +166,8 @@ ownership transfer requires an explicit host-fenced document migration.
 - Outbound `DocumentChange` sections lower only their affected Yjs regions.
   Compatible nodes and uniquely derived relocated subtrees keep their Yjs
   identities.
-- Split undo metadata derives from classified changed paths and commit
-  snapshots; routine structural commits never scan the full document.
+- Canonical split changes lower through bounded affected ranges; routine
+  structural commits never scan the full document.
 - `BaseYjsPlugin` and `YjsPlugin` install that adapter through Plate's plugin
   composition layer.
 - Collaboration binds to the editor view root that installs the extension.

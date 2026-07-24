@@ -2,7 +2,11 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { property, schema } from '@platejs/plite';
-import { insertBreak, insertText } from '@platejs/plite/internal';
+import {
+  insertBreak,
+  insertText,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { BaseParagraphPlugin } from '../../lib/plugins';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 
@@ -91,6 +95,53 @@ describe('input rules', () => {
     insertText(editor, '*');
 
     expect(apply).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps generated competing insertText rules single-winner', () => {
+    for (const winnerIndex of [0, 1, 3, 7]) {
+      for (const continueInsertion of [false, true]) {
+        const callCounts = Array.from({ length: 8 }, () => 0);
+        const editor = createPlateEditor({
+          plugins: [
+            createPlatePlugin({
+              key: 'testPlugin',
+            }).configure({
+              inputRules: Array.from({ length: 8 }, (_, index) =>
+                defineInputRule({
+                  apply: ({ insertText }) => {
+                    callCounts[index] += 1;
+
+                    if (index !== winnerIndex) return false;
+                    if (continueInsertion) insertText('continued');
+
+                    return true;
+                  },
+                  target: 'insertText',
+                  trigger: '*',
+                })
+              ),
+            }),
+          ],
+          initialValue: [{ children: [{ text: '' }], type: 'p' }],
+        } as any);
+
+        editor.update.selection.set({
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 0, path: [0, 0] },
+        });
+        insertText(editor, '*');
+
+        expect(callCounts).toEqual(
+          Array.from({ length: 8 }, (_, index) =>
+            index <= winnerIndex ? 1 : 0
+          )
+        );
+        expect(editorString(editor, [])).toBe(
+          continueInsertion ? 'continued' : ''
+        );
+      }
+    }
   });
 
   it('passes the active transaction to insertText rules', () => {
@@ -267,7 +318,7 @@ describe('input rules', () => {
     expect(apply).not.toHaveBeenCalled();
   });
 
-  it('combines definition-side and configure-time rule arrays', () => {
+  it('keeps terminal configure-time rules final over definition defaults', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
@@ -293,10 +344,10 @@ describe('input rules', () => {
 
     expect(
       getPlateRuntime(editor).inputRules.plugins.testPlugin.rules
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(
       getPlateRuntime(editor).inputRules.insertText.byTrigger['*']
-    ).toHaveLength(1);
+    ).toBeUndefined();
     expect(
       getPlateRuntime(editor).inputRules.insertText.byTrigger._
     ).toHaveLength(1);
@@ -665,6 +716,8 @@ describe('input rules', () => {
           }),
         ],
       })
-    ).toThrow('inputRules config must be an array of explicit rule instances.');
+    ).toThrow(
+      'inputRules config must be an array of explicit rule instances or a factory.'
+    );
   });
 });

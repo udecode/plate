@@ -2364,10 +2364,10 @@ describe('BaseListPlugin numbering behavior', () => {
 
         editor.update.nodes.set({ visited: true }, { at: [0] });
 
-        const mainChange = editor.read.lastCommit()?.changes.primary;
+        const mainChange = editor.read.lastCommit()?.changes.toJSON().primary;
 
         expect(mainChange).toBeDefined();
-        expect(mainChange!.data.length).toBeLessThanOrEqual(2);
+        expect(mainChange!.length).toBeLessThanOrEqual(2);
         expect(editor.read.children()[size - 1]).toMatchObject({
           listStart: size,
         });

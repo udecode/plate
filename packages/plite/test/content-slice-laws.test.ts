@@ -7,7 +7,7 @@ import {
   encodeContentSlice,
   prepareContentSliceVariant,
 } from '../src/core/content-slice';
-import { DocumentSlice, type JsonNode } from '../src/core/document-change';
+import { PreparedTokenSlice, type JsonNode } from '../src/core/change/tokens';
 
 const lawSeed = Number.parseInt(
   process.env.PLITE_CONTENT_SLICE_LAW_SEED ?? '20260720',
@@ -155,7 +155,7 @@ describe('ContentSlice generated laws', () => {
     assertLaw(
       fc.property(sliceInputArbitrary, (input) => {
         const slice = ContentSlice.fromJSON(input);
-        const canonical = DocumentSlice.fromNodes(
+        const canonical = PreparedTokenSlice.fromNodes(
           slice.content as readonly JsonNode[]
         );
 

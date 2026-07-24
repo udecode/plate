@@ -24,10 +24,9 @@ export const getCodeBlockLanguageChange = (
   >,
   type: string
 ) => {
-  const roots: readonly (string | undefined)[] = [
-    ...(context.change.primary ? [undefined] : []),
-    ...context.change.roots.keys(),
-  ];
+  const roots = new Set<string | undefined>();
+
+  context.change.iterChangedRanges((root) => roots.add(root ?? undefined));
 
   for (const root of roots) {
     if (!context.changed.has('properties', root)) continue;

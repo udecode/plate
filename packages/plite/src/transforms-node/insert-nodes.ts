@@ -7,6 +7,7 @@ import {
 } from '../core/public-state';
 import { nodes as getNodes } from '../editor/nodes';
 import {
+  type Descendant,
   type Location,
   LocationApi,
   NodeApi,
@@ -39,7 +40,9 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
     let at: Location | undefined = options.at;
     let { match, select } = options;
 
-    const nextNodes = Array.isArray(nodes) ? nodes : [nodes];
+    const nextNodes = (
+      Array.isArray(nodes) ? nodes : [nodes]
+    ) as readonly Descendant[];
 
     if (nextNodes.length === 0) {
       return;

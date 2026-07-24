@@ -295,12 +295,20 @@ Use `renderPlaceholder` when the placeholder needs custom markup.
 <Editable
   placeholder="Start typing..."
   renderPlaceholder={({ attributes, children }) => (
-    <span {...attributes}>{children}</span>
+    <span
+      {...attributes}
+      style={{ ...attributes.style, color: "#6b7280", opacity: 0.6 }}
+    >
+      {children}
+    </span>
   )}
 />
 ```
 
-Keep the provided attributes. They make the placeholder behave like editor chrome instead of document content.
+Keep the provided attributes. They supply the structural positioning,
+pointer-inert behavior, and selection isolation that make the placeholder
+editor chrome instead of document content. The host owns presentation such as
+color, opacity, and text decoration.
 
 ## Event Props
 

@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-24-collaboration-runtime",
+      "href": "/registry/changelog/2026-07-24-collaboration-runtime.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Run collaboration with independent peers and remote cursors",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["collaboration-demo", "remote-cursor-overlay"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-24-compose-markdown-footnotes",
       "href": "/registry/changelog/2026-07-24-compose-markdown-footnotes.json",
       "status": "draft",
@@ -46,6 +64,29 @@
       "diagnostics": []
     },
     {
+      "id": "2026-07-24-configurable-color-controls",
+      "href": "/registry/changelog/2026-07-24-configurable-color-controls.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Configure color palettes and recent colors",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "font-color-toolbar-button",
+        "toolbar",
+        "fixed-toolbar-buttons",
+        "table-node"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-24-decouple-suggestion-trailing-block",
       "href": "/registry/changelog/2026-07-24-decouple-suggestion-trailing-block.json",
       "status": "draft",
@@ -60,6 +101,53 @@
         "status": "unresolved"
       },
       "targets": ["suggestion-kit", "editor-kit", "editor-ai"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-24-feature-toolbar-plugin-portals",
+      "href": "/registry/changelog/2026-07-24-feature-toolbar-plugin-portals.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Use installed feature plugins in toolbar controls",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "mark-toolbar-button",
+        "font-color-toolbar-button",
+        "font-size-toolbar-button",
+        "media-toolbar-button",
+        "more-toolbar-button",
+        "fixed-toolbar-buttons",
+        "floating-toolbar-buttons",
+        "installation-next-02-marks-demo",
+        "installation-next-03-elements-demo",
+        "installation-next-demo"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
+      "id": "2026-07-24-own-editor-presentation",
+      "href": "/registry/changelog/2026-07-24-own-editor-presentation.json",
+      "status": "draft",
+      "kind": "behavior",
+      "summary": "Keep editor presentation in the app",
+      "change": {
+        "type": "source",
+        "date": "2026-07-24",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["editor"],
       "entries": 1,
       "diagnostics": []
     },

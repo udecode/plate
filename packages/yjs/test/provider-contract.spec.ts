@@ -203,7 +203,8 @@ const createProviderEditor = (
 
 const createProviderEditorWithHistory = (
   provider: FakeProvider,
-  order: 'history-first' | 'yjs-first'
+  order: 'history-first' | 'yjs-first',
+  options: Partial<YjsExtensionOptions> = {}
 ): ProviderEditor => {
   const editor = createInitialEditor();
   const cleanups: Cleanup[] = [];
@@ -218,6 +219,7 @@ const createProviderEditorWithHistory = (
         clientId: `provider-peer-${order}`,
         provider,
         rootName: '@platejs/plite',
+        ...options,
       })
     )
   );
@@ -636,9 +638,11 @@ describe('@platejs/yjs provider contract', () => {
 
   it('seeds empty provider docs on sync when explicitly requested', () => {
     const provider = new FakeProvider();
-    const { cleanup, editor } = createProviderEditor(provider, {
-      seedProviderOnSync: true,
-    });
+    const { cleanup, editor } = createProviderEditorWithHistory(
+      provider,
+      'history-first',
+      { seedProviderOnSync: true }
+    );
     const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
@@ -651,9 +655,7 @@ describe('@platejs/yjs provider contract', () => {
 
     assert.equal(editorString(editor, [0]), 'alpha!');
 
-    runEditorYjsUpdate(editor, (yjs) => {
-      yjs.undo();
-    });
+    undoEditorHistory(editor);
 
     assert.equal(editorString(editor, [0]), 'alpha');
 

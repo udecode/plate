@@ -1,5 +1,11 @@
 import { act, render } from '@testing-library/react';
 import {
+  defineEditorExtension,
+  defineValueCodec,
+  type Range,
+  SelectionApi,
+} from '@platejs/plite';
+import {
   getRuntimeId as editorGetRuntimeId,
   getSelection as editorGetSelection,
   replace as editorReplace,
@@ -27,6 +33,72 @@ import {
 } from '../src/editable/selection-reconciler';
 import { ReactEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
+
+type ProjectedTableCellSelection = Range &
+  Readonly<{
+    cells: readonly Range[];
+    kind: 'projected-table-cell';
+  }>;
+
+declare module '@platejs/plite' {
+  interface EditorSelectionKindMap {
+    'projected-table-cell': ProjectedTableCellSelection;
+  }
+}
+
+const isProjectedTableCellSelection = (
+  selection: unknown
+): selection is ProjectedTableCellSelection =>
+  SelectionApi.isSelection(selection) &&
+  selection.kind === 'projected-table-cell' &&
+  Array.isArray((selection as ProjectedTableCellSelection).cells);
+
+const ProjectedTableCellSelectionExtension = defineEditorExtension({
+  name: 'projected-table-cell-selection',
+  selections: [
+    {
+      codec: defineValueCodec<ProjectedTableCellSelection>({
+        decode(value) {
+          if (!isProjectedTableCellSelection(value)) {
+            throw new Error('Invalid projected table-cell selection.');
+          }
+
+          return value;
+        },
+        encode: (selection) => selection,
+        version: 1,
+      }),
+      domRange: (selection) =>
+        selection.cells.length > 0
+          ? Object.freeze({
+              anchor: selection.anchor,
+              focus: selection.anchor,
+            })
+          : null,
+      kind: 'projected-table-cell',
+      map(selection, context) {
+        const range = context.mapRange(selection, {
+          association: 'outward',
+        });
+        const cells = selection.cells.flatMap((cell) => {
+          const mapped = context.mapRange(cell, {
+            association: 'outward',
+            deletion: 'drop',
+          });
+
+          return mapped ? [mapped] : [];
+        });
+
+        return range && cells.length > 0
+          ? { ...selection, ...range, cells }
+          : null;
+      },
+      ranges: (selection) => selection.cells,
+      replacementRange: (selection) => selection,
+      validate: isProjectedTableCellSelection,
+    },
+  ],
+});
 
 test('beforeinput preserves pending native text repair selection over mismatched DOM selection', () => {
   const editor = createReactEditor();
@@ -1037,6 +1109,197 @@ test('beforeinput does not import only the first range from multiple target rang
   } finally {
     root.remove();
     domSelection.removeAllRanges();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler collapses an endpoint-equal expanded DOM range to the structural projection', () => {
+  vi.useFakeTimers();
+
+  const editor = createReactEditor({
+    extensions: [ProjectedTableCellSelectionExtension],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+  const selection: ProjectedTableCellSelection = {
+    anchor: { offset: 0, path: [0, 0] },
+    cells: [
+      {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      {
+        anchor: { offset: 0, path: [1, 0] },
+        focus: { offset: 3, path: [1, 0] },
+      },
+    ],
+    focus: { offset: 3, path: [1, 0] },
+    kind: 'projected-table-cell',
+  };
+
+  editorReplace(editor, {
+    children: [
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
+    ],
+    selection,
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      partialDOMBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+        <span>one</span>
+        <span>two</span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const firstText = container.querySelector('span')?.firstChild;
+    const secondText = container.querySelectorAll('span')[1]?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (!firstText || !secondText || !domSelection) {
+      throw new Error('Expected rendered text and document selection');
+    }
+
+    const collapsedDOMRange = document.createRange();
+    collapsedDOMRange.setStart(firstText, 0);
+    collapsedDOMRange.setEnd(firstText, 0);
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 0, secondText, 3);
+
+    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(
+      SelectionApi.text({
+        anchor: selection.anchor,
+        focus: selection.focus,
+      })
+    );
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    const resolveDOMRange = vi
+      .spyOn(ReactEditor, 'resolveDOMRange')
+      .mockImplementation((_editor, range) => {
+        expect(range).toEqual({
+          anchor: selection.anchor,
+          focus: selection.anchor,
+        });
+
+        return collapsedDOMRange;
+      });
+    vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
+
+    act(() => {
+      renderTick++;
+      rerender(<Harness />);
+    });
+
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(domSelection.isCollapsed).toBe(true);
+    expect(domSelection.anchorNode).toBe(firstText);
+    expect(domSelection.anchorOffset).toBe(0);
+
+    act(() => {
+      editor.update((tx) => {
+        tx.text.insert('x', { at: { offset: 0, path: [1, 0] } });
+      });
+      renderTick++;
+      rerender(<Harness />);
+    });
+
+    expect(editorGetSelection(editor)?.kind).toBe('projected-table-cell');
+    expect(editor.read.selection.domRange()).toEqual({
+      anchor: selection.anchor,
+      focus: selection.anchor,
+    });
+    expect(domSelection.isCollapsed).toBe(true);
+    expect(domSelection.anchorNode).toBe(firstText);
+    expect(domSelection.anchorOffset).toBe(0);
+    expect(resolveDOMRange).toHaveBeenCalled();
+  } finally {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  }
+});
+
+test('selection reconciler clears native selection for a model-only projection', () => {
+  vi.useFakeTimers();
+
+  const editor = createReactEditor({
+    extensions: [ProjectedTableCellSelectionExtension],
+  });
+  const runtime = new EditableDOMRuntime({ editor });
+  runtime.inputController.preferModelSelectionForInputRef.current = true;
+  runtime.androidInputManagerRef.current = null;
+  let renderTick = 0;
+  const selection: ProjectedTableCellSelection = {
+    anchor: { offset: 0, path: [0, 0] },
+    cells: [],
+    focus: { offset: 3, path: [1, 0] },
+    kind: 'projected-table-cell',
+  };
+
+  editorReplace(editor, {
+    children: [
+      { children: [{ text: 'one' }], type: 'paragraph' },
+      { children: [{ text: 'two' }], type: 'paragraph' },
+    ],
+    selection,
+  });
+
+  const Harness = () => {
+    useEditableSelectionReconciler({
+      partialDOMBackedSelection: false,
+      runtime,
+      scrollSelectionIntoView: vi.fn(),
+    });
+
+    return (
+      <div data-render-tick={renderTick} ref={runtime.rootRef}>
+        <span>one</span>
+        <span>two</span>
+      </div>
+    );
+  };
+
+  try {
+    const { container, rerender } = render(<Harness />);
+    const firstText = container.querySelector('span')?.firstChild;
+    const secondText = container.querySelectorAll('span')[1]?.firstChild;
+    const domSelection = document.getSelection();
+
+    if (!firstText || !secondText || !domSelection) {
+      throw new Error('Expected rendered text and document selection');
+    }
+
+    domSelection.removeAllRanges();
+    domSelection.setBaseAndExtent(firstText, 0, secondText, 2);
+
+    vi.spyOn(ReactEditor, 'findDocumentOrShadowRoot').mockReturnValue(document);
+    vi.spyOn(ReactEditor, 'resolvePliteRange').mockReturnValue(null);
+    vi.spyOn(ReactEditor, 'hasRange').mockReturnValue(true);
+    vi.spyOn(ReactEditor, 'isComposing').mockReturnValue(false);
+
+    act(() => {
+      renderTick++;
+      rerender(<Harness />);
+    });
+
+    expect(editorGetSelection(editor)).toEqual(selection);
+    expect(editor.read.selection.domRange()).toBeNull();
+    expect(domSelection.rangeCount).toBe(0);
+  } finally {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   }
 });

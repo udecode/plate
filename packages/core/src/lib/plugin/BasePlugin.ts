@@ -1,4 +1,5 @@
 import type {
+  ContentSlice,
   DecoratedRange,
   Descendant,
   Element,
@@ -10,13 +11,20 @@ import type {
   EditorInstalledStateGroups,
   EditorInstalledTxGroups,
   EditorNodeChangeKind,
+  EditorCoreStateView,
   EditorUpdateContext,
   NamedRootKey,
   NodeEntry,
   Path,
+  PropertyValueDescriptor,
+  PropertyValueOf,
+  SchemaElementProperty,
+  SchemaProperty,
+  SchemaTextProperty,
   Text,
   Value,
 } from '@platejs/plite';
+import type { TxReadMethod } from '@platejs/plite/internal';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type {
@@ -29,6 +37,7 @@ import type { BaseEditor } from '../editor';
 import type {
   PlatePluginExtensionEditor,
   PlatePluginOwnUpdate,
+  PlatePluginReadState,
   PlatePluginTransaction,
 } from '../editor/pluginRuntimeTypes';
 import type {
@@ -38,12 +47,9 @@ import type {
 import type {
   AnyPluginConfig,
   AnyPluginTx,
-  BaseDeserializer,
-  BaseHtmlDeserializer,
   BaseInjectProps,
   PluginBase,
   PluginBaseContext,
-  BaseSerializer,
   BaseTransformOptions,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
@@ -54,6 +60,8 @@ import type {
   InferPluginBehaviorConfig,
   InferPluginApi,
   InferPluginConfigTree,
+  InferExactPluginSchemaContribution,
+  InferPluginDocumentType,
   InferPluginTx,
   InferPluginSchemaModel,
   InferSelectors,
@@ -62,8 +70,8 @@ import type {
   MatchRules,
   NodeComponent,
   NodeComponents,
-  ParserOptions,
-  ParserPluginContext,
+  HtmlParserOptions,
+  HtmlPluginContext,
   PluginConfig,
   PluginReference,
   PluginSchema,
@@ -73,12 +81,8 @@ import type {
 import type { HandlerReturnType } from './HandlerReturnType';
 
 type ErasedBasePlugin = BasePlugin<any>;
-type ErasedPluginInject = Omit<
-  ErasedBasePlugin['inject'],
-  'nodeProps' | 'targetParserToInject'
-> & {
+type ErasedPluginInject = Omit<ErasedBasePlugin['inject'], 'nodeProps'> & {
   nodeProps?: any;
-  targetParserToInject?: ((ctx: any) => ParserPluginProjection) | null;
 };
 type ErasedPluginHandlers = {
   onNodeChange?: ((ctx: any) => HandlerReturnType) | null;
@@ -86,10 +90,13 @@ type ErasedPluginHandlers = {
 };
 type ErasedPluginInvariantKey =
   | '__apiExtensions'
+  | '__codecExtensions'
+  | '__htmlCodecExtensions'
   | '__configurationLayers'
   | '__editorApi'
   | '__editorExtensions'
   | '__extensions'
+  | '__readExtensions'
   | '__resolved'
   | '__selectorExtensions'
   | '__txExtensions'
@@ -98,6 +105,8 @@ type ErasedPluginInvariantKey =
   | 'decorate'
   | 'extend'
   | 'extendApi'
+  | 'extendCodecs'
+  | 'extendHtmlCodec'
   | 'extendEditorApi'
   | 'extendExtension'
   | 'extendSelectors'
@@ -106,7 +115,6 @@ type ErasedPluginInvariantKey =
   | 'handlers'
   | 'inject'
   | 'options'
-  | 'parser'
   | 'parsers'
   | 'render'
   | 'rules'
@@ -117,10 +125,13 @@ type ErasedPluginInvariantKey =
 /** Type-erased boundary for heterogeneous plugin collections. */
 export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   __apiExtensions: ErasedBasePlugin['__apiExtensions'];
+  __codecExtensions: ErasedBasePlugin['__codecExtensions'];
+  __htmlCodecExtensions: ErasedBasePlugin['__htmlCodecExtensions'];
   __configurationLayers: readonly any[];
   __editorApi: ErasedBasePlugin['__editorApi'];
   __editorExtensions: ErasedBasePlugin['__editorExtensions'];
   __extensions: ErasedBasePlugin['__extensions'];
+  __readExtensions: ErasedBasePlugin['__readExtensions'];
   __resolved?: boolean;
   __selectorExtensions: ErasedBasePlugin['__selectorExtensions'];
   __txExtensions: ErasedBasePlugin['__txExtensions'];
@@ -129,6 +140,8 @@ export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   decorate?: any;
   extend: any;
   extendApi: any;
+  extendCodecs: any;
+  extendHtmlCodec: any;
   extendEditorApi: any;
   extendExtension: any;
   extendSelectors: any;
@@ -137,11 +150,10 @@ export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   handlers: ErasedPluginHandlers;
   inject: ErasedPluginInject;
   options: any;
-  parser: any;
   parsers: any;
   render: any;
   rules: any;
-  schema: any;
+  readonly schema: any;
   transformInitialValue?: any;
   withComponent: any;
 };
@@ -153,7 +165,6 @@ export type AnyResolvedBasePlugin = Omit<
   handlers: ErasedPluginHandlers;
   inject: ErasedPluginInject;
   options: any;
-  parser: any;
   parsers: any;
   render: any;
   rules: any;
@@ -170,16 +181,6 @@ export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
 ) => DecoratedRange[] | undefined;
 
 // -----------------------------------------------------------------------------
-
-export type Deserializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseDeserializer & {
-    parse?: (
-      options: AnyObject & BasePluginContext<C> & { element: any }
-    ) => Partial<Descendant> | undefined | void;
-    query?: (
-      options: AnyObject & BasePluginContext<C> & { element: any }
-    ) => boolean;
-  };
 
 export type ResolvedBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   BasePlugin<C>,
@@ -256,35 +257,6 @@ export type ExtendEditorApi<
   EA = {},
 > = (ctx: BasePluginContext<C>) => EA & Deep2Partial<InferApi<C>>;
 
-export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseHtmlDeserializer & {
-    /**
-     * Whether to disable the default node props parsing logic. By default, all
-     * data-plite-* attributes will be parsed into node props.
-     *
-     * @default false
-     */
-    disableDefaultNodeProps?: boolean;
-    parse?: (
-      options: ParserPluginContext<C> & {
-        element: HTMLElement;
-        node: Readonly<AnyObject>;
-      }
-    ) => Partial<Descendant> | undefined | void;
-    query?: (
-      options: ParserPluginContext<C> & { element: HTMLElement }
-    ) => boolean;
-    toNodeProps?: (
-      options: ParserPluginContext<C> & { element: HTMLElement }
-    ) => Partial<Descendant> | undefined | void;
-  };
-
-export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseSerializer & {
-    parse?: (options: BasePluginContext<C> & { node: Descendant }) => string;
-    query?: (options: BasePluginContext<C> & { node: Descendant }) => boolean;
-  };
-
 export type InferConfig<P> = P extends {
   readonly __config: infer C extends AnyPluginConfig;
 }
@@ -333,28 +305,362 @@ export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   }
 ) => EditorDocumentValue;
 
-export type Parser<C extends AnyPluginConfig = PluginConfig> = {
-  format?: readonly string[] | string;
-  deserialize?: (
-    options: ParserOptions & ParserPluginContext<C>
-  ) => readonly Descendant[] | undefined;
-  /** Whole-schema ownership for document-level codecs such as HTML/Markdown. */
-  owns?: readonly Readonly<{ kind: 'schema' }>[];
-  query?: (options: ParserOptions & ParserPluginContext<C>) => boolean;
-  transformData?: (options: ParserOptions & ParserPluginContext<C>) => string;
+export type HtmlParser<C extends AnyPluginConfig = PluginConfig> = {
+  query?: (options: HtmlParserOptions & HtmlPluginContext<C>) => boolean;
+  transformData?: (options: HtmlParserOptions & HtmlPluginContext<C>) => string;
   transformFragment?: (
-    options: ParserOptions &
-      ParserPluginContext<C> & { fragment: readonly Descendant[] }
+    options: HtmlParserOptions &
+      HtmlPluginContext<C> & { fragment: readonly Descendant[] }
   ) => readonly Descendant[];
 };
 
-/** Parser-only projection contributed to another installed plugin. */
-export type ParserPluginProjection<
-  C extends AnyPluginConfig = AnyPluginConfig,
-> = {
-  parser?: Nullable<Parser<WithAnyKey<C>>>;
-  parsers?: BasePlugin<C>['parsers'];
+export type HtmlMatchValue = string | readonly string[];
+
+type HtmlMatcherFields = {
+  attributes?: Readonly<Record<string, true | HtmlMatchValue>>;
+  className?: string;
+  style?: Readonly<Record<string, '*' | HtmlMatchValue>>;
+  tag?: HtmlMatchValue;
 };
+
+export type HtmlMatcher = Readonly<
+  | (HtmlMatcherFields & {
+      attributes: NonNullable<HtmlMatcherFields['attributes']>;
+    })
+  | (HtmlMatcherFields & { className: string })
+  | (HtmlMatcherFields & { style: NonNullable<HtmlMatcherFields['style']> })
+  | (HtmlMatcherFields & { tag: HtmlMatchValue })
+>;
+
+export type HtmlAttributes = Readonly<
+  Record<string, boolean | number | string | null | undefined>
+>;
+
+export type HtmlElementPatch = Readonly<{
+  attributes?: HtmlAttributes;
+  children?: never;
+  style?: Readonly<Record<string, number | string | null | undefined>>;
+  tag?: never;
+}>;
+
+declare const htmlContentToken: unique symbol;
+
+export type HtmlContentToken = Readonly<{
+  [htmlContentToken]: true;
+}>;
+
+export type HtmlWrapperSpec = Readonly<{
+  attributes?: HtmlAttributes;
+  style?: Readonly<Record<string, number | string | null | undefined>>;
+  tag: string;
+}>;
+
+export type HtmlNodeSpec = Readonly<{
+  attributes?: HtmlAttributes;
+  children?:
+    | HtmlContentToken
+    | readonly (HtmlContentToken | HtmlNodeSpec | Readonly<{ text: string }>)[];
+  patchTarget?: true;
+  style?: Readonly<Record<string, number | string | null | undefined>>;
+  tag: string;
+}>;
+
+type HtmlDecodeContext = Readonly<{
+  element: Readonly<HTMLElement>;
+  state: EditorCoreStateView;
+}>;
+
+type HtmlElementDecodeResult<TProperties extends object> = Readonly<
+  Partial<TProperties> & {
+    children?: readonly Descendant[];
+  }
+>;
+
+type HtmlElementEncodeContext<TNode extends Element> = Readonly<{
+  content: HtmlContentToken;
+  node: Readonly<TNode>;
+  state: EditorCoreStateView;
+}>;
+
+type HtmlPropertyEncodeContext<TNode, TValue> = Readonly<{
+  node: Readonly<TNode>;
+  state: EditorCoreStateView;
+  value: TValue;
+}>;
+
+type HtmlPropertiesEncodeContext<TNode, TValues extends object> = Readonly<{
+  node: Readonly<TNode>;
+  state: EditorCoreStateView;
+  values: Readonly<TValues>;
+}>;
+
+type HtmlRuleDirections<TDecode, TEncodeContext, TEncodeResult> =
+  | Readonly<{
+      decode: (context: HtmlDecodeContext) => TDecode | undefined;
+      decodeOnly?: never;
+      encode: (context: TEncodeContext) => TEncodeResult | null;
+    }>
+  | Readonly<{
+      decode: (context: HtmlDecodeContext) => TDecode | undefined;
+      decodeOnly: true;
+      encode?: never;
+    }>;
+
+type HtmlRuleBase = Readonly<{
+  match: readonly [HtmlMatcher, ...HtmlMatcher[]];
+  priority?: number;
+}>;
+
+type HtmlContribution<C extends AnyPluginConfig> =
+  InferExactPluginSchemaContribution<C>;
+
+type HtmlContributionElements<C extends AnyPluginConfig> =
+  HtmlContribution<C> extends Readonly<{
+    elements: infer TElements extends Readonly<
+      Record<string, import('@platejs/plite').SchemaElement>
+    >;
+  }>
+    ? TElements
+    : Readonly<Record<never, never>>;
+
+type HtmlContributionProperties<C extends AnyPluginConfig> =
+  HtmlContribution<C> extends Readonly<{
+    properties: readonly (infer TProperty extends SchemaProperty)[];
+  }>
+    ? TProperty
+    : never;
+
+type HtmlPropertyName<TKey> = TKey extends string ? TKey : never;
+
+type HtmlPropertyMap<TProperty> = Readonly<{
+  [TMember in TProperty as TMember extends SchemaProperty
+    ? HtmlPropertyName<TMember['key']>
+    : never]?: TMember extends SchemaProperty
+    ? PropertyValueOf<TMember['value']>
+    : never;
+}>;
+
+type HtmlElementSchema<C extends AnyPluginConfig> =
+  InferPluginDocumentType<C> extends keyof HtmlContributionElements<C>
+    ? HtmlContributionElements<C>[InferPluginDocumentType<C>]
+    : never;
+
+type HtmlElementOwnedProperties<C extends AnyPluginConfig> =
+  HtmlElementSchema<C> extends Readonly<{
+    properties?: infer TProperties extends Readonly<
+      Record<string, PropertyValueDescriptor>
+    >;
+  }>
+    ? Readonly<{
+        [TKey in keyof TProperties]?: PropertyValueOf<TProperties[TKey]>;
+      }>
+    : Readonly<Record<never, never>>;
+
+type HtmlOwnedPropertyMap<C extends AnyPluginConfig> =
+  HtmlElementOwnedProperties<C> &
+    HtmlPropertyMap<HtmlContributionProperties<C>>;
+
+type HtmlHasOnlyExactPropertyKeys<C extends AnyPluginConfig> = [
+  Exclude<
+    HtmlContributionProperties<C>,
+    SchemaProperty & Readonly<{ key: string }>
+  >,
+] extends [never]
+  ? true
+  : false;
+
+type IsUnion<T, TWhole = T> = T extends TWhole
+  ? [TWhole] extends [T]
+    ? false
+    : true
+  : never;
+
+type HtmlSoleExactProperty<C extends AnyPluginConfig> =
+  HtmlContributionProperties<C> extends infer TProperty
+    ? [TProperty] extends [never]
+      ? never
+      : IsUnion<TProperty> extends true
+        ? never
+        : TProperty extends SchemaProperty & { key: string }
+          ? TProperty
+          : never
+    : never;
+
+type HtmlPropertyDecode<C extends AnyPluginConfig> = [
+  HtmlSoleExactProperty<C>,
+] extends [never]
+  ? HtmlPropertyMap<HtmlContributionProperties<C>>
+  : HtmlSoleExactProperty<C> extends SchemaProperty
+    ? PropertyValueOf<HtmlSoleExactProperty<C>['value']>
+    : never;
+
+type HtmlPropertyEncodeContextFor<C extends AnyPluginConfig> = [
+  HtmlSoleExactProperty<C>,
+] extends [never]
+  ? HtmlPropertiesEncodeContext<Element, HtmlOwnedPropertyMap<C>>
+  : HtmlSoleExactProperty<C> extends SchemaProperty
+    ? HtmlPropertyEncodeContext<
+        Element,
+        PropertyValueOf<HtmlSoleExactProperty<C>['value']>
+      >
+    : never;
+
+type HtmlTextEncodeContextFor<C extends AnyPluginConfig> = [
+  HtmlSoleExactProperty<C>,
+] extends [never]
+  ? HtmlPropertiesEncodeContext<Text, HtmlOwnedPropertyMap<C>>
+  : HtmlSoleExactProperty<C> extends SchemaProperty
+    ? HtmlPropertyEncodeContext<
+        Text,
+        PropertyValueOf<HtmlSoleExactProperty<C>['value']>
+      >
+    : never;
+
+type HtmlElementRule<C extends AnyPluginConfig> = HtmlRuleBase &
+  HtmlRuleDirections<
+    HtmlElementDecodeResult<HtmlOwnedPropertyMap<C>>,
+    HtmlElementEncodeContext<Element & HtmlOwnedPropertyMap<C>>,
+    HtmlNodeSpec
+  > & {
+    createsElement?: never;
+  };
+
+type HtmlElementPropertyRule<C extends AnyPluginConfig> = HtmlRuleBase &
+  (
+    | (HtmlRuleDirections<
+        HtmlPropertyDecode<C>,
+        HtmlPropertyEncodeContextFor<C>,
+        HtmlElementPatch
+      > & {
+        createsElement?: never;
+      })
+    | (HtmlRuleDirections<
+        HtmlElementDecodeResult<HtmlOwnedPropertyMap<C>>,
+        HtmlElementEncodeContext<Element & HtmlOwnedPropertyMap<C>>,
+        HtmlNodeSpec
+      > & {
+        createsElement: true;
+      })
+  );
+
+type HtmlTextPropertyRule<C extends AnyPluginConfig> = HtmlRuleBase &
+  HtmlRuleDirections<
+    HtmlPropertyDecode<C>,
+    HtmlTextEncodeContextFor<C>,
+    HtmlWrapperSpec
+  > & {
+    createsElement?: never;
+  };
+
+type HtmlForeignElementPropertyRule<C extends AnyPluginConfig> = HtmlRuleBase &
+  HtmlRuleDirections<
+    HtmlPropertyDecode<C>,
+    HtmlPropertyEncodeContextFor<C>,
+    HtmlElementPatch
+  > & {
+    createsElement?: never;
+  };
+
+type HtmlSelfRule<C extends AnyPluginConfig> =
+  HtmlHasOnlyExactPropertyKeys<C> extends false
+    ? never
+    : [HtmlElementSchema<C>] extends [never]
+      ? [HtmlContributionProperties<C>] extends [never]
+        ? never
+        : [Exclude<HtmlContributionProperties<C>, SchemaTextProperty>] extends [
+              never,
+            ]
+          ? HtmlTextPropertyRule<C>
+          : [
+                Exclude<HtmlContributionProperties<C>, SchemaElementProperty>,
+              ] extends [never]
+            ? HtmlElementPropertyRule<C>
+            : never
+      : [
+            Exclude<HtmlContributionProperties<C>, SchemaElementProperty>,
+          ] extends [never]
+        ? HtmlElementRule<C>
+        : never;
+
+export type ExtendHtmlCodec<C extends AnyPluginConfig> = (
+  context: BasePluginContext<InferPluginBehaviorConfig<C>>
+) => HtmlSelfRule<C>;
+
+type HtmlForeignRule<C extends AnyPluginConfig> =
+  HtmlHasOnlyExactPropertyKeys<C> extends false
+    ? never
+    : [HtmlElementSchema<C>] extends [never]
+      ? [HtmlContributionProperties<C>] extends [never]
+        ? never
+        : [Exclude<HtmlContributionProperties<C>, SchemaTextProperty>] extends [
+              never,
+            ]
+          ? HtmlTextPropertyRule<C>
+          : [
+                Exclude<HtmlContributionProperties<C>, SchemaElementProperty>,
+              ] extends [never]
+            ? HtmlForeignElementPropertyRule<C>
+            : never
+      : [
+            Exclude<HtmlContributionProperties<C>, SchemaElementProperty>,
+          ] extends [never]
+        ? HtmlElementRule<C>
+        : never;
+
+export type ExtendForeignHtmlCodec<
+  C extends AnyPluginConfig,
+  TTarget extends AnyPluginConfig,
+> = (
+  context: BasePluginContext<InferPluginBehaviorConfig<C>>
+) => HtmlForeignRule<TTarget>;
+
+export type ForeignHtmlCodecTarget<
+  C extends AnyPluginConfig,
+  TTarget extends PluginReference,
+> = TTarget['key'] extends C['key'] ? never : TTarget;
+
+type CodecDecodeContext = Readonly<{
+  data: string;
+  format: string;
+  source: Readonly<{
+    files: Readonly<{
+      readonly [index: number]: File;
+      readonly length: number;
+      item: (index: number) => File | null;
+    }>;
+    getData: (format: string) => string;
+    types: readonly string[];
+  }>;
+  state: EditorCoreStateView;
+}>;
+
+type CodecEncodeContext = Readonly<{
+  format: string;
+  slice: ContentSlice;
+  state: EditorCoreStateView;
+}>;
+
+type CodecDeclaration = Readonly<{
+  decode?: (context: CodecDecodeContext) => ContentSlice | null;
+  encode?: (context: CodecEncodeContext) => string | null;
+  key?: never;
+  owner?: never;
+  priority?: number;
+  query?: (context: CodecDecodeContext) => boolean;
+  scope?: 'document';
+  target?: never;
+}>;
+
+type CodecMap = Readonly<
+  Record<string, CodecDeclaration> & {
+    /** HTML node codecs use the inferred `.extendHtmlCodec()` surface. */
+    'text/html'?: never;
+  }
+>;
+
+type ExtendCodecs<C extends AnyPluginConfig = PluginConfig> = (
+  context: BasePluginContext<InferPluginBehaviorConfig<C>>
+) => CodecMap;
 
 export type PartialBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   Partial<ResolvedBasePlugin<C>>,
@@ -378,12 +684,10 @@ type ErasedBasePluginOverride = Partial<{
   inject: any;
   inputRules: any;
   options: any;
-  parser: any;
   parsers: any;
   priority: number;
   render: any;
   rules: any;
-  schema: any;
   selectors: any;
   shortcuts: any;
   targetPluginKeys: readonly string[];
@@ -401,11 +705,14 @@ type ErasedBasePluginOverride = Partial<{
 export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
   PartialBasePlugin<C>,
   | '__apiExtensions'
+  | '__codecExtensions'
+  | '__htmlCodecExtensions'
   | '__config'
   | '__configurationLayers'
   | '__editorApi'
   | '__editorExtensions'
   | '__extensions'
+  | '__readExtensions'
   | '__pluginReference'
   | '__selectorExtensions'
   | '__txExtensions'
@@ -414,6 +721,8 @@ export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
   | 'dependencies'
   | 'extend'
   | 'extendApi'
+  | 'extendCodecs'
+  | 'extendHtmlCodec'
   | 'extendEditorApi'
   | 'extendExtension'
   | 'extendSelectors'
@@ -421,6 +730,7 @@ export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
   | 'extendTxGroup'
   | 'key'
   | 'override'
+  | 'schema'
   | 'withComponent'
 >;
 
@@ -437,16 +747,6 @@ export interface RenderStaticNodeWrapperProps<C extends AnyPluginConfig = any>
   extends PliteRenderElementProps<Element, C> {
   key: string;
 }
-
-export type Serializer<C extends AnyPluginConfig = PluginConfig> =
-  BaseSerializer & {
-    parse?: (
-      options: AnyObject & BasePluginContext<C> & { node: Descendant }
-    ) => any;
-    query?: (
-      options: AnyObject & BasePluginContext<C> & { node: Descendant }
-    ) => boolean;
-  };
 
 export type PlatePluginTxGroup<
   TGroup extends object = object,
@@ -478,6 +778,28 @@ export type PlatePluginTxExtension = ExtendTxGroups<AnyPluginConfig> & {
   __plateOwnTxGroup?: true;
   __plateTxGroupKey?: string;
 };
+
+export type PlatePluginReadGroup<
+  TGroup extends object = object,
+  C extends AnyPluginConfig = AnyPluginConfig,
+> = (
+  state: PlatePluginReadState<InferPluginConfigTree<C>>,
+  editor: BaseEditor
+) => TGroup;
+
+export type PlatePluginReadGroups = Record<
+  string,
+  PlatePluginReadGroup | undefined
+>;
+
+export type PlatePluginReadExtension = (
+  ctx: BasePluginImplementationContext<AnyPluginConfig>
+) => PlatePluginReadGroups;
+
+export type PlatePluginApiExtension = Readonly<{
+  extension: (ctx: BasePluginContext<AnyPluginConfig>) => any;
+  isPluginSpecific: boolean;
+}>;
 
 export type InferTxGroup<TGroup extends (...args: any[]) => any> =
   ReturnType<TGroup>;
@@ -551,10 +873,6 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
       }>;
       inject: Nullable<{
         nodeProps?: InjectNodeProps<C>;
-        parsers?: Record<string, ParserPluginProjection>;
-        targetParserToInject?: (
-          ctx: BasePluginContext<C> & { targetPlugin: string }
-        ) => ParserPluginProjection;
       }>;
       override: {
         components?: NodeComponents;
@@ -566,21 +884,9 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> =
          */
         plugins?: Record<string, ErasedBasePluginOverride>;
       };
-      parser: Nullable<Parser<WithAnyKey<C>>>;
-      parsers:
-        | (Record<
-            string,
-            {
-              deserializer?: Deserializer<WithAnyKey<C>>;
-              serializer?: Serializer<WithAnyKey<C>>;
-            }
-          > & { html?: never })
-        | {
-            html?: Nullable<{
-              deserializer?: HtmlDeserializer<WithAnyKey<C>>;
-              serializer?: HtmlSerializer<WithAnyKey<C>>;
-            }>;
-          };
+      parsers: {
+        html?: Nullable<HtmlParser<WithAnyKey<C>>>;
+      };
       render: Nullable<{
         /**
          * When other plugins' `node` components are rendered, this function can
@@ -711,12 +1017,155 @@ type RuntimeBasePluginConfig<
     InferPluginApi<C>,
     InferEnabled<C>
   >,
-  'dependencies' | 'parser' | 'parsers' | 'render' | 'schema' | 'type'
+  'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
   render?: Omit<NonNullable<BasePlugin<C>['render']>, 'isDecoration'> | null;
 };
 
-type StaticBasePluginConfig<
+export type BasePluginExtensionContract = {
+  api?: object;
+  read?: object;
+  selectors?: object;
+  update?: object;
+};
+
+type ExtensionContractField<
+  TContract extends BasePluginExtensionContract,
+  TKey extends keyof BasePluginExtensionContract,
+> = TContract[TKey] extends object ? TContract[TKey] : {};
+
+type ExtensionContractApi<TContract extends BasePluginExtensionContract> =
+  ExtensionContractField<TContract, 'api'>;
+
+type ExtensionContractRead<TContract extends BasePluginExtensionContract> =
+  ExtensionContractField<TContract, 'read'>;
+
+type ExtensionContractSelectors<TContract extends BasePluginExtensionContract> =
+  ExtensionContractField<TContract, 'selectors'>;
+
+type ExtensionContractUpdate<TContract extends BasePluginExtensionContract> =
+  ExtensionContractField<TContract, 'update'>;
+
+type TransactionReadGroup<TGroup extends object> = {
+  [TKey in keyof TGroup]: TGroup[TKey] extends (...args: any[]) => any
+    ? TxReadMethod<TGroup[TKey]>
+    : TGroup[TKey];
+};
+
+type AdditiveContract<TCurrent, TAddition> = [keyof TAddition] extends [never]
+  ? TCurrent
+  : [keyof TCurrent] extends [never]
+    ? TAddition
+    : Omit<TAddition, keyof TCurrent> & TCurrent;
+
+type WithPluginGroup<TGroups, TKey extends string, TGroup extends object> = [
+  keyof TGroups,
+] extends [never]
+  ? Record<TKey, TGroup>
+  : Omit<TGroups, TKey> & Record<TKey, TGroup>;
+
+type UnifiedPluginTx<TContract extends BasePluginExtensionContract> =
+  AdditiveContract<
+    TransactionReadGroup<ExtensionContractRead<TContract>>,
+    ExtensionContractUpdate<TContract>
+  >;
+
+type ExistingPluginTx<C extends AnyPluginConfig> =
+  InferTx<C> extends Record<C['key'], infer TTx extends object> ? TTx : {};
+
+type ExtendedPluginTx<
+  C extends AnyPluginConfig,
+  TContract extends BasePluginExtensionContract,
+> = keyof UnifiedPluginTx<TContract> extends never
+  ? InferTx<C>
+  : WithPluginGroup<
+      InferTx<C>,
+      C['key'],
+      AdditiveContract<ExistingPluginTx<C>, UnifiedPluginTx<TContract>>
+    >;
+
+type ExistingPluginState<C extends AnyPluginConfig> =
+  InferState<C> extends Record<C['key'], infer TState extends object>
+    ? TState
+    : {};
+
+type ExtendedPluginState<
+  C extends AnyPluginConfig,
+  TContract extends BasePluginExtensionContract,
+> = keyof ExtensionContractRead<TContract> extends never
+  ? InferState<C>
+  : WithPluginGroup<
+      InferState<C>,
+      C['key'],
+      AdditiveContract<ExistingPluginState<C>, ExtensionContractRead<TContract>>
+    >;
+
+type UnifiedCapabilityConfig<
+  C extends AnyPluginConfig,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends object,
+  TUpdate extends object,
+> =
+  | {
+      /** Immutable API owned by this plugin. */
+      api: Deep2Partial<InferPluginApi<C>> & TApi;
+    }
+  | {
+      /** Raw Plite editor behavior contributed by this authoring stage. */
+      extension: ContextualPlateEditorExtensionInput<C>;
+    }
+  | {
+      /** State-bound reads owned by this plugin. */
+      read: (context: {
+        state: PlatePluginReadState<InferPluginConfigTree<C>>;
+      }) => TRead;
+    }
+  | {
+      selectors: Partial<InferSelectors<C>> & TSelectors;
+    }
+  | {
+      /** Transaction-bound updates owned by this plugin. */
+      update: (context: {
+        tx: PlatePluginTransaction<InferPluginConfigTree<C>>;
+      }) => TUpdate;
+    };
+
+type UnifiedRuntimeBasePluginConfig<
+  C extends AnyPluginConfig,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends object,
+  TUpdate extends object,
+> = {
+  /** Immutable API owned by this plugin. */
+  api?: Deep2Partial<InferPluginApi<C>> & TApi;
+  /** Raw Plite editor behavior contributed by this authoring stage. */
+  extension?: ContextualPlateEditorExtensionInput<C>;
+  /** State-bound reads owned by this plugin. */
+  read?: (context: {
+    state: PlatePluginReadState<InferPluginConfigTree<C>>;
+  }) => TRead;
+  selectors?: Partial<InferSelectors<C>> & TSelectors;
+  /** Transaction-bound updates owned by this plugin. */
+  update?: (context: {
+    tx: PlatePluginTransaction<InferPluginConfigTree<C>>;
+  }) => TUpdate;
+} & UnifiedCapabilityConfig<C, TApi, TRead, TSelectors, TUpdate>;
+
+type InferredExtensionContract<
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends object,
+  TUpdate extends object,
+> = {
+  api: TApi;
+  read: TRead;
+  selectors: TSelectors;
+  update: TUpdate;
+};
+
+type StaticBasePluginConfigBase<
   C extends AnyPluginConfig,
   EO = {},
   EA = {},
@@ -740,6 +1189,26 @@ type StaticBasePluginConfig<
   >,
   'dependencies'
 >;
+
+type StaticBasePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+  Enabled extends boolean = InferEnabled<C>,
+> = Omit<StaticBasePluginConfigBase<C, EO, EA, ES, Enabled>, 'schema'> & {
+  schema?: never;
+};
+
+type TerminalBasePluginConfig<
+  C extends AnyPluginConfig,
+  EO = {},
+  EA = {},
+  ES = {},
+  Enabled extends boolean = InferEnabled<C>,
+> = Omit<StaticBasePluginConfig<C, EO, EA, ES, Enabled>, 'schema'> & {
+  schema?: never;
+};
 
 type ContextualBasePluginConfig<C extends AnyPluginConfig> = Pick<
   RuntimeBasePluginConfig<C>,
@@ -802,6 +1271,24 @@ export type ExtendedBasePlugin<
   >
 >;
 
+export type UnifiedExtendedBasePlugin<
+  C extends AnyPluginConfig,
+  TContract extends BasePluginExtensionContract,
+> = BasePlugin<
+  PluginConfig<
+    C['key'],
+    InferOptions<C>,
+    InferApi<C>,
+    ExtendedPluginTx<C, TContract>,
+    AdditiveContract<InferSelectors<C>, ExtensionContractSelectors<TContract>>,
+    ExtendedPluginState<C, TContract>,
+    InferDependencies<C>,
+    InferPluginSchemaModel<C>,
+    AdditiveContract<InferPluginApi<C>, ExtensionContractApi<TContract>>,
+    InferEnabled<C>
+  >
+>;
+
 /** @internal Nameable boundary for downstream declaration emit. */
 export type ExtendedBasePluginWithExtension<
   C extends AnyPluginConfig,
@@ -828,6 +1315,8 @@ type PluginAuthoringMethod =
   | 'configure'
   | 'extend'
   | 'extendApi'
+  | 'extendCodecs'
+  | 'extendHtmlCodec'
   | 'extendEditorApi'
   | 'extendExtension'
   | 'extendSelectors'
@@ -898,12 +1387,20 @@ export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
+  __apiExtensions: PlatePluginApiExtension[];
+  /** @internal Codec authoring callbacks compiled with the Plate model. */
+  __codecExtensions: ExtendCodecs<AnyPluginConfig>[];
+  /** @internal HTML node-codec authoring callbacks compiled with the Plate model. */
+  __htmlCodecExtensions: readonly Readonly<{
+    extension: (context: BasePluginContext<AnyPluginConfig>) => unknown;
+    targetKey: string | null;
+  }>[];
   __configurationLayers: readonly PluginConfigurationLayer<C>[];
   /** @internal Root editor API declarations carried by this descriptor. */
   __editorApi: InferApi<C>;
   __editorExtensions: ExtendPlateEditorExtension<AnyPluginConfig>[];
   __extensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
+  __readExtensions: PlatePluginReadExtension[];
   __selectorExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
   __txExtensions: PlatePluginTxExtension[];
   clone(): BasePlugin<C>;
@@ -932,7 +1429,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      StaticBasePluginConfig<C, {}, {}, {}, Enabled> & {
+      TerminalBasePluginConfig<C, {}, {}, {}, Enabled> & {
         enabled: Enabled;
         type: TType;
       },
@@ -945,7 +1442,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      StaticBasePluginConfig<C> & { type: TType },
+      TerminalBasePluginConfig<C> & { type: TType },
       TShortcuts
     >
   ): ConfiguredBasePluginType<C, TType>;
@@ -955,15 +1452,33 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      StaticBasePluginConfig<C, {}, {}, {}, Enabled> & {
+      TerminalBasePluginConfig<C, {}, {}, {}, Enabled> & {
         enabled: Enabled;
       },
       TShortcuts
     >
   ): ConfiguredBasePluginEnabled<C, Enabled>;
   configure<const TShortcuts extends BaseShortcutRecord = {}>(
-    config: WithValidatedBaseShortcuts<C, StaticBasePluginConfig<C>, TShortcuts>
+    config: WithValidatedBaseShortcuts<
+      C,
+      TerminalBasePluginConfig<C>,
+      TShortcuts
+    >
   ): ConfiguredBasePlugin<C>;
+  extend<
+    const TContract extends BasePluginExtensionContract = {},
+    const TApi extends object = ExtensionContractApi<TContract>,
+    const TRead extends object = ExtensionContractRead<TContract>,
+    const TSelectors extends object = ExtensionContractSelectors<TContract>,
+    const TUpdate extends object = ExtensionContractUpdate<TContract>,
+  >(
+    extendConfig: (
+      ctx: BasePluginContext<C>
+    ) => UnifiedRuntimeBasePluginConfig<C, TApi, TRead, TSelectors, TUpdate>
+  ): UnifiedExtendedBasePlugin<
+    C,
+    InferredExtensionContract<TApi, TRead, TSelectors, TUpdate>
+  >;
   extend<
     EO = {},
     EA = {},
@@ -1002,6 +1517,26 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       TShortcuts
     >
   ): ExtendedBasePlugin<C, EO, EA, ES, Enabled>;
+  /**
+   * Declares MIME-keyed product codecs with owner and schema claims inferred
+   * from this plugin.
+   */
+  extendCodecs(extension: ExtendCodecs<C>): BasePlugin<C>;
+  /**
+   * Declares this plugin's inferred HTML element, property, or mark codec.
+   */
+  extendHtmlCodec(extension: ExtendHtmlCodec<C>): BasePlugin<C>;
+  /**
+   * Declares an inferred HTML codec for another typed plugin descriptor.
+   */
+  extendHtmlCodec<
+    const TTarget extends PluginReference & {
+      readonly __config: AnyPluginConfig;
+    },
+  >(
+    target: ForeignHtmlCodecTarget<C, TTarget>,
+    extension: ExtendForeignHtmlCodec<C, InferConfig<TTarget>>
+  ): BasePlugin<C>;
   extendExtension<
     const TExtension extends ContextualPlateEditorExtensionInput<C>,
   >(

@@ -6,7 +6,6 @@ import type { HistoryExtensionTypes } from '@platejs/plite-history';
 
 import { HistoryPlugin } from './HistoryPlugin';
 import { OverridePlugin } from './override/OverridePlugin';
-import { ParserPlugin } from './ParserPlugin';
 import { type DebugErrorType, type LogLevel, DebugPlugin } from './debug';
 import { type DomConfig, DOMPlugin } from './dom';
 import { type ElementStateConfig, ElementStatePlugin } from './element-state';
@@ -39,8 +38,7 @@ export type CorePluginConfig =
     >
   | PluginConfig<'html', {}, {}, {}, {}, {}, readonly [], never, HtmlApi>
   | PluginConfig<'inputRules'>
-  | PluginConfig<'override'>
-  | PluginConfig<'parser'>;
+  | PluginConfig<'override'>;
 
 export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
@@ -68,7 +66,6 @@ export const getCorePlugins = ({
     HistoryPlugin,
     InputRulesPlugin,
     OverridePlugin,
-    ParserPlugin,
     HtmlPlugin,
     NodeIdPlugin.configure(
       typeof resolvedNodeId === 'object'

@@ -77,7 +77,7 @@ export const LocationApi: Readonly<LocationInterface> = Object.freeze({
  * without using `Point` which requires leaf text nodes to be present.
  */
 
-export type Span = [Path, Path];
+export type Span = readonly [Path, Path];
 
 export interface SpanInterface {
   /**

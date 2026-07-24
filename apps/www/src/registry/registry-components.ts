@@ -167,6 +167,7 @@ export const registryComponents: Registry['items'] = [
   },
   {
     dependencies: [
+      '@platejs/basic-styles',
       '@platejs/comment',
       '@platejs/excalidraw',
       '@platejs/link',

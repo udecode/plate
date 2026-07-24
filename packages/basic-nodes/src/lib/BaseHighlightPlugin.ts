@@ -11,21 +11,16 @@ export const BaseHighlightPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validNodeName: ['MARK'],
-          },
-        ],
-      },
-    },
-  },
   render: { as: 'mark' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: () => true,
+    encode: ({ value }) => (value ? { tag: 'mark' } : null),
+    match: [{ tag: 'mark' }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

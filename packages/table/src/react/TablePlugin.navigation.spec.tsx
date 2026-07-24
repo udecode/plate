@@ -2,6 +2,7 @@
 
 import { Hotkeys, type BaseEditor } from '@platejs/core';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import type { Value } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
@@ -72,7 +73,7 @@ const createDOMRangeMock = (rects: Partial<DOMRect>[]) => {
 };
 
 const domRanges = new WeakMap<
-  BaseEditor,
+  BaseEditor<any, any>,
   { index: number; ranges: ReturnType<typeof createDOMRangeMock>[] }
 >();
 
@@ -90,8 +91,8 @@ const TestDOMRangePlugin = createPlatePlugin({
   },
 }));
 
-const mockToDOMRange = (
-  editor: BaseEditor,
+const mockToDOMRange = <V extends Value>(
+  editor: BaseEditor<V, any>,
   ...ranges: ReturnType<typeof createDOMRangeMock>[]
 ) => {
   domRanges.set(editor, { index: 0, ranges });

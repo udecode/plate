@@ -3,7 +3,6 @@
  */
 
 export * from './HistoryPlugin';
-export * from './ParserPlugin';
 export * from './getCorePlugins';
 export * from './affinity/index';
 export * from './debug/index';

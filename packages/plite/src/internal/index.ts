@@ -1,4 +1,6 @@
 export type { Editor, Value } from '../interfaces/editor';
+export { txRead } from '../core/tx-only';
+export type { TxReadMethod } from '../core/tx-only';
 
 export { failInvariant } from './fail-invariant';
 
@@ -99,17 +101,21 @@ export { createDetachedContentSlice } from '../core/content-slice';
 export type { InternalEditorRuntimeElementEntry } from '../core/snapshot-index';
 export { editorCommands } from '../core/editor-commands';
 export {
-  createInternalDocumentChange,
+  createInternalRootChangeFromSections,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeClassificationEntries,
-  getInternalDocumentChangeEntries,
-  getInternalDocumentChangeSet,
+  getInternalDocumentChangeRanges,
+  getInternalDocumentChangeRootKeys,
+  hasInternalDocumentChangeRoot,
+  mapInternalDocumentChangePoint,
   mapInternalDocumentChangePosition,
+} from '../core/change/document-change';
+export {
   getDocumentChangeRelocations,
+  getExactDocumentChangeRelocation,
   getExactDocumentChangeRelocations,
-  IndexedDocument,
   type DocumentChangeRelocation,
-} from '../core/document-change';
+} from '../core/change/mapping';
 export {
   createInternalClipboardApi,
   type EditorExtensionsFromOptions,
@@ -197,6 +203,7 @@ export {
   assertSelectionSupported,
   decodeEditorSelection,
   encodeEditorSelection,
+  getSelectionDOMRange,
   mapSelectionThroughChange,
 } from '../core/selection-protocol';
 export { createEditorEffect } from '../core/transaction-values';

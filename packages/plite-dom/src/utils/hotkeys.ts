@@ -1,4 +1,4 @@
-import { IS_APPLE } from './environment';
+import { usesAppleDOMHotkeys } from './environment';
 import { createCompiledHotkeyMatcher } from './hotkey-match';
 
 export type {
@@ -13,7 +13,6 @@ export type {
  */
 
 const HOTKEYS = {
-  bold: 'mod+b',
   compose: ['down', 'left', 'right', 'up', 'backspace', 'enter'],
   moveBackward: 'left',
   moveForward: 'right',
@@ -25,7 +24,6 @@ const HOTKEYS = {
   extendForward: 'shift+right',
   extendWordBackward: 'ctrl+shift+left',
   extendWordForward: 'ctrl+shift+right',
-  italic: 'mod+i',
   moveLineBackward: 'home',
   moveLineForward: 'end',
   insertSoftBreak: 'shift+enter',
@@ -67,14 +65,21 @@ const create = (key: string) => {
   const generic = HOTKEYS[<keyof typeof HOTKEYS>key];
   const apple = APPLE_HOTKEYS[<keyof typeof APPLE_HOTKEYS>key];
   const windows = WINDOWS_HOTKEYS[<keyof typeof WINDOWS_HOTKEYS>key];
-  const isGeneric = generic ? createCompiledHotkeyMatcher(generic) : undefined;
+  const isGenericApple = generic
+    ? createCompiledHotkeyMatcher(generic, { platform: 'apple' })
+    : undefined;
+  const isGenericOther = generic
+    ? createCompiledHotkeyMatcher(generic, { platform: 'other' })
+    : undefined;
   const isApple = apple ? createCompiledHotkeyMatcher(apple) : undefined;
   const isWindows = windows ? createCompiledHotkeyMatcher(windows) : undefined;
 
   return (event: KeyboardEvent) => {
-    if (isGeneric?.(event)) return true;
-    if (IS_APPLE && isApple?.(event)) return true;
-    if (!IS_APPLE && isWindows && isWindows(event)) return true;
+    const appleHost = usesAppleDOMHotkeys(event);
+
+    if ((appleHost ? isGenericApple : isGenericOther)?.(event)) return true;
+    if (appleHost && isApple?.(event)) return true;
+    if (!appleHost && isWindows && isWindows(event)) return true;
     return false;
   };
 };
@@ -87,7 +92,6 @@ export { isHotkey } from './hotkey-match';
 
 /** Platform-aware hotkey predicates used by Plite DOM editing behavior. */
 export const Hotkeys = {
-  isBold: create('bold'),
   isCompose: create('compose'),
   isMoveBackward: create('moveBackward'),
   isMoveForward: create('moveForward'),
@@ -103,7 +107,6 @@ export const Hotkeys = {
   isExtendLineForward: create('extendLineForward'),
   isExtendWordBackward: create('extendWordBackward'),
   isExtendWordForward: create('extendWordForward'),
-  isItalic: create('italic'),
   isMoveLineBackward: create('moveLineBackward'),
   isMoveLineForward: create('moveLineForward'),
   isMoveWordBackward: create('moveWordBackward'),

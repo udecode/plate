@@ -7,7 +7,6 @@
     "@platejs/basic-nodes": "53.0.0",
     "@platejs/basic-styles": "53.0.0",
     "@platejs/callout": "53.0.0",
-    "@platejs/caption": "53.0.0",
     "@platejs/code-block": "53.0.0",
     "@platejs/code-drawing": "53.0.0",
     "@platejs/combobox": "53.0.0",

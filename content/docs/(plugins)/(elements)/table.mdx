@@ -129,6 +129,12 @@ const editor = createPlateEditor({
 - `options.disableMerge`: Disables cell merging functionality.
 - `options.minColumnWidth`: Sets the minimum width for table columns.
 
+Column widths are stored once on the table's `colSizes`. Table renderers read
+that vector through `useTableColSizes`; pointer previews use transient
+overrides, then commit through
+`editor.plugin(TablePlugin).update.setColumnSize`. Row resizing follows the
+same pattern with each row's `size`.
+
 ### Add Toolbar Button
 
 You can add [`TableToolbarButton`](/docs/components/table-toolbar-button) to your [Toolbar](/docs/toolbar) to insert tables.
@@ -364,14 +370,20 @@ The table cell element to get the size for.
 <APIItem name="colSizes" type="number[]" optional>
 Optional array of column sizes. If not provided, will use the table's overridden column sizes.
 </APIItem>
+<APIItem name="cellIndices" type="CellIndices" optional>
+Optional precomputed row and column indices for the cell.
+</APIItem>
+<APIItem name="rowSize" type="number" optional>
+Optional row height. If not provided, the value is read from the cell's row.
+</APIItem>
 </APIOptions>
 
 <APIReturns>
 <APIItem name="width" type="number">
 The total width of the cell, calculated by summing the widths of all columns it spans.
 </APIItem>
-<APIItem name="minHeight" type="number | undefined">
-The minimum height of the cell, derived from the row's size property.
+<APIItem name="minHeight" type="number">
+The minimum height of the cell, derived from the row's size property or `0`.
 </APIItem>
 </APIReturns>
 </API>
@@ -989,13 +1001,16 @@ specific border type.
 
 ### `useTableColSizes`
 
-Custom hook that returns the column sizes of a table with overrides applied. If the `colCount` of the table updates to 1 and the `enableUnsetSingleColSize` option is enabled, it unsets the `colSizes` node.
+Returns the table's column sizes with transient resize overrides applied.
 
 <API name="useTableColSizes">
 <APIOptions>
 <APIItem name="disableOverrides" type="boolean" optional>
 If `true`, disables applying overrides to the column sizes.
 - **Default:** `false`
+</APIItem>
+<APIItem name="transformColSizes" type="(colSizes: number[]) => number[]" optional>
+Transforms the resolved sizes for the current renderer.
 </APIItem>
 </APIOptions>
 
@@ -1008,13 +1023,11 @@ If `true`, disables applying overrides to the column sizes.
 
 ### `useTableElement`
 
-A hook for a table element that handles cell selection and margin left calculations.
+A hook for a table element that resolves its left margin and collapses an
+active cell selection when the table is pressed.
 
 <API name="useTableElement">
 <APIReturns>
-  <APIItem name="isSelectingCell" type="boolean">
-    Whether cells are currently being selected.
-  </APIItem>
   <APIItem name="marginLeft" type="number">
     The margin left of the table, considering overrides and plugin options.
   </APIItem>

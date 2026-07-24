@@ -8,25 +8,22 @@ export const BaseStrikethroughPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['S', 'DEL', 'STRIKE'] },
-          { validStyle: { textDecoration: 'line-through' } },
-        ],
-        query: ({ element }) =>
-          !someHtmlElement(
-            element,
-            (node) => node.style.textDecoration === 'none'
-          ),
-      },
-    },
-  },
   render: { as: 's' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) =>
+      someHtmlElement(element, (node) => node.style.textDecoration === 'none')
+        ? undefined
+        : true,
+    encode: ({ value }) => (value ? { tag: 's' } : null),
+    match: [
+      { tag: ['s', 'del', 'strike'] },
+      { style: { textDecoration: 'line-through' } },
+    ],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

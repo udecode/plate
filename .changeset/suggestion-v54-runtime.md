@@ -7,7 +7,7 @@ installed editor API, and register suggestion marks and metadata in compiled
 schemas with versioned inline validation.
 
 **Migration:** Read suggestion data and helpers from
-`editor.plugin(BaseSuggestionPlugin).api`. Replace standalone suggestion
+`editor.api.suggestion`. Replace standalone suggestion
 transforms with `editor.update.suggestion`:
 
 ```tsx

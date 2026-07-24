@@ -25,6 +25,7 @@ import {
   defineStateField,
   type Node,
   NodeApi,
+  type Path,
   type Value,
 } from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
@@ -897,7 +898,7 @@ const PaginationTableLayoutContext =
 const getNativeFlowEditablePathKeys = (
   fragments: readonly {
     pageIndex: number;
-    path: number[];
+    path: Path;
     units?: readonly unknown[];
   }[]
 ) => {

@@ -11,7 +11,7 @@ import { useEditableProps } from '../hooks';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { type PlateStoreState, useEditor } from '../stores';
-import { EditorHotkeysEffect } from './EditorHotkeysEffect';
+import { EditorShortcutDispatcher } from './EditorShortcutDispatcher';
 import { EditorRefEffect } from './EditorRefEffect';
 import { PlateControllerEffect } from './PlateControllerEffect';
 import { PlateRoot } from './PlateRoot';
@@ -24,6 +24,21 @@ export type PlateContentProps = Omit<EditableProps, 'decorate'> & {
   /** R enders the editable content. */
   renderEditable?: (editable: React.ReactElement) => React.ReactNode;
 };
+
+const renderDefaultPlatePlaceholder: NonNullable<
+  PlateContentProps['renderPlaceholder']
+> = ({ attributes, children }) => (
+  <span
+    {...attributes}
+    style={{
+      ...attributes.style,
+      opacity: 0.333,
+      textDecoration: 'none',
+    }}
+  >
+    {children}
+  </span>
+);
 
 const getPlateContentReadOnly = ({
   disabled,
@@ -107,6 +122,11 @@ const PlateContentBranch = React.forwardRef<
     const editableProps = useEditableProps({
       ...props,
       readOnly: plateReadOnly,
+      renderPlaceholder:
+        props.renderPlaceholder ??
+        (props.disableDefaultStyles
+          ? undefined
+          : renderDefaultPlatePlaceholder),
     });
 
     const editableRef = useRef<HTMLDivElement | null>(null);
@@ -156,7 +176,7 @@ const PlateContentBranch = React.forwardRef<
       <>
         {renderEditable ? renderEditable(editable) : editable}
 
-        <EditorHotkeysEffect id={id} editableRef={editableRef} />
+        <EditorShortcutDispatcher id={id} editableRef={editableRef} />
         <EditorRefEffect id={id} />
         <PlateControllerEffect id={id} />
       </>

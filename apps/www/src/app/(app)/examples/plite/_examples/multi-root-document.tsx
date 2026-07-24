@@ -70,11 +70,11 @@ const formatCommit = (commit: EditorCommit | null) => {
   }
 
   const roots = new Set<string | null>([
-    ...(commit.changes.primary ? [null] : []),
-    ...commit.changes.roots.keys(),
     ...commit.changes.createRoots,
     ...commit.changes.deleteRoots,
   ]);
+
+  commit.changes.iterChangedRanges((root) => roots.add(root));
 
   return [
     `commit:${commit.version}`,

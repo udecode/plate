@@ -3,11 +3,11 @@
 ---
 
 - Move `CsvPlugin` to the Plite plugin runtime with typed CSV deserialization
-  through `editor.plugin(CsvPlugin).api.deserialize`
-- Configure CSV parser behavior through `CsvPlugin.options`
+  through `editor.api.csv.deserialize`
+- Configure CSV codec behavior through `CsvPlugin.options`
 
-**Migration:** Configure CSV settings through `options` and scope API access to
-the plugin portal:
+**Migration:** Configure CSV settings through `options` and use the inferred
+editor API:
 
 ```tsx
 CsvPlugin.configure({
@@ -17,9 +17,5 @@ CsvPlugin.configure({
   },
 });
 
-// Before
 editor.api.csv.deserialize({ data });
-
-// After
-editor.plugin(CsvPlugin).api.deserialize({ data });
 ```

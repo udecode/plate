@@ -1,14 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
+import { DocumentChange } from '../src/core/change/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
 import {
-  DocumentChange,
   getDocumentChangeRelocations,
   getExactDocumentChangeRelocations,
-  IndexedDocument,
-  moveNodeChange,
-  type JsonEditorValue,
-} from '../src/core/document-change';
+} from '../src/core/change/mapping';
+import { moveNodeChange } from '../src/core/change/root-change';
+import type { JsonEditorValue } from '../src/core/change/tokens';
+import { createTestDocumentChange } from './support/document-change';
 
 const paragraph = (text: string) => ({
   children: [{ text }],
@@ -21,8 +22,8 @@ describe('DocumentChange relocations', () => {
     const beta = paragraph('beta');
     const gamma = paragraph('gamma');
     const before: JsonEditorValue = { children: [alpha, beta, gamma] };
-    const document = IndexedDocument.fromValue(before.children);
-    const change = new DocumentChange({
+    const document = DocumentIndex.fromValue(before.children);
+    const change = createTestDocumentChange({
       primary: moveNodeChange(document, [0], [2]),
     });
 
@@ -36,8 +37,8 @@ describe('DocumentChange relocations', () => {
     const before: JsonEditorValue = {
       children: [alpha, { children: [paragraph('beta')], type: 'quote' }],
     };
-    const document = IndexedDocument.fromValue(before.children);
-    const change = new DocumentChange({
+    const document = DocumentIndex.fromValue(before.children);
+    const change = createTestDocumentChange({
       primary: moveNodeChange(document, [0], [1, 1]),
     });
 

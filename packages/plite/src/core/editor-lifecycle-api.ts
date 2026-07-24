@@ -13,7 +13,7 @@ import type {
   EditorUpdateTransaction,
   Value,
 } from '../interfaces';
-import { isTxOnlyMethod } from './tx-only';
+import { isTxOnlyMethod, isTxReadMethod } from './tx-only';
 import { getSemanticUpdateLowering } from './semantic-update-method';
 import {
   compileEditorUpdatePolicy,
@@ -144,6 +144,13 @@ const createUpdateExtensionPath = <
             `Editor update group "${groupName}" method "${path.join(
               '.'
             )}" is transaction-only.`
+          );
+        }
+        if (isTxReadMethod(method)) {
+          throw new Error(
+            `Editor update group "${groupName}" method "${path.join(
+              '.'
+            )}" is read-only.`
           );
         }
 

@@ -45,17 +45,16 @@ describe('toPlatePlugin', () => {
       element: { content: schema.content.open({ default: 'text', min: 1 }) },
     },
     options: { t: 1 },
-    parsers: {
-      html: {
-        deserializer: {
-          rules: [{ validNodeName: 'P' }],
-          query: ({ element }) => element.style.fontFamily !== 'Consolas',
-        },
-      },
-    },
-  }).extendEditorApi(() => ({
-    baseApiMethod: () => 'base',
-  }));
+  })
+    .extendHtmlCodec(() => ({
+      decode: ({ element }) =>
+        element.style.fontFamily === 'Consolas' ? undefined : {},
+      encode: ({ content }) => ({ children: content, tag: 'p' }),
+      match: [{ tag: 'p' }],
+    }))
+    .extendEditorApi(() => ({
+      baseApiMethod: () => 'base',
+    }));
 
   const MockComponent: NodeComponent = () => null;
   const MockAboveComponent: NodeComponent = () => null;
@@ -141,6 +140,30 @@ describe('toPlatePlugin', () => {
         render: { node: MockComponent },
       });
     }).toThrow();
+  });
+
+  it('keeps schema creation-owned through Base-to-Plate conversion', () => {
+    expect(() =>
+      (toPlatePlugin as any)(BaseParagraphPlugin, {
+        schema: {
+          element: {
+            content: schema.content.open({ default: 'text', min: 1 }),
+          },
+        },
+      })
+    ).toThrow('cannot define schema through toPlatePlugin()');
+
+    const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin);
+
+    expect(() =>
+      (ParagraphPlugin.extend as any)({
+        schema: {
+          element: {
+            content: schema.content.open({ default: 'text', min: 1 }),
+          },
+        },
+      })
+    ).toThrow('cannot define schema through .extend()');
   });
 
   // Type checks for toPlatePlugin
@@ -507,5 +530,11 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     const plugin = toPlatePlugin(configured);
 
     expect(() => (plugin.extend as any)({})).toThrow('already configured');
+    expect(() => (plugin.extendCodecs as any)(() => ({}))).toThrow(
+      'already configured'
+    );
+    expect(() => (plugin.extendHtmlCodec as any)(() => ({}))).toThrow(
+      'already configured'
+    );
   });
 });

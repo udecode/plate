@@ -437,7 +437,7 @@ export type DeleteFragmentCommand = {
 export type InsertBreakCommand = void;
 
 export type InsertNodesCommand = {
-  nodes: Descendant | Descendant[];
+  nodes: Descendant | readonly Descendant[];
   options?: CommandTargetOptions<NodeInsertNodesOptions<Descendant>>;
 };
 

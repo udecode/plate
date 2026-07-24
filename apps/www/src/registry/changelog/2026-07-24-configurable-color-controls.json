@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-24-configurable-color-controls",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-24-configurable-color-controls.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-24",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Configure color palettes and recent colors",
+  "targets": [
+    {
+      "name": "font-color-toolbar-button",
+      "files": ["apps/www/src/registry/ui/font-color-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toolbar",
+      "files": ["apps/www/src/registry/ui/toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "fixed-toolbar-buttons",
+      "files": ["apps/www/src/registry/ui/fixed-toolbar-buttons.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-24-configurable-color-controls-7e0f4ca1",
+      "kind": "behavior",
+      "summary": "Configure text color palettes, optionally control recent colors, and navigate color grids with the keyboard.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "font-color-toolbar-button",
+        "toolbar",
+        "fixed-toolbar-buttons",
+        "table-node"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-24",
+          "entry": "2026-07-24-configurable-color-controls",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

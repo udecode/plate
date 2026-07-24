@@ -136,6 +136,27 @@ describe('ElementProvider', () => {
     );
   };
 
+  const UpdatingNameElementProvider = ({
+    buttonLabel,
+    children,
+    initialName,
+  }: {
+    buttonLabel: string;
+    children: React.ReactNode;
+    initialName: string;
+  }) => {
+    const [name, setName] = React.useState(initialName);
+
+    return (
+      <NameElementProvider name={name}>
+        <button onClick={() => setName(`${name}!`)} type="button">
+          {buttonLabel}
+        </button>
+        {children}
+      </NameElementProvider>
+    );
+  };
+
   type ConsumerProps = {
     label?: string;
   };
@@ -324,6 +345,155 @@ describe('ElementProvider', () => {
 
     (expect(getByText('Age 1: 40')) as any).toBeInTheDocument();
     (expect(getByText('Age 2: 150')) as any).toBeInTheDocument();
+  });
+
+  it('does not propagate outer updates through a nested element provider', () => {
+    let innerConsumerRenders = 0;
+    let innerProviderRenders = 0;
+
+    const InnerConsumer = () => {
+      innerConsumerRenders++;
+
+      const element = useElement();
+
+      return <div>Inner type: {element.type}</div>;
+    };
+    const InnerProvider = React.memo(function InnerProvider({
+      children,
+    }: {
+      children: React.ReactNode;
+    }) {
+      innerProviderRenders++;
+
+      return <AgeElementProvider age={20}>{children}</AgeElementProvider>;
+    });
+    const { getByText } = render(
+      <PlateWrapper>
+        <UpdatingNameElementProvider
+          buttonLabel="updateOuterName"
+          initialName="John"
+        >
+          <InnerProvider>
+            <NameElementConsumer label="Outer name: " />
+            <InnerConsumer />
+          </InnerProvider>
+        </UpdatingNameElementProvider>
+      </PlateWrapper>
+    );
+    const initialInnerConsumerRenders = innerConsumerRenders;
+    const initialInnerProviderRenders = innerProviderRenders;
+
+    (expect(getByText('Outer name: John')) as any).toBeInTheDocument();
+    (expect(getByText('Inner type: age')) as any).toBeInTheDocument();
+
+    void act(() => getByText('updateOuterName').click());
+
+    (expect(getByText('Outer name: John!')) as any).toBeInTheDocument();
+    (expect(getByText('Inner type: age')) as any).toBeInTheDocument();
+    expect({ innerConsumerRenders, innerProviderRenders }).toEqual({
+      innerConsumerRenders: initialInnerConsumerRenders,
+      innerProviderRenders: initialInnerProviderRenders,
+    });
+  });
+
+  it('updates an exact scoped consumer through a different scoped provider', () => {
+    let ageConsumerRenders = 0;
+    let innerProviderRenders = 0;
+    let nameConsumerRenders = 0;
+
+    const ExactNameConsumer = React.memo(function ExactNameConsumer() {
+      nameConsumerRenders++;
+
+      const element = useElement(NamePlugin);
+
+      return <div>Exact name: {element.name}</div>;
+    });
+    const InnerAgeConsumer = React.memo(function InnerAgeConsumer() {
+      ageConsumerRenders++;
+
+      const element = useElement();
+
+      return <div>Inner age: {(element as AgeElement).age}</div>;
+    });
+    const InnerProvider = React.memo(function InnerProvider() {
+      innerProviderRenders++;
+
+      return (
+        <AgeElementProvider age={20}>
+          <ExactNameConsumer />
+          <InnerAgeConsumer />
+        </AgeElementProvider>
+      );
+    });
+    const { getByText } = render(
+      <PlateWrapper>
+        <UpdatingNameElementProvider
+          buttonLabel="updateScopedName"
+          initialName="John"
+        >
+          <InnerProvider />
+        </UpdatingNameElementProvider>
+      </PlateWrapper>
+    );
+    const initialAgeConsumerRenders = ageConsumerRenders;
+    const initialInnerProviderRenders = innerProviderRenders;
+    const initialNameConsumerRenders = nameConsumerRenders;
+
+    void act(() => getByText('updateScopedName').click());
+
+    (expect(getByText('Exact name: John!')) as any).toBeInTheDocument();
+    (expect(getByText('Inner age: 20')) as any).toBeInTheDocument();
+    expect({
+      ageConsumerRenders,
+      innerProviderRenders,
+      nameConsumerRenders,
+    }).toEqual({
+      ageConsumerRenders: initialAgeConsumerRenders,
+      innerProviderRenders: initialInnerProviderRenders,
+      nameConsumerRenders: initialNameConsumerRenders + 1,
+    });
+  });
+
+  it('shadows outer updates at a nested provider with the same scope', () => {
+    let innerConsumerRenders = 0;
+    let innerProviderRenders = 0;
+
+    const InnerConsumer = React.memo(function InnerConsumer() {
+      innerConsumerRenders++;
+
+      const element = useElement(NamePlugin);
+
+      return <div>Shadowed name: {element.name}</div>;
+    });
+    const InnerProvider = React.memo(function InnerProvider() {
+      innerProviderRenders++;
+
+      return (
+        <NameElementProvider name="Jane">
+          <InnerConsumer />
+        </NameElementProvider>
+      );
+    });
+    const { getByText } = render(
+      <PlateWrapper>
+        <UpdatingNameElementProvider
+          buttonLabel="updateShadowedName"
+          initialName="John"
+        >
+          <InnerProvider />
+        </UpdatingNameElementProvider>
+      </PlateWrapper>
+    );
+    const initialInnerConsumerRenders = innerConsumerRenders;
+    const initialInnerProviderRenders = innerProviderRenders;
+
+    void act(() => getByText('updateShadowedName').click());
+
+    (expect(getByText('Shadowed name: Jane')) as any).toBeInTheDocument();
+    expect({ innerConsumerRenders, innerProviderRenders }).toEqual({
+      innerConsumerRenders: initialInnerConsumerRenders,
+      innerProviderRenders: initialInnerProviderRenders,
+    });
   });
 
   it('lazily bridges useElementStore consumers and propagates updates', () => {

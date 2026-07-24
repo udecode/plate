@@ -4,8 +4,8 @@ description: Configure keyboard shortcuts on Plate plugins.
 ---
 
 Plugin shortcuts map key combinations to plugin methods or explicit handlers.
-Plate compiles them during plugin setup and renders them through
-`EditorHotkeysEffect` inside the editable. This guide covers linked methods,
+Plate compiles one immutable, ordered table during plugin setup. Each editable
+root installs one dispatcher for that table. This guide covers linked methods,
 custom handlers, overrides, priorities, and default shortcut ownership.
 
 ## How Shortcuts Resolve
@@ -29,11 +29,11 @@ handlers do not need a linked method.
 
 | Field | Meaning |
 | --- | --- |
-| `keys` | Key combination passed to `useHotkeys`. Use a string like `'mod+b'` or arrays like `[[Key.Mod, 'b']]`. |
+| `keys` | Key combination compiled by Plate's realm-aware matcher. Use a string like `'mod+b'` or arrays like `[[Key.Mod, 'b']]`. |
 | `handler` | Explicit callback receiving `{ editor, event, eventDetails }`. |
 | `target` | Optional `'update' | 'api'` disambiguation when both same-named routes exist. |
 | `priority` | Shortcut priority. Defaults to the parent plugin priority. |
-| `preventDefault` | Passed through to `useHotkeys`. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()` after handled shortcuts. |
+| `preventDefault` | Browser-default policy for a handled shortcut. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
 | `null` | Removes that named shortcut from the plugin. |
 
 ## Linked Update Shortcuts
@@ -130,15 +130,14 @@ Returning `false` means "not handled"; Plate will not call `preventDefault()` fo
 
 ## Prevent Default
 
-Plate has two layers of default-prevention behavior:
-
 | Configuration | Behavior |
 | --- | --- |
 | `preventDefault` omitted and handler returns anything except `false` | Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
-| Handler returns `false` | Plate leaves the event alone. |
-| `preventDefault` is set | Plate passes the option to `useHotkeys` and skips its own `preventDefault()` call. |
+| Handler returns `false` | Plate leaves the event alone and tries the next matching shortcut. |
+| `preventDefault: false` and handler handles the event | Plate stops shortcut dispatch and leaves the browser default enabled. |
+| `preventDefault: true`, or a predicate returning `true` | Plate calls `event.preventDefault()`. |
 
-Use the default omission for normal editor commands. Set `preventDefault` only when you intentionally want `useHotkeys` to own that behavior.
+Use the default omission for normal editor commands.
 
 ## Configure Existing Shortcuts
 
@@ -224,7 +223,8 @@ export const PriorityPlugin = createPlatePlugin({
 });
 ```
 
-Plate stores the resolved priority with the shortcut and passes it to `useHotkeys`.
+Plate orders the compiled table by shortcut priority, plugin order, then
+declaration order. The first handled route wins.
 
 ## Editor-Level Shortcuts
 

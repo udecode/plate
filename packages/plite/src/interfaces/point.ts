@@ -10,9 +10,9 @@ import { isObject } from '../utils/is-object';
  */
 
 export interface BasePoint {
-  path: Path;
-  offset: number;
-  root?: string;
+  readonly offset: number;
+  readonly path: Path;
+  readonly root?: string;
 }
 
 export type Point = BasePoint;
@@ -98,4 +98,4 @@ export const PointApi: Readonly<PointInterface> = Object.freeze({
  * belong to a range.
  */
 
-export type PointEntry = [Point, 'anchor' | 'focus'];
+export type PointEntry = readonly [Point, 'anchor' | 'focus'];

@@ -6,9 +6,9 @@ import type {
 import {
   type DocumentChange,
   getInternalDocumentChangeEntries,
-  IndexedDocument,
-  type JsonEditorValue,
-} from './document-change';
+} from './change/document-change';
+import { DocumentIndex } from './change/document-index';
+import type { JsonEditorValue } from './change/tokens';
 
 export type AnchorStateListener = {
   begin: () => void;
@@ -21,13 +21,13 @@ export type AnchorChangeContext = Readonly<{
   after: EditorDocumentValue;
   before: EditorDocumentValue;
   change: DocumentChange;
-  afterRoot: (root: string) => IndexedDocument;
-  beforeRoot: (root: string) => IndexedDocument;
+  afterRoot: (root: string) => DocumentIndex;
+  beforeRoot: (root: string) => DocumentIndex;
   replace: boolean;
 }>;
 
 type ActiveAnchorState = {
-  indexes: Map<string, IndexedDocument>;
+  indexes: Map<string, DocumentIndex>;
   listeners: Set<AnchorStateListener>;
   value: EditorDocumentValue;
 };
@@ -93,15 +93,13 @@ const rootNodes = (value: JsonEditorValue, root: string) =>
 
 const indexRoot = (
   value: EditorDocumentValue,
-  indexes: Map<string, IndexedDocument>,
+  indexes: Map<string, DocumentIndex>,
   root: string
 ) => {
   let index = indexes.get(root);
 
   if (!index) {
-    index = IndexedDocument.fromValue(
-      rootNodes(value as JsonEditorValue, root)
-    );
+    index = DocumentIndex.fromValue(rootNodes(value as JsonEditorValue, root));
     indexes.set(root, index);
   }
 
@@ -112,8 +110,8 @@ const createAnchorChangeContext = (
   before: EditorDocumentValue,
   after: EditorDocumentValue,
   change: DocumentChange,
-  beforeIndexes: Map<string, IndexedDocument>,
-  afterIndexes: Map<string, IndexedDocument>,
+  beforeIndexes: Map<string, DocumentIndex>,
+  afterIndexes: Map<string, DocumentIndex>,
   replace: boolean
 ): AnchorChangeContext => ({
   after,
@@ -127,7 +125,7 @@ const createAnchorChangeContext = (
 const applyAnchorChange = (
   state: ActiveAnchorState,
   change: DocumentChange,
-  indexedAfter?: ReadonlyMap<string, IndexedDocument>
+  indexedAfter?: ReadonlyMap<string, DocumentIndex>
 ) => {
   const before = state.value;
   const beforeIndexes = new Map(state.indexes);
@@ -153,7 +151,7 @@ const applyAnchorChange = (
   for (const root of change.createRoots) {
     roots ??= {};
     const index =
-      indexedAfter?.get(root) ?? IndexedDocument.fromValue(roots[root] ?? []);
+      indexedAfter?.get(root) ?? DocumentIndex.fromValue(roots[root] ?? []);
 
     roots[root] = index.value as EditorDocumentValue['children'];
     afterIndexes.set(root, index);
@@ -218,7 +216,7 @@ export const beginAnchorTransaction = (editor: Editor) => {
 export const notifyAnchorChanges = (
   editor: Editor,
   change: DocumentChange,
-  indexedAfter?: ReadonlyMap<string, IndexedDocument>,
+  indexedAfter?: ReadonlyMap<string, DocumentIndex>,
   options: Readonly<{ replace?: boolean }> = {}
 ) => {
   const state = getActiveAnchorState(editor);

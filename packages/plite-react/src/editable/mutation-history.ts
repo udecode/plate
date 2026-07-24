@@ -6,7 +6,7 @@ import {
 } from '../view-selection';
 import {
   type Editor,
-  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRootKeys,
   runTrustedUpdate,
 } from './runtime-editor-api';
 
@@ -27,11 +27,7 @@ const getHistoryBatchSingleChangedRoot = (
       direction === 'undo' ? history?.undos?.() : history?.redos?.();
     const batch = stack?.at(-1);
     const roots = new Set<RootKey>([
-      ...(batch?.change
-        ? [...getInternalDocumentChangeEntries(batch.change)].map(
-            ([root]) => root
-          )
-        : []),
+      ...(batch?.change ? getInternalDocumentChangeRootKeys(batch.change) : []),
       ...(batch?.change?.createRoots ?? []),
       ...(batch?.change?.deleteRoots ?? []),
     ]);

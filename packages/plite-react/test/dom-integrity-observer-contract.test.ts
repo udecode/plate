@@ -1,4 +1,4 @@
-import { DOMIntegrityObserver } from '../src/editable/dom-integrity-observer';
+import { DOMIntegrityObserver } from '@platejs/plite-dom/internal';
 
 type ScheduledTask = {
   callback: () => void;
@@ -96,9 +96,9 @@ test('ignores runtime-owned, composition, canonical, and React commit mutations'
   const text = document.createTextNode('model');
   const rootChrome = document.createElement('span');
 
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(text);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
 
   harness.observer.runOwned('scheduler', () => {
     harness.root.setAttribute('data-runtime-write', 'true');
@@ -128,9 +128,9 @@ test('ignores runtime-owned, composition, canonical, and React commit mutations'
   text.nodeValue = 'model';
   await waitForMutations();
 
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.setAttribute('data-react-write', 'true');
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
   await waitForMutations();
 
   expect(harness.tasks.filter((task) => !task.cancelled)).toHaveLength(0);
@@ -163,9 +163,9 @@ test('repairs external text, attribute, and child corruption without changing th
   textHost.setAttribute('data-plite-path', '0,0');
   textHost.append(text);
   paragraph.append(textHost);
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(paragraph);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
   onRepair.mockClear();
 
   text.nodeValue = 'corrupt';
@@ -200,9 +200,9 @@ test('adopts a queued DOM mutation when the model commit claims it before repair
   const harness = createHarness({ isOwnedMutation: () => owned });
   const text = document.createTextNode('model');
 
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(text);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
 
   text.nodeValue = 'native';
   await waitForMutations();
@@ -230,9 +230,9 @@ test('preserves the DOM selection and requests authoritative model selection exp
   textHost.setAttribute('data-plite-node', 'text');
   textHost.setAttribute('data-plite-path', '0,0');
   textHost.append(text);
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(textHost);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
   onRepair.mockClear();
 
   range.setStart(text, 3);
@@ -260,9 +260,9 @@ test('unwraps unauthorized external wrappers around model text', async () => {
   textHost.setAttribute('data-plite-node', 'text');
   textHost.setAttribute('data-plite-path', '0,0');
   textHost.append(text);
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(textHost);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
 
   text.replaceWith(wrapper);
   wrapper.append(text);
@@ -286,12 +286,12 @@ test('repairs mounted content in read-only partial-DOM roots', async () => {
   const boundary = document.createElement('section');
   const text = document.createTextNode('mounted');
 
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.setAttribute('contenteditable', 'false');
   boundary.setAttribute('data-plite-dom-coverage-boundary', 'true');
   boundary.append(text);
   harness.root.append(boundary);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
 
   text.nodeValue = 'corrupt';
   boundary.setAttribute('data-external', 'true');
@@ -314,9 +314,9 @@ test('observes roots mounted in shadow DOM without crossing the host', async () 
   document.body.append(host);
   shadowRoot.append(harness.root);
   harness.observer.setRoot(harness.root);
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(text);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
 
   host.setAttribute('data-host-external', 'untouched');
   text.nodeValue = 'shadow corrupt';
@@ -339,11 +339,11 @@ test('isolates nested and sibling editable roots', async () => {
 
   nestedRoot.setAttribute('data-plite-editor', 'true');
   nestedRoot.append(nestedText);
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(owned, nestedRoot);
   siblingRoot.setAttribute('data-plite-editor', 'true');
   document.body.append(siblingRoot);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
 
   nestedText.nodeValue = 'nested-corrupt';
   siblingRoot.setAttribute('data-external', 'sibling');
@@ -400,9 +400,9 @@ test('bounds hostile repair loops and defers further work to the next frame', as
     },
   });
 
-  harness.observer.pauseForReactCommit();
+  harness.observer.pauseForHostCommit();
   harness.root.append(text);
-  harness.observer.resumeAfterReactCommit();
+  harness.observer.resumeAfterHostCommit();
   text.nodeValue = 'corrupt-0';
   await waitForMutations();
   harness.run('microtask');

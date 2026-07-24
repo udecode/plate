@@ -8,23 +8,22 @@ import {
   type Descendant,
   type Element,
   ElementApi,
+  type Value,
 } from '@platejs/plite';
 import {
   encodeContentSlice,
   prepareContentSliceVariant,
 } from '../src/core/content-slice';
-import {
-  ChangeSet,
-  DocumentSlice,
-  IndexedDocument,
-} from '../src/core/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
+import { RootChange } from '../src/core/change/root-change';
+import { PreparedTokenSlice } from '../src/core/change/tokens';
 
-const paragraph = (text: string): Element => ({
+const paragraph = (text: string) => ({
   children: [{ text }],
   type: 'paragraph',
 });
 
-const section = (text: string): Element => ({
+const section = (text: string) => ({
   children: [paragraph(text)],
   type: 'section',
 });
@@ -70,7 +69,7 @@ describe('ContentSlice', () => {
     const inputParagraph = input.content[0]!.children[0];
 
     assert.equal(ElementApi.isElement(inputParagraph), true);
-    (inputParagraph as Element).children[0] = { text: 'changed' };
+    inputParagraph.children[0] = { text: 'changed' };
 
     assert.deepEqual(slice.content, [section('one')]);
   });
@@ -140,8 +139,8 @@ describe('ContentSlice', () => {
     assert.equal(Object.isFrozen(slice.content), true);
 
     const closed = prepareContentSliceVariant(slice, 0, 0);
-    const document = IndexedDocument.fromValue([]);
-    const inserted = ChangeSet.create(document, {
+    const document = DocumentIndex.fromValue([]);
+    const inserted = RootChange.create(document, {
       from: 0,
       insert: encodeContentSlice(closed),
     }).apply(document).value;
@@ -169,9 +168,9 @@ describe('ContentSlice', () => {
 
   it('retains detached prepared node identity only for an exact insertion', () => {
     const slice = ContentSlice.closed([paragraph('prepared')]);
-    const document = IndexedDocument.fromValue([]);
+    const document = DocumentIndex.fromValue([]);
     const prepared = encodeContentSlice(slice);
-    const inserted = ChangeSet.create(document, {
+    const inserted = RootChange.create(document, {
       from: 0,
       insert: prepared,
     }).apply(document).value;
@@ -181,8 +180,8 @@ describe('ContentSlice', () => {
     assert.equal(inserted[0], slice.content[0]);
     assert.equal(inserted[0].children[0], slice.content[0].children[0]);
 
-    const serialized = DocumentSlice.fromJSON(prepared.toJSON());
-    const unbranded = ChangeSet.create(document, {
+    const serialized = PreparedTokenSlice.fromJSON(prepared.toJSON());
+    const unbranded = RootChange.create(document, {
       from: 0,
       insert: serialized,
     }).apply(document).value;
@@ -192,9 +191,9 @@ describe('ContentSlice', () => {
 
   it('rebuilds repeated prepared nodes instead of duplicating live identity', () => {
     const slice = ContentSlice.closed([paragraph('prepared')]);
-    const document = IndexedDocument.fromValue([]);
+    const document = DocumentIndex.fromValue([]);
     const prepared = encodeContentSlice(slice);
-    const inserted = ChangeSet.create(document, [
+    const inserted = RootChange.create(document, [
       { from: 0, insert: prepared },
       { from: 0, insert: prepared },
     ]).apply(document).value;
@@ -209,7 +208,7 @@ describe('ContentSlice', () => {
 
   it('publishes prepared identity only once across committed insertions', () => {
     const slice = ContentSlice.closed([paragraph('prepared')]);
-    const editor = createEditor({
+    const editor = createEditor<Value>({
       initialValue: [paragraph('first'), paragraph('second')],
     });
     let commits = 0;
@@ -309,7 +308,7 @@ describe('ContentSlice', () => {
     const replacementParagraph = replacement[0]!.children[0];
 
     assert.equal(ElementApi.isElement(replacementParagraph), true);
-    (replacementParagraph as Element).children[0] = { text: 'mutated' };
+    replacementParagraph.children[0] = { text: 'mutated' };
 
     assert.deepEqual(preserved, {
       content: [section('after')],

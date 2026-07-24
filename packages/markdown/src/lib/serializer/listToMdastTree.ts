@@ -13,22 +13,22 @@ export type MdListFragment = {
 };
 
 export function listToMdastTree(
-  nodes: TListElement[],
+  nodes: readonly TListElement[],
   options: SerializeMdContext,
   isBlock?: false
 ): MdList;
 export function listToMdastTree(
-  nodes: TListElement[],
+  nodes: readonly TListElement[],
   options: SerializeMdContext,
   isBlock: true
 ): MdList | MdListFragment;
 export function listToMdastTree(
-  nodes: TListElement[],
+  nodes: readonly TListElement[],
   options: SerializeMdContext,
   isBlock?: boolean
 ): MdList | MdListFragment;
 export function listToMdastTree(
-  nodes: TListElement[],
+  nodes: readonly TListElement[],
   options: SerializeMdContext,
   isBlock = false
 ): MdList | MdListFragment {
@@ -167,7 +167,7 @@ export function listToMdastTree(
  * preserves list numbering while allowing individual block wrapping
  */
 function processListWithBlockIds(
-  nodes: TListElement[],
+  nodes: readonly TListElement[],
   options: SerializeMdContext
 ): MdListFragment {
   const fragments: MdRootContent[] = [];

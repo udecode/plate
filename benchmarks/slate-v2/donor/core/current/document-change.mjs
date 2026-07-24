@@ -15,11 +15,11 @@ import {
 import {
   insertNodeChange,
   insertTextChange,
-  IndexedDocument,
   moveNodeChange,
   removeTextChange,
   setNodeChange,
-} from '../../../../../packages/plite/src/core/document-change.ts';
+} from '../../../../../packages/plite/src/core/change/root-change.ts';
+import { DocumentIndex } from '../../../../../packages/plite/src/core/change/document-index.ts';
 import { round, summarize } from '../../shared/stats.mjs';
 
 const runs = Number.parseInt(process.env.PLITE_CHANGESET_RUNS ?? '3', 10);
@@ -116,7 +116,7 @@ const measureSetup = (children) => {
     editorSamples.push(performance.now() - start);
 
     start = performance.now();
-    IndexedDocument.fromValue(children);
+    DocumentIndex.fromValue(children);
     indexSamples.push(performance.now() - start);
   }
 
@@ -139,7 +139,7 @@ const measureScenario = (children, scenario) => {
 
   for (let iteration = 0; iteration < iterations; iteration++) {
     const editor = setupEditor(children);
-    const document = IndexedDocument.fromValue(children);
+    const document = DocumentIndex.fromValue(children);
     const value = { children, marks: null, selection: null };
     const publisher = setupKernelPublisher();
     let editorApplyElapsedMs = 0;
@@ -242,7 +242,7 @@ const measureScenario = (children, scenario) => {
 
 const runBenchmark = (run) => {
   const children = createChildren();
-  const document = IndexedDocument.fromValue(children);
+  const document = DocumentIndex.fromValue(children);
   const setup = measureSetup(children);
   const lanes = Object.fromEntries(
     scenarios.map((scenario) => [
@@ -288,7 +288,7 @@ const runBenchmark = (run) => {
 for (let warmup = 0; warmup < 3; warmup++) {
   const children = createChildren();
   const editor = setupEditor(children);
-  const document = IndexedDocument.fromValue(children);
+  const document = DocumentIndex.fromValue(children);
   const change = toDocumentChange(scenarios[0].build(document));
 
   editor.update((tx) => tx.changes.apply(change));
@@ -315,7 +315,7 @@ const artifact = {
     editor:
       'one prebuilt Plite editor with one commit subscriber; timer includes canonical DocumentChange construction, native transaction apply, commit construction, and publication',
     kernel:
-      'one prebuilt indexed JSON document with one commit subscriber; timer includes ChangeSet construction, DocumentChange wrapping, immutable apply, commit construction, and publication',
+      'one prebuilt indexed JSON document with one commit subscriber; timer includes private root-change construction, DocumentChange wrapping, immutable apply, commit construction, and publication',
     serializedReplay:
       'every scenario reconstructs DocumentChange from its versioned JSON envelope, applies it, publishes the same minimal commit, and must remain under 2x editor transaction time',
     excluded:

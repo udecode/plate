@@ -8,24 +8,18 @@ export const BaseUnderlinePlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['U'] },
-          { validStyle: { textDecoration: ['underline'] } },
-        ],
-        query: ({ element }) =>
-          !someHtmlElement(
-            element,
-            (node) => node.style.textDecoration === 'none'
-          ),
-      },
-    },
-  },
   render: { as: 'u' },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) =>
+      someHtmlElement(element, (node) => node.style.textDecoration === 'none')
+        ? undefined
+        : true,
+    encode: ({ value }) => (value ? { tag: 'u' } : null),
+    match: [{ tag: 'u' }, { style: { textDecoration: 'underline' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

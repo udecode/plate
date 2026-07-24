@@ -3,75 +3,15 @@ import path from 'node:path';
 
 import puppeteer, { type Page } from 'puppeteer';
 
-type BenchmarkName = 'input' | 'mount' | 'selection';
+import {
+  TABLE_PERF_SMOKE_BUDGETS,
+  type TablePerfBenchmarkName as BenchmarkName,
+  type TablePerfHarness as RunnerHarness,
+  type TablePerfHarnessConfig,
+  type TablePerfHarnessSnapshot,
+} from '../src/app/dev/table-perf/contract';
+
 type PresetName = 'smoke';
-
-type TableConfig = {
-  cols: number;
-  rows: number;
-};
-
-type Metrics = {
-  initialRender: number | null;
-  lastRenderDuration: number | null;
-  renderCount: number;
-  renderDurations: number[];
-};
-
-type BenchmarkResult = {
-  max: number;
-  mean: number;
-  median: number;
-  min: number;
-  p95: number;
-  p99: number;
-  stdDev: number;
-};
-
-type LatencyResult = {
-  max: number;
-  mean: number;
-  median: number;
-  min: number;
-  p95: number;
-  samples: number[];
-};
-
-type SelectionLatencyResult = LatencyResult & {
-  selectedCells: number;
-  simulatedDelayMs: number;
-};
-
-type SelectionSimulationConfig = {
-  cols: number;
-  delayMs: number;
-  rows: number;
-};
-
-type TablePerfHarnessConfig = {
-  cols: number;
-  rows: number;
-  selectionCols?: number;
-  selectionDelayMs?: number;
-  selectionRows?: number;
-};
-
-type TablePerfHarnessSnapshot = {
-  benchmarkResult: BenchmarkResult | null;
-  config: TableConfig;
-  inputLatencyResult: LatencyResult | null;
-  metrics: Metrics;
-  selectionLatencyResult: SelectionLatencyResult | null;
-  selectionSimulation: SelectionSimulationConfig;
-};
-
-type RunnerHarness = {
-  configure: (
-    config: TablePerfHarnessConfig
-  ) => Promise<TablePerfHarnessSnapshot>;
-  readSnapshot: () => TablePerfHarnessSnapshot;
-  runBenchmark: (benchmark: BenchmarkName) => Promise<TablePerfHarnessSnapshot>;
-};
 
 type RunnerJob = TablePerfHarnessConfig & {
   benchmarks: BenchmarkName[];
@@ -79,8 +19,20 @@ type RunnerJob = TablePerfHarnessConfig & {
   timeoutMs?: number;
 };
 
+type RunnerPressure = {
+  domNodes: number;
+  dragHandles: number;
+  selectedCellElements: number;
+  tableCells: number;
+  usedJSHeapSize: number | null;
+};
+
+type RunnerSnapshot = TablePerfHarnessSnapshot & {
+  pressure: RunnerPressure;
+};
+
 type RunnerJobResult = {
-  benchmarks: Partial<Record<BenchmarkName, TablePerfHarnessSnapshot>>;
+  benchmarks: Partial<Record<BenchmarkName, RunnerSnapshot>>;
   id: string;
   settings: TablePerfHarnessConfig;
 };
@@ -139,6 +91,16 @@ function getSmokeJobs(): RunnerJob[] {
       benchmarks: ['selection'],
       cols: 40,
       id: 'table-selection-40x40-10x10',
+      rows: 40,
+      selectionCols: 10,
+      selectionDelayMs: 0,
+      selectionRows: 10,
+      timeoutMs: 300_000,
+    },
+    {
+      benchmarks: ['resize'],
+      cols: 40,
+      id: 'table-resize-40x40',
       rows: 40,
       selectionCols: 10,
       selectionDelayMs: 0,
@@ -220,17 +182,45 @@ async function runBenchmark(
   return Promise.race([runPromise, timeoutPromise]);
 }
 
-function summarizeSnapshot(snapshot: TablePerfHarnessSnapshot) {
+async function readPressure(page: Page): Promise<RunnerPressure> {
+  return page.evaluate(() => {
+    const root = document.querySelector('[data-table-perf-editor="true"]');
+    const memory = performance as Performance & {
+      memory?: { usedJSHeapSize?: number };
+    };
+
+    return {
+      domNodes: root?.querySelectorAll('*').length ?? 0,
+      dragHandles:
+        root?.querySelectorAll('[data-table-cell-drag-handle="true"]').length ??
+        0,
+      selectedCellElements:
+        root?.querySelectorAll('[data-table-cell-selected="true"]').length ?? 0,
+      tableCells: root?.querySelectorAll('td,th').length ?? 0,
+      usedJSHeapSize: memory.memory?.usedJSHeapSize ?? null,
+    };
+  });
+}
+
+function summarizeSnapshot(snapshot: RunnerSnapshot) {
   return {
     benchmarkMean: snapshot.benchmarkResult?.mean ?? null,
     benchmarkP95: snapshot.benchmarkResult?.p95 ?? null,
+    benchmarkP99: snapshot.benchmarkResult?.p99 ?? null,
     config: snapshot.config,
     initialRender: snapshot.metrics.initialRender,
     inputMean: snapshot.inputLatencyResult?.mean ?? null,
+    inputP95: snapshot.inputLatencyResult?.p95 ?? null,
+    inputP99: snapshot.inputLatencyResult?.p99 ?? null,
     lastRenderDuration: snapshot.metrics.lastRenderDuration,
+    pressure: snapshot.pressure,
     renderCount: snapshot.metrics.renderCount,
+    resizeMean: snapshot.resizeLatencyResult?.mean ?? null,
+    resizeP95: snapshot.resizeLatencyResult?.p95 ?? null,
+    resizeP99: snapshot.resizeLatencyResult?.p99 ?? null,
     selectionMean: snapshot.selectionLatencyResult?.mean ?? null,
     selectionP95: snapshot.selectionLatencyResult?.p95 ?? null,
+    selectionP99: snapshot.selectionLatencyResult?.p99 ?? null,
     selectedCells: snapshot.selectionLatencyResult?.selectedCells ?? null,
     selectionSimulation: snapshot.selectionSimulation,
   };
@@ -247,6 +237,79 @@ function summarizeRun(run: RunnerJobResult) {
     id: run.id,
     settings: run.settings,
   };
+}
+
+function getBudgetFailures(runs: RunnerJobResult[]) {
+  const failures: string[] = [];
+
+  for (const run of runs) {
+    const budget =
+      TABLE_PERF_SMOKE_BUDGETS[run.id as keyof typeof TABLE_PERF_SMOKE_BUDGETS];
+
+    if (!budget) continue;
+
+    for (const [benchmark, threshold] of Object.entries(budget) as [
+      BenchmarkName,
+      {
+        dragHandles?: number;
+        maxMs: number;
+        p95Ms: number;
+        p99Ms: number;
+        selectedCellElements?: number;
+      },
+    ][]) {
+      const snapshot = run.benchmarks[benchmark];
+      const result =
+        benchmark === 'mount'
+          ? snapshot?.benchmarkResult
+          : benchmark === 'input'
+            ? snapshot?.inputLatencyResult
+            : benchmark === 'resize'
+              ? snapshot?.resizeLatencyResult
+              : snapshot?.selectionLatencyResult;
+
+      if (!result) {
+        failures.push(`${run.id}:${benchmark} produced no result`);
+        continue;
+      }
+      if (result.p95 > threshold.p95Ms) {
+        failures.push(
+          `${run.id}:${benchmark} p95 ${result.p95.toFixed(2)}ms > ${threshold.p95Ms}ms`
+        );
+      }
+      if (result.p99 > threshold.p99Ms) {
+        failures.push(
+          `${run.id}:${benchmark} p99 ${result.p99.toFixed(2)}ms > ${threshold.p99Ms}ms`
+        );
+      }
+      if (result.max > threshold.maxMs) {
+        failures.push(
+          `${run.id}:${benchmark} max ${result.max.toFixed(2)}ms > ${threshold.maxMs}ms`
+        );
+      }
+      if (
+        benchmark === 'selection' &&
+        threshold.selectedCellElements !== undefined &&
+        snapshot?.pressure.selectedCellElements !==
+          threshold.selectedCellElements
+      ) {
+        failures.push(
+          `${run.id}:${benchmark} rendered ${snapshot?.pressure.selectedCellElements ?? 0} selected cells, expected ${threshold.selectedCellElements}`
+        );
+      }
+      if (
+        benchmark === 'selection' &&
+        threshold.dragHandles !== undefined &&
+        snapshot?.pressure.dragHandles !== threshold.dragHandles
+      ) {
+        failures.push(
+          `${run.id}:${benchmark} rendered ${snapshot?.pressure.dragHandles ?? 0} drag handles, expected ${threshold.dragHandles}`
+        );
+      }
+    }
+  }
+
+  return failures;
 }
 
 async function main() {
@@ -310,21 +373,33 @@ async function main() {
 
       for (const benchmark of job.benchmarks) {
         console.log(`[table-perf] running ${job.id}:${benchmark}`);
-        jobResult.benchmarks[benchmark] = await runBenchmark(
+        const snapshot = await runBenchmark(
           page,
           benchmark,
           job.timeoutMs ?? timeoutMs
         );
+        jobResult.benchmarks[benchmark] = {
+          ...snapshot,
+          pressure: await readPressure(page),
+        };
       }
 
       runs.push(jobResult);
     }
 
     const capturedAt = new Date().toISOString();
+    const budgetFailures = preset === 'smoke' ? getBudgetFailures(runs) : [];
     const outPath = path.resolve(process.cwd(), outArg);
     const summaryOutPath = path.resolve(process.cwd(), summaryOutArg);
-    const rawPayload = { capturedAt, preset: preset ?? null, runs, url };
+    const rawPayload = {
+      budgetFailures,
+      capturedAt,
+      preset: preset ?? null,
+      runs,
+      url,
+    };
     const summaryPayload = {
+      budgetFailures,
       capturedAt,
       preset: preset ?? null,
       runs: runs.map(summarizeRun),
@@ -338,6 +413,12 @@ async function main() {
 
     console.log(`[table-perf] wrote ${outPath}`);
     console.log(`[table-perf] wrote ${summaryOutPath}`);
+
+    if (budgetFailures.length > 0) {
+      throw new Error(
+        `Table performance budgets failed:\n${budgetFailures.join('\n')}`
+      );
+    }
   } finally {
     await browser.close();
   }

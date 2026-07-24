@@ -18,11 +18,11 @@ import {
 
 import {
   type DocumentChange,
-  getInternalDocumentChangeSet,
-  IndexedDocument,
-  type JsonEditorValue,
+  getInternalDocumentRootChange,
   mapInternalDocumentChangePosition,
-} from './document-change';
+} from './change/document-change';
+import { DocumentIndex } from './change/document-index';
+import type { JsonEditorValue } from './change/tokens';
 import { toPublicRoot } from './public-root';
 import { getEditorSchema } from './editor-runtime';
 import {
@@ -275,7 +275,7 @@ export const decodeEditorSelection = (
 };
 
 const rangeAssociations = (
-  document: IndexedDocument,
+  document: DocumentIndex,
   range: Range,
   association: RangeMappingOptions['association']
 ): readonly [-1 | 1, -1 | 1] => {
@@ -307,7 +307,7 @@ const createMapContext = (
   runtimeIndexes?: SelectionMappingOptions['runtimeIndexes']
 ): EditorSelectionMapContext => {
   const nearestDeletedPoint = (
-    document: IndexedDocument,
+    document: DocumentIndex,
     point: Point,
     targetRoot: RootKey,
     includeRoot: boolean,
@@ -316,7 +316,7 @@ const createMapContext = (
     const backwardPosition = mapInternalDocumentChangePosition(
       change,
       targetRoot,
-      IndexedDocument.fromValue(rootValue(before, targetRoot)).positionAt({
+      DocumentIndex.fromValue(rootValue(before, targetRoot)).positionAt({
         offset: point.offset,
         path: point.path,
       }),
@@ -325,7 +325,7 @@ const createMapContext = (
     const forwardPosition = mapInternalDocumentChangePosition(
       change,
       targetRoot,
-      IndexedDocument.fromValue(rootValue(before, targetRoot)).positionAt({
+      DocumentIndex.fromValue(rootValue(before, targetRoot)).positionAt({
         offset: point.offset,
         path: point.path,
       }),
@@ -376,12 +376,10 @@ const createMapContext = (
 
     if (change.deleteRoots.has(targetRoot)) return null;
 
-    const beforeDocument = IndexedDocument.fromValue(
+    const beforeDocument = DocumentIndex.fromValue(
       rootValue(before, targetRoot)
     );
-    const afterDocument = IndexedDocument.fromValue(
-      rootValue(after, targetRoot)
-    );
+    const afterDocument = DocumentIndex.fromValue(rootValue(after, targetRoot));
     const association = options.association === 'backward' ? -1 : 1;
     const position = beforeDocument.positionAt({
       offset: point.offset,
@@ -390,7 +388,7 @@ const createMapContext = (
     const nodeRange = beforeDocument.nodeRange(point.path);
     let nodeWasRemoved = false;
 
-    getInternalDocumentChangeSet(change, targetRoot)?.iterChangedRanges(
+    getInternalDocumentRootChange(change, targetRoot)?.iterChangedRanges(
       (from, to) => {
         if (from <= nodeRange.from && to >= nodeRange.to) {
           nodeWasRemoved = true;
@@ -488,8 +486,8 @@ const createMapContext = (
       return Object.freeze([...retainedPath]) as unknown as Path;
     }
 
-    const beforeDocument = IndexedDocument.fromValue(rootValue(before, root));
-    const afterDocument = IndexedDocument.fromValue(rootValue(after, root));
+    const beforeDocument = DocumentIndex.fromValue(rootValue(before, root));
+    const afterDocument = DocumentIndex.fromValue(rootValue(after, root));
     const association = options.association === 'backward' ? -1 : 1;
     const position = beforeDocument.nodeRange(path).from;
     const mapped = mapInternalDocumentChangePosition(
@@ -516,7 +514,7 @@ const createMapContext = (
     }
 
     const associations = rangeAssociations(
-      IndexedDocument.fromValue(rootValue(before, targetRoot)),
+      DocumentIndex.fromValue(rootValue(before, targetRoot)),
       range,
       options.association
     );
@@ -568,14 +566,16 @@ export const getSelectionReplacementRange = (
   );
 };
 
-export const getSelectionDOMRange = (
-  editor: Editor,
+export const getSelectionDOMRange = <TEditor extends Editor<any, any>>(
+  editor: TEditor,
   selection: Selection
 ): Range | null => {
   if (!selection) return null;
   if (SelectionApi.isNode(selection)) return null;
 
-  return getSelectionSpec(editor, selection).domRange?.(selection) ?? selection;
+  const domRange = getSelectionSpec(editor as Editor, selection).domRange;
+
+  return domRange ? domRange(selection) : selection;
 };
 
 export const assertSelectionSupported = (
@@ -623,7 +623,7 @@ export const assertSelectionSupported = (
     }
 
     try {
-      const document = IndexedDocument.fromValue(
+      const document = DocumentIndex.fromValue(
         rootValue(jsonDocumentValue, rangeRoot)
       );
 
@@ -732,7 +732,7 @@ export const mapSelectionThroughChange = (
   }
 
   try {
-    const document = IndexedDocument.fromValue(rootValue(before, rangeRoot));
+    const document = DocumentIndex.fromValue(rootValue(before, rangeRoot));
 
     document.positionAt(selection.anchor);
     document.positionAt(selection.focus);

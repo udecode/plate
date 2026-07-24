@@ -56,6 +56,29 @@ const isInsideBlockquote = (editor: BaseEditor, path: Path) =>
       node.type === editor.getType(KEYS.blockquote),
   });
 
+const parseIndent = (
+  element: Readonly<HTMLElement>,
+  offset: number,
+  unit: string
+) => {
+  const dataValue =
+    element.dataset.indent ?? element.getAttribute('aria-level');
+
+  if (dataValue) {
+    const value = Number(dataValue);
+
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  }
+  const styleValue = element.style.marginLeft;
+
+  if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) return;
+
+  const numericValue = unit ? styleValue.slice(0, -unit.length) : styleValue;
+  const value = Number(numericValue) / offset;
+
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
 export const BaseIndentPlugin = createBasePlugin({
   key: KEYS.indent,
   inject: {
@@ -80,6 +103,26 @@ export const BaseIndentPlugin = createBasePlugin({
   }),
   targetPluginKeys: defaultTargetPluginKeys,
 })
+  .extendHtmlCodec(({ getOptions }) => ({
+    decode: ({ element }) => {
+      const { offset = 24, unit = 'px' } = getOptions();
+
+      return parseIndent(element, offset, unit);
+    },
+    encode: ({ value }) => {
+      const { offset = 24, unit = 'px' } = getOptions();
+
+      return {
+        attributes: { 'data-indent': value },
+        style: { marginLeft: value * offset + unit },
+      };
+    },
+    match: [
+      { attributes: { 'aria-level': true } },
+      { attributes: { 'data-indent': true } },
+      { style: { marginLeft: '*' } },
+    ],
+  }))
   .extendTx(({ editor, plugin, type }) => (tx) => {
     const set = ({
       nodes,

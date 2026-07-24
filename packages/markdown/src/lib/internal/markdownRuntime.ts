@@ -1,10 +1,5 @@
-import type {
-  BaseEditor,
-  ParserPluginContext,
-  ParserPluginRegistry,
-  PluginConfig,
-} from '@platejs/core';
-import { prepareParserPluginContext } from '@platejs/core';
+import type { BaseEditor, PluginConfig } from '@platejs/core';
+import { getPluginKey } from '@platejs/core';
 import type { EditorCoreStateView } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -14,8 +9,13 @@ import type { MdRules, PlateType } from '../types';
 import { defaultRules } from '../rules/defaultRules';
 
 type MarkdownRuntimeConfig = PluginConfig<'markdown', MarkdownPluginOptions>;
-type ConfiguredMarkdownPluginOptions =
-  ParserPluginContext<MarkdownRuntimeConfig>['options'];
+type ConfiguredMarkdownPluginOptions = Readonly<MarkdownPluginOptions>;
+
+type MarkdownPluginRegistry = Readonly<{
+  getKey: (type: string) => string | undefined;
+  getType: (key: string) => string;
+  has: (key: string) => boolean;
+}>;
 
 type MarkdownRuntimeOptions = Readonly<{
   allowedNodes: readonly PlateType[] | null;
@@ -31,17 +31,20 @@ type MarkdownRuntimeOptions = Readonly<{
 
 export type MarkdownRuntime = Readonly<{
   options: MarkdownRuntimeOptions;
-  registry: ParserPluginRegistry;
+  registry: MarkdownPluginRegistry;
   state: EditorCoreStateView;
 }>;
 
 export const createMarkdownRuntime = (
-  context: Pick<
-    ParserPluginContext<MarkdownRuntimeConfig>,
-    'options' | 'registry' | 'state'
-  >
-): MarkdownRuntime =>
-  Object.freeze({
+  editor: BaseEditor,
+  pluginKey: string,
+  state: EditorCoreStateView
+): MarkdownRuntime => {
+  const options = editor
+    .plugin<MarkdownRuntimeConfig>({ key: pluginKey })
+    .getOptions() as MarkdownPluginOptions;
+
+  return Object.freeze({
     options: Object.freeze({
       allowedNodes: null,
       disallowedNodes: null,
@@ -49,11 +52,16 @@ export const createMarkdownRuntime = (
       remarkPlugins: [],
       remarkStringifyOptions: null,
       rules: null,
-      ...context.options,
+      ...options,
     }),
-    registry: context.registry,
-    state: context.state,
+    registry: Object.freeze({
+      getKey: (type: string) => getPluginKey(editor, type),
+      getType: (key: string) => editor.getType(key),
+      has: (key: string) => getPluginKey(editor, editor.getType(key)) === key,
+    }),
+    state,
   });
+};
 
 export const withMarkdownRuntime = <T>(
   editor: BaseEditor,
@@ -63,9 +71,8 @@ export const withMarkdownRuntime = <T>(
     const plugin = editor.plugin<MarkdownRuntimeConfig>({
       key: KEYS.markdown,
     }).plugin;
-    const createContext = prepareParserPluginContext(editor, plugin);
 
-    return run(createMarkdownRuntime(createContext(state)));
+    return run(createMarkdownRuntime(editor, plugin.key, state));
   });
 
 export const buildRulesWithRuntime = (runtime: MarkdownRuntime): MdRules => {

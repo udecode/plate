@@ -11,6 +11,8 @@ import {
   type DescendantIn,
   type Editor,
   type EditorDocumentValue,
+  type EditorSnapshot,
+  type Element,
   ElementApi,
   type ElementEntry,
   type ElementEntryOf,
@@ -23,6 +25,10 @@ import {
   type NodeEntryIn,
   type NodeEntryOf,
   type NodeIn,
+  type Path,
+  type Point,
+  type Range,
+  type Text,
   TextApi,
   type TextEntry,
   type TextEntryIn,
@@ -94,6 +100,11 @@ const value: CustomValue = [{ type: 'paragraph', children: [{ text: 'one' }] }];
 
 const editor = createEditor<CustomValue>();
 const typedEditor: Editor<CustomValue> = editor;
+const inferredReadonlyEditor = createEditor({
+  initialValue: [
+    { type: 'paragraph', children: [{ bold: true, text: 'inferred' }] },
+  ],
+});
 declare const externalDocument: EditorDocumentValue<
   {
     children: { text: string; transient: false }[];
@@ -173,19 +184,19 @@ type _BooleanMarksFromText = Assert<
 type _AncestorEntry = Assert<
   Equal<
     AncestorEntry<ParagraphElement>,
-    [ParagraphElement, import('@platejs/plite').Path]
+    readonly [ParagraphElement, import('@platejs/plite').Path]
   >
 >;
 type _DescendantEntry = Assert<
   Equal<
     DescendantEntry<ParagraphElement>,
-    [ParagraphElement | CustomText, import('@platejs/plite').Path]
+    readonly [ParagraphElement | CustomText, import('@platejs/plite').Path]
   >
 >;
 type _DescendantEntryFromEditor = Assert<
   Equal<
     DescendantEntryOf<typeof typedEditor>,
-    [
+    readonly [
       ParagraphElement | QuoteElement | CustomText,
       import('@platejs/plite').Path,
     ]
@@ -194,28 +205,79 @@ type _DescendantEntryFromEditor = Assert<
 type _ElementEntry = Assert<
   Equal<
     ElementEntry<ParagraphElement>,
-    [ParagraphElement, import('@platejs/plite').Path]
+    readonly [ParagraphElement, import('@platejs/plite').Path]
   >
 >;
+
+const assertReadonlyPublication = (
+  value: Value,
+  element: Element,
+  text: Text,
+  path: Path,
+  point: Point,
+  range: Range,
+  snapshot: EditorSnapshot
+) => {
+  // @ts-expect-error published values do not expose array mutation
+  value[0] = element;
+  // @ts-expect-error published element children are readonly
+  element.children[0] = text;
+  // @ts-expect-error published element properties are readonly
+  element.type = 'changed';
+  // @ts-expect-error published text properties are readonly
+  text.text = 'changed';
+  // @ts-expect-error published paths are readonly
+  path[0] = 1;
+  // @ts-expect-error published points are readonly
+  point.offset = 1;
+  // @ts-expect-error published ranges are readonly
+  range.anchor = point;
+  // @ts-expect-error published snapshots expose readonly children
+  snapshot.children[0] = element;
+};
+
+void assertReadonlyPublication;
+
+const assertInferredReadonlyPublication = (
+  inferred: typeof inferredReadonlyEditor
+) => {
+  const children = inferred.read.children();
+
+  // @ts-expect-error inferred published values do not expose array mutation
+  children[0] = { type: 'paragraph', children: [{ text: 'changed' }] };
+  // @ts-expect-error inferred published element children are readonly
+  children[0].children[0] = { text: 'changed' };
+  // @ts-expect-error inferred published text properties are readonly
+  children[0].children[0].text = 'changed';
+  // Inference still retains literal custom properties.
+  const bold: boolean = children[0].children[0].bold;
+
+  return bold;
+};
+
+void assertInferredReadonlyPublication;
 type _NodeChildEntry = Assert<
   Equal<
     NodeChildEntry<ParagraphElement>,
-    [CustomText, import('@platejs/plite').Path]
+    readonly [CustomText, import('@platejs/plite').Path]
   >
 >;
 type _TextEntry = Assert<
   Equal<
     TextEntry<ParagraphElement>,
-    [CustomText, import('@platejs/plite').Path]
+    readonly [CustomText, import('@platejs/plite').Path]
   >
 >;
 type _TextEntryFromValue = Assert<
-  Equal<TextEntryIn<CustomValue>, [CustomText, import('@platejs/plite').Path]>
+  Equal<
+    TextEntryIn<CustomValue>,
+    readonly [CustomText, import('@platejs/plite').Path]
+  >
 >;
 type _NodeEntryFromValue = Assert<
   Equal<
     NodeEntryIn<CustomValue>,
-    [
+    readonly [
       ParagraphElement | QuoteElement | CustomText,
       import('@platejs/plite').Path,
     ]
@@ -224,7 +286,7 @@ type _NodeEntryFromValue = Assert<
 type _NodeEntryFromEditor = Assert<
   Equal<
     NodeEntryOf<typeof typedEditor>,
-    [
+    readonly [
       Editor<CustomValue> | ParagraphElement | QuoteElement | CustomText,
       import('@platejs/plite').Path,
     ]
@@ -233,13 +295,13 @@ type _NodeEntryFromEditor = Assert<
 type _ElementEntryFromEditor = Assert<
   Equal<
     ElementEntryOf<typeof typedEditor>,
-    [ParagraphElement | QuoteElement, import('@platejs/plite').Path]
+    readonly [ParagraphElement | QuoteElement, import('@platejs/plite').Path]
   >
 >;
 type _TextEntryFromEditor = Assert<
   Equal<
     TextEntryOf<typeof typedEditor>,
-    [CustomText, import('@platejs/plite').Path]
+    readonly [CustomText, import('@platejs/plite').Path]
   >
 >;
 type _ContentSliceFromEditor = Assert<

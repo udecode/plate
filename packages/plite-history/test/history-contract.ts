@@ -145,25 +145,20 @@ const TEST_SCHEMA_IDENTITY = Object.freeze({
   kind: 'derived' as const,
 });
 
-const structuralDocumentChange = (
-  change: DocumentChange,
-  primary: DocumentChange['primary'] = change.primary
-): DocumentChange =>
+const structuralDocumentChange = (change: DocumentChange): DocumentChange =>
   Object.assign(Object.create(null) as object, {
-    apply: DocumentChange.prototype.apply,
-    compose: DocumentChange.prototype.compose,
-    correct: DocumentChange.prototype.correct,
+    apply: change.apply.bind(change),
+    compose: change.compose.bind(change),
+    correct: change.correct.bind(change),
     createRoots: change.createRoots,
     deleteRoots: change.deleteRoots,
     empty: change.empty,
-    invert: DocumentChange.prototype.invert,
-    iterChangedRanges: DocumentChange.prototype.iterChangedRanges,
-    mapPosition: DocumentChange.prototype.mapPosition,
-    primary,
+    invert: change.invert.bind(change),
+    iterChangedRanges: change.iterChangedRanges.bind(change),
+    mapPosition: change.mapPosition.bind(change),
     primaryClassification: change.primaryClassification,
     rootClassifications: change.rootClassifications,
-    roots: change.roots,
-    toJSON: DocumentChange.prototype.toJSON,
+    toJSON: change.toJSON.bind(change),
   }) as DocumentChange;
 
 describe('plite-history contract', () => {
@@ -275,36 +270,6 @@ describe('plite-history contract', () => {
         undos: [{ ...batch, change }],
       }),
       true
-    );
-  });
-
-  it('rejects an invalid nested change set', () => {
-    const batch = historyBatch();
-    const changeSet = batch.change.primary!;
-    const invalidChangeSet = Object.assign(Object.create(null) as object, {
-      apply: changeSet.apply,
-      compose: changeSet.compose,
-      data: changeSet.data,
-      empty: changeSet.empty,
-      invert: changeSet.invert,
-      iterChangedRanges: changeSet.iterChangedRanges,
-      length: changeSet.length,
-      mapPos: changeSet.mapPos,
-      movedNode: changeSet.movedNode,
-      newLength: changeSet.newLength,
-      sections: changeSet.sections,
-      toJSON: () => [{ length: -1 }],
-    }) as unknown as typeof changeSet;
-    const change = structuralDocumentChange(batch.change, invalidChangeSet);
-
-    assert.equal(
-      History.isHistory({
-        redos: [],
-        revision: 1,
-        schema: TEST_SCHEMA_IDENTITY,
-        undos: [{ ...batch, change }],
-      }),
-      false
     );
   });
 

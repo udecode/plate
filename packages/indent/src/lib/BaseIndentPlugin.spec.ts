@@ -5,14 +5,44 @@ import {
   getEditorPlugin,
 } from '@platejs/core';
 import {
+  ContentSlice,
   EditorSchemaValidationError,
   property,
   schema,
   target,
 } from '@platejs/plite';
+import { getExtensionRegistry } from '@platejs/plite/internal';
 import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
+
+const serializeHtml = (editor: ReturnType<typeof createBaseEditor>) => {
+  type Registration = {
+    codec: {
+      format: string;
+      serialize?: (context: {
+        format: string;
+        slice: ContentSlice;
+        state: typeof editor.read;
+      }) => null | string;
+    };
+  };
+
+  const registrations = (getExtensionRegistry(editor).capabilities.get(
+    'host.codecs'
+  ) ?? []) as readonly Registration[];
+  const codec = registrations.find(
+    (registration) => registration.codec.format === 'text/html'
+  )?.codec;
+
+  if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
+
+  return codec.serialize({
+    format: 'text/html',
+    slice: ContentSlice.closed(editor.read.children()),
+    state: editor.read,
+  });
+};
 
 const TestIndentPropsPlugin = createBasePlugin({
   key: 'testIndentProps',
@@ -171,6 +201,31 @@ describe('BaseIndentPlugin', () => {
     expect(editor.read.children()[0]).not.toHaveProperty('indent');
   });
 
+  it('decodes CSS indentation through configured units', () => {
+    const IndentPlugin = BaseIndentPlugin.configure({
+      options: {
+        offset: 10,
+        unit: 'em',
+      },
+      type: 'depth',
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, IndentPlugin],
+    });
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<p style="margin-left: 20em">Indented</p>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Indented' }],
+        depth: 2,
+        type: KEYS.p,
+      },
+    ]);
+  });
+
   it('uses the resolved plugin type as its sole storage key', () => {
     const IndentPlugin = BaseIndentPlugin.configure({
       inject: {
@@ -203,5 +258,38 @@ describe('BaseIndentPlugin', () => {
 
     expect(editor.update.indent.untab()).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({ depth: 1 });
+  });
+
+  it('round-trips configured indent values through HTML', () => {
+    const IndentPlugin = BaseIndentPlugin.configure({
+      options: {
+        offset: 10,
+        unit: 'em',
+      },
+      type: 'depth',
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, IndentPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'Indented' }],
+          depth: 2,
+          type: KEYS.p,
+        },
+      ],
+    });
+    const html = serializeHtml(editor);
+
+    expect(html).not.toBeNull();
+
+    const paragraph = new DOMParser()
+      .parseFromString(html!, 'text/html')
+      .body.querySelector('p') as HTMLElement;
+
+    expect(paragraph.dataset.indent).toBe('2');
+    expect(paragraph.style.marginLeft).toBe('20em');
+    expect(editor.api.html.deserialize({ element: html! })).toEqual([
+      ...editor.read.children(),
+    ]);
   });
 });

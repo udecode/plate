@@ -816,10 +816,6 @@ export const applyEditableCommand = ({
       }
 
       return applyRootLocalSelectionMoveCommand({ command, editor });
-
-    case 'set-block':
-    case 'toggle-mark':
-      return false;
   }
 };
 

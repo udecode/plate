@@ -15,10 +15,7 @@ import {
   SelectionApi,
   type Value,
 } from '../interfaces';
-import type {
-  NodeMutationMethods,
-  NodeReplaceChildrenOptions,
-} from '../interfaces/transforms/node';
+import type { NodeReplaceChildrenOptions } from '../interfaces/transforms/node';
 
 const getParentChildren = <V extends Value>(
   editor: Editor<V>,
@@ -59,12 +56,13 @@ const findNodeReferencePath = (
   return null;
 };
 
-export const replaceChildren: NodeMutationMethods['replaceChildren'] = <
+export const replaceChildren = <
   V extends Value,
-  T extends ElementOrTextIn<V>,
+  TExtensions extends readonly unknown[],
+  T extends ElementOrTextIn<NoInfer<V>>,
 >(
-  editor: Parameters<NodeMutationMethods<V>['replaceChildren']>[0],
-  children: T[],
+  editor: Editor<V, TExtensions>,
+  children: readonly T[],
   { at, count, index = 0, newSelection }: NodeReplaceChildrenOptions
 ) => {
   const parentChildren = getParentChildren(editor, at);
@@ -124,13 +122,9 @@ export const replaceChildren: NodeMutationMethods['replaceChildren'] = <
   applyBuiltDocumentChange(
     editor,
     (builder, root) =>
-      builder.replaceChildren(
-        root,
-        at,
-        index,
-        replacedChildren.length,
-        children as Descendant[]
-      ),
+      builder.replaceChildren(root, at, index, replacedChildren.length, [
+        ...children,
+      ] as Descendant[]),
     {
       ...(selectionAfter === undefined ? {} : { selectionAfter }),
       selectionRoot: getEditorUpdateRoot(editor),

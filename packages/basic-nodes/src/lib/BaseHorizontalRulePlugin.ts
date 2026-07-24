@@ -8,16 +8,9 @@ export const BaseHorizontalRulePlugin = createBasePlugin({
       void: 'block',
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validNodeName: 'HR',
-          },
-        ],
-      },
-    },
-  },
   render: { as: 'hr' },
-});
+}).extendHtmlCodec(() => ({
+  decode: () => ({}),
+  encode: () => ({ tag: 'hr' }),
+  match: [{ tag: 'hr' }],
+}));

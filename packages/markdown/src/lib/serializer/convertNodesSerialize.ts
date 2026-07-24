@@ -16,7 +16,7 @@ import { getSerializerByKey } from './utils/getSerializerByKey';
 import { wrapWithBlockId } from './wrapWithBlockId';
 
 export const convertNodesSerialize = (
-  nodes: Descendant[],
+  nodes: readonly Descendant[],
   options: SerializeMdContext,
   isBlock = false
 ): MdRootContent[] => {

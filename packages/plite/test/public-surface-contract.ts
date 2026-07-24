@@ -117,8 +117,7 @@ const bannedPublicSurface = [
   {
     pattern:
       /\b(?:change|commit\.changes)\.(?:changes|classifications|preserveEmptyRoots)\b|\.toJSON\(\)\.changes\b/,
-    reason:
-      'DocumentChange exposes primary and named-root fields without legacy root maps',
+    reason: 'DocumentChange keeps compact root changes private',
   },
   {
     pattern:

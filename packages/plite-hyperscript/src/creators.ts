@@ -29,12 +29,25 @@ export type HyperscriptEditorFixture = {
   selection: Selection;
 };
 
+type MutableRangeDraft = {
+  anchor?: Range['anchor'];
+  focus?: Range['focus'];
+};
+
+type MutableTextDraft = {
+  [key: string]: unknown;
+  text: string;
+};
+
 /**
  * Resolve the descendants of a node by normalizing the children that can be
  * passed into a hyperscript creator function.
  */
 
-const STRINGS: WeakSet<Text> = new WeakSet();
+const STRINGS = new WeakSet<object>();
+
+const isStringDraft = (value: unknown): value is MutableTextDraft =>
+  TextApi.isText(value) && STRINGS.has(value);
 
 const resolveDescendants = (children: any[]): Descendant[] => {
   const nodes: Descendant[] = [];
@@ -54,17 +67,14 @@ const resolveDescendants = (children: any[]): Descendant[] => {
     }
 
     if (TextApi.isText(normalizedChild)) {
-      const textChild = normalizedChild;
-
       if (
-        TextApi.isText(prev) &&
-        STRINGS.has(prev) &&
-        STRINGS.has(textChild) &&
-        TextApi.equals(prev, textChild, { loose: true })
+        isStringDraft(prev) &&
+        isStringDraft(normalizedChild) &&
+        TextApi.equals(prev, normalizedChild, { loose: true })
       ) {
-        prev.text += textChild.text;
+        prev.text += normalizedChild.text;
       } else {
-        nodes.push(textChild);
+        nodes.push(normalizedChild);
       }
     } else if (ElementApi.isElement(normalizedChild)) {
       nodes.push(normalizedChild);
@@ -128,7 +138,14 @@ export function createElement(
   attributes: { [key: string]: any },
   children: any[]
 ): Element {
-  return { ...attributes, children: resolveDescendants(children) } as Element;
+  const fixture = {
+    ...attributes,
+    children: resolveDescendants(children),
+  };
+
+  // A raw <element> is a pre-ingress fixture and may omit `type`; custom
+  // element shorthands supply it before the value crosses editor ingress.
+  return fixture as unknown as Element;
 }
 
 /**
@@ -246,7 +263,7 @@ const resolveEditorFixture = (children: any[]): HyperscriptEditorFixture => {
 
   const descendants = resolveDescendants(otherChildren);
 
-  const selection: Partial<Range> = {};
+  const selection: MutableRangeDraft = {};
   const root: Element = { children: descendants, type: 'root' };
 
   for (const [node, path] of NodeApi.texts(root)) {

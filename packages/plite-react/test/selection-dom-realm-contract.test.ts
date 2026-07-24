@@ -12,6 +12,14 @@ const createFrameDocument = () => {
   return { frame, frameDocument, frameWindow };
 };
 
+const markWebKitRealm = (frameWindow: Window) => {
+  Object.defineProperty(frameWindow.navigator, 'userAgent', {
+    configurable: true,
+    value:
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Safari/605.1.15',
+  });
+};
+
 const createInputController = () =>
   ({
     preferModelSelectionForInputRef: { current: false },
@@ -29,17 +37,6 @@ const createInputController = () =>
 
 const importWebKitSelectionModules = async () => {
   vi.resetModules();
-  vi.doMock('@platejs/plite-dom', async () => {
-    const actual =
-      await vi.importActual<typeof import('@platejs\/plite-dom')>(
-        '@platejs/plite-dom'
-      );
-
-    return {
-      ...actual,
-      IS_WEBKIT: true,
-    };
-  });
 
   const [selectionController, selectionReconciler, reactEditor] =
     await Promise.all([
@@ -140,7 +137,8 @@ test('selectionchange listener skips repair-induced model-owned history imports'
 test('WebKit shadow selectionchange uses the editor document realm', async () => {
   const { applyEditableDOMSelectionChange, ReactEditor } =
     await importWebKitSelectionModules();
-  const { frame, frameDocument } = createFrameDocument();
+  const { frame, frameDocument, frameWindow } = createFrameDocument();
+  markWebKitRealm(frameWindow);
   const host = frameDocument.createElement('div');
   const editorElement = frameDocument.createElement('div');
   const execCommand = vi.fn();
@@ -185,6 +183,7 @@ test('WebKit shadow beforeinput uses the shadow root realm', async () => {
   const { handleWebKitShadowDOMBeforeInput, ReactEditor } =
     await importWebKitSelectionModules();
   const { frame, frameDocument, frameWindow } = createFrameDocument();
+  markWebKitRealm(frameWindow);
   const host = frameDocument.createElement('div');
   const target = frameDocument.createTextNode('abc');
   const root = host.attachShadow({ mode: 'open' });

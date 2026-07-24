@@ -21,7 +21,7 @@ import {
 } from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
-const paragraph = (text: string): Element => ({
+const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -1223,7 +1223,9 @@ describe('plite delete contract', () => {
       Element,
       'children'
     > & {
-      children: { children: Element[] }[];
+      readonly children: readonly {
+        readonly children: readonly Element[];
+      }[];
     };
 
     assert.equal(tableNode.type, 'table');

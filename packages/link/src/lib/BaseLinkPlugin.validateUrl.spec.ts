@@ -1,4 +1,5 @@
 import { createBaseEditor } from '@platejs/core';
+import { NodeApi } from '@platejs/plite';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import type { BaseLinkConfig } from './BaseLinkPlugin';
@@ -193,18 +194,15 @@ describe('validateUrl', () => {
       allowedSchemes: ['mailto'],
       isUrl: () => true,
     });
-    const plugin = editor.getPlugin(BaseLinkPlugin);
-    const parse = plugin.parsers.html?.deserializer?.parse;
-    const element = document.createElement('a');
-
-    element.setAttribute('href', 'https://example.com');
+    const fragment = editor.api.html.deserialize({
+      element: '<a href="https://example.com">Link</a>',
+    });
 
     expect(
-      parse?.({
-        element,
-        options: plugin.options,
-        type: plugin.type,
-      } as any)
-    ).toBeUndefined();
+      Array.from(
+        NodeApi.elements({ children: fragment ?? [], type: 'root' }),
+        ([node]) => node
+      ).some((node) => node.type === editor.getType(BaseLinkPlugin.key))
+    ).toBe(false);
   });
 });

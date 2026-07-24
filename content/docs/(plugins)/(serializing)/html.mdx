@@ -171,16 +171,17 @@ export function ParagraphElementStatic(props: PliteElementProps) {
 
 ## HTML to Plate
 
-The HTML deserializer allows you to convert HTML content (strings or DOM elements) back into Plate format. This supports round-trip conversion, preserving structure, formatting, and attributes where corresponding plugin rules exist.
+The HTML decoder converts strings or DOM elements back into Plate content. It
+preserves structure, formatting, and attributes when the installed plugins own
+matching codecs.
 
 <Steps>
 
 ### Basic Usage
 
-Use the `HtmlPlugin` API within a client-side Plate editor context.
+Call the root HTML API from a client-side Plate editor.
 
 ```tsx title="components/my-html-importer.tsx"
-import { HtmlPlugin } from 'platejs';
 import { usePlateEditor } from 'platejs/react';
 // Import ALL Plate plugins needed to represent the HTML content
 import { BasicBlocksKit } from '@/components/editor/plugins/basic-blocks-kit';
@@ -195,12 +196,11 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   });
 
   const handleImport = () => {
-    const slateValue = editor
-      .plugin(HtmlPlugin)
-      .api.deserialize({ element: htmlString });
-    editor.update((tx) => {
-      tx.value.replace({ children: slateValue });
-    });
+    const value = editor.api.html.deserialize({ element: htmlString });
+
+    if (!value) return;
+
+    editor.update.value.replace({ children: value });
   };
 
   // ... render your editor and a button to trigger handleImport ...
@@ -214,9 +214,10 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
   model.
 </Callout>
 
-### Plugin Deserialization Rules Overview
+### Plugin HTML Codec Overview
 
-Each Plate plugin can define rules for how it interprets specific HTML tags, styles, and attributes during deserialization. Below is a summary of common HTML structures and the Plate plugins typically responsible for them.
+Each Plate plugin owns the HTML tags, styles, and attributes for its schema
+claim. The same `.extendHtmlCodec()` declaration handles decode and encode.
 
 | HTML Element / Style                                       | Plate Plugin (Typical)  | Notes                                                                    |
 | :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
@@ -230,10 +231,7 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | Converts to `kbd: true` mark.                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | Converts to paragraph element.                                           |
 | `<h1>` - `<h6>`                                            | [`H1Plugin`–`H6Plugin`](/docs/heading)    | Converts to corresponding heading elements (`h1` - `h6`).                |
-| `<ul>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to unordered list (`ul` type). Items become `li`.               |
-| `<ol>`                                                     | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to ordered list (`ol` type). Items become `li`.                 |
-| `<li>` (within `<ul>` or `<ol>`)                           | [`ListPlugin` (classic)](/docs/list-classic)            | Converts to list item (`li` type), with `lic` (list item content) child. |
-| `<li>` (with `aria-level` for indent)                      | [`ListPlugin`](/docs/list)      | Converts to paragraph with `indent` and `listStyleType` props.           |
+| `<ul>`, `<ol>`, `<li>`                                     | [`ListPlugin`](/docs/list)      | Converts list items to blocks with `indent` and `listStyleType` properties. |
 | `<blockquote>`                                             | [`BlockquotePlugin`](/docs/blockquote)      | Converts to blockquote element.                                          |
 | `<pre>` (often with `<code>` inside)                       | [`CodeBlockPlugin`](/docs/code-block)       | Converts to `code_block` element. Content split into `code_line`.        |
 | `<hr>`                                                     | [`HorizontalRulePlugin`](/docs/horizontal-rule)  | Converts to horizontal rule element.                                     |
@@ -244,7 +242,7 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
 | `<tr>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `tr` (table row) element.                                    |
 | `<td>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `td` (table cell) element.                                   |
 | `<th>`                                                     | [`TablePlugin`](/docs/table)           | Converts to `th` (table header cell) element.                            |
-| `style="background-color: ..."`                          | [`FontColorPlugin`](/docs/font)    | Converts to `backgroundColor` mark. (Plugin name might seem inverse) |
+| `style="background-color: ..."`                          | [`FontBackgroundColorPlugin`](/docs/font)    | Converts to `backgroundColor` mark. |
 | `style="color: ..."`                                     | [`FontColorPlugin`](/docs/font)       | Converts to `color` mark.                                                |
 | `style="font-family: ..."`                               | [`FontFamilyPlugin`](/docs/font)      | Converts to `fontFamily` mark.                                           |
 | `style="font-size: ..."`                                 | [`FontSizePlugin`](/docs/font)        | Converts to `fontSize` mark.                                             |
@@ -257,96 +255,75 @@ Each Plate plugin can define rules for how it interprets specific HTML tags, sty
   The exact Plate type (e.g., `ParagraphPlugin.key` vs. `'p'`) depends on how plugins are configured. The table shows typical associations. Ensure the corresponding Plate plugins are included in your editor for these rules to apply.
 </Callout>
 
-### Deserialization Properties in Plugins
+### `.extendHtmlCodec()`
 
-Plugins can define how they handle HTML deserialization using properties within their `parsers.html.deserializer` configuration:
+Package authors declare node-level HTML meaning with `.extendHtmlCodec()`
+before the app's terminal `.configure()` call:
 
--   **`parse`**: A function `({ editor, element, getOptions, ... }) => Partial<PliteNode>` that takes an HTML element and returns a partial Plate node. This is where the main conversion logic resides.
--   **`query`**: An optional function `({ element, getOptions }) => boolean` that determines if the deserializer rule should even be considered for the current HTML element.
--   **`rules`**: An array of rule objects, each defining conditions for matching an HTML element:
-    -   `validNodeName`: String or array of strings for matching HTML tag names (e.g., `'P'`, `['STRONG', 'B']`).
-    -   `validAttribute`: Object or array of objects specifying required attribute names and/or values (e.g., `{ align: ['left', 'center'] }`).
-    -   `validClassName`: String or array of strings for matching CSS class names.
-    -   `validStyle`: Object or array of objects specifying required CSS style properties and/or values (e.g., `{ fontWeight: ['600', '700', 'bold'] }`).
--   **`isElement`**: Boolean, `true` if the plugin deserializes an HTML element into a Plate Element node.
--   **`isLeaf`**: Boolean, `true` if the plugin deserializes an HTML element or style into a Plate Leaf (mark) on a Text node.
--   **`attributeNames`**: Array of HTML attribute names whose values should be preserved on the `node.attributes` property of the resulting Plate node.
--   **`withoutChildren`**: Boolean, if `true`, child nodes of the HTML element are not processed by `convertHtmlAttributes`.
+- `match` is a non-empty array of tag, class, attribute, or style matchers.
+- `decode` returns only the value or properties owned by the plugin. Element
+  codecs do not return `type`; Plate supplies the installed configured type.
+- `encode` returns a wrapper for a mark, a full node spec for an element, or an
+  attribute/style patch for an element property.
+- Import-only mappings set `decodeOnly: true` instead of omitting encode
+  silently.
+- `priority` resolves intentional overlap. Equal-priority exclusive claims
+  fail model compilation instead of depending on plugin array order.
 
-### Customizing Deserialization Behavior
+This element codec maps `<aside>` to a callout and preserves an app-configured
+storage type:
 
-You can extend a plugin to modify its HTML parsing logic. This is useful for supporting non-standard HTML attributes or structures.
+```tsx title="lib/callout-plugin.ts"
+import { property, schema } from 'platejs';
+import { createPlatePlugin } from 'platejs/react';
 
-```tsx title="lib/custom-code-block-plugin.ts"
-import { CodeBlockPlugin } from '@platejs/code-block/react';
-import { CodeLinePlugin } from '@platejs/code-block'; // Base if needed
+const CalloutPlugin = createPlatePlugin({
+  key: 'callout',
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      properties: {
+        variant: property.string(),
+      },
+    },
+  },
+  type: 'callout',
+}).extendHtmlCodec(() => ({
+  decode: ({ element }) => ({
+    variant: element.dataset.variant || undefined,
+  }),
+  encode: ({ content, node }) => ({
+    attributes: { 'data-variant': node.variant },
+    children: content,
+    tag: 'aside',
+  }),
+  match: [{ tag: 'aside' }],
+}));
 
-const MyCustomCodeBlockPlugin = CodeBlockPlugin.configure({
+export const NotePlugin = CalloutPlugin.configure({ type: 'note' });
+```
+
+`NotePlugin` decodes `<aside>` as a `note` element because the codec targets
+the installed descriptor, not a hard-coded type string.
+
+### Whole-Input HTML Hooks
+
+Use flat `parsers.html.query`, `transformData`, and `transformFragment` hooks
+for work that needs the complete incoming payload. These hooks run before or
+after node decoding; they do not declare node matches.
+
+```ts title="lib/html-cleanup-plugin.ts"
+const HtmlCleanupPlugin = createPlatePlugin({
+  key: 'htmlCleanup',
   parsers: {
     html: {
-      deserializer: {
-        // Inherit most rules and properties, then override or add
-        ...CodeBlockPlugin.parsers.html.deserializer,
-        parse: ({ element, editor }) => { // editor might be needed for getType
-          const language = element.getAttribute('data-custom-lang') || element.className.match(/language-(?<lang>[^\s]+)/)?.groups?.lang;
-          const textContent = element.textContent || '';
-          const lines = textContent.split('\n');
-
-          return {
-            type: CodeBlockPlugin.key, // Or editor.getType(CodeBlockPlugin.key)
-            lang: language,
-            code: textContent, // Example: store full code string
-            children: lines.map((line) => ({
-              type: editor.getType(CodeLinePlugin.key),
-              children: [{ text: line }],
-            })),
-          };
-        },
-        rules: [
-          // Inherit existing rules if desired
-          ...(CodeBlockPlugin.parsers.html.deserializer.rules || []),
-          // Add a new rule to match based on a custom attribute
-          { validAttribute: { 'data-custom-lang': true } },
-        ],
-      },
+      query: ({ source }) => source.types.includes('text/html'),
+      transformData: ({ data }) =>
+        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
     },
   },
 });
-
-// Then use MyCustomCodeBlockPlugin in your editor configuration.
 ```
-This example customizes `CodeBlockPlugin` to look for a `data-custom-lang` attribute or a `language-*` class for determining the code language.
-
-### Advanced Deserialization Example (`ListPlugin`)
-
-The `ListPlugin` demonstrates a more complex deserialization scenario where it transforms HTML list structures (`<li>` elements) into indented paragraphs within Plate, using `aria-level` to determine indentation.
-
-Here's a conceptual look at its deserialization logic:
-
-```ts
-// Simplified concept from ListPlugin
-export const ListPluginConfig = {
-  // ... other configurations ...
-  parsers: {
-    html: {
-      deserializer: {
-        isElement: true,
-        // query: ({ element }) => hasListAncestor(element), // Example condition
-        parse: ({ editor, element }) => ({
-          type: 'p', // Converts <li> to <p>
-          indent: Number(element.getAttribute('aria-level') || '1'),
-          listStyleType: element.style.listStyleType || undefined,
-          // Children are processed by Plate's default deserializer after this node is created
-        }),
-        rules: [
-          { validNodeName: 'LI' }, // Only applies to <li> elements
-        ],
-      },
-    },
-  },
-};
-```
-This illustrates how a plugin can completely reinterpret HTML structures into a different Plate representation.
 
 </Steps>
 
@@ -396,29 +373,27 @@ Converts Plate nodes from `editor.children` (or a provided `value`) into an HTML
 
 Parses an HTML string or `HTMLElement` into a Plate `Value` (an array of `Descendant` nodes). This is typically used on the client-side with a fully configured Plate editor.
 
-<API name="deserializeHtml">
+<API name="editor.api.html.deserialize">
 <APIParameters>
-  <APIItem name="editor" type="PlateEditor">
-    The client-side Plate editor instance.
-  </APIItem>
-  <APIItem name="options" type="DeserializeHtmlOptions">
+  <APIItem
+    name="options"
+    type="{ element: HTMLElement | string; collapseWhiteSpace?: boolean }"
+  >
     Options for deserialization.
   </APIItem>
 </APIParameters>
-<APIOptions type="DeserializeHtmlOptions">
+<APIOptions>
   <APIItem name="element" type="HTMLElement | string">
     The HTML string or `HTMLElement` to deserialize.
   </APIItem>
   <APIItem name="collapseWhiteSpace" type="boolean" optional>
     If `true` (default), collapses whitespace from text nodes similarly to how browsers treat whitespace in HTML. Set to `false` to preserve all whitespace. Default: `true`.
   </APIItem>
-  <APIItem name="stripWhitespace" type="boolean" optional>
-    **Deprecated.** Use `collapseWhiteSpace`. If `true`, leading/trailing whitespace is trimmed and sequences of whitespace are collapsed. Default: `true`.
-  </APIItem>
 </APIOptions>
 <APIReturns>
-  <APIItem type="Descendant[]">
-    The deserialized Plate `Value`.
+  <APIItem type="Descendant[] | null">
+    The deserialized Plate `Value`, or `null` when the compiled HTML decoder
+    rejects an invalid or unsupported result.
   </APIItem>
 </APIReturns>
 </API>

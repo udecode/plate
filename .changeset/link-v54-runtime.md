@@ -3,7 +3,8 @@
 ---
 
 Move link behavior to `BaseLinkPlugin`, `LinkPlugin`, and the installed editor
-API, and register link properties in compiled schemas.
+API, register link properties in compiled schemas, and use the readable
+descriptor key `link` while preserving the serialized element type `a`.
 
 **Migration:** Replace standalone link transforms with `editor.update.link`:
 
@@ -16,7 +17,7 @@ editor.update.link.wrap(options);
 ```
 
 Read URL validation and anchor attributes from
-`editor.plugin(BaseLinkPlugin).api`. Control floating-link state through
-`editor.plugin(LinkPlugin).api`. Remove `withLink`, `insertLink`, `unwrapLink`,
+`editor.api.link`. Control floating-link state through the same namespace.
+Remove `withLink`, `insertLink`, `unwrapLink`,
 `upsertLink`, `upsertLinkText`, `wrapLink`, `submitFloatingLink`, and
 `triggerFloatingLink*` imports.

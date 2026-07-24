@@ -178,49 +178,63 @@ const BaseLinkPluginDefinition = createBasePlugin({
       },
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [{ validNodeName: 'A' }],
-        parse: ({ element, options, type }) => {
-          const url = element.getAttribute('href');
-
-          if (url && validateUrlWithOptions(options, url)) {
-            return {
-              target: element.getAttribute('target') || '_blank',
-              type,
-              url,
-            };
-          }
-        },
-      },
-    },
-  },
   rules: {
     normalize: { removeEmpty: true },
     selection: { affinity: 'directional' },
   },
   type: KEYS.link,
-}).extendApi<BaseLinkApi>(({ getOptions }) => ({
-  getAttributes: (link) => {
-    const {
-      allowedSchemes,
-      dangerouslySkipSanitization,
-      defaultLinkAttributes,
-    } = getOptions();
-    const url = typeof link.url === 'string' ? link.url : '';
-    const href = dangerouslySkipSanitization
-      ? url
-      : sanitizeUrl(url, { allowedSchemes }) || undefined;
+})
+  .extendHtmlCodec(({ getOptions }) => ({
+    decode: ({ element }) => {
+      const url = element.getAttribute('href');
 
-    return {
-      ...defaultLinkAttributes,
-      ...(href === undefined ? {} : { href }),
-      ...(typeof link.target === 'string' ? { target: link.target } : {}),
-    };
-  },
-  validateUrl: (url) => validateUrlWithOptions(getOptions(), url),
-}));
+      if (!url || !validateUrlWithOptions(getOptions(), url)) return;
+
+      return {
+        target: element.getAttribute('target') || '_blank',
+        url,
+      };
+    },
+    encode: ({ content, node }) => {
+      const { allowedSchemes, dangerouslySkipSanitization } = getOptions();
+      const url = typeof node.url === 'string' ? node.url : '';
+      const href = dangerouslySkipSanitization
+        ? url
+        : sanitizeUrl(url, { allowedSchemes }) || undefined;
+
+      if (!href) return null;
+
+      return {
+        attributes: {
+          href,
+          target: node.target,
+        },
+        children: content,
+        tag: 'a',
+      };
+    },
+    match: [{ tag: 'a' }],
+  }))
+  .extendApi<BaseLinkApi>(({ getOptions }) => ({
+    getAttributes: (link) => {
+      const {
+        allowedSchemes,
+        dangerouslySkipSanitization,
+        defaultLinkAttributes,
+      } = getOptions();
+      const url = typeof link.url === 'string' ? link.url : '';
+      const href = dangerouslySkipSanitization
+        ? url
+        : sanitizeUrl(url, { allowedSchemes }) || undefined;
+
+      return {
+        ...defaultLinkAttributes,
+        ...(href === undefined ? {} : { href }),
+        ...(typeof link.target === 'string' ? { target: link.target } : {}),
+      };
+    },
+    validateUrl: (url) => validateUrlWithOptions(getOptions(), url),
+  }));
 
 /** Enables support for hyperlinks. */
 export const BaseLinkPlugin = BaseLinkPluginDefinition.extendTxGroup<

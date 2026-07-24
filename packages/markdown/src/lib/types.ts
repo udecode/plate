@@ -58,7 +58,7 @@ export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
 
 /** Prepared Markdown serialization context supplied to conversion rules. */
 export type SerializeMdContext = Readonly<
-  Omit<SerializeMdOptions, 'value'> & { value: Descendant[] }
+  Omit<SerializeMdOptions, 'value'> & { value: readonly Descendant[] }
 > &
   MarkdownConversionContext;
 

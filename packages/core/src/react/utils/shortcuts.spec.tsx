@@ -57,6 +57,47 @@ it('uses custom hotkey handler for bold', () => {
 });
 
 describe('extend method with shortcuts', () => {
+  it('publishes one frozen shortcut table in deterministic order', () => {
+    const firstPlugin = createPlatePlugin({
+      key: 'first',
+      priority: 10,
+      shortcuts: {
+        first: {
+          keys: 'ctrl+1',
+          handler: () => {},
+        },
+        second: {
+          keys: 'ctrl+2',
+          handler: () => {},
+        },
+      },
+    });
+    const secondPlugin = createPlatePlugin({
+      key: 'second',
+      priority: 20,
+      shortcuts: {
+        first: {
+          keys: 'ctrl+3',
+          handler: () => {},
+        },
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [firstPlugin, secondPlugin],
+    });
+    const table = getPlateRuntime(editor).shortcutTable.filter(
+      ({ id }) => id.startsWith('first.') || id.startsWith('second.')
+    );
+
+    expect(table.map(({ id }) => id)).toEqual([
+      'second.first',
+      'first.first',
+      'first.second',
+    ]);
+    expect(Object.isFrozen(getPlateRuntime(editor).shortcutTable)).toBe(true);
+    expect(table.every(Object.isFrozen)).toBe(true);
+  });
+
   it('add new shortcuts to a plugin', () => {
     const testPlugin = createPlatePlugin({
       key: 'testPlugin',

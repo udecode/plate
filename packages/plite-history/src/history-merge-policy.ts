@@ -5,8 +5,8 @@ import {
   type Selection,
 } from '@platejs/plite';
 import {
-  getInternalDocumentChangeEntries,
-  getInternalDocumentChangeSet,
+  getInternalDocumentChangeRanges,
+  getInternalDocumentChangeRootKeys,
   MAIN_ROOT_KEY,
   toPublicRoot,
 } from '@platejs/plite/internal';
@@ -55,9 +55,7 @@ const pathKey = (path: readonly number[]) => path.join('.');
 
 const getChangedRoot = (commit: EditorCommit): RootKey | null => {
   const roots = new Set<RootKey>([
-    ...[...getInternalDocumentChangeEntries(commit.changes)].map(
-      ([root]) => root
-    ),
+    ...getInternalDocumentChangeRootKeys(commit.changes),
     ...commit.changes.createRoots,
     ...commit.changes.deleteRoots,
   ]);
@@ -166,11 +164,11 @@ export const createHistoryBatchGroup = (
 
   if (!root) return null;
 
-  const rootChange = getInternalDocumentChangeSet(commit.changes, root);
   const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-  const ranges: ChangedRange[] = [];
-
-  rootChange?.iterChangedRanges((...range) => ranges.push(range));
+  const ranges: readonly ChangedRange[] = getInternalDocumentChangeRanges(
+    commit.changes,
+    root
+  );
 
   const range = ranges.length === 1 ? ranges[0]! : null;
   const changedSpan = getChangedSpan(ranges);

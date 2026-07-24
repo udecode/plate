@@ -135,6 +135,16 @@ Let builders and initializers own contextual typing.
   `satisfies`, cast the callback, or annotate every parameter.
 - An `extendTx` generic describes the returned command object, not the
   transaction-factory function.
+- Treat the builder chain as a typed capability dependency graph. When a later
+  API, tx, extension, handler, or required dependent needs an earlier
+  capability, add an earlier `.extendApi()` or `.extendTx()` stage and consume
+  its accumulated inferred `api` / update surface. Multiple ordered stages in
+  one plugin are preferred over parameter-threaded helper functions.
+- Stage only an honest scoped capability that consumers, required dependents,
+  or durable plugin operations should discover. Do not publish a private
+  implementation fragment merely to share it between stages. Keep it lexical,
+  keep a pure shared domain algorithm private, coalesce stages, or name the
+  missing builder capability.
 - If contextual inference fails, repair the owning Core builder/generic or
   source API. A new config alias or explicit `editor`/`tx` annotation is not an
   inference fix.
@@ -187,6 +197,18 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
   `table.update.insert.table()`. Route disputed public spelling to `best-api`.
 - `extendTx` owns the plugin's one-shot update group. Use `extendTxGroup` only
   when an additional named group is itself meaningful.
+- Put capability producers before their consumers. Later `.extendApi()` and
+  `.extendTx()` callbacks may destructure the accumulated inferred `api`;
+  required dependents consume the same capability through their inferred
+  editor or scoped portal.
+- Inside a later tx method, reuse an earlier staged mutation through the same
+  active transaction: `tx[plugin.key].method(...)`. Do not call
+  `editor.plugin(FooPlugin).update.method(...)`, `context.update`, or another
+  one-shot update from the active tx; that reopens a transaction.
+- `extendExtension` is assembled before plugin API publication. When its
+  runtime callbacks need a staged API, keep the typed extension context and
+  read `context.api` inside the runtime callback. Do not eagerly destructure
+  `api` in the extension factory and capture the pre-publication value.
 - Repeated callers use the scoped API/tx method. They do not justify a parallel
   exported helper.
 - Transform-backed callbacks receive and mutate through the active `tx`. Do not
@@ -195,6 +217,16 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 - Do not extract one-owner behavior merely to create
   `foo(editor, tx, ...)` or paired one-shot/tx wrappers. Inline it where `tx`,
   `api`, options, editor, and type remain contextually inferred.
+- New scoped methods and surviving helpers take domain arguments by default.
+  Do not pass `editor`, `api`, `read`, `tx`, `getOptions`, resolved plugin
+  option values, or resolved plugin type merely to reuse plugin-owned behavior.
+  Operation options remain valid domain input. Keep one-use machinery lexical;
+  stage an honest reused plugin capability through another builder call.
+- Before adding a state/read-view parameter, try keeping the query in the
+  active tx stage or callback owner. Allow an explicit active-state boundary
+  only when the same public query must observe an uncommitted transaction
+  snapshot; add focused proof and never substitute stale `editor.read` merely
+  to shorten the signature.
 - A surviving transaction helper must own a real cross-plugin or
   transaction-composition algorithm, require `tx`, and never open a nested
   update.
@@ -275,11 +307,17 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 7. Prove the smallest honest surface:
    - package typecheck and behavior tests;
    - Core type tests when builder/public inference changes;
+   - compile/runtime proof that a required dependent sees staged capabilities;
+   - compile/runtime proof for staged tx-to-tx reuse when one tx stage consumes
+     another;
+   - runtime proof when an extension callback consumes a staged API;
+   - an active-transaction test when a query crosses a state-view boundary;
    - React tests when React behavior changes;
    - `pnpm brl` when exports or public files change.
 8. Audit for stale helper names, root option helpers, nested updates, explicit
-   plugin annotations, empty config aliases, top-level plugin `config`, and
-   one-use file taxonomies.
+   plugin annotations, empty config aliases, top-level plugin `config`,
+   parameter-threaded `editor` / `api` / `read` / `tx` helpers, and one-use
+   file taxonomies.
 
 ## Do Not Copy
 

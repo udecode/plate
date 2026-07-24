@@ -382,6 +382,93 @@ describe('selection runtime', () => {
     expect(cleanupCalls).toBe(1);
   });
 
+  test('exports a custom DOM projection after a DOM-owned selection commit', () => {
+    const inputController = createInputController();
+    inputController.state.selectionSource = 'dom-current';
+    inputController.state.selectionChangeOrigin = 'native-user';
+    let listener: ((change?: EditorCommit) => void) | null = null;
+    const syncOptions: Array<{ forceModelExport?: boolean } | undefined> = [];
+
+    subscribeSelectionOnlyDOMExport({
+      addSelectorEventListener(nextListener, options) {
+        listener = (change) => {
+          if (options?.shouldUpdate?.(change) ?? true) {
+            nextListener(change);
+          }
+        };
+
+        return () => {};
+      },
+      getDOMSelectionProjection: () => collapsedSelection,
+      getModelSelection: () => expandedSelection,
+      inputController,
+      scheduleDOMExport(callback) {
+        callback();
+      },
+      syncDOMSelectionToEditor(options) {
+        syncOptions.push(options);
+      },
+    });
+
+    listener?.(
+      createChange({
+        childrenChanged: false,
+        selectionChanged: true,
+      })
+    );
+
+    expect(syncOptions).toEqual([{ forceModelExport: true }]);
+    expect(inputController.preferModelSelectionForInputRef.current).toBe(true);
+    expect(inputController.state.modelSelectionPreference).toEqual({
+      preferModelSelection: true,
+      reason: 'programmatic-export',
+      selectionSource: 'model-owned',
+    });
+    expect(inputController.state.selectionChangeOrigin).toBe(
+      'programmatic-export'
+    );
+    expect(inputController.state.selectionSource).toBe('model-owned');
+  });
+
+  test('restores a custom DOM projection after a text-only document commit', () => {
+    const inputController = createInputController();
+    inputController.state.selectionSource = 'dom-current';
+    inputController.state.selectionChangeOrigin = 'native-user';
+    let listener: ((change?: EditorCommit) => void) | null = null;
+    const syncOptions: Array<{ forceModelExport?: boolean } | undefined> = [];
+
+    subscribeSelectionOnlyDOMExport({
+      addSelectorEventListener(nextListener, options) {
+        listener = (change) => {
+          if (options?.shouldUpdate?.(change) ?? true) {
+            nextListener(change);
+          }
+        };
+
+        return () => {};
+      },
+      getDOMSelectionProjection: () => collapsedSelection,
+      getModelSelection: () => expandedSelection,
+      inputController,
+      scheduleDOMExport(callback) {
+        callback();
+      },
+      syncDOMSelectionToEditor(options) {
+        syncOptions.push(options);
+      },
+    });
+
+    listener?.(
+      createChange({
+        childrenChanged: true,
+        selectionChanged: false,
+      })
+    );
+
+    expect(syncOptions).toEqual([{ forceModelExport: true }]);
+    expect(inputController.state.selectionSource).toBe('model-owned');
+  });
+
   test('defers DOM export for content-changing commits', () => {
     const inputController = createInputController();
     inputController.state.selectionSource = 'dom-current';

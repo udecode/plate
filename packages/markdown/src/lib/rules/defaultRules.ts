@@ -76,7 +76,7 @@ function isBoolean(value: unknown) {
 
 const createClassicListItemContent = (
   context: MarkdownConversionContext,
-  children: Descendant[] = []
+  children: readonly Descendant[] = []
 ) => ({
   children: children.length > 0 ? children : [{ text: '' }],
   type: getPluginType(context, KEYS.lic),
@@ -110,7 +110,7 @@ const deserializeClassicListItemChildren = (
 
 const groupInlineChildrenIntoParagraphs = (
   context: MarkdownConversionContext,
-  children: Descendant[] = []
+  children: readonly Descendant[] = []
 ) => {
   const paragraphType = getPluginType(context, KEYS.p);
   const elements: Descendant[] = [];
@@ -156,7 +156,7 @@ const groupInlineChildrenIntoParagraphs = (
 };
 
 const normalizeParagraphLineBreaks = (
-  children: Descendant[],
+  children: readonly Descendant[],
   options: { preserveEmptyParagraphs?: boolean }
 ) => {
   const isEmptyParagraph =
@@ -837,7 +837,9 @@ export const defaultRules = {
       const context = options;
       const isOrdered = getPluginKey(context, node.type) === KEYS.olClassic;
 
-      const serializeListItems = (children: Descendant[]): MdListItem[] => {
+      const serializeListItems = (
+        children: readonly Descendant[]
+      ): MdListItem[] => {
         const items: MdListItem[] = [];
         let currentItem: MdListItem | null = null;
 
@@ -938,7 +940,15 @@ export const defaultRules = {
   p: {
     deserialize: (node, deco, options) => {
       const isKeepLineBreak = options.splitLineBreaks;
-      const children = convertChildrenDeserialize(node.children, deco, options);
+      const children = convertChildrenDeserialize(
+        node.children,
+        deco,
+        options
+      ).map((child) =>
+        TextApi.isText(child) && child.text === '\u200B'
+          ? { ...child, text: '' }
+          : child
+      );
       const splitBlockTypes = new Set(['img']);
 
       const elements: Descendant[] = [];
@@ -953,12 +963,6 @@ export const defaultRules = {
           inlineNodes = [];
         }
       };
-
-      children.forEach((c) => {
-        if (c.text === '\u200B') {
-          c.text = '';
-        }
-      });
 
       children.forEach((child, index, children) => {
         const { type } = child as { type?: string };

@@ -2,17 +2,21 @@ import type { RefObject } from 'react';
 import { type Editor, type Path, type Range, RangeApi } from '@platejs/plite';
 import type { DOMElement } from '@platejs/plite-dom';
 import {
+  DOMRootRuntime,
   type DOMPhaseScheduler,
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
 } from '@platejs/plite-dom/internal';
 import { setEditorMarks } from './runtime-editor-api';
 
+type DOMInputRuntime = DOMRootRuntime<HTMLElement>['domInputRuntime'];
+
+const EDITABLE_INPUT_RUNTIME = Symbol('editable-input-runtime');
+
 export type InputIntent =
   | 'clipboard'
   | 'composition'
   | 'delete'
-  | 'format'
   | 'history'
   | 'insert-break'
   | 'internal-control'
@@ -154,51 +158,151 @@ export type RepairDOMInput = (
 ) => void;
 
 export type EditableInputController = {
+  domInputRuntime: DOMInputRuntime;
   preferModelSelectionForInputRef: RefObject<boolean>;
   scheduleTask?: DOMPhaseScheduler['schedule'];
   state: EditableInputControllerState;
 };
 
-export const createEditableInputControllerState =
-  (): EditableInputControllerState => ({
-    activeIntent: null,
-    compositionSession: null,
-    draggedBlock: false,
-    draggedRange: null,
-    isComposing: false,
-    isDraggingInternally: false,
-    isUpdatingSelection: false,
-    latestElement: null,
-    modelSelectionPreference: null,
-    modelOwnedTextInputGuard: 0,
-    outsideFocusBoundarySettleUntil: 0,
-    pendingDOMSelectionImport: false,
-    pendingCompositionEnd: null,
-    pendingRootDOMInput: null,
-    pendingNativeTextInputRepairSuppressedDOMSelection: false,
-    pendingNativeTextInputRepairOffset: null,
-    pendingNativeTextInputRepairPathKey: null,
-    recentTextInputRepairEcho: null,
-    repairInducedSelectionOriginVersion: 0,
-    selectionChangeOrigin: null,
-    selectionSource: 'unknown',
+type EditableInputControllerInput = Omit<
+  EditableInputController,
+  'domInputRuntime'
+> & {
+  domInputRuntime?: DOMInputRuntime;
+};
+
+type RuntimeBackedEditableInputControllerState =
+  EditableInputControllerState & {
+    [EDITABLE_INPUT_RUNTIME]?: DOMInputRuntime;
+  };
+
+const bindEditableInputRuntimeState = (
+  state: EditableInputControllerState,
+  domInputRuntime: DOMInputRuntime
+) => {
+  const runtimeState = state as RuntimeBackedEditableInputControllerState;
+
+  if (runtimeState[EDITABLE_INPUT_RUNTIME] === domInputRuntime) return state;
+
+  domInputRuntime.setCompositionSession(state.compositionSession);
+  domInputRuntime.setPendingCompositionEnd(state.pendingCompositionEnd);
+  domInputRuntime.nativeInputState.pendingInput =
+    state.pendingRootDOMInput ?? null;
+  domInputRuntime.nativeInputState.pendingRepairOffset =
+    state.pendingNativeTextInputRepairOffset ?? null;
+  domInputRuntime.nativeInputState.pendingRepairPathKey =
+    state.pendingNativeTextInputRepairPathKey ?? null;
+  domInputRuntime.nativeInputState.recentRepairEcho =
+    state.recentTextInputRepairEcho ?? null;
+  domInputRuntime.nativeInputState.suppressedDOMSelection =
+    state.pendingNativeTextInputRepairSuppressedDOMSelection ?? false;
+
+  Object.defineProperties(state, {
+    [EDITABLE_INPUT_RUNTIME]: {
+      configurable: true,
+      value: domInputRuntime,
+    },
+    compositionSession: {
+      configurable: true,
+      enumerable: true,
+      get: () => domInputRuntime.compositionSession,
+      set: (session) => domInputRuntime.setCompositionSession(session),
+    },
+    pendingCompositionEnd: {
+      configurable: true,
+      enumerable: true,
+      get: () =>
+        domInputRuntime.getPendingCompositionEnd<PendingCompositionEnd>(),
+      set: (pending) => domInputRuntime.setPendingCompositionEnd(pending),
+    },
+    pendingNativeTextInputRepairOffset: {
+      configurable: true,
+      enumerable: true,
+      get: () => domInputRuntime.nativeInputState.pendingRepairOffset,
+      set: (offset) => {
+        domInputRuntime.nativeInputState.pendingRepairOffset = offset;
+      },
+    },
+    pendingNativeTextInputRepairPathKey: {
+      configurable: true,
+      enumerable: true,
+      get: () => domInputRuntime.nativeInputState.pendingRepairPathKey,
+      set: (pathKey) => {
+        domInputRuntime.nativeInputState.pendingRepairPathKey = pathKey;
+      },
+    },
+    pendingNativeTextInputRepairSuppressedDOMSelection: {
+      configurable: true,
+      enumerable: true,
+      get: () => domInputRuntime.nativeInputState.suppressedDOMSelection,
+      set: (suppressed) => {
+        domInputRuntime.nativeInputState.suppressedDOMSelection =
+          suppressed ?? false;
+      },
+    },
+    pendingRootDOMInput: {
+      configurable: true,
+      enumerable: true,
+      get: () =>
+        domInputRuntime.nativeInputState
+          .pendingInput as EditableInputControllerState['pendingRootDOMInput'],
+      set: (pending) => {
+        domInputRuntime.nativeInputState.pendingInput = pending ?? null;
+      },
+    },
+    recentTextInputRepairEcho: {
+      configurable: true,
+      enumerable: true,
+      get: () => domInputRuntime.nativeInputState.recentRepairEcho,
+      set: (echo) => {
+        domInputRuntime.nativeInputState.recentRepairEcho = echo ?? null;
+      },
+    },
   });
+
+  return state;
+};
+
+export const createEditableInputControllerState = (
+  domInputRuntime: DOMInputRuntime = DOMRootRuntime.createDetachedInputRuntime()
+): EditableInputControllerState =>
+  bindEditableInputRuntimeState(
+    {
+      activeIntent: null,
+      compositionSession: null,
+      draggedBlock: false,
+      draggedRange: null,
+      isComposing: false,
+      isDraggingInternally: false,
+      isUpdatingSelection: false,
+      latestElement: null,
+      modelSelectionPreference: null,
+      modelOwnedTextInputGuard: 0,
+      outsideFocusBoundarySettleUntil: 0,
+      pendingDOMSelectionImport: false,
+      pendingCompositionEnd: null,
+      pendingRootDOMInput: null,
+      pendingNativeTextInputRepairSuppressedDOMSelection: false,
+      pendingNativeTextInputRepairOffset: null,
+      pendingNativeTextInputRepairPathKey: null,
+      recentTextInputRepairEcho: null,
+      repairInducedSelectionOriginVersion: 0,
+      selectionChangeOrigin: null,
+      selectionSource: 'unknown',
+    },
+    domInputRuntime
+  );
 
 export const beginEditableCompositionSession = (
   inputController: EditableInputController
 ) => {
-  inputController.state.compositionSession = {
-    modelCommitted: false,
-    text: null,
-  };
+  inputController.domInputRuntime.beginComposition();
 };
 
 export const markEditableCompositionModelCommitted = (
   inputController: EditableInputController
 ) => {
-  if (inputController.state.compositionSession) {
-    inputController.state.compositionSession.modelCommitted = true;
-  }
+  inputController.domInputRuntime.markCompositionModelCommitted();
 };
 
 export const runTrackedEditableCompositionMutation = <T>({
@@ -238,9 +342,7 @@ export const recordEditableCompositionText = (
   inputController: EditableInputController,
   text: string
 ) => {
-  if (inputController.state.compositionSession) {
-    inputController.state.compositionSession.text = text;
-  }
+  inputController.domInputRuntime.recordCompositionText(text);
 };
 
 export const captureEditableCompositionRuntimeMarks = (editor: Editor) => ({
@@ -308,11 +410,20 @@ export const isEditableOutsideFocusBoundarySettling = (
 ) => state.outsideFocusBoundarySettleUntil > getEditableInputTimestamp();
 
 export const createEditableInputController = ({
+  domInputRuntime = DOMRootRuntime.createDetachedInputRuntime(),
   preferModelSelectionForInputRef,
   scheduleTask,
   state,
-}: EditableInputController): EditableInputController => ({
-  preferModelSelectionForInputRef,
-  scheduleTask,
-  state,
-});
+}: EditableInputControllerInput): EditableInputController => {
+  const boundRuntime =
+    (state as RuntimeBackedEditableInputControllerState)[
+      EDITABLE_INPUT_RUNTIME
+    ] ?? domInputRuntime;
+
+  return {
+    domInputRuntime: boundRuntime,
+    preferModelSelectionForInputRef,
+    scheduleTask,
+    state: bindEditableInputRuntimeState(state, boundRuntime),
+  };
+};

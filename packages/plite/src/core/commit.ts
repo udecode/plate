@@ -19,13 +19,13 @@ import { RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import {
   type DocumentChange,
-  getDocumentChangeAfterPaths,
   getInternalDocumentChangeClassification,
   getInternalDocumentChangeEntries,
-  getInternalDocumentChangeSet,
-  IndexedDocument,
-  type JsonEditorValue,
-} from './document-change';
+  getInternalDocumentRootChange,
+} from './change/document-change';
+import { getDocumentChangeAfterPaths } from './change/classification';
+import { DocumentIndex } from './change/document-index';
+import type { JsonEditorValue } from './change/tokens';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { buildSnapshotIndex, pathKey } from './snapshot-index';
 import { toInternalRoot, toPublicRoot } from './public-root';
@@ -215,7 +215,7 @@ const getTopLevelRanges = (
 };
 
 const getChangedTopLevelRange = (
-  document: IndexedDocument,
+  document: DocumentIndex,
   from: number,
   to: number
 ): TopLevelRuntimeRange | null => {
@@ -456,7 +456,7 @@ const createCommitChanged = ({
     const cached = topLevelRangeCache.get(root);
 
     if (cached) return cached;
-    const change = getInternalDocumentChangeSet(changes, root);
+    const change = getInternalDocumentRootChange(changes, root);
 
     if (!change) {
       const empty = Object.freeze([]) as readonly TopLevelRuntimeRange[];
@@ -466,8 +466,8 @@ const createCommitChanged = ({
       return empty;
     }
 
-    const beforeDocument = IndexedDocument.fromValue(valueRoot(before, root));
-    const afterDocument = IndexedDocument.fromValue(valueRoot(after, root));
+    const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
+    const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
     const movedTargetIndex = change.movedNode(beforeDocument)?.targetPath[0];
     const ranges: TopLevelRuntimeRange[] = [];
 
@@ -634,9 +634,9 @@ const createCommitChanged = ({
         (runtimeId, index) => runtimeId !== afterTopLevel[index]
       );
 
-    const beforeDocument = IndexedDocument.fromValue(valueRoot(before, root));
-    const afterDocument = IndexedDocument.fromValue(valueRoot(after, root));
-    const change = getInternalDocumentChangeSet(changes, root);
+    const beforeDocument = DocumentIndex.fromValue(valueRoot(before, root));
+    const afterDocument = DocumentIndex.fromValue(valueRoot(after, root));
+    const change = getInternalDocumentRootChange(changes, root);
     const touchedPaths = new Map<string, Path>();
     const topLevelTouchedPaths = new Map<string, Path>();
     const touchedNodeRuntimeIds = new Set<RuntimeId>();
@@ -828,7 +828,7 @@ const createCommitChanged = ({
     switch (kind) {
       case 'document':
         return (
-          !!getInternalDocumentChangeSet(changes, root) ||
+          !!getInternalDocumentRootChange(changes, root) ||
           changes.createRoots.has(root) ||
           changes.deleteRoots.has(root)
         );

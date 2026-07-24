@@ -43,8 +43,6 @@ export type PliteProjectionSlice<T = unknown> = {
   start: number;
 };
 
-export type PliteProjectionEntry<T = unknown> = PliteProjectionSlice<T>;
-
 export type PliteSourceDirtinessClass =
   | 'always'
   | 'selection'
@@ -135,7 +133,7 @@ export type PliteProjectionStoreMetrics = Readonly<{
   sourceSubscriberWakeCount: number;
 }>;
 
-export type PliteProjectionStore<T = unknown> = {
+export type CompiledProjectionStore<T = unknown> = {
   destroy: () => void;
   getMetrics: () => PliteProjectionStoreMetrics;
   getSourceStatus: () => PliteViewSourceStatus;
@@ -529,7 +527,7 @@ export const createPliteProjectionStore = <T>(
   editor: Editor,
   source: PliteProjectionSource<T>,
   options: PliteProjectionStoreOptions = {}
-): PliteProjectionStore<T> => {
+): CompiledProjectionStore<T> => {
   const refreshListeners = new Set<PliteProjectionRefreshListener>();
   let destroyed = false;
   const sourceId = options.sourceId ?? 'projection';

@@ -1,14 +1,18 @@
 import type { Descendant } from '@platejs/plite';
 
+import { deserializeHtmlWithCompiledCodec } from '../../../../internal/plugin/compilePlateHtmlCodec';
 import type { BaseEditor } from '../../../editor';
-import { deserializeHtmlWithParserRuntime } from '../../../../internal/plugin/html-parser-runtime';
-import { withPreparedParserRuntime } from '../../../../internal/plugin/prepareParserRegistry';
 
 /** Deserialize HTML element to a valid document fragment. */
 export const deserializeHtml = (
   editor: BaseEditor,
   options: { collapseWhiteSpace?: boolean; element: HTMLElement | string }
-): Descendant[] =>
-  withPreparedParserRuntime(editor, (runtime) =>
-    deserializeHtmlWithParserRuntime(runtime, options)
+): Descendant[] | null => {
+  const compiled = deserializeHtmlWithCompiledCodec(editor, options);
+
+  if (compiled !== undefined) return compiled;
+
+  throw new Error(
+    'Plate HTML codec is unavailable before the editor model is compiled.'
   );
+};

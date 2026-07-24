@@ -13,16 +13,16 @@ import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   type Peer,
   paragraph,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const initialValue = (): Descendant[] => [
@@ -35,10 +35,10 @@ const createPeer = (
   clientId: string,
   seedUpdate?: Uint8Array,
   children: readonly Descendant[] = initialValue()
-): Peer => createYjsPeer({ children, clientId, seedUpdate });
+): Peer => createYjsHistoryPeer({ children, clientId, seedUpdate });
 
 const createPeers = (clientIds: readonly string[]): Peer[] =>
-  createSeededYjsPeers({ children: initialValue(), clientIds });
+  createSeededYjsHistoryPeers({ children: initialValue(), clientIds });
 
 const removeMiddleBlock = (peer: Peer): void => {
   peer.editor.update.nodes.remove({ at: [1] });
@@ -204,10 +204,10 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'gamma']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'beta', 'gamma']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!', 'gamma']);
   });
 });

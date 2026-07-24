@@ -5,7 +5,7 @@ import {
   createEditor,
   defineEditorExtension,
 } from '../../../../../packages/plite/src/index.ts';
-import { DocumentChangeBuilder } from '../../../../../packages/plite/src/core/document-change.ts';
+import { ChangeDraft } from '../../../../../packages/plite/src/core/change/builder.ts';
 import * as Editor from '../../../../../packages/plite/src/internal/index.ts';
 import { history as historyExtension } from '../../../../../packages/plite-history/src/index.ts';
 import { summarize, writeBenchmarkArtifact } from '../../shared/stats.mjs';
@@ -118,7 +118,7 @@ const compileRemoteChanges = (cohort) => {
     cohort.id === 'pathological'
       ? createPathologicalTextBurstCommands(cohort.remoteOps)
       : createRemoteTextBurstCommands(cohort);
-  const builder = new DocumentChangeBuilder({
+  const builder = new ChangeDraft({
     children,
     marks: null,
     selection: {

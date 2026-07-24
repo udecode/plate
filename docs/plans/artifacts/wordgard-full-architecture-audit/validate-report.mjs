@@ -14,16 +14,18 @@ const plan = readFileSync(planPath, 'utf8');
 const lines = plan.split('\n');
 const failures = [];
 const fail = (message) => failures.push(message);
-const requirementRows = lines.filter((line) => /^\| R\d{3} \|/.test(line));
+const ledgerRowPattern = /^\| (DOC|STATE|HC|PRODUCT|TABLE|VIEW|META)-\d{3} \|/;
+const requirementRowPattern = /^\| R\d{3} \|/;
+const requirementRows = lines.filter((line) =>
+  requirementRowPattern.test(line)
+);
 
-if (requirementRows.length !== 62) {
-  fail(`Expected 62 requirement rows, found ${requirementRows.length}`);
+if (requirementRows.length !== 69) {
+  fail(`Expected 69 requirement rows, found ${requirementRows.length}`);
 }
 
 const ledgerRows = lines
-  .filter((line) =>
-    /^\| (DOC|STATE|HC|PRODUCT|TABLE|VIEW|META)-\d{3} \|/.test(line)
-  )
+  .filter((line) => ledgerRowPattern.test(line))
   .map((line) => line.slice(2, -2).split(' | '));
 
 if (ledgerRows.length !== 181) {
@@ -60,42 +62,36 @@ for (const cells of ledgerRows) {
       Math.abs(stated - sum) > Number.EPSILON &&
       Math.abs(stated - sum * 2.5) > Number.EPSILON
     ) {
-      fail(
-        `${cells[0]} score field ${field} sums to ${sum}, states ${stated}`
-      );
+      fail(`${cells[0]} score field ${field} sums to ${sum}, states ${stated}`);
     }
   }
 }
 
 const expectedDispositions = {
-  Adopt: 49,
+  Adopt: 48,
   Defer: 1,
-  Reject: 39,
+  Reject: 40,
   Surpass: 92,
 };
 const expectedVerdicts = {
-  Bridge: 4,
+  Bridge: 3,
   Cut: 9,
   Gate: 16,
-  Keep: 114,
+  Keep: 115,
   Move: 6,
   Rearchitect: 31,
   Rename: 1,
 };
 const normalizedCounts = (counts) =>
   Object.fromEntries(
-    Object.entries(counts).sort(([left], [right]) =>
-      left.localeCompare(right)
-    )
+    Object.entries(counts).sort(([left], [right]) => left.localeCompare(right))
   );
 
 if (
   JSON.stringify(normalizedCounts(dispositionCounts)) !==
   JSON.stringify(normalizedCounts(expectedDispositions))
 ) {
-  fail(
-    `Disposition counts differ: ${JSON.stringify(dispositionCounts)}`
-  );
+  fail(`Disposition counts differ: ${JSON.stringify(dispositionCounts)}`);
 }
 if (
   JSON.stringify(normalizedCounts(verdictCounts)) !==
@@ -132,7 +128,8 @@ for (const requiredCall of [
   '**Decision:** Rejected by user.',
   'Keep `@platejs/list-classic`',
 ]) {
-  if (!plan.includes(requiredCall)) fail(`Missing target call: ${requiredCall}`);
+  if (!plan.includes(requiredCall))
+    fail(`Missing target call: ${requiredCall}`);
 }
 
 const roots = [
@@ -184,9 +181,7 @@ for (const reference of references) {
       reference.end < reference.start ||
       reference.end > lineCount
     ) {
-      fail(
-        `Citation range outside ${lineCount} lines: ${reference.raw}`
-      );
+      fail(`Citation range outside ${lineCount} lines: ${reference.raw}`);
     }
   }
 }
@@ -210,8 +205,11 @@ if (latestManifest.summary?.changedFiles !== 52) {
   );
 }
 if (
-  checkoutManifest.census.sourcePaths !== 718 ||
-  checkoutManifest.census.mappedSourcePaths !== 718 ||
+  checkoutManifest.census.changedPaths !==
+    checkoutManifest.census.sourcePaths +
+      checkoutManifest.census.excludedPaths ||
+  checkoutManifest.census.mappedSourcePaths !==
+    checkoutManifest.census.sourcePaths ||
   checkoutManifest.census.unclassifiedPaths !== 0 ||
   checkoutManifest.census.unmappedSourcePaths !== 0
 ) {
@@ -224,7 +222,10 @@ const runGitBuffer = (...args) =>
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 const nulList = (...args) =>
-  runGitBuffer(...args).toString().split('\0').filter(Boolean);
+  runGitBuffer(...args)
+    .toString()
+    .split('\0')
+    .filter(Boolean);
 const currentPaths = [
   ...new Set([
     ...nulList('diff', '--cached', '--name-only', '-z'),
@@ -232,9 +233,7 @@ const currentPaths = [
     ...nulList('ls-files', '--others', '--exclude-standard', '-z'),
   ]),
 ].sort();
-const manifestPaths = checkoutManifest.files
-  .map((file) => file.path)
-  .sort();
+const manifestPaths = checkoutManifest.files.map((file) => file.path).sort();
 
 if (JSON.stringify(currentPaths) !== JSON.stringify(manifestPaths)) {
   fail('Current changed-path set differs from current-checkout-refresh.json');
@@ -243,6 +242,12 @@ if (JSON.stringify(currentPaths) !== JSON.stringify(manifestPaths)) {
 for (const file of checkoutManifest.files) {
   if (file.exclusionReason || file.sha256 === null) continue;
   const absolutePath = join(repository, file.path);
+
+  if (!existsSync(absolutePath)) {
+    fail(`Checkout manifest path is missing: ${file.path}`);
+    continue;
+  }
+
   const hash = createHash('sha256')
     .update(readFileSync(absolutePath))
     .digest('hex');
@@ -257,8 +262,8 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log(
-  JSON.stringify({
+process.stdout.write(
+  `${JSON.stringify({
     citations: references.length,
     concepts: ledgerRows.length,
     dispositionCounts,
@@ -266,5 +271,5 @@ console.log(
     requirements: requirementRows.length,
     sourcePaths: checkoutManifest.census.sourcePaths,
     verdictCounts,
-  })
+  })}\n`
 );

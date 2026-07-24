@@ -1,4 +1,12 @@
-import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test';
+import {
+  afterAll,
+  afterEach,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from 'bun:test';
 import { createBaseEditor } from '@platejs/core';
 
 const cleanDocxMock = mock((html: string) => html);
@@ -49,6 +57,23 @@ describe('importDocx', () => {
       comments: [],
       nodes: [{ type: 'p', children: [{ text: 'Hello' }] }],
       warnings: ['warn-1'],
+    });
+  });
+
+  it('reports HTML decode rejection instead of silently succeeding', async () => {
+    const { importDocx } = await loadModule();
+    const editor = createBaseEditor();
+
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [{ message: 'warn-1' }],
+      value: '<p>Hello</p>',
+    }));
+    spyOn(editor.api.html, 'deserialize').mockReturnValue(null);
+
+    expect(await importDocx(editor, new ArrayBuffer(8))).toEqual({
+      comments: [],
+      nodes: [],
+      warnings: ['warn-1', 'Failed to decode HTML'],
     });
   });
 });

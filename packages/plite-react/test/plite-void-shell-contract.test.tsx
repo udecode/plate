@@ -1,9 +1,12 @@
-import { act } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import React from 'react';
 import { hydrateRoot, type Root } from 'react-dom/client';
 import { renderToString } from 'react-dom/server';
 
 import { PliteInlineVoidShell } from '../src/components/plite-void-shell';
+import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
+import { EditableDOMRuntimeContext } from '../src/hooks/use-claim-editable-dom-commit';
+import { createReactEditor } from '../src/plugin/with-react';
 
 const MAC_OS_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15';
@@ -66,5 +69,34 @@ test('PliteInlineVoidShell hydrates with the same initial order on Mac clients',
     }
     container?.remove();
     restoreNavigator(originalNavigator);
+  }
+});
+
+test('PliteInlineVoidShell uses the mounted root platform', () => {
+  const root = document.createElement('div');
+  const runtime = new EditableDOMRuntime({
+    editor: createReactEditor(),
+    testRootFacts: { platform: 'apple' },
+  });
+
+  document.body.append(root);
+  runtime.setRoot(root);
+  runtime.connect();
+
+  try {
+    const rendered = render(
+      <EditableDOMRuntimeContext.Provider value={runtime}>
+        <InlineVoidFixture />
+      </EditableDOMRuntimeContext.Provider>
+    );
+    const inlineVoid =
+      rendered.getByTestId('void-content').parentElement!.parentElement!;
+
+    expect(inlineVoid.firstElementChild).toBe(
+      rendered.getByTestId('void-anchor')
+    );
+  } finally {
+    runtime.destroy();
+    root.remove();
   }
 });

@@ -11,26 +11,20 @@ export const BaseFontColorPlugin = createBasePlugin({
       styleKey: 'color',
     },
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          {
-            validStyle: {
-              color: '*',
-            },
-          },
-        ],
-        parse({ element, type }) {
-          if (element.style.color) {
-            return { [type]: element.style.color };
-          }
-        },
-      },
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => element.style.color || undefined,
+    encode: ({ value }) => ({
+      style: { color: value },
+      tag: 'span',
+    }),
+    match: [{ style: { color: '*' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    clear: () => {
+      tx.marks.remove(type);
     },
-  },
-}).extendTx(({ type }) => (tx) => ({
-  set: (value: string) => {
-    tx.marks.add(type, value);
-  },
-}));
+    set: (value: string) => {
+      tx.marks.add(type, value);
+    },
+  }));

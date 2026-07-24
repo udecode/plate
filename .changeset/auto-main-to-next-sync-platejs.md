@@ -5,7 +5,8 @@
 - Expose the Plite-backed Plate editor and plugin model, including
   `editor.read`, `editor.update`, top-level plugin `type`, compiled
   `schema.element` and `schema.mark`, plugin `options`, and
-  plugin-owned `editor.plugin(Plugin).api` and `.update` groups
+  inferred plugin-owned `editor.api[pluginKey]` and `editor.update` groups;
+  exact generic code can use `editor.plugin(Plugin)`
 - Export pure schema and plugin builders from `platejs`, React components and
   hooks from `platejs/react`, and `renderStaticHtml` from `platejs/static`
 - Initialize editors synchronously through `initialValue` or
@@ -15,20 +16,30 @@
   complete document through Plate `onValueChange`, and render typed interactive
   or static content-root slots
 - Defer initialization with `skipInitialization: true`, then publish the loaded
-  document with one `editor.update.value.replace({ children })` call
+  document with one `editor.update.value.replace({ children })` call; plugin
+  document-input transforms run before schema fitting
 - Delete `@platejs/autoformat`; declare input rules on the feature plugins that
   own the resulting behavior
-- Compose required plugin capabilities through `dependencies`, optional
-  defaults through one direct `plugins` level, and presets through readonly
-  plugin arrays
-- Remove recursive child mutation, root-plugin callbacks, and global
-  string-key plugin enable/override maps
+- Delete `@platejs/caption`; non-void media elements own direct inline caption
+  children, while Plate UI media components render caption and asset-focus
+  states
+- Compose required plugin capabilities through `dependencies`; include optional
+  capabilities and presets directly in consumer plugin arrays
+- Remove recursive child mutation, root-plugin callbacks, topology-capable
+  foreign-plugin patches, and the parallel global plugin enablement map; keep
+  configuration-only weak peers for package plugins that cannot control the
+  editor kit
 
 **Migration:** Replace `value` with synchronous `initialValue`, move async
 loading before editor construction, replace `useEditorRef` with `useEditor`,
 replace `serializeHtml` with `renderStaticHtml`, and replace autoformat rules
-with feature-owned `inputRules`. Configure complete plugin descriptors in the
-ordinary array and use `inject.parsers` for parser-only projections.
+with feature-owned `inputRules`. Remove `@platejs/caption` imports and caption
+plugin registration, then store and render captions as the media element's
+direct children. Configure imported plugin descriptors in the ordinary array.
+Use `override.plugins[key]` only for package-owned adaptation of an
+already-installed foreign peer. Declare HTML node, mark, and property mappings
+through `.extendHtmlCodec()`, and put whole-input HTML hooks directly under
+`parsers.html`.
 
 For deferred loading:
 

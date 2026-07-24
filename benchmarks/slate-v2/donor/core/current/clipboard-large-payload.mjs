@@ -4,8 +4,13 @@ import { readFileSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { performance } from 'node:perf_hooks';
 import {
+  createBaseEditor,
+  createBasePlugin,
+} from '../../../../../packages/core/src/index.ts';
+import {
   ContentSlice,
   createEditor,
+  defineExtensionSlot,
 } from '../../../../../packages/plite/src/index.ts';
 import {
   defineHostCodec,
@@ -13,6 +18,7 @@ import {
   hostCodecs,
   writeHostFragmentData,
 } from '../../../../../packages/plite-dom/src/index.ts';
+import { getExtensionRegistry } from '../../../../../packages/plite/src/internal/index.ts';
 import { EDITOR_TO_WINDOW } from '../../../../../packages/plite-dom/src/internal/index.ts';
 import { insertHostData } from '../../../../../packages/plite-dom/src/plugin/host-codec.ts';
 import {
@@ -139,10 +145,26 @@ const createDocument = (blockCount) =>
     createParagraph(`existing-${index}`)
   );
 
+const createPlateParagraph = (text) => ({
+  type: 'p',
+  children: [{ text }],
+});
+
+const createPlateFragment = (lineCount) =>
+  Array.from({ length: lineCount }, (_, index) =>
+    createPlateParagraph(createTextLine(index))
+  );
+
 const textByteLength = (text) => Buffer.byteLength(text, 'utf8');
 const roundRatio = (value) => Number(value.toFixed(6));
 
 const benchmarkHostFormat = 'application/x-plite-benchmark-json';
+const benchmarkPlateFormat = 'application/x-plate-benchmark-json';
+const benchmarkPlateReconfigurationFormat =
+  'application/x-plate-benchmark-reconfiguration';
+const plateCodecReconfigurationSlot = defineExtensionSlot(
+  'benchmark-plate-codec-reconfiguration'
+);
 const hostCodecParseDurations = [];
 const hostCodecSerializeDurations = [];
 const benchmarkHostCodecExtension = hostCodecs('benchmark-host-codec', [
@@ -172,6 +194,92 @@ const benchmarkHostCodecExtension = hostCodecs('benchmark-host-codec', [
   }),
 ]);
 
+const createPlateCodecCounters = () => ({
+  compilation: 0,
+  decode: 0,
+  decodeMs: 0,
+  encode: 0,
+  encodeMs: 0,
+  query: 0,
+});
+
+const createPlateReconfigurationCodecExtension = (label, counters) => {
+  counters.compilation += 1;
+
+  return hostCodecs(`benchmark-plate-codec-reconfiguration:${label}`, [
+    defineHostCodec({
+      format: benchmarkPlateReconfigurationFormat,
+      key: `benchmark:plate-codec-reconfiguration:${label}`,
+      parse: ({ data }) => {
+        counters.decode += 1;
+
+        const payload = JSON.parse(data);
+
+        return ContentSlice.fromJSON(payload.slice);
+      },
+      query: () => {
+        counters.query += 1;
+
+        return true;
+      },
+      serialize: ({ slice }) => {
+        counters.encode += 1;
+
+        return JSON.stringify({ label, slice });
+      },
+    }),
+  ]);
+};
+
+const createPlateBenchmarkCodecPlugin = (counters) =>
+  createBasePlugin({
+    key: 'benchmarkPlateCodec',
+    options: {
+      format: 'application/x-plate-benchmark-unconfigured',
+    },
+  })
+    .extendCodecs(({ editor, plugin }) => {
+      counters.compilation += 1;
+
+      const { format } = editor.plugin(plugin).getOptions();
+
+      return {
+        [format]: {
+          scope: 'document',
+          decode: ({ data }) => {
+            const start = performance.now();
+
+            counters.decode += 1;
+            try {
+              return ContentSlice.fromJSON(JSON.parse(data));
+            } finally {
+              counters.decodeMs += performance.now() - start;
+            }
+          },
+          encode: ({ slice }) => {
+            const start = performance.now();
+
+            counters.encode += 1;
+            try {
+              return JSON.stringify(slice);
+            } finally {
+              counters.encodeMs += performance.now() - start;
+            }
+          },
+          query: () => {
+            counters.query += 1;
+
+            return true;
+          },
+        },
+      };
+    })
+    .configure({
+      options: {
+        format: benchmarkPlateFormat,
+      },
+    });
+
 const createBenchmarkEditor = (children, selection, extensions = []) => {
   const editor = createEditor({
     extensions: [dom(), ...extensions],
@@ -183,6 +291,30 @@ const createBenchmarkEditor = (children, selection, extensions = []) => {
 
   return editor;
 };
+
+const createPlateBenchmarkEditor = (children, selection, counters) => {
+  const editor = createBaseEditor({
+    initialValue: children,
+    nodeId: false,
+    plugins: [createPlateBenchmarkCodecPlugin(counters)],
+    selection,
+  });
+
+  EDITOR_TO_WINDOW.set(editor, benchmarkWindow);
+
+  return editor;
+};
+
+const createPlateCodecReconfigurationEditor = (initialCounters) =>
+  createBenchmarkEditor(
+    [createParagraph('')],
+    collapsedStartSelection,
+    [
+      plateCodecReconfigurationSlot.of(
+        createPlateReconfigurationCodecExtension('initial', initialCounters)
+      ),
+    ]
+  );
 
 const collapsedStartSelection = {
   anchor: { path: [0, 0], offset: 0 },
@@ -757,6 +889,293 @@ const measureHostCodecSerialize = (lineCount, sampleCount) => {
   );
 };
 
+const verifyPlateCodecCallbacks = (
+  counters,
+  { compilation, decode, encode, query }
+) => {
+  verify(
+    counters.compilation === compilation,
+    `Expected ${compilation} Plate codec compilation callback, received ${counters.compilation}`
+  );
+  verify(
+    counters.decode === decode,
+    `Expected ${decode} Plate codec decode callback, received ${counters.decode}`
+  );
+  verify(
+    counters.encode === encode,
+    `Expected ${encode} Plate codec encode callback, received ${counters.encode}`
+  );
+  verify(
+    counters.query === query,
+    `Expected ${query} Plate codec query callback, received ${counters.query}`
+  );
+};
+
+const plateCodecMetadata = (counters) => ({
+  compilationCallbacks: counters.compilation,
+  decodeCallbacks: counters.decode,
+  decodeMs: round(counters.decodeMs),
+  encodeCallbacks: counters.encode,
+  encodeMs: round(counters.encodeMs),
+  queryCallbacks: counters.query,
+});
+
+const measurePlateCodecCompilation = (sampleCount) =>
+  measureLane(sampleCount, () => {
+    const counters = createPlateCodecCounters();
+
+    createPlateBenchmarkEditor(
+      [createPlateParagraph('')],
+      collapsedStartSelection,
+      counters
+    );
+    verifyPlateCodecCallbacks(counters, {
+      compilation: 1,
+      decode: 0,
+      encode: 0,
+      query: 0,
+    });
+
+    return plateCodecMetadata(counters);
+  });
+
+const measurePlateCodecReconfiguration = (sampleCount) =>
+  measurePreparedLane(
+    sampleCount,
+    () => {
+      const initialCounters = createPlateCodecCounters();
+      const replacementCounters = createPlateCodecCounters();
+      const editor = createPlateCodecReconfigurationEditor(initialCounters);
+
+      return {
+        configurationRevisionBefore:
+          getExtensionRegistry(editor).configurationRevision,
+        initialCounters,
+        replacementCounters,
+        editor,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ editor, replacementCounters }) => {
+      editor.update.extensions.reconfigure(
+        plateCodecReconfigurationSlot,
+        createPlateReconfigurationCodecExtension(
+          'replacement',
+          replacementCounters
+        )
+      );
+    },
+    {
+      inspect: ({
+        configurationRevisionBefore,
+        editor,
+        initialCounters,
+        replacementCounters,
+        versionBefore,
+      }) => {
+        const configurationCommit = editor.read.lastCommit();
+        const configurationRevisionAfter =
+          getExtensionRegistry(editor).configurationRevision;
+        const configurationCommitCount =
+          editor.read.runtime.snapshot().version - versionBefore;
+
+        verify(
+          configurationCommitCount === 1,
+          `Expected one Plate codec reconfiguration commit, received ${configurationCommitCount}`
+        );
+        verify(
+          configurationCommit?.dirtyStateKeys.includes('$configuration') ??
+            false,
+          'Plate codec reconfiguration did not dirty configuration state'
+        );
+        verify(
+          configurationRevisionAfter === configurationRevisionBefore + 1,
+          `Expected one Plate codec configuration revision, received ${
+            configurationRevisionAfter - configurationRevisionBefore
+          }`
+        );
+        verifyPlateCodecCallbacks(initialCounters, {
+          compilation: 1,
+          decode: 0,
+          encode: 0,
+          query: 0,
+        });
+        verifyPlateCodecCallbacks(replacementCounters, {
+          compilation: 1,
+          decode: 0,
+          encode: 0,
+          query: 0,
+        });
+
+        const slice = ContentSlice.closed([
+          createParagraph('reconfigured-codec'),
+        ]);
+        const input = new FakeDataTransfer();
+
+        input.setData(
+          benchmarkPlateReconfigurationFormat,
+          JSON.stringify({ slice })
+        );
+        verify(
+          insertHostData(editor, input),
+          'Reconfigured Plate codec did not insert data'
+        );
+
+        const output = new FakeDataTransfer();
+        const formats = writeHostFragmentData(editor, output, slice);
+        const payload = JSON.parse(
+          output.getData(benchmarkPlateReconfigurationFormat)
+        );
+
+        verify(
+          formats.includes(benchmarkPlateReconfigurationFormat),
+          'Reconfigured Plate codec did not serialize its format'
+        );
+        verify(
+          payload.label === 'replacement',
+          'Reconfigured Plate codec did not replace the initial registration'
+        );
+        verifyPlateCodecCallbacks(initialCounters, {
+          compilation: 1,
+          decode: 0,
+          encode: 0,
+          query: 0,
+        });
+        verifyPlateCodecCallbacks(replacementCounters, {
+          compilation: 1,
+          decode: 1,
+          encode: 1,
+          query: 1,
+        });
+
+        return {
+          configurationCommitCount,
+          configurationDirtyCommits: configurationCommit?.dirtyStateKeys.includes(
+            '$configuration'
+          )
+            ? 1
+            : 0,
+          configurationRevisionDelta:
+            configurationRevisionAfter - configurationRevisionBefore,
+          initialCompilationCallbacks: initialCounters.compilation,
+          initialDecodeCallbacks: initialCounters.decode,
+          initialEncodeCallbacks: initialCounters.encode,
+          initialQueryCallbacks: initialCounters.query,
+          replacementCompilationCallbacks: replacementCounters.compilation,
+          replacementDecodeCallbacks: replacementCounters.decode,
+          replacementEncodeCallbacks: replacementCounters.encode,
+          replacementQueryCallbacks: replacementCounters.query,
+        };
+      },
+    }
+  );
+
+const measurePlateCodecParseInsert = (lineCount, sampleCount) => {
+  const slice = ContentSlice.closed(createPlateFragment(lineCount));
+  const payload = JSON.stringify(slice);
+
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const counters = createPlateCodecCounters();
+      const editor = createPlateBenchmarkEditor(
+        [createPlateParagraph('')],
+        collapsedStartSelection,
+        counters
+      );
+      const data = new FakeDataTransfer();
+
+      data.setData(benchmarkPlateFormat, payload);
+
+      return {
+        beforeChildren: editor.read.children(),
+        counters,
+        data,
+        editor,
+        versionBefore: editor.read.runtime.snapshot().version,
+      };
+    },
+    ({ data, editor }) => insertHostData(editor, data),
+    {
+      inspect: (
+        { beforeChildren, counters, editor, versionBefore },
+        inserted
+      ) => {
+        verify(inserted, 'Plate codec insert benchmark did not insert data');
+        verifyPlateCodecCallbacks(counters, {
+          compilation: 1,
+          decode: 1,
+          encode: 0,
+          query: 1,
+        });
+
+        const children = editor.read.children();
+
+        verify(
+          children.length === lineCount,
+          `Expected ${lineCount} Plate codec blocks, received ${children.length}`
+        );
+
+        return {
+          ...getCommitMetadata(editor, versionBefore, beforeChildren),
+          ...plateCodecMetadata(counters),
+          insertedBlocks: children.length,
+          lineCount,
+          payloadBytes: textByteLength(payload),
+        };
+      },
+      measureRetained: true,
+    }
+  );
+};
+
+const measurePlateCodecSerialize = (lineCount, sampleCount) => {
+  const slice = ContentSlice.closed(createPlateFragment(lineCount));
+
+  return measurePreparedLane(
+    sampleCount,
+    () => {
+      const counters = createPlateCodecCounters();
+      const data = new FakeDataTransfer();
+      const editor = createPlateBenchmarkEditor(
+        [createPlateParagraph('')],
+        null,
+        counters
+      );
+
+      return { counters, data, editor };
+    },
+    ({ data, editor }) => writeHostFragmentData(editor, data, slice),
+    {
+      inspect: ({ counters, data }, formats) => {
+        const payload = data.getData(benchmarkPlateFormat);
+
+        verify(
+          formats.includes(benchmarkPlateFormat),
+          'Plate codec serialize benchmark did not report its format'
+        );
+        verify(
+          payload.length > 0,
+          'Plate codec serialize benchmark produced no payload'
+        );
+        verifyPlateCodecCallbacks(counters, {
+          compilation: 1,
+          decode: 0,
+          encode: 1,
+          query: 0,
+        });
+
+        return {
+          ...plateCodecMetadata(counters),
+          fragmentNodes: slice.content.length,
+          lineCount,
+          payloadBytes: textByteLength(payload),
+        };
+      },
+    }
+  );
+};
+
 const measureFullSelectionCopy = (
   lineCount,
   sampleCount,
@@ -1024,6 +1443,19 @@ const measureIssueTargets = () =>
       }
     : undefined;
 
+const measurePlateCodecs = () => ({
+  compilationMs: measurePlateCodecCompilation(issueTargetIterations),
+  parseInsert10000Ms: measurePlateCodecParseInsert(
+    issueTargetStressLines,
+    issueTargetIterations
+  ),
+  reconfigurationMs: measurePlateCodecReconfiguration(issueTargetIterations),
+  serialize10000Ms: measurePlateCodecSerialize(
+    issueTargetStressLines,
+    issueTargetIterations
+  ),
+});
+
 const workerLanes = ['issue', 'cut', 'support'];
 const workerArtifacts = workerLanes.map(
   (lane) => `tmp/plite-clipboard-${lane}-${process.pid}.json`
@@ -1032,6 +1464,7 @@ let workerPids;
 let cohortResults;
 let pathological;
 let issueTargets;
+let plateCodecs;
 
 if (benchmarkPartition) {
   const laneResult =
@@ -1040,7 +1473,10 @@ if (benchmarkPartition) {
       : benchmarkPartition === 'cut'
         ? { pathological: measuredPathological() }
         : benchmarkPartition === 'issue'
-          ? { issueTargets: measureIssueTargets() }
+          ? {
+              issueTargets: measureIssueTargets(),
+              plateCodecs: measurePlateCodecs(),
+            }
           : null;
 
   if (!laneResult) {
@@ -1132,6 +1568,7 @@ if (benchmarkPartition) {
   cohortResults = workersByLane.support.cohorts;
   pathological = workersByLane.cut.pathological;
   issueTargets = workersByLane.issue.issueTargets;
+  plateCodecs = workersByLane.issue.plateCodecs;
   workerPids = Object.freeze({
     cut: workersByLane.cut.pid,
     issue: workersByLane.issue.pid,
@@ -1141,6 +1578,7 @@ if (benchmarkPartition) {
   cohortResults = measureCohorts();
   pathological = measuredPathological();
   issueTargets = measureIssueTargets();
+  plateCodecs = measurePlateCodecs();
 }
 
 const issueTargetThresholds = issueTargetsEnabled
@@ -1179,6 +1617,7 @@ const allLanes = [
   ),
   ...Object.values(pathological),
   ...Object.values(issueTargets ?? {}),
+  ...Object.values(plateCodecs),
 ];
 const metadataP95 = (lane, key) =>
   summarizeDurations(
@@ -1222,6 +1661,17 @@ const metrics = {
   plite_clipboard_issue_budget_failures: issueBudgetFailures.length,
   plite_clipboard_plain_text_paste_10000_p50_ms:
     issueTargets?.largePlainTextPaste10000.p50 ?? 0,
+  plite_clipboard_plate_codec_compile_p95_ms: plateCodecs.compilationMs.p95,
+  plite_clipboard_plate_codec_decode_10000_p95_ms: metadataP95(
+    plateCodecs.parseInsert10000Ms,
+    'decodeMs'
+  ),
+  plite_clipboard_plate_codec_parse_insert_10000_p95_ms:
+    plateCodecs.parseInsert10000Ms.p95,
+  plite_clipboard_plate_codec_reconfigure_p95_ms:
+    plateCodecs.reconfigurationMs.p95,
+  plite_clipboard_plate_codec_serialize_10000_p95_ms:
+    plateCodecs.serialize10000Ms.p95,
   plite_clipboard_populated_full_selection_copy_10000_p50_ms:
     issueTargets?.populatedFullSelectionCopy10000.p50 ?? 0,
   plite_clipboard_populated_plain_text_paste_10000_p50_ms:
@@ -1277,6 +1727,7 @@ const summary = {
     currentContentSliceBoundary: true,
     currentDOMClipboardBoundary: true,
     currentHostCodecBoundary: true,
+    currentPlateCodecBoundary: true,
     oneCommitPerMutation: correctnessFailures.every(
       (failure) => !failure.startsWith('Expected one commit')
     ),
@@ -1300,6 +1751,7 @@ const summary = {
   },
   metrics,
   pathological,
+  plateCodecs,
   thresholdPolicy: {
     releaseGate: authorityArtifact && issueTargetsEnabled,
     source: 'Slate issues #4056, #5945, and #5992',

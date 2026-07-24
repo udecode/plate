@@ -39,43 +39,42 @@ export const BaseTextAlignPlugin = createBasePlugin({
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
-    targetParserToInject: ({ type }) => ({
-      parsers: {
-        html: {
-          deserializer: {
-            parse: ({ element }) => {
-              if (element.style.textAlign) {
-                return { [type]: element.style.textAlign };
-              }
-            },
-          },
-        },
-      },
-    }),
   },
   targetPluginKeys: defaultTargetPluginKeys,
   type: 'align',
-}).extendTx(({ editor, plugin, type }) => (tx) => ({
-  set: (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
-    const { defaultNodeValue } = editor.getInjectProps(plugin);
-    const match = getInjectMatch(editor, plugin);
-
-    if (value === defaultNodeValue) {
-      tx.nodes.unset(type, {
-        match,
-        ...options,
-      });
-      return;
-    }
-
-    tx.nodes.set(
-      { [type]: value },
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => element.style.textAlign || undefined,
+    encode: ({ value }) => ({ style: { textAlign: value } }),
+    match: [
       {
-        match,
-        ...options,
+        style: {
+          textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+        },
+      },
+    ],
+  }))
+  .extendTx(({ editor, plugin, type }) => (tx) => ({
+    set: (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
+      const { defaultNodeValue } = editor.getInjectProps(plugin);
+      const match = getInjectMatch(editor, plugin);
+
+      if (value === defaultNodeValue) {
+        tx.nodes.unset(type, {
+          match,
+          ...options,
+        });
+        return;
       }
-    );
-  },
-}));
+
+      tx.nodes.set(
+        { [type]: value },
+        {
+          match,
+          ...options,
+        }
+      );
+    },
+  }));
 
 export type TextAlignConfig = InferConfig<typeof BaseTextAlignPlugin>;

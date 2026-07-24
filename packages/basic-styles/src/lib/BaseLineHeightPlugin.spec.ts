@@ -1,8 +1,4 @@
-import {
-  BaseParagraphPlugin,
-  createBaseEditor,
-  HtmlPlugin,
-} from '@platejs/core';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { BaseLineHeightPlugin } from './BaseLineHeightPlugin';
@@ -79,12 +75,12 @@ describe('BaseLineHeightPlugin', () => {
     });
 
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<p style="line-height: 2">text</p>',
       })
     ).toMatchObject([
       {
-        [editor.getType(KEYS.lineHeight)]: '2',
+        [editor.getType(KEYS.lineHeight)]: 2,
         children: [{ text: 'text' }],
         type: KEYS.p,
       },
@@ -139,13 +135,13 @@ describe('BaseLineHeightPlugin', () => {
     });
 
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<p style="line-height: 2">text</p>',
       })
     ).toMatchObject([
       {
         children: [{ text: 'text' }],
-        leading: '2',
+        leading: 2,
         type: KEYS.p,
       },
     ]);

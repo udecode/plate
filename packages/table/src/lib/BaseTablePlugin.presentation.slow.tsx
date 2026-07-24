@@ -100,6 +100,9 @@ describe('table presentation slow contracts', () => {
         ) as TestEditor;
 
         const editor = createEditorInstance(input);
+        let commits = 0;
+
+        editor.subscribeCommit(() => commits++);
         editor
           .plugin(BaseTablePlugin)
           .update.setBorderSize(2, { border: 'all' });
@@ -127,6 +130,7 @@ describe('table presentation slow contracts', () => {
             </editor>
           ).children
         );
+        expect(commits).toBe(1);
       });
 
       it('set border left', () => {

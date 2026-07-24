@@ -3,6 +3,7 @@ import {
   ElementApi,
   PathApi,
   PointApi,
+  type Path,
   type EditorStateView,
   type EditorTransactionSpecBuilder,
   type Element,
@@ -21,7 +22,7 @@ import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 const resetBlock = (
   editor: BaseEditor,
   tx: Pick<EditorTransactionSpecBuilder, 'blocks'>,
-  at: number[]
+  at: Path
 ) => {
   tx.blocks.reset(
     { type: getEditorDefaultBlockType(editor) },
@@ -35,7 +36,7 @@ const getRuleOverridePlugin = (
   editor: BaseEditor,
   rule: MatchRules,
   node: Element,
-  path: number[],
+  path: Path,
   hasRules: (plugin: AnyBasePlugin) => boolean
 ) => {
   for (const key of getPlateRuntime(editor).pluginCache.rules.match) {
@@ -106,7 +107,7 @@ const executeBreakRuleAction = (
   editor: BaseEditor,
   tx: EditorTransactionSpecBuilder,
   action: string | undefined,
-  blockPath: number[]
+  blockPath: Path
 ) => {
   if (!action || action === 'default') return false;
   if (action === 'none') return true;
@@ -137,7 +138,7 @@ const executeDeleteRuleAction = (
   editor: BaseEditor,
   tx: EditorTransactionSpecBuilder,
   action: string | undefined,
-  blockPath: number[]
+  blockPath: Path
 ) => {
   if (action === 'reset') {
     resetBlock(editor, tx, blockPath);
@@ -153,8 +154,8 @@ const executeDeleteRuleAction = (
 
 const selectAdjacentBlockVoid = (
   tx: EditorTransactionSpecBuilder,
-  adjacent: readonly [unknown, number[]] | undefined,
-  current: readonly [Element, number[]]
+  adjacent: readonly [unknown, Path] | undefined,
+  current: readonly [Element, Path]
 ) => {
   if (
     !adjacent ||
@@ -181,7 +182,7 @@ const getEffectiveBreakRules = (
   editor: BaseEditor,
   rule: MatchRules,
   blockNode: Element,
-  blockPath: number[]
+  blockPath: Path
 ) => {
   const plugin = getPluginByType(editor, blockNode.type);
   const overridePlugin = getRuleOverridePlugin(
@@ -199,7 +200,7 @@ const getEffectiveDeleteRules = (
   editor: BaseEditor,
   rule: MatchRules,
   blockNode: Element,
-  blockPath: number[]
+  blockPath: Path
 ) => {
   const plugin = getPluginByType(editor, blockNode.type);
   const overridePlugin = getRuleOverridePlugin(
@@ -259,7 +260,7 @@ const getMergeOverrideRules = (
   editor: BaseEditor,
   rule: MatchRules,
   node: Element,
-  path: number[]
+  path: Path
 ) => {
   for (const key of getPlateRuntime(editor).pluginCache.rules.match) {
     const plugin = editor.getPlugin({ key });
@@ -285,7 +286,7 @@ const getMergeOverrideRules = (
 const shouldRemoveEmptyMergeTarget = (
   editor: BaseEditor,
   node: Element,
-  path: number[]
+  path: Path
 ) => {
   const type = typeof node.type === 'string' ? node.type : undefined;
   const plugin = type ? getPluginByType(editor, type) : undefined;

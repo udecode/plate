@@ -1,5 +1,11 @@
-import { createBaseEditor, createBasePlugin, HtmlPlugin } from '@platejs/core';
-import { property, type PropertyValueOf, schema, target } from '@platejs/plite';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import {
+  type PropertyValueOf,
+  SelectionApi,
+  property,
+  schema,
+  target,
+} from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseAudioPlugin } from './BaseAudioPlugin';
@@ -419,7 +425,7 @@ describe('Base media plugin contracts', () => {
     });
 
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element:
           '<img alt="Direct caption owner" src="https://platejs.org/image.png" />',
       })
@@ -432,10 +438,61 @@ describe('Base media plugin contracts', () => {
       },
     ]);
     expect(
-      editor
-        .plugin(HtmlPlugin)
-        .api.deserialize({ element: '<img alt="missing" />' })
+      editor.api.html.deserialize({ element: '<img alt="missing" />' })
     ).toEqual([]);
+  });
+
+  it('encodes a visible image and caption with standard media attributes', () => {
+    const point = { offset: 0, path: [0, 0] };
+    const editor = createBaseEditor({
+      plugins: [BaseImagePlugin],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      initialValue: [
+        {
+          alt: 'Plate',
+          children: [{ text: 'Image caption' }],
+          initialHeight: 360,
+          initialWidth: 640,
+          type: KEYS.img,
+          url: 'https://platejs.org/image.png',
+          width: '50%',
+        },
+      ],
+    });
+    const data = new DataTransfer();
+
+    editor.api.clipboard.writeSelection(data);
+
+    const document = new DOMParser().parseFromString(
+      data.getData('text/html'),
+      'text/html'
+    );
+    const figure = document.body.querySelector('figure.plate-image');
+    const image = figure?.querySelector<HTMLElement>(':scope > img');
+
+    expect(image?.getAttribute('src')).toBe('https://platejs.org/image.png');
+    expect(image?.getAttribute('alt')).toBe('Plate');
+    expect(image?.getAttribute('height')).toBe('360');
+    expect(image?.getAttribute('width')).toBe('640');
+    expect(image?.style.width).toBe('50%');
+    expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
+      'Image caption'
+    );
+    expect(
+      editor.api.html.deserialize({
+        element: figure!.outerHTML,
+      })
+    ).toEqual([
+      {
+        alt: 'Plate',
+        children: [{ text: 'Image caption' }],
+        initialHeight: 360,
+        initialWidth: 640,
+        type: KEYS.img,
+        url: 'https://platejs.org/image.png',
+        width: '50%',
+      },
+    ]);
   });
 
   it('keeps every isolating media owner intact when deleting backward from the next block', () => {

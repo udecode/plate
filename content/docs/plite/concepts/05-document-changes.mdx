@@ -24,12 +24,9 @@ anchors, corrections, and view invalidation:
 - `iterChangedRanges(visit)`
 - `toJSON()` and `DocumentChange.fromJSON(json)`
 
-`ChangeSet` is the single-root algebra used inside `DocumentChange`.
-
-The primary document has its own `primary` change and
-`primaryClassification`. Named roots live in the `roots` and
-`rootClassifications` maps. Omit `root` when mapping a primary-document
-position. Explicit root strings always address named secondary roots.
+The compact per-root representation is private. Omit `root` when mapping a
+primary-document position. Explicit root strings always address named
+secondary roots.
 
 ```typescript
 const mapped = change.mapPosition(position, {

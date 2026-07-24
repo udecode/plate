@@ -1,9 +1,45 @@
 import { createBaseEditor } from '@platejs/core';
+import { SelectionApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 
 describe('BaseBlockquotePlugin', () => {
+  it('decodes and encodes its HTML element claim', () => {
+    const point = { offset: 0, path: [0, 0, 0] };
+    const editor = createBaseEditor({
+      plugins: [BaseBlockquotePlugin],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      initialValue: [
+        {
+          children: [{ children: [{ text: 'Quote' }], type: KEYS.p }],
+          type: KEYS.blockquote,
+        },
+      ],
+    });
+    const data = new DataTransfer();
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<blockquote><p>Quote</p></blockquote>',
+      })
+    ).toEqual([
+      {
+        children: [{ children: [{ text: 'Quote' }], type: KEYS.p }],
+        type: KEYS.blockquote,
+      },
+    ]);
+
+    editor.api.clipboard.writeSelection(data);
+
+    const body = new DOMParser().parseFromString(
+      data.getData('text/html'),
+      'text/html'
+    ).body;
+
+    expect(body.querySelector('blockquote > p')?.textContent).toBe('Quote');
+  });
+
   it('uses container grammar and scoped wrapper semantics', () => {
     const editor = createBaseEditor({
       plugins: [BaseBlockquotePlugin],

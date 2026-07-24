@@ -12,7 +12,7 @@ description: API reference for the Plate editor runtime.
 | `PlateEditor` | `@platejs/core/react` | React editor type with Plate plugin APIs, transaction groups, handlers, renders, and hooks. |
 | `BaseEditor` | `@platejs/core` | Non-React editor type used by server-side and static editor paths. |
 | Plite primitives | `@platejs/plite` | `children`, `selection`, `operations`, core `api`, and the transaction/update runtime. |
-| Core plugins | `@platejs/core` | Debugging, HTML parsing, parser pipeline, length, node id, history, input rules, and base paragraph behavior. |
+| Core plugins | `@platejs/core` | Debugging, HTML parsing, product codecs, length, node id, history, input rules, and base paragraph behavior. |
 | React core plugins | `@platejs/core/react` | React extension, DOM integration, event editor, navigation feedback, and React paragraph plugin. |
 
 Use `PlateEditor` when a page or component runs inside React. Use `BaseEditor` when you need the headless editor from `createBaseEditor`.
@@ -218,9 +218,9 @@ Mutations run through `editor.update`. Core Plite commands live on the transacti
 
 Some core behavior is exposed by routing browser/editor events into the Plite transaction runtime rather than by adding public editor methods.
 
-| Plugin | Effect |
+| Surface | Effect |
 | --- | --- |
-| `ParserPlugin` | Handles paste data and scans plugin parsers in reverse plugin order. Matching parsers transform data, deserialize a fragment, transform the fragment, and insert it. |
+| Product codec registry | Compiles plugin `.extendCodecs()` declarations and delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
 | Plite change events | Emits committed node and text change contexts so Plate handlers can receive previous and next node or text state. |
 | Plite React runtime | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior. |
 | `HtmlPlugin` | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`. |

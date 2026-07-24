@@ -64,6 +64,48 @@ export function getEditorPlugin(
   ) => {
     store.set('state', snapshotPluginOptions(value) as never);
   };
+  const createApiFacade = (path: readonly PropertyKey[]): unknown =>
+    new Proxy(
+      (...args: unknown[]) => {
+        let owner: unknown =
+          getCompiledPlatePluginApi(editor, getPlugin().key) ?? {};
+        let value = owner;
+
+        for (const key of path) {
+          owner = value;
+          value =
+            value && (typeof value === 'object' || typeof value === 'function')
+              ? (value as Record<PropertyKey, unknown>)[key]
+              : undefined;
+        }
+
+        if (typeof value !== 'function') {
+          throw new TypeError(
+            `Plugin API method "${path.map(String).join('.')}" is not callable.`
+          );
+        }
+
+        return Reflect.apply(value, owner, args);
+      },
+      {
+        get(_target, key) {
+          if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+            return;
+          }
+
+          return createApiFacade([...path, key]);
+        },
+      }
+    );
+  const api = new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
+    get(_target, key) {
+      if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+        return;
+      }
+
+      return createApiFacade([key]);
+    },
+  });
   const getRuntimeApi = () => {
     const plugin = getPlugin();
 
@@ -71,7 +113,7 @@ export function getEditorPlugin(
       isResolvingPlatePlugin(editor, plugin) &&
       !hasCompiledPlatePluginApiCandidate(editor)
     ) {
-      return {};
+      return api;
     }
 
     return getCompiledPlatePluginApi(editor, plugin.key) ?? {};
@@ -124,6 +166,49 @@ export function getEditorPlugin(
         },
       }
     );
+  const createReadFacade = (path: readonly PropertyKey[]): unknown =>
+    new Proxy(
+      (...args: unknown[]) => {
+        let owner: unknown = (
+          editor.read as unknown as Record<PropertyKey, unknown>
+        )[getPlugin().key];
+        let value = owner;
+
+        for (const key of path) {
+          owner = value;
+          value =
+            value && (typeof value === 'object' || typeof value === 'function')
+              ? (value as Record<PropertyKey, unknown>)[key]
+              : undefined;
+        }
+
+        if (typeof value !== 'function') {
+          throw new TypeError(
+            `Plugin read method "${path.map(String).join('.')}" is not callable.`
+          );
+        }
+
+        return Reflect.apply(value, owner, args);
+      },
+      {
+        get(_target, key) {
+          if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+            return;
+          }
+
+          return createReadFacade([...path, key]);
+        },
+      }
+    );
+  const read = new Proxy(Object.create(null) as Record<PropertyKey, unknown>, {
+    get(_target, key) {
+      if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
+        return;
+      }
+
+      return createReadFacade([key]);
+    },
+  });
   const update = new Proxy(
     Object.create(null) as Record<PropertyKey, unknown>,
     {
@@ -209,6 +294,7 @@ export function getEditorPlugin(
     api: { enumerable: true, get: getRuntimeApi },
     installed: { enumerable: true, get: isInstalled },
     plugin: { enumerable: true, get: getPlugin },
+    read: { enumerable: true, value: read },
     type: { enumerable: true, get: () => getPlugin().type },
     update: { enumerable: true, value: update },
   });

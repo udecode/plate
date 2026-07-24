@@ -6,8 +6,8 @@ import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -15,9 +15,9 @@ import {
   type Peer,
   paragraph,
   readPeerChildren,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -35,7 +35,7 @@ const createPeer = (
   clientId: ClientId,
   children: readonly Descendant[] = initialValue()
 ): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children,
     clientId,
     numericClientId: clientIds[clientId],
@@ -45,7 +45,7 @@ const createPeers = (
   ids: readonly ClientId[],
   children: readonly Descendant[] = initialValue()
 ): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children,
     clientIds: ids,
     numericClientIds: clientIds,
@@ -152,14 +152,14 @@ describe('@platejs/yjs set_node collaboration contract', () => {
       ]);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(readPeerChildren(peer), [
         { type: 'paragraph', children: [{ text: 'alpha!' }] },
       ]);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(readPeerChildren(peer), [
         {
@@ -208,7 +208,7 @@ describe('@platejs/yjs set_node collaboration contract', () => {
       ]);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha']);
     for (const peer of peers) {
       assert.deepEqual(readPeerChildren(peer), [

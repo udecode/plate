@@ -57,7 +57,7 @@ type PlatePluginConfig<
       >
     >
   >,
-  keyof PlatePluginMethods | 'api' | 'options' | 'shortcuts'
+  keyof PlatePluginMethods | 'api' | 'options' | 'schema' | 'shortcuts'
 > & {
   api?: EA & Partial<InferApi<C>>;
   options?: EO & Partial<InferOptions<C>>;
@@ -88,7 +88,7 @@ type RuntimePlatePluginConfig<
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
   PlatePluginConfig<C, EO, EA, ES, TShortcuts>,
-  'dependencies' | 'parser' | 'parsers' | 'render' | 'schema' | 'type'
+  'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
   render?: Omit<
     NonNullable<PlatePluginConfig<C, EO, EA, ES, TShortcuts>['render']>,
@@ -104,6 +104,8 @@ type BasePluginDescriptorInput = PluginReference & {
 const methodsToWrap = [
   'clone',
   'configure',
+  'extendCodecs',
+  'extendHtmlCodec',
   'extendEditorApi',
   'extendExtension',
   'extendSelectors',
@@ -116,7 +118,10 @@ const methodsToWrap = [
 
 const extensionArrayKeys = [
   '__apiExtensions',
+  '__codecExtensions',
+  '__htmlCodecExtensions',
   '__editorExtensions',
+  '__readExtensions',
   '__selectorExtensions',
   '__txExtensions',
 ] as const;
@@ -166,7 +171,7 @@ type ExtendPlatePluginConfig<
       >
     >
   >,
-  keyof PlatePluginMethods | 'shortcuts'
+  keyof PlatePluginMethods | 'schema' | 'shortcuts'
 > & {
   shortcuts?: PluginShortcutInput<C, TShortcuts, Shortcut>;
 };
@@ -176,7 +181,7 @@ type RuntimeExtendPlatePluginConfig<
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
   ExtendPlatePluginConfig<C, TShortcuts>,
-  'dependencies' | 'parser' | 'parsers' | 'render' | 'schema' | 'type'
+  'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
   render?: Omit<
     NonNullable<ExtendPlatePluginConfig<C, TShortcuts>['render']>,
@@ -192,7 +197,7 @@ type RuntimeExtendPlatePluginConfig<
  *   React-specific functionality to be added.
  * @param basePlugin - The base BasePlugin to be extended.
  * @param extendConfig - Static plugin configuration, or a runtime callback for
- *   behavior that does not define schema or parser behavior.
+ *   behavior that does not define schema or HTML behavior.
  * @returns A new PlatePlugin that combines the base BasePlugin functionality
  *   with React-specific features defined in the extension configuration.
  */
@@ -285,9 +290,12 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
     );
   }
 
-  const plugin = brandPluginDescriptor({
-    ...basePlugin,
-  }) as unknown as PlatePlugin<any>;
+  const plugin = brandPluginDescriptor(
+    {
+      ...basePlugin,
+    },
+    basePlugin
+  ) as unknown as PlatePlugin<any>;
 
   methodsToWrap.forEach((method) => {
     const originalMethod = plugin[method];
@@ -310,6 +318,15 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
       plugin,
       extendedPlugin as PlatePlugin<any>
     ) as any;
+  }
+  if (
+    typeof extendConfig === 'object' &&
+    extendConfig !== null &&
+    Object.hasOwn(extendConfig, 'schema')
+  ) {
+    throw new Error(
+      `Plate plugin '${plugin.key}' cannot define schema through toPlatePlugin(). Declare schema when creating the base plugin.`
+    );
   }
 
   const extendedBasePlugin = createBasePlugin(

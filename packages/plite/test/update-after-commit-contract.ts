@@ -10,12 +10,11 @@ import {
   createEditor,
   createEditorRuntime,
   createEditorView,
-  type Element,
   defineEditorExtension,
   type EditorCommitHandler,
 } from '@platejs/plite';
 
-const paragraph = (text: string): Element => ({
+const paragraph = (text: string) => ({
   type: 'paragraph',
   children: [{ text }],
 });
@@ -226,8 +225,8 @@ describe('editor.update afterCommit', () => {
       defineEditorExtension({
         name: 'nested-named-root-on-commit-snapshot',
         onCommit({ commit, editor, snapshot }) {
-          const [block] = snapshot.children as {
-            children: { text: string }[];
+          const [block] = snapshot.children as readonly {
+            readonly children: readonly { readonly text: string }[];
           }[];
           const snapshotText = block?.children[0]?.text ?? '';
 
@@ -296,8 +295,8 @@ describe('editor.update afterCommit', () => {
 
     headerEditor.update((tx, { afterCommit }) => {
       afterCommit(({ editor, snapshot }) => {
-        const [block] = snapshot.children as {
-          children: { text: string }[];
+        const [block] = snapshot.children as readonly {
+          readonly children: readonly { readonly text: string }[];
         }[];
 
         event = {

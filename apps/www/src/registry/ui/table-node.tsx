@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 
 import { selectBlockById, useDraggable, useDropLine } from '@platejs/dnd';
 import {
@@ -39,6 +40,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import {
+  type Path,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -169,7 +171,7 @@ function useTableResizeController({
   hoverIndicatorRef: React.RefObject<HTMLDivElement | null>;
   marginLeft: number;
   controlColumnWidth: number;
-  tablePath: number[];
+  tablePath: Path;
   tableRef: React.RefObject<HTMLTableElement | null>;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
 }) {
@@ -495,7 +497,18 @@ function useTableResizeController({
     clearFrozenRowHeights();
   }, [clearFrozenRowHeights, hideDeferredResizeIndicator, hideResizeIndicator]);
 
-  React.useEffect(() => stopResize, [stopResize]);
+  const stopResizeRef = React.useRef(stopResize);
+
+  React.useEffect(() => {
+    stopResizeRef.current = stopResize;
+  }, [stopResize]);
+
+  React.useEffect(
+    () => () => {
+      stopResizeRef.current();
+    },
+    []
+  );
 
   const startResize = React.useCallback(
     (
@@ -630,7 +643,42 @@ export const TableElement = withHOC(
     });
     const tableRef = React.useRef<HTMLTableElement>(null);
     const wrapperRef = React.useRef<HTMLDivElement>(null);
+    const dragCellId = useEditorSelector((editor) => {
+      const view = getTableApi(editor).getSelection();
+
+      if (
+        !view?.complete ||
+        view.grid.problems.length > 0 ||
+        typeof view.table.id !== 'string' ||
+        view.table.id !== props.element.id ||
+        view.anchors.length <= 1 ||
+        view.cellIds.length !== view.anchors.length
+      ) {
+        return null;
+      }
+
+      return view.cellIds[0] ?? null;
+    });
+    const [dragHandleHost, setDragHandleHost] =
+      React.useState<HTMLElement | null>(null);
     useTableSelectionDom(tableRef);
+    React.useLayoutEffect(() => {
+      let nextHost: HTMLElement | null = null;
+
+      if (dragCellId) {
+        const escapedCellId = globalThis.CSS?.escape
+          ? globalThis.CSS.escape(dragCellId)
+          : dragCellId.replaceAll('"', '\\"');
+        nextHost =
+          tableRef.current?.querySelector<HTMLElement>(
+            `[data-table-cell-id="${escapedCellId}"]`
+          ) ?? null;
+      }
+
+      setDragHandleHost((currentHost) =>
+        currentHost === nextHost ? currentHost : nextHost
+      );
+    }, [dragCellId, props.element]);
     const resizeController = useTableResizeController({
       controlColumnWidth,
       deferColumnResize,
@@ -651,20 +699,6 @@ export const TableElement = withHOC(
         () => TABLE_DEFAULT_COLUMN_WIDTH
       );
     }, [api, colSizes, props.element]);
-    const tableVariableStyle = React.useMemo(() => {
-      if (resolvedColSizes.length === 0) {
-        return;
-      }
-
-      return {
-        ...Object.fromEntries(
-          resolvedColSizes.map((colSize, index) => [
-            `--table-col-${index}`,
-            `${colSize}px`,
-          ])
-        ),
-      } as React.CSSProperties;
-    }, [resolvedColSizes]);
     const tableStyle = React.useMemo(
       () =>
         ({
@@ -688,11 +722,7 @@ export const TableElement = withHOC(
         style={{ paddingLeft: marginLeft }}
       >
         <TableResizeContext.Provider value={resizeController}>
-          <div
-            ref={wrapperRef}
-            className="group/table relative w-fit"
-            style={tableVariableStyle}
-          >
+          <div ref={wrapperRef} className="group/table relative w-fit">
             <div
               ref={dragIndicatorRef}
               className="-translate-x-[1.5px] pointer-events-none absolute inset-y-0 z-36 hidden w-[3px] bg-ring/70"
@@ -705,16 +735,31 @@ export const TableElement = withHOC(
             />
             <table
               ref={tableRef}
-              className={cn(
-                'mr-0 ml-px table h-px table-fixed border-collapse',
-                'data-[table-selecting=true]:[&_*::selection]:!bg-transparent',
-                'data-[table-selecting=true]:[&_*::selection]:!text-inherit',
-                'data-[table-selecting=true]:[&_*::-moz-selection]:!bg-transparent',
-                'data-[table-selecting=true]:[&_*::-moz-selection]:!text-inherit',
-                'data-[table-selecting=true]:[&_*]:!caret-transparent'
-              )}
+              className="mr-0 ml-px table h-px table-fixed border-collapse"
               style={tableStyle}
               {...tableProps}
+              onMouseDown={(event) => {
+                if (
+                  (event.target as Element).closest(
+                    '[data-table-cell-drag-handle="true"]'
+                  )
+                ) {
+                  event.stopPropagation();
+
+                  return;
+                }
+
+                tableProps.onMouseDown();
+              }}
+              onPointerDown={(event) => {
+                if (
+                  (event.target as Element).closest(
+                    '[data-table-cell-drag-handle="true"]'
+                  )
+                ) {
+                  event.stopPropagation();
+                }
+              }}
             >
               {resolvedColSizes.length > 0 && (
                 <colgroup>
@@ -741,6 +786,22 @@ export const TableElement = withHOC(
               )}
               <tbody className="min-w-full">{children}</tbody>
             </table>
+
+            {dragHandleHost &&
+              createPortal(
+                <button
+                  aria-label="Move selected cells"
+                  className="-translate-y-1/2 absolute top-1/2 left-6 z-40 flex h-6 w-4 cursor-grab items-center justify-center rounded-sm border bg-background text-muted-foreground shadow-sm active:cursor-grabbing"
+                  contentEditable={false}
+                  data-table-cell-drag-for={dragCellId}
+                  data-table-cell-drag-handle="true"
+                  draggable
+                  type="button"
+                >
+                  <GripVertical className="size-3" />
+                </button>,
+                dragHandleHost
+              )}
 
             {isSelectingTable && (
               <div
@@ -918,6 +979,7 @@ function TableFloatingToolbarContent({
           </ColorDropdownMenu>
           {canMerge && onMerge && (
             <ToolbarButton
+              aria-label="Merge cells"
               onClick={onMerge}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Merge cells"
@@ -927,6 +989,7 @@ function TableFloatingToolbarContent({
           )}
           {canSplit && onSplit && (
             <ToolbarButton
+              aria-label="Split cell"
               onClick={onSplit}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Split cell"
@@ -937,7 +1000,7 @@ function TableFloatingToolbarContent({
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <ToolbarButton tooltip="Cell borders">
+              <ToolbarButton aria-label="Cell borders" tooltip="Cell borders">
                 <Grid2X2Icon />
               </ToolbarButton>
             </DropdownMenuTrigger>
@@ -949,7 +1012,11 @@ function TableFloatingToolbarContent({
 
           {collapsedInside && (
             <ToolbarGroup>
-              <ToolbarButton tooltip="Delete table" {...buttonProps}>
+              <ToolbarButton
+                {...buttonProps}
+                aria-label="Delete table"
+                tooltip="Delete table"
+              >
                 <Trash2Icon />
               </ToolbarButton>
             </ToolbarGroup>
@@ -959,6 +1026,7 @@ function TableFloatingToolbarContent({
         {collapsedInside && (
           <ToolbarGroup>
             <ToolbarButton
+              aria-label="Insert row before"
               onClick={onInsertRowBefore}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Insert row before"
@@ -966,6 +1034,7 @@ function TableFloatingToolbarContent({
               <ArrowUp />
             </ToolbarButton>
             <ToolbarButton
+              aria-label="Insert row after"
               onClick={onInsertRowAfter}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Insert row after"
@@ -973,6 +1042,7 @@ function TableFloatingToolbarContent({
               <ArrowDown />
             </ToolbarButton>
             <ToolbarButton
+              aria-label="Delete row"
               onClick={onDeleteRow}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Delete row"
@@ -985,6 +1055,7 @@ function TableFloatingToolbarContent({
         {collapsedInside && (
           <ToolbarGroup>
             <ToolbarButton
+              aria-label="Insert column before"
               onClick={onInsertColumnBefore}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Insert column before"
@@ -992,6 +1063,7 @@ function TableFloatingToolbarContent({
               <ArrowLeft />
             </ToolbarButton>
             <ToolbarButton
+              aria-label="Insert column after"
               onClick={onInsertColumnAfter}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Insert column after"
@@ -999,6 +1071,7 @@ function TableFloatingToolbarContent({
               <ArrowRight />
             </ToolbarButton>
             <ToolbarButton
+              aria-label="Delete column"
               onClick={onDeleteColumn}
               onMouseDown={(e) => e.preventDefault()}
               tooltip="Delete column"
@@ -1122,7 +1195,9 @@ function ColorDropdownMenu({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton tooltip={tooltip}>{children}</ToolbarButton>
+        <ToolbarButton aria-label={tooltip} tooltip={tooltip}>
+          {children}
+        </ToolbarButton>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start">
@@ -1222,14 +1297,6 @@ function useTableCellPresentation(element: TTableCellElement) {
 
   const colSpan = api.getColSpan(element);
   const rowSpan = api.getRowSpan(element);
-  const width = React.useMemo(() => {
-    const terms = Array.from(
-      { length: colSpan },
-      (_, offset) => `var(--table-col-${col + offset}, 120px)`
-    );
-
-    return terms.length === 1 ? terms[0]! : `calc(${terms.join(' + ')})`;
-  }, [col, colSpan]);
 
   return {
     borders,
@@ -1237,7 +1304,6 @@ function useTableCellPresentation(element: TTableCellElement) {
     colSpan,
     rowIndex: row + rowSpan - 1,
     rowSpan,
-    width,
   };
 }
 
@@ -1248,6 +1314,7 @@ function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
   return (
     <Button
       ref={dragRef}
+      aria-label="Select or move row"
       variant="outline"
       className={cn(
         '-translate-y-1/2 absolute top-1/2 left-0 z-51 h-6 w-4 p-0 focus-visible:ring-0 focus-visible:ring-offset-0',
@@ -1305,7 +1372,7 @@ export function TableCellElement({
     'isSelectionAreaVisible'
   );
 
-  const { borders, colIndex, colSpan, rowIndex, rowSpan, width } =
+  const { borders, colIndex, colSpan, rowIndex, rowSpan } =
     useTableCellPresentation(element);
 
   return (
@@ -1328,8 +1395,6 @@ export function TableCellElement({
       style={
         {
           '--cellBackground': element.background,
-          maxWidth: width,
-          minWidth: width,
         } as React.CSSProperties
       }
       attributes={{
@@ -1393,6 +1458,7 @@ const TableCellResizeControls = React.memo(function TableCellResizeControls({
     >
       <div
         className="-top-2 -right-1 pointer-events-auto absolute z-40 h-[calc(100%_+_8px)] w-2 cursor-col-resize touch-none"
+        data-table-resize-handle="column-end"
         onPointerEnter={(event) => {
           setResizePreview(event, {
             colIndex,

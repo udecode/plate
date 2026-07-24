@@ -879,12 +879,13 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: [],
-    description: 'A cursor overlay slot for app-owned collaboration wiring.',
+    dependencies: ['@platejs/yjs'],
+    description:
+      'Remote Yjs selections and carets positioned over the Plate editor.',
     files: [{ path: 'ui/remote-cursor-overlay.tsx', type: 'registry:ui' }],
     meta: {
       docs: [{ route: '/docs/yjs' }],
-      examples: [],
+      examples: ['collaboration-demo'],
     },
     name: 'remote-cursor-overlay',
     registryDependencies: [],

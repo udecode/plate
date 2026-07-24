@@ -10,6 +10,7 @@ import {
 import {
   createEditor,
   type Descendant,
+  type Editor,
   ElementApi,
   type Element,
   type EditorExtension,
@@ -17,6 +18,7 @@ import {
   schema,
   SelectionApi,
   TextApi,
+  type Value,
 } from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
@@ -1406,8 +1408,11 @@ describe('plite normalization contract', () => {
         return state / 0x1_00_00_00_00;
       };
     };
-    const assertCorrected = (
-      editor: ReturnType<typeof createEditor>,
+    const assertCorrected = <
+      V extends Value,
+      TExtensions extends readonly unknown[],
+    >(
+      editor: Editor<V, TExtensions>,
       node: Element,
       path: readonly number[]
     ) => {

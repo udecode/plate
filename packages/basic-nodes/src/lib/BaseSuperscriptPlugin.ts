@@ -8,22 +8,18 @@ export const BaseSuperscriptPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['SUP'] },
-          { validStyle: { verticalAlign: 'super' } },
-        ],
-      },
-    },
-  },
   render: { as: 'sup' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTx(({ editor, type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type, true, {
-      clear: editor.getType(KEYS.sub),
-    });
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: () => true,
+    encode: ({ value }) => (value ? { tag: 'sup' } : null),
+    match: [{ tag: 'sup' }, { style: { verticalAlign: 'super' } }],
+  }))
+  .extendTx(({ editor, type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type, true, {
+        clear: editor.getType(KEYS.sub),
+      });
+    },
+  }));

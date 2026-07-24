@@ -1,16 +1,13 @@
-import React from 'react';
-
-import type { TTableCellElement } from '@platejs/utils';
-
 import { KEYS } from '@platejs/utils';
 import { useEditorPlugin, useEditorSelector } from '@platejs/core/react';
+import { RangeApi } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 
+import { readTableSelection } from '../lib/internal/selection';
 import { TablePlugin } from './TablePlugin';
 
 export const useTableMergeState = () => {
-  const { editor, getOptions } = useEditorPlugin(TablePlugin);
-  const table = editor.plugin(TablePlugin).api;
+  const { getOptions } = useEditorPlugin(TablePlugin);
 
   const { disableMerge } = getOptions();
 
@@ -24,39 +21,44 @@ export const useTableMergeState = () => {
 
   const collapsed = !readOnly && someTable && !selectionExpanded;
 
-  const selectedCellEntries = useEditorSelector((editor) =>
-    editor.plugin(TablePlugin).api.getSelectedCellEntries()
+  const selectionView = useEditorSelector(
+    (editor) => {
+      const table = editor.plugin(TablePlugin);
+
+      return readTableSelection(editor.read, {
+        cellTypes: table.api.getCellTypes(),
+        tableType: editor.getType(KEYS.table),
+      });
+    },
+    {
+      equalityFn: (next, previous) =>
+        next === previous ||
+        (!next && !previous) ||
+        (!!next &&
+          !!previous &&
+          next.root === previous.root &&
+          next.table === previous.table &&
+          RangeApi.equals(next.selection, previous.selection)),
+    }
   );
-  const isRectangularSelection = React.useMemo(() => {
-    if (selectedCellEntries.length <= 1) return false;
-
-    const selectedCells = selectedCellEntries.map(
-      ([cell]) => cell as TTableCellElement
-    );
-    const { maxCol, maxRow, minCol, minRow } =
-      table.getSelectedCellsBoundingBox(selectedCells);
-    const selectedArea = selectedCells.reduce(
-      (total, cell) => total + table.getColSpan(cell) * table.getRowSpan(cell),
-      0
-    );
-
-    return selectedArea === (maxCol - minCol + 1) * (maxRow - minRow + 1);
-  }, [selectedCellEntries, table]);
+  const isRectangularSelection =
+    !!selectionView &&
+    selectionView.anchors.length > 1 &&
+    selectionView.complete;
 
   const canMerge =
     !disableMerge &&
     !readOnly &&
     someTable &&
     selectionExpanded &&
-    selectedCellEntries.length > 1 &&
+    (selectionView?.anchors.length ?? 0) > 1 &&
     isRectangularSelection;
 
   const canSplit =
     !disableMerge &&
     collapsed &&
-    selectedCellEntries.length === 1 &&
-    (table.getColSpan(selectedCellEntries[0][0] as TTableCellElement) > 1 ||
-      table.getRowSpan(selectedCellEntries[0][0] as TTableCellElement) > 1);
+    selectionView?.anchors.length === 1 &&
+    (selectionView.anchor.colSpan > 1 || selectionView.anchor.rowSpan > 1);
 
   return { canMerge, canSplit };
 };

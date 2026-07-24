@@ -57,7 +57,12 @@ export function TableToolbarButton(props: DropdownMenuProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Table" isDropdown>
+        <ToolbarButton
+          aria-label="Table"
+          className="data-[state=open]:bg-accent data-[state=open]:text-accent-foreground"
+          tooltip="Table"
+          isDropdown
+        >
           <Table />
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -73,7 +78,7 @@ export function TableToolbarButton(props: DropdownMenuProps) {
               <span>Table</span>
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="m-0 p-0">
-              <TablePicker />
+              <TablePicker onInsert={() => setOpen(false)} />
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
@@ -231,61 +236,138 @@ export function TableToolbarButton(props: DropdownMenuProps) {
   );
 }
 
-function TablePicker() {
+const TABLE_PICKER_DIMENSION = 8;
+
+function TablePicker({ onInsert }: { onInsert: () => void }) {
   const { editor } = useEditorPlugin(TablePlugin);
-
-  const [tablePicker, setTablePicker] = React.useState({
-    grid: Array.from({ length: 8 }, () => Array.from({ length: 8 }).fill(0)),
-    size: { colCount: 0, rowCount: 0 },
+  const [activeCell, setActiveCell] = React.useState({
+    colIndex: 0,
+    rowIndex: 0,
   });
+  const cellRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+  const size = {
+    colCount: activeCell.colIndex + 1,
+    rowCount: activeCell.rowIndex + 1,
+  };
 
-  const onCellMove = (rowIndex: number, colIndex: number) => {
-    const newGrid = [...tablePicker.grid];
+  const insertTable = (rowIndex: number, colIndex: number) => {
+    runTableCommand(editor, () => {
+      editor.plugin(TablePlugin).update.insert(
+        {
+          colCount: colIndex + 1,
+          rowCount: rowIndex + 1,
+        },
+        { select: true }
+      );
+    });
+    onInsert();
+  };
 
-    for (let i = 0; i < newGrid.length; i++) {
-      for (let j = 0; j < newGrid[i].length; j++) {
-        newGrid[i][j] =
-          i >= 0 && i <= rowIndex && j >= 0 && j <= colIndex ? 1 : 0;
+  const activateCell = (rowIndex: number, colIndex: number) => {
+    setActiveCell((currentCell) => {
+      if (
+        currentCell.rowIndex === rowIndex &&
+        currentCell.colIndex === colIndex
+      ) {
+        return currentCell;
       }
-    }
 
-    setTablePicker({
-      grid: newGrid,
-      size: { colCount: colIndex + 1, rowCount: rowIndex + 1 },
+      return { colIndex, rowIndex };
     });
   };
 
+  const moveFocus = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    rowIndex: number,
+    colIndex: number
+  ) => {
+    const nextCell = { colIndex, rowIndex };
+
+    switch (event.key) {
+      case 'ArrowDown': {
+        nextCell.rowIndex = Math.min(rowIndex + 1, TABLE_PICKER_DIMENSION - 1);
+        break;
+      }
+      case 'ArrowLeft': {
+        nextCell.colIndex = Math.max(colIndex - 1, 0);
+        break;
+      }
+      case 'ArrowRight': {
+        nextCell.colIndex = Math.min(colIndex + 1, TABLE_PICKER_DIMENSION - 1);
+        break;
+      }
+      case 'ArrowUp': {
+        nextCell.rowIndex = Math.max(rowIndex - 1, 0);
+        break;
+      }
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    activateCell(nextCell.rowIndex, nextCell.colIndex);
+    cellRefs.current[
+      nextCell.rowIndex * TABLE_PICKER_DIMENSION + nextCell.colIndex
+    ]?.focus();
+  };
+
   return (
-    <div
-      className="flex! m-0 flex-col p-0"
-      onClick={() => {
-        runTableCommand(editor, () => {
-          editor.plugin(TablePlugin).update.insert(tablePicker.size, {
-            select: true,
-          });
-        });
-      }}
-      role="button"
-    >
-      <div className="grid size-[130px] grid-cols-8 gap-0.5 p-1">
-        {tablePicker.grid.map((rows, rowIndex) =>
-          rows.map((value, columIndex) => (
-            <div
-              key={`(${rowIndex},${columIndex})`}
-              className={cn(
-                'col-span-1 size-3 border border-solid bg-secondary',
-                !!value && 'border-current'
-              )}
-              onMouseMove={() => {
-                onCellMove(rowIndex, columIndex);
-              }}
-            />
-          ))
-        )}
+    <div className="flex! m-0 flex-col p-0">
+      <div
+        aria-colcount={TABLE_PICKER_DIMENSION}
+        aria-label="Table size"
+        aria-rowcount={TABLE_PICKER_DIMENSION}
+        className="grid size-[130px] grid-cols-8 gap-0.5 p-1"
+        role="grid"
+      >
+        {Array.from({ length: TABLE_PICKER_DIMENSION }, (_, rowIndex) => (
+          <div key={rowIndex} className="contents" role="row">
+            {Array.from({ length: TABLE_PICKER_DIMENSION }, (_, colIndex) => {
+              const isActive =
+                activeCell.rowIndex === rowIndex &&
+                activeCell.colIndex === colIndex;
+              const isSelected =
+                rowIndex <= activeCell.rowIndex &&
+                colIndex <= activeCell.colIndex;
+
+              return (
+                <button
+                  key={`(${rowIndex},${colIndex})`}
+                  ref={(element) => {
+                    cellRefs.current[
+                      rowIndex * TABLE_PICKER_DIMENSION + colIndex
+                    ] = element;
+                  }}
+                  aria-colindex={colIndex + 1}
+                  aria-label={`Insert ${rowIndex + 1} by ${colIndex + 1} table`}
+                  aria-rowindex={rowIndex + 1}
+                  aria-selected={isSelected}
+                  autoFocus={isActive}
+                  className={cn(
+                    'col-span-1 size-3 border border-solid bg-secondary',
+                    isSelected && 'border-current'
+                  )}
+                  onClick={() => insertTable(rowIndex, colIndex)}
+                  onFocus={() => activateCell(rowIndex, colIndex)}
+                  onKeyDown={(event) => moveFocus(event, rowIndex, colIndex)}
+                  onPointerMove={() => activateCell(rowIndex, colIndex)}
+                  role="gridcell"
+                  tabIndex={isActive ? 0 : -1}
+                  type="button"
+                />
+              );
+            })}
+          </div>
+        ))}
       </div>
 
-      <div className="text-center text-current text-xs">
-        {tablePicker.size.rowCount} x {tablePicker.size.colCount}
+      <div
+        aria-atomic="true"
+        aria-live="polite"
+        className="text-center text-current text-xs"
+      >
+        {size.rowCount} x {size.colCount}
       </div>
     </div>
   );

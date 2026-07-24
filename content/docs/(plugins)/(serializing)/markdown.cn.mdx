@@ -89,7 +89,9 @@ const editor = createPlateEditor({
 
 ### 配置插件
 
-Markdown 语法、过滤策略或转换规则与默认值不同时，配置 `MarkdownPlugin.options`。粘贴解析、Markdown API 与 host 序列化共享这组 options。
+Markdown 语法、过滤策略或转换规则与默认值不同时，配置
+`MarkdownPlugin.options`。Markdown API 以及插件的 `text/markdown` 和
+`text/plain` codec 声明共享这组 options。
 
 ```tsx title="lib/plate-editor.ts"
 import { createPlateEditor } from 'platejs/react';
@@ -116,20 +118,18 @@ const editor = createPlateEditor({
     }),
   ],
 });
-
-// 如需禁用 Markdown 粘贴处理：
-const editorWithoutPaste = createPlateEditor({
-  plugins: [
-    // ...其它 Plate 插件
-    MarkdownPlugin.extend({ parser: null }),
-  ],
-});
 ```
 
 <Callout type="info">
-  `MarkdownPlugin` 自带默认 Markdown options 与粘贴解析器。转换 API 位于
-  `editor.api.markdown`；插件 options 仍通过
+  `MarkdownPlugin` 通过 `editor.api.markdown` 提供转换 API，并声明
+  `text/markdown` 和 `text/plain` codec。插件 options 仍通过
   `editor.plugin(MarkdownPlugin)` 访问。
+</Callout>
+
+<Callout type="warning" title="仅表示主内容">
+  Markdown 只表示 `document.children`，不会保留命名 roots 或 slice
+  的开放边缘。需要精确保留 roots、`openStart` 和 `openEnd` 时，剪贴板传输使用
+  `application/x-plite-fragment`。
 </Callout>
 
 ### Markdown 转 Plate（反序列化）
@@ -166,6 +166,8 @@ const editor = createPlateEditor({
 ### Plate 转 Markdown（序列化）
 
 使用 `editor.api.markdown.serialize` 将当前编辑器文档或指定的 `EditorDocumentValue` 转回 Markdown 字符串。
+
+序列化只读取文档的主 `children`。命名 roots 不属于 Markdown 表示。
 
 **序列化当前编辑器内容：**
 
@@ -297,15 +299,15 @@ MarkdownPlugin.configure({
 
 ### `MarkdownPlugin`
 
-`MarkdownPlugin` 安装 Markdown 反序列化、序列化、host codec，以及默认的 `text/plain` / `text/markdown` 粘贴解析器。需要改变 host 粘贴行为时，直接扩展 parser 描述符。
+`MarkdownPlugin` 提供 `editor.api.markdown`，并声明以下 product codecs：
 
-<API name="MarkdownPlugin">
-  <APIAttributes>
-    <APIItem name="parser" type="Parser | null">
-      粘贴内容处理相关配置。设置为 `null` 可禁止 Markdown 粘贴。默认情况下会启用将 `text/plain` 视为 Markdown 粘贴。详见 [PlatePlugin API > parser](/docs/api/core/plate-plugin#parser)。
-    </APIItem>
-  </APIAttributes>
-</API>
+| 格式 | 解码 | 编码 | 表示 |
+| --- | --- | --- | --- |
+| `text/markdown` | 是 | 是 | 闭合的主内容 slice |
+| `text/plain` | 是 | 否 | 闭合的主内容 slice |
+
+通用剪贴板管线优先使用 `application/x-plite-fragment` 表示精确的 Plate
+slice，并在需要时回退到这些外部格式。
 
 ---
 
@@ -352,7 +354,7 @@ MarkdownPlugin.configure({
     </APIItem>
   </APIOptions>
   <APIReturns type="EditorDocumentValue">
-    返回包含反序列化块级 `children` 的文档。
+    返回包含反序列化主块级 `children` 的文档。Markdown 不创建命名 roots。
   </APIReturns>
 </API>
 
@@ -389,6 +391,7 @@ MarkdownPlugin.configure({
   <APIOptions type="SerializeMdOptions">
     <APIItem name="value" type="EditorDocumentValue" optional>
       需要序列化为 Markdown 的 Plate 文档，默认为 `editor.read.value()`。
+      只表示 `value.children`，不会序列化命名 roots。
     </APIItem>
     <APIItem name="allowedNodes" type="PlateType[] | null" optional>
       覆盖插件的 `allowedNodes` 配置。

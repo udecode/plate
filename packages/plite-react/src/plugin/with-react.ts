@@ -16,12 +16,13 @@ import type {
   DOMEditorOptions,
 } from '@platejs/plite-dom';
 import { dom } from '@platejs/plite-dom';
-import { EDITOR_TO_PENDING_SELECTION } from '@platejs/plite-dom/internal';
+import {
+  EDITOR_TO_PENDING_SELECTION,
+  findEditorDOMRootRuntime,
+} from '@platejs/plite-dom/internal';
 import { history, type HistoryExtension } from '@platejs/plite-history';
 import { refreshEditorDecorations } from '../decoration-refresh';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
-
-const ANDROID_USER_AGENT_RE = /Android/;
 
 /** Options for installing the React DOM bridge on an editor. */
 export interface ReactEditorOptions extends DOMEditorOptions {}
@@ -126,8 +127,7 @@ export const react = (options: ReactEditorOptions = {}): ReactExtension => {
 
       if (
         context.commit.changed.hasAny('text') &&
-        typeof navigator !== 'undefined' &&
-        ANDROID_USER_AGENT_RE.test(navigator.userAgent)
+        findEditorDOMRootRuntime(context.editor)?.isAndroidHost
       ) {
         EDITOR_TO_PENDING_SELECTION.delete(context.editor);
       }

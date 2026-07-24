@@ -15,12 +15,11 @@ import type { Text } from '../interfaces/text';
 
 import {
   DocumentChange,
-  getInternalDocumentChangeSet,
-  IndexedDocument,
-  type JsonEditorValue,
-  type JsonNode,
-  type TrackMode,
-} from './document-change';
+  getInternalDocumentRootChange,
+} from './change/document-change';
+import { DocumentIndex } from './change/document-index';
+import type { JsonEditorValue, JsonNode } from './change/tokens';
+import type { TrackMode } from './change/root-change';
 import {
   type AnchorChangeContext,
   getAnchorStateValue,
@@ -94,7 +93,7 @@ const hasRoot = (value: JsonEditorValue, root: string) =>
   root === 'main' || Object.hasOwn(value.roots ?? {}, root);
 
 const indexedRoot = (value: JsonEditorValue, root: string) =>
-  IndexedDocument.fromValue(rootNodes(value, root));
+  DocumentIndex.fromValue(rootNodes(value, root));
 
 const readValue = (editor: Editor) =>
   getEditorDocumentValue(editor) as EditorDocumentValue as JsonEditorValue;
@@ -127,7 +126,7 @@ const mapTextOffset = (
 
   const before = { children: [source] } satisfies JsonEditorValue;
   const after = { children: [current] } satisfies JsonEditorValue;
-  const sourceDocument = IndexedDocument.fromValue(before.children);
+  const sourceDocument = DocumentIndex.fromValue(before.children);
   const position = sourceDocument.positionAt({ offset, path: [0] });
   const mapped = DocumentChange.between(before, after).mapPosition(position, {
     association: association === -1 ? 'backward' : 'forward',
@@ -136,7 +135,7 @@ const mapTextOffset = (
 
   return mapped == null
     ? null
-    : (IndexedDocument.fromValue(after.children).pointAt(mapped, association)
+    : (DocumentIndex.fromValue(after.children).pointAt(mapped, association)
         ?.offset ?? null);
 };
 
@@ -275,8 +274,8 @@ export function createAnchor<TValue extends AnchorValue>(
   const resolveMappedPoint = (
     state: PointState,
     change: DocumentChange,
-    source: IndexedDocument,
-    next: IndexedDocument,
+    source: DocumentIndex,
+    next: DocumentIndex,
     endpointAssociation: -1 | 1,
     preserveSamePathOffset: boolean
   ): MappedPoint | null => {
@@ -419,7 +418,7 @@ export function createAnchor<TValue extends AnchorValue>(
         const nodeRange = sourceDocument().nodeRange(current as Path);
         let removed = false;
 
-        getInternalDocumentChangeSet(change, root)?.iterChangedRanges(
+        getInternalDocumentRootChange(change, root)?.iterChangedRanges(
           (from, to) => {
             if (from <= nodeRange.from && to >= nodeRange.to) removed = true;
           }

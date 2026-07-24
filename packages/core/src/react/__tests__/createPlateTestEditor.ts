@@ -1,5 +1,6 @@
 import type { Value } from '@platejs/plite';
 import { subscribeCommit } from '@platejs/plite/internal';
+import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 
 import { act, fireEvent, render } from '@testing-library/react';
 import { parseHotkey } from 'is-hotkey';
@@ -46,12 +47,6 @@ type PlateTestActions = {
 };
 
 type PlateTestRenderResult = ReturnType<typeof render>;
-
-const APPLE_PLATFORM_RE = /Mac|iPhone|iPad|iPod/;
-
-const isApplePlatform = () =>
-  typeof navigator !== 'undefined' &&
-  APPLE_PLATFORM_RE.test(navigator.platform);
 
 const fireBeforeInput = (element: HTMLElement, init: InputEventInit): void => {
   fireEvent(
@@ -200,7 +195,7 @@ export const createPlateTestEditor = async <
         act(async () => {
           fireBeforeInput(element, { inputType: 'deleteWordForward' });
         }),
-      isApple: isApplePlatform,
+      isApple: () => usesAppleDOMHotkeys({ currentTarget: element }),
       paste,
       pressEnter: async () => {
         await triggerKeyboardEvent('Enter');

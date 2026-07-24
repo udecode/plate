@@ -15,8 +15,8 @@ import { isObject } from '../utils/is-object';
  */
 
 export interface BaseRange {
-  anchor: Point;
-  focus: Point;
+  readonly anchor: Point;
+  readonly focus: Point;
 }
 
 export type Range = BaseRange;
@@ -30,7 +30,7 @@ export interface RangeInterface {
    * Get the start and end points of a range, in the order in which they appear
    * in the document.
    */
-  edges: (range: Range, options?: RangeEdgesOptions) => [Point, Point];
+  edges: (range: Range, options?: RangeEdgesOptions) => readonly [Point, Point];
 
   /**
    * Get the end point of a range.
@@ -101,7 +101,10 @@ export interface RangeInterface {
 
 // eslint-disable-next-line no-redeclare
 export const RangeApi: Readonly<RangeInterface> = Object.freeze({
-  edges(range: Range, options: RangeEdgesOptions = {}): [Point, Point] {
+  edges(
+    range: Range,
+    options: RangeEdgesOptions = {}
+  ): readonly [Point, Point] {
     const { reverse = false } = options;
     const { anchor, focus } = range;
     return RangeApi.isBackward(range) === reverse

@@ -9,11 +9,11 @@ import {
   type Descendant,
   type ElementIn,
   type Editor,
-  type EditorCommit,
   type EditorSchemaIdentity,
   type EditorUpdateTransaction,
   type EditorValueFromExtensions,
   NodeApi,
+  type Path,
   property,
   type Range,
   schema,
@@ -46,42 +46,26 @@ type PeerDefinition = {
   replacementText: string;
 };
 
-type ExampleUndoGroup = {
-  kind: 'command' | 'keyboard';
-  size: number;
-};
-
 type PeerCommandTx =
   YjsEditor extends Editor<infer V, infer TExtensions>
     ? EditorUpdateTransaction<V, TExtensions>
     : never;
 type PeerCommand = (tx: PeerCommandTx) => void;
 
-type KeyboardInputType = 'delete' | 'enter' | 'text';
-
 type ExamplePeer = PeerDefinition & {
   awareness: ExampleAwareness;
   connected: boolean;
   doc: Y.Doc;
   editor?: YjsEditor;
-  pendingKeyboardInputType?: KeyboardInputType;
-  pendingLocalChangeKind?: ExampleUndoGroup['kind'];
   redoDepth: number;
-  redoGroups: ExampleUndoGroup[];
   renderEpoch: number;
   undoDepth: number;
-  undoGroups: ExampleUndoGroup[];
 };
 
 type ExampleNetwork = {
   notify: () => void;
   peers: ExamplePeer[];
   registerPeerEditor: (peer: ExamplePeer, editor: YjsEditor) => () => void;
-  recordLocalChange: (
-    peer: ExamplePeer,
-    commit: EditorCommit<CollaborationValue>
-  ) => void;
-  runWithoutLocalHistory: (fn: () => void) => void;
   roomSchemaIdentity: NamedSchemaIdentity;
   subscribeNotify: (notify: () => void) => () => void;
   syncAll: () => void;
@@ -160,33 +144,12 @@ type CollaborationElement = ElementIn<CollaborationValue>;
 type CollaborationText = TextIn<CollaborationValue>;
 type YjsEditor = ReactEditor<
   CollaborationValue,
-  readonly [ReturnType<typeof createYjsExtension>]
+  readonly [ReturnType<typeof history>, ReturnType<typeof createYjsExtension>]
 >;
 
-const syncPeerHistoryDepths = (peer: ExamplePeer) => {
-  peer.undoDepth = peer.undoGroups.length;
-  peer.redoDepth = peer.redoGroups.length;
-};
-
-const recordPeerUndoGroup = (
-  peer: ExamplePeer,
-  kind: ExampleUndoGroup['kind'],
-  inputType?: KeyboardInputType
-) => {
-  const previous = peer.undoGroups.at(-1);
-
-  if (
-    kind === 'keyboard' &&
-    inputType !== 'enter' &&
-    previous?.kind === 'keyboard'
-  ) {
-    previous.size += 1;
-  } else {
-    peer.undoGroups.push({ kind, size: 1 });
-  }
-
-  peer.redoGroups = [];
-  syncPeerHistoryDepths(peer);
+const syncPeerHistoryDepths = (peer: ExamplePeer, editor: YjsEditor) => {
+  peer.undoDepth = editor.read.history.undos().length;
+  peer.redoDepth = editor.read.history.redos().length;
 };
 
 const INITIAL_VALUE: CollaborationValue = [
@@ -312,10 +275,8 @@ const createExampleNetwork = (): ExampleNetwork => {
       connected: true,
       doc,
       redoDepth: 0,
-      redoGroups: [],
       renderEpoch: 0,
       undoDepth: 0,
-      undoGroups: [],
     };
   });
 
@@ -330,28 +291,6 @@ const createExampleNetwork = (): ExampleNetwork => {
           peer.editor = undefined;
         }
       };
-    },
-    recordLocalChange(peer, commit) {
-      if (network.syncing) {
-        return;
-      }
-      if (commit.changed.has('document')) {
-        recordPeerUndoGroup(
-          peer,
-          peer.pendingLocalChangeKind ?? 'keyboard',
-          peer.pendingKeyboardInputType
-        );
-      }
-    },
-    runWithoutLocalHistory(fn) {
-      const wasSyncing = network.syncing;
-
-      network.syncing = true;
-      try {
-        fn();
-      } finally {
-        network.syncing = wasSyncing;
-      }
     },
     roomSchemaIdentity: seed.identity,
     subscribeNotify(notify) {
@@ -438,7 +377,7 @@ const getEditorValue = (editor: YjsEditor): CollaborationValue =>
   cloneValue([...editor.read.children()]);
 
 type TextEntry = {
-  path: number[];
+  path: Path;
   text: string;
 };
 
@@ -449,7 +388,7 @@ const hasDescendantChildren = (
 
 const findFirstTextEntryInNode = (
   node: Descendant,
-  path: number[]
+  path: Path
 ): TextEntry | null => {
   if (TextApi.isText(node)) {
     return { path, text: node.text };
@@ -478,7 +417,7 @@ const findFirstTextEntryInNode = (
 
 const findLastTextEntryInNode = (
   node: Descendant,
-  path: number[]
+  path: Path
 ): TextEntry | null => {
   if (TextApi.isText(node)) {
     return { path, text: node.text };
@@ -507,7 +446,7 @@ const findLastTextEntryInNode = (
 
 const findLastTextEntry = (
   nodes: readonly Descendant[],
-  basePath: number[] = []
+  basePath: Path = []
 ): TextEntry | null => {
   for (let index = nodes.length - 1; index >= 0; index--) {
     const node = nodes[index];
@@ -528,7 +467,7 @@ const findLastTextEntry = (
 
 const getTextEntryAtPath = (
   nodes: readonly Descendant[],
-  path: number[]
+  path: Path
 ): TextEntry | null => {
   let current: Descendant | undefined;
   let children: readonly Descendant[] = nodes;
@@ -730,12 +669,6 @@ const getBlockText = (editor: YjsEditor, index: number) => {
   return node ? NodeApi.string(node) : '';
 };
 
-const clearPeerHistory = (peer: ExamplePeer) => {
-  peer.undoGroups = [];
-  peer.redoGroups = [];
-  syncPeerHistoryDepths(peer);
-};
-
 const documentText = (editor: YjsEditor) =>
   getEditorValue(editor)
     .map((node) => NodeApi.string(node))
@@ -747,9 +680,6 @@ const selectedText = (editor: YjsEditor) =>
     .getSelection()
     ?.toString()
     .replaceAll('\uFEFF', '');
-
-const hasCanonicalSnapshot = (editor: YjsEditor) =>
-  getBlockText(editor, 0).includes('canonical snapshot.');
 
 const syncSelectionFromDom = (editor: YjsEditor) => {
   const selection = editor.api.dom.getWindow().getSelection();
@@ -773,18 +703,12 @@ const runPeerCommand = (
   network: ExampleNetwork,
   peer: ExamplePeer,
   editor: YjsEditor,
-  command: PeerCommand,
-  { undoable = true }: { undoable?: boolean } = {}
+  command: PeerCommand
 ) => {
   syncSelectionFromDom(editor);
-  const previousKind = peer.pendingLocalChangeKind;
 
-  peer.pendingLocalChangeKind = undoable ? 'command' : undefined;
-  try {
-    editor.update({ history: 'new-batch' }, command);
-  } finally {
-    peer.pendingLocalChangeKind = previousKind;
-  }
+  editor.update({ history: 'new-batch' }, command);
+  syncPeerHistoryDepths(peer, editor);
 
   editor.api.dom.focus({ retries: 1 });
   network.syncAll();
@@ -807,10 +731,6 @@ const setConnected = (
 
   if (connected) {
     network.syncAll();
-
-    if (hasCanonicalSnapshot(editor)) {
-      clearPeerHistory(peer);
-    }
   } else {
     network.syncAwareness();
   }
@@ -1218,23 +1138,12 @@ const undoPeer = (
   peer: ExamplePeer,
   editor: YjsEditor
 ) => {
-  const group = peer.undoGroups.pop();
-
-  if (!group) {
-    return;
-  }
-
   const previousValue = getEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  network.runWithoutLocalHistory(() => {
-    for (let index = 0; index < group.size; index++) {
-      editor.update.yjs.undo();
-    }
-  });
+  editor.update.history.undo();
 
-  peer.redoGroups.push(group);
-  syncPeerHistoryDepths(peer);
+  syncPeerHistoryDepths(peer, editor);
   syncPeerSelectionAfterHistory(
     network,
     peer,
@@ -1250,23 +1159,12 @@ const redoPeer = (
   peer: ExamplePeer,
   editor: YjsEditor
 ) => {
-  const group = peer.redoGroups.pop();
-
-  if (!group) {
-    return;
-  }
-
   const previousValue = getEditorValue(editor);
   const previousSelection = readEditorSelection(editor);
 
-  network.runWithoutLocalHistory(() => {
-    for (let index = 0; index < group.size; index++) {
-      editor.update.yjs.redo();
-    }
-  });
+  editor.update.history.redo();
 
-  peer.undoGroups.push(group);
-  syncPeerHistoryDepths(peer);
+  syncPeerHistoryDepths(peer, editor);
   syncPeerSelectionAfterHistory(
     network,
     peer,
@@ -1302,37 +1200,12 @@ const handleHistoryKeyDown = (
   return true;
 };
 
-const getKeyboardInputType = (
-  event: KeyboardEvent<HTMLDivElement>
-): KeyboardInputType | null => {
-  if (event.metaKey || event.ctrlKey || event.altKey) {
-    return null;
-  }
-
-  if (event.key === 'Enter') {
-    return 'enter';
-  }
-
-  if (event.key === 'Backspace' || event.key === 'Delete') {
-    return 'delete';
-  }
-
-  return event.key.length === 1 ? 'text' : null;
-};
-
 const handleEditableKeyDown = (
   event: KeyboardEvent<HTMLDivElement>,
   network: ExampleNetwork,
   peer: ExamplePeer,
   editor: YjsEditor
 ) => {
-  const keyboardInputType = getKeyboardInputType(event);
-
-  if (keyboardInputType) {
-    peer.pendingLocalChangeKind = 'keyboard';
-    peer.pendingKeyboardInputType = keyboardInputType;
-  }
-
   if (handleDeleteKeyDown(event, network, peer, editor)) {
     return;
   }
@@ -1520,16 +1393,8 @@ const PeerPanel = ({
   return (
     <Plite
       editor={editor}
-      onCommit={({ commit }) => {
-        if (network.syncing && hasCanonicalSnapshot(editor)) {
-          clearPeerHistory(peer);
-        }
-        if (
-          !commit.tags.includes('historic') &&
-          !commit.tags.includes('yjs-example-test-setup')
-        ) {
-          network.recordLocalChange(peer, commit);
-        }
+      onCommit={() => {
+        syncPeerHistoryDepths(peer, editor);
         network.syncAll();
       }}
     >

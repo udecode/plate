@@ -97,10 +97,6 @@ export interface TTableRowElement extends Element {
 
 export interface TTableCellElement extends Element {
   id?: string;
-  attributes?: {
-    colspan?: string;
-    rowspan?: string;
-  };
   background?: string;
   borders?: {
     /** Only the last row cells have a bottom border. */

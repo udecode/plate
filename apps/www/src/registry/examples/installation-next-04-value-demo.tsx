@@ -93,13 +93,13 @@ export default function MyEditorPage() {
           Quote
         </ToolbarButton>
 
-        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
+        <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
           B
         </MarkToolbarButton>
-        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">
+        <MarkToolbarButton plugin={ItalicPlugin} tooltip="Italic (⌘+I)">
           I
         </MarkToolbarButton>
-        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">
+        <MarkToolbarButton plugin={UnderlinePlugin} tooltip="Underline (⌘+U)">
           U
         </MarkToolbarButton>
 

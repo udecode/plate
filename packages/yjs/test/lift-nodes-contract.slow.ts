@@ -5,17 +5,17 @@ import type { Descendant } from '@platejs/plite';
 import {
   assertCanonicalYjsTrace,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getVisibleYjsNodeAt,
   type Peer,
   paragraph,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -48,7 +48,7 @@ const createPeer = (
   seedUpdate?: Uint8Array,
   children: readonly Descendant[] = initialValue()
 ): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children,
     clientId,
     numericClientId: clientIds[clientId],
@@ -59,7 +59,7 @@ const createPeers = (
   ids: readonly ClientId[],
   children: readonly Descendant[] = initialValue()
 ): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children,
     clientIds: ids,
     numericClientIds: clientIds,
@@ -148,12 +148,12 @@ describe('@platejs/yjs liftNodes collaboration contract', () => {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!', 'beta', 'gamma']);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!beta', 'gamma']);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!', 'beta', 'gamma']);
     }
@@ -215,12 +215,12 @@ describe('@platejs/yjs liftNodes collaboration contract', () => {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!']);
     }
@@ -282,12 +282,12 @@ describe('@platejs/yjs liftNodes collaboration contract', () => {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'beta!', 'gamma']);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alphabeta!', 'gamma']);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha', 'beta!', 'gamma']);
     }
@@ -375,7 +375,7 @@ describe('@platejs/yjs liftNodes collaboration contract', () => {
       ]);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), [
         'alphabeta!gamma',
@@ -383,7 +383,7 @@ describe('@platejs/yjs liftNodes collaboration contract', () => {
       ]);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), [
         'alpha',

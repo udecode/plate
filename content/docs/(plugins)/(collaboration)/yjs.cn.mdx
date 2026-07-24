@@ -6,16 +6,20 @@ toc: true
 
 <ComponentPreview name="collaboration-demo" />
 
+预览通过无需凭证的本地房间运行两个独立编辑器，展示远程文档和光标更新、断开与
+重连、schema 拒绝与恢复，以及远程编辑后的 Plite History 撤销。生产环境的传输、
+认证、持久化和房间命名仍由应用负责。
+
 <PackageInfo>
 
 ## 功能特性
 
-- **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`@platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和撤销/重做接入编辑器。
+- **提供者边界：** 应用负责 Hocuspocus、WebSocket、WebRTC、IndexedDB 或自定义传输代码。`@platejs/yjs` 负责把 `Y.Doc`、提供者生命周期、Awareness、选择状态和规范编辑器更改接入编辑器。
 - **自定义提供者：** 将提供者包包装成 `YjsProviderLike`，然后通过 `YjsPlugin.configure` 配置。
 - **Awareness 与光标：** 集成 Yjs Awareness 协议，用于在用户之间共享光标位置和临时状态。远程光标 UI 使用 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay)。
 - **多根文档：** 通过同一个编辑器扩展和 Yjs 事务边界同步主 `children`、命名 `roots` 和带根信息的 Awareness。
 - **自定义光标：** 通过 `tx.yjs.sendSelection` 发送光标名称、颜色和其他元数据。
-- **显式命令：** 插件会安装 Plite Yjs 扩展，并添加 `state.yjs` 读取和 `tx.yjs` 命令，用于连接、Awareness、选择、撤销和重做。
+- **显式命令：** 插件会安装 Plite Yjs 扩展，并添加 `state.yjs` 读取和 `tx.yjs` 命令，用于连接、Awareness 和选择。撤销和重做由 Plite History 负责。
 
 </PackageInfo>
 
@@ -159,13 +163,14 @@ function EditorStatus() {
 
 提供者包留在应用边界。把 Hocuspocus、WebSocket、WebRTC、IndexedDB 或其他传输包装成 `YjsProviderLike`，再通过 `YjsPlugin.configure` 配置。包装器负责网络连接状态，插件负责安装 Plite/Yjs 同步扩展。
 
-| 关注点                                 | 所有者                  |
-| -------------------------------------- | ----------------------- |
-| `Y.Doc` 和根名                         | 应用加 `YjsPlugin` 配置 |
-| 提供者包安装                           | 应用                    |
-| 房间命名和认证                         | 应用                    |
-| 持久化和服务扩容                       | 应用                    |
-| 编辑器操作、选择、Awareness、撤销/重做 | `@platejs/yjs`          |
+| 关注点                         | 所有者                                   |
+| ------------------------------ | ---------------------------------------- |
+| `Y.Doc` 和根名                 | 应用加 `YjsPlugin` 配置                  |
+| 提供者包安装                   | 应用                                     |
+| 房间命名和认证                 | 应用                                     |
+| 持久化和服务扩容               | 应用                                     |
+| 编辑器操作、选择、撤销/重做    | `@platejs/plite` 和 `@platejs/plite-history` |
+| Awareness 和远程光标           | `@platejs/yjs`                           |
 
 ## 连接命令
 
@@ -188,7 +193,13 @@ editor.update((tx) => {
 | `tx.yjs.reconnect()`                | 提供者中断后重新连接。      |
 | `tx.yjs.sendSelection(range, data)` | 发布本地选择和光标元数据。  |
 | `tx.yjs.clearSelection()`           | 清空本地 Awareness 选择。   |
-| `tx.yjs.undo()` / `tx.yjs.redo()`   | 执行 Yjs 感知的撤销和重做。 |
+
+安装 Plite history 来提供撤销和重做。它的规范重放和其他编辑器更新一样，通过同一个 Yjs 同步桥发送：
+
+```tsx
+editor.update.history.undo();
+editor.update.history.redo();
+```
 
 ## 后端设置
 

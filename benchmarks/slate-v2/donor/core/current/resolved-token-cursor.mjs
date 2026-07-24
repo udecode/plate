@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { IndexedDocument } from '../../../../../packages/plite/src/core/document-change.ts';
+import { DocumentIndex } from '../../../../../packages/plite/src/core/change/document-index.ts';
 import {
   createTreeIndex,
   ResolvedTokenCursor,
@@ -319,7 +319,7 @@ const measureCohort = ({ blocks, id, queryCount }) => {
   const flatIndex = indexEntries(children);
   const tree = createTreeIndex(children);
   const legacy = new LegacyIndexedQueries(flatIndex, tree);
-  const live = IndexedDocument.fromValue(children);
+  const live = DocumentIndex.fromValue(children);
   const cursor = new ResolvedTokenCursor(tree);
   const queries = createQueries(flatIndex, queryCount);
 
@@ -445,9 +445,9 @@ const artifact = {
     cursor:
       'one package-private ResolvedTokenCursor reuses the existing immutable TreeIndex; setup is excluded',
     legacy:
-      'exact pre-cursor IndexedDocument algorithms over a prebuilt flat entry index and TreeIndex-equivalent positions; setup is excluded',
+      'exact pre-cursor DocumentIndex algorithms over a prebuilt flat entry index and TreeIndex-equivalent positions; setup is excluded',
     live:
-      'the checked-out IndexedDocument public query methods, measured with the same prebuilt document and query corpus',
+      'the checked-out DocumentIndex public query methods, measured with the same prebuilt document and query corpus',
     queryOrder:
       'deterministic monotonically increasing positions and ranges sampled across the full document',
     repeatedUnit:

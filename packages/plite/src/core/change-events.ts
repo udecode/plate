@@ -15,11 +15,9 @@ import type { Path } from '../interfaces/path';
 import { getEditorRuntimeOwner } from './editor-runtime';
 import { getExtensionRegistry } from './extension-registry';
 import { buildSnapshotIndex } from './snapshot-index';
-import {
-  type ChangeSet,
-  getInternalDocumentChangeEntries,
-  IndexedDocument,
-} from './document-change';
+import type { RootChange } from './change/root-change';
+import { getInternalDocumentChangeEntries } from './change/document-change';
+import { DocumentIndex } from './change/document-index';
 import { toPublicRoot } from './public-root';
 
 const rootChildren = (
@@ -119,8 +117,8 @@ type SparseNodeCandidate = {
 };
 
 const getChangedRangePaths = (
-  change: ChangeSet,
-  document: IndexedDocument,
+  change: RootChange,
+  document: DocumentIndex,
   phase: 'after' | 'before'
 ) => {
   const paths = new Map<string, Path>();
@@ -144,9 +142,9 @@ const getChangedRangePaths = (
 };
 
 const getSparseNodeCandidates = (
-  change: ChangeSet,
-  beforeDocument: IndexedDocument,
-  afterDocument: IndexedDocument,
+  change: RootChange,
+  beforeDocument: DocumentIndex,
+  afterDocument: DocumentIndex,
   beforeIndex: SnapshotIndex,
   afterIndex: SnapshotIndex
 ) => {
@@ -351,8 +349,8 @@ export const forEachEditorNodeChange = <TEditor extends Editor>(
       root === 'main'
         ? commit.after.index
         : buildSnapshotIndex(owner, afterChildren);
-    const beforeDocument = IndexedDocument.fromValue(beforeChildren);
-    const afterDocument = IndexedDocument.fromValue(afterChildren);
+    const beforeDocument = DocumentIndex.fromValue(beforeChildren);
+    const afterDocument = DocumentIndex.fromValue(afterChildren);
     const { candidates, relocated } = getSparseNodeCandidates(
       change,
       beforeDocument,
@@ -453,8 +451,8 @@ export const forEachEditorTextChange = <TEditor extends Editor>(
         : buildSnapshotIndex(owner, afterChildren);
     const { candidates } = getSparseNodeCandidates(
       change,
-      IndexedDocument.fromValue(beforeChildren),
-      IndexedDocument.fromValue(afterChildren),
+      DocumentIndex.fromValue(beforeChildren),
+      DocumentIndex.fromValue(afterChildren),
       beforeIndex,
       afterIndex
     );

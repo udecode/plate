@@ -253,14 +253,10 @@ describe('table clipboard slow contracts', () => {
             </htr>
             <htr>
               <htd>
-                <hp>
-                  <htext />
-                </hp>
+                <hp>a</hp>
               </htd>
               <htd>
-                <hp>
-                  <htext />
-                </hp>
+                <hp>b</hp>
               </htd>
             </htr>
           </htable>

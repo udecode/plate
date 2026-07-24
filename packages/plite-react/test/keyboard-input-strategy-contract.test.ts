@@ -81,6 +81,49 @@ const reactKeyEvent = (nativeEvent: KeyboardEvent) =>
     target: null,
   }) as any;
 
+const createRealmKeyEvent = ({
+  beforeInput,
+  key,
+}: {
+  beforeInput: boolean;
+  key: string;
+}) => {
+  const frame = document.createElement('iframe');
+
+  document.body.append(frame);
+  const frameDocument = frame.contentDocument!;
+  const frameWindow = frame.contentWindow!;
+  const target = frameDocument.createElement('div');
+
+  Object.defineProperty(frameWindow.navigator, 'userAgent', {
+    configurable: true,
+    value:
+      'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',
+  });
+  Object.defineProperty(frameWindow, 'InputEvent', {
+    configurable: true,
+    value: beforeInput
+      ? class InputEvent {
+          getTargetRanges() {
+            return [];
+          }
+        }
+      : class InputEvent {},
+  });
+  frameDocument.body.append(target);
+  const nativeEvent = new frameWindow.KeyboardEvent('keydown', {
+    bubbles: true,
+    key,
+  });
+
+  target.dispatchEvent(nativeEvent);
+
+  return {
+    event: reactKeyEvent(nativeEvent),
+    remove: () => frame.remove(),
+  };
+};
+
 const paragraph = (text: string) =>
   ({
     type: 'paragraph',
@@ -188,7 +231,7 @@ describe('keyboard input strategy', () => {
     ).toBe(true);
   });
 
-  it('uses navigator.platform when the user agent is spoofed', () => {
+  it('does not read a process-global navigator for an unowned event', () => {
     vi.stubGlobal('navigator', {
       platform: 'MacIntel',
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
@@ -203,7 +246,7 @@ describe('keyboard input strategy', () => {
           metaKey: true,
           shiftKey: false,
         })
-      ).toBe(true);
+      ).toBe(false);
       expect(
         isSelectAllHotkey({
           altKey: false,
@@ -212,7 +255,7 @@ describe('keyboard input strategy', () => {
           metaKey: false,
           shiftKey: false,
         })
-      ).toBe(false);
+      ).toBe(true);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -2320,15 +2363,6 @@ describe('keyboard input strategy', () => {
 
     const applyEditableCommand = vi.fn(() => true);
 
-    vi.doMock('@platejs/plite-dom', async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import('@platejs/plite-dom')>();
-
-      return {
-        ...actual,
-        HAS_BEFORE_INPUT_SUPPORT: false,
-      };
-    });
     vi.doMock('../src/editable/mutation-controller', async (importOriginal) => {
       const actual =
         await importOriginal<
@@ -2356,7 +2390,11 @@ describe('keyboard input strategy', () => {
         },
         initialValue: [paragraph('one'), paragraph('two')],
       }) as ReactEditorType;
-      const event = reactKeyEvent(keyEvent('a'));
+      const realmEvent = createRealmKeyEvent({
+        beforeInput: false,
+        key: 'a',
+      });
+      const { event } = realmEvent;
       const hasEditableTarget = vi
         .spyOn(ReactEditor, 'hasEditableTarget')
         .mockReturnValue(true);
@@ -2384,10 +2422,10 @@ describe('keyboard input strategy', () => {
         editor,
       });
 
+      realmEvent.remove();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     } finally {
-      vi.doUnmock('@platejs/plite-dom');
       vi.doUnmock('../src/editable/mutation-controller');
       vi.resetModules();
     }
@@ -2398,15 +2436,6 @@ describe('keyboard input strategy', () => {
 
     const applyEditableCommand = vi.fn(() => true);
 
-    vi.doMock('@platejs/plite-dom', async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import('@platejs/plite-dom')>();
-
-      return {
-        ...actual,
-        HAS_BEFORE_INPUT_SUPPORT: true,
-      };
-    });
     vi.doMock('../src/editable/mutation-controller', async (importOriginal) => {
       const actual =
         await importOriginal<
@@ -2457,7 +2486,11 @@ describe('keyboard input strategy', () => {
           },
         ],
       }) as ReactEditorType;
-      const event = reactKeyEvent(keyEvent('Z'));
+      const realmEvent = createRealmKeyEvent({
+        beforeInput: true,
+        key: 'Z',
+      });
+      const { event } = realmEvent;
       const hasEditableTarget = vi
         .spyOn(ReactEditor, 'hasEditableTarget')
         .mockReturnValue(true);
@@ -2485,10 +2518,10 @@ describe('keyboard input strategy', () => {
         editor,
       });
 
+      realmEvent.remove();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     } finally {
-      vi.doUnmock('@platejs/plite-dom');
       vi.doUnmock('../src/editable/mutation-controller');
       vi.resetModules();
     }
@@ -2499,17 +2532,6 @@ describe('keyboard input strategy', () => {
 
     const applyEditableCommand = vi.fn(() => true);
 
-    vi.doMock('@platejs/plite-dom', async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import('@platejs/plite-dom')>();
-
-      return {
-        ...actual,
-        HAS_BEFORE_INPUT_SUPPORT: true,
-        IS_CHROME: true,
-        IS_WEBKIT: false,
-      };
-    });
     vi.doMock('../src/editable/editing-kernel', async (importOriginal) => {
       const actual =
         await importOriginal<typeof import('../src/editable/editing-kernel')>();
@@ -2560,7 +2582,34 @@ describe('keyboard input strategy', () => {
         },
         initialValue: [{ type: 'image', children: [{ text: '' }] }],
       }) as ReactEditorType;
-      const event = reactKeyEvent(keyEvent('Delete'));
+      const frame = document.createElement('iframe');
+
+      document.body.append(frame);
+      const frameDocument = frame.contentDocument!;
+      const frameWindow = frame.contentWindow!;
+      const target = frameDocument.createElement('div');
+
+      Object.defineProperty(frameWindow.navigator, 'userAgent', {
+        configurable: true,
+        value:
+          'Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',
+      });
+      Object.defineProperty(frameWindow, 'InputEvent', {
+        configurable: true,
+        value: class InputEvent {
+          getTargetRanges() {
+            return [];
+          }
+        },
+      });
+      frameDocument.body.append(target);
+      const nativeEvent = new frameWindow.KeyboardEvent('keydown', {
+        bubbles: true,
+        key: 'Delete',
+      });
+
+      target.dispatchEvent(nativeEvent);
+      const event = reactKeyEvent(nativeEvent);
       const hasEditableTarget = vi
         .spyOn(ReactEditor, 'hasEditableTarget')
         .mockReturnValue(true);
@@ -2588,10 +2637,10 @@ describe('keyboard input strategy', () => {
         editor,
       });
 
+      frame.remove();
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
     } finally {
-      vi.doUnmock('@platejs/plite-dom');
       vi.doUnmock('../src/editable/editing-kernel');
       vi.doUnmock('../src/editable/mutation-controller');
       vi.resetModules();

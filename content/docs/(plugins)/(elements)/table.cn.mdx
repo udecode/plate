@@ -127,6 +127,11 @@ const editor = createPlateEditor({
 - `options.disableMerge`: 禁用单元格合并功能
 - `options.minColumnWidth`: 设置表格列的最小宽度
 
+列宽仅存储在表格的 `colSizes` 中。表格渲染器通过
+`useTableColSizes` 读取该数组；拖动预览使用临时覆盖值，然后通过
+`editor.plugin(TablePlugin).update.setColumnSize` 提交。行高调整使用相同方式，
+并写入每一行的 `size`。
+
 ### 添加工具栏按钮
 
 可以在[工具栏](/docs/toolbar)中添加 [`TableToolbarButton`](/docs/components/table-toolbar-button) 来插入表格。
@@ -348,14 +353,20 @@ const editor = createPlateEditor({
 <APIItem name="colSizes" type="number[]" optional>
 列宽数组。若未提供，将使用表格的覆盖列宽设置
 </APIItem>
+<APIItem name="cellIndices" type="CellIndices" optional>
+预先计算的单元格行列索引
+</APIItem>
+<APIItem name="rowSize" type="number" optional>
+行高。若未提供，将从单元格所在行读取
+</APIItem>
 </APIOptions>
 
 <APIReturns>
 <APIItem name="width" type="number">
 单元格总宽度（根据跨列数计算各列宽度之和）
 </APIItem>
-<APIItem name="minHeight" type="number | undefined">
-单元格最小高度（根据行的尺寸属性确定）
+<APIItem name="minHeight" type="number">
+单元格最小高度（根据行的尺寸属性确定，未设置时为 `0`）
 </APIItem>
 </APIReturns>
 </API>
@@ -947,13 +958,16 @@ const editor = createPlateEditor({
 
 ### `useTableColSizes`
 
-返回应用了覆盖的表格列大小的自定义 hook。如果表格的 `colCount` 更新为 1 且启用了 `enableUnsetSingleColSize` 选项，它将取消设置 `colSizes` 节点。
+返回应用了临时调整大小覆盖值的表格列宽。
 
 <API name="useTableColSizes">
 <APIOptions>
 <APIItem name="disableOverrides" type="boolean" optional>
 如果为 `true`，则禁用对列大小应用覆盖。
 - **默认值：** `false`
+</APIItem>
+<APIItem name="transformColSizes" type="(colSizes: number[]) => number[]" optional>
+转换当前渲染器使用的已解析列宽。
 </APIItem>
 </APIOptions>
 
@@ -966,13 +980,10 @@ const editor = createPlateEditor({
 
 ### `useTableElement`
 
-处理单元格选择和左边距计算的表格元素 hook。
+解析表格左边距，并在按下表格时折叠当前单元格选择的 hook。
 
 <API name="useTableElement">
 <APIReturns>
-  <APIItem name="isSelectingCell" type="boolean">
-    是否正在选择单元格。
-  </APIItem>
   <APIItem name="marginLeft" type="number">
     表格的左边距，考虑覆盖和插件选项。
   </APIItem>

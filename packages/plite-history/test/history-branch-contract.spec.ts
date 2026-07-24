@@ -76,6 +76,51 @@ describe('immutable history branches', () => {
     assert.deepEqual(History.toJSON(lazy), History.toJSON(eager));
   });
 
+  it('keeps a skipped merge-boundary insert on the surviving left block', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: [paragraph('alpha'), paragraph('beta')],
+    });
+
+    editor.update((tx) => tx.nodes.merge({ at: [1] }));
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert('?', { at: { offset: 'alpha'.length, path: [0, 0] } });
+    });
+    editor.update((tx) => tx.history.undo());
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('alpha?'),
+      paragraph('beta'),
+    ]);
+
+    editor.update((tx) => tx.history.redo());
+
+    assert.deepEqual(editor.read.children(), [paragraph('alpha?beta')]);
+  });
+
+  it('keeps a skipped boundary insert through a broad text replacement', () => {
+    const editor = createEditor({
+      extensions: [history()],
+      initialValue: [paragraph('alpha')],
+    });
+
+    editor.update.nodes.replaceChildren([{ text: 'alphaLin fragment' }], {
+      at: [0],
+    });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.text.insert(' Ada', { at: { offset: 5, path: [0, 0] } });
+    });
+    editor.update((tx) => tx.history.undo());
+
+    assert.deepEqual(editor.read.children(), [paragraph('alpha Ada')]);
+
+    editor.update((tx) => tx.history.redo());
+
+    assert.deepEqual(editor.read.children(), [
+      paragraph('alpha AdaLin fragment'),
+    ]);
+  });
+
   it('throws an unresolvable mapping instead of silently deleting history', () => {
     const editor = createEditor({
       extensions: [history()],

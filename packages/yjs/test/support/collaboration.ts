@@ -10,8 +10,11 @@ import {
   replace as editorReplace,
   string as editorString,
 } from '@platejs/plite/internal';
-import { history } from '@platejs/plite-history';
-import { createReactEditor, type ReactEditor } from '@platejs/plite-react';
+import {
+  history,
+  type HistoryStateApi,
+  type HistoryTxApi,
+} from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import type { YjsNode } from '../../src/core/attributes';
@@ -39,14 +42,13 @@ export type Peer<TEditor extends TestEditor = TestEditor> = {
   readonly editor: TEditor;
 };
 
-export type ReactPeer = Peer<ReactEditor>;
-
-type CreateYjsPeerOptions = {
+export type CreateYjsPeerOptions = {
   awareness?: YjsAwarenessLike;
   children: readonly Descendant[];
   clientId: string;
   numericClientId?: number;
   provider?: YjsProviderLike;
+  roots?: Readonly<Record<string, readonly Descendant[]>>;
   seedUpdate?: Uint8Array;
 };
 
@@ -65,7 +67,7 @@ const isYjsNode = (value: unknown): value is YjsNode =>
 const getRawYjsChildren = (node: Y.XmlElement): YjsNode[] =>
   node.toArray().filter(isYjsNode);
 
-const createYjsPeerWithEditor = <TEditor extends TestEditor>(
+export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
   editor: TEditor,
   {
     children,
@@ -73,11 +75,13 @@ const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     clientId,
     numericClientId,
     provider,
+    roots,
     seedUpdate,
   }: CreateYjsPeerOptions
 ): Peer<TEditor> => {
   editorReplace(editor, {
     children: [...children],
+    ...(roots ? { roots } : {}),
     selection: null,
   });
   editor.read.schema.validateDocument(editor.read.value());
@@ -108,8 +112,11 @@ const createYjsPeerWithEditor = <TEditor extends TestEditor>(
 export const createYjsPeer = (options: CreateYjsPeerOptions): Peer =>
   createYjsPeerWithEditor(createEditor(), options);
 
-export const createYjsReactPeer = (options: CreateYjsPeerOptions): ReactPeer =>
-  createYjsPeerWithEditor(createReactEditor(), options);
+export const createYjsHistoryPeer = (options: CreateYjsPeerOptions): Peer =>
+  createYjsPeerWithEditor(
+    createEditor({ extensions: [history()] as const }),
+    options
+  );
 
 export const createSeededYjsPeers = ({
   children,
@@ -149,9 +156,15 @@ export const createSeededYjsPeers = ({
 export const createSeededYjsHistoryPeers = ({
   children,
   clientIds,
+  createEditor: createHistoryEditor,
+  numericClientIds,
+  roots,
 }: {
   children: readonly Descendant[];
   clientIds: readonly string[];
+  createEditor?: () => TestEditor;
+  numericClientIds?: Readonly<Record<string, number>>;
+  roots?: Readonly<Record<string, readonly Descendant[]>>;
 }) => {
   const [firstClientId, ...remainingClientIds] = clientIds;
 
@@ -161,8 +174,15 @@ export const createSeededYjsHistoryPeers = ({
 
   const createPeer = (clientId: string, seedUpdate?: Uint8Array) =>
     createYjsPeerWithEditor(
-      createEditor({ extensions: [history()] as const }),
-      { children, clientId, seedUpdate }
+      createHistoryEditor?.() ??
+        createEditor({ extensions: [history()] as const }),
+      {
+        children,
+        clientId,
+        numericClientId: numericClientIds?.[clientId],
+        roots,
+        seedUpdate,
+      }
     );
   const firstPeer = createPeer(firstClientId);
   const seedUpdate = Y.encodeStateAsUpdate(firstPeer.doc);
@@ -195,7 +215,7 @@ export const getYjsNodeAt = (peer: Peer, path: readonly number[]): YjsNode => {
       throw new Error(`Cannot descend into Y.XmlText at ${path.join('.')}`);
     }
 
-    const child = getRawYjsChildren(current)[index];
+    const child: YjsNode | undefined = getRawYjsChildren(current)[index];
 
     if (child === undefined) {
       throw new Error(`No Yjs node at ${path.join('.')}`);
@@ -297,14 +317,6 @@ export const connectYjsPeer = (peer: Peer): void => {
   runYjsUpdate(peer, (yjs) => yjs.connect());
 };
 
-export const undoYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (yjs) => yjs.undo());
-};
-
-export const redoYjsPeer = (peer: Peer): void => {
-  runYjsUpdate(peer, (yjs) => yjs.redo());
-};
-
 export const clearYjsTrace = (peer: Peer): void => {
   runYjsUpdate(peer, (yjs) => yjs.clearTrace());
 };
@@ -319,23 +331,51 @@ export const disconnectAndClearYjsTrace = (peer: Peer): void => {
 };
 
 export const getHistoryUndoCount = (editor: TestEditor): number =>
-  editor.read.history.undos().length;
+  editor.read(
+    (state) =>
+      (
+        state as typeof state & {
+          readonly history: HistoryStateApi;
+        }
+      ).history.undos().length
+  );
+
+export const getHistoryRedoCount = (editor: TestEditor): number =>
+  editor.read(
+    (state) =>
+      (
+        state as typeof state & {
+          readonly history: HistoryStateApi;
+        }
+      ).history.redos().length
+  );
 
 export const undoEditorHistory = (editor: TestEditor): void => {
-  editor.update.history.undo();
+  editor.update((tx) => {
+    (
+      tx as typeof tx & {
+        readonly history: HistoryTxApi;
+      }
+    ).history.undo();
+  });
 };
 
-export const setEditorDomApi = (
-  editor: ReactEditor,
-  dom: Partial<Pick<ReactEditor['api']['dom'], 'resolveRangeRect'>>
-): void => {
-  editor.api = {
-    ...editor.api,
-    dom: {
-      ...editor.api.dom,
-      ...dom,
-    },
-  };
+export const redoEditorHistory = (editor: TestEditor): void => {
+  editor.update((tx) => {
+    (
+      tx as typeof tx & {
+        readonly history: HistoryTxApi;
+      }
+    ).history.redo();
+  });
+};
+
+export const undoHistoryPeer = (peer: Peer): void => {
+  undoEditorHistory(peer.editor);
+};
+
+export const redoHistoryPeer = (peer: Peer): void => {
+  redoEditorHistory(peer.editor);
 };
 
 export const syncConnectedPeers = (peers: readonly Peer[]): void => {
@@ -367,19 +407,19 @@ export const connectYjsPeerAndSync = (
   syncConnectedPeers(peers);
 };
 
-export const undoYjsPeerAndSync = (
+export const undoHistoryPeerAndSync = (
   peer: Peer,
   peers: readonly Peer[]
 ): void => {
-  undoYjsPeer(peer);
+  undoHistoryPeer(peer);
   syncConnectedPeers(peers);
 };
 
-export const redoYjsPeerAndSync = (
+export const redoHistoryPeerAndSync = (
   peer: Peer,
   peers: readonly Peer[]
 ): void => {
-  redoYjsPeer(peer);
+  redoHistoryPeer(peer);
   syncConnectedPeers(peers);
 };
 

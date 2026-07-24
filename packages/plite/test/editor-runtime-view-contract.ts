@@ -12,6 +12,7 @@ import {
   defineEditorExtension,
   type EditorUpdateTransaction,
   NodeApi,
+  type Path,
   SelectionApi,
 } from '@platejs/plite';
 import {
@@ -2144,7 +2145,7 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const seenPaths: number[][] = [];
+    const seenPaths: Path[] = [];
     const entries = headerEditor.read((state) =>
       state.nodes.entries({
         at: [],

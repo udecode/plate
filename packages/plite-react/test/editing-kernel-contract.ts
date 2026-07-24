@@ -147,7 +147,6 @@ test('editable command definitions cover every command kind', () => {
     'delete',
     'delete-both',
     'delete-fragment',
-    'format',
     'history',
     'insert-break',
     'insert-data',
@@ -155,46 +154,32 @@ test('editable command definitions cover every command kind', () => {
     'move-selection',
     'select',
     'select-all',
-    'set-block',
-    'toggle-mark',
     'transpose-character',
   ]);
 });
 
-test('beforeinput format commands resolve through semantic command definitions', () => {
-  expect(
-    getEditableCommandFromBeforeInputType({
-      data: null,
-      inputType: 'formatBold',
-      selection: null,
-    })
-  ).toEqual({ format: 'bold', kind: 'format' });
-  expect(
-    getEditableCommandFromBeforeInputType({
-      data: null,
-      inputType: 'formatItalic',
-      selection: null,
-    })
-  ).toEqual({ format: 'italic', kind: 'format' });
-  expect(
-    getEditableCommandFromBeforeInputType({
-      data: null,
-      inputType: 'formatUnderline',
-      selection: null,
-    })
-  ).toEqual({ format: 'underline', kind: 'format' });
-  expect(
-    getEditableCommandFromBeforeInputType({
-      data: null,
-      inputType: 'formatStrikeThrough',
-      selection: null,
-    })
-  ).toEqual({ format: 'strikethrough', kind: 'format' });
-
-  expect(
-    getEditableCommandDefinition({ format: 'bold', kind: 'format' })
-      ?.inputFamilies
-  ).toContain('beforeinput');
+test('beforeinput format intents stay private to the host runtime', () => {
+  for (const inputType of [
+    'formatBold',
+    'formatItalic',
+    'formatUnderline',
+    'formatStrikeThrough',
+  ]) {
+    expect(
+      getEditableCommandFromBeforeInputType({
+        data: null,
+        inputType,
+        selection: null,
+      })
+    ).toBeNull();
+    expect(
+      classifyBeforeInputIntent({
+        editor: createEditor() as any,
+        event: { inputType } as InputEvent,
+        internalTarget: false,
+      })
+    ).toBeNull();
+  }
 });
 
 test('beforeinput and keydown commands resolve through typed definitions', () => {

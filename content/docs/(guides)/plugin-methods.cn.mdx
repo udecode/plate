@@ -248,6 +248,31 @@ const SingleLinePlugin = createPlatePlugin({
 
 普通读取与服务使用 `.extendApi()` 或 `.extendEditorApi()`；插件文档变更使用 `.extendTx()` 或 `.extendTxGroup()`。只有需要参与命令、校正、查询中间件或生命周期时才安装 Plite 扩展。
 
+### .extendCodecs
+
+当插件拥有 MIME 格式与 Plate 内容之间的转换时，使用 `.extendCodecs()`。
+回调中的 key 是 MIME 类型；`decode` 返回精确的 `ContentSlice` 或 `null`，
+`encode` 接收需要转换的精确 slice。
+
+```ts
+import { ContentSlice } from '@platejs/plite';
+import { createBasePlugin } from 'platejs';
+
+const RecordsPlugin = createBasePlugin({
+  key: 'records',
+}).extendCodecs(() => ({
+  'application/json': {
+    scope: 'document',
+    decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
+    encode: ({ slice }) => JSON.stringify(slice),
+  },
+}));
+```
+
+Plate 会从插件推断 codec owner 和 schema claims。只有格式表示完整 schema 时才
+使用 `scope: 'document'`。`.extendCodecs()` 必须位于最终 `.configure()` 之前；
+基础插件对象不接受 `codecs` 字段。
+
 ### API 与事务命令的区别
 
 API 和事务命令服务于不同目的：
@@ -319,3 +344,8 @@ const CodeBlockPlugin = toPlatePlugin(
   }
 );
 ```
+
+`toPlatePlugin()` 会保留基础插件的方法，包括 `.configure()`、`.extend()`、
+`.extendCodecs()`、`.extendExtension()`、`.extendApi()`、
+`.extendEditorApi()`、`.extendTx()`、`.extendTxGroup()` 和
+`.withComponent()`。

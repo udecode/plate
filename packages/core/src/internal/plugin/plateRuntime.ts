@@ -3,6 +3,7 @@ import { getEditorRuntimeOwner } from '@platejs/plite/internal';
 
 import type { AnyBasePlugin, EditorShortcut, NodeComponents } from '../../lib';
 import type { ResolvedInputRulesMeta } from '../../lib/plugins/input-rules/types';
+import type { CompiledPlateShortcut } from './compilePlateShortcuts';
 
 export type PlatePluginCache = Readonly<{
   decorate: readonly string[];
@@ -55,6 +56,7 @@ export type PlateRuntime = Readonly<{
   pluginCache: PlatePluginCache;
   pluginList: readonly AnyBasePlugin[];
   plugins: Readonly<Record<string, AnyBasePlugin>>;
+  shortcutTable: readonly CompiledPlateShortcut[];
   shortcuts: Readonly<
     Record<string, PublishedEditorShortcut | null | undefined>
   >;

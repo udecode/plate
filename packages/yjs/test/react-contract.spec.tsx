@@ -15,14 +15,16 @@ import {
   useYjsRemoteCursorOverlayPositions,
 } from '../src/react';
 import {
-  createYjsReactPeer,
   FakeAwareness,
   FakeProvider,
   type Peer,
   paragraph,
   runYjsUpdate,
-  setEditorDomApi,
 } from './support/collaboration';
+import {
+  createYjsReactPeer,
+  setEditorDomApi,
+} from './support/react-collaboration';
 
 const shouldUnregisterHappyDOM = !GlobalRegistrator.isRegistered;
 

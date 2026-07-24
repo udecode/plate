@@ -139,6 +139,38 @@ Inline means one coherent owner declaration, not a mandatory object-literal or
 chain spelling. Prefer the single inference-preserving shape with the fewest
 learned concepts; reject one public verb per compiler destination.
 
+### Builder Consolidation Inference Gate
+
+Public simplicity is measured after typing, not before it. Prefer the fewest
+inference-preserving, semantically distinct authoring stages, not merely the
+fewest builder method names. An internal compiler destination does not by
+itself earn a public verb, but no builder may absorb another through a generic
+path, merged stage, renamed overload, or deletion until the surviving path
+carries the same inferred contract.
+
+Before proposing any builder merge, overload consolidation, rename, or
+deletion:
+
+1. Read the owning generics' input and return types. For every affected
+   dimension, state whether the surviving return type widens that accumulator
+   or merely carries the old type through. Check options, root API, plugin API,
+   read/state groups, own and named transaction groups, selectors,
+   dependencies, schema, extensions, and codecs when they apply.
+2. Require compile-only parity for callback contextual inference, literals,
+   overloads, repeated-stage accumulation, dependency composition, arbitrary
+   named-group keys, root and typed-portal projection, plugin conversion,
+   terminal configuration, and finite declaration emit without `any`.
+3. Include negative proof: unknown groups and invalid access still fail, and a
+   read or mutation capability does not leak onto the wrong editor surface.
+4. If any affected accumulator is preserved instead of widened, do not merge
+   or delete the stage. Fix the owning generic first or keep the stage.
+   Explicit callback annotations, casts, `any`, and helper aliases are failed
+   inference, not migration tools.
+
+Inference is a hard constraint, not a permanent excuse for exposing compiler
+taxonomy. Once the surviving authoring path proves exact parity, remove the
+redundant public verb rather than keeping both paths.
+
 Prefer deep public interfaces: callers learn a small stable surface while the
 owner contains the honest implementation complexity. If examples, tests, or
 normal customization must punch through that surface into internals, the
@@ -157,6 +189,16 @@ semantics.
 
 An API is not scalable because it exposes every possible mechanism. It scales
 when future capability can be added without making every caller learn it.
+
+A plugin schema is creation-owned. Declare it in the plugin constructor, using
+the schema factory over typed options when authored variability is intentional;
+neither `.extend()` nor terminal `.configure()` can replace it. TypeScript
+cannot retroactively re-typecheck schema-derived callbacks, including callbacks
+contributed by another plugin against that descriptor. Reject schema
+replacement at the public type and runtime boundary while keeping unrelated
+authoring and terminal configuration available. Runtime-resolved identity such
+as a configured node type may remain configurable only when the author callback
+types it truthfully rather than as the pre-configuration literal.
 
 ## Public Complexity Budget
 
@@ -330,9 +372,28 @@ properties, caches, or caught portal errors. Access plugin-owned API, options,
 updates, and the installed descriptor only after the check when absence is
 valid.
 
+When a parent namespace already fixes the format and flow, keep its operation
+hooks flat. `parsers.html` owns `query`, `transformData`, and
+`transformFragment` directly. Do not repeat that direction with
+`ingress`/`egress` buckets unless the child has a distinct independently
+consumed lifecycle.
+
 Copied registry UI and reusable package components are generic by definition,
 even when one current host supplies a complete kit. They must not import the
 host's editor type or use its root plugin namespaces.
+
+Treat each independently installable registry item as a source-distribution
+owner. Keep its copied UI self-contained. Repeating short presentation JSX,
+labels, or menu rows across items is cheaper than adding another shared
+registry file and dependency. Extract only when the new owner has an
+independent install/use job or owns real behavior beyond presentation reuse.
+
+Registry surfaces dedicated to `*-classic`, including `list-classic`, are
+maintenance-only pending deprecation. Do not propose or perform parity work,
+new variants, shared abstractions, polish, demos, adoption, or API investment
+for them. Touch them only for a user-facing regression, security or release
+blocker, or an explicitly authorized deprecation/removal. New work targets the
+modern registry surface. Planned deprecation alone does not authorize deletion.
 
 Repeated callers of plugin behavior reuse that plugin-owned API; they do not
 create a second helper owner. Keep the algorithm inside the plugin and expose
@@ -341,6 +402,31 @@ owns a real cross-plugin, cross-layer, or transaction-composition job that the
 plugin surface cannot express honestly. A raw helper that accepts both `tx`
 and the plugin's resolved `type` is evidence that the plugin boundary is
 missing.
+
+Treat a plugin builder chain as a typed capability dependency graph. When later
+plugin stages or required dependents need an earlier capability, publish the
+smallest honest read/service with an earlier `.extendApi()` or mutation with an
+earlier `.extendTx()`, then consume the accumulated inferred surface from later
+builder contexts. Multiple ordered builder calls inside one plugin are not API
+fragmentation. A later active tx stage calls an earlier mutation through that
+same transaction's plugin group, `tx[plugin.key].method(...)`; calling a portal
+one-shot update would open a nested transaction.
+
+Do not publish a private implementation fragment merely so two builder stages
+can share it. Staging is for an honest scoped capability that a consumer,
+required dependent, or durable plugin operation can discover. Keep one-use
+machinery lexical; keep a shared pure domain algorithm private with domain-only
+inputs; coalesce stages or name a builder gap when private runtime context
+cannot be shared without plumbing.
+
+Default new scoped methods and surviving functions to domain inputs only. Do
+not thread `editor`, `api`, `read`, `tx`, `getOptions`, resolved plugin option
+values, or a resolved plugin type through a helper graph when the plugin builder
+can capture or stage them. Operation options remain valid domain input. Before
+exposing a state/view parameter, try the active tx stage or callback owner. An
+explicit active-state boundary is valid only when the same honest query must
+run against an uncommitted transaction snapshot and focused proof shows that
+`editor.read` would be stale.
 
 Reject promotion when it only creates a name for one implementation fragment,
 turns a boolean into a plugin without a complete absence story, exposes
@@ -360,6 +446,9 @@ Ask:
 - Can one owner noun be removed from a scoped API?
 - Can nesting become a flat domain verb?
 - Can inference remove a type, cast, helper, or duplicated contract?
+- When merging builder stages, does the surviving return type widen every
+  affected accumulator, or merely preserve it? Where are the parity and
+  negative type proofs?
 - Is a customization path paying for an advanced case on every basic call?
 - Is composition about user-visible capability or merely internal fragments?
 - For behavior composition, did invariant, parameter, substitutable capability,

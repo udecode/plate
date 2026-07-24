@@ -59,8 +59,8 @@ Never combine packages in one changeset.
 ```bash
 # Wrong
 ---
-'@platejs/core': patch
-'@platejs/utils': patch
+"@platejs/core": patch
+"@platejs/utils": patch
 ---
 
 # Correct
@@ -198,7 +198,7 @@ Breaking change:
 
 ````md
 ---
-'@platejs/basic-nodes': major
+"@platejs/basic-nodes": major
 ---
 
 Remove `LegacyPlugin`; use `ExamplePlugin`

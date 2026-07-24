@@ -1,4 +1,5 @@
 import type { Descendant } from '@platejs/plite';
+import { type Diff, DiffMatchPatch, DiffOp } from 'diff-match-patch-ts';
 import * as Y from 'yjs';
 
 import {
@@ -233,42 +234,81 @@ export const setYjsNodeAttributes = (
   }
 };
 
-const getSharedPrefixLength = (left: string, right: string): number => {
-  let index = 0;
+const textDiff = new DiffMatchPatch();
+const MAX_TEXT_DIFF_MATRIX = 1_000_000;
 
-  while (
-    index < left.length &&
-    index < right.length &&
-    left[index] === right[index]
-  ) {
-    index++;
-  }
+textDiff.Diff_Timeout = 0;
 
-  return index;
-};
-
-const getSharedSuffixLength = (
-  left: string,
-  right: string,
-  prefixLength: number
-): number => {
+const commonPrefixLength = (left: string, right: string): number => {
+  const limit = Math.min(left.length, right.length);
   let length = 0;
 
-  while (
-    length < left.length - prefixLength &&
-    length < right.length - prefixLength
-  ) {
-    const leftIndex = left.length - 1 - length;
-    const rightIndex = right.length - 1 - length;
+  while (length < limit && left[length] === right[length]) length++;
 
-    if (left[leftIndex] !== right[rightIndex]) {
-      break;
-    }
+  return length;
+};
 
+const commonSuffixLength = (
+  left: string,
+  right: string,
+  prefix: number
+): number => {
+  const limit = Math.min(left.length, right.length) - prefix;
+  let length = 0;
+
+  while (length < limit && left.at(-1 - length) === right.at(-1 - length)) {
     length++;
   }
 
   return length;
+};
+
+const boundedTextDiff = (left: string, right: string): Diff[] => {
+  const prefixLength = commonPrefixLength(left, right);
+  const suffixLength = commonSuffixLength(left, right, prefixLength);
+  const prefix = left.slice(0, prefixLength);
+  const suffix = left.slice(left.length - suffixLength);
+  const leftMiddle = left.slice(prefixLength, left.length - suffixLength);
+  const rightMiddle = right.slice(prefixLength, right.length - suffixLength);
+  const middle =
+    leftMiddle.length === 0
+      ? ([[DiffOp.Insert, rightMiddle]] satisfies Diff[])
+      : rightMiddle.length === 0
+        ? ([[DiffOp.Delete, leftMiddle]] satisfies Diff[])
+        : leftMiddle.length <= MAX_TEXT_DIFF_MATRIX / rightMiddle.length
+          ? textDiff.diff_main(leftMiddle, rightMiddle, false)
+          : ([
+              [DiffOp.Delete, leftMiddle],
+              [DiffOp.Insert, rightMiddle],
+            ] satisfies Diff[]);
+
+  return [
+    ...(prefix ? ([[DiffOp.Equal, prefix]] satisfies Diff[]) : []),
+    ...middle,
+    ...(suffix ? ([[DiffOp.Equal, suffix]] satisfies Diff[]) : []),
+  ];
+};
+
+const diffText = (previous: string, next: string): Diff[] => {
+  const reverse = previous > next;
+  const diff = boundedTextDiff(
+    reverse ? next : previous,
+    reverse ? previous : next
+  );
+
+  return reverse
+    ? diff.map(
+        ([operation, value]) =>
+          [
+            operation === DiffOp.Delete
+              ? DiffOp.Insert
+              : operation === DiffOp.Insert
+                ? DiffOp.Delete
+                : DiffOp.Equal,
+            value,
+          ] satisfies Diff
+      )
+    : diff;
 };
 
 const replaceYjsText = (
@@ -281,19 +321,17 @@ const replaceYjsText = (
     return;
   }
 
-  const prefixLength = getSharedPrefixLength(previous, next);
-  const suffixLength = getSharedSuffixLength(previous, next, prefixLength);
-  const removeLength = previous.length - prefixLength - suffixLength;
-  const insertLength = next.length - prefixLength - suffixLength;
+  let offset = 0;
 
-  if (removeLength > 0) {
-    text.delete(prefixLength, removeLength);
-  }
-
-  if (insertLength > 0) {
-    const insertText = next.slice(prefixLength, prefixLength + insertLength);
-
-    text.insert(prefixLength, insertText, attributes);
+  for (const [operation, value] of diffText(previous, next)) {
+    if (operation === DiffOp.Equal) {
+      offset += value.length;
+    } else if (operation === DiffOp.Delete) {
+      text.delete(offset, value.length);
+    } else {
+      text.insert(offset, value, attributes);
+      offset += value.length;
+    }
   }
 };
 

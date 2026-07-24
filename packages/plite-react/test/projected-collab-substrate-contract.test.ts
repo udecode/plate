@@ -114,12 +114,13 @@ describe('projected root lifecycle collaboration substrate', () => {
     });
 
     const change = lastChange(source);
+    const json = change.toJSON();
 
     expect([...change.createRoots]).toEqual([UNSYNCED_ROOT]);
-    expect(change.primary).not.toBeNull();
-    expect(change.roots.has(UNSYNCED_ROOT)).toBe(true);
-    expect(JSON.stringify(change.toJSON())).not.toContain('ownerPath');
-    expect(JSON.stringify(change.toJSON())).not.toContain('ownerRoot');
+    expect(json.primary).toBeDefined();
+    expect(json.roots?.[UNSYNCED_ROOT]).toBeDefined();
+    expect(JSON.stringify(json)).not.toContain('ownerPath');
+    expect(JSON.stringify(json)).not.toContain('ownerRoot');
 
     applyRemote(remote, change);
 

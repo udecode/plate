@@ -39,6 +39,9 @@ const replaceStaticMetadata = (value: unknown, createdAt: number): unknown => {
   return next;
 };
 
+const isEditorValue = (value: EditorDocumentValue | Value): value is Value =>
+  Array.isArray(value);
+
 export const normalizeStaticValue = <T extends EditorDocumentValue | Value>(
   value: T,
   options: NormalizeStaticValueOptions = {}
@@ -53,7 +56,7 @@ export const normalizeStaticValue = <T extends EditorDocumentValue | Value>(
       ...normalizeNodeIdOptions,
       idCreator,
     });
-  const normalized = Array.isArray(value)
+  const normalized = isEditorValue(value)
     ? normalize(value)
     : {
         ...value,

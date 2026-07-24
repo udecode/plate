@@ -8,7 +8,7 @@ import { withMarkdownRuntime } from '../internal/markdownRuntime';
 
 export const serializeInlineMd = (
   editor: BaseEditor,
-  options?: Omit<SerializeMdOptions, 'value'> & { value?: Text[] }
+  options?: Omit<SerializeMdOptions, 'value'> & { value?: readonly Text[] }
 ) =>
   withMarkdownRuntime(editor, (runtime) =>
     serializeInlineMdWithRuntime(runtime, options)

@@ -25,11 +25,9 @@ import type {
   PluginSchemaOwn,
   PluginSchemaReferences,
 } from '../../lib/plugin';
-import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
 import {
   freezePluginDescriptorValue,
   isNominalPluginReference,
-  mergePlugins,
 } from '../utils/mergePlugins';
 import {
   clearPlateRuntimeCandidate,
@@ -70,6 +68,7 @@ export type PlateModelPublication = Readonly<{
   pluginCache: PlateRuntime['pluginCache'];
   pluginList: readonly AnyBasePlugin[];
   plugins: Readonly<Record<string, AnyBasePlugin>>;
+  shortcutTable: PlateRuntime['shortcutTable'];
   shortcuts: PlateRuntime['shortcuts'];
 }>;
 
@@ -185,52 +184,6 @@ export const getResolvedPluginTargetTypes = (
   editor: BaseEditor,
   plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
 ) => getResolvedPluginTargetBinding(editor, plugin).types;
-
-const applyResolvedTargetParserInjection = (
-  editor: BaseEditor,
-  plugin: AnyBasePlugin
-) => {
-  const targetParserToInject = plugin.inject?.targetParserToInject;
-
-  if (!targetParserToInject) return;
-  const binding = getResolvedPluginTargetBinding(editor, plugin);
-
-  if (binding.keys.length === 0) return;
-  type ParserProjectionMap = NonNullable<
-    NonNullable<AnyBasePlugin['inject']>['parsers']
-  >;
-  const injectedParsers: Record<string, ParserProjectionMap[string]> =
-    Object.create(null);
-
-  binding.keys.forEach((targetPlugin) => {
-    injectedParsers[targetPlugin] = withResolvingPlatePlugin(
-      editor,
-      plugin,
-      () =>
-        targetParserToInject({
-          ...getEditorPlugin(editor, plugin),
-          targetPlugin,
-        })
-    );
-  });
-
-  plugin.inject = plugin.inject || {};
-  const overlays: ParserProjectionMap = Object.create(null);
-
-  for (const source of [plugin.inject.parsers, injectedParsers]) {
-    if (!source) continue;
-
-    for (const key of Object.keys(source)) {
-      const overlay = source[key];
-
-      if (!overlay) continue;
-      overlays[key] = Object.hasOwn(overlays, key)
-        ? mergePlugins(overlays[key], overlay)
-        : mergePlugins({}, overlay);
-    }
-  }
-  plugin.inject.parsers = overlays;
-};
 
 const assertType = (plugin: AnyBasePlugin) => {
   if (typeof plugin.type !== 'string' || plugin.type.length === 0) {
@@ -399,9 +352,6 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
   pluginList.forEach(assertType);
   pluginList.forEach((plugin) => {
     compileResolvedPluginTargetBinding(editor, plugin);
-  });
-  pluginList.forEach((plugin) => {
-    applyResolvedTargetParserInjection(editor, plugin);
   });
   pluginList.forEach((plugin) => {
     declarations.set(

@@ -2,6 +2,7 @@ import {
   type Node,
   NodeApi,
   type Path,
+  PathApi,
   PointApi,
   type Point,
   type Range,
@@ -19,6 +20,7 @@ import {
   getSelection as editorGetSelection,
   getActiveEditorTransaction,
   getEditorRuntimeIdForNode,
+  getSelectionDOMRange,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
   point as editorPoint,
@@ -48,7 +50,7 @@ import {
   isDOMText,
   normalizeDOMPoint,
 } from '../utils/dom';
-import { IS_ANDROID, IS_FIREFOX } from '../utils/environment';
+import { isAndroidDOMHost, isGeckoDOMHost } from '../utils/environment';
 
 import { Key } from '../utils/key';
 import {
@@ -97,6 +99,14 @@ import {
 } from './dom-phase-scheduler';
 
 const EDITOR_TO_CANCEL_FOCUS_RETRY = new WeakMap<EditorType, () => void>();
+const EDITOR_TO_FOCUS_REQUEST_GENERATION = new WeakMap<EditorType, number>();
+const ROOT_TO_FOCUS_REQUEST_OWNER = new WeakMap<
+  Document | ShadowRoot,
+  {
+    editor: EditorType;
+    generation: number;
+  }
+>();
 
 /** Core editor accepted by the DOM bridge before its API is installed. */
 export type DOMEditor<
@@ -1024,12 +1034,24 @@ export const DOMEditor: DOMEditorInterface = {
 
   focus: (editor, options = {}) => {
     const retries = options.retries ?? 50;
+    const focusRequestGeneration =
+      (EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) ?? 0) + 1;
+
+    EDITOR_TO_FOCUS_REQUEST_GENERATION.set(editor, focusRequestGeneration);
 
     // Return if no dom node is associated with the editor, which means the editor is not yet mounted
     // or has been unmounted. This can happen especially, while retrying to focus the editor.
     if (!EDITOR_TO_ELEMENT.get(editor)) {
       return;
     }
+
+    const root = DOMEditor.findDocumentOrShadowRoot(editor);
+    const focusRequestOwner = {
+      editor,
+      generation: focusRequestGeneration,
+    };
+
+    ROOT_TO_FOCUS_REQUEST_OWNER.set(root, focusRequestOwner);
 
     // Retry setting focus if the editor has pending updates.
     // The DOM (selection) is unstable while changes are applied.
@@ -1049,6 +1071,9 @@ export const DOMEditor: DOMEditorInterface = {
           if (EDITOR_TO_CANCEL_FOCUS_RETRY.get(editor) === cancel) {
             EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
           }
+          if (ROOT_TO_FOCUS_REQUEST_OWNER.get(root) !== focusRequestOwner) {
+            return;
+          }
           DOMEditor.focus(editor, { retries: retries - 1 });
         },
         {
@@ -1065,7 +1090,6 @@ export const DOMEditor: DOMEditorInterface = {
     EDITOR_TO_CANCEL_FOCUS_RETRY.delete(editor);
 
     const el = DOMEditor.assertDOMNode(editor, editor);
-    const root = DOMEditor.findDocumentOrShadowRoot(editor);
 
     const getLiveSelection = () => editorGetSelection(editor);
     const selection = getLiveSelection();
@@ -1092,10 +1116,19 @@ export const DOMEditor: DOMEditorInterface = {
 
       if (selection) {
         const domSelection = getSelection(root);
-        const domRange = DOMEditor.resolveDOMRange(editor, selection);
+        const projectedSelection = getSelectionDOMRange(editor, selection);
 
-        if (domSelection && domRange) {
-          if (RangeApi.isBackward(selection)) {
+        if (!domSelection) {
+          return;
+        }
+        if (!projectedSelection) {
+          domSelection.removeAllRanges();
+          return;
+        }
+        const domRange = DOMEditor.resolveDOMRange(editor, projectedSelection);
+
+        if (domRange) {
+          if (RangeApi.isBackward(projectedSelection)) {
             domSelection.setBaseAndExtent(
               domRange.endContainer,
               domRange.endOffset,
@@ -1120,6 +1153,91 @@ export const DOMEditor: DOMEditorInterface = {
       } catch {
         return false;
       }
+    };
+    let ownedActiveElement: Element | null =
+      root.activeElement === el ||
+      (root.activeElement && containsShadowAware(el, root.activeElement))
+        ? root.activeElement
+        : null;
+    const settleFocus = () => {
+      if (
+        EDITOR_TO_FOCUS_REQUEST_GENERATION.get(editor) !==
+          focusRequestGeneration ||
+        ROOT_TO_FOCUS_REQUEST_OWNER.get(root) !== focusRequestOwner
+      ) {
+        return;
+      }
+
+      const liveElement = EDITOR_TO_ELEMENT.get(editor);
+
+      if (liveElement !== el || !el.isConnected || el.getRootNode() !== root) {
+        return;
+      }
+
+      const rootActiveElement = root.activeElement;
+      const shadowHost = 'host' in root ? root.host : null;
+      const activeElement =
+        rootActiveElement ??
+        (root === el.ownerDocument ? null : el.ownerDocument.activeElement);
+
+      if (activeElement === el) {
+        return;
+      }
+      if (
+        activeElement?.isConnected &&
+        containsShadowAware(el, activeElement)
+      ) {
+        ownedActiveElement = activeElement;
+        return;
+      }
+
+      const lostToInactiveHost =
+        activeElement === null ||
+        activeElement === el.ownerDocument.body ||
+        (rootActiveElement === null && activeElement === shadowHost) ||
+        (activeElement === ownedActiveElement && !activeElement.isConnected);
+
+      if (!lostToInactiveHost) {
+        return;
+      }
+
+      IS_FOCUSED.set(editor, true);
+      setEditorFocused(editor, true);
+      el.focus({ preventScroll: true });
+      trySyncDomSelection();
+    };
+    const scheduleFocusSettle = () => {
+      scheduleEditorDOMPhase(
+        editor,
+        'dom-write',
+        'dom-editor-focus-settle-microtask',
+        settleFocus,
+        {
+          key: 'dom-editor-focus-settle-microtask',
+          timing: 'microtask',
+        }
+      );
+      scheduleEditorDOMPhase(
+        editor,
+        'dom-write',
+        'dom-editor-focus-settle-frame',
+        settleFocus,
+        {
+          key: 'dom-editor-focus-settle-frame',
+          timing: 'animation-frame',
+        }
+      );
+      scheduleEditorDOMPhase(
+        editor,
+        'dom-write',
+        'dom-editor-focus-settle-timeout',
+        settleFocus,
+        {
+          delay: 50,
+          key: 'dom-editor-focus-settle-timeout',
+          timing: 'timeout',
+        }
+      );
     };
 
     if (root.activeElement !== el) {
@@ -1169,12 +1287,14 @@ export const DOMEditor: DOMEditorInterface = {
           }
         );
       }
+      scheduleFocusSettle();
       return;
     }
 
     IS_FOCUSED.set(editor, true);
     setEditorFocused(editor, true);
     trySyncDomSelection();
+    scheduleFocusSettle();
   },
 
   getWindow: (editor) => {
@@ -1532,7 +1652,7 @@ export const DOMEditor: DOMEditorInterface = {
 
   scrollIntoView: (editor, target, options = { scrollMode: 'if-needed' }) => {
     const run = () => {
-      if (Array.isArray(target)) {
+      if (PathApi.isPath(target)) {
         const node = editor.read((state) => state.nodes.get(target)?.[0]);
         const element = node ? DOMEditor.resolveDOMNode(editor, node) : null;
 
@@ -1733,7 +1853,7 @@ export const DOMEditor: DOMEditorInterface = {
             // COMPAT: While composing at the start of a text node, some keyboards put
             // the text content inside the zero width space.
             if (
-              IS_ANDROID &&
+              isAndroidDOMHost(el) &&
               !exactMatch &&
               el.hasAttribute('data-plite-zero-width') &&
               el.textContent.length > 0 &&
@@ -1852,7 +1972,7 @@ export const DOMEditor: DOMEditorInterface = {
         offset === domNode.textContent!.length &&
         // COMPAT: Android IMEs might remove the zero width space while composing,
         // and we don't add it for line-breaks.
-        IS_ANDROID &&
+        isAndroidDOMHost(parentNode) &&
         domNode.getAttribute('data-plite-zero-width') === 'z' &&
         domNode.textContent?.startsWith('\uFEFF') &&
         // COMPAT: If the parent node is a Plite zero-width space, editor is
@@ -1864,13 +1984,13 @@ export const DOMEditor: DOMEditorInterface = {
           // COMPAT: In Firefox, `range.cloneContents()` returns an extra trailing '\n'
           // when the document ends with a new-line character. This results in the offset
           // length being off by one, so we need to subtract one to account for this.
-          (IS_FIREFOX && domNode.textContent?.endsWith('\n\n')))
+          (isGeckoDOMHost(domNode) && domNode.textContent?.endsWith('\n\n')))
       ) {
         offset--;
       }
     }
 
-    if (IS_ANDROID && !textNode && !exactMatch) {
+    if (isAndroidDOMHost(parentNode) && !textNode && !exactMatch) {
       const node = parentNode.hasAttribute('data-plite-node')
         ? parentNode
         : parentNode.closest('[data-plite-node]');
@@ -1985,7 +2105,10 @@ export const DOMEditor: DOMEditorInterface = {
       if (isDOMSelection(domRange)) {
         // COMPAT: In firefox the normal seletion way does not work
         // (https://github.com/ianstormtaylor/slate/pull/5486#issue-1820720223)
-        if (IS_FIREFOX && domRange.rangeCount > 1) {
+        if (
+          isGeckoDOMHost(domRange.anchorNode ?? domRange.focusNode ?? el) &&
+          domRange.rangeCount > 1
+        ) {
           focusNode = domRange.focusNode; // Focus node works fine
           const firstRange = domRange.getRangeAt(0);
           const lastRange = domRange.getRangeAt(domRange.rangeCount - 1);
@@ -2083,7 +2206,7 @@ export const DOMEditor: DOMEditorInterface = {
     // when isTrailing is true) in the focusOffset, resulting in an invalid
     // Plite point. (2023/11/01)
     if (
-      IS_FIREFOX &&
+      isGeckoDOMHost(focusNode) &&
       focusNode.textContent?.endsWith('\n\n') &&
       focusOffset === focusNode.textContent.length
     ) {

@@ -33,7 +33,7 @@ Plugin keys targeted by the plugin's schema contributions and injected behavior.
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
-Plugin-owned values used by schema factories, parsers, host codecs, and runtime
+Plugin-owned values used by schema factories, parsers, codecs, and runtime
 behavior. Package authors declare defaults with `create*Plugin()` or
 `.extend()`. App consumers apply one final
 `.configure({ options: { ... } })`; live values use
@@ -128,13 +128,6 @@ If true, only matches leaf nodes. Used to restrict prop injection to leaf nodes.
 </APISubListItem>
 <APISubListItem parent="inject" name="maxLevel" type="number" optional>
 Maximum nesting level for node prop injection. Nodes deeper than this level will not receive injected props.
-</APISubListItem>
-<APISubListItem parent="inject" name="parsers" type="Record<string, ParserPluginProjection>" optional>
-Parser-only projections contributed to installed plugins by key.
-</APISubListItem>
-<APISubListItem parent="inject" name="targetParserToInject" type="function" optional>
-A function that returns a parser-only projection for each installed, enabled
-target named by `targetPluginKeys`.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -263,19 +256,13 @@ package plugin must disable an optional installed peer.
 </APISubList>
 </APIItem>
 
-<APIItem name="parser" type="Nullable<Parser<WithAnyKey<C>>>">
-  Defines how the plugin parses content.
-</APIItem>
-
 <APIItem name="parsers" type="object">
-Defines serializers and deserializers for various formats.
+Defines whole-input HTML parsing behavior.
 
 <APISubList>
-<APISubListItem parent="parsers" name="html" type="Nullable<{ deserializer?: HtmlDeserializer<WithAnyKey<C>>; serializer?: HtmlSerializer<WithAnyKey<C>> }>" optional>
-HTML parser configuration.
-</APISubListItem>
-<APISubListItem parent="parsers" name="htmlReact" type="Nullable<{ serializer?: HtmlReactSerializer<WithAnyKey<C>> }>" optional>
-HTML React serializer configuration.
+<APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyKey<C>>>" optional>
+Whole-input HTML hooks. `query`, `transformData`, and `transformFragment` are
+flat siblings. Node, mark, and property mappings use `.extendHtmlCodec()`.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -449,6 +436,27 @@ every `.extend*()` call before applying consumer `.configure()`.
     | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
 ) => PlatePlugin;
 ```
+
+</APIItem>
+
+<APIItem name="extendHtmlCodec" type="function">
+Declares the plugin's bidirectional HTML element, mark, or property mapping.
+The self overload infers the schema claim from the owning descriptor. Pass a
+different typed plugin descriptor only when this extension genuinely owns that
+foreign plugin's HTML mapping.
+
+```ts
+extendHtmlCodec(extension: ExtendHtmlCodec<C>): BasePlugin<C>;
+
+extendHtmlCodec<TTarget extends PluginReference>(
+  target: ForeignHtmlCodecTarget<C, TTarget>,
+  extension: ExtendForeignHtmlCodec<C, InferConfig<TTarget>>
+): BasePlugin<C>;
+```
+
+Call `.extendHtmlCodec()` during package authoring, before terminal
+`.configure()`. Element decoders return owned properties, not `type`; the
+runtime supplies the installed target's configured type.
 
 </APIItem>
 

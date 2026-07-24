@@ -14,6 +14,7 @@ Plugin methods return new plugin instances, so package authors can keep a base p
 - [Selectors](#selectors)
 - [API And Transactions](#api-and-transactions)
 - [Install Plite Extensions](#install-plite-extensions)
+- [Declare Product Codecs](#declare-product-codecs)
 - [Components](#components)
 - [Convert Plite Plugins](#convert-plite-plugins)
 - [API Reference](#api-reference)
@@ -30,6 +31,7 @@ Plugin methods return new plugin instances, so package authors can keep a base p
 | `.extendEditorApi()` | Add editor-wide API methods. | `editor.api`. |
 | `.extendTx()` | Add plugin-owned transaction commands. | `editor.update((tx) => tx[plugin.key])`. |
 | `.extendTxGroup()` | Add commands to a named transaction group. | `editor.update((tx) => tx[groupKey])`. |
+| `.extendCodecs()` | Declare MIME-keyed import and export behavior owned by the plugin. | Plate's compiled product codec registry. |
 | `.withComponent()` | Attach a node component to a plugin. | `plugin.render.node`. |
 | `.clone()` | Copy a plugin definition. | A new plugin object. |
 
@@ -314,6 +316,32 @@ export const SingleLinePlugin = createBasePlugin({
 
 Use the keyed overload, `.extendExtension(key, extension)`, when one plugin installs several unnamed extension fragments and each needs a stable name. Keep ordinary reads in `.extendApi()` or `.extendEditorApi()`, and ordinary mutations in `.extendTx()` or `.extendTxGroup()`.
 
+## Declare Product Codecs
+
+Use `.extendCodecs()` when a plugin owns conversion between a MIME format and
+Plate content. The callback key is the MIME type; `decode` returns an exact
+`ContentSlice` or `null`, while `encode` receives the exact slice to convert.
+
+```ts title="records-plugin.ts" showLineNumbers
+import { ContentSlice } from '@platejs/plite';
+import { createBasePlugin } from 'platejs';
+
+export const RecordsPlugin = createBasePlugin({
+  key: 'records',
+}).extendCodecs(() => ({
+  'application/json': {
+    scope: 'document',
+    decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
+    encode: ({ slice }) => JSON.stringify(slice),
+  },
+}));
+```
+
+Plate infers the codec owner and schema claims from the plugin. Use
+`scope: 'document'` only when the format represents the whole schema. Keep
+codec authoring before the terminal `.configure()` call; a base plugin object
+does not accept a `codecs` field.
+
 ## Components
 
 Use `.withComponent()` to bind a Plate UI node component to a plugin. It writes
@@ -361,7 +389,10 @@ export const MentionPlugin = toPlatePlugin(BaseMentionPlugin, {
 });
 ```
 
-`toPlatePlugin()` preserves the base plugin methods, including `.configure()`, `.extend()`, `.extendExtension()`, `.extendApi()`, `.extendEditorApi()`, `.extendTx()`, `.extendTxGroup()`, and `.withComponent()`.
+`toPlatePlugin()` preserves the base plugin methods, including `.configure()`,
+`.extend()`, `.extendCodecs()`, `.extendExtension()`, `.extendApi()`,
+`.extendEditorApi()`, `.extendTx()`, `.extendTxGroup()`, and
+`.withComponent()`.
 
 ## API Reference
 
@@ -369,6 +400,7 @@ export const MentionPlugin = toPlatePlugin(BaseMentionPlugin, {
 | --- | --- | --- |
 | `.configure(config)` | One object or callback returning a partial existing plugin config. | Resolves once per descriptor and editor, lets contextual extensions read configured values, and remains the final override. |
 | `.extend(config)` | Object or callback returning a partial plugin config. | Object configs merge immediately; callback configs run during plugin resolution. |
+| `.extendCodecs(callback)` | Callback returning MIME-keyed codec declarations. | Compiles plugin-owned decode and encode declarations into the product codec registry. |
 | `.extendExtension(extension)` | Plite extension descriptor or callback; accepts an optional key as the first argument. | Installs the extension when the Plate plugin resolves. |
 | `.extendSelectors(callback)` | Callback returning selector functions. | Extends the plugin option store selectors. |
 | `.extendApi(callback)` | Callback returning functions. | Exposes plugin-owned methods through `editor.api[plugin.key]`; exact generic code can use `editor.plugin(plugin).api`. |

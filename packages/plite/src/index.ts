@@ -30,13 +30,8 @@ export type {
   AnchorValue,
   RangeAnchorAssociation,
 } from './core/anchor';
-export { ChangeSet, DocumentChange } from './core/document-change';
-export type {
-  ChangeSection,
-  JsonEditorValue,
-  JsonNode,
-  NodePropertyDelta,
-} from './core/document-change';
+export { DocumentChange } from './core/document-change';
+export type { JsonEditorValue, JsonNode } from './core/document-change';
 export { defineExtensionSlot } from './core/extension-slot';
 export type {
   EditorExtensionSlot,

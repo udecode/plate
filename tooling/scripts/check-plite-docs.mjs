@@ -515,6 +515,19 @@ function auditSlateV2Docs() {
     const lines = source.split('\n');
     const codeLines = inCodeFenceByLine(lines);
 
+    if (relativePath.startsWith('content/docs/')) {
+      for (const signal of [
+        ...manualYjsSoakRunnerSignals,
+        ...yjsSoakScriptAliases,
+      ]) {
+        if (source.includes(signal)) {
+          failures.push(
+            `${relativePath}: public docs must not claim an unregistered manual Yjs soak runner: ${signal}`
+          );
+        }
+      }
+    }
+
     for (const { pattern, reason } of deletedArchitecturePatterns) {
       const match = pattern.exec(source);
 

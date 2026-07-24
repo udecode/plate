@@ -3,6 +3,7 @@
 import React from 'react';
 
 import {
+  ContentSlice,
   defineStateField,
   property,
   schema,
@@ -36,15 +37,6 @@ const VariantPlugin = createBasePlugin({
 
 const AtomicParserBPlugin = createBasePlugin({
   key: 'atomicParserB',
-  parser: {
-    deserialize: () => [
-      {
-        children: [{ atomicParserB: true, text: 'parsed-b' }],
-        type: 'p',
-      },
-    ],
-    format: 'application/x-plate-atomic-parser',
-  },
   render: {
     as: 'u',
     abovePlite: ({ children }) => (
@@ -56,7 +48,18 @@ const AtomicParserBPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-});
+}).extendCodecs(() => ({
+  'application/x-plate-atomic-parser': {
+    scope: 'document',
+    decode: () =>
+      ContentSlice.closed([
+        {
+          children: [{ atomicParserB: true, text: 'parsed-b' }],
+          type: 'p',
+        },
+      ]),
+  },
+}));
 
 const ReadOnlyProbe = () => {
   const editor = useEditor();
@@ -80,6 +83,41 @@ const CommitFromLayoutEffect = ({ text }: { text?: string }) => {
 };
 
 describe('PlateContent', () => {
+  it('owns default placeholder presentation above Plite structure', async () => {
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    });
+    const { container, rerender } = render(
+      <Plate editor={editor}>
+        <PlateContent placeholder="Type something" />
+      </Plate>
+    );
+
+    await waitFor(() => {
+      const placeholder = container.querySelector<HTMLElement>(
+        '[data-plite-placeholder="true"]'
+      );
+
+      expect(placeholder?.style.opacity).toBe('0.333');
+      expect(placeholder?.style.textDecoration).toBe('none');
+    });
+
+    rerender(
+      <Plate editor={editor}>
+        <PlateContent disableDefaultStyles placeholder="Type something" />
+      </Plate>
+    );
+
+    await waitFor(() => {
+      const placeholder = container.querySelector<HTMLElement>(
+        '[data-plite-placeholder="true"]'
+      );
+
+      expect(placeholder?.style.opacity).toBe('');
+      expect(placeholder?.style.textDecoration).toBe('');
+    });
+  });
+
   it('renders inside the Plate container without mutating editor runtime', () => {
     const editor = createPlateEditor({
       initialValue: value,

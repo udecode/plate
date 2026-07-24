@@ -1,4 +1,5 @@
 import {
+  type Descendant,
   type DocumentChange,
   type EditorDocumentValue,
   NodeApi,
@@ -11,14 +12,13 @@ import {
 } from '@platejs/plite';
 import {
   above as editorAbove,
-  getInternalDocumentChangeSet,
+  hasInternalDocumentChangeRoot,
   hasPath as editorHasPath,
-  IndexedDocument,
   isBlock as editorIsBlock,
   MAIN_ROOT_KEY,
+  mapInternalDocumentChangePoint,
   next as editorNext,
   toInternalRoot,
-  toPublicRoot,
 } from '@platejs/plite/internal';
 import { EDITOR_TO_PENDING_DIFFS } from './weak-maps';
 
@@ -266,6 +266,22 @@ export type PendingDocumentChange = Readonly<{
 const rootChildren = (value: EditorDocumentValue, root: string) =>
   root === MAIN_ROOT_KEY ? value.children : (value.roots?.[root] ?? []);
 
+const nodeAt = (
+  children: readonly Descendant[],
+  path: readonly number[]
+): Descendant | null => {
+  let descendants = children;
+  let node: Descendant | undefined;
+
+  for (const index of path) {
+    node = descendants[index];
+    if (!node) return null;
+    descendants = NodeApi.isElement(node) ? node.children : [];
+  }
+
+  return node ?? null;
+};
+
 const mapPointThroughChange = (
   editor: EditorType<any>,
   point: Point,
@@ -275,34 +291,27 @@ const mapPointThroughChange = (
   const root = getPendingPointRoot(editor, point);
 
   if (context.change.deleteRoots.has(root)) return null;
-  if (!getInternalDocumentChangeSet(context.change, root)) return point;
+  if (!hasInternalDocumentChangeRoot(context.change, root)) return point;
 
-  const source = IndexedDocument.fromValue(rootChildren(context.before, root));
-  const target = IndexedDocument.fromValue(rootChildren(context.after, root));
-  const localPoint = { offset: point.offset, path: point.path };
+  const next = mapInternalDocumentChangePoint(
+    context.change,
+    context.before,
+    context.after,
+    root,
+    { offset: point.offset, path: point.path },
+    association
+  );
 
-  try {
-    const position = source.positionAt(localPoint);
-    const publicRoot = toPublicRoot(root);
-    const mapped = context.change.mapPosition(position, {
-      association: association === 1 ? 'forward' : 'backward',
-      ...(publicRoot ? { root: publicRoot } : {}),
-    });
-    const next = mapped === null ? null : target.pointAt(mapped, association);
+  if (!next) return null;
 
-    if (!next) return null;
+  const mappedPoint = {
+    offset: next.offset,
+    path: [...next.path] as Path,
+  };
 
-    const mappedPoint = {
-      offset: next.offset,
-      path: [...next.path] as Path,
-    };
-
-    return point.root === undefined && root === MAIN_ROOT_KEY
-      ? mappedPoint
-      : { ...mappedPoint, root };
-  } catch {
-    return null;
-  }
+  return point.root === undefined && root === MAIN_ROOT_KEY
+    ? mappedPoint
+    : { ...mappedPoint, root };
 };
 
 export function transformPendingPoint(
@@ -396,7 +405,7 @@ export function transformTextDiff(
   const { path, diff, id } = textDiff;
   const root = getPendingDiffRoot(editor);
 
-  if (!getInternalDocumentChangeSet(context.change, root)) {
+  if (!hasInternalDocumentChangeRoot(context.change, root)) {
     return textDiff;
   }
   if (!editor) return null;
@@ -424,9 +433,7 @@ export function transformTextDiff(
     };
   }
 
-  const startNode = IndexedDocument.fromValue(
-    rootChildren(context.after, root)
-  ).node(start.path);
+  const startNode = nodeAt(rootChildren(context.after, root), start.path);
 
   if (!NodeApi.isText(startNode)) return null;
 

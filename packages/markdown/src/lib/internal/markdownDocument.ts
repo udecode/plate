@@ -94,7 +94,7 @@ export const serializeUnknownMdxNode = (
 
 export const toMarkdownBlockContent = (
   context: MarkdownConversionContext,
-  children: Descendant[]
+  children: readonly Descendant[]
 ): Value => {
   const content: Element[] = [];
   let inline: Descendant[] = [];
@@ -136,8 +136,8 @@ export const toMarkdownBlockContent = (
 
 export const toMarkdownCaptionContent = (
   context: MarkdownConversionContext,
-  children: Descendant[]
-): Descendant[] => {
+  children: readonly Descendant[]
+): readonly Descendant[] => {
   const blocks = toMarkdownBlockContent(context, children);
 
   if (blocks.length !== 1 || blocks[0].type !== context.getPluginType(KEYS.p)) {

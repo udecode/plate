@@ -33,7 +33,7 @@ export const serializeMdWithRuntime = (
 
 export const serializeInlineMdWithRuntime = (
   runtime: MarkdownRuntime,
-  options?: Omit<SerializeMdOptions, 'value'> & { value?: Text[] }
+  options?: Omit<SerializeMdOptions, 'value'> & { value?: readonly Text[] }
 ) => {
   const { value = [], ...serializeOptions } = options ?? {};
   const mergedOptions = getMergedOptionsSerialize(runtime, serializeOptions, {
@@ -55,7 +55,7 @@ export const serializeInlineMdWithRuntime = (
 };
 
 const slateToMdast = (
-  children: Descendant[],
+  children: readonly Descendant[],
   options: SerializeMdContext
 ): MdRoot => ({
   children: convertNodesSerialize(

@@ -113,10 +113,10 @@ Blocked condition:
 Task state:
 - task_type: package API refactor and inference proof
 - task_complexity: normal
-- current_phase: intake
-- current_phase_status: in_progress
-- next_phase: implementation
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: N/A
+- goal_status: complete
 
 Current verdict:
 - verdict: implement the accepted staged capability chain
@@ -174,8 +174,9 @@ Work Checklist:
 - [x] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason. N/A: no video.
 - [x] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
-      is recorded with reason.
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
+      is recorded with reason. List owns the early query family; Core already
+      carries staged and dependency-tree inference correctly.
 - [x] Release artifact requirement recorded: changeset, registry changelog, or
       N/A with reason.
 - [x] Final handoff shape decided: concise local feature/refactor result, exact
@@ -193,8 +194,10 @@ Work Checklist:
       browser behavior, agent-action, or command-contract changes, or marked
       N/A with reason. Risk: transaction-aware reads could accidentally use
       `editor.read`; proof must exercise an explicit active transaction state.
-- [ ] Review/autoreview target selected from actual diff state for non-trivial
-      implementation work, or marked N/A with reason.
+- [x] Review/autoreview target selected from actual diff state for non-trivial
+      implementation work: staged query block and replacements in
+      `BaseListPlugin.tsx`, two new query tests, and query prose added to the
+      existing List changeset; exclude prior List/shared-checkout work and plan.
 - [x] Agent-native review decision recorded for `.agents/**`, `.claude/**`,
       `.codex/**`, skills, hooks, commands, prompts, or user-action tooling.
       N/A: user explicitly deferred skill work; source audit must prove no
@@ -208,55 +211,55 @@ Work Checklist:
 - [x] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset. N/A: package source.
 - [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`. N/A: published API delta exists.
 - [x] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes. Hard cut from raw main-era helpers to scoped flat methods; no aliases.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
+- [x] Package/API pack: generated barrels or release notes are updated when required. Existing List changeset updated; no barrel topology change.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
-| Browser final proof | pending | Attach Browser/Chrome/Computer proof or exact caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-24-list-staged-plugin-api-proof.md` | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Pass: 112/112 tests, 14/14 typecheck tasks, build, lint, Browser, source audit, diff check, and autoreview |
+| Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Red proof: 44 pass, 1 fail because `editor.api.list.getPrevious` was absent |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Fast/React 49/49; slow 63/63; active-transaction and required-dependent rows pass |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `pnpm turbo typecheck --filter=./packages/list` -> 14/14 tasks |
+| Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no file or export topology change |
+| Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifest, lockfile, dependency, or install-graph change |
+| Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: user deferred skill repair; no `.agents/**` write occurred in this packet |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Package commands ran in `/Users/zbeyens/git/plate-2`; Browser used its local `www` app |
+| Browser surface changed | yes | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | `/blocks/list-demo` rendered and List outdent interaction preserved |
+| Browser final proof | yes | Attach Browser/Chrome/Computer proof or exact caveat when browser proof applies | HTTP 200; Disc item became paragraph after Home+Backspace; 0 console errors/warnings |
+| CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no template output touched |
+| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Existing `.changeset/list-scoped-api.md` updated for flat scoped queries |
+| Registry-only component work changed | no | Update `docs/components/changelog.mdx` or record N/A | N/A: package source change, not registry-only |
+| Docs or content changed | no | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | N/A: no user reference docs/content change; only changeset and goal ledger |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Active transaction could read stale state; dedicated tx test proves the explicit state view sees uncommitted insertion |
+| Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling change |
+| Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no install-corruption signal |
+| Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Bounded dirty-local review exited 0 with no accepted/actionable findings |
+| PR create or update | no | Run `check` before PR work and sync PR body to the task-style final handoff | N/A: user did not request PR work |
+| Task-style PR body verified | no | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | N/A: no PR |
+| PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no PR |
+| Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: direct local request, no tracker |
+| Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Filled below |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `pnpm --filter @platejs/list lint:fix` -> pass |
+| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Reads/searches/review were bounded; one broad skill-mtime probe overflowed and was abandoned without affecting source |
+| Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-24-list-staged-plugin-api-proof.md` | Pass recorded after ledger closure |
+| Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Two staged APIs, one tx, one extension; no stale `getPreviousList`/`getNextList`; no export topology change |
+| Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published `@platejs/list` API/type/runtime delta |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | Existing `@platejs/list` major changeset updated; no forbidden package/version |
+| Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: not registry-only |
+| No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: package changeset applies |
+| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | 112/112 tests; typecheck 14/14; package build passes |
+| Barrel/export generation | no | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | N/A: no exported file or barrel change |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | requirements, skills, source, baseline, release owner, and failing proof recorded | implementation |
-| Implementation | in_progress | dependent test fails because `editor.api.list.getPrevious` is undefined | verification |
-| Verification | pending | | closeout |
-| PR / tracker sync | pending | | final response |
-| Closeout | pending | | final response |
+| Implementation | complete | early query API, dependent use, tx use, and lazy extension use implemented without casts | verification |
+| Verification | complete | 112/112 List tests, typecheck 14/14, build/lint, Browser interaction, source audit, diff check, and autoreview green | closeout |
+| PR / tracker sync | complete | N/A: neither requested nor linked | closeout |
+| Closeout | complete | Final contract filled; completion checker passes | final response |
 
 Findings:
 - Core's staged builder already accumulates API types across multiple
@@ -265,6 +268,11 @@ Findings:
   descriptor publishes neither method.
 - Required dependency installation works at runtime; the new dependent test
   reaches `editor.api.list`, then fails exactly at the missing query.
+- `extendExtension` factories are assembled before plugin API publication.
+  Destructuring `{ api }` there snapshots the empty pre-publication value;
+  retaining the typed context and reading `context.api` inside runtime
+  callbacks resolves the published API lazily. `.extendApi` and `.extendTx`
+  stages can destructure accumulated `api`.
 
 Decisions and tradeoffs:
 - Publish `getPrevious` and `getNext` as one early query family; keep the generic
@@ -275,37 +283,65 @@ Decisions and tradeoffs:
   not a clean dependent job.
 
 Implementation notes:
-- None yet.
+- Added one early inferred query stage and retained later API/tx/behavior stages.
+- Kept `getSibling` lexical because dependents need domain queries, not the
+  callback-heavy traversal mechanism.
+- Kept extension access lazy through `context.api` because eager destructuring
+  occurs before API publication.
 
 Review fixes:
-- None yet.
+- Autoreview accepted the staged publication, dependent inference,
+  transaction-state propagation, lazy extension access, flat names, and lack
+  of compatibility aliases; no source fix required.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| Expected red test: `editor.api.list.getPrevious is not a function` | 1 | Add the early staged query API, then rerun the exact test | Open |
+| Expected red test: `editor.api.list.getPrevious is not a function` | 1 | Add the early staged query API, then rerun the exact test | Resolved: dependent proof passes |
+| Eager `{ api }` destructuring in `extendExtension` captured the pre-publication empty API and caused 22 focused failures | 1 | Preserve the extension context and read `context.api` lazily inside runtime callbacks | Resolved: focused suite 46/46, then full fast/React 49/49 and slow 63/63 |
 
 Verification evidence:
 - Red proof: `bun test ./packages/list/src/lib/BaseListPlugin.spec.tsx` in
   `/Users/zbeyens/git/plate-2` -> 44 pass, 1 fail at the dependent call because
   the query is not yet published.
+- `bun test ./packages/list/src/lib/BaseListPlugin.spec.tsx` -> 46 pass after
+  staged API and lazy extension-context repair.
+- `bun test ./packages/list/src/lib/BaseListPlugin.spec.tsx ./packages/list/src/react/ListPlugin.spec.tsx` -> 49 pass.
+- `bun test ./packages/list/src/lib/BaseListPlugin.slow.tsx` -> 63 pass.
+- `pnpm turbo typecheck --filter=./packages/list` -> 14/14 tasks.
+- `pnpm --filter @platejs/list build` -> pass.
+- `pnpm --filter @platejs/list lint:fix` -> 13 files checked, one formatted.
+- Browser `/blocks/list-demo` -> HTTP 200; `Disc 1` changed from
+  `plite-indent-1 plite-listStyleType-disc`, role `listitem`, to paragraph
+  styling with no role after Home+Backspace; console errors/warnings: 0.
+- `git diff --check -- <bounded files>` -> pass.
+- Focused source audit -> two `.extendApi()` stages; one `.extendTx()`; one
+  `.extendExtension()`; no stale `getPreviousList`, `getNextList`, or extracted
+  sibling helper under `packages/list/src`.
+- Dirty-local autoreview of the bounded packet -> exit 0, no
+  accepted/actionable findings.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: N/A: no PR requested
+- Issue / tracker line: N/A: direct local request
+- Confidence line: high; all named gates pass
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: red dependent test, 44 pass / 1 fail; browser N/A before source
+  - Verified: 112/112 List tests and live Browser interaction
+- Browser check: `/blocks/list-demo` HTTP 200, list-to-paragraph interaction
+  preserved, 0 console errors/warnings
+- Outcome: staged plugin APIs propagate through later stages and required
+  dependents without Core changes, casts, or callback annotations
+- Caveat: `extendExtension` must access `context.api` lazily at runtime; eager
+  destructuring captures the pre-publication API
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: early List-owned flat query API
+  - Why not quick patch: raw lexical calls cannot be inferred by dependents
+  - Why not broader change: Core already accumulates staged and dependency-tree
+    types correctly
+- Verified: tests, typecheck, build, lint, Browser, source audit, diff check,
+  autoreview
+- PR body verified: N/A: no PR
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -328,25 +364,31 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: N/A: not requested
+- Issue / tracker: N/A: no target
+- Browser proof: `/blocks/list-demo` interaction green, console clean
+- Caveats: skill doctrine repair intentionally deferred by the user
 
 Timeline:
 - 2026-07-24T11:08:18.985Z Task goal plan created.
 - 2026-07-24 Red proof added and run: required dependent resolves List but
   `getPrevious` is absent.
+- 2026-07-24 Staged API implemented; diagnosed extension publication timing and
+  switched runtime behavior callbacks to lazy `context.api`.
+- 2026-07-24 Package tests/typecheck/build/lint and live browser interaction
+  passed.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Implementing the early List query stage |
-| Where am I going? | Focused verification, browser smoke, review, closeout |
+| Where am I? | Complete |
+| Where am I going? | Final handoff |
 | What is the goal? | Prove staged List API inference through a required dependent without skill edits |
-| What have I learned? | Dependency installation works; the missing runtime API is the exact red failure |
-| What have I done? | Captured requirements, source/baseline, and a 44-pass/1-fail repro |
+| What have I learned? | Staged API/dependency inference works; editor-extension API access must stay lazy until runtime publication |
+| What have I done? | Implemented the query family and passed tests, typecheck, build, lint, Browser, source audit, and autoreview |
 
 Open risks:
-- Query methods must honor an explicitly supplied transaction state rather than
-  silently reading the committed editor snapshot.
+- No open source blocker. Public third-parameter state is an advanced
+  composition escape, but the focused transaction test proves it reads
+  inserted uncommitted nodes. Skill doctrine repair remains intentionally
+  deferred.

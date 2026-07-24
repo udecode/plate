@@ -6,8 +6,8 @@ import {
   assertPeerTexts,
   clearYjsTrace,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -18,9 +18,9 @@ import {
   readPeerChildren,
   readPeerSelection,
   readPeerPliteValue,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -34,7 +34,7 @@ type ClientId = keyof typeof clientIds;
 const initialValue = (): Descendant[] => [paragraph('alpha')];
 
 const createPeer = (clientId: ClientId, seedUpdate?: Uint8Array): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children: initialValue(),
     clientId,
     numericClientId: clientIds[clientId],
@@ -42,7 +42,7 @@ const createPeer = (clientId: ClientId, seedUpdate?: Uint8Array): Peer =>
   });
 
 const createPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: ids,
     numericClientIds: clientIds,
@@ -170,11 +170,11 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
     assertPeerTexts(peers, ['alpha!']);
     assert.deepEqual(getPeerTopLevelTypes(b), ['quote']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!']);
     assert.deepEqual(getPeerTopLevelTypes(b), ['paragraph']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha!']);
     assert.deepEqual(getPeerTopLevelTypes(b), ['quote']);
   });

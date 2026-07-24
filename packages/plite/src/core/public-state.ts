@@ -146,18 +146,18 @@ import { notifyEditorChangeListeners } from './change-events';
 import { createEditorCommit } from './commit';
 import {
   classifyDocumentChangeRoot,
-  DocumentChange,
-  DocumentChangeBuilder,
-  type DocumentChangeStep,
-  getInternalDocumentChangeClassification,
-  getInternalDocumentChangeEntries,
-  getInternalDocumentChangeSet,
   getDocumentChangeAfterPaths,
   getDocumentChangeTopLevelRanges,
-  IndexedDocument,
-  type JsonEditorValue,
-  type JsonNode,
-} from './document-change';
+} from './change/classification';
+import {
+  getInternalDocumentChangeClassification,
+  getInternalDocumentChangeEntries,
+  getInternalDocumentRootChange,
+  DocumentChange,
+} from './change/document-change';
+import { ChangeDraft, type DocumentChangeStep } from './change/builder';
+import { DocumentIndex } from './change/document-index';
+import type { JsonEditorValue, JsonNode } from './change/tokens';
 import {
   canonicalizeRootChildren,
   constructCanonicalDocumentChange,
@@ -282,7 +282,7 @@ type TransactionSnapshot = {
   };
   baseRuntimeIndexes: Record<string, () => SnapshotIndex>;
   baseSnapshots: Record<string, EditorSnapshot>;
-  builder: DocumentChangeBuilder;
+  builder: ChangeDraft;
   afterCommitHandlers: TransactionAfterCommitHandler[];
   annotations: Map<
     string,
@@ -306,7 +306,7 @@ type TransactionSnapshot = {
   >;
   facet: EditorFacetDraft;
   rootIndexes: Record<string, SnapshotIndex>;
-  roots: Record<string, Descendant[]>;
+  roots: Record<string, readonly Descendant[]>;
   tags: Set<EditorUpdateTag>;
   transactionChangeObservers: Set<
     import('../interfaces/editor').EditorTransactionChangeHandler
@@ -350,8 +350,11 @@ type MaterializedAfterCommitHandler = {
   handler: EditorCommitHandler;
 };
 
-const CHILDREN = new WeakMap<Editor, Descendant[]>();
-const ROOTS = new WeakMap<Editor, Record<string, Descendant[]>>();
+const CHILDREN = new WeakMap<Editor, readonly Descendant[]>();
+const ROOTS = new WeakMap<
+  Editor,
+  Readonly<Record<string, readonly Descendant[]>>
+>();
 const DOCUMENT_STATE = new WeakMap<
   Editor,
   Record<string, unknown> | undefined
@@ -731,11 +734,13 @@ const createEditorDocumentValue = <V extends Value>({
   children: V;
   fields: ReadonlyMap<string, Pick<EditorStateField, 'persist' | 'serialize'>>;
   meta: Record<string, unknown> | undefined;
-  roots: Record<string, Descendant[]>;
+  roots: Readonly<Record<string, readonly Descendant[]>>;
 }): EditorDocumentValue<V> => {
-  const mainChildren = (roots[MAIN_ROOT_KEY] ?? children) as V;
+  const mainChildren = (roots[MAIN_ROOT_KEY] ?? children) as unknown as V;
   const extraRoots = Object.fromEntries(
-    Object.entries(roots).filter(([key]) => key !== MAIN_ROOT_KEY)
+    Object.entries(roots)
+      .filter(([key]) => key !== MAIN_ROOT_KEY)
+      .map(([root, rootChildren]) => [root, rootChildren as unknown as V])
   ) as Record<string, V>;
   const persistentMeta =
     meta === undefined
@@ -1143,7 +1148,7 @@ const readAdjacentPoint = (
 const readRangeEdges = (
   editor: Editor,
   at: Location
-): [Point, Point] | undefined => {
+): readonly [Point, Point] | undefined => {
   if (!hasLocationPath(editor, at)) return;
 
   return getEditorRuntime(editor).edges(at);
@@ -1595,19 +1600,21 @@ export const getChildren = <V extends Value>(editor: Editor<V>): V => {
 
 export const getEditorDocumentRoots = (
   editor: Editor
-): Record<string, Descendant[]> => {
+): Readonly<Record<string, readonly Descendant[]>> => {
   const context = getTransactionSpecContext(editor);
 
   if (context) {
     const value = context.snapshot.builder.value;
 
     return {
-      [MAIN_ROOT_KEY]: value.children as Descendant[],
-      ...(value.roots as Record<string, Descendant[]> | undefined),
+      [MAIN_ROOT_KEY]: value.children as unknown as readonly Descendant[],
+      ...(value.roots as unknown as
+        | Readonly<Record<string, readonly Descendant[]>>
+        | undefined),
     };
   }
 
-  const children = getChildren(editor) as Descendant[];
+  const children = getChildren(editor);
   const storedRoots = ROOTS.get(editor);
 
   if (!storedRoots) {
@@ -1651,7 +1658,7 @@ export const getLiveNode = (
   }
 
   let node: PliteNode | undefined;
-  let children: Descendant[] = getChildren(editor);
+  let children: readonly Descendant[] = getChildren(editor);
 
   for (let index = 0; index < path.length; index += 1) {
     node = children[path[index]!];
@@ -1810,7 +1817,8 @@ export const getSelectionMarks = <V extends Value>(
       }
     }
 
-    const { text, ...rest } = node;
+    const { text, ...nodeProperties } = node;
+    const rest: Record<string, unknown> = { ...nodeProperties };
 
     if (inheritedFromPrevious || anchor.offset === node.text.length) {
       for (const key of Object.keys(rest)) {
@@ -2231,7 +2239,7 @@ const fitSliceIntoActiveDraft = <V extends Value>(
               : undefined);
 
           if (boundaryPoint) {
-            const position = IndexedDocument.fromValue(
+            const position = DocumentIndex.fromValue(
               getChildren(editor) as readonly Descendant[]
             ).childPosition(parentPath, index);
 
@@ -4913,7 +4921,7 @@ const enterEditorRootChildren = (
 
   const previousActiveChildrenRoot = ACTIVE_CHILDREN_ROOT.get(editor);
   const previousRoot = getCurrentChildrenRoot(editor);
-  const previousChildren = getChildren(editor) as Descendant[];
+  const previousChildren = getChildren(editor);
   const previousRoots = getEditorDocumentRoots(editor);
   const previousRootChildren = previousRoots[previousRoot];
 
@@ -4995,7 +5003,7 @@ export const repairEditorValue = (editor: Editor) => {
   for (const root of roots) {
     withEditorUpdateRoot(editor, root, () =>
       withEditorUpdateRootChildren(editor, root, () => {
-        const children = getChildren(editor) as Descendant[];
+        const children = getChildren(editor);
         const canonical = canonicalizeRootChildren(
           editor,
           children,
@@ -5640,7 +5648,7 @@ const getCurrentRootSnapshot = (
     version: getVersion(editor),
   };
 
-  IndexedDocument.fromValue(children);
+  DocumentIndex.fromValue(children);
   Object.defineProperty(snapshot, 'index', {
     enumerable: true,
     get: () => {
@@ -5787,7 +5795,7 @@ const createEditorDocumentChangeBuilder = (
     }
   };
 
-  return new DocumentChangeBuilder(value, {
+  return new ChangeDraft(value, {
     assertCanonical: (candidate, change) => {
       assertRevision();
       if (
@@ -5875,7 +5883,7 @@ export const applyDocumentChangeStep = (
 
 export const applyBuiltDocumentChange = (
   editor: Editor,
-  build: (builder: DocumentChangeBuilder, root: RootKey) => DocumentChangeStep,
+  build: (builder: ChangeDraft, root: RootKey) => DocumentChangeStep,
   options: ApplyDocumentChangeOptions &
     Readonly<{
       runtimeIdTransfers?: readonly Readonly<{
@@ -5912,8 +5920,8 @@ const createTransactionChanged = ({
   after: EditorDocumentValue;
   before: EditorDocumentValue;
   change: DocumentChange;
-  indexedAfter?: ReadonlyMap<string, IndexedDocument>;
-  indexedBefore?: ReadonlyMap<string, IndexedDocument>;
+  indexedAfter?: ReadonlyMap<string, DocumentIndex>;
+  indexedBefore?: ReadonlyMap<string, DocumentIndex>;
 }>): EditorTransactionChanged => {
   const afterIndexes = new Map(indexedAfter);
   const beforeIndexes = new Map(indexedBefore);
@@ -5931,16 +5939,13 @@ const createTransactionChanged = ({
     (root === MAIN_ROOT_KEY
       ? value.children
       : (value.roots?.[root] ?? [])) as readonly Descendant[];
-  const getIndex = (
-    phase: 'after' | 'before',
-    root: string
-  ): IndexedDocument => {
+  const getIndex = (phase: 'after' | 'before', root: string): DocumentIndex => {
     const indexes = phase === 'after' ? afterIndexes : beforeIndexes;
     const cached = indexes.get(root);
 
     if (cached) return cached;
 
-    const index = IndexedDocument.fromValue(
+    const index = DocumentIndex.fromValue(
       getRootChildren(phase === 'after' ? after : before, root)
     );
 
@@ -5961,7 +5966,7 @@ const createTransactionChanged = ({
       return existing;
     }
 
-    const rootChange = getInternalDocumentChangeSet(change, root);
+    const rootChange = getInternalDocumentRootChange(change, root);
 
     if (!rootChange) return null;
 
@@ -5981,7 +5986,7 @@ const createTransactionChanged = ({
     if (cached) return cached;
 
     const classification = getClassification(root);
-    const rootChange = getInternalDocumentChangeSet(change, root);
+    const rootChange = getInternalDocumentRootChange(change, root);
     const paths = Object.freeze(
       (classification && !classification.structure
         ? classification.paths
@@ -6000,7 +6005,7 @@ const createTransactionChanged = ({
 
     if (cached) return cached;
 
-    const rootChange = getInternalDocumentChangeSet(change, root);
+    const rootChange = getInternalDocumentRootChange(change, root);
     const ranges = rootChange
       ? getDocumentChangeTopLevelRanges(
           rootChange,
@@ -6145,9 +6150,9 @@ const inheritDocumentChangeStepRuntimeIds = (
     const beforeChildren = getDocumentRootChildren(step.before, root);
     const afterChildren = getDocumentRootChildren(step.after, root);
     const before =
-      step.indexedBefore.get(root) ?? IndexedDocument.fromValue(beforeChildren);
+      step.indexedBefore.get(root) ?? DocumentIndex.fromValue(beforeChildren);
     const after =
-      step.indexedAfter.get(root) ?? IndexedDocument.fromValue(afterChildren);
+      step.indexedAfter.get(root) ?? DocumentIndex.fromValue(afterChildren);
     const currentIndex = snapshot.rootIndexes[root];
     const baseIndex = snapshot.baseRuntimeIndexes[root];
     const previousIndex =
@@ -6259,7 +6264,7 @@ const applyTransactionSpecDocumentChangeStep = (
   const roots = {
     [MAIN_ROOT_KEY]: after.children,
     ...(after.roots ?? {}),
-  } as Record<string, Descendant[]>;
+  } as Record<string, readonly Descendant[]>;
   const activeRoot = getCurrentChildrenRoot(editor);
   const nextRoot = Object.hasOwn(roots, activeRoot)
     ? activeRoot
@@ -6628,7 +6633,7 @@ const createEditorUpdateDraftContext = (
 const publishTransactionDraft = (
   editor: Editor,
   context: TransactionSpecContext,
-  roots: Record<string, Descendant[]>
+  roots: Readonly<Record<string, readonly Descendant[]>>
 ) => {
   const selection = cloneValue(context.selection);
   const documentState = copyDocumentState(context.documentState);
@@ -6853,7 +6858,7 @@ export const runEditorTransaction = (
           const draftRoots = {
             [MAIN_ROOT_KEY]: draftValue.children,
             ...(draftValue.roots ?? {}),
-          } as Record<string, Descendant[]>;
+          } as Record<string, readonly Descendant[]>;
           const beforeValue = Object.freeze(
             getChangeValue(snapshot.roots)
           ) as EditorDocumentValue;
@@ -6884,7 +6889,7 @@ export const runEditorTransaction = (
               ? previousSnapshot
               : getTransactionRootSnapshot(editor, snapshot, MAIN_ROOT_KEY);
           const mainRootChanged =
-            !!getInternalDocumentChangeSet(canonicalChanges, MAIN_ROOT_KEY) ||
+            !!getInternalDocumentRootChange(canonicalChanges, MAIN_ROOT_KEY) ||
             canonicalChanges.createRoots.has(MAIN_ROOT_KEY) ||
             canonicalChanges.deleteRoots.has(MAIN_ROOT_KEY);
           const afterSnapshot = profileCoreDuration(
@@ -6924,11 +6929,11 @@ export const runEditorTransaction = (
             const committedRoots = {
               ...getEditorDocumentRoots(editor),
               [MAIN_ROOT_KEY]: afterSnapshot.children,
-            } as Record<string, Descendant[]>;
+            } as Record<string, readonly Descendant[]>;
 
             ROOTS.set(editor, committedRoots);
             if (getCurrentChildrenRoot(editor) === MAIN_ROOT_KEY) {
-              CHILDREN.set(editor, afterSnapshot.children as Descendant[]);
+              CHILDREN.set(editor, afterSnapshot.children);
             }
           });
 
@@ -7351,8 +7356,8 @@ export const initializePublicState = <
     }
   }
 
-  CHILDREN.set(editor, initialChildren as Descendant[]);
-  ROOTS.set(editor, initialRoots as Record<string, Descendant[]>);
+  CHILDREN.set(editor, initialChildren);
+  ROOTS.set(editor, initialRoots);
   CURRENT_CHILDREN_ROOT.set(editor, MAIN_ROOT_KEY);
   DOCUMENT_STATE.set(editor, initialValue.meta);
   EDITOR_COMPOSING.set(editor, false);
@@ -7388,7 +7393,7 @@ export const initializeEditorSchemaDocument = (
   const roots = {
     [MAIN_ROOT_KEY]: document.children,
     ...(document.roots ?? {}),
-  } as Record<string, Descendant[]>;
+  } as Record<string, readonly Descendant[]>;
 
   CHILDREN.set(editor, roots[MAIN_ROOT_KEY]!);
   ROOTS.set(editor, roots);

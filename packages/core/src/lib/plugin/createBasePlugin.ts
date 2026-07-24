@@ -10,15 +10,11 @@ import type {
   PluginSchemaContext,
   PluginSchemaDeclaration,
   PluginSchemaModel,
-  WithAnyKey,
 } from './PluginConfig';
 import type {
   AnyBasePlugin,
   BasePlugin,
-  BasePluginContext,
   EditorShortcut,
-  Parser,
-  ParserPluginProjection,
   PlateEditorExtensionInput,
   PluginShortcutInput,
 } from './BasePlugin';
@@ -27,18 +23,17 @@ import { isFunction } from '../../internal/utils/isFunction';
 import {
   brandPluginDescriptor,
   freezePluginDescriptorValue,
+  isNominalPluginDescriptor,
   mergePlugins,
+  registerHtmlCodecSchemaFamilies,
 } from '../../internal/utils/mergePlugins';
 
 type PluginInputInject<C extends AnyPluginConfig> = Omit<
   NonNullable<BasePlugin<C>['inject']>,
-  'nodeProps' | 'targetParserToInject'
+  'nodeProps'
 > & {
   nodeProps?: Record<string, any> &
     NonNullable<BasePlugin<C>['inject']>['nodeProps'];
-  targetParserToInject?: (
-    ctx: BasePluginContext<C> & { targetPlugin: string }
-  ) => ParserPluginProjection;
 };
 
 type PluginInputRender<C extends AnyPluginConfig> = NonNullable<
@@ -54,7 +49,6 @@ type ContextualPluginInput<C extends AnyPluginConfig> = {
   inject?: NoInfer<PluginInputInject<C> | null>;
   inputRules?: NoInfer<BasePlugin<C>['inputRules']>;
   override?: NoInfer<BasePlugin<C>['override']>;
-  parser?: NoInfer<Parser<WithAnyKey<C>>>;
   parsers?: NoInfer<BasePlugin<C>['parsers']>;
   priority?: number;
   render?: NoInfer<PluginInputRender<C> | null>;
@@ -155,13 +149,18 @@ type InferredBasePluginInput<
 
 const extensionArrayKeys = [
   '__apiExtensions',
+  '__codecExtensions',
+  '__htmlCodecExtensions',
   '__editorExtensions',
+  '__readExtensions',
   '__selectorExtensions',
   '__txExtensions',
 ] as const;
 
 type ExtensionArrayKey = (typeof extensionArrayKeys)[number];
-type ExtensionArrayRecord = Partial<Record<ExtensionArrayKey, unknown[]>>;
+type ExtensionArrayRecord = Partial<
+  Record<ExtensionArrayKey, readonly unknown[]>
+>;
 
 type MutableBasePlugin = Omit<
   BasePlugin<AnyPluginConfig>,
@@ -244,6 +243,18 @@ const assertNoLegacyNode = (configuration: unknown) => {
   }
 };
 
+const assertNoBaseCodecField = (configuration: unknown) => {
+  if (
+    configuration &&
+    typeof configuration === 'object' &&
+    Object.hasOwn(configuration, 'codecs')
+  ) {
+    throw new Error(
+      'Plate plugin `codecs` configuration is unsupported. Use `.extendCodecs()`.'
+    );
+  }
+};
+
 const assertNoPluginChildren = (configuration: unknown) => {
   if (
     configuration &&
@@ -280,6 +291,7 @@ const assertRuntimeCallback = (
   }
 
   assertNoLegacyNode(value);
+  assertNoBaseCodecField(value);
   assertNoRelationshipMutation(value, kind === 'extension' ? 'extend' : kind);
 
   if (kind === 'configure') {
@@ -293,7 +305,6 @@ const assertRuntimeCallback = (
   }
 
   for (const key of [
-    'parser',
     'parsers',
     'schema',
     'targetPluginKeys',
@@ -320,6 +331,7 @@ const assertRuntimeCallback = (
 
 const snapshotModelConfiguration = (configuration: any) => {
   assertNoLegacyNode(configuration);
+  assertNoBaseCodecField(configuration);
 
   // Snapshot model identity here. The complete descriptor graph is snapshotted
   // at editor publication, where nominal plugin references and opaque extension
@@ -336,7 +348,7 @@ const snapshotModelConfiguration = (configuration: any) => {
   return Object.freeze(snapshot);
 };
 
-const normalizePlateEditorExtensions = (
+export const normalizePlateEditorExtensions = (
   pluginKey: string,
   input: PlateEditorExtensionInput | undefined,
   extensionKey?: string
@@ -549,10 +561,10 @@ export function createBasePlugin<
   >
 >;
 export function createBasePlugin(config: any): any {
-  const recreatePlugin = createBasePlugin as (config: any) => any;
   const baseConfig = config as Partial<AnyBasePlugin>;
 
   assertNoLegacyNode(baseConfig);
+  assertNoBaseCodecField(baseConfig);
   assertNoPluginChildren(baseConfig);
 
   const key = baseConfig.key;
@@ -565,10 +577,13 @@ export function createBasePlugin(config: any): any {
     {
       key,
       __apiExtensions: [],
+      __codecExtensions: [],
+      __htmlCodecExtensions: [],
       __configurationLayers: [],
       __editorApi: {},
       __editorExtensions: [],
       __extensions: [],
+      __readExtensions: [],
       __selectorExtensions: [],
       __txExtensions: [],
       dependencies: [],
@@ -576,7 +591,6 @@ export function createBasePlugin(config: any): any {
       inject: {},
       options: {},
       override: {},
-      parser: {},
       parsers: {},
       priority: 100,
       render: {},
@@ -590,8 +604,10 @@ export function createBasePlugin(config: any): any {
     },
     config
   ) as unknown as MutableBasePlugin;
+  const recreateBasePlugin = createBasePlugin as (configuration: any) => any;
+  const recreatePlugin = (configuration: any) =>
+    recreateBasePlugin(brandPluginDescriptor(configuration, plugin));
 
-  plugin.schema = freezePluginDescriptorValue(plugin.schema);
   (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
     Object.freeze([...plugin.targetPluginKeys]);
 
@@ -601,6 +617,17 @@ export function createBasePlugin(config: any): any {
     throw new Error(
       `Plate plugin '${plugin.key}' is already configured. Call .${method}() before .configure().`
     );
+  };
+  const assertNoSchemaMutation = (configuration: unknown, method: string) => {
+    if (
+      typeof configuration === 'object' &&
+      configuration !== null &&
+      Object.hasOwn(configuration, 'schema')
+    ) {
+      throw new Error(
+        `Plate plugin '${plugin.key}' cannot define schema through .${method}(). Declare schema when creating the plugin.`
+      );
+    }
   };
 
   plugin.configure = (config: any) => {
@@ -613,6 +640,7 @@ export function createBasePlugin(config: any): any {
         const configuration = config(ctx);
 
         assertRuntimeCallback(configuration, 'configure');
+        assertNoSchemaMutation(configuration, 'configure');
 
         return configuration;
       };
@@ -624,6 +652,7 @@ export function createBasePlugin(config: any): any {
 
       return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
     }
+    assertNoSchemaMutation(config, 'configure');
     assertNoRelationshipMutation(config, 'configure');
     if (typeof config.type === 'string') {
       newPlugin.type = config.type;
@@ -717,15 +746,72 @@ export function createBasePlugin(config: any): any {
           const extension = extendConfig(ctx as never);
 
           assertRuntimeCallback(extension, 'extension');
+          assertNoSchemaMutation(extension, 'extend');
 
           return extension;
         },
       ];
     } else {
+      assertNoSchemaMutation(extendConfig, 'extend');
       assertNoLegacyNode(extendConfig);
+      assertNoBaseCodecField(extendConfig);
       assertNoRelationshipMutation(extendConfig, 'extend');
       newPlugin = mergePlugins(newPlugin, extendConfig as any);
     }
+
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
+  };
+
+  plugin.extendCodecs = (extension: any) => {
+    assertAuthoringOpen('extendCodecs');
+
+    if (!isFunction(extension)) {
+      throw new Error('Plate plugin extendCodecs requires a callback.');
+    }
+
+    const newPlugin = { ...plugin };
+
+    newPlugin.__codecExtensions = [
+      ...(newPlugin.__codecExtensions as any),
+      extension,
+    ];
+
+    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
+  };
+
+  plugin.extendHtmlCodec = (targetOrExtension: any, maybeExtension?: any) => {
+    assertAuthoringOpen('extendHtmlCodec');
+    const hasTarget = maybeExtension !== undefined;
+    const extension = hasTarget ? maybeExtension : targetOrExtension;
+
+    if (!isFunction(extension)) {
+      throw new Error('Plate plugin extendHtmlCodec requires a callback.');
+    }
+    if (hasTarget && !isNominalPluginDescriptor(targetOrExtension)) {
+      throw new Error(
+        'Plate plugin extendHtmlCodec requires a plugin descriptor target.'
+      );
+    }
+    if (hasTarget && targetOrExtension.key === plugin.key) {
+      throw new Error(
+        'Plate plugin extendHtmlCodec requires a different plugin descriptor target.'
+      );
+    }
+
+    const newPlugin = { ...plugin };
+    const storedExtension = registerHtmlCodecSchemaFamilies(
+      (context: unknown) => extension(context),
+      plugin,
+      hasTarget ? targetOrExtension : plugin
+    );
+
+    newPlugin.__htmlCodecExtensions = [
+      ...(newPlugin.__htmlCodecExtensions as any),
+      Object.freeze({
+        extension: storedExtension,
+        targetKey: hasTarget ? targetOrExtension.key : null,
+      }),
+    ];
 
     return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
   };

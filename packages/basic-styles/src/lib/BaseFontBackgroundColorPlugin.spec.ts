@@ -1,4 +1,4 @@
-import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { getRenderNodeStaticProps } from '@platejs/core/static/internal';
 import { KEYS } from '@platejs/utils';
 
@@ -22,13 +22,18 @@ describe('BaseFontBackgroundColorPlugin', () => {
       editor.read.schema.property(BaseFontBackgroundColorPlugin)?.value.kind
     ).toBe('string');
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<span style="background-color: rgb(255, 255, 0)">text</span>',
       })
     ).toMatchObject([
       {
-        [KEYS.backgroundColor]: 'rgb(255, 255, 0)',
-        text: 'text',
+        children: [
+          {
+            [KEYS.backgroundColor]: 'rgb(255, 255, 0)',
+            text: 'text',
+          },
+        ],
+        type: KEYS.p,
       },
     ]);
   });
@@ -48,6 +53,12 @@ describe('BaseFontBackgroundColorPlugin', () => {
 
     expect(editor.read.children()[0]?.children[0]).toMatchObject({
       [KEYS.backgroundColor]: 'yellow',
+      text: 'text',
+    });
+
+    editor.update.backgroundColor.clear();
+
+    expect(editor.read.children()[0]?.children[0]).toEqual({
       text: 'text',
     });
   });
@@ -91,12 +102,16 @@ describe('BaseFontBackgroundColorPlugin', () => {
       }).attributes.style
     ).toEqual({ backgroundColor: 'yellow' });
 
-    const parsed = editor.plugin(HtmlPlugin).api.deserialize({
+    const parsed = editor.api.html.deserialize({
       element: '<span style="background-color: red">text</span>',
     });
 
-    expect(parsed).toMatchObject([{ highlight: 'red', text: 'text' }]);
-    expect(parsed[0]).not.toHaveProperty('backgroundColor');
+    expect(parsed).toEqual([
+      {
+        children: [{ highlight: 'red', text: 'text' }],
+        type: KEYS.p,
+      },
+    ]);
 
     editor.update.backgroundColor.set('yellow');
 
@@ -107,5 +122,11 @@ describe('BaseFontBackgroundColorPlugin', () => {
     expect(editor.read.children()[0]?.children[0]).not.toHaveProperty(
       'backgroundColor'
     );
+
+    editor.update.backgroundColor.clear();
+
+    expect(editor.read.children()[0]?.children[0]).toEqual({
+      text: 'text',
+    });
   });
 });

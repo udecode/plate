@@ -1,6 +1,7 @@
 import { type FormEvent, type RefObject, useCallback } from 'react';
 import { PathApi, type Range, RangeApi, SelectionApi } from '@platejs/plite';
-import { getSelection, IS_WEBKIT } from '@platejs/plite-dom';
+import { getSelection } from '@platejs/plite-dom';
+import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
 import type {
   EditableDOMBeforeInputContext,
   EditableDOMBeforeInputHandler,
@@ -10,7 +11,7 @@ import { useOptionalPliteRuntimeContext } from '../hooks/use-plite-runtime';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
 import { getInputEventTargetRanges } from './dom-input-event';
-import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-kernel';
+import { completeDuplicateEditableEditingEpochCommand } from './editing-epoch-adapter';
 import {
   type EditableCommand,
   prepareEditableBeforeInputKernel,
@@ -56,18 +57,6 @@ import {
   restoreUserSelectionAfterBeforeInput,
   syncSelectionForBeforeInput,
 } from './selection-reconciler';
-
-type ApplyInputRules = ({
-  data,
-  event,
-  inputType,
-  selection,
-}: {
-  data: unknown;
-  event?: InputEvent;
-  inputType: string;
-  selection: Range | null;
-}) => boolean;
 
 type ReactBeforeInputHandler = (
   event: FormEvent<HTMLDivElement>
@@ -165,7 +154,7 @@ export const getPendingCompositionInputOwnership = ({
 
   if (pending.ownership === 'settled') return 'settled';
   if (pending.ownership === 'external') return 'external';
-  if (native || IS_WEBKIT) return 'none';
+  if (native || findEditorDOMRootRuntime(editor)?.isWebKitHost) return 'none';
   if (!ReactEditor.isComposing(editor)) return 'none';
 
   return 'plite';
@@ -195,7 +184,6 @@ export const claimSettledCompositionInput = ({
 };
 
 export const queuePendingCompositionModelInput = ({
-  applyInputRules,
   command,
   data,
   editor,
@@ -206,7 +194,6 @@ export const queuePendingCompositionModelInput = ({
   selection,
   setComposing,
 }: {
-  applyInputRules?: ApplyInputRules;
   command: EditableCommand | null;
   data: string;
   editor: ReactRuntimeEditor;
@@ -255,17 +242,6 @@ export const queuePendingCompositionModelInput = ({
 
         const { committed } = runTrackedEditableCompositionMutation({
           callback: () => {
-            if (
-              publish &&
-              applyInputRules?.({
-                data: capturedInput.data,
-                inputType: capturedInput.inputType,
-                selection: liveSelection,
-              })
-            ) {
-              return;
-            }
-
             request = applyModelOwnedBeforeInputMutation({
               command: capturedInput.command,
               data: capturedInput.data,
@@ -392,7 +368,6 @@ export const shouldAllowBeforeInputSelectionImport = ({
 
 export const useRuntimeBeforeInputEvents = ({
   androidInputManagerRef,
-  applyInputRules,
   deferNativeTextInputRepair = false,
   deferredMutations,
   editor,
@@ -412,7 +387,6 @@ export const useRuntimeBeforeInputEvents = ({
   trace,
 }: {
   androidInputManagerRef: EditableEventRuntime['android']['managerRef'];
-  applyInputRules: ApplyInputRules;
   deferNativeTextInputRepair?: boolean;
   deferredMutations: RefObject<DeferredMutation[]>;
   editor: ReactRuntimeEditor;
@@ -945,7 +919,6 @@ export const useRuntimeBeforeInputEvents = ({
 
             if (
               queuePendingCompositionModelInput({
-                applyInputRules,
                 command: decision.command,
                 data,
                 editor,
@@ -960,29 +933,6 @@ export const useRuntimeBeforeInputEvents = ({
               inputController.state.pendingNativeTextInputRepairOffset = null;
               return;
             }
-          }
-
-          const applyCurrentInputRules = () =>
-            applyInputRules({
-              data,
-              event,
-              inputType: type,
-              selection: currentSelection,
-            });
-          const inputRulesHandled = profileBeforeInputDuration(
-            'beforeinput-input-rules',
-            () =>
-              isCompositionFinalInputType(type)
-                ? runTrackedEditableCompositionMutation({
-                    callback: applyCurrentInputRules,
-                    editor,
-                    inputController,
-                  }).result
-                : applyCurrentInputRules()
-          );
-
-          if (inputRulesHandled) {
-            return;
           }
 
           if (!native) {
@@ -1058,7 +1008,6 @@ export const useRuntimeBeforeInputEvents = ({
       }),
     [
       androidInputManagerRef,
-      applyInputRules,
       deferNativeTextInputRepair,
       deferredMutations,
       editor,

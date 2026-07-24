@@ -1,13 +1,27 @@
 /** @jsx jsxt */
 
+import assert from 'node:assert/strict';
+
 import { BaseTablePlugin } from './BaseTablePlugin';
 import type { TableConfig } from './BaseTablePlugin';
 import { createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
-import { property, schema, target, TextApi } from '@platejs/plite';
-import type { Element, Text } from '@platejs/plite';
+import {
+  createEditorView,
+  property,
+  schema,
+  target,
+  TextApi,
+} from '@platejs/plite';
+import type { EditorRuntime, Element, Text } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
+import type { TTableCellElement } from '@platejs/utils';
+
+import {
+  readTableSelection,
+  readTableSelectionViewMetrics,
+} from './internal/selection';
 
 describe('table selection slow contracts', () => {
   {
@@ -750,15 +764,12 @@ describe('table selection slow contracts', () => {
             .api.getSelectedCells()
             ?.map((cell) => cell.id)
         ).toEqual(['c11', 'c21']);
-        expect(editor.plugin(BaseTablePlugin).api.getSelectedCells()).toBe(
-          editor.plugin(BaseTablePlugin).api.getSelectedCells()
-        );
         expect(editor.plugin(BaseTablePlugin).api.getSelectedCellIds()).toEqual(
           ['c11', 'c21']
         );
         expect(
           editor.plugin(BaseTablePlugin).api.getSelectedTableIds()
-        ).toBeNull();
+        ).toEqual(['table-1']);
         expect(
           editor.plugin(BaseTablePlugin).api.getSelectedTables()
         ).toHaveLength(1);
@@ -817,7 +828,7 @@ describe('table selection slow contracts', () => {
         expect(editor.plugin(BaseTablePlugin).api.isSelectingCell()).toBe(true);
       });
 
-      it('caches null results for single-cell selections and returns null table ids', () => {
+      it('returns null values for a single-cell selection', () => {
         const input = (
           <editor>
             <htable>
@@ -839,16 +850,7 @@ describe('table selection slow contracts', () => {
           editor.plugin(BaseTablePlugin).api.getSelectedCells()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCells()
-        ).toBeNull();
-        expect(
           editor.plugin(BaseTablePlugin).api.getSelectedCellIds()
-        ).toBeNull();
-        expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellIds()
-        ).toBeNull();
-        expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedTableIds()
         ).toBeNull();
         expect(
           editor.plugin(BaseTablePlugin).api.getSelectedTableIds()
@@ -856,4 +858,436 @@ describe('table selection slow contracts', () => {
       });
     });
   }
+
+  describe('TableCellSelection mapping', () => {
+    const createTable = (prefix: string) => ({
+      children: Array.from({ length: 2 }, (_, row) => ({
+        children: Array.from({ length: 2 }, (_, col) => {
+          const id = `${prefix}-${row}${col}`;
+
+          return {
+            children: [{ children: [{ text: id }], type: 'p' }],
+            id,
+            type: 'td',
+          };
+        }),
+        type: 'tr',
+      })),
+      id: `${prefix}-table`,
+      type: 'table',
+    });
+    const RootHolderPlugin = createBasePlugin({
+      key: 'tableSelectionRootHolder',
+      schema: {
+        element: {
+          contentRoots: {
+            body: {
+              content: schema.content.type('table', {
+                default: { type: 'table' },
+                min: 1,
+              }),
+              ownership: 'exclusive',
+            },
+          },
+          topLevel: true,
+          void: 'block',
+        },
+      },
+    });
+
+    it('resolves explicit cell geometry by identity across named roots', () => {
+      const root = 'table-selection-bounds-root';
+      const rootTable = {
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'span' }], type: 'p' }],
+                id: 'span',
+                rowSpan: 2,
+                type: 'td',
+              },
+              {
+                children: [{ children: [{ text: 'top' }], type: 'p' }],
+                id: 'top',
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'target' }], type: 'p' }],
+                id: 'target',
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        id: 'root-table',
+        type: 'table',
+      };
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: [BaseTablePlugin, RootHolderPlugin],
+        initialValue: {
+          children: [
+            {
+              childRoots: { body: root },
+              children: [{ text: '' }],
+              type: RootHolderPlugin.key,
+            },
+            createTable('main'),
+          ],
+          roots: { [root]: [rootTable] },
+        },
+      });
+      const runtime = Object.freeze({
+        api: editor.api,
+        anchor: editor.anchor,
+        editor,
+        extend: editor.extend,
+        getApi: editor.getApi,
+        read: editor.read,
+        subscribe: editor.subscribe,
+        subscribeCommit: editor.subscribeCommit,
+        update: editor.update,
+      }) as unknown as EditorRuntime;
+      const rootEditor = createEditorView(runtime, {
+        root,
+      }) as unknown as typeof editor;
+      const mainAnchor = editor.read.points.start([1, 0, 0]);
+      const mainFocus = editor.read.points.end([1, 0, 1]);
+      const target = rootEditor.read.nodes.get<TTableCellElement>([0, 1, 0]);
+
+      assert(mainAnchor);
+      assert(mainFocus);
+      assert(target);
+      editor.update.selection.set({ anchor: mainAnchor, focus: mainFocus });
+
+      expect(
+        editor
+          .plugin(BaseTablePlugin)
+          .api.getSelectedCellsBoundingBox([target[0]])
+      ).toEqual({ maxCol: 1, maxRow: 1, minCol: 1, minRow: 1 });
+    });
+
+    it('drops deleted cell ranges without duplicating surviving cells', () => {
+      const ids = ['a', 'b', 'c', 'd', 'e'];
+
+      for (const removedIndex of ids.keys()) {
+        const editor = createPlateEditor({
+          nodeId: true,
+          plugins: [BaseTablePlugin],
+          initialValue: [
+            {
+              children: [
+                {
+                  children: ids.map((id) => ({
+                    children: [{ children: [{ text: id }], type: 'p' }],
+                    id,
+                    type: 'td',
+                  })),
+                  type: 'tr',
+                },
+              ],
+              type: 'table',
+            },
+          ],
+        });
+        const anchor = editor.read.points.start([0, 0, 0]);
+        const focus = editor.read.points.end([0, 0, ids.length - 1]);
+
+        assert(anchor);
+        assert(focus);
+
+        const tableSelection = editor
+          .plugin(BaseTablePlugin)
+          .api.createCellSelection({ anchor, focus });
+
+        assert(tableSelection);
+        editor.update.selection.set(tableSelection);
+        editor.update((tx) => {
+          tx.nodes.remove({ at: [0, 0, removedIndex] });
+        });
+
+        const selection = editor.read.selection();
+        const expectedIds = ids.filter((_, index) => index !== removedIndex);
+
+        assert(selection?.kind === 'table-cell');
+        expect(selection.cells).toHaveLength(expectedIds.length);
+        expect(
+          new Set(
+            selection.cells.map((cell) =>
+              JSON.stringify([cell.anchor, cell.focus])
+            )
+          ).size
+        ).toBe(expectedIds.length);
+        expect(editor.plugin(BaseTablePlugin).api.getSelectedCellIds()).toEqual(
+          expectedIds
+        );
+        expect(selection.cells).toEqual(
+          expectedIds.map((_, index) => {
+            const range = editor.read.ranges.get([0, 0, index]);
+
+            assert(range);
+
+            return range;
+          })
+        );
+      }
+    });
+
+    it('rejects duplicate and reversed persisted cell ranges', () => {
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: [BaseTablePlugin],
+        initialValue: [createTable('codec')],
+      });
+      const anchor = editor.read.points.start([0, 0, 0]);
+      const focus = editor.read.points.end([0, 1, 1]);
+
+      assert(anchor);
+      assert(focus);
+
+      const selection = editor
+        .plugin(BaseTablePlugin)
+        .api.createCellSelection({ anchor, focus });
+
+      assert(selection);
+      editor.update.selection.set(selection);
+      expect(() =>
+        editor.update((tx) => {
+          tx.selection.move({ edge: 'focus' });
+        })
+      ).not.toThrow();
+      expect(editor.read.selection()?.kind).toBe('table-cell');
+      editor.update.selection.set(selection);
+
+      for (const invalid of [
+        {
+          ...selection,
+          cells: [selection.cells[0], selection.cells[0]],
+        },
+        {
+          ...selection,
+          cells: [
+            {
+              anchor: selection.cells[0].focus,
+              focus: selection.cells[0].anchor,
+            },
+            ...selection.cells.slice(1),
+          ],
+        },
+      ]) {
+        assert.throws(
+          () => editor.update.selection.set(invalid),
+          /Invalid editor selection "table-cell" value/
+        );
+      }
+    });
+
+    it('rebases every persisted cell range across generated named-root versions', () => {
+      const root = 'table-selection-root';
+      const editor = createPlateEditor({
+        nodeId: true,
+        plugins: [BaseTablePlugin, RootHolderPlugin],
+        initialValue: {
+          children: [
+            {
+              childRoots: { body: root },
+              children: [{ text: '' }],
+              type: RootHolderPlugin.key,
+            },
+            createTable('main'),
+          ],
+          roots: {
+            [root]: [createTable('root'), createTable('root-after')],
+          },
+        },
+      });
+      const runtime = Object.freeze({
+        api: editor.api,
+        anchor: editor.anchor,
+        editor,
+        extend: editor.extend,
+        getApi: editor.getApi,
+        read: editor.read,
+        subscribe: editor.subscribe,
+        subscribeCommit: editor.subscribeCommit,
+        update: editor.update,
+      }) as unknown as EditorRuntime;
+      const rootEditor = createEditorView(runtime, {
+        root,
+      }) as unknown as typeof editor;
+      const anchor = rootEditor.read.points.start([0, 0, 0]);
+      const focus = rootEditor.read.points.end([0, 1, 1]);
+
+      assert(anchor);
+      assert(focus);
+
+      const rootRange = Object.freeze({ anchor, focus });
+      const rootSelectionView = readTableSelection(rootEditor.read, {
+        at: rootRange,
+        cellTypes: ['td', 'th'],
+        tableType: 'table',
+      });
+      const baseSelectionView = readTableSelection(editor.read, {
+        at: rootRange,
+        cellTypes: ['td', 'th'],
+        tableType: 'table',
+      });
+
+      assert(rootSelectionView, 'root-scoped table selection view');
+      assert(baseSelectionView, 'explicit-root base table selection view');
+      expect(rootSelectionView.selection).toBe(rootRange);
+      expect(baseSelectionView.selection).toBe(rootRange);
+
+      const upperLeft = rootEditor.read.nodes.get([0, 0, 0]);
+      const upperRight = rootEditor.read.nodes.get([0, 0, 1]);
+      const upperRow = rootEditor.read.nodes.get([0, 0]);
+      const upperLeftPoint = rootEditor.read.points.start([0, 0, 0]);
+      const upperRightPoint = rootEditor.read.points.start([0, 0, 1]);
+      const lowerRightPoint = rootEditor.read.points.start([0, 1, 1]);
+
+      assert(upperLeft);
+      assert(upperRight);
+      assert(upperRow);
+      assert(upperLeftPoint);
+      assert(upperRightPoint);
+      assert(lowerRightPoint);
+      expect(
+        editor.plugin(BaseTablePlugin).api.getLeftCell({ at: lowerRightPoint })
+      ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
+      expect(
+        editor.plugin(BaseTablePlugin).api.getTopCell({ at: lowerRightPoint })
+      ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
+      expect(
+        editor.plugin(BaseTablePlugin).api.getCellInNextRow(upperLeftPoint)
+      ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
+      expect(
+        editor.plugin(BaseTablePlugin).api.getCellInPreviousRow(lowerRightPoint)
+      ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
+      expect(
+        editor
+          .plugin(BaseTablePlugin)
+          .api.getNextCell(upperLeft, upperLeftPoint, upperRow)
+      ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
+      expect(
+        editor
+          .plugin(BaseTablePlugin)
+          .api.getPreviousCell(upperRight, upperRightPoint, upperRow)
+      ).toEqual([expect.objectContaining({ id: 'root-00' }), [0, 0, 0]]);
+
+      const tableSelection = editor
+        .plugin(BaseTablePlugin)
+        .api.createCellSelection(rootRange);
+
+      assert(tableSelection);
+      rootEditor.update.selection.set(tableSelection);
+
+      const assertMappedSelection = (tableIndex: number) => {
+        const selection = rootEditor.read.selection();
+
+        assert(selection?.kind === 'table-cell');
+        expect(selection.cells).toHaveLength(4);
+        expect(
+          selection.cells.map(({ anchor: cellAnchor }) => cellAnchor.root)
+        ).toEqual([root, root, root, root]);
+        expect(
+          selection.cells.map(({ anchor: cellAnchor }) => cellAnchor.path[0])
+        ).toEqual([tableIndex, tableIndex, tableIndex, tableIndex]);
+        expect(
+          selection.cells.map(({ focus: cellFocus }) => cellFocus.offset)
+        ).toEqual([
+          'root-00'.length,
+          'root-01'.length,
+          'root-10'.length,
+          'root-11'.length,
+        ]);
+
+        const view = readTableSelection(rootEditor.read, {
+          cellTypes: ['td', 'th'],
+          tableType: 'table',
+        });
+        const beforeHotRead = readTableSelectionViewMetrics();
+        const hotView = readTableSelection(rootEditor.read, {
+          cellTypes: ['td', 'th'],
+          tableType: 'table',
+        });
+        const afterHotRead = readTableSelectionViewMetrics();
+
+        expect(view?.root).toBe(root);
+        expect(hotView).toBe(view);
+        expect(afterHotRead.cacheHitCount - beforeHotRead.cacheHitCount).toBe(
+          1
+        );
+        expect(view?.anchors.map(({ id }) => id)).toEqual([
+          'root-00',
+          'root-01',
+          'root-10',
+          'root-11',
+        ]);
+      };
+
+      assertMappedSelection(0);
+
+      let previousVersion = rootEditor.read.runtime.snapshot().version;
+
+      for (let prefixCount = 1; prefixCount <= 20; prefixCount++) {
+        rootEditor.update((tx) => {
+          tx.nodes.insert(createTable(`prefix-${prefixCount}`), { at: [0] });
+        });
+
+        const version = rootEditor.read.runtime.snapshot().version;
+
+        expect(version).toBeGreaterThan(previousVersion);
+        previousVersion = version;
+        assertMappedSelection(prefixCount);
+      }
+
+      for (let prefixCount = 19; prefixCount >= 0; prefixCount--) {
+        rootEditor.update((tx) => {
+          tx.nodes.remove({ at: [0] });
+        });
+
+        const version = rootEditor.read.runtime.snapshot().version;
+
+        expect(version).toBeGreaterThan(previousVersion);
+        previousVersion = version;
+        assertMappedSelection(prefixCount);
+      }
+
+      editor.update((tx) => {
+        tx.nodes.insert(
+          { children: [{ text: 'main-only' }], type: 'p' },
+          { at: [0] }
+        );
+      });
+      assertMappedSelection(0);
+
+      const lastCell = rootEditor.read.points.end([0, 1, 1]);
+
+      assert(lastCell);
+      rootEditor.update.selection.set(lastCell);
+
+      expect(
+        editor.plugin(BaseTablePlugin).update.moveSelection({ at: lastCell })
+      ).toBe(true);
+      expect(rootEditor.read.selection()).toMatchObject({
+        anchor: {
+          offset: 0,
+          path: [1, 0, 0, 0, 0],
+          root,
+        },
+        focus: {
+          offset: 0,
+          path: [1, 0, 0, 0, 0],
+          root,
+        },
+      });
+    });
+  });
 });

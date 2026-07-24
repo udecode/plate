@@ -1,5 +1,6 @@
 'use client';
 
+import { CsvPlugin } from '@platejs/csv';
 import { type InferPlugins, TrailingBlockPlugin, type Value } from 'platejs';
 import { type PlateEditor, useEditor as usePlateEditor } from 'platejs/react';
 
@@ -85,6 +86,7 @@ export const EditorKit = [
   TrailingBlockPlugin,
 
   // Parsers
+  CsvPlugin,
   ...DocxKit,
   ...MarkdownKit,
 

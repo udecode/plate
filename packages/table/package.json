@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@platejs/core": "workspace:^",
+    "@platejs/plite-dom": "workspace:^",
     "@platejs/plite-react": "workspace:^",
     "@platejs/resizable": "workspace:^",
     "@platejs/plite": "workspace:^",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@plate/scripts": "workspace:*",
     "@platejs/test-utils": "workspace:^",
+    "@platejs/yjs": "workspace:^",
     "mutative": "^1.1.0",
     "platejs": "workspace:^"
   },

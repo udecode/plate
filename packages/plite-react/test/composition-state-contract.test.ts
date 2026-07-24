@@ -34,20 +34,6 @@ import {
 } from '../src/editable/runtime-before-input-events';
 import { ReactEditor } from '../src/plugin/react-editor';
 
-const platform = vi.hoisted(() => ({ android: false }));
-
-vi.mock('@platejs/plite-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@platejs/plite-dom')>();
-
-  return {
-    ...actual,
-    get IS_ANDROID() {
-      return platform.android;
-    },
-    IS_WEBKIT: false,
-  };
-});
-
 const createTextEditor = (text = 'abcd') => {
   const editor = createEditor();
 
@@ -65,13 +51,14 @@ const createTextEditor = (text = 'abcd') => {
 
 const createCompositionEvent = (
   data = '',
-  textContent: string | null = null
+  textContent: string | null = null,
+  currentTarget: Pick<HTMLElement, 'querySelectorAll' | 'textContent'> = {
+    querySelectorAll: () => [],
+    textContent,
+  }
 ) => {
   const event = {
-    currentTarget: {
-      querySelectorAll: () => [],
-      textContent,
-    },
+    currentTarget,
     data,
     isDefaultPrevented: () => false,
     isPropagationStopped: () => false,
@@ -1581,7 +1568,19 @@ describe('composition state', () => {
 
   it('leaves Android composition completion to the Android manager', () => {
     const editor = createTextEditor();
-    const event = createCompositionEvent('文', 'a文d');
+    const frame = document.createElement('iframe');
+
+    document.body.append(frame);
+    const frameWindow = frame.contentWindow!;
+    const root = frame.contentDocument!.createElement('div');
+
+    Object.defineProperty(frameWindow.navigator, 'userAgent', {
+      configurable: true,
+      value:
+        'Mozilla/5.0 (Linux; Android 15) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36',
+    });
+    frame.contentDocument!.body.append(root);
+    const event = createCompositionEvent('文', 'a文d', root);
     const inputController = createInputController();
     const manager = { handleCompositionEnd: vi.fn() };
     const scheduleTask: NonNullable<EditableInputController['scheduleTask']> =
@@ -1591,7 +1590,6 @@ describe('composition state', () => {
       .mockReturnValue(true);
     const setComposing = vi.fn();
 
-    platform.android = true;
     inputController.state.activeIntent = 'composition';
     inputController.state.isComposing = true;
 
@@ -1613,7 +1611,7 @@ describe('composition state', () => {
       expect(inputController.state.pendingCompositionEnd).toBeNull();
       expect(editorString(editor, [])).toBe('abcd');
     } finally {
-      platform.android = false;
+      frame.remove();
       hasSelectableTarget.mockRestore();
     }
   });

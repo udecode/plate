@@ -76,10 +76,10 @@ describe('ai chat streaming history', () => {
 
     expect(editor.read.history.undos()).toHaveLength(1);
     const [batch] = editor.read.history.undos();
-    const mainChange = batch!.change.primary;
+    const mainChange = batch!.change.toJSON().primary;
 
     expect(mainChange).toBeDefined();
-    expect(mainChange!.data.length).toBeLessThan(chunks.length);
+    expect(mainChange!.length).toBeLessThan(chunks.length);
     expect(
       editor.read.nodes.some({
         at: [],

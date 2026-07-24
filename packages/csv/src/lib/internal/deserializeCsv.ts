@@ -1,12 +1,9 @@
-import type { ParserPluginContext, PluginConfig } from '@platejs/core';
 import type { Descendant } from '@platejs/plite';
 
 import { KEYS } from '@platejs/utils';
 import Papa from 'papaparse';
 
 import type { CsvParseOptions, CsvPluginOptions } from '../CsvPlugin';
-
-type CsvRuntimePluginConfig = PluginConfig<'csv', CsvPluginOptions>;
 
 type CsvTextNode = {
   text: string;
@@ -72,11 +69,11 @@ const isValidCsv = (
   return true;
 };
 
-export const deserializeCsvWithParserContext = (
-  context: Pick<
-    ParserPluginContext<CsvRuntimePluginConfig>,
-    'options' | 'registry'
-  >,
+export const deserializeCsvWithContext = (
+  context: Readonly<{
+    options: Readonly<CsvPluginOptions>;
+    getType: (key: string) => string;
+  }>,
   {
     data,
     ...parseOptions
@@ -103,11 +100,11 @@ export const deserializeCsvWithParserContext = (
     return;
   }
 
-  const paragraph = context.registry.getType(KEYS.p);
-  const table = context.registry.getType(KEYS.table);
-  const th = context.registry.getType(KEYS.th);
-  const tr = context.registry.getType(KEYS.tr);
-  const td = context.registry.getType(KEYS.td);
+  const paragraph = context.getType(KEYS.p);
+  const table = context.getType(KEYS.table);
+  const th = context.getType(KEYS.th);
+  const tr = context.getType(KEYS.tr);
+  const td = context.getType(KEYS.td);
 
   const ast: CsvElementNode = {
     children: [],

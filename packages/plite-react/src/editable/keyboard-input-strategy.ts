@@ -9,14 +9,18 @@ import {
 } from '@platejs/plite';
 import {
   getSelection,
-  HAS_BEFORE_INPUT_SUPPORT,
   Hotkeys,
-  IS_CHROME,
-  IS_IOS,
-  IS_WEBKIT,
   isDOMElement,
   isDOMText,
 } from '@platejs/plite-dom';
+import {
+  getDOMHostLanguage,
+  hasDOMHostQuirk,
+  isBlinkDOMHost,
+  isWebKitDOMHost,
+  supportsDOMBeforeInput,
+  usesAppleDOMHotkeys,
+} from '@platejs/plite-dom/internal';
 import type { EditableKeyDownHandler } from '../components/editable';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
@@ -39,7 +43,7 @@ import {
   isDestructiveEditableCommand,
   isEditableEditingEpochCommand,
   markEditableEditingEpochCommandHandled,
-} from './editing-epoch-kernel';
+} from './editing-epoch-adapter';
 import { getEditableCommandFromKeyDown } from './editing-kernel';
 import {
   type HistoryFocusOwnerApi,
@@ -67,7 +71,7 @@ import {
   isElementReadOnly as editorIsElementReadOnly,
   hasPath as editorHasPath,
   isBlock as editorIsBlock,
-  getInternalDocumentChangeEntries,
+  getInternalDocumentChangeRootKeys,
   toInternalRoot,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
@@ -345,11 +349,7 @@ const getLastCommitSingleChangedRoot = (
 ): RootKey | null => {
   const commit = editor.read((state) => state.lastCommit());
   const roots = new Set<RootKey>([
-    ...(commit
-      ? [...getInternalDocumentChangeEntries(commit.changes)].map(
-          ([root]) => root
-        )
-      : []),
+    ...(commit ? getInternalDocumentChangeRootKeys(commit.changes) : []),
     ...(commit?.changes.createRoots ?? []),
     ...(commit?.changes.deleteRoots ?? []),
   ]);
@@ -487,9 +487,10 @@ const isCollapsedSelectionBackedByEditableTextDOM = ({
 };
 
 export const shouldDeferBackspaceToNativeInput = ({
-  isIOS = IS_IOS,
-  language = typeof navigator === 'undefined' ? '' : navigator.language,
   nativeEvent,
+  isIOS = usesAppleDOMHotkeys(nativeEvent) &&
+    hasDOMHostQuirk(nativeEvent, 'compositionend-precedes-final-input'),
+  language = getDOMHostLanguage(nativeEvent),
 }: {
   isIOS?: boolean;
   language?: string;
@@ -1076,8 +1077,8 @@ export const applyEditableKeyDown = ({
     // COMPAT: Certain browsers don't support the `beforeinput` event, so we
     // fall back to guessing at the input intention for hotkeys.
     // COMPAT: In iOS, some of these hotkeys are handled in the
-    if (HAS_BEFORE_INPUT_SUPPORT) {
-      if (IS_CHROME || IS_WEBKIT) {
+    if (supportsDOMBeforeInput(nativeEvent)) {
+      if (isBlinkDOMHost(nativeEvent) || isWebKitDOMHost(nativeEvent)) {
         // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
         // an event when deleting backwards in a selected void inline node
         const currentNode =
@@ -1131,13 +1132,6 @@ export const applyEditableKeyDown = ({
           editor,
         });
         return keyDownHandled(DEFAULT_MODEL_COMMAND_REPAIR);
-      }
-
-      // We don't have a core behavior for these, but they change the
-      // DOM if we don't prevent them, so we have to.
-      if (Hotkeys.isBold(nativeEvent) || Hotkeys.isItalic(nativeEvent)) {
-        event.preventDefault();
-        return keyDownHandled();
       }
 
       if (Hotkeys.isTransposeCharacter(nativeEvent)) {

@@ -3,9 +3,9 @@ title: Collaboration Demo
 description: Real-time Plate collaboration example with Yjs providers and remote cursors.
 ---
 
-This example shows the collaboration boundary: Plate renders the editor surface,
-and the app owns the Yjs provider, transport, persistence, authentication, room
-naming, and cursor data.
+This example runs two independent Plate editors through an app-owned local Yjs
+room. Plate renders the editor surfaces. The app owns the provider, transport,
+persistence, authentication, room name, and cursor data.
 
 ## Demo
 
@@ -13,8 +13,8 @@ naming, and cursor data.
 
 ## Source
 
-The demo is intentionally small. It keeps the editor UI visible while naming the
-parts that belong outside the Plate package.
+The demo creates two provider endpoints, two editor `Y.Doc` instances, and one
+room document. The provider is credential-free and development-only.
 
 <ComponentSource name="collaboration-demo" />
 
@@ -24,9 +24,11 @@ parts that belong outside the Plate package.
 | --- | --- | --- |
 | `createYjsExtension` | `@platejs/yjs` | Binds a shared `Y.Doc` and provider wrapper to Plite operations. |
 | Provider wrapper | App infrastructure | Wrap Hocuspocus, WebRTC, IndexedDB, or custom transport as `YjsProviderLike`. |
-| Room state | App | Keep room ids, auth tokens, and persistence outside Plate packages. |
-| Connection commands | `tx.yjs` | Connect, disconnect, reconnect, publish selection, clear selection, undo, and redo. |
+| Local room | Registry example | Exchanges document and awareness updates between two independent peers. |
+| Production room state | App | Keep room ids, auth tokens, persistence, and provider URLs outside Plate packages. |
+| Connection commands | `tx.yjs` | Connect, disconnect, reconnect, publish selection, and clear selection. |
 | Connection reads | `state.yjs` | Read connected, synced, and provider status from `editor.read`. |
+| Undo and redo | `@platejs/plite-history` | Replay canonical editor changes through the same Yjs bridge. |
 
 Use the full [Yjs guide](/docs/yjs) when wiring a real provider.
 
@@ -37,13 +39,17 @@ Remote cursor UI belongs at the app edge. The reusable registry component is
 
 <ComponentSource name="remote-cursor-overlay" />
 
-Render it around a positioned editor container and feed cursor state from
-`@platejs/yjs/react`.
+Render it inside a positioned editor container. It reads cursor state and DOM
+geometry from `@platejs/yjs/react`, excludes the local cursor, and ignores
+unresolved ranges.
 
 ## Try It
 
-Use this demo to review the app/package boundary. Use the [Yjs guide](/docs/yjs)
-for the provider setup and connection commands.
+Type in either editor to see remote document and cursor updates. Disconnect one
+peer to queue local work, reconnect it, then use the standard history controls
+to undo or redo only that peer's local change. The schema controls show a
+rejected incompatible join and a compatible recovery without replacing either
+editor.
 
 ## Related
 

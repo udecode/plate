@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
+import { SubscriptPlugin, SuperscriptPlugin } from '@platejs/basic-nodes/react';
 import {
   KeyboardIcon,
   MoreHorizontalIcon,
@@ -55,10 +56,7 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
 
           <DropdownMenuItem
             onSelect={() => {
-              editor.update((tx) => {
-                tx.marks.remove(KEYS.sub);
-                tx.marks.toggle(KEYS.sup);
-              });
+              editor.plugin(SuperscriptPlugin).update.toggle();
               editor.api.dom.focus();
             }}
           >
@@ -68,10 +66,7 @@ export function MoreToolbarButton(props: DropdownMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
-              editor.update((tx) => {
-                tx.marks.remove(KEYS.sup);
-                tx.marks.toggle(KEYS.sub);
-              });
+              editor.plugin(SubscriptPlugin).update.toggle();
               editor.api.dom.focus();
             }}
           >

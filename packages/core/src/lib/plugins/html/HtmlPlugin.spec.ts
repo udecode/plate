@@ -1,33 +1,24 @@
 import { createBaseEditor } from '../../editor';
-import { prepareParserPluginContext } from '../../utils';
 import { HtmlPlugin } from './HtmlPlugin';
 
 describe('HtmlPlugin', () => {
-  it('declares the html parser format', () => {
+  it('publishes the HTML API without a public parser descriptor', () => {
     const editor = createBaseEditor();
 
-    expect(editor.getPlugin(HtmlPlugin).parser.format).toBe('text/html');
     expect(editor.api.html).toBe(editor.plugin(HtmlPlugin).api);
     expect(Object.isFrozen(editor.api.html)).toBe(true);
+    expect('parser' in editor.getPlugin(HtmlPlugin)).toBe(false);
   });
 
-  it('deserializes the parsed document body without a second fitter', () => {
+  it('deserializes the document body through one exact-slice codec', () => {
     const editor = createBaseEditor();
+    const transfer = new DataTransfer();
 
-    const createContext = prepareParserPluginContext(editor, HtmlPlugin);
-    const result = editor.read((state) =>
-      editor.getPlugin(HtmlPlugin).parser.deserialize?.({
-        ...createContext(state),
-        data: '<p>Hello</p>',
-        format: 'text/html',
-        source: {
-          files: [] as any,
-          getData: () => '<p>Hello</p>',
-          types: ['text/html'],
-        },
-      })
-    );
+    transfer.setData('text/html', '<p>Hello</p>');
 
-    expect(result).toEqual([{ children: [{ text: 'Hello' }], type: 'p' }]);
+    expect(editor.api.clipboard.insertData(transfer)).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'Hello' }], type: 'p' },
+    ]);
   });
 });

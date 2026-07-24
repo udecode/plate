@@ -5,6 +5,7 @@ import type {
 } from '@platejs/plite';
 import { defineEditorExtension } from '@platejs/plite';
 import { getCompiledEditorSchemaFromApi } from '@platejs/plite/internal';
+import { txRead } from '@platejs/plite/internal';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
 
@@ -14,6 +15,7 @@ import type {
   BasePlugin,
   BasePlugins,
   NodeComponents,
+  PlatePluginReadGroup,
   PlatePluginTxGroup,
   PlateSchemaIdentity,
 } from '../../lib';
@@ -43,6 +45,7 @@ import {
   type PluginOptionsStore,
   setPluginOptionsStore,
 } from './pluginOptionsStore';
+import { compilePlateShortcuts } from './compilePlateShortcuts';
 import {
   setPlateRuntimeCandidate,
   type PlatePluginCache,
@@ -242,7 +245,7 @@ const snapshotPluginDescriptorValue = (
 
   const frozen = Object.freeze(snapshot);
 
-  return isPluginDescriptor ? brandPluginDescriptor(frozen) : frozen;
+  return isPluginDescriptor ? brandPluginDescriptor(frozen, value) : frozen;
 };
 
 /** Capture the immutable descriptor graph used by every Plate projection. */
@@ -318,7 +321,10 @@ const publishPlatePluginDescriptors = (
   const publishedByKey = new Map<string, AnyBasePlugin>();
 
   pluginList.forEach((plugin) => {
-    publishedByKey.set(plugin.key, brandPluginDescriptor({} as AnyBasePlugin));
+    publishedByKey.set(
+      plugin.key,
+      brandPluginDescriptor({} as AnyBasePlugin, plugin)
+    );
   });
 
   const snapshots = new WeakMap<object, unknown>();
@@ -414,6 +420,7 @@ export const resolvePlugins = (
     pluginCache,
     pluginList: [],
     plugins: Object.create(null),
+    shortcutTable: [],
     shortcuts: Object.create(null),
   });
   const resolvedPlugins = resolveAndSortPlugins(editor, sources);
@@ -587,6 +594,14 @@ export const createPlateModelPublication = (
     transformInitialValue: freezeList(pluginCache.transformInitialValue),
     useHooks: freezeList(pluginCache.useHooks),
   });
+  const shortcutRuntime = snapshotApiValue(
+    createPluginShortcuts(
+      editor,
+      publishedPluginList,
+      shortcutApiByPlugin,
+      updateMethods
+    )
+  );
 
   return Object.freeze({
     apiByPlugin,
@@ -597,14 +612,8 @@ export const createPlateModelPublication = (
     pluginCache: publishedPluginCache,
     pluginList: Object.freeze(publishedPluginList),
     plugins: Object.freeze(plugins),
-    shortcuts: snapshotApiValue(
-      createPluginShortcuts(
-        editor,
-        publishedPluginList,
-        shortcutApiByPlugin,
-        updateMethods
-      )
-    ),
+    shortcutTable: shortcutRuntime.shortcutTable,
+    shortcuts: shortcutRuntime.shortcuts,
   });
 };
 
@@ -765,6 +774,29 @@ const collectPluginTxGroups = (
   });
 };
 
+const collectPluginReadGroups = (
+  editor: BaseEditor,
+  pluginList: readonly AnyBasePlugin[]
+) => {
+  const readGroups = new Map<string, PlatePluginReadGroup[]>();
+
+  pluginList.forEach((plugin) => {
+    plugin.__readExtensions.forEach((readExtension) => {
+      Object.entries(readExtension(getEditorPlugin(editor, plugin))).forEach(
+        ([groupKey, groupFactory]) => {
+          if (!groupFactory) return;
+          const groups = readGroups.get(groupKey) ?? [];
+
+          groups.push(groupFactory);
+          readGroups.set(groupKey, groups);
+        }
+      );
+    });
+  });
+
+  return readGroups;
+};
+
 /** Stage plugin API and transaction factories in the Plate model revision. */
 export const createPlateRuntimeExtension = (
   editor: BaseEditor,
@@ -823,22 +855,62 @@ export const createPlateRuntimeExtension = (
     apiByPlugin,
     () => collectPluginTxGroups(editor, pluginList)
   );
+  const readRuntime = withCompiledPlatePluginApiCandidate(
+    editor,
+    apiByPlugin,
+    () => collectPluginReadGroups(editor, pluginList)
+  );
+  const state = Object.create(null) as NonNullable<EditorExtension['state']>;
   const tx = Object.create(null) as NonNullable<EditorExtension['tx']>;
 
-  txRuntime.groups.forEach((groupFactories, groupKey) => {
-    tx[groupKey] = (transaction, runtimeEditor, context) => {
+  readRuntime.forEach((groupFactories, groupKey) => {
+    state[groupKey] = (stateView, runtimeEditor) => {
       const group = Object.create(null) as Record<string, unknown>;
 
       groupFactories.forEach((groupFactory) => {
         Object.assign(
           group,
-          groupFactory(transaction, runtimeEditor as BaseEditor, context as any)
+          groupFactory(stateView as never, runtimeEditor as BaseEditor)
         );
       });
 
       return group;
     };
   });
+  new Set([...readRuntime.keys(), ...txRuntime.groups.keys()]).forEach(
+    (groupKey) => {
+      const readFactories = readRuntime.get(groupKey) ?? [];
+      const updateFactories = txRuntime.groups.get(groupKey) ?? [];
+
+      tx[groupKey] = (transaction, runtimeEditor, context) => {
+        const group = Object.create(null) as Record<string, unknown>;
+
+        readFactories.forEach((groupFactory) => {
+          const readGroup = groupFactory(
+            transaction as never,
+            runtimeEditor as BaseEditor
+          );
+
+          Object.entries(readGroup).forEach(([methodName, method]) => {
+            group[methodName] =
+              typeof method === 'function' ? txRead(method) : method;
+          });
+        });
+        updateFactories.forEach((groupFactory) => {
+          Object.assign(
+            group,
+            groupFactory(
+              transaction,
+              runtimeEditor as BaseEditor,
+              context as any
+            )
+          );
+        });
+
+        return group;
+      };
+    }
+  );
 
   return Object.freeze({
     api: runtimeApi,
@@ -846,7 +918,8 @@ export const createPlateRuntimeExtension = (
     extension: defineEditorExtension<BaseEditor>()({
       ...(Object.keys(runtimeApi).length > 0 ? { api: runtimeApi } : {}),
       name: 'plate:runtime',
-      ...(txRuntime.groups.size > 0 ? { tx } : {}),
+      ...(readRuntime.size > 0 ? { state } : {}),
+      ...(readRuntime.size > 0 || txRuntime.groups.size > 0 ? { tx } : {}),
     }),
     shortcutApiByPlugin: Object.freeze(shortcutApiByPlugin),
     updateMethods: txRuntime.updateMethods,
@@ -863,127 +936,154 @@ const createPluginShortcuts = (
     string,
     BasePlugin['shortcuts'][string]
   >;
+  const compilerInputs: Array<{
+    declarationIndex: number;
+    id: string;
+    pluginIndex: number;
+    shortcut: NonNullable<BasePlugin['shortcuts'][string]>;
+  }> = [];
 
-  pluginList.forEach((plugin) => {
-    Object.entries(plugin.shortcuts).forEach(([originalKey, hotkey]) => {
-      const namespacedKey = `${plugin.key}.${originalKey}`;
+  pluginList.forEach((plugin, pluginIndex) => {
+    Object.entries(plugin.shortcuts).forEach(
+      ([originalKey, hotkey], declarationIndex) => {
+        const namespacedKey = `${plugin.key}.${originalKey}`;
 
-      if (hotkey === null) {
-        // If hotkey is null, remove the namespaced shortcut
-        delete (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
-          namespacedKey
-        ];
-      } else if (hotkey && typeof hotkey === 'object') {
-        const { target, ...hotkeyOptions } = hotkey;
-        const resolvedHotkey = { ...hotkeyOptions } as Record<
-          string,
-          unknown
-        > & {
-          handler?: (...args: any[]) => any;
-          priority?: number;
-        };
+        if (hotkey === null) {
+          // If hotkey is null, remove the namespaced shortcut
+          delete (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
+            namespacedKey
+          ];
+        } else if (hotkey && typeof hotkey === 'object') {
+          const { target, ...hotkeyOptions } = hotkey;
+          const resolvedHotkey = { ...hotkeyOptions } as Record<
+            string,
+            unknown
+          > & {
+            handler?: (...args: any[]) => any;
+            priority?: number;
+          };
 
-        if (resolvedHotkey.handler && target !== undefined) {
-          throw new Error(
-            `Plate shortcut "${namespacedKey}" cannot define \`target\` together with a custom handler.`
-          );
-        }
-
-        if (!resolvedHotkey.handler && updateMethods) {
-          if (target !== undefined && target !== 'api' && target !== 'update') {
+          if (resolvedHotkey.handler && target !== undefined) {
             throw new Error(
-              `Plate shortcut "${namespacedKey}" target must be "update" or "api".`
+              `Plate shortcut "${namespacedKey}" cannot define \`target\` together with a custom handler.`
             );
           }
-          const hasUpdate =
-            updateMethods[plugin.key]?.includes(originalKey) === true;
-          const apiScopes = shortcutApiByPlugin?.[plugin.key];
-          const editorApiCommand = apiScopes?.editor[originalKey];
-          const pluginApiCommand = apiScopes?.plugin[originalKey];
-          const hasEditorApi = typeof editorApiCommand === 'function';
-          const hasPluginApi = typeof pluginApiCommand === 'function';
-          const hasAmbiguousApi = hasEditorApi && hasPluginApi;
-          const apiOwner = hasPluginApi ? apiScopes?.plugin : apiScopes?.editor;
-          const apiCommand = hasPluginApi ? pluginApiCommand : editorApiCommand;
-          if (hasAmbiguousApi) {
-            throw new Error(
-              `Plate shortcut "${namespacedKey}" matches API commands in both plugin and editor scopes. Rename one command or add a custom handler.`
-            );
-          }
-          const hasApi = typeof apiCommand === 'function';
-          const route = (() => {
-            if (target === 'update') {
-              if (!hasUpdate) {
-                throw new Error(
-                  `Plate shortcut "${namespacedKey}" targets missing update command "${plugin.key}.${originalKey}".`
-                );
-              }
 
-              return 'update';
-            }
-            if (target === 'api') {
-              if (!hasApi) {
-                throw new Error(
-                  `Plate shortcut "${namespacedKey}" targets missing API command "${plugin.key}.${originalKey}".`
-                );
-              }
-
-              return 'api';
-            }
-            if (hasUpdate && hasApi) {
+          if (!resolvedHotkey.handler && updateMethods) {
+            if (
+              target !== undefined &&
+              target !== 'api' &&
+              target !== 'update'
+            ) {
               throw new Error(
-                `Plate shortcut "${namespacedKey}" matches both update and API commands. Set target to "update" or "api".`
+                `Plate shortcut "${namespacedKey}" target must be "update" or "api".`
               );
             }
-            if (hasUpdate) return 'update';
-            if (hasApi) return 'api';
+            const hasUpdate =
+              updateMethods[plugin.key]?.includes(originalKey) === true;
+            const apiScopes = shortcutApiByPlugin?.[plugin.key];
+            const editorApiCommand = apiScopes?.editor[originalKey];
+            const pluginApiCommand = apiScopes?.plugin[originalKey];
+            const hasEditorApi = typeof editorApiCommand === 'function';
+            const hasPluginApi = typeof pluginApiCommand === 'function';
+            const hasAmbiguousApi = hasEditorApi && hasPluginApi;
+            const apiOwner = hasPluginApi
+              ? apiScopes?.plugin
+              : apiScopes?.editor;
+            const apiCommand = hasPluginApi
+              ? pluginApiCommand
+              : editorApiCommand;
+            if (hasAmbiguousApi) {
+              throw new Error(
+                `Plate shortcut "${namespacedKey}" matches API commands in both plugin and editor scopes. Rename one command or add a custom handler.`
+              );
+            }
+            const hasApi = typeof apiCommand === 'function';
+            const route = (() => {
+              if (target === 'update') {
+                if (!hasUpdate) {
+                  throw new Error(
+                    `Plate shortcut "${namespacedKey}" targets missing update command "${plugin.key}.${originalKey}".`
+                  );
+                }
 
-            throw new Error(
-              `Plate shortcut "${namespacedKey}" does not match a public update or API command. Add a custom handler or define the command.`
-            );
-          })();
+                return 'update';
+              }
+              if (target === 'api') {
+                if (!hasApi) {
+                  throw new Error(
+                    `Plate shortcut "${namespacedKey}" targets missing API command "${plugin.key}.${originalKey}".`
+                  );
+                }
 
-          if (route === 'update') {
-            resolvedHotkey.handler = () => {
-              const updateGroup = (
-                editor.update as unknown as Record<string, unknown>
-              )[plugin.key];
-              const command =
-                updateGroup && typeof updateGroup === 'object'
-                  ? (updateGroup as Record<string, unknown>)[originalKey]
-                  : undefined;
-
-              if (typeof command !== 'function') {
+                return 'api';
+              }
+              if (hasUpdate && hasApi) {
                 throw new Error(
-                  `Plate shortcut "${namespacedKey}" lost its compiled update command.`
+                  `Plate shortcut "${namespacedKey}" matches both update and API commands. Set target to "update" or "api".`
                 );
               }
+              if (hasUpdate) return 'update';
+              if (hasApi) return 'api';
 
-              const result = Reflect.apply(command, updateGroup, []);
-
-              return result === false ? false : undefined;
-            };
-          } else {
-            resolvedHotkey.handler = () =>
-              Reflect.apply(
-                apiCommand as (...args: never[]) => unknown,
-                apiOwner,
-                []
+              throw new Error(
+                `Plate shortcut "${namespacedKey}" does not match a public update or API command. Add a custom handler or define the command.`
               );
+            })();
+
+            if (route === 'update') {
+              resolvedHotkey.handler = () => {
+                const updateGroup = (
+                  editor.update as unknown as Record<string, unknown>
+                )[plugin.key];
+                const command =
+                  updateGroup && typeof updateGroup === 'object'
+                    ? (updateGroup as Record<string, unknown>)[originalKey]
+                    : undefined;
+
+                if (typeof command !== 'function') {
+                  throw new Error(
+                    `Plate shortcut "${namespacedKey}" lost its compiled update command.`
+                  );
+                }
+
+                const result = Reflect.apply(command, updateGroup, []);
+
+                return result === false ? false : undefined;
+              };
+            } else {
+              resolvedHotkey.handler = () =>
+                Reflect.apply(
+                  apiCommand as (...args: never[]) => unknown,
+                  apiOwner,
+                  []
+                );
+            }
           }
+
+          // Set shortcut priority, falling back to plugin priority
+          resolvedHotkey.priority = resolvedHotkey.priority ?? plugin.priority;
+
+          (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
+            namespacedKey
+          ] = resolvedHotkey as NonNullable<BasePlugin['shortcuts'][string]>;
+          compilerInputs.push({
+            declarationIndex,
+            id: namespacedKey,
+            pluginIndex,
+            shortcut: resolvedHotkey as NonNullable<
+              BasePlugin['shortcuts'][string]
+            >,
+          });
         }
-
-        // Set shortcut priority, falling back to plugin priority
-        resolvedHotkey.priority = resolvedHotkey.priority ?? plugin.priority;
-
-        (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
-          namespacedKey
-        ] = resolvedHotkey as NonNullable<BasePlugin['shortcuts'][string]>;
       }
-    });
+    );
   });
 
-  return shortcuts;
+  return {
+    shortcutTable: compilePlateShortcuts(compilerInputs),
+    shortcuts,
+  };
 };
 
 const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
@@ -1210,13 +1310,16 @@ const applyComponentOverrides = (
       return plugin;
     }
 
-    return brandPluginDescriptor({
-      ...plugin,
-      render: {
-        ...plugin.render,
-        node: override.component,
+    return brandPluginDescriptor(
+      {
+        ...plugin,
+        render: {
+          ...plugin.render,
+          node: override.component,
+        },
       },
-    }) as AnyBasePlugin;
+      plugin
+    ) as AnyBasePlugin;
   });
 };
 
@@ -1244,12 +1347,16 @@ const getPresentPluginKeys = (
 
 const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   '__apiExtensions',
+  '__codecExtensions',
+  '__htmlCodecExtensions',
+  '__schemaFamily',
   '__config',
   '__configurationLayers',
   '__editorApi',
   '__editorExtensions',
   '__extensions',
   '__pluginReference',
+  '__readExtensions',
   '__selectorExtensions',
   '__txExtensions',
   'clone',
@@ -1257,6 +1364,8 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   'dependencies',
   'extend',
   'extendApi',
+  'extendCodecs',
+  'extendHtmlCodec',
   'extendEditorApi',
   'extendExtension',
   'extendSelectors',
@@ -1265,6 +1374,7 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   'key',
   'override',
   'plugins',
+  'schema',
   'withComponent',
 ]);
 

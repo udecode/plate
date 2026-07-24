@@ -4,10 +4,18 @@ import {
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
+  prepareHtmlPluginContext,
 } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { BaseIndentPlugin } from '@platejs/indent';
-import { DocumentChange, schema, type Descendant } from '@platejs/plite';
+import {
+  ContentSlice,
+  DocumentChange,
+  schema,
+  type Descendant,
+  type Element,
+} from '@platejs/plite';
+import { getExtensionRegistry } from '@platejs/plite/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import ReactDOMServer from 'react-dom/server';
 
@@ -22,6 +30,34 @@ import {
 } from './BaseListPlugin';
 
 jsxt;
+
+const serializeHtml = (editor: ReturnType<typeof createBaseEditor>) => {
+  type Registration = {
+    codec: {
+      format: string;
+      serialize?: (context: {
+        format: string;
+        slice: ContentSlice;
+        state: typeof editor.read;
+      }) => null | string;
+    };
+  };
+
+  const registrations = (getExtensionRegistry(editor).capabilities.get(
+    'host.codecs'
+  ) ?? []) as readonly Registration[];
+  const codec = registrations.find(
+    (registration) => registration.codec.format === 'text/html'
+  )?.codec;
+
+  if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
+
+  return codec.serialize({
+    format: 'text/html',
+    slice: ContentSlice.closed(editor.read.children()),
+    state: editor.read,
+  });
+};
 
 const FixtureHeadingPlugin = createBasePlugin({
   key: KEYS.h1,
@@ -75,6 +111,32 @@ const assertScopedListTypes = () => {
 void assertScopedListTypes;
 
 describe('BaseListPlugin', () => {
+  const transformListHtml = (data: string) => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+    });
+    const createContext = prepareHtmlPluginContext(editor, BaseListPlugin);
+    const context = editor.read((state) => createContext(state));
+    const transformData = BaseListPlugin.parsers.html?.transformData;
+
+    if (!transformData) {
+      throw new Error('Missing HTML transformData');
+    }
+
+    const dataTransfer = new DataTransfer();
+
+    return transformData({
+      ...context,
+      data,
+      format: 'text/html',
+      source: {
+        files: dataTransfer.files,
+        getData: (format) => dataTransfer.getData(format),
+        types: [...dataTransfer.types],
+      },
+    });
+  };
+
   it('keeps list blocks on the single compiled paragraph schema', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
@@ -171,7 +233,7 @@ describe('BaseListPlugin', () => {
     ).toEqual([
       {
         children: [{ text: 'Paragraph list item' }],
-        type: KEYS.p,
+        type: 'note',
       },
     ]);
     expect(() =>
@@ -216,6 +278,90 @@ describe('BaseListPlugin', () => {
     });
   });
 
+  it('publishes staged list queries to required dependents', () => {
+    const ListDependentPlugin = createBasePlugin({
+      dependencies: [BaseListPlugin],
+      key: 'listDependent',
+    }).extendApi(({ editor }) => ({
+      getPreviousType: () => {
+        const entry = editor.read.nodes.get<Element>([1]);
+
+        if (!entry) return;
+
+        return editor.api.list.getPrevious(entry)?.[0].type;
+      },
+    }));
+    const editor = createBaseEditor({
+      plugins: [ListDependentPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'First' }],
+          indent: 1,
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+        {
+          children: [{ text: 'Second' }],
+          indent: 1,
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+      ],
+    });
+    const firstEntry = editor.read.nodes.get<Element>([0]);
+
+    expect(editor.api.listDependent.getPreviousType()).toBe(KEYS.p);
+    expect(
+      firstEntry
+        ? editor.plugin(BaseListPlugin).api.getNext(firstEntry)?.[1]
+        : undefined
+    ).toEqual([1]);
+  });
+
+  it('reads staged list queries from the active transaction snapshot', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'First' }],
+          indent: 1,
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+        {
+          children: [{ text: 'Second' }],
+          indent: 1,
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        {
+          children: [{ text: 'Inserted' }],
+          indent: 1,
+          listStyleType: 'disc',
+          type: KEYS.p,
+        },
+        { at: [1] }
+      );
+
+      const lastEntry = tx.nodes.get<Element>([2]);
+
+      expect(
+        lastEntry
+          ? editor
+              .plugin(BaseListPlugin)
+              .api.getPrevious(lastEntry, undefined, tx)?.[0]
+          : undefined
+      ).toMatchObject({
+        children: [{ text: 'Inserted' }],
+      });
+    });
+  });
+
   it('composes indent and outdent into one undoable update', () => {
     const value = [{ children: [{ text: 'Item' }], type: KEYS.p }];
     const editor = createBaseEditor({
@@ -239,6 +385,29 @@ describe('BaseListPlugin', () => {
     list.update.outdent({ at: [0] });
 
     expect(editor.read.children()).toEqual(value);
+  });
+
+  it('removes list metadata when outdenting a root item', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseListPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'Item' }],
+          indent: 1,
+          listRestart: 4,
+          listRestartPolite: 5,
+          listStart: 4,
+          listStyleType: 'decimal',
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.plugin(BaseListPlugin).update.outdent({ at: [0] });
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'Item' }], type: KEYS.p },
+    ]);
   });
 
   it('replays a frozen list update without replaying local selection or history', () => {
@@ -285,12 +454,10 @@ describe('BaseListPlugin', () => {
   });
 
   it('flattens nested lists, block children, and derives indent metadata from html', () => {
-    const transformData = (BaseListPlugin as any).inject.parsers[KEYS.html]
-      .parser.transformData;
     const body = new DOMParser().parseFromString(
-      transformData({
-        data: '<ul><li><p>Parent</p><ul><li>Child</li></ul></li></ul>',
-      }),
+      transformListHtml(
+        '<ul><li><p>Parent</p><ul><li>Child</li></ul></li></ul>'
+      ),
       'text/html'
     ).body;
     const parentItem = body.querySelector('ul > li') as HTMLElement;
@@ -305,13 +472,11 @@ describe('BaseListPlugin', () => {
   });
 
   it('prefers aria-level and inline list styles over derived defaults', () => {
-    const transformData = (BaseListPlugin as any).inject.parsers[KEYS.html]
-      .parser.transformData;
     const item = new DOMParser()
       .parseFromString(
-        transformData({
-          data: '<ol style="list-style-type: upper-alpha"><li aria-level="3" style="list-style-type: square"><span>Item</span></li></ol>',
-        }),
+        transformListHtml(
+          '<ol style="list-style-type: upper-alpha"><li aria-level="3" style="list-style-type: square"><span>Item</span></li></ol>'
+        ),
         'text/html'
       )
       .body.querySelector('li') as HTMLElement;
@@ -382,6 +547,69 @@ describe('BaseListPlugin', () => {
         element: { children: [{ text: 'Item' }], type: editor.getType(KEYS.p) },
       } as any)
     ).toBeUndefined();
+  });
+
+  it('increments an ordered parent start across its list items', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseListPlugin],
+    });
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<ol start="4"><li>Four</li><li>Five</li></ol>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Four' }],
+        listStart: 4,
+        listStyleType: 'decimal',
+        type: KEYS.p,
+      },
+      {
+        children: [{ text: 'Five' }],
+        listStart: 5,
+        listStyleType: 'decimal',
+        type: KEYS.p,
+      },
+    ]);
+  });
+
+  it('round-trips every list claim with the indent patch on its list item', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, BaseListPlugin],
+      initialValue: [
+        {
+          checked: false,
+          children: [{ text: 'Item' }],
+          indent: 2,
+          listRestart: 4,
+          listRestartPolite: 5,
+          listStart: 6,
+          listStyleType: 'decimal',
+          type: KEYS.p,
+        },
+      ],
+    });
+    const html = serializeHtml(editor);
+
+    expect(html).not.toBeNull();
+
+    const body = new DOMParser().parseFromString(html!, 'text/html').body;
+    const list = body.querySelector('ol') as HTMLOListElement;
+    const listItem = list.querySelector('li') as HTMLLIElement;
+
+    expect(list.start).toBe(6);
+    expect(list.style.listStyleType).toBe('decimal');
+    expect(listItem.dataset.checked).toBe('false');
+    expect(listItem.dataset.indent).toBe('2');
+    expect(listItem.dataset.listRestart).toBe('4');
+    expect(listItem.dataset.listRestartPolite).toBe('5');
+    expect(listItem.dataset.listStart).toBe('6');
+    expect(listItem.dataset.listStyleType).toBe('decimal');
+    expect(listItem.style.marginLeft).toBe('48px');
+    expect(editor.api.html.deserialize({ element: html! })).toEqual([
+      ...editor.read.children(),
+    ]);
   });
 });
 

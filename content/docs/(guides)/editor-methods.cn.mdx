@@ -123,11 +123,9 @@ editor.update((tx) => {
 将插件描述符传给 `editor.plugin(plugin)`，即可打开它的类型化 portal。该 portal 包含插件拥有的 API、一次性 update 命令、type 和实时 options。
 
 ```ts title="html-methods.ts" showLineNumbers
-import { HtmlPlugin } from 'platejs';
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-const html = editor.plugin(HtmlPlugin);
-
-const nodes = html.api.deserialize({ element: '<p>Hello</p>' });
+editor.plugin(BoldPlugin).update.toggle();
 ```
 
 | 方法 | 用途 |

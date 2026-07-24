@@ -7,17 +7,14 @@ import {
   type Text,
   TextApi,
 } from '@platejs/plite';
-import {
-  IS_ANDROID,
-  IS_IOS,
-  IS_UC_MOBILE,
-  IS_WEBKIT,
-  IS_WECHATBROWSER,
-  isDOMNode,
-} from '@platejs/plite-dom';
+import { isDOMNode } from '@platejs/plite-dom';
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
+  findEditorDOMRootRuntime,
+  hasDOMHostQuirk,
+  isAndroidDOMHost,
+  isWebKitDOMHost,
 } from '@platejs/plite-dom/internal';
 import type { AndroidInputManager } from '../hooks/android-input-manager/android-input-manager';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
@@ -222,6 +219,7 @@ const schedulePendingCompositionEnd = ({
   scheduleTask: NonNullable<EditableInputController['scheduleTask']>;
   settledData: string;
 }) => {
+  inputController.domInputRuntime.setCompositionPhase('final-input-ready');
   let active = true;
   let cancelScheduledTask = () => {};
   let claimedInput: PendingCompositionInput | null = null;
@@ -300,6 +298,7 @@ const schedulePendingCompositionEnd = ({
     const run = () => {
       if (!active) return;
 
+      inputController.domInputRuntime.setCompositionPhase('committing');
       runScheduledTask = null;
       cancelScheduledTask = () => {};
       let settled = false;
@@ -359,6 +358,10 @@ const schedulePendingCompositionEnd = ({
       }
 
       claimedInput = input;
+      inputController.domInputRuntime.settleComposition(
+        input.inputType,
+        'model'
+      );
       settledInput = {
         data: input.data,
         inputTypes: ['insertFromComposition', 'insertText'],
@@ -522,7 +525,16 @@ export const commitChromeCompositionEndFallback = ({
   // COMPAT: Some browsers do not fire a usable `insertFromComposition`
   // beforeinput. If the composed text reached the DOM but not the model,
   // commit it from compositionend and then remove unmanaged DOM text.
-  if (IS_WEBKIT || IS_IOS || IS_WECHATBROWSER || IS_UC_MOBILE || !text) {
+  const rootRuntime = findEditorDOMRootRuntime(editor);
+  const suppressFallback =
+    (rootElement
+      ? isWebKitDOMHost(rootElement) ||
+        hasDOMHostQuirk(rootElement, 'compositionend-precedes-final-input')
+      : rootRuntime?.isWebKitHost ||
+        rootRuntime?.hasHostQuirk('compositionend-precedes-final-input')) ??
+    false;
+
+  if (suppressFallback || !text) {
     return false;
   }
 
@@ -725,7 +737,7 @@ export const applyEditableCompositionEnd = ({
 
     const compositionEndIsExternallyOwned =
       isCompositionEventHandled({ event, handler: onCompositionEnd }) ||
-      IS_ANDROID;
+      isAndroidDOMHost(event);
     const finishComposing = () => {
       try {
         if (runtimeOwnsComposing && ReactEditor.isComposing(editor)) {
@@ -737,7 +749,7 @@ export const applyEditableCompositionEnd = ({
       }
     };
 
-    if (IS_ANDROID || !wasComposing) {
+    if (isAndroidDOMHost(event) || !wasComposing) {
       clearEditableCompositionRuntimeState(editor);
       inputController.state.compositionSession = null;
       clearCompositionIntent();
@@ -906,7 +918,7 @@ export const applyEditableCompositionStart = ({
 
     if (
       isCompositionEventHandled({ event, handler: onCompositionStart }) ||
-      IS_ANDROID
+      isAndroidDOMHost(event)
     ) {
       return;
     }

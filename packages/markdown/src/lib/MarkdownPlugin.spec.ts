@@ -1,8 +1,4 @@
-import {
-  createBaseEditor,
-  createBasePlugin,
-  prepareParserPluginContext,
-} from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { ContentSlice, property } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import type { Pluggable, Preset, Settings } from 'unified';
@@ -22,38 +18,21 @@ const BoldPlugin = createBasePlugin({
 const createDataTransfer = ({
   files = [],
   html = '',
+  text = '',
 }: {
   files?: File[];
   html?: string;
+  text?: string;
 }) => {
   const dataTransfer = new DataTransfer();
 
   if (html) dataTransfer.setData('text/html', html);
+  if (text) dataTransfer.setData('text/plain', text);
   files.forEach((file) => {
     dataTransfer.items.add(file);
   });
 
   return dataTransfer;
-};
-
-const createParserContext = (
-  editor: ReturnType<typeof createBaseEditor>,
-  dataTransfer: DataTransfer,
-  data: string,
-  format = 'text/plain'
-) => {
-  const createContext = prepareParserPluginContext(editor, MarkdownPlugin);
-
-  return editor.read((state) => ({
-    ...createContext(state),
-    data,
-    format,
-    source: {
-      files: dataTransfer.files,
-      getData: (type: string) => dataTransfer.getData(type),
-      types: [...dataTransfer.types],
-    },
-  }));
 };
 
 describe('MarkdownPlugin', () => {
@@ -161,7 +140,7 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.serialize()).toBe('string');
   });
 
-  it('exposes default options, root markdown api, and text parser deserialization', () => {
+  it('exposes default options, root markdown api, and codec deserialization', () => {
     const editor = createBaseEditor({
       plugins: [MarkdownPlugin],
     });
@@ -178,8 +157,7 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
-    expect(plugin.parser.format).toEqual(['text/plain', 'text/markdown']);
-    expect(plugin.parser.deserialize).toBeUndefined();
+    expect('parser' in plugin).toBe(false);
     expect(editor.api.markdown.deserialize('**bold**')).toEqual({
       children: [
         {
@@ -195,17 +173,17 @@ describe('MarkdownPlugin', () => {
       plugins: [MarkdownPlugin],
     });
 
-    const query = editor.getPlugin(MarkdownPlugin).parser.query!;
-
     expect(
-      query({
-        ...createParserContext(
-          editor,
-          createDataTransfer({ html: '<p>paste me</p>' }),
-          'plain text'
-        ),
-      })
-    ).toBe(false);
+      editor.api.clipboard.insertData(
+        createDataTransfer({
+          html: '<p>paste me</p>',
+          text: '**plain text**',
+        })
+      )
+    ).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'paste me' }], type: 'p' },
+    ]);
   });
 
   it('passes through URL-only clipboard text so link handling can own it', () => {
@@ -213,17 +191,14 @@ describe('MarkdownPlugin', () => {
       plugins: [MarkdownPlugin],
     });
 
-    const query = editor.getPlugin(MarkdownPlugin).parser.query!;
-
     expect(
-      query({
-        ...createParserContext(
-          editor,
-          createDataTransfer({}),
-          'https://platejs.org/docs'
-        ),
-      })
-    ).toBe(false);
+      editor.api.clipboard.insertData(
+        createDataTransfer({ text: 'https://platejs.org/docs' })
+      )
+    ).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'https://platejs.org/docs' }], type: 'p' },
+    ]);
   });
 
   it('parses plain text when the clipboard carries files', () => {
@@ -231,33 +206,30 @@ describe('MarkdownPlugin', () => {
       plugins: [MarkdownPlugin],
     });
 
-    const query = editor.getPlugin(MarkdownPlugin).parser.query!;
-
     expect(
-      query(
-        createParserContext(
-          editor,
-          createDataTransfer({
-            files: [new File([''], 'attachment.txt')],
-          }),
-          'https://platejs.org/docs'
-        )
+      editor.api.clipboard.insertData(
+        createDataTransfer({
+          files: [new File([''], 'attachment.txt')],
+          text: 'https://platejs.org/docs',
+        })
       )
     ).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: 'https://platejs.org/docs' }], type: 'p' },
+    ]);
   });
 
   it('parses non-url plain text by default', () => {
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin],
+      plugins: [BoldPlugin, MarkdownPlugin],
     });
 
-    const query = editor.getPlugin(MarkdownPlugin).parser.query!;
-
     expect(
-      query({
-        ...createParserContext(editor, createDataTransfer({}), '**bold**'),
-      })
+      editor.api.clipboard.insertData(createDataTransfer({ text: '**bold**' }))
     ).toBe(true);
+    expect(editor.read.children()).toEqual([
+      { children: [{ bold: true, text: 'bold' }], type: 'p' },
+    ]);
   });
 
   it('registers Markdown serialization with the host codec registry', () => {
@@ -270,6 +242,33 @@ describe('MarkdownPlugin', () => {
     writeHostFragmentData(editor, data, ContentSlice.closed(fragment.children));
 
     expect(data.getData('text/markdown')).toBe('**bold**\n');
+  });
+
+  it('projects only primary content through the Markdown host codec', () => {
+    const editor = createBaseEditor({
+      plugins: [MarkdownPlugin],
+    });
+    const data = new DataTransfer();
+
+    writeHostFragmentData(
+      editor,
+      data,
+      ContentSlice.fromJSON({
+        content: [
+          {
+            children: [{ text: 'Primary content' }],
+            type: 'p',
+          },
+        ],
+        openEnd: 1,
+        openStart: 1,
+        roots: {
+          caption: [{ text: 'Detached caption' }],
+        },
+      })
+    );
+
+    expect(data.getData('text/markdown')).toBe('Primary content\n');
   });
 
   it('round-trips image alt through the Markdown host codec', () => {

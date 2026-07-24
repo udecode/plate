@@ -1,30 +1,12 @@
-import React, { type ReactNode, useEffect, useState } from 'react';
+import React, { type ReactNode } from 'react';
 
+import { useEditableDOMHostFact } from '../hooks/use-claim-editable-dom-commit';
 import { recordPliteReactRender } from '../render-profiler';
 import { PliteElement } from './plite-element';
 import { PliteSpacer } from './plite-spacer';
 
-const MAC_OS_USER_AGENT_RE = /Mac OS X/;
-
-const isApplePlatform = () =>
-  typeof navigator !== 'undefined' &&
-  MAC_OS_USER_AGENT_RE.test(navigator.userAgent);
-
-const useApplePlatformAfterHydration = () => {
-  const [isApple, setIsApple] = useState(false);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setIsApple(isApplePlatform());
-    }, 0);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, []);
-
-  return isApple;
-};
+const useApplePlatformAfterHydration = () =>
+  useEditableDOMHostFact((runtime) => runtime.isAppleHost, false);
 
 export const PliteVoidShell = ({
   children,

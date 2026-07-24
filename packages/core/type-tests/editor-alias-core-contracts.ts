@@ -3,7 +3,7 @@ import type { PlateEditor } from '@platejs/core/react';
 import type { Descendant } from '@platejs/plite';
 
 declare const baseEditor: BaseEditor;
-declare const expectDescendants: (value: Descendant[]) => void;
+declare const expectDescendants: (value: Descendant[] | null) => void;
 declare const plateEditor: PlateEditor;
 
 baseEditor.api.debug.log('base');

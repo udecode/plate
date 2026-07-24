@@ -21,8 +21,8 @@ type UnionToIntersection<U> = (
  */
 
 export interface BaseText {
-  text: string;
-  [key: string]: unknown;
+  readonly text: string;
+  readonly [key: string]: unknown;
 }
 
 export type Text = BaseText;
@@ -65,12 +65,12 @@ export type BooleanMarksOf<N> = Partial<
   Pick<MarksOf<N>, BooleanMarkKeysOf<N> & keyof MarksOf<N>>
 >;
 
-export interface LeafPosition {
-  start: number;
+export type LeafPosition = Readonly<{
   end: number;
   isFirst?: true;
   isLast?: true;
-}
+  start: number;
+}>;
 
 export interface TextEqualsOptions {
   loose?: boolean;
@@ -101,7 +101,7 @@ export interface TextInterface {
   /**
    * Check if a value is a list of `Text` objects.
    */
-  isTextList: <N extends Text = Text>(value: unknown) => value is N[];
+  isTextList: <N extends Text = Text>(value: unknown) => value is readonly N[];
 
   /**
    * Check if some props are a partial of Text.
@@ -146,7 +146,7 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
     return isObject(value) && typeof value.text === 'string';
   },
 
-  isTextList<N extends Text = Text>(value: unknown): value is N[] {
+  isTextList<N extends Text = Text>(value: unknown): value is readonly N[] {
     return Array.isArray(value) && value.every((val) => TextApi.isText(val));
   },
 
@@ -252,10 +252,12 @@ export const TextApi: Readonly<TextInterface> = Object.freeze({
       for (const [index, item] of leaves.entries()) {
         const start = currentOffset;
         const end = start + item.leaf.text.length;
-        const position: LeafPosition = { start, end };
-
-        if (index === 0) position.isFirst = true;
-        if (index === leaves.length - 1) position.isLast = true;
+        const position: LeafPosition = {
+          end,
+          ...(index === 0 ? { isFirst: true } : {}),
+          ...(index === leaves.length - 1 ? { isLast: true } : {}),
+          start,
+        };
 
         item.position = position;
         currentOffset = end;

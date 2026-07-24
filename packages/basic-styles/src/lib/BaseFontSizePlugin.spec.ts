@@ -1,4 +1,4 @@
-import { createBaseEditor, HtmlPlugin } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
 import { getRenderNodeStaticProps } from '@platejs/core/static/internal';
 import { KEYS } from '@platejs/utils';
 
@@ -22,13 +22,18 @@ describe('BaseFontSizePlugin', () => {
       'string'
     );
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<span style="font-size: 18px">text</span>',
       })
     ).toMatchObject([
       {
-        [KEYS.fontSize]: '18px',
-        text: 'text',
+        children: [
+          {
+            [KEYS.fontSize]: '18px',
+            text: 'text',
+          },
+        ],
+        type: KEYS.p,
       },
     ]);
   });
@@ -91,12 +96,16 @@ describe('BaseFontSizePlugin', () => {
       }).attributes.style
     ).toEqual({ fontSize: '20px' });
 
-    const parsed = editor.plugin(HtmlPlugin).api.deserialize({
+    const parsed = editor.api.html.deserialize({
       element: '<span style="font-size: 18px">text</span>',
     });
 
-    expect(parsed).toMatchObject([{ fontScale: '18px', text: 'text' }]);
-    expect(parsed[0]).not.toHaveProperty('fontSize');
+    expect(parsed).toEqual([
+      {
+        children: [{ fontScale: '18px', text: 'text' }],
+        type: KEYS.p,
+      },
+    ]);
 
     editor.update.fontSize.set('20px');
 

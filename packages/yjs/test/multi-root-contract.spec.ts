@@ -10,11 +10,12 @@ import {
   type Editor,
   schema,
 } from '@platejs/plite';
+import { history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
-import { getEditorYjsTx } from '../src/core/editor-yjs';
 import { readPliteValueFromYjs } from '../src/core/document';
 import { createYjsExtension } from '../src/core/extension';
+import { undoEditorHistory } from './support/collaboration';
 
 const paragraph = (text: string): Descendant => ({
   children: [{ text }],
@@ -91,7 +92,7 @@ const createContentRootPeer = (
   editor: Editor;
 } => {
   const editor = createEditor({
-    extensions: [ContentRootSchema],
+    extensions: [history(), ContentRootSchema],
     initialValue: [paragraph('Body')],
   });
   const cleanup = editor.extend(
@@ -240,9 +241,7 @@ describe('@platejs/yjs multi-root document contract', () => {
 
     sourceUpdates = 0;
     targetCommits = 0;
-    source.editor.update((tx) => {
-      getEditorYjsTx(tx).undo();
-    });
+    undoEditorHistory(source.editor);
 
     assert.equal(sourceUpdates, 1);
 
@@ -274,9 +273,7 @@ describe('@platejs/yjs multi-root document contract', () => {
 
     sourceUpdates = 0;
     targetCommits = 0;
-    source.editor.update((tx) => {
-      getEditorYjsTx(tx).undo();
-    });
+    undoEditorHistory(source.editor);
 
     assert.equal(sourceUpdates, 1);
     assert.deepEqual(source.editor.read.children(), [

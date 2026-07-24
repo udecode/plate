@@ -1,12 +1,24 @@
 import type { BaseEditor } from '../../lib/editor';
-import type { AnyPluginTx, PluginConfig } from '../../lib/plugin/PluginConfig';
-import type { AnyBasePlugin, BasePlugin } from '../../lib/plugin/BasePlugin';
+import type {
+  AnyPluginConfig,
+  AnyPluginTx,
+  PluginConfig,
+} from '../../lib/plugin/PluginConfig';
+import type {
+  PlatePluginReadState,
+  PlatePluginTransaction,
+} from '../../lib/editor/pluginRuntimeTypes';
+import type {
+  AnyBasePlugin,
+  BasePlugin,
+  PlateEditorExtensionInput,
+  PlatePluginReadExtension,
+  PlatePluginTxExtension,
+} from '../../lib/plugin/BasePlugin';
 
+import { normalizePlateEditorExtensions } from '../../lib/plugin/createBasePlugin';
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
-import {
-  freezePluginDescriptorValue,
-  mergePlugins,
-} from '../utils/mergePlugins';
+import { mergePlugins } from '../utils/mergePlugins';
 import { withResolvingPlatePlugin } from './compilePlateModel';
 
 const assertConfiguredInputRules = (config: unknown) => {
@@ -47,13 +59,77 @@ const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
   editor: BaseEditor,
   plugin: P
 ): P => {
-  plugin.schema = freezePluginDescriptorValue(plugin.schema);
   (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
     Object.freeze([...plugin.targetPluginKeys]);
 
   (validatePlugin as any)(editor, plugin);
 
   return plugin;
+};
+
+type UnifiedExtensionResult = Record<PropertyKey, unknown> & {
+  api?: object;
+  extension?: PlateEditorExtensionInput;
+  read?: (context: { state: PlatePluginReadState<AnyPluginConfig> }) => object;
+  selectors?: object;
+  update?: (context: { tx: PlatePluginTransaction<AnyPluginConfig> }) => object;
+};
+
+const applyUnifiedExtension = <P extends AnyBasePlugin>(
+  plugin: P,
+  extension: UnifiedExtensionResult
+): P => {
+  const {
+    api,
+    extension: editorExtension,
+    read,
+    selectors,
+    update,
+    ...configuration
+  } = extension;
+  const extended = mergePlugins(plugin, configuration);
+
+  if (api !== undefined) {
+    extended.__apiExtensions = [
+      ...extended.__apiExtensions,
+      { extension: () => api, isPluginSpecific: true },
+    ];
+  }
+  if (selectors !== undefined) {
+    extended.__selectorExtensions = [
+      ...extended.__selectorExtensions,
+      () => selectors,
+    ];
+  }
+  if (typeof read === 'function') {
+    const readExtension: PlatePluginReadExtension = () => ({
+      [extended.key]: (state) =>
+        read({
+          state,
+        }),
+    });
+
+    extended.__readExtensions = [...extended.__readExtensions, readExtension];
+  }
+  if (typeof update === 'function') {
+    const txExtension: PlatePluginTxExtension = () => ({
+      [extended.key]: (tx) =>
+        update({
+          tx,
+        }),
+    });
+
+    txExtension.__plateOwnTxGroup = true;
+    extended.__txExtensions = [...extended.__txExtensions, txExtension];
+  }
+  if (editorExtension !== undefined) {
+    extended.__editorExtensions = [
+      ...extended.__editorExtensions,
+      () => normalizePlateEditorExtensions(extended.key, editorExtension),
+    ];
+  }
+
+  return extended;
 };
 
 /** Reapply captured terminal configuration without executing callbacks again. */
@@ -117,7 +193,7 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
     const extensions = [...plugin.__extensions];
 
     for (const extension of extensions) {
-      plugin = mergePlugins(
+      plugin = applyUnifiedExtension(
         plugin,
         withResolvingPlatePlugin(editor, plugin, () =>
           extension(getEditorPlugin(editor, plugin))

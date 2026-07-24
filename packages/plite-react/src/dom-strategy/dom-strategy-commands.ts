@@ -1,5 +1,5 @@
 import type { Editor, EditorSnapshot, Range, RuntimeId } from '@platejs/plite';
-import { isApplePlatform } from '@platejs/plite-dom';
+import { usesAppleDOMHotkeys } from '@platejs/plite-dom/internal';
 import { point as editorPoint } from '../editable/runtime-editor-api';
 
 export type MountedTopLevelRange = {
@@ -70,22 +70,23 @@ export const isSelectionPartialDOMBacked = (
 type SelectAllHotkeyPlatform = 'apple' | 'other';
 
 export const isSelectAllHotkey = (
-  {
-    altKey,
-    ctrlKey,
-    key,
-    metaKey,
-    shiftKey,
-  }: {
+  event: {
     altKey: boolean;
     ctrlKey: boolean;
     key: string;
     metaKey: boolean;
     shiftKey: boolean;
   },
-  platform: SelectAllHotkeyPlatform = isApplePlatform() ? 'apple' : 'other'
-) =>
-  !altKey &&
-  !shiftKey &&
-  key.toLowerCase() === 'a' &&
-  (platform === 'apple' ? metaKey && !ctrlKey : ctrlKey && !metaKey);
+  platform: SelectAllHotkeyPlatform = usesAppleDOMHotkeys(event)
+    ? 'apple'
+    : 'other'
+) => {
+  const { altKey, ctrlKey, key, metaKey, shiftKey } = event;
+
+  return (
+    !altKey &&
+    !shiftKey &&
+    key.toLowerCase() === 'a' &&
+    (platform === 'apple' ? metaKey && !ctrlKey : ctrlKey && !metaKey)
+  );
+};

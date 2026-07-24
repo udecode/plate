@@ -17,9 +17,6 @@ import {
   type DOMRange,
   getDefaultView,
   getSelection,
-  IS_ANDROID,
-  IS_FIREFOX,
-  IS_WEBKIT,
   isDOMElement,
   isDOMNode,
   isDOMText,
@@ -32,6 +29,8 @@ import {
   EDITOR_TO_USER_SELECTION,
   EDITOR_TO_WINDOW,
   ELEMENT_TO_NODE,
+  isGeckoDOMHost,
+  isWebKitDOMHost,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
   NODE_TO_ELEMENT,
@@ -67,6 +66,7 @@ import {
   point as editorPoint,
   void as editorVoid,
   hasPath as editorHasPath,
+  getSelectionDOMRange,
   setEditorFocused,
   string as editorString,
 } from './runtime-editor-api';
@@ -300,7 +300,7 @@ export const applyEditableBlur = ({
   // COMPAT: Safari doesn't always remove the selection even if the content-
   // editable element no longer has focus. Refer to:
   // https://stackoverflow.com/questions/12353247/force-contenteditable-div-to-stop-accepting-input-after-it-loses-focus-under-web
-  if (IS_WEBKIT) {
+  if (isWebKitDOMHost(root)) {
     const domSelection = getSelection(root);
     domSelection?.removeAllRanges();
   }
@@ -338,7 +338,7 @@ export const applyEditableFocus = ({
     // COMPAT: If the editor has nested editable elements, the focus
     // can go to them. In Firefox, this must be prevented because it
     // results in issues with keyboard navigation. (2017/03/30)
-    if (IS_FIREFOX && event.target !== el) {
+    if (isGeckoDOMHost(event) && event.target !== el) {
       el.focus();
       return;
     }
@@ -442,7 +442,7 @@ export const applyEditableClick = ({
       return;
     }
 
-    if (IS_FIREFOX && event.detail === 1) {
+    if (isGeckoDOMHost(event) && event.detail === 1) {
       const range = editor.api.dom.resolveEventRange(event.nativeEvent);
       const clickedInline =
         range && RangeApi.isCollapsed(range)
@@ -937,7 +937,7 @@ export const handleWebKitShadowDOMBeforeInput = ({
   if (
     !(
       processing.current &&
-      IS_WEBKIT &&
+      isWebKitDOMHost(root) &&
       ShadowRootConstructor &&
       root instanceof ShadowRootConstructor
     )
@@ -1092,7 +1092,7 @@ export const useEditableSelectionReconciler = ({
 
       // COMPAT: In firefox the normal selection way does not work
       // (https://github.com/ianstormtaylor/slate/pull/5486#issue-1820720223)
-      if (IS_FIREFOX && domSelection.rangeCount > 1) {
+      if (runtime.isGeckoHost && domSelection.rangeCount > 1) {
         const firstRange = domSelection.getRangeAt(0);
         const lastRange = domSelection.getRangeAt(domSelection.rangeCount - 1);
 
@@ -1117,6 +1117,11 @@ export const useEditableSelectionReconciler = ({
         hasDomSelectionInEditor = true;
       }
 
+      const projectedSelection =
+        selection && !SelectionApi.isNode(selection)
+          ? getSelectionDOMRange(editor, selection)
+          : null;
+
       // If the DOM selection is in the editor and the editor selection is already correct, we're done.
       if (
         hasDomSelection &&
@@ -1136,7 +1141,8 @@ export const useEditableSelectionReconciler = ({
 
         if (
           pliteRange &&
-          RangeApi.equals(pliteRange, selection) &&
+          projectedSelection &&
+          RangeApi.equals(pliteRange, projectedSelection) &&
           !isCollapsedElementSelection
         ) {
           return;
@@ -1186,23 +1192,20 @@ export const useEditableSelectionReconciler = ({
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
 
-      let newDomRange: DOMRange | null = null;
-
-      newDomRange =
-        selection && !SelectionApi.isNode(selection)
-          ? (readModelSelectionDOMPreference({
-              editor,
-              editorElement,
-              selection,
-            }) ??
-            createFastDOMSelectionRange({
-              editor,
-              editorElement,
-              includeFullDocument: false,
-              selection,
-            }) ??
-            ReactEditor.resolveDOMRange(editor, selection))
-          : null;
+      const newDomRange = projectedSelection
+        ? (readModelSelectionDOMPreference({
+            editor,
+            editorElement,
+            selection: projectedSelection,
+          }) ??
+          createFastDOMSelectionRange({
+            editor,
+            editorElement,
+            includeFullDocument: false,
+            selection: projectedSelection,
+          }) ??
+          ReactEditor.resolveDOMRange(editor, projectedSelection))
+        : null;
 
       if (newDomRange) {
         const [startContainer, startOffset] = clampDOMSelectionPoint(
@@ -1214,7 +1217,7 @@ export const useEditableSelectionReconciler = ({
           newDomRange.endOffset
         );
 
-        if (ReactEditor.isComposing(editor) && !IS_ANDROID) {
+        if (ReactEditor.isComposing(editor) && !runtime.isAndroidHost) {
           if (domSelection.rangeCount > 0) {
             domSelection.collapseToEnd();
           } else {
@@ -1225,7 +1228,7 @@ export const useEditableSelectionReconciler = ({
               endOffset
             );
           }
-        } else if (RangeApi.isBackward(selection!)) {
+        } else if (RangeApi.isBackward(projectedSelection!)) {
           domSelection.setBaseAndExtent(
             endContainer,
             endOffset,
@@ -1246,7 +1249,11 @@ export const useEditableSelectionReconciler = ({
         if (readPliteViewSelection(editor) && !selectionHasDOMCoverage) {
           writePliteViewSelection(editor, null);
         }
-      } else if (!selection || SelectionApi.isNode(selection)) {
+      } else if (
+        !selection ||
+        SelectionApi.isNode(selection) ||
+        !projectedSelection
+      ) {
         domSelection.removeAllRanges();
       }
 
@@ -1266,7 +1273,7 @@ export const useEditableSelectionReconciler = ({
     const ensureSelection =
       androidInputManagerRef.current?.isFlushing() === 'action';
 
-    if (!IS_ANDROID || !ensureSelection) {
+    if (!runtime.isAndroidHost || !ensureSelection) {
       clearUpdatingSelection();
       return;
     }

@@ -256,6 +256,21 @@ describe('extensible selection protocol', () => {
     assert.equal(editor.read.selection.domRange(), null);
   });
 
+  it('preserves an explicit null custom DOM range projection', () => {
+    const selection = {
+      ...cellSelection(),
+      cells: [cellSelection().cells[0]!],
+    };
+    const editor = createEditor({
+      extensions: [cellSelectionExtension],
+      initialSelection: selection,
+      initialValue,
+    });
+
+    assert.deepEqual(editor.read.selection(), selection);
+    assert.equal(editor.read.selection.domRange(), null);
+  });
+
   it('reads a node selection from its named root as one closed exact-owner slice', () => {
     const point = { offset: 0, path: [0, 0], root: 'header' };
     const selection = SelectionApi.node([0], {
@@ -340,9 +355,7 @@ describe('extensible selection protocol', () => {
     );
     assert.equal(Object.isFrozen(specSelection), true);
     assert.equal(Object.isFrozen(specSelection.cells[0]?.focus.path), true);
-    assert.throws(() => {
-      specSelection.cells[0]!.focus.path[0] = 9;
-    });
+    assert.equal(Reflect.set(specSelection.cells[0]!.focus.path, 0, 9), false);
   });
 
   it('replaces a custom selection when setting a plain range', () => {

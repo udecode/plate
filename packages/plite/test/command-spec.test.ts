@@ -39,7 +39,7 @@ type InsertCommand = {
 
 const createTextEditorWithExtensions = (
   extensions: readonly EditorExtension<any, any>[] = []
-) =>
+): Editor<Value> =>
   createEditor({
     extensions,
     initialSelection: SelectionApi.text({
@@ -47,7 +47,7 @@ const createTextEditorWithExtensions = (
       focus: { offset: 1, path: [0, 0] },
     }),
     initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }] as Value,
-  });
+  }) as unknown as Editor<Value>;
 
 type CommandDeclarations = NonNullable<EditorExtension['commands']>;
 
@@ -92,10 +92,6 @@ describe('pure command transaction specs', () => {
     if (spec === false) throw new Error('Expected a transaction spec.');
 
     assert.equal(Object.isFrozen(spec), true);
-    assert.throws(
-      () => (spec.changes.roots as Map<string, unknown>).clear(),
-      /Cannot mutate a published DocumentChange map/
-    );
     assert.throws(
       () => (spec.changes.createRoots as Set<string>).add('other'),
       /Cannot mutate a published DocumentChange set/

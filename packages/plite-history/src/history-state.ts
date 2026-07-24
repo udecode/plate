@@ -9,6 +9,7 @@ import {
 import {
   areEditorSchemaIdentitiesEqual,
   getInternalDocumentChangeClassificationEntries,
+  getInternalDocumentChangeRootKeys,
   MAIN_ROOT_KEY,
   mapSelectionThroughChange,
 } from '@platejs/plite/internal';
@@ -270,11 +271,19 @@ const resolveHead = <V extends Value>(
     const nextBase = batchValue.change.apply(
       batchBase
     ) as EditorDocumentValue<V>;
-    const transformed = DocumentChange.transform(
-      batchValue.change,
+    const batchChange =
+      mapping.textOnly && isTextOnlyMapping(batchValue.change)
+        ? DocumentChange.between(batchBase, nextBase)
+        : batchValue.change;
+    const mappedFirst = DocumentChange.transform(
       mapping.change,
+      batchChange,
       batchBase
     );
+    const transformed = {
+      a: mappedFirst.b,
+      b: mappedFirst.a,
+    };
     const mappedBatchBase = mapping.change.apply(batchBase);
     const mappedNextBase = transformed.b.apply(nextBase);
 
@@ -533,7 +542,7 @@ const isTextOnlyMapping = (change: DocumentChange) => {
   return (
     change.createRoots.size === 0 &&
     change.deleteRoots.size === 0 &&
-    (change.primary !== null || change.roots.size > 0) &&
+    getInternalDocumentChangeRootKeys(change).length > 0 &&
     classifications.length > 0 &&
     classifications.every(
       ([, classification]) =>

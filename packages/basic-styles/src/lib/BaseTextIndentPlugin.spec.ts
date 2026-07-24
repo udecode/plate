@@ -85,6 +85,30 @@ describe('BaseTextIndentPlugin', () => {
     ).toBe('30em');
   });
 
+  it('decodes CSS text indentation through configured units', () => {
+    const TextIndentPlugin = BaseTextIndentPlugin.configure({
+      options: {
+        offset: 10,
+        unit: 'em',
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, TextIndentPlugin],
+    });
+
+    expect(
+      editor.api.html.deserialize({
+        element: '<p style="text-indent: 20em">Indented</p>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Indented' }],
+        textIndent: 2,
+        type: KEYS.p,
+      },
+    ]);
+  });
+
   it('applies and clears text indent through the typed tx group', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],

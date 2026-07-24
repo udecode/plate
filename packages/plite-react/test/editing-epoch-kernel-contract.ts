@@ -6,7 +6,7 @@ import {
   getCurrentEditableEditingEpoch,
   markEditableEditingEpochCommandHandled,
   shouldSkipDuplicateEditableEditingEpochCommand,
-} from '../src/editable/editing-epoch-kernel';
+} from '../src/editable/editing-epoch-adapter';
 import {
   createEditableKernelResult,
   recordEditableKernelTrace,

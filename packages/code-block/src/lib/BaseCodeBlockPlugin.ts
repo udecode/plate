@@ -4,7 +4,6 @@ import { type PluginConfig, createBasePlugin } from '@platejs/core';
 import { ElementApi, property, schema } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import { isCodeBlockEmpty } from './queries';
 import {
   CODE_LINE_TO_DECORATIONS,
@@ -23,6 +22,8 @@ import {
 import { withInsertDataCodeBlock } from './withInsertDataCodeBlock';
 import { withInsertFragmentCodeBlock } from './withInsertFragmentCodeBlock';
 
+const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
+
 export const BaseCodeLinePlugin = createBasePlugin({
   key: KEYS.codeLine,
   schema: {
@@ -33,7 +34,16 @@ export const BaseCodeLinePlugin = createBasePlugin({
     },
   },
   type: NODES.codeLine,
-});
+}).extendHtmlCodec(() => ({
+  decode: () => ({}),
+  encode: ({ content }) => ({
+    attributes: { 'data-code-line': true },
+    children: content,
+    style: { display: 'block', minHeight: '1em' },
+    tag: 'span',
+  }),
+  match: [{ attributes: { 'data-code-line': true }, tag: 'span' }],
+}));
 
 export type CodeBlockConfig = PluginConfig<
   'codeBlock',
@@ -48,22 +58,18 @@ export type CodeBlockConfig = PluginConfig<
 export const BaseCodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
   dependencies: [BaseCodeLinePlugin],
-  inject: {
-    parsers: {
-      [KEYS.html]: {
-        parser: {
-          query: ({ registry, state }) => {
-            const selection = state.selection();
+  parsers: {
+    html: {
+      query: ({ registry, state }) => {
+        const selection = state.selection();
 
-            return (
-              !selection ||
-              !state.nodes.some({
-                at: selection,
-                match: { type: registry.getType(KEYS.codeLine) },
-              })
-            );
-          },
-        },
+        return (
+          !selection ||
+          !state.nodes.some({
+            at: selection,
+            match: { type: registry.getType(KEYS.codeLine) },
+          })
+        );
       },
     },
   },
@@ -82,7 +88,6 @@ export const BaseCodeBlockPlugin = createBasePlugin({
     };
   },
   type: NODES.codeBlock,
-  parsers: { html: { deserializer: htmlDeserializerCodeBlock } },
   render: { as: 'pre' },
   rules: {
     delete: {
@@ -93,6 +98,45 @@ export const BaseCodeBlockPlugin = createBasePlugin({
       isCodeBlockEmpty(editor),
   },
 })
+  .extendHtmlCodec(({ editor }) => ({
+    decode: ({ element }) => {
+      const encodedLines = Array.from(
+        element.querySelectorAll(':scope > code > span[data-code-line]')
+      );
+      const languageSelectorText =
+        Array.from(element.childNodes).find(
+          (node) => node.nodeName === 'SELECT'
+        )?.textContent ?? '';
+      const languageClass = element
+        .querySelector(':scope > code')
+        ?.className.match(CODE_LANGUAGE_CLASS_RE)?.[1];
+      const lang = element.dataset.language || languageClass || undefined;
+      const lines =
+        encodedLines.length > 0
+          ? encodedLines.map((line) => line.textContent ?? '')
+          : (element.textContent ?? '')
+              .replace(languageSelectorText, '')
+              .split('\n');
+      const codeLineType = editor.getType(BaseCodeLinePlugin.key);
+
+      return {
+        children: lines.map((line) => ({
+          children: [{ text: line }],
+          type: codeLineType,
+        })),
+        ...(lang ? { lang } : {}),
+      };
+    },
+    encode: ({ content, node }) => ({
+      attributes: {
+        'data-language': node.lang,
+      },
+      children: [{ children: content, tag: 'code' }],
+      tag: 'pre',
+    }),
+    match: [{ tag: 'pre' }, { style: { fontFamily: 'Consolas' }, tag: 'p' }],
+    priority: 10,
+  }))
   .extendExtension(withCodeBlock)
   .extendExtension(withInsertDataCodeBlock)
   .extendExtension(withInsertFragmentCodeBlock)

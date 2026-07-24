@@ -178,8 +178,9 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: [],
-    description: 'Editor shell for app-owned collaboration wiring.',
+    dependencies: ['@platejs/yjs', 'yjs'],
+    description:
+      'Two-peer Yjs collaboration with cursors, reconnect, schema guards, and history.',
     files: [
       {
         path: 'examples/collaboration-demo.tsx',
@@ -188,10 +189,13 @@ export const examples: Registry['items'] = [
     ],
     name: 'collaboration-demo',
     registryDependencies: [
-      '@plate/use-mounted',
+      '@plate/basic-nodes-kit',
+      '@plate/editor',
       '@plate/remote-cursor-overlay',
+      'alert',
+      'badge',
       'button',
-      'input',
+      'card',
     ],
     type: 'registry:example',
   },
@@ -413,7 +417,6 @@ export const demoExamples: Registry['items'] = (
       registryDependencies: ['@plate/align-kit', '@plate/editor-kit'],
       type: 'registry:example',
     },
-
     {
       description: 'Apply formatting automatically using shortcodes.',
       files: [

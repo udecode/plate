@@ -48,6 +48,12 @@ Mixed package plus registry work may need both:
 Registry-only work under `apps/www/src/registry/**` uses the registry changelog
 instead of a package changeset.
 
+Do not create a changelog event merely to keep a `*-classic` registry variant,
+including `list-classic`, in parity or to advertise proactive work on it.
+Classic surfaces are maintenance-only pending deprecation. If an authorized
+user-facing regression fix, security/release fix, deprecation, or removal
+changes one, use the normal changelog contract and name the real affected item.
+
 ## Authoring Contract
 
 Use one MDX file per changelog event.

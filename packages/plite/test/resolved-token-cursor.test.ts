@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import fc from 'fast-check';
 
-import { IndexedDocument, type JsonNode } from '../src/core/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
+import type { JsonNode } from '../src/core/change/tokens';
 
 type ReferenceEntry = {
   contentFrom: number;
@@ -162,7 +163,7 @@ const nodeRangesTouching = (
     );
 
 const assertEquivalentQueries = (nodes: readonly JsonNode[]) => {
-  const document = IndexedDocument.fromValue(nodes);
+  const document = DocumentIndex.fromValue(nodes);
   const reference = indexEntries(nodes);
 
   assert.equal(document.length, reference.length);
@@ -265,7 +266,7 @@ describe('resolved token cursor', () => {
 
     assertEquivalentQueries(nodes);
 
-    const document = IndexedDocument.fromValue(nodes);
+    const document = DocumentIndex.fromValue(nodes);
 
     for (const position of [-1, document.length + 1]) {
       assert.equal(document.childBoundaryAt(position), null);

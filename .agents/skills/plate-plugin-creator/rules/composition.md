@@ -66,9 +66,7 @@ When the final app/registry composition owns membership, configure the child
 beside the parent:
 
 ```ts
-export const PlainCodeBlockKit = [
-  CodeBlockPlugin,
-];
+export const PlainCodeBlockKit = [CodeBlockPlugin];
 ```
 
 Omit an optional capability to disable it. When keeping it with custom options,
@@ -192,6 +190,36 @@ the portal directly. Both discovery paths expose one implementation.
 Use `extendEditorApi` only for a genuinely unkeyed root editor capability.
 Never publish the same plugin service through both builders.
 
+### Staged capability order
+
+Use repeated builder stages when one capability depends on another:
+
+1. publish the smallest honest read/service in an early `.extendApi()`;
+2. consume its inferred `api` from later `.extendApi()` / `.extendTx()` stages;
+3. let required dependents consume the accumulated capability through their
+   inferred editor or scoped portal;
+4. from a later tx method, call an earlier mutation through the active
+   `tx[plugin.key].method(...)` group.
+
+This is preferable to a helper such as
+`resolveFoo(editor, read, api, pluginOptions, ...)`. Keep new method signatures
+about the domain job, including valid operation options, not runtime plumbing.
+
+Stage only an honest scoped capability that a consumer, required dependent, or
+durable plugin operation should discover. Do not publish a private
+implementation fragment merely to share it between stages. Keep it lexical,
+keep a shared pure domain algorithm private, coalesce stages, or identify a
+builder gap.
+
+Never call `editor.plugin(...).update`, `context.update`, or another one-shot
+update to reuse an earlier tx method from an active tx. That opens a nested
+transaction instead of composing the current one.
+
+`extendExtension` factories are assembled before the plugin API is published.
+If a later runtime callback needs staged API, retain the typed context and read
+`context.api` inside that callback. Eagerly destructuring `api` in the factory
+can capture the pre-publication empty value.
+
 A plugin portal already owns its noun. Keep methods flat and task-shaped:
 
 ```ts
@@ -262,6 +290,16 @@ function insertFooWithTx(...) {}
 
 when one plugin owns the behavior. Inline the body where `tx`, `api`, options,
 editor, and type are inferred.
+
+When several plugin-owned stages need the same honest scoped behavior, stage it
+as an earlier API/tx capability instead of passing `editor`, `api`, `read`,
+`tx`, `getOptions`, resolved plugin option values, or resolved type through
+another function. Operation options remain valid domain input.
+
+Before adding a state/read-view parameter, try the active transaction stage or
+callback owner. Keep the parameter only when one public query honestly serves
+both committed and uncommitted snapshots, and prove that the transaction path
+does not read stale `editor.read`.
 
 A transaction-accepting function survives only for a real cross-plugin or
 transaction-composition algorithm that a scoped method cannot own. Record its

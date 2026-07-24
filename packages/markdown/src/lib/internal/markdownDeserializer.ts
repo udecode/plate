@@ -146,10 +146,10 @@ const markdownToSlateNodesWithMdxFallback = (
 const appendInlineNodesToLastTextContainer = (
   runtime: MarkdownRuntime,
   node: unknown,
-  inlineNodes: Descendant[]
-): boolean => {
+  inlineNodes: readonly Descendant[]
+): Element | null => {
   if (!ElementApi.isElement(node) || runtime.state.schema.isVoid(node)) {
-    return false;
+    return null;
   }
 
   const paragraphType = runtime.registry.getType(KEYS.p);
@@ -164,30 +164,46 @@ const appendInlineNodesToLastTextContainer = (
       isPlainTextNode(lastChild) &&
       inlineNodes.every((inlineNode) => isPlainTextNode(inlineNode))
     ) {
-      lastChild.text += inlineNodes
-        .map((inlineNode) => inlineNode.text)
-        .join('');
-
-      return true;
+      return {
+        ...node,
+        children: [
+          ...node.children.slice(0, -1),
+          {
+            ...lastChild,
+            text:
+              lastChild.text +
+              inlineNodes.map((inlineNode) => inlineNode.text).join(''),
+          },
+        ],
+      };
     }
 
-    node.children.push(...inlineNodes);
-    return true;
+    return {
+      ...node,
+      children: [...node.children, ...inlineNodes],
+    };
   }
 
   for (let i = node.children.length - 1; i >= 0; i--) {
-    if (
-      appendInlineNodesToLastTextContainer(
-        runtime,
-        node.children[i],
-        inlineNodes
-      )
-    ) {
-      return true;
+    const child = appendInlineNodesToLastTextContainer(
+      runtime,
+      node.children[i],
+      inlineNodes
+    );
+
+    if (child) {
+      return {
+        ...node,
+        children: [
+          ...node.children.slice(0, i),
+          child,
+          ...node.children.slice(i + 1),
+        ],
+      };
     }
   }
 
-  return false;
+  return null;
 };
 
 export const markdownToSlateNodesSafelyWithRuntime = (
@@ -265,11 +281,16 @@ export const markdownToSlateNodesSafelyWithRuntime = (
     return [...completeNodes, newBlock];
   }
 
-  if (
-    ElementApi.isElement(lastBlock) &&
-    appendInlineNodesToLastTextContainer(runtime, lastBlock, incompleteNodes)
-  ) {
-    return completeNodes;
+  if (ElementApi.isElement(lastBlock)) {
+    const appendedBlock = appendInlineNodesToLastTextContainer(
+      runtime,
+      lastBlock,
+      incompleteNodes
+    );
+
+    if (appendedBlock) {
+      return [...completeNodes.slice(0, -1), appendedBlock];
+    }
   }
 
   return completeNodes;

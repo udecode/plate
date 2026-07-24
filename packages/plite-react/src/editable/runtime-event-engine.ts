@@ -4,7 +4,6 @@ import {
   type InputEvent as ReactInputEvent,
   useMemo,
 } from 'react';
-import type { Range } from '@platejs/plite';
 import type {
   EditableDOMBeforeInputHandler,
   EditableKeyDownHandler,
@@ -24,18 +23,6 @@ import { useRuntimeKeyboardEvents } from './runtime-keyboard-events';
 import type { RuntimeSelectionImportController } from './runtime-selection-engine';
 import { useRuntimeTargetBridge } from './runtime-target-bridge';
 import type { EditableDOMSelectionSyncOptions } from './selection-controller';
-
-type ApplyInputRules = ({
-  data,
-  event,
-  inputType,
-  selection,
-}: {
-  data: unknown;
-  event?: InputEvent;
-  inputType: string;
-  selection: Range | null;
-}) => boolean;
 
 type EditableRootCallbackProps = Pick<
   ComponentPropsWithRef<'div'>,
@@ -96,7 +83,6 @@ export type EditableEventRuntime = EditableEventRuntimeCore & {
 };
 
 export const useEditableEventRuntime = ({
-  applyInputRules,
   callbacks,
   deferNativeTextInputRepair = false,
   onDOMBeforeInput,
@@ -108,7 +94,6 @@ export const useEditableEventRuntime = ({
   syncDOMSelectionToEditor,
   trace,
 }: {
-  applyInputRules: ApplyInputRules;
   callbacks: EditableRootCallbackProps;
   deferNativeTextInputRepair?: boolean;
   onDOMBeforeInput?: EditableDOMBeforeInputHandler;
@@ -175,7 +160,6 @@ export const useEditableEventRuntime = ({
       | undefined,
   });
   useRuntimeBrowserHandle({
-    applyInputRules,
     browserHandleNextId,
     browserHandleRangeAnchors,
     domPhaseScheduler,
@@ -191,7 +175,6 @@ export const useEditableEventRuntime = ({
   });
   const beforeInputHandlers = useRuntimeBeforeInputEvents({
     androidInputManagerRef: eventCore.android.managerRef,
-    applyInputRules,
     deferNativeTextInputRepair,
     deferredMutations,
     editor,

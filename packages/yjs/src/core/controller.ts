@@ -16,6 +16,7 @@ import {
   getCompiledPropertyMergeStrategy,
   getCollabEffects,
   getEditorExtensionRegistry,
+  getInternalDocumentChangeRootKeys,
   MAIN_ROOT_KEY,
   scheduleAfterCommitNotification,
 } from '@platejs/plite/internal';
@@ -47,15 +48,12 @@ import {
   mergeYjsEventBatches,
   YjsEventChangeBridge,
   type YjsEventImportFallback,
+  type YjsEventNormalization,
 } from './event-change-bridge';
 import {
   createYjsProviderLifecycleAdapter,
   type YjsProviderLifecycleAdapter,
 } from './provider-lifecycle-adapter';
-import {
-  createYjsSplitHistoryAdapter,
-  type YjsSplitHistoryAdapter,
-} from './split-history-adapter';
 import {
   type PreparedYjsSharedEffects,
   YjsSharedEffectLog,
@@ -75,10 +73,6 @@ import type {
   YjsTraceEntry,
   YjsTx,
 } from './types';
-import {
-  createYjsUndoManagerAdapter,
-  type YjsUndoManagerAdapter,
-} from './undo-manager-adapter';
 
 const notifySubscribers = (subscribers: ReadonlySet<() => void>): void => {
   for (const listener of subscribers) {
@@ -111,7 +105,6 @@ type YjsRootBinding = {
   readonly bridge: YjsEventChangeBridge;
   readonly emptyValue: readonly Descendant[];
   readonly root: Y.XmlElement;
-  readonly splitHistory: YjsSplitHistoryAdapter;
   synchronizedChildren: readonly Descendant[];
 };
 
@@ -135,7 +128,6 @@ export class YjsController {
   private readonly emptyValueFor: (root: string) => readonly Descendant[];
   private readonly canonicalizeOrigin = {};
   private readonly bindings = new Map<string, YjsRootBinding>();
-  private readonly historyOrigin = {};
   private readonly isSetValued: YjsSetPropertyResolver;
   private readonly localOrigin = {};
   private readonly seedOrigin = {};
@@ -167,8 +159,6 @@ export class YjsController {
   ) => void;
   private readonly seedProviderOnSync: boolean;
   private readonly traceEntries: YjsTraceEntry[] = [];
-  private readonly undoManager: Y.UndoManager;
-  private readonly undoManagerAdapter: YjsUndoManagerAdapter;
 
   private awarenessRevision = 0;
   private paused = false;
@@ -177,7 +167,6 @@ export class YjsController {
   private readonly pendingRemoteNamedRoots = new Set<string>();
   private pendingRemoteRootChange = false;
   private pendingRemoteSchemaChange = false;
-  private pendingRemoteSplitRepair = true;
   private schemaError: Error | null = null;
   private seeded = false;
   private initialized = false;
@@ -188,8 +177,7 @@ export class YjsController {
     context: Readonly<{
       canonicalize: YjsEditorAdapter['canonicalize'];
       emptyValueFor: (root: string) => readonly Descendant[];
-    }>,
-    previous?: YjsController
+    }>
   ) {
     this.editor = editor;
     this.emptyValueFor = context.emptyValueFor;
@@ -259,26 +247,9 @@ export class YjsController {
       onProviderSyncedChange: () => this.reconcileProviderOwnedDocAfterSync(),
       provider: this.provider,
     });
-    this.undoManager =
-      previous?.doc === this.doc &&
-      previous.root === this.root &&
-      previous.roots === this.roots
-        ? previous.undoManager
-        : new Y.UndoManager([this.root, this.roots], {
-            trackedOrigins: new Set([this.localOrigin]),
-          });
-    this.undoManager.addTrackedOrigin(this.localOrigin);
-    this.undoManager.stopCapturing();
-    this.undoManagerAdapter = createYjsUndoManagerAdapter(this.undoManager);
-
     this.bindings.set(
       MAIN_ROOT_KEY,
-      this.createRootBinding(
-        MAIN_ROOT_KEY,
-        this.root,
-        this.undoManagerAdapter,
-        Object.freeze([])
-      )
+      this.createRootBinding(MAIN_ROOT_KEY, this.root, Object.freeze([]))
     );
     for (const [root, yRoot] of this.roots) {
       if (!(yRoot instanceof Y.XmlElement)) {
@@ -286,12 +257,7 @@ export class YjsController {
       }
       this.bindings.set(
         root,
-        this.createRootBinding(
-          root,
-          yRoot,
-          this.undoManagerAdapter,
-          Object.freeze([])
-        )
+        this.createRootBinding(root, yRoot, Object.freeze([]))
       );
     }
     this.awarenessAdapter = createYjsAwarenessAdapter({
@@ -312,12 +278,9 @@ export class YjsController {
 
       this.pendingRemoteEvents = mergeYjsEventBatches(
         this.pendingRemoteEvents,
-        captureYjsEventBatch(events)
+        captureYjsEventBatch(events, transaction)
       );
       this.pendingRemoteRootChange = true;
-      if (transaction.origin === this.historyOrigin) {
-        this.pendingRemoteSplitRepair = false;
-      }
     };
     this.rootsObserver = (events, transaction) => {
       if (this.shouldIgnoreRemoteTransaction(transaction)) return;
@@ -335,9 +298,6 @@ export class YjsController {
         if (typeof root === 'string') {
           this.pendingRemoteNamedRoots.add(root);
         }
-      }
-      if (transaction.origin === this.historyOrigin) {
-        this.pendingRemoteSplitRepair = false;
       }
     };
     this.sharedEffectsObserver = (event, transaction) => {
@@ -370,7 +330,6 @@ export class YjsController {
   private createRootBinding(
     root: string,
     yRoot: Y.XmlElement,
-    undoManagerAdapter: YjsUndoManagerAdapter,
     synchronizedChildren: readonly Descendant[]
   ): YjsRootBinding {
     const bridge = new YjsEventChangeBridge(
@@ -387,16 +346,6 @@ export class YjsController {
       bridge,
       emptyValue: this.emptyValueFor(root),
       root: yRoot,
-      splitHistory: createYjsSplitHistoryAdapter({
-        doc: this.doc,
-        editorRoot: root,
-        historyOrigin: this.historyOrigin,
-        isSetValued: this.isSetValued,
-        isConnected: () => this.providerLifecycle.connected(),
-        root: yRoot,
-        schemaRoot: root === MAIN_ROOT_KEY ? null : root,
-        undoManagerAdapter,
-      }),
       synchronizedChildren,
     };
   }
@@ -474,11 +423,6 @@ export class YjsController {
     ) {
       this.provider?.destroy?.();
     }
-    if (replacement?.undoManager === this.undoManager) {
-      this.undoManager.removeTrackedOrigin(this.localOrigin);
-    } else {
-      this.undoManager.destroy();
-    }
   }
 
   private bindExternalEvents(): void {
@@ -528,10 +472,7 @@ export class YjsController {
     if (commit.changed.hasAny('document')) {
       committedValue = this.editorAdapter.readValue();
       previousCommittedValue = commit.inverseChanges.apply(committedValue);
-      if (commit.changes.primary) {
-        changedRoots.add(MAIN_ROOT_KEY);
-      }
-      for (const root of commit.changes.roots.keys()) {
+      for (const root of getInternalDocumentChangeRootKeys(commit.changes)) {
         changedRoots.add(root);
       }
       for (const root of commit.changes.createRoots) {
@@ -599,11 +540,9 @@ export class YjsController {
     const preparedSharedEffects = this.sharedEffectLog.prepare(sharedEffects);
 
     if (!documentChanged) {
-      this.undoManager.stopCapturing();
       this.doc.transact(() => {
         this.appendSharedEffects(preparedSharedEffects);
       }, this.localOrigin);
-      this.undoManager.stopCapturing();
 
       if (shouldSendSelection) {
         this.awarenessAdapter.sendSelection();
@@ -619,13 +558,8 @@ export class YjsController {
     const after = committedValue;
     const before = previousCommittedValue;
     const removedBindings: string[] = [];
-    const splitHistories: Array<{
-      adapter: YjsSplitHistoryAdapter;
-      value: ReturnType<YjsSplitHistoryAdapter['createFromChange']>;
-    }> = [];
     const fallbacks = new Set<string>();
 
-    this.undoManager.stopCapturing();
     this.doc.transact(() => {
       for (const root of changedRoots) {
         if (commit.changes.deleteRoots.has(root)) {
@@ -651,12 +585,7 @@ export class YjsController {
           const yRoot = new Y.XmlElement();
 
           this.roots.set(root, yRoot);
-          binding = this.createRootBinding(
-            root,
-            yRoot,
-            this.undoManagerAdapter,
-            Object.freeze([])
-          );
+          binding = this.createRootBinding(root, yRoot, Object.freeze([]));
           this.bindings.set(root, binding);
           replaceYjsChildren(binding.root, expectedChildren, this.isSetValued, {
             ancestors: [],
@@ -678,26 +607,9 @@ export class YjsController {
           root === MAIN_ROOT_KEY
             ? commit.changed.has('structure')
             : commit.changed.has('structure', publicRoot);
-        const splitHistory = binding.splitHistory.createFromChange({
-          after: expectedChildren,
-          before: canonicalBefore,
-          change: commit.changes,
-          paths:
-            root === MAIN_ROOT_KEY
-              ? commit.changed.paths()
-              : commit.changed.paths(publicRoot),
-          structureChanged,
-        });
-
-        splitHistories.push({
-          adapter: binding.splitHistory,
-          value: splitHistory,
-        });
-
         const incremental =
           changedRoots.size === 1 && !this.editor.read.schema.hasContentRoots()
             ? binding.bridge.lower(commit.changes, expectedChildren, {
-                splitHistory,
                 structureChanged,
               })
             : null;
@@ -753,9 +665,6 @@ export class YjsController {
       this.appendSharedEffects(preparedSharedEffects);
     }, this.localOrigin);
 
-    for (const splitHistory of splitHistories) {
-      splitHistory.adapter.store(splitHistory.value);
-    }
     for (const root of removedBindings) {
       this.bindings.delete(root);
     }
@@ -771,8 +680,6 @@ export class YjsController {
         binding.synchronizedChildren = this.editorAdapter.readChildren(root);
       }
     }
-    this.undoManager.stopCapturing();
-
     if (shouldSendSelection) {
       this.awarenessAdapter.sendSelection();
     }
@@ -836,7 +743,6 @@ export class YjsController {
     this.pendingRemoteNamedRoots.clear();
     this.pendingRemoteEffects = false;
     this.pendingRemoteSchemaChange = false;
-    this.pendingRemoteSplitRepair = true;
     this.seeded = true;
     this.sharedEffectLog.settle();
   }
@@ -920,7 +826,6 @@ export class YjsController {
     const rootChanged = this.pendingRemoteRootChange;
     const namedRoots = new Set(this.pendingRemoteNamedRoots);
     const events = this.pendingRemoteEvents;
-    const repairRemoteSplitAfterOfflineUndo = this.pendingRemoteSplitRepair;
     const pending = this.sharedEffectLog.pending();
 
     this.pendingRemoteEvents = null;
@@ -928,28 +833,17 @@ export class YjsController {
     this.pendingRemoteNamedRoots.clear();
     this.pendingRemoteEffects = false;
     this.pendingRemoteSchemaChange = false;
-    this.pendingRemoteSplitRepair = true;
 
     if (namedRoots.size > 0) {
-      this.importDocumentFromYjs(
-        'remote-reconcile',
-        { repairRemoteSplitAfterOfflineUndo },
-        pending.effects,
-        { main: rootChanged, named: namedRoots }
-      );
+      this.importDocumentFromYjs('remote-reconcile', pending.effects, {
+        main: rootChanged,
+        named: namedRoots,
+      });
     } else if (rootChanged) {
       if (events === null) {
-        this.importFromYjs(
-          'remote-reconcile',
-          { repairRemoteSplitAfterOfflineUndo },
-          pending.effects
-        );
+        this.importFromYjs('remote-reconcile', pending.effects);
       } else {
-        this.importYjsEvents(
-          events,
-          { repairRemoteSplitAfterOfflineUndo },
-          pending.effects
-        );
+        this.importYjsEvents(events, pending.effects);
       }
     } else if (pending.effects.length > 0) {
       this.editorAdapter.applyRemote({ effects: pending.effects });
@@ -1016,15 +910,6 @@ export class YjsController {
       reconnect: () => {
         this.providerLifecycle.reconnect();
       },
-      redo: () => {
-        if (
-          ![...this.bindings.values()].some(({ splitHistory }) =>
-            splitHistory.redo()
-          )
-        ) {
-          this.undoManager.redo();
-        }
-      },
       resume: () => {
         this.paused = false;
       },
@@ -1036,15 +921,6 @@ export class YjsController {
       },
       sendSelection: (range, data) => {
         this.awarenessAdapter.sendSelection(range, data);
-      },
-      undo: () => {
-        if (
-          ![...this.bindings.values()].some(({ splitHistory }) =>
-            splitHistory.undo()
-          )
-        ) {
-          this.undoManager.undo();
-        }
       },
     };
   }
@@ -1076,7 +952,7 @@ export class YjsController {
 
     const pending = this.sharedEffectLog.pending();
 
-    this.importDocumentFromYjs('remote-reconcile', {}, pending.effects);
+    this.importDocumentFromYjs('remote-reconcile', pending.effects);
     this.sharedEffectLog.acknowledge(pending.eventIds);
   }
 
@@ -1175,7 +1051,7 @@ export class YjsController {
       return;
     }
 
-    this.importDocumentFromYjs('seed', {}, effects);
+    this.importDocumentFromYjs('seed', effects);
   }
 
   private reconcileProviderOwnedDocAfterSync(): void {
@@ -1203,17 +1079,12 @@ export class YjsController {
 
   private importFromYjs(
     mode: YjsTraceEntry['mode'] = 'remote-reconcile',
-    options: { repairRemoteSplitAfterOfflineUndo?: boolean } = {},
     effects: readonly EditorEffect[] = [],
     trace: {
       fallback?: YjsEventImportFallback;
       importKind?: YjsTraceEntry['importKind'];
     } = {}
   ): void {
-    if (options.repairRemoteSplitAfterOfflineUndo ?? true) {
-      this.repairSplitHistories();
-    }
-
     this.doc.transact(() => {
       removeRedundantEmptyYjsTextNodes(this.root);
     }, this.canonicalizeOrigin);
@@ -1253,17 +1124,12 @@ export class YjsController {
 
   private importDocumentFromYjs(
     mode: YjsTraceEntry['mode'] = 'remote-reconcile',
-    options: { repairRemoteSplitAfterOfflineUndo?: boolean } = {},
     effects: readonly EditorEffect[] = [],
     changed?: Readonly<{
       main: boolean;
       named: ReadonlySet<string>;
     }>
   ): void {
-    if (options.repairRemoteSplitAfterOfflineUndo ?? true) {
-      this.repairSplitHistories();
-    }
-
     const namedRoots =
       changed?.named ??
       new Set([
@@ -1364,12 +1230,7 @@ export class YjsController {
       let binding = this.bindings.get(root);
 
       if (!binding || binding.root !== yRoot) {
-        binding = this.createRootBinding(
-          root,
-          yRoot,
-          this.undoManagerAdapter,
-          Object.freeze([])
-        );
+        binding = this.createRootBinding(root, yRoot, Object.freeze([]));
         this.bindings.set(root, binding);
       }
       roots[root] = this.readYjsRootValue(binding);
@@ -1440,12 +1301,7 @@ export class YjsController {
       let binding = this.bindings.get(root);
 
       if (!binding || binding.root !== yRoot) {
-        binding = this.createRootBinding(
-          root,
-          yRoot,
-          this.undoManagerAdapter,
-          Object.freeze([])
-        );
+        binding = this.createRootBinding(root, yRoot, Object.freeze([]));
         this.bindings.set(root, binding);
       }
       binding.synchronizedChildren = this.editorAdapter.readChildren(root);
@@ -1461,44 +1317,31 @@ export class YjsController {
     }
   }
 
-  private repairSplitHistories(): void {
-    for (const binding of this.bindings.values()) {
-      binding.splitHistory.repairAfterOfflineUndo();
-    }
-  }
-
   private importYjsEvents(
     events: CapturedYjsEventBatch,
-    options: { repairRemoteSplitAfterOfflineUndo?: boolean },
     effects: readonly EditorEffect[]
   ): void {
-    if (options.repairRemoteSplitAfterOfflineUndo ?? true) {
-      this.repairSplitHistories();
-    }
-
     const binding = this.bindings.get(MAIN_ROOT_KEY);
 
     if (!binding) {
       throw new Error('Yjs primary root binding is unavailable.');
     }
-    let normalizedNodes: ReadonlySet<Y.XmlElement | Y.XmlText> = new Set();
+    let normalization: YjsEventNormalization = {
+      changedNodes: new Set(),
+      removedNodes: new Set(),
+    };
 
     this.doc.transact(() => {
-      normalizedNodes = binding.bridge.normalize(events);
+      normalization = binding.bridge.normalize(events);
     }, this.canonicalizeOrigin);
 
-    const result = binding.bridge.translate(events, normalizedNodes);
+    const result = binding.bridge.translate(events, normalization);
 
     if (result.kind === 'fallback') {
-      this.importFromYjs(
-        'remote-reconcile',
-        { repairRemoteSplitAfterOfflineUndo: false },
-        effects,
-        {
-          fallback: result.fallback,
-          importKind: 'full-diff-fallback',
-        }
-      );
+      this.importFromYjs('remote-reconcile', effects, {
+        fallback: result.fallback,
+        importKind: 'full-diff-fallback',
+      });
 
       return;
     }

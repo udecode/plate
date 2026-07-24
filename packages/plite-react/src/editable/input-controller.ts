@@ -6,7 +6,7 @@ import type {
 } from 'react';
 import type { Editor } from '@platejs/plite';
 import { Hotkeys, isDOMElement, isDOMText } from '@platejs/plite-dom';
-import { IS_COMPOSING } from '@platejs/plite-dom/internal';
+import { DOMRootRuntime, IS_COMPOSING } from '@platejs/plite-dom/internal';
 
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
@@ -326,10 +326,6 @@ export const classifyKeyboardIntent = ({
     return 'delete';
   }
 
-  if (Hotkeys.isBold(nativeEvent) || Hotkeys.isItalic(nativeEvent)) {
-    return 'format';
-  }
-
   if (
     nativeEvent.key.length === 1 &&
     (nativeEvent.altKey || nativeEvent.ctrlKey || nativeEvent.metaKey)
@@ -357,41 +353,12 @@ export const classifyBeforeInputIntent = ({
   event: InputEvent;
   internalTarget?: boolean;
 }): InputIntent | null => {
-  const { inputType } = event;
+  const intent = DOMRootRuntime.classifyBeforeInputIntent({
+    inputType: event.inputType,
+    internalTarget,
+  });
 
-  if (inputType === 'historyUndo' || inputType === 'historyRedo') {
-    return 'history';
-  }
-
-  if (internalTarget) {
-    return 'internal-control';
-  }
-
-  if (inputType.startsWith('format')) {
-    return 'format';
-  }
-
-  if (inputType.includes('Composition')) {
-    return 'composition';
-  }
-
-  if (inputType.includes('Paste') || inputType.includes('Drop')) {
-    return 'clipboard';
-  }
-
-  if (inputType.startsWith('delete')) {
-    return 'delete';
-  }
-
-  if (inputType === 'insertLineBreak' || inputType === 'insertParagraph') {
-    return 'insert-break';
-  }
-
-  if (inputType.startsWith('insert')) {
-    return 'text-insert';
-  }
-
-  return null;
+  return intent === 'format' ? null : intent;
 };
 
 export const classifyClipboardIntent = ({

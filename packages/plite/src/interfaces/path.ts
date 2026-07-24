@@ -4,7 +4,7 @@
  * object, they can be relative to any `Node` object.
  */
 
-export type Path = number[];
+export type Path = readonly number[];
 
 export interface PathAncestorsOptions {
   reverse?: boolean;
@@ -21,7 +21,7 @@ export interface PathInterface {
    * The paths are sorted from shallowest to deepest ancestor. However, if the
    * `reverse: true` option is passed, they are reversed.
    */
-  ancestors: (path: Path, options?: PathAncestorsOptions) => Path[];
+  ancestors: (path: Path, options?: PathAncestorsOptions) => readonly Path[];
 
   /**
    * Get the common ancestor path of two paths.
@@ -115,7 +115,7 @@ export interface PathInterface {
    * The paths are sorted from shallowest to deepest. However, if the `reverse:
    * true` option is passed, they are reversed.
    */
-  levels: (path: Path, options?: PathLevelsOptions) => Path[];
+  levels: (path: Path, options?: PathLevelsOptions) => readonly Path[];
 
   /**
    * Given a path, get the path to the next sibling node.
@@ -140,7 +140,7 @@ export interface PathInterface {
 
 // eslint-disable-next-line no-redeclare
 export const PathApi: Readonly<PathInterface> = Object.freeze({
-  ancestors(path: Path, options: PathAncestorsOptions = {}): Path[] {
+  ancestors(path: Path, options: PathAncestorsOptions = {}): readonly Path[] {
     const { reverse = false } = options;
     let paths = PathApi.levels(path, options);
 
@@ -154,7 +154,7 @@ export const PathApi: Readonly<PathInterface> = Object.freeze({
   },
 
   common(path: Path, another: Path): Path {
-    const common: Path = [];
+    const common: number[] = [];
 
     for (let i = 0; i < path.length && i < another.length; i++) {
       const av = path[i];

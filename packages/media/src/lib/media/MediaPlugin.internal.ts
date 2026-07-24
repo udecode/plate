@@ -198,7 +198,7 @@ const normalizeMediaDescendant = (
     ElementApi.isElement(normalizedLegacy[0]) &&
     normalizedLegacy[0].children.every(isInlineCaptionChild)
   ) {
-    legacy = normalizedLegacy[0].children;
+    legacy = [...normalizedLegacy[0].children];
   } else {
     throw new Error(
       `Legacy media caption at ${location} must contain inline content or one block wrapper.`

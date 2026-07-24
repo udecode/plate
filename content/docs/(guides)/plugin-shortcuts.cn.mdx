@@ -3,7 +3,7 @@ title: 插件快捷键
 description: 配置 Plate 插件的键盘快捷键。
 ---
 
-插件快捷键把按键组合映射到插件方法或显式处理函数。Plate 在插件设置阶段编译快捷键，并通过可编辑区域中的 `EditorHotkeysEffect` 运行它们。
+插件快捷键把按键组合映射到插件方法或显式处理函数。Plate 在插件设置阶段把它们编译为一个不可变的有序表，每个可编辑根节点只安装一个分发器。
 
 ## 快捷键解析规则
 
@@ -22,11 +22,11 @@ description: 配置 Plate 插件的键盘快捷键。
 
 | 字段 | 含义 |
 | --- | --- |
-| `keys` | 传给 `useHotkeys` 的按键组合，例如 `'mod+b'` 或 `[[Key.Mod, 'b']]`。 |
+| `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'` 或 `[[Key.Mod, 'b']]`。 |
 | `handler` | 接收 `{ editor, event, eventDetails }` 的显式处理函数。 |
 | `target` | 同名更新方法和 API 方法同时存在时，用 `'update' | 'api'` 消除歧义。 |
 | `priority` | 快捷键优先级；默认使用插件优先级。 |
-| `preventDefault` | 传给 `useHotkeys`。省略时，Plate 会在快捷键被处理后调用 `preventDefault()` 和 `stopPropagation()`。 |
+| `preventDefault` | 已处理快捷键的浏览器默认行为策略。省略时，Plate 调用 `preventDefault()` 和 `stopPropagation()`。 |
 | `null` | 删除这个命名快捷键。 |
 
 ## 链接更新方法
@@ -119,10 +119,11 @@ export const DraftPlugin = createPlatePlugin({
 | 配置 | 行为 |
 | --- | --- |
 | 省略 `preventDefault`，且处理结果不是 `false` | Plate 调用 `event.preventDefault()` 和 `event.stopPropagation()`。 |
-| 返回 `false` | Plate 不修改事件。 |
-| 显式设置 `preventDefault` | Plate 把该选项交给 `useHotkeys`，不再自行调用 `preventDefault()`。 |
+| 返回 `false` | Plate 不修改事件，并尝试下一个匹配的快捷键。 |
+| `preventDefault: false` 且事件已处理 | Plate 停止快捷键分发，但保留浏览器默认行为。 |
+| `preventDefault: true`，或判断函数返回 `true` | Plate 调用 `event.preventDefault()`。 |
 
-普通编辑器命令应省略 `preventDefault`。只有明确需要 `useHotkeys` 控制事件行为时才设置它。
+普通编辑器命令应省略 `preventDefault`。
 
 ## 配置已有快捷键
 
@@ -201,6 +202,8 @@ export const PriorityPlugin = createPlatePlugin({
   },
 });
 ```
+
+Plate 按快捷键优先级、插件顺序、声明顺序排列编译表。第一个已处理的路径胜出。
 
 ## 编辑器级快捷键
 

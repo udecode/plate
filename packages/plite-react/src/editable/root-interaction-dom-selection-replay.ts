@@ -1,4 +1,4 @@
-const FIREFOX_USER_AGENT_RE = /\bFirefox\//;
+import { isGeckoDOMHost } from '@platejs/plite-dom/internal';
 
 export type ExpandedDOMSelectionSnapshot = {
   anchorNode: Node;
@@ -130,9 +130,7 @@ export const isPointInsideDOMSelection = ({
 };
 
 export const needsMouseUpDOMSelectionReplay = (target: HTMLElement) =>
-  FIREFOX_USER_AGENT_RE.test(
-    target.ownerDocument.defaultView?.navigator.userAgent ?? ''
-  );
+  isGeckoDOMHost(target);
 
 export const shouldReplayMouseUpDOMSelection = ({
   hasExpandedDOMRange,

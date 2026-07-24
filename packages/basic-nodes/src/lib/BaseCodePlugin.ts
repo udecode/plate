@@ -9,27 +9,23 @@ export const BaseCodePlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['CODE'] },
-          { validStyle: { fontFamily: 'Consolas' } },
-        ],
-        query({ element }) {
-          const blockAbove = findHtmlParentElement(element, 'P');
-
-          if (blockAbove?.style.fontFamily === 'Consolas') return false;
-
-          return !findHtmlParentElement(element, 'PRE');
-        },
-      },
-    },
-  },
   render: { as: 'code' },
   rules: { selection: { affinity: 'hard' } },
-}).extendTx(({ type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type);
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => {
+      const blockAbove = findHtmlParentElement(element, 'P');
+
+      return blockAbove?.style.fontFamily === 'Consolas' ||
+        findHtmlParentElement(element, 'PRE')
+        ? undefined
+        : true;
+    },
+    encode: ({ value }) => (value ? { tag: 'code' } : null),
+    match: [{ tag: 'code' }, { style: { fontFamily: 'Consolas' } }],
+  }))
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

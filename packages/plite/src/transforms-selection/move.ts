@@ -5,7 +5,8 @@ import {
   after as editorAfter,
   before as editorBefore,
 } from '../interfaces/editor';
-import { type Range, RangeApi } from '../interfaces/range';
+import type { Point } from '../interfaces/point';
+import { RangeApi } from '../interfaces/range';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
 import { setSelection } from './set-selection';
 
@@ -31,7 +32,7 @@ export const applyMove: SelectionMutationMethods['move'] = (
 
   const { anchor, focus } = selection;
   const opts = { distance, unit };
-  const props: Partial<Range> = {};
+  const props: { anchor?: Point; focus?: Point } = {};
 
   if (edge == null || edge === 'anchor') {
     const point = reverse

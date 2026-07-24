@@ -7,18 +7,18 @@ import {
   getRuntimeIdForNode,
   setRuntimeId,
 } from '../utils/runtime-ids';
+import type { DocumentChangeRuntimeCandidate } from './change/classification';
 import {
-  type DocumentChangeRuntimeCandidate,
-  DocumentSlice,
-  getChangeSetRelocations,
+  PreparedTokenSlice,
   getPreparedDocumentSlice,
   getPreparedDocumentRuntimeId,
   getPreparedDocumentRuntimePath,
   isDeferredPreparedDocumentSlice,
-  type ChangeSet,
-  type IndexedDocument,
   type JsonNode,
-} from './document-change';
+} from './change/tokens';
+import { getRootChangeRelocations } from './change/mapping';
+import type { RootChange } from './change/root-change';
+import type { DocumentIndex } from './change/document-index';
 import { profileCoreDuration } from './profiling';
 
 const EMPTY_ENTRIES = Object.freeze([]) as readonly (readonly [
@@ -249,15 +249,15 @@ export const buildSnapshotIndex = (
 };
 
 type StructuralSnapshotIndexMappingSegment = Readonly<{
-  after: IndexedDocument;
-  before: IndexedDocument;
-  change: ChangeSet;
+  after: DocumentIndex;
+  before: DocumentIndex;
+  change: RootChange;
   span: number;
 }>;
 
 type PathStableSnapshotIndexMappingSegment = Readonly<{
-  after: IndexedDocument;
-  before: IndexedDocument;
+  after: DocumentIndex;
+  before: DocumentIndex;
   change: null;
   span: number;
 }>;
@@ -286,7 +286,7 @@ type PreparedRuntimePlacement = Readonly<{
   index: number;
   parentPath: Path;
   segments: readonly SnapshotIndexMappingSegment[];
-  slice: DocumentSlice;
+  slice: PreparedTokenSlice;
 }>;
 
 const MAPPED_SNAPSHOT_INDEXES = new WeakMap<
@@ -296,7 +296,7 @@ const MAPPED_SNAPSHOT_INDEXES = new WeakMap<
 
 type MappedElementIndexDescriptor = Readonly<{
   additions: readonly ElementPathEntry[];
-  after: IndexedDocument;
+  after: DocumentIndex;
   base: SnapshotIndex;
   segments: readonly SnapshotIndexMappingSegment[];
 }>;
@@ -323,11 +323,11 @@ export const captureSnapshotIndexMapping = (index: SnapshotIndex) => {
 };
 const SEGMENT_MOVES = new WeakMap<
   SnapshotIndexMappingSegment,
-  ReturnType<ChangeSet['movedNode']>
+  ReturnType<RootChange['movedNode']>
 >();
 const SEGMENT_RELOCATIONS = new WeakMap<
   SnapshotIndexMappingSegment,
-  ReturnType<typeof getChangeSetRelocations>
+  ReturnType<typeof getRootChangeRelocations>
 >();
 const SEGMENT_MAY_RELOCATE = new WeakMap<
   SnapshotIndexMappingSegment,
@@ -339,9 +339,9 @@ const INVERSE_MAPPING_SEGMENTS = new WeakMap<
 >();
 
 const assertMappingLengths = (
-  before: IndexedDocument,
-  after: IndexedDocument,
-  change: ChangeSet
+  before: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange
 ) => {
   if (change.length !== before.length) {
     throw new Error(
@@ -356,9 +356,9 @@ const assertMappingLengths = (
 };
 
 const createMappingSegment = (
-  before: IndexedDocument,
-  after: IndexedDocument,
-  change: ChangeSet,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange,
   span = 1
 ): StructuralSnapshotIndexMappingSegment => {
   assertMappingLengths(before, after, change);
@@ -367,8 +367,8 @@ const createMappingSegment = (
 };
 
 const createPathStableMappingSegment = (
-  before: IndexedDocument,
-  after: IndexedDocument,
+  before: DocumentIndex,
+  after: DocumentIndex,
   span = 1
 ): PathStableSnapshotIndexMappingSegment =>
   Object.freeze({ after, before, change: null, span });
@@ -446,7 +446,7 @@ const getSegmentRelocations = (segment: SnapshotIndexMappingSegment) => {
   let relocations = SEGMENT_RELOCATIONS.get(segment);
 
   if (!relocations) {
-    relocations = getChangeSetRelocations(
+    relocations = getRootChangeRelocations(
       segment.change,
       segment.before,
       segment.after
@@ -468,7 +468,7 @@ const mapRelocatedPath = (
   if (mayRelocate === undefined) {
     mayRelocate = segment.change.data.some(
       (data) =>
-        data instanceof DocumentSlice &&
+        data instanceof PreparedTokenSlice &&
         !getPreparedDocumentSlice(data) &&
         !isDeferredPreparedDocumentSlice(data) &&
         data.tokens.some((token) => token.kind === 'open')
@@ -495,7 +495,7 @@ const mapRelocatedPath = (
 };
 
 const positionWasReplaced = (
-  change: ChangeSet,
+  change: RootChange,
   position: number,
   side: 'after' | 'before'
 ) => {
@@ -599,9 +599,9 @@ const mapPathBackward = (
 /** @internal Append one root change using the snapshot index's binary compaction. */
 export const appendCanonicalDocumentPathMapping = (
   mapping: CanonicalDocumentPathMapping,
-  before: IndexedDocument,
-  after: IndexedDocument,
-  change: ChangeSet
+  before: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange
 ): CanonicalDocumentPathMapping =>
   compactMappingSegments(mapping, createMappingSegment(before, after, change));
 
@@ -645,7 +645,7 @@ export const mapCanonicalDocumentPath = (
 export const getCanonicalDocumentPathMappingStats = (
   mapping: CanonicalDocumentPathMapping
 ) => {
-  const documents = new Set<IndexedDocument>();
+  const documents = new Set<DocumentIndex>();
 
   for (const segment of mapping) {
     documents.add(segment.before);
@@ -675,7 +675,7 @@ const preparedRuntimePlacementsFromSegment = (
     const data = segment.change.data[dataIndex];
     const outputLength = inserted < 0 ? length : inserted;
 
-    if (inserted >= 0 && data instanceof DocumentSlice) {
+    if (inserted >= 0 && data instanceof PreparedTokenSlice) {
       const prepared = getPreparedDocumentSlice(data);
       const boundary =
         prepared && prepared.nodes.length > 0
@@ -864,7 +864,7 @@ const mapChangedRuntimeIds = (
   const sourcePaths = new Map<string, Path>();
   const targetPaths = new Map<string, Path>();
   const addTouching = (
-    document: IndexedDocument,
+    document: DocumentIndex,
     paths: Map<string, Path>,
     from: number,
     to: number
@@ -914,7 +914,7 @@ const mapChangedRuntimeIds = (
 
   const relocations = segment.change.data.some(
     (data) =>
-      data instanceof DocumentSlice &&
+      data instanceof PreparedTokenSlice &&
       !getPreparedDocumentSlice(data) &&
       !isDeferredPreparedDocumentSlice(data) &&
       data.tokens.some((token) => token.kind === 'open')
@@ -983,7 +983,7 @@ const mapChangedRuntimeIds = (
     }
   }
 
-  const nodeText = (path: Path, document: IndexedDocument): string => {
+  const nodeText = (path: Path, document: DocumentIndex): string => {
     const node = document.node(path);
 
     if ('text' in node && typeof node.text === 'string') return node.text;
@@ -1107,7 +1107,7 @@ export const getSnapshotIndexMappingStats = (index: SnapshotIndex) => {
     });
   }
 
-  const documents = new Set<IndexedDocument>();
+  const documents = new Set<DocumentIndex>();
 
   for (const segment of descriptor.segments) {
     documents.add(segment.before);
@@ -1195,9 +1195,9 @@ const queryMappedElementEntries = (
 
 /** Map stable node identities through one canonical root change. */
 export const mapSnapshotIndexThroughChange = (
-  before: IndexedDocument,
-  after: IndexedDocument,
-  change: ChangeSet,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange,
   index: SnapshotIndex,
   editor: Editor,
   discardedRuntimeIds: ReadonlySet<RuntimeId> = new Set(),
@@ -1311,7 +1311,7 @@ export const mapSnapshotIndexThroughChange = (
   const materializedElementPathsByType = new Map<string, ElementPathEntry[]>();
   let activeDescriptor: MappedSnapshotIndexDescriptor | null = descriptor;
   let activeSegments: readonly SnapshotIndexMappingSegment[] | null = segments;
-  let currentDocument: IndexedDocument | null = segments.at(-1)!.after;
+  let currentDocument: DocumentIndex | null = segments.at(-1)!.after;
   let materializedEntries: readonly (readonly [RuntimeId, Path])[] | undefined;
   let mappedIndex: SnapshotIndex;
 
@@ -1599,9 +1599,9 @@ export const mapSnapshotIndexThroughChange = (
  * still starts from the exact current token document.
  */
 export const advancePathStableSnapshotIndex = (
-  before: IndexedDocument,
-  after: IndexedDocument,
-  change: ChangeSet,
+  before: DocumentIndex,
+  after: DocumentIndex,
+  change: RootChange,
   index: SnapshotIndex,
   editor: Editor,
   runtimeCandidates?: readonly DocumentChangeRuntimeCandidate[]

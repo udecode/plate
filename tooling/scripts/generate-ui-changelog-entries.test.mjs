@@ -599,7 +599,9 @@ test('current entry files generate registry changelog indexes', () => {
   assert.equal(outputs.length, sources.length);
   assert.deepEqual(
     index.events.map((event) => event.id),
-    outputs.map((output) => output.entry.id).reverse()
+    [...outputs]
+      .sort((a, b) => b.entry.change.date.localeCompare(a.entry.change.date))
+      .map((output) => output.entry.id)
   );
   assert.ok(
     index.events.every(

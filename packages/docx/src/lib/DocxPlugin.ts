@@ -1,4 +1,4 @@
-import { type HtmlDeserializer, createBasePlugin } from '@platejs/core';
+import { createBasePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { cleanDocx } from './docx-cleaner/cleanDocx';
@@ -12,66 +12,53 @@ import { getTextListStyleType } from './docx-cleaner/utils/getTextListStyleType'
 import { isDocxContent } from './docx-cleaner/utils/isDocxContent';
 import { isDocxList } from './docx-cleaner/utils/isDocxList';
 
-const parse: HtmlDeserializer['parse'] = ({ element, type }) => {
-  if (isDocxList(element)) {
-    const text = element.textContent ?? '';
-    element.innerHTML = getDocxListContentHtml(element);
+const normalizeDocxData = (data: string, rtf: string) => {
+  const document = new DOMParser().parseFromString(data, 'text/html');
+  const { body } = document;
 
-    return {
-      indent: getDocxListIndent(element),
-      listStyleType: getTextListStyleType(text) ?? 'disc',
-      type,
-    };
-  }
+  if (!isDocxContent(body)) return cleanDocx(data, rtf);
 
-  const indent = getDocxIndent(element);
-  const textIndent = getDocxTextIndent(element);
+  body.querySelectorAll('p, h1, h2, h3, h4, h5, h6').forEach((element) => {
+    const htmlElement = element as HTMLElement;
 
-  return {
-    ...(indent ? { indent } : {}),
-    ...(textIndent ? { textIndent } : {}),
-    type,
-  };
+    if (isDocxList(element)) {
+      const listItem = document.createElement('li');
+
+      Array.from(element.attributes).forEach(({ name, value }) => {
+        listItem.setAttribute(name, value);
+      });
+      listItem.dataset.indent = String(getDocxListIndent(element));
+      listItem.dataset.listStyleType =
+        getTextListStyleType(element.textContent ?? '') ?? 'disc';
+      listItem.innerHTML = getDocxListContentHtml(element);
+      element.replaceWith(listItem);
+
+      return;
+    }
+
+    const indent = getDocxIndent(htmlElement);
+    const textIndent = getDocxTextIndent(htmlElement);
+
+    if (indent) htmlElement.dataset.indent = String(indent);
+    if (textIndent) htmlElement.dataset.textIndent = String(textIndent);
+  });
+  const cleaned = cleanDocx(body.innerHTML, rtf);
+  const cleanedDocument = new DOMParser().parseFromString(cleaned, 'text/html');
+
+  cleanedDocument.body.querySelectorAll('img').forEach((element) => {
+    element.remove();
+  });
+
+  return cleanedDocument.body.outerHTML;
 };
 
 export const DocxPlugin = createBasePlugin({
   key: KEYS.docx,
   editOnly: true,
-  inject: {
-    parsers: {
-      [KEYS.html]: {
-        parser: {
-          transformData: ({ data, source }) => {
-            const rtf = source.getData('text/rtf');
-
-            return cleanDocx(data, rtf);
-          },
-        },
-      },
-      ...Object.fromEntries(
-        ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((key) => [
-          key,
-          {
-            parsers: {
-              html: {
-                deserializer: {
-                  parse,
-                },
-              },
-            },
-          },
-        ])
-      ),
-      img: {
-        parser: {
-          query: ({ source }) => {
-            const data = source.getData('text/html');
-            const { body } = new DOMParser().parseFromString(data, 'text/html');
-
-            return !isDocxContent(body);
-          },
-        },
-      },
+  parsers: {
+    html: {
+      transformData: ({ data, source }) =>
+        normalizeDocxData(data, source.getData('text/rtf')),
     },
   },
 });

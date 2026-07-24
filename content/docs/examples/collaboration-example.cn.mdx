@@ -2,13 +2,15 @@
 title: 协作演示
 ---
 
-这个示例展示协作边界：Plate 渲染编辑器界面，应用负责 Yjs provider、传输、持久化、认证、房间命名和光标数据。
+这个示例通过应用自有的本地 Yjs 房间运行两个独立的 Plate 编辑器。Plate
+负责渲染编辑器界面，应用负责 provider、传输、持久化、认证、房间名和光标数据。
 
 <ComponentPreview name="collaboration-demo" />
 
 ## 源码
 
-示例刻意保持很小。它让编辑器界面可见，同时标出哪些协作部分属于应用边界。
+示例创建两个 provider 端点、两个编辑器 `Y.Doc` 实例和一个房间文档。这个
+provider 不需要凭证，只用于开发环境。
 
 <ComponentSource name="collaboration-demo" />
 
@@ -18,8 +20,14 @@ title: 协作演示
 | --- | --- | --- |
 | `createYjsExtension` | `@platejs/yjs` | 把共享 `Y.Doc` 和 provider 包装器接入 Plite 操作。 |
 | Provider 包装器 | 应用基础设施 | 将 Hocuspocus、WebRTC、IndexedDB 或自定义传输包装成 `YjsProviderLike`。 |
-| 房间状态 | 应用 | 房间 id、认证令牌和持久化逻辑不属于 Plate 包。 |
-| 连接命令 | `tx.yjs` | 连接、断开、重连、发布选择、清空选择、撤销和重做。 |
+| 本地房间 | Registry 示例 | 在两个独立 peer 之间交换文档和 awareness 更新。 |
+| 生产房间状态 | 应用 | 房间 id、认证令牌、持久化和 provider URL 不属于 Plate 包。 |
+| 连接命令 | `tx.yjs` | 连接、断开、重连、发布选择和清空选择。 |
 | 连接读取 | `state.yjs` | 通过 `editor.read` 读取连接、同步和 provider 状态。 |
+| 撤销和重做 | `@platejs/plite-history` | 通过同一 Yjs bridge 重放标准编辑器更改。 |
 
 真实 provider 接入请看 [Yjs 指南](/docs/yjs)。
+
+在任一编辑器中输入即可看到远程文档和光标更新。断开一个 peer 可以排队本地
+更改，重新连接后再用标准历史记录控件仅撤销或重做该 peer 的本地更改。Schema
+控件会展示不兼容加入被拒绝，以及兼容端点在不替换现有编辑器的情况下恢复。

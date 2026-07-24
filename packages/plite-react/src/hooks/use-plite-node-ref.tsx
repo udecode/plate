@@ -10,11 +10,11 @@ import {
   EDITOR_TO_KEY_TO_ELEMENT,
   ELEMENT_TO_NODE,
   IS_COMPOSING,
+  markDOMSyncMutationTarget,
   NODE_TO_ELEMENT,
   NODE_TO_RUNTIME_ID,
 } from '@platejs/plite-dom/internal';
 import { EditorContext } from '../context';
-import { markDOMSyncMutationTarget } from '../editable/dom-sync-mutation-ownership';
 import {
   type Editor,
   getEditorRuntimeOwner,

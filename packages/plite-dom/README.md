@@ -36,9 +36,8 @@ Public root exports are grouped around:
 - Text-diff utilities such as `applyStringDiff`, `mergeStringDiffs`,
   `normalizePoint`, `normalizeRange`, `normalizeStringDiff`, `targetRange`, and
   `verifyDiffState`.
-- Environment flags such as `CAN_USE_DOM`, `HAS_BEFORE_INPUT_SUPPORT`,
-  `IS_ANDROID`, `IS_CHROME`, `IS_FIREFOX`, `IS_IOS`, `IS_UC_MOBILE`,
-  `IS_WEBKIT`, and `IS_WECHATBROWSER`.
+- `CAN_USE_DOM` for SSR-safe module initialization. Mounted DOM adapters
+  resolve browser behavior from their own root.
 - Decoration helpers `isElementDecorationsEqual`, `isTextDecorationsEqual`, and
   `splitDecorationsByChild`.
 - `defineHostCodec`, `hostCodecs`, and `writeHostFragmentData` for

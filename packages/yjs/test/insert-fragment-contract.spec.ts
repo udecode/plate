@@ -6,17 +6,17 @@ import {
   assertCanonicalYjsTrace,
   assertPeerTexts,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
   getYjsNodeAt,
   type Peer,
   paragraph,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -30,7 +30,7 @@ type ClientId = keyof typeof clientIds;
 const initialValue = (): Descendant[] => [paragraph('alpha')];
 
 const createPeer = (clientId: ClientId, seedUpdate?: Uint8Array): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children: initialValue(),
     clientId,
     numericClientId: clientIds[clientId],
@@ -38,7 +38,7 @@ const createPeer = (clientId: ClientId, seedUpdate?: Uint8Array): Peer =>
   });
 
 const createPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: ids,
     numericClientIds: clientIds,
@@ -163,10 +163,10 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha AdaLin fragment']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha Ada']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha AdaLin fragment']);
   });
 
@@ -186,10 +186,10 @@ describe('@platejs/yjs insert_fragment collaboration contract', () => {
     connectYjsPeerAndSync(b, peers);
     assertPeerTexts(peers, ['local', 'remote']);
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['alpha', 'remote']);
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     assertPeerTexts(peers, ['local', 'remote']);
   });
 });

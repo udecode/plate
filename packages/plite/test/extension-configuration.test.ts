@@ -531,6 +531,12 @@ describe('transactional extension configuration', () => {
       initialValue: [paragraph('before')],
     });
     const schemaFacade = editor.read((state) => state.schema);
+    assert.deepEqual(
+      schemaFacade.fitDocument({
+        children: [paragraph('compiled-before')],
+      }).children,
+      [paragraph('compiled-before')]
+    );
     const beforeRevision = getCompiledEditorConfiguration(editor).revision;
     const commits: number[] = [];
     const observerStates: Array<{
@@ -597,6 +603,19 @@ describe('transactional extension configuration', () => {
     assert.deepEqual(editor.read.children(), [
       { children: [{ text: 'before' }], type: 'heading' },
     ]);
+    assert.throws(
+      () =>
+        schemaFacade.fitDocument({
+          children: [paragraph('stale-fitter')],
+        }),
+      /unknown editor element type "paragraph"/i
+    );
+    assert.deepEqual(
+      schemaFacade.fitDocument({
+        children: [{ children: [{ text: 'current-fitter' }], type: 'heading' }],
+      }).children,
+      [{ children: [{ text: 'current-fitter' }], type: 'heading' }]
+    );
     assert.deepEqual(commits, [1]);
     assert.deepEqual(observerStates, [
       {

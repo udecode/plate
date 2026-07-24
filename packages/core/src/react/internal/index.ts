@@ -1,4 +1,4 @@
-export * from '../components/EditorHotkeysEffect';
+export * from '../components/EditorShortcutDispatcher';
 export * from '../components/EditorRefEffect';
 export * from '../components/PlateControllerEffect';
 export * from '../libs/index';

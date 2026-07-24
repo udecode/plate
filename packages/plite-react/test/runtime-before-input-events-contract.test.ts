@@ -249,7 +249,7 @@ test('beforeinput still flushes pending DOM selection for native-owned input', (
   ).toBe(true);
 });
 
-test('pending composition input defers input rules and captures immutable input', () => {
+test('pending composition input captures immutable input before one model commit', () => {
   const editor = createEditor() as ReactEditor;
   const compositionSelection: Range = {
     kind: 'text',
@@ -278,7 +278,6 @@ test('pending composition input defers input rules and captures immutable input'
       return true;
     },
   };
-  const applyInputRules = vi.fn(() => true);
   const requestEditableRepair = vi.fn();
   const command = {
     inputType: 'insertFromComposition',
@@ -288,7 +287,6 @@ test('pending composition input defers input rules and captures immutable input'
 
   expect(
     queuePendingCompositionModelInput({
-      applyInputRules,
       command,
       data: '文',
       editor,
@@ -299,21 +297,14 @@ test('pending composition input defers input rules and captures immutable input'
       setComposing: vi.fn(),
     })
   ).toBe(true);
-  expect(applyInputRules).not.toHaveBeenCalled();
   expect(editorString(editor, [])).toBe('abcd');
   expect(pendingInput).not.toBeNull();
   expect(Object.isFrozen(pendingInput)).toBe(true);
 
   expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
-    false
+    true
   );
-  expect(applyInputRules).toHaveBeenCalledOnce();
-  expect(applyInputRules).toHaveBeenCalledWith({
-    data: '文',
-    inputType: 'insertFromComposition',
-    selection: compositionSelection,
-  });
-  expect(editorString(editor, [])).toBe('abcd');
+  expect(editorString(editor, [])).toBe('a文d');
 
   pendingInput?.complete();
   expect(requestEditableRepair).toHaveBeenCalledOnce();
@@ -321,6 +312,7 @@ test('pending composition input defers input rules and captures immutable input'
 
 test('pending composition input records only an actual document commit', () => {
   const editor = createEditor() as ReactEditor;
+  let commitCount = 0;
   const compositionSelection: Range = {
     kind: 'text',
     anchor: { offset: 1, path: [0, 0] },
@@ -330,6 +322,9 @@ test('pending composition input records only an actual document commit', () => {
   editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
     selection: compositionSelection,
+  });
+  editor.subscribeCommit(() => {
+    commitCount += 1;
   });
   const inputController = createEditableInputController({
     preferModelSelectionForInputRef: { current: false },
@@ -369,6 +364,11 @@ test('pending composition input records only an actual document commit', () => {
   );
   expect(editorString(editor, [])).toBe('a文d');
   expect(inputController.state.compositionSession?.modelCommitted).toBe(true);
+  expect(commitCount).toBe(1);
+  expect(pendingInput?.commit(compositionSelection, { publish: true })).toBe(
+    false
+  );
+  expect(commitCount).toBe(1);
 });
 
 test('settled composition completion suppresses one matching late final only', () => {

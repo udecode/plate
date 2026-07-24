@@ -1,4 +1,5 @@
 import { property, type EditorMarks, type Selection } from '@platejs/plite';
+import { DOMRootRuntime } from '@platejs/plite-dom/internal';
 
 import { createBaseEditor } from '../../../editor';
 import { createBasePlugin } from '../../../plugin';
@@ -126,5 +127,42 @@ describe('getMarkBoundaryAffinity', () => {
         ]
       )
     ).toBe('backward');
+  });
+
+  it('uses the focused editor root for Gecko boundary affinity', () => {
+    const editor = createEditor({
+      marks: { bold: true, color: 'red' },
+      selection: collapsedSelection(0),
+    });
+    const root = document.createElement('div');
+    const runtime = new DOMRootRuntime<HTMLDivElement>({
+      adapter: {},
+      editor,
+      getAndroidMutationHandler: () => null,
+      isAndroidMutationOwned: () => false,
+      isCanonicalTextMutation: () => false,
+      isComposing: () => false,
+      onRepair: () => {},
+      resolvePath: () => null,
+      testRootFacts: { engine: 'gecko' },
+    });
+
+    root.tabIndex = 0;
+    document.body.append(root);
+    runtime.setRoot(root);
+    runtime.connect();
+    root.focus();
+
+    try {
+      expect(
+        getMarkBoundaryAffinity(editor, [
+          [{ bold: true, color: 'blue', text: 'a' }, [0, 0]],
+          [{ bold: true, color: 'red', text: 'b' }, [0, 1]],
+        ])
+      ).toBe('forward');
+    } finally {
+      runtime.destroy();
+      root.remove();
+    }
   });
 });

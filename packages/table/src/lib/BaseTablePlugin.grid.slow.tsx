@@ -17,7 +17,7 @@ describe('table grid slow contracts', () => {
       )
     ) as Element;
 
-  describe('getTableGridByRange', () => {
+  describe('table range projection', () => {
     describe('when selection is in cell 1', () => {
       it.each([
         { disableMerge: true },

@@ -1,5 +1,5 @@
-import { createBaseEditor, HtmlPlugin } from '@platejs/core';
-import { ElementApi } from '@platejs/plite';
+import { createBaseEditor } from '@platejs/core';
+import { ElementApi, SelectionApi, createEditor } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
@@ -37,7 +37,7 @@ describe('BaseMediaEmbedPlugin', () => {
       )
     ).toBe('https://x.com/platejs/status/1234567890');
     expect(
-      editor.plugin(HtmlPlugin).api.deserialize({
+      editor.api.html.deserialize({
         element: '<iframe src="https://example.com/embed"></iframe>',
       })
     ).toEqual([
@@ -48,10 +48,92 @@ describe('BaseMediaEmbedPlugin', () => {
       },
     ]);
     expect(
-      editor
-        .plugin(HtmlPlugin)
-        .api.deserialize({ element: '<iframe></iframe>' })
+      editor.api.html.deserialize({ element: '<iframe></iframe>' })
     ).toEqual([]);
+    expect(
+      editor.api.html.deserialize({
+        element: '<iframe src="javascript:alert(1)"></iframe>',
+      })
+    ).toEqual([]);
+  });
+
+  it('encodes safe iframes and rejects unsafe iframe URLs', () => {
+    const point = { offset: 0, path: [0, 0] };
+    const safe = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      initialValue: [
+        {
+          children: [{ text: 'Embed caption' }],
+          type: NODES.mediaEmbed,
+          url: 'https://example.com/embed',
+          width: 640,
+        },
+      ],
+    });
+    const safeData = new DataTransfer();
+
+    safe.api.clipboard.writeSelection(safeData);
+
+    const safeDocument = new DOMParser().parseFromString(
+      safeData.getData('text/html'),
+      'text/html'
+    );
+    const figure = safeDocument.body.querySelector('figure.plate-media-embed');
+    const iframe = figure?.querySelector<HTMLElement>(':scope > iframe');
+
+    expect(iframe?.getAttribute('src')).toBe('https://example.com/embed');
+    expect(iframe?.hasAttribute('allowfullscreen')).toBe(true);
+    expect(iframe?.style.width).toBe('640px');
+    expect(iframe?.hasAttribute('srcdoc')).toBe(false);
+    expect(
+      iframe?.getAttributeNames().some((name) => name.startsWith('on'))
+    ).toBe(false);
+    expect(figure?.querySelector(':scope > figcaption')?.textContent).toBe(
+      'Embed caption'
+    );
+    expect(
+      safe.api.html.deserialize({
+        element: figure!.outerHTML,
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Embed caption' }],
+        type: NODES.mediaEmbed,
+        url: 'https://example.com/embed',
+        width: '640px',
+      },
+    ]);
+
+    const reports: unknown[] = [];
+    const unsafe = createBaseEditor({
+      editor: createEditor({
+        lifecycleErrorSink: (error) => reports.push(error),
+      }),
+      plugins: [BaseMediaEmbedPlugin],
+      selection: SelectionApi.node([0], { anchor: point, focus: point }),
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: NODES.mediaEmbed,
+          url: 'javascript:alert(1)',
+        },
+      ],
+    });
+    const unsafeData = new DataTransfer();
+
+    unsafe.api.clipboard.writeSelection(unsafeData);
+
+    const unsafeDocument = new DOMParser().parseFromString(
+      unsafeData.getData('text/html'),
+      'text/html'
+    );
+
+    expect(unsafeDocument.body.querySelector('iframe')).toBeNull();
+    expect(
+      unsafeDocument.body.querySelector('[data-plite-fragment]')
+    ).not.toBeNull();
+    expect(reports).toHaveLength(1);
   });
 
   it('stores normalized embed metadata for supported providers', () => {

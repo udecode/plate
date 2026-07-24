@@ -140,15 +140,16 @@ export const limitNodeInsert = <
   TNode extends ElementOrTextIn<V>,
 >(
   editor: Editor<V>,
-  nodes: TNode | TNode[],
+  nodes: TNode | readonly TNode[],
   options: NodeInsertNodesOptions<TNode> | undefined
 ) => {
-  const input = Array.isArray(nodes) ? nodes : [nodes];
+  const isList = Array.isArray(nodes);
+  const input = (isList ? nodes : [nodes]) as readonly DescendantIn<V>[];
   const limited = limitFragmentInsert(
     editor,
-    input as DescendantIn<V>[],
+    input,
     options
   ) as readonly TNode[];
 
-  return Array.isArray(nodes) ? [...limited] : limited[0];
+  return isList ? limited : limited[0];
 };

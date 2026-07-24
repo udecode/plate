@@ -16,6 +16,14 @@ const outputPath = join(artifactDirectory, 'current-checkout-refresh.json');
 const auditPlan = 'docs/plans/2026-07-23-wordgard-full-architecture-audit.md';
 const auditArtifactPrefix =
   'docs/plans/artifacts/wordgard-full-architecture-audit/';
+const basicNodePathPattern = /basic-(nodes|blocks|marks)|heading|blockquote/i;
+const codeBlockPathPattern = /code-block/i;
+const linkPathPattern = /link/i;
+const listPathPattern = /list-classic|[/.-]list(?:[/.-]|$)/i;
+const mediaPathPattern = /caption|media/i;
+const stylePathPattern = /basic-styles|align|font|color|indent|line-height/i;
+const tablePathPattern = /table/i;
+const writingDirectionPathPattern = /writing[-_]?direction/i;
 
 const runGitBuffer = (...args) =>
   execFileSync('git', ['-C', repository, ...args], {
@@ -90,17 +98,17 @@ const classifyProductPath = (path) => {
         'DOC-033',
         'DOC-034',
       ],
-      'Rooted document codecs, parser ownership, Markdown adoption, and proof.'
+      'Document codecs, parser ownership, truthful Markdown projection, and proof.'
     );
   }
-  if (/caption|media/i.test(path)) {
+  if (mediaPathPattern.test(path)) {
     return result(
       'plate-media-direct-caption',
       ['PRODUCT-004', 'PRODUCT-011', 'PRODUCT-023', 'PRODUCT-024'],
       'Media insertion, direct caption children, node selection, host UI, and compatibility cleanup.'
     );
   }
-  if (/list-classic|[/.-]list(?:[/.-]|$)/i.test(path)) {
+  if (listPathPattern.test(path)) {
     return result(
       'plate-list-owners',
       [
@@ -113,7 +121,7 @@ const classifyProductPath = (path) => {
       'Flat and structural list API publication, behavior colocation, adoption, and proof.'
     );
   }
-  if (/link/i.test(path)) {
+  if (linkPathPattern.test(path)) {
     return result(
       'plate-link-owner',
       [
@@ -126,21 +134,21 @@ const classifyProductPath = (path) => {
       'Link API, update, safety, shortcut, UI, and paste-policy adoption.'
     );
   }
-  if (/table/i.test(path)) {
+  if (tablePathPattern.test(path)) {
     return result(
       'plate-table-owner',
       tableConcepts,
       'Table schema, grid, mutation, selection, ingress, public API, and proof.'
     );
   }
-  if (/code-block/i.test(path)) {
+  if (codeBlockPathPattern.test(path)) {
     return result(
       'plate-code-block-owner',
       ['PRODUCT-004', 'PRODUCT-006', 'PRODUCT-008', 'PRODUCT-018'],
       'Code-block feature updates, shortcuts, input behavior, adoption, and proof.'
     );
   }
-  if (/basic-(nodes|blocks|marks)|heading|blockquote/i.test(path)) {
+  if (basicNodePathPattern.test(path)) {
     return result(
       'plate-basic-node-owners',
       [
@@ -156,7 +164,14 @@ const classifyProductPath = (path) => {
       'Individual block and mark plugins, inferred updates, explicit kits, callers, and proof.'
     );
   }
-  if (/basic-styles|align|font|color|indent|line-height/i.test(path)) {
+  if (writingDirectionPathPattern.test(path)) {
+    return result(
+      'plate-writing-direction-rejection-cleanup',
+      ['PRODUCT-020'],
+      'Rejected C23 paths deleted from the worktree; staged-path accounting remains until an authorized index refresh.'
+    );
+  }
+  if (stylePathPattern.test(path)) {
     return result(
       'plate-style-owners',
       [
@@ -422,6 +437,16 @@ const classify = (path) => {
   if (path.startsWith('packages/')) {
     return classifyProductPath(path);
   }
+  if (
+    path.startsWith('apps/plite/') &&
+    writingDirectionPathPattern.test(path)
+  ) {
+    return result(
+      'plate-writing-direction-rejection-cleanup',
+      ['PRODUCT-020'],
+      'Rejected C23 paths deleted from the worktree; staged-path accounting remains until an authorized index refresh.'
+    );
+  }
   if (path.startsWith('apps/plite/')) {
     return result(
       'plite-release-proof-app',
@@ -527,11 +552,15 @@ const anchors = [
   },
   {
     path: 'apps/www/src/registry/ui/mark-toolbar-button.tsx',
-    patterns: ['nodeType: string'],
+    patterns: ['plugin: MarkPlugin', 'editor.plugin(plugin).update.toggle()'],
   },
   {
     path: 'apps/www/src/registry/ui/turn-into-toolbar-button.tsx',
-    patterns: ['setBlockType(editor, type)'],
+    patterns: [
+      'useSelectionFragmentProp({',
+      'getProp: (node) => getBlockType(node as Element)',
+      'setBlockType(editor, type);',
+    ],
   },
 ];
 
@@ -563,7 +592,9 @@ for (const file of files) {
     summary: file.summary,
   };
 
-  file.conceptIds.forEach((conceptId) => entry.conceptIds.add(conceptId));
+  file.conceptIds.forEach((conceptId) => {
+    entry.conceptIds.add(conceptId);
+  });
   entry.paths.push(file.path);
   clusterMap.set(file.cluster, entry);
 }
@@ -609,11 +640,11 @@ const manifest = {
 
 writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);
 
-console.log(
-  JSON.stringify({
+process.stdout.write(
+  `${JSON.stringify({
     output: relative(repository, outputPath),
     ...manifest.census,
     clusters: clusters.length,
     anchors: verifiedAnchors.length,
-  })
+  })}\n`
 );

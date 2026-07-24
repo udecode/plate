@@ -33,6 +33,14 @@ describe('plite-history package README contract', () => {
     assert.match(readme, /History\.isHistory\(state\.history\(\)\)/);
     assert.match(readme, /History\.isHistory\(value\)/);
     assert.match(readme, /`usePliteEditor` installs history by default/);
+    assert.match(
+      readme,
+      /Persist and restore validated history with version 4 JSON\./
+    );
+    assert.doesNotMatch(
+      readme,
+      /Persist and restore validated history with version 3 JSON\./
+    );
     assert.doesNotMatch(readme, /createReactEditor/);
   });
 });

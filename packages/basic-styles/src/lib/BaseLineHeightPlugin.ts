@@ -13,6 +13,12 @@ import { KEYS } from '@platejs/utils';
 
 const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
 
+const parseLineHeight = (value: string) => {
+  const numberValue = Number(value);
+
+  return Number.isFinite(numberValue) ? numberValue : value;
+};
+
 /**
  * Enables configurable line spacing on targeted block elements.
  */
@@ -39,44 +45,38 @@ export const BaseLineHeightPlugin = createBasePlugin({
     nodeProps: {
       defaultNodeValue: 1.5,
     },
-    targetParserToInject: ({ type }) => ({
-      parsers: {
-        html: {
-          deserializer: {
-            parse: ({ element }) => {
-              if (element.style.lineHeight) {
-                return {
-                  [type]: element.style.lineHeight,
-                };
-              }
-            },
-          },
-        },
-      },
-    }),
   },
   targetPluginKeys: defaultTargetPluginKeys,
-}).extendTx(({ editor, plugin, type }) => (tx) => ({
-  set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-    const { defaultNodeValue } = editor.getInjectProps(plugin);
-    const match = getInjectMatch(editor, plugin);
+})
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) =>
+      element.style.lineHeight
+        ? parseLineHeight(element.style.lineHeight)
+        : undefined,
+    encode: ({ value }) => ({ style: { lineHeight: value } }),
+    match: [{ style: { lineHeight: '*' } }],
+  }))
+  .extendTx(({ editor, plugin, type }) => (tx) => ({
+    set: (value: number, options?: NodeSetNodesOptions<Element>) => {
+      const { defaultNodeValue } = editor.getInjectProps(plugin);
+      const match = getInjectMatch(editor, plugin);
 
-    if (value === defaultNodeValue) {
-      tx.nodes.unset(type, {
-        match,
-        ...options,
-      });
-      return;
-    }
-
-    tx.nodes.set(
-      { [type]: value },
-      {
-        match,
-        ...options,
+      if (value === defaultNodeValue) {
+        tx.nodes.unset(type, {
+          match,
+          ...options,
+        });
+        return;
       }
-    );
-  },
-}));
+
+      tx.nodes.set(
+        { [type]: value },
+        {
+          match,
+          ...options,
+        }
+      );
+    },
+  }));
 
 export type LineHeightConfig = InferConfig<typeof BaseLineHeightPlugin>;

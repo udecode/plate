@@ -15,7 +15,6 @@ const internalYjsAttributeKeys = [
   'plite:yjs-hidden',
   'plite:yjs-id',
   'plite:type',
-  'plite:yjs-split-undo-text',
   'plite:yjs-virtual-child-id',
   'plite:yjs-virtual-placeholder',
   'plite:yjs-set:spoof',

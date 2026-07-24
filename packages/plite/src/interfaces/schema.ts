@@ -1046,10 +1046,10 @@ export type SchemaElementPropertiesFor<
   TSchema extends EditorSchemaSource,
   TType extends SchemaElementTypes<TSchema>,
 > = {
-  [TKey in SchemaElementPropertyKeys<TSchema, TType>]?: SchemaEntryValue<
-    SchemaElementPropertyEntry<TSchema, TType>,
-    TKey
-  >;
+  readonly [TKey in SchemaElementPropertyKeys<
+    TSchema,
+    TType
+  >]?: SchemaEntryValue<SchemaElementPropertyEntry<TSchema, TType>, TKey>;
 };
 
 export type SchemaElementPropertyValue<
@@ -1077,7 +1077,7 @@ export type SchemaTextPropertyKeys<TSchema extends EditorSchemaSource> =
 
 /** Optional JSON property values accepted on schema text leaves. */
 export type SchemaTextProperties<TSchema extends EditorSchemaSource> = {
-  [TKey in SchemaTextPropertyKeys<TSchema>]?: SchemaEntryValue<
+  readonly [TKey in SchemaTextPropertyKeys<TSchema>]?: SchemaEntryValue<
     SchemaTextPropertyEntry<TSchema>,
     TKey
   >;
@@ -1106,7 +1106,7 @@ export type SchemaPropertyIds<TSchema extends EditorSchemaSource> =
 
 /** One text leaf inferred from a frozen schema definition. */
 export type SchemaText<TSchema extends EditorSchemaSource> = {
-  text: string;
+  readonly text: string;
 } & SchemaTextProperties<TSchema>;
 
 type SchemaAllElementPropertyEntry<
@@ -1118,20 +1118,20 @@ type SchemaAllElementPropertyEntry<
     : never;
 
 type PreservedSchemaElementProperties<TSchema extends EditorSchemaSource> = {
-  [TKey in SchemaEntryKey<
+  readonly [TKey in SchemaEntryKey<
     SchemaAllElementPropertyEntry<TSchema>
   >]?: SchemaEntryValue<SchemaAllElementPropertyEntry<TSchema>, TKey>;
 };
 
 type PreservedSchemaText<TSchema extends EditorSchemaSource> = {
-  [key: string]: unknown;
-  text: string;
+  readonly [key: string]: unknown;
+  readonly text: string;
 } & SchemaTextProperties<TSchema>;
 
 type PreservedSchemaElement<TSchema extends EditorSchemaSource> = {
-  [key: string]: unknown;
-  children: PreservedSchemaDescendant<TSchema>[];
-  type: string;
+  readonly [key: string]: unknown;
+  readonly children: readonly PreservedSchemaDescendant<TSchema>[];
+  readonly type: string;
 } & PreservedSchemaElementProperties<TSchema>;
 
 type PreservedSchemaDescendant<TSchema extends EditorSchemaSource> =
@@ -1148,8 +1148,11 @@ export type SchemaElementFor<
 > =
   TType extends SchemaElementTypes<TSchema>
     ? {
-        children: SchemaDescendant<TSchema, [...TDepth, unknown]>[];
-        type: TType;
+        readonly children: readonly SchemaDescendant<
+          TSchema,
+          [...TDepth, unknown]
+        >[];
+        readonly type: TType;
       } & SchemaElementPropertiesFor<TSchema, TType> &
         SchemaElementContentRootsFor<TSchema, TType>
     : never;
@@ -1173,8 +1176,8 @@ type SchemaValueBrand<TSchema extends EditorSchemaExtension> = Readonly<{
 /** Default editor value inferred from a complete schema extension. */
 export type SchemaValue<TSchema extends EditorSchemaExtension> =
   (SchemaDefinitionOf<TSchema>['unknown'] extends 'preserve'
-    ? PreservedSchemaElement<TSchema>[]
-    : SchemaElementFor<TSchema>[]) &
+    ? readonly PreservedSchemaElement<TSchema>[]
+    : readonly SchemaElementFor<TSchema>[]) &
     SchemaValueBrand<TSchema>;
 
 type SchemaDescendantOfExtension<TSchema> =

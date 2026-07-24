@@ -16,6 +16,7 @@ import {
 import {
   addMark as editorAddMark,
   getLastCommit as editorGetLastCommit,
+  getInternalDocumentChangeRootKeys,
   getRuntimeId as editorGetRuntimeId,
   getSnapshot as editorGetSnapshot,
   replace as editorReplace,
@@ -42,10 +43,11 @@ import {
   readDOMFragmentData,
 } from '../src/internal';
 
-const editorGetChangedRoots = (editor: Editor) => [
-  ...(editorGetLastCommit(editor)?.changes.primary ? [null] : []),
-  ...(editorGetLastCommit(editor)?.changes.roots.keys() ?? []),
-];
+const editorGetChangedRoots = (editor: Editor) =>
+  (editorGetLastCommit(editor)
+    ? getInternalDocumentChangeRootKeys(editorGetLastCommit(editor)!.changes)
+    : []
+  ).map((root) => (root === 'main' ? null : root));
 
 class FakeDataTransfer {
   private readonly store = new Map<string, string>();

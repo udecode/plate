@@ -10,7 +10,12 @@ import 'prismjs/components/prism-tsx';
 import 'prismjs/components/prism-typescript';
 import type React from 'react';
 import type { ChangeEvent, PointerEvent } from 'react';
-import { type Descendant, NodeApi } from '@platejs/plite';
+import {
+  type Descendant,
+  NodeApi,
+  type Point,
+  type Range,
+} from '@platejs/plite';
 import { isHotkey } from '@platejs/plite-dom';
 import {
   Editable,
@@ -325,15 +330,8 @@ const collectCodeTextRanges = (
 
 type CodeIndentAction = 'indent' | 'outdent';
 
-type EditorPoint = {
-  path: number[];
-  offset: number;
-};
-
-type EditorRange = {
-  anchor: EditorPoint;
-  focus: EditorPoint;
-};
+type EditorPoint = Point;
+type EditorRange = Range;
 
 const preventLeadingCodeBlockBackspace = (
   editor: CustomEditor,

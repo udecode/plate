@@ -6,7 +6,10 @@ import {
 import {
   EDITOR_TO_PENDING_INSERTION_MARKS,
   EDITOR_TO_USER_MARKS,
+  isDOMSyncMutation,
   IS_COMPOSING,
+  IS_NODE_MAP_DIRTY,
+  markDOMSyncMutationTarget,
 } from '@platejs/plite-dom/internal';
 import { renderHook } from '@testing-library/react';
 import { type CompositionEvent, type ReactNode, StrictMode } from 'react';
@@ -19,10 +22,6 @@ import {
   subscribeEditableRuntimeFocus,
 } from '../src/editable/editable-dom-runtime';
 import {
-  isDOMSyncMutation,
-  markDOMSyncMutationTarget,
-} from '../src/editable/dom-sync-mutation-ownership';
-import {
   beginEditableCompositionSession,
   markEditableCompositionModelCommitted,
 } from '../src/editable/input-state';
@@ -30,12 +29,6 @@ import { queuePendingCompositionModelInput } from '../src/editable/runtime-befor
 import { useEditableRootRuntimeState } from '../src/editable/runtime-root-state';
 import { ReactEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
-
-vi.mock('@platejs/plite-dom', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@platejs/plite-dom')>();
-
-  return { ...actual, IS_WEBKIT: false };
-});
 
 const strictMode = ({ children }: { children: ReactNode }) => (
   <StrictMode>{children}</StrictMode>
@@ -236,6 +229,16 @@ test('changing roots cancels old-root work before registering the new root', () 
 
   runtime.destroy();
   expect(prepareDOMTeardown).toHaveBeenCalledTimes(2);
+});
+
+test('publishes a clean node map after the React DOM commit', () => {
+  const editor = createReactEditor();
+  const runtime = new EditableDOMRuntime({ editor });
+
+  IS_NODE_MAP_DIRTY.set(editor, true);
+  runtime.completeReactCommit();
+
+  expect(IS_NODE_MAP_DIRTY.get(editor)).toBe(false);
 });
 
 test.each([

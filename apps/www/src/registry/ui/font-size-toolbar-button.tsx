@@ -7,7 +7,6 @@ import type { Element } from 'platejs';
 import { toUnitLess } from '@platejs/basic-styles';
 import { FontSizePlugin } from '@platejs/basic-styles/react';
 import { Minus, Plus } from 'lucide-react';
-import { KEYS } from 'platejs';
 import { useEditorPlugin, useEditorSelector } from 'platejs/react';
 
 import {
@@ -47,10 +46,10 @@ const FONT_SIZES = [
 export function FontSizeToolbarButton() {
   const [inputValue, setInputValue] = React.useState(DEFAULT_FONT_SIZE);
   const [isFocused, setIsFocused] = React.useState(false);
-  const { editor } = useEditorPlugin(FontSizePlugin);
+  const { editor, type } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
-    const fontSize = editor.read.marks()?.[KEYS.fontSize];
+    const fontSize = editor.read.marks()?.[type];
 
     if (fontSize) {
       return toUnitLess(fontSize as string);
@@ -77,7 +76,7 @@ export function FontSizeToolbarButton() {
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
-      editor.update.marks.add(KEYS.fontSize, `${newSize}px`);
+      editor.plugin(FontSizePlugin).update.set(`${newSize}px`);
     }
 
     editor.api.dom.focus();
@@ -85,7 +84,7 @@ export function FontSizeToolbarButton() {
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
-    editor.update.marks.add(KEYS.fontSize, `${newSize}px`);
+    editor.plugin(FontSizePlugin).update.set(`${newSize}px`);
     editor.api.dom.focus();
   };
 
@@ -134,7 +133,7 @@ export function FontSizeToolbarButton() {
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
-                editor.update.marks.add(KEYS.fontSize, `${size}px`);
+                editor.plugin(FontSizePlugin).update.set(`${size}px`);
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

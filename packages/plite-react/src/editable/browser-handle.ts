@@ -48,6 +48,7 @@ import {
   getRuntimeId as editorGetRuntimeId,
   getSelection as editorGetSelection,
   getEditorSelectionRoot,
+  getInternalDocumentChangeRootKeys,
   getSnapshot as editorGetSnapshot,
   insertText as editorInsertText,
   string as editorString,
@@ -144,8 +145,9 @@ type RefBox<T> = {
 };
 
 const getPublicDocumentChangeRoots = (change: DocumentChange) => [
-  ...(change.primary ? [null] : []),
-  ...change.roots.keys(),
+  ...getInternalDocumentChangeRootKeys(change).map((root) =>
+    root === 'main' ? null : root
+  ),
   ...change.createRoots,
   ...change.deleteRoots,
 ];
@@ -201,18 +203,12 @@ export const attachPliteBrowserHandle = ({
   editor,
   element,
   inputController,
-  applyInputRules,
   forceRender,
   flushPendingNativeTextInput,
   isPartialDOMBackedSelection,
   scrollPathIntoView,
   setExplicitPartialDOMBackedSelection,
 }: {
-  applyInputRules?: (input: {
-    data: unknown;
-    inputType: string;
-    selection: Range | null;
-  }) => boolean;
   browserHandleNextId: RefBox<number>;
   browserHandleRangeAnchors: RefBox<Map<string, Anchor<Range>>>;
   domPhaseScheduler: DOMPhaseScheduler;
@@ -694,16 +690,6 @@ export const attachPliteBrowserHandle = ({
     },
     insertText: (text) => {
       const selection = readRuntimeSelection(editor);
-      if (
-        applyInputRules?.({
-          data: text,
-          inputType: 'insertText',
-          selection,
-        })
-      ) {
-        return;
-      }
-
       const path = selection ? RangeApi.start(selection).path : null;
       runCommand({ kind: 'insert-text', text });
       if (!path || !didSyncTextPathToDOM(editor, path)) {

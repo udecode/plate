@@ -11,43 +11,46 @@ import { getChildren as editorGetChildren } from '../interfaces/editor';
 import { formatDebugValue } from './format-debug-value';
 import { inheritRuntimeId } from './runtime-ids';
 
-const setChildren = (root: Ancestor, children: Descendant[]) => {
+const setChildren = (root: Ancestor, children: readonly Descendant[]) => {
   if (NodeApi.isEditor(root)) {
-    setEditorChildren(root, children);
+    setEditorChildren(root, [...children]);
     return;
   }
 
-  (root as { children: Descendant[] }).children = children;
+  Object.assign(root, { children });
 };
 
-const getChildren = (root: Ancestor): Descendant[] =>
+const getChildren = (root: Ancestor): readonly Descendant[] =>
   NodeApi.isEditor(root) ? editorGetChildren(root) : root.children;
 
-export const insertChildren = <T>(xs: T[], index: number, ...newValues: T[]) =>
-  insertChildRange(xs, index, newValues);
+export const insertChildren = <T>(
+  xs: readonly T[],
+  index: number,
+  ...newValues: T[]
+) => insertChildRange(xs, index, newValues);
 
 export const insertChildRange = <T>(
-  xs: T[],
+  xs: readonly T[],
   index: number,
   newValues: readonly T[]
 ) => xs.slice(0, index).concat(newValues, xs.slice(index));
 
 export const replaceChildren = <T>(
-  xs: T[],
+  xs: readonly T[],
   index: number,
   removeCount: number,
   ...newValues: T[]
 ) => replaceChildRange(xs, index, removeCount, newValues);
 
 export const replaceChildRange = <T>(
-  xs: T[],
+  xs: readonly T[],
   index: number,
   removeCount: number,
   newValues: readonly T[]
 ) => xs.slice(0, index).concat(newValues, xs.slice(index + removeCount));
 
 export const removeChildren = <T>(
-  xs: T[],
+  xs: readonly T[],
   index: number,
   removeCount: number
 ) => replaceChildRange(xs, index, removeCount, []);
@@ -100,7 +103,7 @@ export const modifyDescendant = <N extends Descendant>(
 export const modifyChildren = (
   root: Ancestor,
   path: Path,
-  f: (children: Descendant[]) => Descendant[]
+  f: (children: readonly Descendant[]) => readonly Descendant[]
 ) => {
   if (path.length === 0) {
     setChildren(root, f(getChildren(root)));

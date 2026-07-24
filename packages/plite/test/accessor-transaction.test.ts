@@ -15,9 +15,12 @@ import {
   createEditorRuntime,
   createEditorView,
   DocumentChange,
+  type Editor,
   type Element,
   NodeApi,
   SelectionApi,
+  type SnapshotInput,
+  type Value,
 } from '@platejs/plite';
 import { defineTestSchema } from './support/schema';
 
@@ -32,11 +35,19 @@ const paragraph = (
 
 const clone = <T>(value: T): T => structuredClone(value);
 
+const replaceSnapshot = editorReplace as unknown as <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  editor: Editor<V, TExtensions>,
+  input: SnapshotInput<V>
+) => void;
+
 const replaceChildren = (
-  editor: ReturnType<typeof createEditor>,
-  children: Element[]
+  editor: Editor<any, readonly unknown[]>,
+  children: readonly Element[]
 ) => {
-  editorReplace(editor, {
+  replaceSnapshot(editor, {
     children: clone(children),
     selection: null,
   });

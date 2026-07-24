@@ -1,9 +1,8 @@
 import type { BaseEditor, PluginConfig } from '@platejs/core';
-import { prepareParserPluginContext } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import type { CsvParseOptions, CsvPluginOptions } from '../../CsvPlugin';
-import { deserializeCsvWithParserContext } from '../../internal/deserializeCsv';
+import { deserializeCsvWithContext } from '../../internal/deserializeCsv';
 
 type CsvRuntimePluginConfig = PluginConfig<'csv', CsvPluginOptions>;
 
@@ -16,9 +15,12 @@ export const deserializeCsv = (
   const plugin = editor.plugin<CsvRuntimePluginConfig>({
     key: KEYS.csv,
   }).plugin;
-  const createContext = prepareParserPluginContext(editor, plugin);
 
-  return editor.read((state) =>
-    deserializeCsvWithParserContext(createContext(state), options)
+  return deserializeCsvWithContext(
+    {
+      getType: (key) => editor.getType(key),
+      options: editor.plugin(plugin).getOptions(),
+    },
+    options
   );
 };

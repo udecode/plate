@@ -29,8 +29,8 @@ export const BaseListKit = [
       belowNodes: BlockListStatic,
     },
     targetPluginKeys: [
-      ...KEYS.heading,
       KEYS.p,
+      ...KEYS.heading,
       KEYS.blockquote,
       KEYS.codeBlock,
       KEYS.toggle,

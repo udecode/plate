@@ -9,27 +9,31 @@ import {
 
 import {
   classifyDocumentChange,
-  getChangeSetApplyStats,
-  getPreparedDocumentSlice,
-  getPreparedDocumentRuntimeId,
-  hasMaterializedDocumentSliceTokens,
+  ChangeDraft,
+} from '../src/core/change/builder';
+import { DocumentChange } from '../src/core/change/document-change';
+import { DocumentIndex } from '../src/core/change/document-index';
+import {
+  getRootChangeApplyStats,
   insertNodeChange,
   insertTextChange,
-  type JsonEditorValue,
-  type JsonNode,
-  IndexedDocument,
   mergeNodeChange,
   moveNodeChange,
-  ChangeSet,
-  DocumentChange,
-  DocumentChangeBuilder,
-  DocumentSlice,
+  RootChange,
   removeNodeChange,
   removeTextChange,
   replaceChildrenChange,
   setNodeChange,
   updateNodePropertiesChange,
-} from '../src/core/document-change';
+} from '../src/core/change/root-change';
+import {
+  getPreparedDocumentRuntimeId,
+  getPreparedDocumentSlice,
+  hasMaterializedDocumentSliceTokens,
+  type JsonEditorValue,
+  type JsonNode,
+  PreparedTokenSlice,
+} from '../src/core/change/tokens';
 import {
   advancePathStableSnapshotIndex,
   buildSnapshotIndex,
@@ -37,6 +41,11 @@ import {
   mapSnapshotIndexThroughChange,
 } from '../src/core/snapshot-index';
 import { getRuntimeIdForNode, seedRuntimeIds } from '../src/utils/runtime-ids';
+import {
+  createTestDocumentChange,
+  getTestDocumentRootChange,
+  getTestDocumentRootChanges,
+} from './support/document-change';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
   ({
@@ -48,18 +57,15 @@ const paragraph = (text: string, props: Record<string, unknown> = {}) =>
 const asJsonNodes = (nodes: readonly Element[]) =>
   nodes as unknown as readonly JsonNode[];
 
-const applyByTokenReference = (
-  change: ChangeSet,
-  document: IndexedDocument
-) => {
-  let output = DocumentSlice.empty;
+const applyByTokenReference = (change: RootChange, document: DocumentIndex) => {
+  let output = PreparedTokenSlice.empty;
   let position = 0;
 
   for (const section of change.toJSON()) {
     assert.equal(section.properties, undefined);
     output = output.concat(
       section.replacement
-        ? DocumentSlice.fromJSON(section.replacement)
+        ? PreparedTokenSlice.fromJSON(section.replacement)
         : document.slice(position, position + section.length)
     );
     position += section.length;
@@ -67,7 +73,7 @@ const applyByTokenReference = (
 
   assert.equal(position, document.length);
 
-  return IndexedDocument.fromTokens(output);
+  return DocumentIndex.fromTokens(output);
 };
 
 type GeneratedDocumentAction =
@@ -199,8 +205,8 @@ const createDocumentActionChange = (
   value: JsonEditorValue,
   action: GeneratedDocumentAction
 ) => {
-  const document = IndexedDocument.fromValue(value.children);
-  let change: ChangeSet;
+  const document = DocumentIndex.fromValue(value.children);
+  let change: RootChange;
 
   switch (action.kind) {
     case 'insert-block': {
@@ -245,7 +251,7 @@ const createDocumentActionChange = (
     }
   }
 
-  return new DocumentChange({ primary: change });
+  return createTestDocumentChange({ primary: change });
 };
 
 const withGeneratedTrace = (
@@ -272,47 +278,24 @@ describe('JSON document change algebra', () => {
       { children: asJsonNodes([paragraph('after')]) }
     );
     const structural = Object.assign(Object.create(null) as object, {
-      apply: DocumentChange.prototype.apply,
-      compose: DocumentChange.prototype.compose,
-      correct: DocumentChange.prototype.correct,
+      apply: change.apply.bind(change),
+      compose: change.compose.bind(change),
+      correct: change.correct.bind(change),
       createRoots: change.createRoots,
       deleteRoots: change.deleteRoots,
       empty: change.empty,
-      invert: DocumentChange.prototype.invert,
-      iterChangedRanges: DocumentChange.prototype.iterChangedRanges,
-      mapPosition: DocumentChange.prototype.mapPosition,
-      primary: change.primary,
+      invert: change.invert.bind(change),
+      iterChangedRanges: change.iterChangedRanges.bind(change),
+      mapPosition: change.mapPosition.bind(change),
       primaryClassification: change.primaryClassification,
       rootClassifications: change.rootClassifications,
-      roots: change.roots,
-      toJSON: DocumentChange.prototype.toJSON,
+      toJSON: change.toJSON.bind(change),
     }) as DocumentChange;
 
     assert.equal(DocumentChange.isDocumentChange(change), true);
     assert.equal(structural instanceof DocumentChange, false);
     assert.equal(DocumentChange.isDocumentChange(structural), true);
     assert.equal(DocumentChange.isDocumentChange({}), false);
-
-    const changeSet = change.primary!;
-    const invalidChangeSet = Object.assign(Object.create(null) as object, {
-      apply: changeSet.apply,
-      compose: changeSet.compose,
-      data: changeSet.data,
-      empty: changeSet.empty,
-      invert: changeSet.invert,
-      iterChangedRanges: changeSet.iterChangedRanges,
-      length: changeSet.length,
-      mapPos: changeSet.mapPos,
-      movedNode: changeSet.movedNode,
-      newLength: changeSet.newLength,
-      sections: changeSet.sections,
-      toJSON: () => [{ length: -1 }],
-    }) as unknown as typeof changeSet;
-    const invalid = Object.assign(Object.create(null) as object, structural, {
-      primary: invalidChangeSet,
-    });
-
-    assert.equal(DocumentChange.isDocumentChange(invalid), false);
   });
 
   it('constructs a builder once at finalization and keeps direct changes strict', () => {
@@ -329,7 +312,7 @@ describe('JSON document change algebra', () => {
 
       return DocumentChange.between(after, canonical);
     };
-    const builder = new DocumentChangeBuilder(before, {
+    const builder = new ChangeDraft(before, {
       construct,
       validate: (value) => {
         assert.equal(value.children.length, 2);
@@ -350,15 +333,15 @@ describe('JSON document change algebra', () => {
     });
     assert.deepEqual(builder.change.apply(before), builder.value);
 
-    const direct = new DocumentChangeBuilder(before, {
+    const direct = new ChangeDraft(before, {
       construct,
       validate: (value) => {
         assert.equal(value.children.length, 1);
       },
     });
-    const directChange = new DocumentChange({
+    const directChange = createTestDocumentChange({
       primary: insertTextChange(
-        IndexedDocument.fromValue(before.children),
+        DocumentIndex.fromValue(before.children),
         [0, 0],
         1,
         '?'
@@ -377,7 +360,7 @@ describe('JSON document change algebra', () => {
       children: asJsonNodes([paragraph('a')]),
     };
     let constructedRoots = 0;
-    const builder = new DocumentChangeBuilder(before, {
+    const builder = new ChangeDraft(before, {
       indexConstructedRoot: () => {
         constructedRoots++;
       },
@@ -390,9 +373,9 @@ describe('JSON document change algebra', () => {
         }
       },
     });
-    const change = new DocumentChange({
+    const change = createTestDocumentChange({
       primary: insertTextChange(
-        IndexedDocument.fromValue(before.children),
+        DocumentIndex.fromValue(before.children),
         [0, 0],
         1,
         '!'
@@ -410,14 +393,14 @@ describe('JSON document change algebra', () => {
       children: asJsonNodes([paragraph('a')]),
     };
     let validatedChildren: readonly JsonNode[] | undefined;
-    const builder = new DocumentChangeBuilder(before, {
+    const builder = new ChangeDraft(before, {
       validate: (value) => {
         validatedChildren = value.children;
       },
     });
-    const change = new DocumentChange({
+    const change = createTestDocumentChange({
       primary: insertTextChange(
-        IndexedDocument.fromValue(before.children),
+        DocumentIndex.fromValue(before.children),
         [0, 0],
         1,
         '!'
@@ -435,7 +418,7 @@ describe('JSON document change algebra', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([paragraph('a')]),
     };
-    const builder = new DocumentChangeBuilder(before, {
+    const builder = new ChangeDraft(before, {
       validate: (value) => {
         if (
           (value.children[0] as { children: readonly [{ text: string }] })
@@ -460,7 +443,7 @@ describe('JSON document change algebra', () => {
     let assertionCount = 0;
     let receivedPreparation: object | undefined;
     let validationCount = 0;
-    const builder = new DocumentChangeBuilder(before, {
+    const builder = new ChangeDraft(before, {
       assertCanonical: () => {
         assertionCount++;
       },
@@ -480,7 +463,7 @@ describe('JSON document change algebra', () => {
     assert.equal(validationCount, 1);
     assert.equal(assertionCount, 0);
 
-    const direct = new DocumentChangeBuilder(before, {
+    const direct = new ChangeDraft(before, {
       assertCanonical: () => {
         assertionCount++;
       },
@@ -488,9 +471,9 @@ describe('JSON document change algebra', () => {
         validationCount++;
       },
     });
-    const change = new DocumentChange({
+    const change = createTestDocumentChange({
       primary: insertTextChange(
-        IndexedDocument.fromValue(before.children),
+        DocumentIndex.fromValue(before.children),
         [0, 0],
         1,
         '?'
@@ -506,19 +489,19 @@ describe('JSON document change algebra', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([paragraph('a'), paragraph('b')]),
     };
-    const beforeIndex = IndexedDocument.fromValue(before.children);
+    const beforeIndex = DocumentIndex.fromValue(before.children);
     const inserted = asJsonNodes([paragraph('x'), paragraph('y')]);
-    const insert = DocumentSlice.fromPreparedNodes(inserted);
+    const insert = PreparedTokenSlice.fromPreparedNodes(inserted);
     const prepared = getPreparedDocumentSlice(insert)!;
     const afterIndex = beforeIndex.withPreparedSplicedNodes([], 0, 1, prepared);
-    const change = new DocumentChange({
-      primary: ChangeSet.create(beforeIndex, {
+    const change = createTestDocumentChange({
+      primary: RootChange.create(beforeIndex, {
         from: beforeIndex.nodeRange([0]).from,
         insert,
         to: beforeIndex.nodeRange([0]).to,
       }),
     });
-    const builder = new DocumentChangeBuilder(before);
+    const builder = new ChangeDraft(before);
     const step = builder.applyTrustedCanonical(change, {
       indexedAfter: new Map([['main', afterIndex]]),
     });
@@ -530,13 +513,13 @@ describe('JSON document change algebra', () => {
     assert.equal(builder.value.children[2], beforeIndex.value[1]);
     assert.equal(hasMaterializedDocumentSliceTokens(insert), false);
 
-    const invalid = new DocumentChangeBuilder(before);
+    const invalid = new ChangeDraft(before);
 
     assert.throws(
       () =>
         invalid.applyTrustedCanonical(change, {
           indexedAfter: new Map([
-            ['main', IndexedDocument.fromValue(asJsonNodes([paragraph('x')]))],
+            ['main', DocumentIndex.fromValue(asJsonNodes([paragraph('x')]))],
           ]),
         }),
       /does not match change lengths/
@@ -554,13 +537,13 @@ describe('JSON document change algebra', () => {
       children: before.children,
     };
     const change = DocumentChange.between(before, after);
-    const candidate = new DocumentChangeBuilder(before).apply(change);
+    const candidate = new ChangeDraft(before).apply(change);
     const deletedRoot = candidate.indexedAfter.get('island');
 
     assert.equal(deletedRoot?.length, 0);
 
-    let indexedDeletedRoot: IndexedDocument | undefined;
-    const builder = new DocumentChangeBuilder(before, {
+    let indexedDeletedRoot: DocumentIndex | undefined;
+    const builder = new ChangeDraft(before, {
       indexConstructedRoot: ({ after, root }) => {
         if (root === 'island') indexedDeletedRoot = after;
       },
@@ -592,11 +575,11 @@ describe('JSON document change algebra', () => {
       return DocumentChange.between(after, after);
     };
     const createBuilder = () =>
-      new DocumentChangeBuilder(before, {
+      new ChangeDraft(before, {
         construct,
         preparationRevision: () => revision,
       });
-    const prepareInsert = (parent: DocumentChangeBuilder) => {
+    const prepareInsert = (parent: ChangeDraft) => {
       const fork = parent.fork();
 
       fork.insertText('main', [0, 0], 1, '!');
@@ -649,7 +632,7 @@ describe('JSON document change algebra', () => {
       owner = authority,
       currentRevision = revision
     ) =>
-      new DocumentChangeBuilder(base, {
+      new ChangeDraft(base, {
         construct: ({ after }) => DocumentChange.between(after, after),
         preparationAuthority: owner,
         preparationRevision: () => currentRevision,
@@ -686,12 +669,12 @@ describe('JSON document change algebra', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([paragraph('ab')]),
     };
-    const builder = new DocumentChangeBuilder(before);
+    const builder = new ChangeDraft(before);
     const step = builder.replaceSlice(
       'main',
       { offset: 1, path: [0, 0] },
       { offset: 1, path: [0, 0] },
-      DocumentSlice.text('!')
+      PreparedTokenSlice.text('!')
     );
 
     assert.deepEqual(builder.value, {
@@ -709,7 +692,7 @@ describe('JSON document change algebra', () => {
       paragraph('d'),
       paragraph('e'),
     ];
-    const before = IndexedDocument.fromValue(asJsonNodes(children));
+    const before = DocumentIndex.fromValue(asJsonNodes(children));
     const replacements = asJsonNodes([paragraph('x'), paragraph('y')]);
     const change = replaceChildrenChange(before, [], 1, 3, replacements);
     const after = change.apply(before);
@@ -723,12 +706,12 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(inverse.apply(after).value, before.value);
     assert.deepEqual(change.compose(inverse).apply(before).value, before.value);
     assert.deepEqual(
-      ChangeSet.fromJSON(change.toJSON()).apply(before).value,
+      RootChange.fromJSON(change.toJSON()).apply(before).value,
       after.value
     );
 
     const concurrent = insertNodeChange(before, [5], paragraph('tail'));
-    const transformed = ChangeSet.transformInDocument(
+    const transformed = RootChange.transformInDocument(
       change,
       concurrent,
       before
@@ -744,15 +727,15 @@ describe('JSON document change algebra', () => {
     const children = Array.from({ length: 10_000 }, (_, index) =>
       paragraph(String(index))
     );
-    const document = IndexedDocument.fromValue(asJsonNodes(children));
+    const document = DocumentIndex.fromValue(asJsonNodes(children));
     const first = document.nodeRange([1000]);
     const second = document.nodeRange([9000]);
-    const change = ChangeSet.create(document, [
+    const change = RootChange.create(document, [
       { from: first.from, to: first.to },
       { from: second.from, to: second.to },
     ]);
     const applied = change.apply(document);
-    const stats = getChangeSetApplyStats(change);
+    const stats = getRootChangeApplyStats(change);
 
     assert.deepEqual(applied.value, [
       ...children.slice(0, 1000),
@@ -791,7 +774,7 @@ describe('JSON document change algebra', () => {
       const children = Array.from({ length: 16 }, (_, index) =>
         paragraph(`${seed}-${index}`)
       );
-      const document = IndexedDocument.fromValue(asJsonNodes(children));
+      const document = DocumentIndex.fromValue(asJsonNodes(children));
       const indexes = [1, 5, 10, 14].filter(() => random() > 0.25);
       const changes = indexes.map((index) => {
         const range = document.nodeRange([index]);
@@ -799,7 +782,7 @@ describe('JSON document change algebra', () => {
 
         return {
           from: range.from,
-          insert: DocumentSlice.fromNodes(
+          insert: PreparedTokenSlice.fromNodes(
             Array.from({ length: replacementCount }, (_, replacement) =>
               paragraph(`${seed}-${index}-r${replacement}`)
             )
@@ -807,10 +790,10 @@ describe('JSON document change algebra', () => {
           to: range.to,
         };
       });
-      const change = ChangeSet.create(document, changes);
+      const change = RootChange.create(document, changes);
       const expected = applyByTokenReference(change, document);
       const applied = change.apply(document);
-      const stats = getChangeSetApplyStats(change);
+      const stats = getRootChangeApplyStats(change);
 
       assert.deepEqual(applied.value, expected.value, `seed ${seed}`);
       assert.equal(applied.length, change.newLength, `seed ${seed}`);
@@ -825,14 +808,14 @@ describe('JSON document change algebra', () => {
   });
 
   it('localizes disjoint token ranges when their rebuilt tree paths nest', () => {
-    const document = IndexedDocument.fromValue(
+    const document = DocumentIndex.fromValue(
       asJsonNodes([paragraph('alpha'), paragraph('beta')])
     );
     const second = document.nodeRange([1]);
-    const change = ChangeSet.create(document, [
+    const change = RootChange.create(document, [
       {
         from: document.positionAt({ offset: 1, path: [0, 0] }),
-        insert: DocumentSlice.text('X'),
+        insert: PreparedTokenSlice.text('X'),
         to: document.positionAt({ offset: 2, path: [0, 0] }),
       },
       { from: second.from, to: second.to },
@@ -841,7 +824,7 @@ describe('JSON document change algebra', () => {
     const applied = change.apply(document);
 
     assert.deepEqual(applied.value, expected.value);
-    assert.deepEqual(getChangeSetApplyStats(change), {
+    assert.deepEqual(getRootChangeApplyStats(change), {
       ancestorPaths: [[], [0, 0]],
       changedRanges: [
         {
@@ -867,7 +850,7 @@ describe('JSON document change algebra', () => {
 
   it('maps structural runtime identities lazily without changing snapshot queries', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       asJsonNodes([
         paragraph('a'),
         paragraph('b'),
@@ -908,7 +891,7 @@ describe('JSON document change algebra', () => {
 
   it('keeps seeded base snapshot lookups sparse until enumeration', () => {
     const owner = {} as Editor;
-    const document = IndexedDocument.fromValue(
+    const document = DocumentIndex.fromValue(
       asJsonNodes(
         Array.from({ length: 10_000 }, (_, index) => paragraph(`line ${index}`))
       )
@@ -959,7 +942,7 @@ describe('JSON document change algebra', () => {
   it('materializes unseeded base snapshot ids in document order', () => {
     const inspect = (firstPath: readonly [number, number]) => {
       const owner = {} as Editor;
-      const document = IndexedDocument.fromValue(
+      const document = DocumentIndex.fromValue(
         asJsonNodes([paragraph('alpha'), paragraph('beta'), paragraph('gamma')])
       );
       const index = buildSnapshotIndex(
@@ -976,12 +959,10 @@ describe('JSON document change algebra', () => {
   });
 
   it('keeps prepared structural slices token-free through runtime publication', () => {
-    const before = IndexedDocument.fromValue(
-      asJsonNodes([paragraph('before')])
-    );
+    const before = DocumentIndex.fromValue(asJsonNodes([paragraph('before')]));
     const inserted = asJsonNodes([paragraph('inserted')]);
-    const slice = DocumentSlice.fromPreparedNodes(inserted);
-    const change = ChangeSet.create(before, {
+    const slice = PreparedTokenSlice.fromPreparedNodes(inserted);
+    const change = RootChange.create(before, {
       from: before.length,
       insert: slice,
     });
@@ -1059,14 +1040,14 @@ describe('JSON document change algebra', () => {
 
   it('maps unqueried prepared identities through later moves and retained paths', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue(asJsonNodes([paragraph('base')]));
+    const before = DocumentIndex.fromValue(asJsonNodes([paragraph('base')]));
     const sourceChildren = before.value as unknown as readonly Descendant[];
 
     seedRuntimeIds(sourceChildren, owner);
     const sourceIndex = buildSnapshotIndex(owner, sourceChildren);
     const inserted = asJsonNodes([paragraph('left'), paragraph('right')]);
-    const slice = DocumentSlice.fromPreparedNodes(inserted);
-    const insert = ChangeSet.create(before, {
+    const slice = PreparedTokenSlice.fromPreparedNodes(inserted);
+    const insert = RootChange.create(before, {
       from: before.length,
       insert: slice,
     });
@@ -1108,7 +1089,7 @@ describe('JSON document change algebra', () => {
   it('keeps mapped snapshot identity injective across query orders', () => {
     const inspect = (order: 'entries' | 'forward' | 'mixed' | 'reverse') => {
       const owner = {} as Editor;
-      const before = IndexedDocument.fromValue(asJsonNodes([paragraph('a')]));
+      const before = DocumentIndex.fromValue(asJsonNodes([paragraph('a')]));
       const sourceIndex = buildSnapshotIndex(
         owner,
         before.value as unknown as readonly Element[]
@@ -1185,7 +1166,7 @@ describe('JSON document change algebra', () => {
 
   it('assigns changed-window runtime ids before mapped snapshot reads', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue(asJsonNodes([paragraph('a')]));
+    const before = DocumentIndex.fromValue(asJsonNodes([paragraph('a')]));
     const sourceIndex = buildSnapshotIndex(
       owner,
       before.value as unknown as readonly Element[]
@@ -1232,7 +1213,7 @@ describe('JSON document change algebra', () => {
 
   it('keeps parent identities stable when moving their only child across parents', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue([
+    const before = DocumentIndex.fromValue([
       {
         children: [paragraph('target')],
         type: 'section',
@@ -1270,14 +1251,14 @@ describe('JSON document change algebra', () => {
   it('detaches an inserted source node that already survives in the document', () => {
     const owner = {} as Editor;
     const shared = paragraph('body');
-    const before = IndexedDocument.fromValue([shared]);
+    const before = DocumentIndex.fromValue([shared]);
     const sourceIndex = buildSnapshotIndex(
       owner,
       before.value as unknown as readonly Element[]
     );
-    const change = ChangeSet.between(
+    const change = RootChange.between(
       before,
-      IndexedDocument.fromValue([shared, shared])
+      DocumentIndex.fromValue([shared, shared])
     );
     const after = change.apply(before);
     const mapped = mapSnapshotIndexThroughChange(
@@ -1300,7 +1281,7 @@ describe('JSON document change algebra', () => {
 
   it('keeps lazy index provenance sequential across text and structural changes', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue(asJsonNodes([paragraph('a')]));
+    const before = DocumentIndex.fromValue(asJsonNodes([paragraph('a')]));
     const sourceIndex = buildSnapshotIndex(
       owner,
       before.value as unknown as readonly Element[]
@@ -1338,7 +1319,7 @@ describe('JSON document change algebra', () => {
 
   it('coalesces path-stable provenance without composing token changes', () => {
     const owner = {} as Editor;
-    let document = IndexedDocument.fromValue(
+    let document = DocumentIndex.fromValue(
       asJsonNodes(
         Array.from({ length: 128 }, (_, index) => paragraph(String(index)))
       )
@@ -1400,7 +1381,7 @@ describe('JSON document change algebra', () => {
 
   it('bounds 1,000 lazy structural mappings and releases documents on materialization', () => {
     const owner = {} as Editor;
-    let document = IndexedDocument.fromValue(
+    let document = DocumentIndex.fromValue(
       asJsonNodes(
         Array.from({ length: 1001 }, (_, index) => paragraph(String(index)))
       )
@@ -1463,7 +1444,7 @@ describe('JSON document change algebra', () => {
     timeout: 20_000,
   }, () => {
     const owner = {} as Editor;
-    let document = IndexedDocument.fromValue(
+    let document = DocumentIndex.fromValue(
       asJsonNodes(
         Array.from({ length: 50_000 }, (_, index) => paragraph(String(index)))
       )
@@ -1498,7 +1479,7 @@ describe('JSON document change algebra', () => {
 
   it('rejects non-sequential lazy structural mappings', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       asJsonNodes([paragraph('a'), paragraph('b'), paragraph('c')])
     );
     const sourceIndex = buildSnapshotIndex(
@@ -1531,7 +1512,7 @@ describe('JSON document change algebra', () => {
 
   it('cuts every removed runtime identity across an unrelated child replacement', () => {
     const owner = {} as Editor;
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       asJsonNodes([paragraph('b'), paragraph('c'), paragraph('d')])
     );
     const sourceIndex = buildSnapshotIndex(
@@ -1561,9 +1542,9 @@ describe('JSON document change algebra', () => {
   });
 
   it('keeps unchanged token prefixes and suffixes out of changed ranges', () => {
-    const before = IndexedDocument.fromValue([paragraph('one')]);
-    const after = IndexedDocument.fromValue([paragraph('onX')]);
-    const change = ChangeSet.between(before, after);
+    const before = DocumentIndex.fromValue([paragraph('one')]);
+    const after = DocumentIndex.fromValue([paragraph('onX')]);
+    const change = RootChange.between(before, after);
     const ranges: number[][] = [];
 
     change.iterChangedRanges((...range) => ranges.push(range));
@@ -1572,12 +1553,12 @@ describe('JSON document change algebra', () => {
   });
 
   it('keeps one node identity intact when content continues after inserted siblings', () => {
-    const before = IndexedDocument.fromValue([paragraph('alpha')]);
-    const after = IndexedDocument.fromValue([
+    const before = DocumentIndex.fromValue([paragraph('alpha')]);
+    const after = DocumentIndex.fromValue([
       paragraph('intro-a'),
       paragraph('intro-balpha'),
     ]);
-    const change = ChangeSet.between(before, after);
+    const change = RootChange.between(before, after);
     const mappedBlock = change.mapPos(before.nodeRange([0]).from, 1, 'around');
     const mappedPoint = change.mapPos(
       before.positionAt({ offset: 1, path: [0, 0] }),
@@ -1592,16 +1573,16 @@ describe('JSON document change algebra', () => {
   });
 
   it('does not assign an ambiguous displaced continuation to either source node', () => {
-    const before = IndexedDocument.fromValue([
+    const before = DocumentIndex.fromValue([
       paragraph('alpha'),
       paragraph('alpha'),
     ]);
-    const after = IndexedDocument.fromValue([
+    const after = DocumentIndex.fromValue([
       paragraph('new-a'),
       paragraph('new-b'),
       paragraph('intro-alpha'),
     ]);
-    const change = ChangeSet.between(before, after);
+    const change = RootChange.between(before, after);
     const displacedTarget = after.nodeRange([2]).from;
 
     assert.deepEqual(change.apply(before).value, after.value);
@@ -1630,8 +1611,8 @@ describe('JSON document change algebra', () => {
         ],
       },
     ];
-    const document = IndexedDocument.fromValue(value);
-    const roundTrip = IndexedDocument.fromTokens(document.tokens);
+    const document = DocumentIndex.fromValue(value);
+    const roundTrip = DocumentIndex.fromTokens(document.tokens);
 
     assert.deepEqual(roundTrip.value, value);
     assert.equal(Object.isFrozen(roundTrip.value), true);
@@ -1649,7 +1630,7 @@ describe('JSON document change algebra', () => {
     ];
     const inserted = paragraph('inserted');
     const before = { children: asJsonNodes(children) };
-    const builder = new DocumentChangeBuilder(before);
+    const builder = new ChangeDraft(before);
 
     builder.insertText('main', [0, 0], 5, 'X');
     builder.setNode('main', [1], { id: 'changed' });
@@ -1682,7 +1663,7 @@ describe('JSON document change algebra', () => {
       [[0], [3], [children[1], children[2], children[3], children[0]]],
       [[3], [0], [children[3], children[0], children[1], children[2]]],
     ] as const) {
-      const document = IndexedDocument.fromValue(asJsonNodes(children));
+      const document = DocumentIndex.fromValue(asJsonNodes(children));
       const change = moveNodeChange(document, path, newPath);
 
       assert.deepEqual(change.apply(document).value, expected);
@@ -1690,7 +1671,7 @@ describe('JSON document change algebra', () => {
   });
 
   it('maps both sides of a text merge to the join boundary', () => {
-    const document = IndexedDocument.fromValue([
+    const document = DocumentIndex.fromValue([
       {
         type: 'paragraph',
         children: [{ text: 'left' }, { text: 'right' }],
@@ -1723,7 +1704,7 @@ describe('JSON document change algebra', () => {
 
   it('moves a same-parent node into the append boundary', () => {
     const children = [paragraph('a'), paragraph('b')];
-    const document = IndexedDocument.fromValue(asJsonNodes(children));
+    const document = DocumentIndex.fromValue(asJsonNodes(children));
     const change = moveNodeChange(document, [0], [2]);
 
     assert.deepEqual(change.apply(document).value, [children[1], children[0]]);
@@ -1737,7 +1718,7 @@ describe('JSON document change algebra', () => {
         children: [paragraph('nested')],
       } satisfies Element,
     ];
-    const document = IndexedDocument.fromValue(asJsonNodes(children));
+    const document = DocumentIndex.fromValue(asJsonNodes(children));
     const change = moveNodeChange(document, [0], [1, 0]);
 
     assert.deepEqual(change.apply(document).value, [
@@ -1749,7 +1730,7 @@ describe('JSON document change algebra', () => {
   });
 
   it('composes, inverts, serializes, and reports changed ranges', () => {
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       asJsonNodes([paragraph('alpha'), paragraph('beta')])
     );
     const insert = insertTextChange(before, [0, 0], 2, '++');
@@ -1760,7 +1741,7 @@ describe('JSON document change algebra', () => {
     const after = properties.apply(afterInsert);
     const composed = insert.compose(properties);
     const restored = composed.invert(before).apply(after);
-    const serialized = ChangeSet.fromJSON(composed.toJSON());
+    const serialized = RootChange.fromJSON(composed.toJSON());
     const ranges: Array<readonly [number, number, number, number]> = [];
 
     composed.iterChangedRanges((...range) => ranges.push(range));
@@ -1773,7 +1754,7 @@ describe('JSON document change algebra', () => {
   });
 
   it('structurally shares untouched JSON and preserves moved node identity', () => {
-    const before = IndexedDocument.fromValue(
+    const before = DocumentIndex.fromValue(
       asJsonNodes([paragraph('a'), paragraph('b'), paragraph('c')])
     );
     const textChange = insertTextChange(before, [0, 0], 1, '!');
@@ -1792,7 +1773,7 @@ describe('JSON document change algebra', () => {
       children: [{ text: 'reordered' }],
       type: 'paragraph',
     } satisfies Element;
-    const reorderedBefore = IndexedDocument.fromValue(
+    const reorderedBefore = DocumentIndex.fromValue(
       asJsonNodes([reordered, paragraph('sibling')])
     );
     const reorderedAfter = moveNodeChange(reorderedBefore, [0], [2]).apply(
@@ -1803,11 +1784,9 @@ describe('JSON document change algebra', () => {
   });
 
   it('fails closed when a replacement breaks JSON token structure', () => {
-    const document = IndexedDocument.fromValue(
-      asJsonNodes([paragraph('safe')])
-    );
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph('safe')]));
     const range = document.nodeRange([0]);
-    const invalid = ChangeSet.create(document, {
+    const invalid = RootChange.create(document, {
       from: range.from,
       to: range.from + 1,
     });
@@ -1816,7 +1795,7 @@ describe('JSON document change algebra', () => {
   });
 
   it('maps text points with forward and backward affinity', () => {
-    const before = IndexedDocument.fromValue(asJsonNodes([paragraph('abcd')]));
+    const before = DocumentIndex.fromValue(asJsonNodes([paragraph('abcd')]));
     const point = { offset: 2, path: [0, 0] };
     const change = insertTextChange(before, [0, 0], 1, 'XX');
     const mappedPosition = change.mapPos(before.positionAt(point), 1);
@@ -1849,12 +1828,10 @@ describe('JSON document change algebra', () => {
   });
 
   it('converges concurrent text changes after transformation', () => {
-    const document = IndexedDocument.fromValue(
-      asJsonNodes([paragraph('abcd')])
-    );
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph('abcd')]));
     const a = insertTextChange(document, [0, 0], 2, 'A');
     const b = insertTextChange(document, [0, 0], 2, 'B');
-    const transformed = ChangeSet.transform(a, b);
+    const transformed = RootChange.transform(a, b);
     const viaA = transformed.b.apply(a.apply(document));
     const viaB = transformed.a.apply(b.apply(document));
 
@@ -1871,7 +1848,7 @@ describe('JSON document change algebra', () => {
         },
       ]),
     };
-    const document = IndexedDocument.fromValue(before.children);
+    const document = DocumentIndex.fromValue(before.children);
 
     for (const [path, first, second, expected] of [
       [
@@ -1882,10 +1859,10 @@ describe('JSON document change algebra', () => {
       ],
       [[0, 0], { bold: true }, { italic: true }, { bold: true, italic: true }],
     ] as const) {
-      const a = new DocumentChange({
+      const a = createTestDocumentChange({
         primary: setNodeChange(document, path, first),
       });
-      const b = new DocumentChange({
+      const b = createTestDocumentChange({
         primary: setNodeChange(document, path, second),
       });
       const transformed = DocumentChange.transform(a, b, before);
@@ -1917,7 +1894,7 @@ describe('JSON document change algebra', () => {
         paragraph('alpha', { tags: ['base'], tone: 'neutral' }),
       ]),
     };
-    const document = IndexedDocument.fromValue(before.children);
+    const document = DocumentIndex.fromValue(before.children);
     const firstSet = updateNodePropertiesChange(document, [0], {
       add: { tags: ['first'] },
       set: { tone: 'warning' },
@@ -1927,7 +1904,7 @@ describe('JSON document change algebra', () => {
       remove: { tags: ['base'] },
       unset: ['tone'],
     });
-    const change = new DocumentChange({
+    const change = createTestDocumentChange({
       primary: firstSet.compose(secondSet),
     });
     const json = change.toJSON();
@@ -1959,9 +1936,9 @@ describe('JSON document change algebra', () => {
       children: asJsonNodes([paragraph('body')]),
       roots: { header: asJsonNodes([paragraph('header')]) },
     };
-    const primary = IndexedDocument.fromValue(before.children);
-    const header = IndexedDocument.fromValue(before.roots!.header!);
-    const change = new DocumentChange({
+    const primary = DocumentIndex.fromValue(before.children);
+    const header = DocumentIndex.fromValue(before.roots!.header!);
+    const change = createTestDocumentChange({
       primary: insertTextChange(primary, [0, 0], 4, '!'),
       roots: new Map([['header', insertTextChange(header, [0, 0], 6, '?')]]),
     });
@@ -1989,9 +1966,7 @@ describe('JSON document change algebra', () => {
   });
 
   it('rejects non-JSON property deltas and serialized token payloads', () => {
-    const document = IndexedDocument.fromValue(
-      asJsonNodes([paragraph('alpha')])
-    );
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph('alpha')]));
     const sparse = Array.from({ length: 1 }) as unknown[];
     const circular: Record<string, unknown> = {};
     const accessor = {} as Record<string, unknown>;
@@ -2056,7 +2031,7 @@ describe('JSON document change algebra', () => {
 
     assert.throws(
       () =>
-        DocumentSlice.fromJSON([
+        PreparedTokenSlice.fromJSON([
           {
             kind: 'open',
             nodeKind: 'element',
@@ -2069,9 +2044,7 @@ describe('JSON document change algebra', () => {
   });
 
   it('publishes immutable change maps, sets, classifications, and sections', () => {
-    const document = IndexedDocument.fromValue(
-      asJsonNodes([paragraph('alpha')])
-    );
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph('alpha')]));
     const rootChange = insertTextChange(document, [0, 0], 5, '!');
     const classification = {
       paths: [[0]],
@@ -2083,7 +2056,7 @@ describe('JSON document change algebra', () => {
     const rootClassifications = new Map([['header', classification]]);
     const createRoots = new Set(['caption']);
     const deleteRoots = new Set(['sidebar']);
-    const change = new DocumentChange({
+    const change = createTestDocumentChange({
       createRoots,
       deleteRoots,
       primary: rootChange,
@@ -2098,12 +2071,14 @@ describe('JSON document change algebra', () => {
     createRoots.add('other');
     deleteRoots.clear();
 
+    const primary = getTestDocumentRootChange(change);
+    const namedRoots = getTestDocumentRootChanges(change);
+
     assert.equal(Object.isFrozen(change), true);
-    assert.equal(Object.isFrozen(change.primary), true);
-    assert.equal(Object.isFrozen(change.roots), true);
     assert.equal(Object.isFrozen(change.createRoots), true);
     assert.equal(Object.isFrozen(change.deleteRoots), true);
-    assert.equal(Object.isFrozen(change.roots.get('header')), true);
+    assert.equal(Object.isFrozen(primary), true);
+    assert.equal(Object.isFrozen(namedRoots.get('header')), true);
     assert.equal(Object.isFrozen(change.primaryClassification), true);
     assert.equal(Object.isFrozen(change.rootClassifications), true);
     assert.equal(
@@ -2116,7 +2091,7 @@ describe('JSON document change algebra', () => {
       if (data === null) continue;
 
       assert.equal(Object.isFrozen(data), true);
-      if (data instanceof DocumentSlice) {
+      if (data instanceof PreparedTokenSlice) {
         assert.equal(Object.isFrozen(data.tokens), true);
         assert.equal(Object.isFrozen(data.offsets), true);
         assert.equal(
@@ -2126,19 +2101,19 @@ describe('JSON document change algebra', () => {
       }
     }
     assert.equal(Object.isFrozen(change.primaryClassification?.paths), true);
-    assert.equal(change.primary, rootChange);
-    assert.equal(change.roots.get('header'), rootChange);
+    assert.equal(primary, rootChange);
+    assert.equal(namedRoots.get('header'), rootChange);
     assert.equal(change.createRoots.has('caption'), true);
     assert.equal(change.createRoots.has('other'), false);
     assert.equal(change.deleteRoots.has('sidebar'), true);
     assert.deepEqual(change.primaryClassification?.paths, [[0]]);
     assert.equal(Object.isFrozen(change.primaryClassification?.paths[0]), true);
 
-    for (const map of [change.roots, change.rootClassifications]) {
+    for (const map of [change.rootClassifications]) {
       const mutable = map as Map<string, unknown>;
 
       assert.throws(
-        () => mutable.set('other', ChangeSet.empty(document.length)),
+        () => mutable.set('other', RootChange.empty(document.length)),
         /Cannot mutate a published DocumentChange map/
       );
       assert.throws(
@@ -2150,7 +2125,7 @@ describe('JSON document change algebra', () => {
         /Cannot mutate a published DocumentChange map/
       );
       assert.throws(() =>
-        Map.prototype.set.call(map, 'other', ChangeSet.empty(document.length))
+        Map.prototype.set.call(map, 'other', RootChange.empty(document.length))
       );
       assert.throws(() => Map.prototype.delete.call(map, 'header'));
       assert.throws(() => Map.prototype.clear.call(map));
@@ -2175,24 +2150,6 @@ describe('JSON document change algebra', () => {
       assert.throws(() => Set.prototype.clear.call(set));
     }
 
-    const entry = change.roots.entries().next().value;
-
-    assert.ok(entry);
-    (entry as [string, ChangeSet])[0] = 'other';
-    assert.equal(change.roots.has('header'), true);
-    assert.equal(change.roots.has('other'), false);
-
-    change.roots.forEach((_value, _root, container) => {
-      assert.equal(container, change.roots);
-      assert.throws(
-        () =>
-          (container as Map<string, ChangeSet>).set(
-            'other',
-            ChangeSet.empty(document.length)
-          ),
-        /Cannot mutate a published DocumentChange map/
-      );
-    });
     change.createRoots.forEach((_value, _again, container) => {
       assert.equal(container, change.createRoots);
       assert.throws(
@@ -2207,8 +2164,8 @@ describe('JSON document change algebra', () => {
 
     assert.throws(
       () =>
-        new DocumentChange({
-          primary: change.primary,
+        createTestDocumentChange({
+          primary,
           primaryClassification: {
             ...classification,
             extra: { mutable: true },
@@ -2218,8 +2175,8 @@ describe('JSON document change algebra', () => {
     );
     assert.throws(
       () =>
-        new DocumentChange({
-          primary: change.primary,
+        createTestDocumentChange({
+          primary,
           primaryClassification: {
             ...classification,
             paths: [[-0]],
@@ -2235,11 +2192,11 @@ describe('JSON document change algebra', () => {
         paragraph('alpha', { tags: ['base'], tone: 'neutral' }),
       ]),
     };
-    const document = IndexedDocument.fromValue(before.children);
+    const document = DocumentIndex.fromValue(before.children);
     const propertyChange = (
       properties: Parameters<typeof updateNodePropertiesChange>[2]
     ) =>
-      new DocumentChange({
+      createTestDocumentChange({
         primary: updateNodePropertiesChange(document, [0], properties),
       });
     const cases = [
@@ -2291,11 +2248,11 @@ describe('JSON document change algebra', () => {
         paragraph('charlie'),
       ]),
     };
-    const document = IndexedDocument.fromValue(before.children);
-    const move = new DocumentChange({
+    const document = DocumentIndex.fromValue(before.children);
+    const move = createTestDocumentChange({
       primary: moveNodeChange(document, [0], [2]),
     });
-    const properties = new DocumentChange({
+    const properties = createTestDocumentChange({
       primary: updateNodePropertiesChange(document, [0], {
         set: { tone: 'warning' },
       }),
@@ -2323,11 +2280,11 @@ describe('JSON document change algebra', () => {
         paragraph('charlie'),
       ]),
     };
-    const document = IndexedDocument.fromValue(before.children);
-    const move = new DocumentChange({
+    const document = DocumentIndex.fromValue(before.children);
+    const move = createTestDocumentChange({
       primary: moveNodeChange(document, [0], [2]),
     });
-    const edit = new DocumentChange({
+    const edit = createTestDocumentChange({
       primary: insertTextChange(document, [0, 0], 5, '!'),
     });
     const transformed = DocumentChange.transform(move, edit, before);
@@ -2346,10 +2303,10 @@ describe('JSON document change algebra', () => {
   });
 
   it('drops an inverse text deletion when a concurrent deletion already removed it', () => {
-    const document = IndexedDocument.fromValue(asJsonNodes([paragraph('aXb')]));
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph('aXb')]));
     const undoInsert = removeTextChange(document, [0, 0], 1, 'X');
     const remoteDelete = removeTextChange(document, [0, 0], 0, 'aX');
-    const transformed = ChangeSet.transform(undoInsert, remoteDelete);
+    const transformed = RootChange.transform(undoInsert, remoteDelete);
 
     assert.equal(transformed.a.empty, true);
     assert.deepEqual(
@@ -2360,17 +2317,17 @@ describe('JSON document change algebra', () => {
 
   it('converges identical and overlapping concurrent deletions', () => {
     const text = 'abcde';
-    const document = IndexedDocument.fromValue(asJsonNodes([paragraph(text)]));
+    const document = DocumentIndex.fromValue(asJsonNodes([paragraph(text)]));
     const identicalA = removeTextChange(document, [0, 0], 1, 'bc');
     const identicalB = removeTextChange(document, [0, 0], 1, 'bc');
-    const identical = ChangeSet.transform(identicalA, identicalB);
+    const identical = RootChange.transform(identicalA, identicalB);
 
     assert.equal(identical.a.empty, true);
     assert.equal(identical.b.empty, true);
 
     const overlapA = removeTextChange(document, [0, 0], 1, 'bc');
     const overlapB = removeTextChange(document, [0, 0], 2, 'cd');
-    const overlap = ChangeSet.transform(overlapA, overlapB);
+    const overlap = RootChange.transform(overlapA, overlapB);
     const viaA = overlap.b.apply(overlapA.apply(document));
     const viaB = overlap.a.apply(overlapB.apply(document));
 
@@ -2393,7 +2350,7 @@ describe('JSON document change algebra', () => {
               fromB,
               text.slice(fromB, toB)
             );
-            const transformed = ChangeSet.transform(a, b);
+            const transformed = RootChange.transform(a, b);
 
             assert.deepEqual(
               transformed.b.apply(a.apply(document)).value,
@@ -2412,9 +2369,9 @@ describe('JSON document change algebra', () => {
         header: asJsonNodes([paragraph('header')]),
       },
     };
-    const main = IndexedDocument.fromValue(value.children);
-    const header = IndexedDocument.fromValue(value.roots!.header!);
-    const change = new DocumentChange({
+    const main = DocumentIndex.fromValue(value.children);
+    const header = DocumentIndex.fromValue(value.roots!.header!);
+    const change = createTestDocumentChange({
       primary: insertTextChange(main, [0, 0], 4, '!'),
       roots: new Map([['header', insertTextChange(header, [0, 0], 6, '?')]]),
     });
@@ -2475,11 +2432,11 @@ describe('JSON document change algebra', () => {
     );
   });
 
-  it('rejects impossible imported ChangeSet section lengths', () => {
+  it('rejects impossible imported RootChange section lengths', () => {
     for (const length of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1]) {
       assert.throws(
-        () => ChangeSet.fromJSON([{ length }]),
-        /Invalid ChangeSet JSON/
+        () => RootChange.fromJSON([{ length }]),
+        /Invalid RootChange JSON/
       );
     }
   });
@@ -2491,13 +2448,13 @@ describe('JSON document change algebra', () => {
         header: asJsonNodes([paragraph('header')]),
       },
     };
-    const main = IndexedDocument.fromValue(before.children);
-    const first = new DocumentChange({
+    const main = DocumentIndex.fromValue(before.children);
+    const first = createTestDocumentChange({
       primary: insertTextChange(main, [0, 0], 2, '++'),
     });
     const afterFirst = first.apply(before);
-    const header = IndexedDocument.fromValue(afterFirst.roots!.header!);
-    const second = new DocumentChange({
+    const header = DocumentIndex.fromValue(afterFirst.roots!.header!);
+    const second = createTestDocumentChange({
       roots: new Map([['header', insertTextChange(header, [0, 0], 3, '!')]]),
     });
     const composed = first.compose(second);
@@ -2529,13 +2486,13 @@ describe('JSON document change algebra', () => {
         header: asJsonNodes([paragraph('xy')]),
       },
     };
-    const main = IndexedDocument.fromValue(before.children);
-    const header = IndexedDocument.fromValue(before.roots!.header!);
-    const a = new DocumentChange({
+    const main = DocumentIndex.fromValue(before.children);
+    const header = DocumentIndex.fromValue(before.roots!.header!);
+    const a = createTestDocumentChange({
       primary: insertTextChange(main, [0, 0], 2, 'A'),
       roots: new Map([['header', insertTextChange(header, [0, 0], 1, '1')]]),
     });
-    const b = new DocumentChange({
+    const b = createTestDocumentChange({
       primary: insertTextChange(main, [0, 0], 2, 'B'),
       roots: new Map([['header', insertTextChange(header, [0, 0], 1, '2')]]),
     });
@@ -2551,8 +2508,8 @@ describe('JSON document change algebra', () => {
     const value: JsonEditorValue = {
       children: asJsonNodes([paragraph('main')]),
     };
-    const document = IndexedDocument.fromValue(value.children);
-    const change = new DocumentChange({
+    const document = DocumentIndex.fromValue(value.children);
+    const change = createTestDocumentChange({
       primary: insertTextChange(document, [0, 0], 4, '!'),
     });
     const after = change.apply(value);
@@ -2568,8 +2525,8 @@ describe('JSON document change algebra', () => {
     const value: JsonEditorValue = {
       children: asJsonNodes([paragraph('main')]),
     };
-    const header = IndexedDocument.fromValue([]);
-    const change = new DocumentChange({
+    const header = DocumentIndex.fromValue([]);
+    const change = createTestDocumentChange({
       roots: new Map([
         ['header', insertNodeChange(header, [0], paragraph('created'))],
       ]),
@@ -2597,7 +2554,7 @@ describe('JSON document change algebra', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([paragraph('main')]),
     };
-    const create = new DocumentChange({
+    const create = createTestDocumentChange({
       createRoots: ['caption'],
     });
     const afterCreate = create.apply(before);
@@ -2605,7 +2562,7 @@ describe('JSON document change algebra', () => {
     assert.deepEqual(afterCreate.roots, { caption: [] });
     assert.deepEqual(create.invert(before).apply(afterCreate), before);
 
-    const remove = new DocumentChange({
+    const remove = createTestDocumentChange({
       deleteRoots: ['caption'],
     });
 
@@ -2623,7 +2580,7 @@ describe('JSON document change algebra', () => {
       roots: { caption: asJsonNodes([paragraph('created')]) },
     };
     const create = DocumentChange.between(absent, created);
-    const remove = new DocumentChange({
+    const remove = createTestDocumentChange({
       deleteRoots: ['caption'],
     });
 
@@ -2664,8 +2621,8 @@ describe('JSON document change algebra', () => {
     const before: JsonEditorValue = {
       children: asJsonNodes([paragraph('alpha')]),
     };
-    const document = IndexedDocument.fromValue(before.children);
-    const change = new DocumentChange({
+    const document = DocumentIndex.fromValue(before.children);
+    const change = createTestDocumentChange({
       primary: insertTextChange(document, [0, 0], 5, '!'),
     });
     let observedRoots: readonly (string | null)[] = [];
@@ -2697,11 +2654,11 @@ describe('JSON document change algebra', () => {
     };
 
     for (let vector = 0; vector < 80; vector++) {
-      const origin = IndexedDocument.fromValue(
+      const origin = DocumentIndex.fromValue(
         asJsonNodes([paragraph(`vector-${vector}-abcdefghij`)])
       );
       let current = origin;
-      let composed = ChangeSet.empty(origin.length);
+      let composed = RootChange.empty(origin.length);
 
       for (let edit = 0; edit < 6; edit++) {
         const text = (current.node([0, 0]) as { text: string }).text;

@@ -8,22 +8,18 @@ export const BaseSubscriptPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-  parsers: {
-    html: {
-      deserializer: {
-        rules: [
-          { validNodeName: ['SUB'] },
-          { validStyle: { verticalAlign: 'sub' } },
-        ],
-      },
-    },
-  },
   render: { as: 'sub' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTx(({ editor, type }) => (tx) => ({
-  toggle: () => {
-    tx.marks.toggle(type, true, {
-      clear: editor.getType(KEYS.sup),
-    });
-  },
-}));
+})
+  .extendHtmlCodec(() => ({
+    decode: () => true,
+    encode: ({ value }) => (value ? { tag: 'sub' } : null),
+    match: [{ tag: 'sub' }, { style: { verticalAlign: 'sub' } }],
+  }))
+  .extendTx(({ editor, type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type, true, {
+        clear: editor.getType(KEYS.sup),
+      });
+    },
+  }));

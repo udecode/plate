@@ -6,16 +6,21 @@ toc: true
 
 <ComponentPreview name="collaboration-demo" />
 
+The preview runs two independent editors through a credential-free local room.
+It demonstrates remote document and cursor updates, disconnect/reconnect,
+schema rejection and recovery, and Plite History undo after a remote edit. Apps
+still own production transport, authentication, persistence, and room naming.
+
 <PackageInfo>
 
 ## Features
 
-- **Provider Boundary:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, or custom transport code. `@platejs/yjs` adapts a `Y.Doc`, provider lifecycle, awareness, selection state, and undo/redo coordination to the editor.
+- **Provider Boundary:** Your app owns Hocuspocus, WebSocket, WebRTC, IndexedDB, or custom transport code. `@platejs/yjs` adapts a `Y.Doc`, provider lifecycle, awareness, selection state, and canonical editor changes.
 - **Custom Providers:** Wrap provider packages as `YjsProviderLike` and pass them to `YjsPlugin.configure`.
 - **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
 - **Multi-Root Documents:** Synchronizes primary children, named roots, and root-qualified awareness through one editor extension and Yjs transaction boundary.
 - **Customizable Cursors:** Send cursor names, colors, and other metadata through `tx.yjs.sendSelection`.
-- **Explicit Commands:** The plugin installs the Plite Yjs extension, including `state.yjs` reads and `tx.yjs` commands for connection, awareness, selection, undo, and redo.
+- **Explicit Commands:** The plugin installs the Plite Yjs extension, including `state.yjs` reads and `tx.yjs` commands for connection, awareness, and selection.
 
 </PackageInfo>
 
@@ -104,9 +109,9 @@ export const yjsPlugin = YjsPlugin.configure({
   selection changes.
 
 One Plate commit that changes primary and named roots becomes one Yjs
-transaction and one undo step. Named roots synchronize without a mounted
-`PlateContent`, and remote selections preserve their root key. A selection
-cannot span two roots.
+transaction. Plite History records that editor commit as one history batch.
+Named roots synchronize without a mounted `PlateContent`, and remote selections
+preserve their root key. A selection cannot span two roots.
 
 ### Add Editor Container
 
@@ -171,13 +176,14 @@ IndexedDB, or another transport as `YjsProviderLike`, then pass it through
 `YjsPlugin.configure`. The wrapper owns network connection state. The plugin
 installs the Plite/Yjs synchronization extension.
 
-| Concern                                            | Owner                       |
-| -------------------------------------------------- | --------------------------- |
-| `Y.Doc` and root name                              | App plus `YjsPlugin` config |
-| Provider package installation                      | App                         |
-| Room naming and authentication                     | App                         |
-| Persistence and server scaling                     | App                         |
-| Editor operations, selection, awareness, undo/redo | `@platejs/yjs`              |
+| Concern                                  | Owner                                   |
+| ---------------------------------------- | --------------------------------------- |
+| `Y.Doc` and root name                    | App plus `YjsPlugin` config             |
+| Provider package installation            | App                                     |
+| Room naming and authentication           | App                                     |
+| Persistence and server scaling           | App                                     |
+| Editor operations, selection, undo/redo  | `@platejs/plite` and `@platejs/plite-history` |
+| Awareness and remote cursors             | `@platejs/yjs`                          |
 
 ## Connection Commands
 
@@ -200,7 +206,14 @@ editor.update((tx) => {
 | `tx.yjs.reconnect()`                | Reconnect after a provider interruption.     |
 | `tx.yjs.sendSelection(range, data)` | Publish local selection and cursor metadata. |
 | `tx.yjs.clearSelection()`           | Clear local awareness selection.             |
-| `tx.yjs.undo()` / `tx.yjs.redo()`   | Run Yjs-aware history.                       |
+
+Install Plite history for undo and redo. Its canonical replay flows through the
+same Yjs synchronization bridge as every other editor update:
+
+```tsx
+editor.update.history.undo();
+editor.update.history.redo();
+```
 
 ## Backend Setup
 

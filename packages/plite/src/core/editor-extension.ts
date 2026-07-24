@@ -25,11 +25,9 @@ import type {
   ValueOf,
 } from '../interfaces/editor';
 import type { EditorSchemaDeclaration } from '../interfaces/schema';
-import {
-  DocumentChange,
-  DocumentChangeBuilder,
-  type JsonEditorValue,
-} from './document-change';
+import { ChangeDraft } from './change/builder';
+import { DocumentChange } from './change/document-change';
+import type { JsonEditorValue } from './change/tokens';
 import { getEditorCommitSnapshot } from './commit';
 import { registerCommandInRegistry } from './command-registry';
 import { createCommandRegistration } from './command-definition';
@@ -1534,7 +1532,7 @@ const classifyCandidatePublicationDocument = (
   document: EditorDocumentValue
 ) => {
   const change = DocumentChange.between(current, document);
-  const builder = new DocumentChangeBuilder(current as JsonEditorValue, {
+  const builder = new ChangeDraft(current as JsonEditorValue, {
     assertCanonical: (candidate, accumulated) => {
       if (
         !constructCanonicalDocumentChange(editor, candidate, accumulated, {
@@ -1635,7 +1633,7 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
     () => editor,
     () => mergedCandidate
   );
-  let documentChange = new DocumentChange();
+  let documentChange = DocumentChange.empty;
 
   if (options.validateDocument !== false) {
     const currentDocument = getEditorDocumentValue(editor);
@@ -1779,7 +1777,7 @@ const createNoopPublication = (): PreparedEditorExtensionPublication => {
       if (phase === 'prepared') phase = 'published';
     },
     configurationChanged: false,
-    documentChange: new DocumentChange(),
+    documentChange: DocumentChange.empty,
     finalize() {
       if (phase === 'published') phase = 'finalized';
     },
@@ -1809,7 +1807,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
 
   const previousCurrentRegistry = getExtensionRegistry(editor);
   let candidate!: ExtensionRegistry<TEditor>;
-  let candidateDocumentChange = new DocumentChange();
+  let candidateDocumentChange = DocumentChange.empty;
   let validateCandidateDocument: (value: EditorDocumentValue) => void = () => {
     throw new Error('Editor extension candidate schema is not prepared.');
   };

@@ -7,8 +7,8 @@ import {
   assertCanonicalYjsTrace,
   clearYjsTrace,
   connectYjsPeerAndSync,
-  createSeededYjsPeers,
-  createYjsPeer,
+  createSeededYjsHistoryPeers,
+  createYjsHistoryPeer,
   disconnectAndClearYjsTrace,
   disconnectYjsPeer,
   getPeerTopLevelTexts,
@@ -17,9 +17,9 @@ import {
   type Peer,
   paragraph,
   readPeerChildren,
-  redoYjsPeerAndSync,
+  redoHistoryPeerAndSync,
   syncConnectedPeers,
-  undoYjsPeerAndSync,
+  undoHistoryPeerAndSync,
 } from './support/collaboration';
 
 const clientIds = {
@@ -51,7 +51,7 @@ const createPeer = (
   seedUpdate?: Uint8Array,
   children: readonly Descendant[] = initialValue()
 ): Peer =>
-  createYjsPeer({
+  createYjsHistoryPeer({
     children,
     clientId,
     numericClientId: clientIds[clientId],
@@ -59,14 +59,14 @@ const createPeer = (
   });
 
 const createPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: initialValue(),
     clientIds: ids,
     numericClientIds: clientIds,
   });
 
 const createNestedPeers = (ids: readonly ClientId[]): Peer[] =>
-  createSeededYjsPeers({
+  createSeededYjsHistoryPeers({
     children: nestedInitialValue(),
     clientIds: ids,
     numericClientIds: clientIds,
@@ -163,12 +163,12 @@ describe('@platejs/yjs move_node collaboration contract', () => {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['beta', 'gamma', 'alpha!']);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['alpha!', 'beta', 'gamma']);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['beta', 'gamma', 'alpha!']);
     }
@@ -200,7 +200,7 @@ describe('@platejs/yjs move_node collaboration contract', () => {
   });
 
   it('keeps an untouched projected sibling on the sparse event path', () => {
-    const peers = createSeededYjsPeers({
+    const peers = createSeededYjsHistoryPeers({
       children: [section(), paragraph('moved'), paragraph('sibling')],
       clientIds: ['a', 'b'],
       numericClientIds: { a: 1, b: 2 },
@@ -269,12 +269,12 @@ describe('@platejs/yjs move_node collaboration contract', () => {
       assert.deepEqual(nestedTexts(peer), [['beta'], ['gamma', 'alpha!']]);
     }
 
-    undoYjsPeerAndSync(b, peers);
+    undoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(nestedTexts(peer), [['alpha!', 'beta'], ['gamma']]);
     }
 
-    redoYjsPeerAndSync(b, peers);
+    redoHistoryPeerAndSync(b, peers);
     for (const peer of peers) {
       assert.deepEqual(nestedTexts(peer), [['beta'], ['gamma', 'alpha!']]);
     }

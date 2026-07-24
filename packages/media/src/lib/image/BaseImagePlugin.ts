@@ -1,7 +1,7 @@
 import {
   type InferConfig,
   createBasePlugin,
-  prepareInsertDataQuery,
+  prepareHtmlParserQuery,
 } from '@platejs/core';
 import { PathApi, property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -45,113 +45,180 @@ export const BaseImagePlugin = defineMediaPlugin(
         },
       },
     },
-    parsers: {
-      html: {
-        deserializer: {
-          rules: [
-            {
-              validNodeName: 'IMG',
-            },
-          ],
-          parse: ({ element, type }) => {
-            const url = element.getAttribute('src');
-
-            if (url) {
-              const alt = element.getAttribute('alt');
-
-              return {
-                ...(alt === null ? {} : { alt }),
-                children: [{ text: '' }],
-                type,
-                url,
-              };
-            }
-          },
-        },
-      },
-    },
   }),
   (options, input) => ({
     ...input,
     url: options.transformUrl?.(input.url) ?? input.url,
   })
-).extendExtension(({ editor, getOptions, plugin }) => {
-  const queryInsertData = prepareInsertDataQuery(editor, plugin);
+)
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => {
+      const image = element.querySelector<HTMLElement>(':scope > img');
 
-  return {
-    clipboard: {
-      insertData(dataTransfer, { next, tx }) {
-        const format = 'text/plain';
-        const text = dataTransfer.getData(format);
-        const imageExtension = isUrl(text)
-          ? new URL(text).pathname.split('.').pop()?.toLowerCase()
-          : undefined;
+      if (!image) return;
 
-        if (
-          !getOptions().disableEmbedInsert &&
-          imageExtension &&
-          imageExtensions.has(imageExtension)
-        ) {
-          tx.img.insert({ url: text });
+      const url = image.getAttribute('src');
 
-          return true;
-        }
+      if (!url) return;
 
-        if (!getOptions().disableUploadInsert && !text) {
-          const { files } = dataTransfer;
-          const imageFiles = Array.from(files).filter((file) =>
-            file.type.startsWith('image/')
-          );
+      const alt = image.getAttribute('alt');
+      const initialHeight = Number(image.getAttribute('height'));
+      const initialWidth = Number(image.getAttribute('width'));
+      const width = image.style.width || undefined;
 
-          if (imageFiles.length === 0) return next(dataTransfer);
-          if (
-            !editor.read((state) =>
-              queryInsertData(state, {
-                data: text,
-                format,
-                source: dataTransfer,
-              })
-            )
-          ) {
-            return next(dataTransfer);
-          }
-
-          const block = tx.nodes.block()?.[0];
-
-          for (const file of imageFiles) {
-            const reader = new FileReader();
-
-            reader.addEventListener('load', async () => {
-              if (typeof reader.result !== 'string') return;
-
-              const uploadImage = getOptions().uploadImage;
-              const url = uploadImage
-                ? await uploadImage(reader.result)
-                : reader.result;
-              const blockPath = block
-                ? editor.read.nodes.path(block)
-                : undefined;
-
-              if (block && !blockPath) return;
-
-              editor.plugin(BaseImagePlugin).update.insert(
-                { url },
-                {
-                  at: blockPath ? PathApi.next(blockPath) : undefined,
-                }
-              );
-            });
-            reader.readAsDataURL(file);
-          }
-
-          return true;
-        }
-
-        return next(dataTransfer);
-      },
+      return {
+        ...(alt === null ? {} : { alt }),
+        ...(Number.isFinite(initialHeight) && initialHeight > 0
+          ? { initialHeight }
+          : {}),
+        ...(Number.isFinite(initialWidth) && initialWidth > 0
+          ? { initialWidth }
+          : {}),
+        ...(width === undefined ? {} : { width }),
+        url,
+      };
     },
-  };
-});
+    encode: ({ content, node }) => {
+      if (
+        typeof node.url !== 'string' ||
+        node.url.length === 0 ||
+        node.isUpload !== undefined ||
+        node.name !== undefined ||
+        node.placeholderId !== undefined
+      ) {
+        return null;
+      }
+
+      return {
+        attributes: { class: 'plate-image' },
+        children: [
+          {
+            attributes: {
+              alt: node.alt,
+              height: node.initialHeight,
+              src: node.url,
+              width: node.initialWidth,
+            },
+            style: {
+              width:
+                typeof node.width === 'number' ? `${node.width}px` : node.width,
+            },
+            tag: 'img',
+          },
+          { children: content, tag: 'figcaption' },
+        ],
+        tag: 'figure',
+      };
+    },
+    match: [{ className: 'plate-image', tag: 'figure' }],
+    priority: 20,
+  }))
+  .extendHtmlCodec(() => ({
+    decode: ({ element }) => {
+      if (element.parentElement?.matches('figure.plate-image')) return;
+
+      const url = element.getAttribute('src');
+
+      if (!url) return;
+
+      const alt = element.getAttribute('alt');
+      const initialHeight = Number(element.getAttribute('height'));
+      const initialWidth = Number(element.getAttribute('width'));
+      const width = element.style.width || undefined;
+
+      return {
+        ...(alt === null ? {} : { alt }),
+        children: [{ text: '' }],
+        ...(Number.isFinite(initialHeight) && initialHeight > 0
+          ? { initialHeight }
+          : {}),
+        ...(Number.isFinite(initialWidth) && initialWidth > 0
+          ? { initialWidth }
+          : {}),
+        ...(width === undefined ? {} : { width }),
+        url,
+      };
+    },
+    decodeOnly: true,
+    match: [{ tag: 'img' }],
+  }))
+  .extendExtension(({ editor, getOptions, plugin }) => {
+    const queryInsertData = prepareHtmlParserQuery(editor, plugin);
+
+    return {
+      clipboard: {
+        insertData(dataTransfer, { next, tx }) {
+          const format = 'text/plain';
+          const text = dataTransfer.getData(format);
+          const imageExtension = isUrl(text)
+            ? new URL(text).pathname.split('.').pop()?.toLowerCase()
+            : undefined;
+
+          if (
+            !getOptions().disableEmbedInsert &&
+            imageExtension &&
+            imageExtensions.has(imageExtension)
+          ) {
+            tx.img.insert({ url: text });
+
+            return true;
+          }
+
+          if (!getOptions().disableUploadInsert && !text) {
+            const { files } = dataTransfer;
+            const imageFiles = Array.from(files).filter((file) =>
+              file.type.startsWith('image/')
+            );
+
+            if (imageFiles.length === 0) return next(dataTransfer);
+            if (
+              !editor.read((state) =>
+                queryInsertData(state, {
+                  data: text,
+                  format,
+                  source: dataTransfer,
+                })
+              )
+            ) {
+              return next(dataTransfer);
+            }
+
+            const block = tx.nodes.block()?.[0];
+
+            for (const file of imageFiles) {
+              const reader = new FileReader();
+
+              reader.addEventListener('load', async () => {
+                if (typeof reader.result !== 'string') return;
+
+                const uploadImage = getOptions().uploadImage;
+                const url = uploadImage
+                  ? await uploadImage(reader.result)
+                  : reader.result;
+                const blockPath = block
+                  ? editor.read.nodes.path(block)
+                  : undefined;
+
+                if (block && !blockPath) return;
+
+                editor.plugin(BaseImagePlugin).update.insert(
+                  { url },
+                  {
+                    at: blockPath ? PathApi.next(blockPath) : undefined,
+                  }
+                );
+              });
+              reader.readAsDataURL(file);
+            }
+
+            return true;
+          }
+
+          return next(dataTransfer);
+        },
+      },
+    };
+  });
 
 export type ImageConfig = InferConfig<typeof BaseImagePlugin>;
 

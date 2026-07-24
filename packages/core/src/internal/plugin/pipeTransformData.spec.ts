@@ -1,9 +1,9 @@
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { pipeTransformData } from './pipeTransformData';
-import { prepareParserRegistry } from './prepareParserRegistry';
+import { prepareHtmlRegistry } from './prepareHtmlRegistry';
 
-const createParserEditor = (
+const createHtmlEditor = (
   plugins: NonNullable<Parameters<typeof createBaseEditor>[0]>['plugins']
 ) =>
   createBaseEditor({
@@ -11,35 +11,39 @@ const createParserEditor = (
   });
 
 describe('pipeTransformData', () => {
-  it('pipes transformed data through parser plugins in order', () => {
+  it('pipes transformed data through HTML plugins in order', () => {
     const calls: string[] = [];
 
     const firstPlugin = createBasePlugin({
       key: 'first',
-      parser: {
-        transformData: ({ data }) => {
-          calls.push(`first:${data}`);
-          return `${data}-alpha`;
+      parsers: {
+        html: {
+          transformData: ({ data }) => {
+            calls.push(`first:${data}`);
+            return `${data}-alpha`;
+          },
         },
       },
     });
 
     const secondPlugin = createBasePlugin({
       key: 'second',
-      parser: {
-        transformData: ({ data }) => {
-          calls.push(`second:${data}`);
-          return `${data}-beta`;
+      parsers: {
+        html: {
+          transformData: ({ data }) => {
+            calls.push(`second:${data}`);
+            return `${data}-beta`;
+          },
         },
       },
     });
 
-    const editor = createParserEditor([firstPlugin, secondPlugin]);
+    const editor = createHtmlEditor([firstPlugin, secondPlugin]);
 
     const result = editor.read((state) =>
-      pipeTransformData(state, prepareParserRegistry(editor).plugins, {
+      pipeTransformData(state, prepareHtmlRegistry(editor).plugins, {
         data: 'start',
-        format: 'text/plain',
+        format: 'text/html',
         source: { files: [] as any, getData: () => '', types: [] },
       })
     );
@@ -51,18 +55,20 @@ describe('pipeTransformData', () => {
   it('skips plugins without transformData', () => {
     const activePlugin = createBasePlugin({
       key: 'active',
-      parser: {
-        transformData: ({ data }) => `${data}-done`,
+      parsers: {
+        html: {
+          transformData: ({ data }) => `${data}-done`,
+        },
       },
     });
     const passivePlugin = createBasePlugin({ key: 'passive' });
 
-    const editor = createParserEditor([passivePlugin, activePlugin]);
+    const editor = createHtmlEditor([passivePlugin, activePlugin]);
 
     const result = editor.read((state) =>
-      pipeTransformData(state, prepareParserRegistry(editor).plugins, {
+      pipeTransformData(state, prepareHtmlRegistry(editor).plugins, {
         data: 'start',
-        format: 'text/plain',
+        format: 'text/html',
         source: { files: [] as any, getData: () => '', types: [] },
       })
     );

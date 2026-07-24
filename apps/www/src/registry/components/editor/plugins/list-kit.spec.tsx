@@ -1,6 +1,6 @@
 import ReactDOMServer from 'react-dom/server';
 
-import { createBasePlugin } from '@platejs/core';
+import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
 import { schema } from 'platejs';
 import { createBaseEditor, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
@@ -54,6 +54,27 @@ const getListNodeProps = (editor: {
     .nodeProps! as ListNodePropsContract;
 
 describe('ListKit unordered list rendering', () => {
+  it('decodes configured list items as paragraphs with list properties', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseParagraphPlugin, ...ListTargetSchemaKit, ...BaseListKit],
+    });
+
+    expect(
+      editor.api.html.deserialize({
+        element:
+          '<ul><li data-checked="true" data-list-start="3">Task</li></ul>',
+      })
+    ).toEqual([
+      {
+        checked: true,
+        children: [{ text: 'Task' }],
+        listStart: 3,
+        listStyleType: 'disc',
+        type: KEYS.p,
+      },
+    ]);
+  });
+
   it('keeps the lightweight unordered path inside the app list renderer', () => {
     expect(BlockList({ element: unorderedElement } as any)).toBeUndefined();
     expect(

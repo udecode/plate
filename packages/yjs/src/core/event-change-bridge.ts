@@ -1,7 +1,6 @@
 import {
-  ChangeSet,
   type Descendant,
-  DocumentChange,
+  type DocumentChange,
   type Element,
   type JsonEditorValue,
   type JsonNode,
@@ -9,11 +8,10 @@ import {
   type Text,
 } from '@platejs/plite';
 import {
-  createInternalDocumentChange,
+  createInternalRootChangeFromSections,
   type DocumentChangeRelocation,
-  getInternalDocumentChangeSet,
   getDocumentChangeRelocations,
-  IndexedDocument,
+  getExactDocumentChangeRelocation,
 } from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
@@ -34,6 +32,7 @@ import {
   readPliteNodeFromYjs,
   removeYjsChild,
   removeRedundantEmptyYjsTextNodesAt,
+  removeSupersededVirtualYjsSplitSuffixes,
   removeYjsVirtualPlaceholderChild,
   setVirtualYjsMove,
   setVirtualYjsUnwrapMove,
@@ -42,13 +41,15 @@ import {
   type YjsPropertyContext,
 } from './document';
 import { areJsonLikeValuesEqual } from './json-equality';
-import { lastPathIndex, nextPath, parentPath, pathsEqual } from './path';
+import { lastPathIndex, parentPath, pathsEqual } from './path';
 import {
   canReplaceCompatibleYjsChildren,
   replaceCompatibleYjsChildren,
 } from './replacement';
-import { applySplitHistoryToYjs } from './split-history-adapter';
-import type { SplitHistory } from './split-history';
+import {
+  applyCanonicalSplitToYjs,
+  findCanonicalSplit,
+} from './canonical-split';
 
 type CapturedYjsDeltaPart = Readonly<{
   delete?: number;
@@ -64,7 +65,13 @@ type CapturedYjsEvent = Readonly<{
 }>;
 
 export type CapturedYjsEventBatch = Readonly<{
+  deletedTextTargets: readonly Y.XmlText[];
   events: readonly CapturedYjsEvent[];
+}>;
+
+export type YjsEventNormalization = Readonly<{
+  changedNodes: ReadonlySet<YjsNode>;
+  removedNodes: ReadonlySet<YjsNode>;
 }>;
 
 export type YjsEventImportFallback =
@@ -608,82 +615,6 @@ const createYjsNodeWithRelocations = (
   return element;
 };
 
-const readDescendant = (
-  children: readonly Descendant[],
-  path: readonly number[]
-): Descendant | null => {
-  let descendants = children;
-  let node: Descendant | undefined;
-
-  for (const index of path) {
-    node = descendants[index];
-
-    if (node === undefined) return null;
-
-    descendants = isElement(node) ? node.children : [];
-  }
-
-  return node ?? null;
-};
-
-const replaceSplitElement = (
-  children: readonly Descendant[],
-  path: readonly number[],
-  left: Descendant,
-  right: Descendant
-): readonly Descendant[] | null => {
-  const index = path[0];
-
-  if (index === undefined) return null;
-  if (path.length === 1) {
-    return [
-      ...children.slice(0, index),
-      left,
-      right,
-      ...children.slice(index + 1),
-    ];
-  }
-
-  const parent = children[index];
-
-  if (!isElement(parent)) return null;
-
-  const nextChildren = replaceSplitElement(
-    parent.children,
-    path.slice(1),
-    left,
-    right
-  );
-
-  if (nextChildren === null) return null;
-
-  const next = [...children];
-
-  next[index] = { ...parent, children: [...nextChildren] };
-
-  return next;
-};
-
-const isExactSplit = (
-  before: readonly Descendant[],
-  after: readonly Descendant[],
-  split: SplitHistory
-): boolean => {
-  const left = readDescendant(after, split.elementPath);
-  const right = readDescendant(after, nextPath(split.elementPath));
-
-  if (left === null || right === null) return false;
-
-  const splitChildren = replaceSplitElement(
-    before,
-    split.elementPath,
-    left,
-    right
-  );
-
-  return splitChildren !== null && areJsonLikeValuesEqual(splitChildren, after);
-};
-
 type PreparedEventImport = Readonly<{
   accept: (children: readonly Descendant[]) => void;
   change: DocumentChange;
@@ -708,8 +639,6 @@ export type YjsEventLowerResult =
       strategy: 'compatible' | 'range';
       tokenLengthNodes: number;
     }>;
-
-type ChangeSetData = ChangeSet['data'][number];
 
 const PROJECTION_ATTRIBUTES = new Set([
   'plite:yjs-hidden',
@@ -745,28 +674,49 @@ const changedEventKeys = (event: Y.YEvent<Y.AbstractType<unknown>>) => {
 };
 
 export const captureYjsEventBatch = (
-  events: readonly Y.YEvent<Y.AbstractType<unknown>>[]
-): CapturedYjsEventBatch => ({
-  events: events.map((event) => {
-    const childListChanged =
-      'childListChanged' in event && event.childListChanged === true;
+  events: readonly Y.YEvent<Y.AbstractType<unknown>>[],
+  transaction: Y.Transaction
+): CapturedYjsEventBatch => {
+  const deletedTextTargets = new Set<Y.XmlText>();
 
-    return {
-      childListChanged,
-      delta: childListChanged
-        ? copyDelta(event.delta as readonly Readonly<Record<string, unknown>>[])
-        : [],
-      keys: changedEventKeys(event),
-      target: event.target,
-    };
-  }),
-});
+  Y.iterateDeletedStructs(transaction, transaction.deleteSet, (struct) => {
+    if (struct instanceof Y.Item && struct.parent instanceof Y.XmlText) {
+      deletedTextTargets.add(struct.parent);
+    }
+  });
+
+  return {
+    deletedTextTargets: [...deletedTextTargets],
+    events: events.map((event) => {
+      const childListChanged =
+        'childListChanged' in event && event.childListChanged === true;
+
+      return {
+        childListChanged,
+        delta: childListChanged
+          ? copyDelta(
+              event.delta as readonly Readonly<Record<string, unknown>>[]
+            )
+          : [],
+        keys: changedEventKeys(event),
+        target: event.target,
+      };
+    }),
+  };
+};
 
 export const mergeYjsEventBatches = (
   left: CapturedYjsEventBatch | null,
   right: CapturedYjsEventBatch
 ): CapturedYjsEventBatch =>
-  left === null ? right : { events: [...left.events, ...right.events] };
+  left === null
+    ? right
+    : {
+        deletedTextTargets: [
+          ...new Set([...left.deletedTextTargets, ...right.deletedTextTargets]),
+        ],
+        events: [...left.events, ...right.events],
+      };
 
 const measureTokenLength = (
   node: Descendant
@@ -1343,9 +1293,9 @@ const isSimpleRootProjection = (
 
 const getTopLevelNode = (
   root: Y.XmlElement,
-  target: Y.AbstractType<unknown>
+  target: Y.AbstractType<unknown> | YjsNode
 ): YjsNode | null => {
-  let current: Y.AbstractType<unknown> = target;
+  let current: Y.AbstractType<unknown> | YjsNode = target;
   let parent = current.parent;
 
   while (parent !== null && parent !== root) {
@@ -1730,27 +1680,6 @@ const sparseLowerRegions = (
   return mergeRegions(regions);
 };
 
-const appendSection = (
-  sections: number[],
-  data: ChangeSetData[],
-  length: number,
-  inserted: number,
-  value: ChangeSetData
-): void => {
-  if (length === 0 && inserted === -1) return;
-
-  const last = sections.length - 1;
-
-  if (inserted === -1 && last >= 1 && sections[last] === -1) {
-    sections[last - 1] = (sections[last - 1] ?? 0) + length;
-
-    return;
-  }
-
-  sections.push(length, inserted);
-  data.push(value);
-};
-
 const createEventDocumentChange = (
   root: string,
   before: readonly Descendant[],
@@ -1767,76 +1696,47 @@ const createEventDocumentChange = (
     before,
     root === 'main' ? null : root
   );
-  const sections: number[] = [];
-  const data: ChangeSetData[] = [];
-  let changedChildren = 0;
-  let changedRanges = 0;
-  let position = 0;
+  const sectionInputs = regions.map((region) =>
+    Object.freeze({
+      after: Object.freeze(after.slice(region.afterFrom, region.afterTo)),
+      before: Object.freeze(before.slice(region.beforeFrom, region.beforeTo)),
+      from: lengths.prefix(region.beforeFrom),
+    })
+  );
+  const result = createInternalRootChangeFromSections(
+    root,
+    lengths.total(),
+    sectionInputs,
+    (node, key) => {
+      const context = contexts.get(node);
 
-  for (const region of regions) {
-    const localBefore = Object.freeze(
-      before.slice(region.beforeFrom, region.beforeTo)
-    );
-    const localAfter = Object.freeze(
-      after.slice(region.afterFrom, region.afterTo)
-    );
-    const local = DocumentChange.between(
-      { children: localBefore },
-      { children: localAfter },
-      {
-        isSetValued: (node, key) => {
-          const context = contexts.get(node);
-
-          return context ? isSetValued(node, key, context) : false;
-        },
-      }
-    ).primary;
-
-    if (!local || local.empty) continue;
-
-    const from = lengths.prefix(region.beforeFrom);
-
-    appendSection(sections, data, from - position, -1, null);
-
-    let sectionIndex = 0;
-    let dataIndex = 0;
-
-    while (sectionIndex < local.sections.length) {
-      appendSection(
-        sections,
-        data,
-        local.sections[sectionIndex] ?? 0,
-        local.sections[sectionIndex + 1] ?? -1,
-        local.data[dataIndex] ?? null
-      );
-      sectionIndex += 2;
-      dataIndex++;
+      return context ? isSetValued(node, key, context) : false;
     }
+  );
+  const changedSections = new Set(result.changedSections);
+  let changedChildren = 0;
 
-    position = lengths.prefix(region.beforeTo);
+  regions.forEach((region, index) => {
+    if (!changedSections.has(index)) return;
+
     changedChildren += Math.max(
       region.beforeTo - region.beforeFrom,
       region.afterTo - region.afterFrom
     );
-    changedRanges++;
-  }
-
-  appendSection(sections, data, lengths.total() - position, -1, null);
-
-  const changeSet = ChangeSet.fromSections(sections, data);
+  });
 
   return {
-    change: createInternalDocumentChange(
-      changeSet.empty ? new Map() : new Map([[root, changeSet]])
-    ),
+    change: result.change,
     changedChildren,
-    changedRanges,
+    changedRanges: changedSections.size,
   };
 };
 
 const eventNormalizationTargets = (batch: CapturedYjsEventBatch) => {
+  const insertedNodes = new Set<YjsNode>();
   const parents = new Set<Y.XmlElement>();
   const recursiveRoots = new Set<Y.XmlElement>();
+  const truncatedTextNodes = new Set(batch.deletedTextTargets);
 
   for (const event of batch.events) {
     if (event.childListChanged && event.target instanceof Y.XmlElement) {
@@ -1846,24 +1746,29 @@ const eventNormalizationTargets = (batch: CapturedYjsEventBatch) => {
       const parent = event.target.parent;
 
       if (parent instanceof Y.XmlElement) parents.add(parent);
+      if (event.delta.some((part) => part.delete !== undefined)) {
+        truncatedTextNodes.add(event.target);
+      }
     }
 
     for (const part of event.delta) {
       if (!Array.isArray(part.insert)) continue;
 
       for (const inserted of part.insert) {
+        if (!isYjsNode(inserted)) continue;
+
+        insertedNodes.add(inserted);
         if (inserted instanceof Y.XmlElement) recursiveRoots.add(inserted);
       }
     }
   }
 
-  return { parents, recursiveRoots };
+  return { insertedNodes, parents, recursiveRoots, truncatedTextNodes };
 };
 
 export class YjsEventChangeBridge {
   private readonly canonicalizeNode: (node: Descendant) => Descendant;
   private children: readonly Descendant[];
-  private indexed: IndexedDocument;
   private readonly isSetValued: YjsSetPropertyResolver;
   private readonly lengths: TokenLengthIndex;
   private ready = false;
@@ -1882,7 +1787,6 @@ export class YjsEventChangeBridge {
   ) {
     this.canonicalizeNode = canonicalizeNode;
     this.children = children;
-    this.indexed = IndexedDocument.fromValue(children);
     this.isSetValued = isSetValued;
     this.lengths = new TokenLengthIndex([]);
     this.root = root;
@@ -1895,15 +1799,10 @@ export class YjsEventChangeBridge {
     change: DocumentChange,
     expected: readonly Descendant[],
     options: Readonly<{
-      splitHistory?: SplitHistory | null;
       structureChanged: boolean;
     }>
   ): YjsEventLowerResult {
     const result = this.lowerAgainstMirror(change, expected, options);
-
-    if (result.kind === 'lowered') {
-      this.acceptIndexedChange(expected);
-    }
 
     return result;
   }
@@ -1912,37 +1811,27 @@ export class YjsEventChangeBridge {
     change: DocumentChange,
     expected: readonly Descendant[],
     {
-      splitHistory = null,
       structureChanged,
     }: Readonly<{
-      splitHistory?: SplitHistory | null;
       structureChanged: boolean;
     }>
   ): YjsEventLowerResult {
     if (!this.ready || this.topNodes.length !== this.children.length) {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
     }
+    const split = structureChanged
+      ? findCanonicalSplit(this.children, expected)
+      : null;
     const splitResult =
-      splitHistory === null ||
-      !isExactSplit(this.children, expected, splitHistory)
-        ? null
-        : this.lowerExactSplit(change, expected, splitHistory);
+      split === null ? null : this.lowerCanonicalSplit(change, expected, split);
 
     if (splitResult !== null) return splitResult;
 
     const exactMove = structureChanged
-      ? (getInternalDocumentChangeSet(change, this.rootKey)?.movedNode(
-          this.indexed
-        ) ?? null)
+      ? getExactDocumentChangeRelocation(change, this.rootKey, this.children)
       : null;
     const exactRelocations: readonly DocumentChangeRelocation[] = exactMove
-      ? [
-          {
-            path: exactMove.path,
-            root: this.rootKey === 'main' ? null : this.rootKey,
-            targetPath: exactMove.targetPath,
-          },
-        ]
+      ? [exactMove]
       : [];
     const relocationResult =
       exactRelocations.length === 1
@@ -2500,24 +2389,24 @@ export class YjsEventChangeBridge {
     };
   }
 
-  private lowerExactSplit(
+  private lowerCanonicalSplit(
     change: DocumentChange,
     expected: readonly Descendant[],
-    splitHistory: SplitHistory
+    split: NonNullable<ReturnType<typeof findCanonicalSplit>>
   ): Extract<YjsEventLowerResult, { kind: 'lowered' }> | null {
-    const topIndex = splitHistory.elementPath[0];
+    const topIndex = split.elementPath[0];
 
     if (topIndex === undefined || this.topNodes.at(topIndex) === undefined) {
       return null;
     }
 
-    const rightElement = applySplitHistoryToYjs(
+    const rightElement = applyCanonicalSplitToYjs(
       this.root,
-      splitHistory,
+      split,
       this.isSetValued,
       this.schemaRoot
     );
-    const insertsTopLevel = splitHistory.elementPath.length === 1;
+    const insertsTopLevel = split.elementPath.length === 1;
 
     if (insertsTopLevel) {
       this.topNodes.splice(topIndex + 1, 0, [rightElement]);
@@ -2706,6 +2595,8 @@ export class YjsEventChangeBridge {
       regionIndex--;
     }
 
+    this.topNodes.reset(getYjsVisibleChildren(this.root, this.root));
+
     let tokenLengthNodes = 0;
 
     for (let index = prepared.length - 1; index >= 0; index--) {
@@ -2713,11 +2604,6 @@ export class YjsEventChangeBridge {
 
       if (!entry) continue;
 
-      this.topNodes.splice(
-        entry.region.beforeFrom,
-        entry.region.beforeTo - entry.region.beforeFrom,
-        entry.nodes
-      );
       tokenLengthNodes += this.lengths.splice(
         entry.region.beforeFrom,
         entry.region.beforeTo - entry.region.beforeFrom,
@@ -2739,27 +2625,35 @@ export class YjsEventChangeBridge {
     };
   }
 
-  normalize(batch: CapturedYjsEventBatch): ReadonlySet<YjsNode> {
-    const { parents, recursiveRoots } = eventNormalizationTargets(batch);
+  normalize(batch: CapturedYjsEventBatch): YjsEventNormalization {
+    const { insertedNodes, parents, recursiveRoots, truncatedTextNodes } =
+      eventNormalizationTargets(batch);
     const attachedParents = new Set(
       [...parents].filter((parent) => parent.doc === this.root.doc)
     );
     const attachedRoots = new Set(
       [...recursiveRoots].filter((node) => node.doc === this.root.doc)
     );
-
-    return removeRedundantEmptyYjsTextNodesAt(
+    const changedNodes = removeSupersededVirtualYjsSplitSuffixes(
       this.root,
-      attachedParents,
-      attachedRoots
+      insertedNodes,
+      truncatedTextNodes
     );
+
+    return {
+      changedNodes,
+      removedNodes: removeRedundantEmptyYjsTextNodesAt(
+        this.root,
+        attachedParents,
+        attachedRoots
+      ),
+    };
   }
 
   reset(children: readonly Descendant[]): number {
     const topNodes = getYjsVisibleChildren(this.root, this.root);
 
     this.children = children;
-    this.indexed = IndexedDocument.fromValue(children);
     this.lengths.reset(children);
     this.ready = topNodes.length === children.length;
     this.rootProjectionSimple = isSimpleRootProjection(this.root, topNodes);
@@ -2770,7 +2664,7 @@ export class YjsEventChangeBridge {
 
   translate(
     batch: CapturedYjsEventBatch,
-    normalizedNodes: ReadonlySet<YjsNode>
+    normalization: YjsEventNormalization
   ): YjsEventImportResult {
     if (!this.ready) {
       return { fallback: 'remote-event-mirror-mismatch', kind: 'fallback' };
@@ -2780,6 +2674,14 @@ export class YjsEventChangeBridge {
     const affectedTopNodes = new Set<YjsNode>();
     let hasProjectedTarget = false;
     let hasUnknownTarget = false;
+
+    for (const node of normalization.changedNodes) {
+      const topNode = getTopLevelNode(this.root, node);
+
+      if (topNode !== null && this.topNodes.has(topNode)) {
+        affectedTopNodes.add(topNode);
+      }
+    }
 
     for (const event of batch.events) {
       if (event.keys.some((key) => PROJECTION_ATTRIBUTES.has(key))) {
@@ -2834,7 +2736,7 @@ export class YjsEventChangeBridge {
       };
     }
 
-    const normalizedTopNodes = [...normalizedNodes].filter((node) =>
+    const normalizedTopNodes = [...normalization.removedNodes].filter((node) =>
       this.topNodes.has(node)
     );
     const parsedRootDelta =
@@ -2969,7 +2871,6 @@ export class YjsEventChangeBridge {
         ...prepared,
         accept: (children) => {
           this.children = children;
-          this.acceptIndexedChange(children);
           for (let index = structural.length - 1; index >= 0; index--) {
             const region = structural[index];
 
@@ -3002,9 +2903,5 @@ export class YjsEventChangeBridge {
       },
       kind: 'change',
     };
-  }
-
-  private acceptIndexedChange(expected: readonly Descendant[]): void {
-    this.indexed = IndexedDocument.fromValue(expected);
   }
 }

@@ -87,7 +87,7 @@ describe('TrailingBlockPlugin Plite runtime', () => {
   });
 
   it('allows wrapping the provided trailing-block insert boundary', () => {
-    const calls: Array<{ at: number[]; type: string }> = [];
+    const calls: Pick<TrailingBlockInsertOptions, 'at' | 'type'>[] = [];
     const insert = (
       _editor: BaseEditor,
       { at, insert: runInsert, type }: TrailingBlockInsertOptions

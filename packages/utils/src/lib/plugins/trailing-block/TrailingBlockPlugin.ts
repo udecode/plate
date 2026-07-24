@@ -34,28 +34,21 @@ export type TrailingBlockConfig = PluginConfig<
      */
     insert?: (editor: BaseEditor, options: TrailingBlockInsertOptions) => void;
     /** Level where the trailing node should be, the first level being 0. */
-    level?: number;
+    level: number;
     /** Match the last node before inserting the trailing block. */
     match?: NodeMatch<Node>;
     /** Type of the trailing block */
-    type?: string;
+    type: string;
   }
 >;
 
-type TrailingBlockPluginConfig = PluginConfig<
-  'trailingBlock',
-  TrailingBlockConfig['options'] & { type: string }
->;
-
-export const TrailingBlockPlugin: BasePlugin<TrailingBlockPluginConfig> =
+export const TrailingBlockPlugin: BasePlugin<TrailingBlockConfig> =
   createBasePlugin<TrailingBlockConfig>({
     key: KEYS.trailingBlock,
-    options: {
-      level: 0,
-    },
   })
     .extend(({ editor }) => ({
       options: {
+        level: 0,
         type: editor.getType(KEYS.p),
       },
     }))
@@ -66,7 +59,6 @@ export const TrailingBlockPlugin: BasePlugin<TrailingBlockPluginConfig> =
           query: 'root',
           correct({ tx }) {
             const { insert, level, match, type } = getOptions();
-            const trailingType = type ?? editor.getType(KEYS.p);
             const lastChild =
               tx.nodes.children().length > 0
                 ? tx.nodes.last([], { level })
@@ -78,15 +70,12 @@ export const TrailingBlockPlugin: BasePlugin<TrailingBlockPluginConfig> =
 
             if (
               !lastChildNode ||
-              (lastChildType !== trailingType &&
+              (lastChildType !== type &&
                 (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
             ) {
               const at = lastChild ? PathApi.next(lastChild[1]) : [0];
               const insertTrailingBlock = () => {
-                tx.nodes.insert(
-                  { children: [{ text: '' }], type: trailingType },
-                  { at }
-                );
+                tx.nodes.insert({ children: [{ text: '' }], type }, { at });
               };
 
               if (insert) {
@@ -94,7 +83,7 @@ export const TrailingBlockPlugin: BasePlugin<TrailingBlockPluginConfig> =
                   at,
                   insert: insertTrailingBlock,
                   tx,
-                  type: trailingType,
+                  type,
                 });
               } else {
                 insertTrailingBlock();

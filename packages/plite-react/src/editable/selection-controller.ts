@@ -12,8 +12,6 @@ import {
   containsShadowAware,
   type DOMRange,
   getSelection,
-  IS_ANDROID,
-  IS_WEBKIT,
   isDOMElement,
   isDOMNode,
   isDOMText,
@@ -21,6 +19,8 @@ import {
 import {
   DOMCoverage,
   type DOMPhaseScheduler,
+  isAndroidDOMHost,
+  isWebKitDOMHost,
   IS_FOCUSED,
   IS_NODE_MAP_DIRTY,
 } from '@platejs/plite-dom/internal';
@@ -57,6 +57,7 @@ import { isEditableOutsideFocusBoundarySettling } from './input-state';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   getSelection as editorGetSelection,
+  getSelectionDOMRange,
   setEditorFocused,
   toInternalRoot,
 } from './runtime-editor-api';
@@ -946,7 +947,7 @@ export const applyEditableDOMSelectionChange = ({
 
   if (
     !processing.current &&
-    IS_WEBKIT &&
+    isWebKitDOMHost(editorElement) &&
     ShadowRootConstructor &&
     editorRoot instanceof ShadowRootConstructor
   ) {
@@ -971,7 +972,7 @@ export const applyEditableDOMSelectionChange = ({
   state.pendingNativeTextInputRepairSuppressedDOMSelection = false;
 
   if (
-    (!IS_ANDROID && ReactEditor.isComposing(editor)) ||
+    (!isAndroidDOMHost(editorElement) && ReactEditor.isComposing(editor)) ||
     state.isDraggingInternally ||
     isEditableOutsideFocusBoundarySettling(state)
   ) {
@@ -1385,13 +1386,18 @@ export const syncEditableDOMSelectionToEditor = ({
     const preserveScroll =
       options?.preserveScroll || shouldSkipSelectionScroll(editor);
     const viewSelection = readPliteViewSelection(editor);
+    const projectedSelection = getSelectionDOMRange(editor, selection);
 
-    if (viewSelection || SelectionApi.isNode(selection)) {
+    if (viewSelection || !projectedSelection) {
       state.isUpdatingSelection = true;
       state.selectionChangeOrigin = 'programmatic-export';
       domSelection.removeAllRanges();
       const clearNativeSelection = () => domSelection.removeAllRanges();
-      const label = viewSelection ? 'view-selection' : 'node-selection';
+      const label = viewSelection
+        ? 'view-selection'
+        : SelectionApi.isNode(selection)
+          ? 'node-selection'
+          : 'model-only-selection';
 
       domPhaseScheduler.schedule(
         'selection-repair',
@@ -1439,14 +1445,14 @@ export const syncEditableDOMSelectionToEditor = ({
       readModelSelectionDOMPreference({
         editor,
         editorElement,
-        selection,
+        selection: projectedSelection,
       }) ??
       createFastDOMSelectionRange({
         editor,
         editorElement,
-        selection,
+        selection: projectedSelection,
       }) ??
-      ReactEditor.resolveDOMRange(editor, selection);
+      ReactEditor.resolveDOMRange(editor, projectedSelection);
 
     if (!domRange) {
       return;
@@ -1464,7 +1470,7 @@ export const syncEditableDOMSelectionToEditor = ({
         ? captureScrollOffsets(editorElement)
         : null;
 
-      if (RangeApi.isBackward(selection)) {
+      if (RangeApi.isBackward(projectedSelection)) {
         domSelection.setBaseAndExtent(
           domRange.endContainer,
           domRange.endOffset,
