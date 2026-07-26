@@ -23,9 +23,10 @@ An explicit target must name an existing route. A custom `handler` owns dispatch
 itself, so it cannot also set `target`.
 
 Declare handlerless shortcuts after the method they link to. TypeScript validates
-the capabilities already carried by that plugin descriptor, so an `.extendTx()`
-or `.extendApi()` call comes before the `.extend({ shortcuts })` call. Custom
-handlers do not need a linked method.
+the capabilities already carried by that plugin descriptor, so the constructor
+contribution with `update` or `api` comes before the
+`.extend({ shortcuts })` call. This real type dependency is why the example
+uses a later stage. Custom handlers do not need a linked method.
 
 | Field | Meaning |
 | --- | --- |
@@ -45,12 +46,12 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
   key: 'signature',
-})
-  .extendTx(() => (tx) => ({
+  update: ({ tx }) => ({
     insertSignature: () => {
       tx.text.insert(' - Plate');
     },
-  }))
+  }),
+})
   .extend({
     shortcuts: {
       insertSignature: {
@@ -71,12 +72,12 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const InspectPlugin = createPlatePlugin({
   key: 'inspect',
-})
-  .extendApi(({ editor }) => ({
+  api: ({ editor }) => ({
     logText: () => {
       editor.api.debug.info('Editor text', editor.api.string([]));
     },
-  }))
+  }),
+})
   .extend({
     shortcuts: {
       logText: {
@@ -108,7 +109,6 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const DraftPlugin = createPlatePlugin({
   key: 'draft',
-}).extend({
   shortcuts: {
     saveDraft: {
       keys: [[Key.Mod, 's']],
@@ -179,11 +179,11 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const ReviewPlugin = createPlatePlugin({
   key: 'review',
-})
-  .extendTx(() => (tx) => ({
+  update: ({ tx }) => ({
     accept: () => tx.text.insert('Accepted'),
     reject: () => tx.text.insert('Rejected'),
-  }))
+  }),
+})
   .extend({
     shortcuts: {
       accept: {
@@ -208,7 +208,6 @@ import { createPlatePlugin } from 'platejs/react';
 export const PriorityPlugin = createPlatePlugin({
   key: 'priority',
   priority: 20,
-}).extend({
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',

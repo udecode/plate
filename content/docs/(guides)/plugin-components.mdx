@@ -5,7 +5,7 @@ description: Render Plate plugin nodes with React components.
 
 Plugin components are the React rendering layer for Plate node plugins. Use
 Plate UI components first when the registry already has the node you need, then
-customize with `PlateElement`, `PlateLeaf`, `.withComponent`, or the editor
+customize with `PlateElement`, `PlateLeaf`, `.configure({ component })`, or the editor
 `components` map. This page shows which registration path to use.
 
 ## Start with Plate UI
@@ -88,12 +88,12 @@ export function CodeLeaf({ children, ...props }: PlateLeafProps) {
 
 ## Register Components
 
-Use the narrowest registration path that fits the job.
+Declare `component` in a new Plate plugin, or include it in the existing
+descriptor's single terminal `.configure()` call.
 
-### withComponent
+### Existing Plugin
 
-Use `.withComponent()` when you only need to attach a React component to a
-plugin.
+Use `.configure({ component })` to attach a React component to a plugin.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
 import {
@@ -105,17 +105,15 @@ import { BlockquoteElement } from '@/components/ui/blockquote-node';
 import { CodeLeaf } from '@/components/ui/code-node';
 
 export const plugins = [
-  BlockquotePlugin.withComponent(BlockquoteElement),
-  CodePlugin.withComponent(CodeLeaf),
+  BlockquotePlugin.configure({ component: BlockquoteElement }),
+  CodePlugin.configure({ component: CodeLeaf }),
 ];
 ```
 
-`.withComponent(Component)` writes `render.node` for the plugin.
+### Component With Consumer Overrides
 
-### render.node
-
-Use `render.node` inside `.configure()` when the same plugin call also owns
-rules, shortcuts, options, or parser behavior.
+When the same plugin also needs rules, shortcuts, options, or parser behavior,
+put every override in that same terminal `.configure()` call.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
 import { CodeRules } from '@platejs/basic-nodes';
@@ -125,8 +123,8 @@ import { CodeLeaf } from '@/components/ui/code-node';
 
 export const plugins = [
   CodePlugin.configure({
+    component: CodeLeaf,
     inputRules: [CodeRules.markdown()],
-    render: { node: CodeLeaf },
     shortcuts: { toggle: { keys: 'mod+e' } },
   }),
 ];
@@ -180,12 +178,12 @@ import { createPlatePlugin } from 'platejs/react';
 
 export const QuotePlugin = createPlatePlugin({
   key: 'quote',
+  render: {
+    as: 'blockquote',
+  },
   type: 'quote',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
-  },
-  render: {
-    as: 'blockquote',
   },
 });
 ```
@@ -219,9 +217,8 @@ replace from the registry.
 | --- | --- | --- |
 | `PlateElement` | Element nodes. | Defaults to `div`; accepts `as`, `className`, `style`, and Plate render props. |
 | `PlateLeaf` | Marked and decorated text. | Defaults to `span`; use with plugins that declare `schema.mark`. |
-| `plugin.withComponent(Component)` | Simple component attachment. | Writes `render.node`. |
-| `plugin.configure({ render: { node } })` | Component plus plugin definition. | Keeps rendering under one owner. |
-| `render.as` | Default wrapper with a different tag. | Works when no custom `render.node` component is set. |
+| `plugin.configure({ component: Component })` | Ordinary node component binding. | Include the component and every consumer override in the same terminal call. |
+| `render.as` | Default wrapper with a different tag. | Works when no `component` is bound. |
 | `components` | Editor-wide component overrides. | Merged into the root plugin's component overrides. |
 | `override.components` | Advanced plugin-level component overrides. | Higher-priority plugins win when a target already has a component. |
 

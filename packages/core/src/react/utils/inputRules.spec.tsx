@@ -322,6 +322,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
+          key: 'testPlugin',
           inputRules: [
             defineInputRule({
               apply: () => true,
@@ -329,7 +330,6 @@ describe('input rules', () => {
               trigger: '*',
             }),
           ],
-          key: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -469,6 +469,9 @@ describe('input rules', () => {
       plugins: [
         createPlatePlugin({
           key: 'bold',
+          schema: {
+            mark: property.boolean({ default: false, omitDefault: true }),
+          },
           inputRules: ({ rule }) => [
             rule.mark({
               end: '*',
@@ -476,9 +479,6 @@ describe('input rules', () => {
               trigger: '*',
             }),
           ],
-          schema: {
-            mark: property.boolean({ default: false, omitDefault: true }),
-          },
         }),
       ],
       initialValue: [{ children: [{ text: '**hello*' }], type: 'p' }],

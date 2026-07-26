@@ -13,11 +13,12 @@ describe('usePlateEditor Plite runtime route', () => {
     const nextValue: Value = [
       { children: [{ text: 'runtime hook' }], type: 'p' },
     ];
-    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
-      () => (tx) => ({
+    const TxPlugin = createPlatePlugin({
+      key: 'txPlugin',
+      update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
-      })
-    );
+      }),
+    });
     let replace: () => void = () => {
       throw new Error('runtime editor was not captured');
     };
@@ -59,11 +60,12 @@ describe('usePlateEditor Plite runtime route', () => {
     const nextValue: Value = [
       { children: [{ text: 'runtime factory' }], type: 'p' },
     ];
-    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
-      () => (tx) => ({
+    const TxPlugin = createPlatePlugin({
+      key: 'txPlugin',
+      update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
-      })
-    );
+      }),
+    });
 
     const editor = createPlateEditor({
       plugins: [TxPlugin],

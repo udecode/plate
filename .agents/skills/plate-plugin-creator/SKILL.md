@@ -25,9 +25,11 @@ needs a plan. Use [docs-creator](../docs-creator/SKILL.md) for public docs.
 Before authoring or refactoring a plugin, read:
 
 1. [creation-flow.md](./rules/creation-flow.md) for semantic and file ownership;
-2. [typing.md](./rules/typing.md) for inference and public contracts;
-3. [composition.md](./rules/composition.md) for options, APIs, transactions,
-   dependencies, Plite primitives, and React behavior.
+2. [typing.md](./rules/typing.md) for inference and public contracts.
+
+This owner contains the canonical options, API, transaction, dependency,
+Plite-primitive, React, and component-binding laws below. Do not read a second
+composition rule.
 
 Use [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) only
 for current repo examples. Core builders and type tests outrank precedent.
@@ -50,8 +52,14 @@ the work invents or materially changes a reusable public shape.
 
 - If behavior matters without React, author it in `src/lib` with
   `createBasePlugin`.
-- Lift an existing semantic base with `toPlatePlugin`; do not re-author it with
-  `createPlatePlugin`.
+- Lift an existing semantic base with `toPlatePlugin` only inside the live
+  React adapter layer; do not re-author it with `createPlatePlugin`.
+- Base/static modules must never import `platejs/react`,
+  `@platejs/core/react`, or any `@platejs/*/react` entrypoint. If a static
+  consumer cannot express a required binding, repair the Base/static Core
+  owner instead of importing a React adapter.
+- A Base/static kit binds a static renderer module, never a live/client node
+  component. In the registry, prefer the owning `*-static` component module.
 - Use `createPlatePlugin` directly only for a real React/Plate-native plugin.
 - Pure grouping of complete plugins belongs in an app or registry kit array,
   never a package bundle plugin.
@@ -77,7 +85,7 @@ Named direct-Plate exceptions:
 Colocation is the default.
 
 - Put behavior with exactly one production owner inline in that plugin's
-  `create*Plugin` / `.extend*` chain. This includes one-use `with*`,
+  `create*Plugin` / `.extend()` chain. This includes one-use `with*`,
   `decorate*`, normalizers, parsers, commands, corrections, matchers, options,
   APIs, and tx callbacks.
 - A separate helper needs multiple production consumers that cannot reuse the
@@ -118,7 +126,7 @@ identity to `best-api`.
 Let builders and initializers own contextual typing.
 
 - Infer plugin exports from `createBasePlugin`, `createPlatePlugin`,
-  `toPlatePlugin`, and chained `.extend*` methods.
+  `toPlatePlugin`, and chained `.extend()` calls.
 - Never annotate or cast an inferred plugin export to `BasePlugin`,
   `PlatePlugin`, or a config type.
 - Do not create `PluginConfig<'foo'>` aliases with no real options, API, tx,
@@ -130,16 +138,37 @@ Let builders and initializers own contextual typing.
   file.
 - Do not annotate local variables, callbacks, examples, or test fixtures whose
   initializer/context should infer them.
-- For an existing API/tx contract, pass the method object type to
-  `.extendApi<ApiContract>(...)` or `.extendTx<TxContract>(...)`. Do not append
-  `satisfies`, cast the callback, or annotate every parameter.
-- An `extendTx` generic describes the returned command object, not the
-  transaction-factory function.
-- Treat the builder chain as a typed capability dependency graph. When a later
-  API, tx, extension, handler, or required dependent needs an earlier
-  capability, add an earlier `.extendApi()` or `.extendTx()` stage and consume
-  its accumulated inferred `api` / update surface. Multiple ordered stages in
-  one plugin are preferred over parameter-threaded helper functions.
+- Bind an initial public capability contract through the constructor's plugin
+  config generic or the field callback's public return type. For a justified
+  later stage, pass the contribution shape to
+  `.extend<{ api: ApiContract }>(...)` or
+  `.extend<{ update: UpdateContract }>(...)`. The `update` contract describes
+  the command object returned by `update({ tx })`, not the factory function.
+  Do not append `satisfies`, cast the callback, or annotate every parameter.
+- Put every independent author contribution in `createBasePlugin()` /
+  `createPlatePlugin()`: `api`, `read`, `selectors`, `update`, `extension`,
+  `codecs`, and ordinary static fields. Constructor callbacks already receive
+  typed authoring context; context access alone never justifies `.extend()`.
+  Use `.extend()` only for an imported/prebuilt descriptor or extension, a
+  shared factory the constructor cannot access, or a real earlier-stage type
+  dependency.
+- Treat an exceptional builder chain as a typed capability dependency graph. When a later
+  API, read, update, extension, handler, or required dependent needs an earlier
+  capability, add an earlier `.extend()` stage with the applicable `api`,
+  `read`, `selectors`, `update`, `extension`, or `codecs` field and consume its
+  accumulated inferred surface. Multiple stages require a real type dependency and
+  remain preferable to parameter-threaded helper functions.
+- Author codecs through the constructor's context-bound callback:
+  `codecs: ({ defineCodecs }) => defineCodecs(map)`.
+  `defineCodecs(map)` handles self and product maps;
+  `defineCodecs(TargetPlugin, map)` handles a foreign map and injects the
+  target. The map remains MIME-keyed, and `'text/html'` accepts one
+  schema-aware rule or a non-empty ordered rule tuple. Keep multiple HTML
+  representations owned by one plugin in the same map; rule count is not a
+  staged type dependency. Move the callback to `.extend()` only when it
+  consumes an earlier capability. This is the one inline codec inference anchor. Do
+  not write direct `codecs: { ... }`, manual `target` fields, a global helper,
+  casts, or callback annotations.
 - Stage only an honest scoped capability that consumers, required dependents,
   or durable plugin operations should discover. Do not publish a private
   implementation fragment merely to share it between stages. Keep it lexical,
@@ -166,9 +195,20 @@ Plate plugin descriptors have one value bag: `options`.
 - Live option updates do not rebuild compiled schema. Configure schema-affecting
   values before editor construction.
 - Plite editor extensions may retain their own unrelated `config` contract.
-- `extendExtension` accepts a built extension or raw extension options. Raw
-  options without `name` default to the plugin key; do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })`.
+- The constructor's `extension` field accepts a built extension or raw
+  extension options. A justified `.extend({ extension })` stage accepts the
+  same shape when it adapts an existing descriptor or consumes an earlier
+  capability. Inline raw options are contextually typed and need no helper.
+  Raw options without `name` default to the plugin key.
+- Contextual typing does not flow backward into an extracted reusable
+  editor-extension factory. Pass that factory the plugin context (or its
+  `defineEditorExtension` member) and return
+  `context.defineEditorExtension({ ... })` so nested commands, inputs, state,
+  transactions, and dependency groups stay inferred. This helper is not a
+  builder stage and does not justify another `.extend()` call.
+- The context-bound helper is distinct from `defineEditorExtension` imported
+  from `@platejs/plite`, which authors standalone Plite extensions. Do not wrap
+  an inline plugin extension object in the imported helper.
 - Use an explicit extension name only for an independently identified secondary
   or standalone extension.
 
@@ -183,31 +223,37 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 
 ## API And Transaction Law
 
-- `extendApi` owns plugin-specific reads/services. On a concrete inferred
-  editor, consumers discover them through `editor.api.<pluginKey>`; generic
+- Constructors own the initial widening contribution: plugin-scoped `api`,
+  `read`, `selectors`, or `update`, editor-wide `extension`, format `codecs`,
+  and ordinary static fields. `.extend()` is the only continuation verb after
+  construction.
+- `api` owns plugin-specific immutable services. `read` owns
+  snapshot/transaction-local reads. `update: ({ tx }) => ({ ... })` owns the
+  plugin-keyed one-shot update surface. On a concrete inferred editor,
+  consumers discover plugin API through `editor.api.<pluginKey>`; generic
   package code and exact ownership use `editor.plugin(FooPlugin).api`.
 - Generic code integrating an optional descriptor first checks
   `editor.plugin(FooPlugin).installed`; required descriptor ownership may
   access the portal directly.
-- Both discovery paths expose the same plugin-owned API. Do not duplicate the
-  implementation with `extendEditorApi`.
-- Use `extendEditorApi` only for a genuinely unkeyed root editor capability.
+- Both discovery paths expose the same plugin-owned API. Publish it once
+  through the constructor's `api` field.
+- A genuinely unkeyed root editor capability belongs under
+  the constructor's `extension: { api }`, not a parallel plugin implementation.
 - A scoped portal already owns the plugin noun. Prefer flat, direct verbs such
   as `table.update.insertTable()` over taxonomy like
   `table.update.insert.table()`. Route disputed public spelling to `best-api`.
-- `extendTx` owns the plugin's one-shot update group. Use `extendTxGroup` only
-  when an additional named group is itself meaningful.
-- Put capability producers before their consumers. Later `.extendApi()` and
-  `.extendTx()` callbacks may destructure the accumulated inferred `api`;
+- Put capability producers before their consumers. Prefer the constructor for
+  the producer. Later `.extend()` callbacks may destructure the accumulated
+  inferred `api`, `read`, selectors, or update surface;
   required dependents consume the same capability through their inferred
   editor or scoped portal.
 - Inside a later tx method, reuse an earlier staged mutation through the same
   active transaction: `tx[plugin.key].method(...)`. Do not call
   `editor.plugin(FooPlugin).update.method(...)`, `context.update`, or another
   one-shot update from the active tx; that reopens a transaction.
-- `extendExtension` is assembled before plugin API publication. When its
-  runtime callbacks need a staged API, keep the typed extension context and
-  read `context.api` inside the runtime callback. Do not eagerly destructure
+- An `extension` contribution is assembled before plugin API publication. When
+  its runtime callbacks need a staged API, keep the typed extension context
+  and read `context.api` inside the runtime callback. Do not eagerly destructure
   `api` in the extension factory and capture the pre-publication value.
 - Repeated callers use the scoped API/tx method. They do not justify a parallel
   exported helper.
@@ -217,6 +263,28 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 - Do not extract one-owner behavior merely to create
   `foo(editor, tx, ...)` or paired one-shot/tx wrappers. Inline it where `tx`,
   `api`, options, editor, and type remain contextually inferred.
+
+## Component Binding Law
+
+- `createPlatePlugin()` accepts root-level `component`.
+- `createBasePlugin()` stays renderer-neutral and does not accept
+  `component`.
+- Existing Plate descriptors bind or replace the ordinary node component
+  through one terminal `.configure({ component })`.
+- Base/static consumers bind a static component directly through
+  `BasePlugin.configure({ component })`.
+- `toPlatePlugin(BasePlugin)` is the live React conversion path. Never use it
+  in a `*-base-kit`, `*-static`, server/static renderer, or other Base/static
+  module merely to bind a component.
+- Hard-delete `.withComponent()`.
+- Do not author, document, or preserve direct public `render.node` assignment.
+- `.configure()` is terminal and non-widening. It changes existing descriptor
+  values; it never publishes new typed capabilities.
+- `createBasePlugin()` / `createPlatePlugin()` own every independent
+  declaration contribution. Constructor callbacks already receive typed
+  authoring context; context access alone never justifies `.extend()`. Use
+  `.extend()` only for imported/prebuilt declarations, a shared factory the
+  constructor cannot access, or an earlier-stage type dependency.
 - New scoped methods and surviving helpers take domain arguments by default.
   Do not pass `editor`, `api`, `read`, `tx`, `getOptions`, resolved plugin
   option values, or resolved plugin type merely to reuse plugin-owned behavior.
@@ -338,7 +406,5 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 
 - [creation-flow.md](./rules/creation-flow.md) — semantic and file ownership
 - [typing.md](./rules/typing.md) — contextual inference and contracts
-- [composition.md](./rules/composition.md) — options, APIs, tx, relationships,
-  Plite primitives, and React behavior
 - [plugin-authoring-audit.md](./references/plugin-authoring-audit.md) — current
   examples and rejected precedent

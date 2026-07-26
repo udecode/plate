@@ -35,22 +35,28 @@ const pliteExtensionNamePattern = /^define.*Extension$/;
 const contextualConfigureKeys = new Set([
   'handlers',
   'options',
+  'override',
   'render',
   'shortcuts',
+]);
+const deletedPluginBuilderMethods = new Set([
+  'extendApi',
+  'extendCodecs',
+  'extendEditorApi',
+  'extendExtension',
+  'extendHtmlCodec',
+  'extendSelectors',
+  'extendTx',
+  'extendTxGroup',
+  'withComponent',
 ]);
 const pluginAuthoringMethods = new Set([
   'clone',
   'configure',
   'configurePlugin',
   'extend',
-  'extendApi',
-  'extendEditorApi',
-  'extendExtension',
   'extendPlugin',
-  'extendSelectors',
-  'extendTx',
-  'extendTxGroup',
-  'withComponent',
+  ...deletedPluginBuilderMethods,
 ]);
 const removedEditorConstructorKeys = new Set(['onReady', 'value']);
 
@@ -194,6 +200,23 @@ const readMemberCallName = (node) =>
     ? getPropertyName(node.callee.property)
     : undefined;
 
+const readCallChainRootName = (node) => {
+  let current = unwrapTypedExpression(node);
+
+  while (current?.type === 'CallExpression') {
+    if (current.callee.type === 'Identifier') return current.callee.name;
+    if (current.callee.type !== 'MemberExpression' || current.callee.computed) {
+      return;
+    }
+
+    current = unwrapTypedExpression(current.callee.object);
+  }
+};
+
+const isForeignStoreSelectorExtension = (node) =>
+  readMemberCallName(node) === 'extendSelectors' &&
+  readCallChainRootName(node) === 'createZustandStore';
+
 const isFunction = (node) =>
   node?.type === 'ArrowFunctionExpression' ||
   node?.type === 'FunctionExpression' ||
@@ -305,6 +328,31 @@ const inspectContextualConfigure = (callback) => {
   return { invalidReturns, properties };
 };
 
+const getStaticExtensionProperties = (contribution) => {
+  const value = unwrapTypedExpression(contribution);
+
+  if (value?.type === 'ObjectExpression') return value.properties;
+  if (isFunction(value)) return inspectContextualConfigure(value).properties;
+
+  return [];
+};
+
+const isDefineCodecsCall = (property) => {
+  if (property?.type !== 'ObjectProperty') return false;
+
+  let value = unwrapTypedExpression(property.value);
+
+  if (isFunction(value)) {
+    value = unwrapTypedExpression(getStaticFunctionResult(value));
+  }
+
+  return (
+    value?.type === 'CallExpression' &&
+    value.callee.type === 'Identifier' &&
+    value.callee.name === 'defineCodecs'
+  );
+};
+
 const isSchemaApiCall = (node, method) =>
   node?.type === 'CallExpression' &&
   node.callee.type === 'MemberExpression' &&
@@ -377,6 +425,99 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         node?.callee?.type === 'MemberExpression'
           ? unwrapTypedExpression(node.callee.object)
           : undefined;
+
+      if (
+        memberCallName &&
+        deletedPluginBuilderMethods.has(memberCallName) &&
+        !isForeignStoreSelectorExtension(node)
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            memberCallName === 'withComponent'
+              ? 'deleted plugin builder .withComponent(); use root-level component'
+              : `deleted plugin builder .${memberCallName}(); use constructor fields or .extend() when context is required`
+          )
+        );
+      }
+
+      if (memberCallName === 'extend') {
+        for (const property of getStaticExtensionProperties(
+          node.arguments[0]
+        )) {
+          if (
+            getPropertyName(property.key) === 'codecs' &&
+            !isDefineCodecsCall(property)
+          ) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+              )
+            );
+          }
+        }
+      }
+
+      if (
+        node.type === 'CallExpression' &&
+        node.callee.type === 'Identifier' &&
+        ['createBasePlugin', 'createPlatePlugin'].includes(node.callee.name) &&
+        node.arguments[0]?.type === 'ObjectExpression'
+      ) {
+        for (const property of node.arguments[0].properties) {
+          const key =
+            property.type === 'ObjectProperty' ||
+            property.type === 'ObjectMethod'
+              ? getPropertyName(property.key)
+              : undefined;
+
+          if (node.callee.name === 'createBasePlugin' && key === 'component') {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'root-level component is available only in createPlatePlugin'
+              )
+            );
+          }
+
+          if (key === 'codecs' && !isDefineCodecsCall(property)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+              )
+            );
+          }
+        }
+      }
+
+      if (
+        node.type === 'ObjectProperty' &&
+        getPropertyName(node.key) === 'render' &&
+        node.value?.type === 'ObjectExpression'
+      ) {
+        const nodeComponent = getObjectProperty(node.value, 'node');
+
+        if (nodeComponent) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              nodeComponent,
+              'plugin node components must use root-level component instead of render.node authoring'
+            )
+          );
+        }
+      }
 
       if (
         memberCallName &&

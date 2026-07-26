@@ -58,31 +58,39 @@ void extendedTablePlugin;
 const tableDependentPlugin = createBasePlugin({
   dependencies: [BaseTablePlugin],
   key: 'tableDependent',
-}).extendApi(({ editor }) => ({
-  createTable: () => {
-    const cell = editor.api.table.createCell({ header: true });
-    const row = editor.api.table.createRow({ colCount: 2, header: true });
-    const selection = editor.api.table.getSelection();
-    const table = editor.api.table.create({ colCount: 2, rowCount: 2 });
+}).extend(({ editor }) => ({
+  api: {
+    createTable: () => {
+      const cell = editor.api.table.createCell({ header: true });
+      const row = editor.api.table.createRow({ colCount: 2, header: true });
+      const selection = editor.api.table.getSelection();
+      const table = editor.api.table.create({ colCount: 2, rowCount: 2 });
 
-    return { cell, row, selection, table };
+      return { cell, row, selection, table };
+    },
   },
 }));
 
-const stagedTableExtension = BaseTablePlugin.extendApi(({ api }) => ({
-  createHeaderRow: () => api.createRow({ colCount: 2, header: true }),
-})).extendTx(({ api, plugin }) => (tx) => ({
-  hideLeftBorder: () => {
-    tx[plugin.key].setBorderSize(0, { border: 'left' });
-
-    const selection = tx.selection();
-    const tableSelection = api.getSelection(undefined, tx);
-
-    return {
-      cellSelection: selection ? api.createCellSelection(selection, tx) : null,
-      tableSelection,
-    };
+const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
+  api: {
+    createHeaderRow: () => api.createRow({ colCount: 2, header: true }),
   },
+})).extend(({ api, plugin }) => ({
+  update: ({ tx }) => ({
+    hideLeftBorder: () => {
+      tx[plugin.key].setBorderSize(0, { border: 'left' });
+
+      const selection = tx.selection();
+      const tableSelection = api.getSelection(undefined, tx);
+
+      return {
+        cellSelection: selection
+          ? api.createCellSelection(selection, tx)
+          : null,
+        tableSelection,
+      };
+    },
+  }),
 }));
 
 void tableDependentPlugin;

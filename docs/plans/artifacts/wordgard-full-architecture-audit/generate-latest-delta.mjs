@@ -11,6 +11,7 @@ const repository = join(artifactDirectory, '../../../../..', 'wordgard');
 const gitDirectory = join(repository, '.git');
 const baselineCommit = '1acb231df7067bf5f85e694aaf4646181441e9ab';
 const latestCommit = '8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e';
+const sourceFileExtensionPattern = /\.[cm]?[jt]sx?$/;
 const baselineManifestPath = join(artifactDirectory, 'coverage-manifest.json');
 const outputPath = join(artifactDirectory, 'latest-delta-manifest.json');
 const baselineManifest = JSON.parse(readFileSync(baselineManifestPath, 'utf8'));
@@ -148,7 +149,7 @@ const declarationKind = (declaration) => {
 };
 
 const collectPublicItems = (source, path) => {
-  if (source === null || !/\.[cm]?[jt]sx?$/.test(path)) return [];
+  if (source === null || !sourceFileExtensionPattern.test(path)) return [];
   const ast = parse(source, {
     errorRecovery: false,
     plugins: ['typescript', 'jsx'],
@@ -401,8 +402,8 @@ const manifest = {
 };
 
 writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`);
-console.log(
-  JSON.stringify(
+process.stdout.write(
+  `${JSON.stringify(
     {
       outputPath,
       summary: manifest.summary,
@@ -410,5 +411,5 @@ console.log(
     },
     null,
     2
-  )
+  )}\n`
 );

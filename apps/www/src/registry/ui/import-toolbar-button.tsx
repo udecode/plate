@@ -22,37 +22,17 @@ import {
 
 import { ToolbarButton } from './toolbar';
 
-type ImportType = 'html' | 'markdown';
-
 export function ImportToolbarButton(props: DropdownMenuProps) {
   const { editor } = useEditorPlugin(MarkdownPlugin);
   const [open, setOpen] = React.useState(false);
   const markdownApi = editor.api.markdown;
-
-  const getFileNodes = (text: string, type: ImportType) => {
-    if (type === 'html') {
-      const editorNode = getEditorDOMFromHtmlString(text);
-      const nodes = editor.plugin(HtmlPlugin).api.deserialize({
-        element: editorNode,
-      });
-
-      return nodes;
-    }
-
-    if (type === 'markdown') {
-      return markdownApi.deserialize(text).children;
-    }
-
-    return [];
-  };
 
   const { openFilePicker: openMdFilePicker } = useFilePicker({
     accept: ['.md', '.mdx'],
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
       const text = await plainFiles[0].text();
-
-      const nodes = getFileNodes(text, 'markdown');
+      const nodes = markdownApi.deserialize(text).children;
 
       editor.update.fragment.replace(nodes);
     },
@@ -63,8 +43,12 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
       const text = await plainFiles[0].text();
+      const editorNode = getEditorDOMFromHtmlString(text);
+      const nodes = editor.plugin(HtmlPlugin).api.deserialize({
+        element: editorNode,
+      });
 
-      const nodes = getFileNodes(text, 'html');
+      if (nodes === null) return;
 
       editor.update.fragment.replace(nodes);
     },

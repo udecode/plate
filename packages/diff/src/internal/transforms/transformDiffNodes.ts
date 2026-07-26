@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant } from '@platejs/plite';
+import { type Descendant, ElementApi } from '@platejs/plite';
 
 import { type ComputeDiffOptions, computeDiff } from '../../lib/computeDiff';
 import { isEqual } from '../utils/is-equal';
@@ -26,18 +26,14 @@ type Handler = (
  */
 const childrenOnlyStrategy: Handler = (node, nextNode, options) => {
   if (
-    node.children != null &&
-    nextNode.children != null &&
+    ElementApi.isElement(node) &&
+    ElementApi.isElement(nextNode) &&
     isEqual(node, nextNode, {
       ignoreDeep: options.ignoreProps,
       ignoreShallow: ['children'],
     })
   ) {
-    const children = computeDiff(
-      node.children as Descendant[],
-      nextNode.children as Descendant[],
-      options
-    );
+    const children = computeDiff(node.children, nextNode.children, options);
 
     return [
       {

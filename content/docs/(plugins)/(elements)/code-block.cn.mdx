@@ -97,14 +97,14 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin.configure({
+      component: CodeBlockElement,
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
-      render: { node: CodeBlockElement },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
+      component: CodeSyntaxLeaf,
       options: { lowlight },
-      render: { node: CodeSyntaxLeaf },
     }),
   ],
 });
@@ -134,28 +134,29 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     CodeBlockPlugin.configure({
+      component: CodeBlockElement,
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
-      render: { node: CodeBlockElement },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
+      component: CodeSyntaxLeaf,
       options: {
         lowlight,
         defaultLanguage: 'js', // 设置默认语言（可选）
       },
-      render: { node: CodeSyntaxLeaf },
     }),
   ],
 });
 ```
 
-- `CodeBlockPlugin.render.node`: 指定 [`CodeBlockElement`](/docs/components/code-block-node) 来渲染代码块容器
+- `CodeBlockPlugin.configure({ component })`：使用
+  [`CodeBlockElement`](/docs/components/code-block-node) 渲染代码块容器
 - `inputRules`：注册三反引号围栏规则。`on: 'match'` 表示围栏完成时立即提交，`on: 'break'` 表示围栏完成后按 `Enter` 再提交。
 - `CodeHighlightPlugin.options.lowlight`: 用于语法高亮的 lowlight 实例
 - `CodeHighlightPlugin.options.defaultLanguage`: 未指定语言时使用的默认语言
 - `shortcuts.toggle`: 定义切换代码块的键盘[快捷键](/docs/plugin-shortcuts)
-- `withComponent`: 为代码行和语法高亮指定组件
+- `component`: 为代码行和语法高亮指定组件
 
 需要纯文本代码块时，省略 `CodeHighlightPlugin`：
 

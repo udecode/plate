@@ -84,6 +84,13 @@ and registry wiring.
   consumers, and compose renderer-specific peer kits in the owning editor
   preset. Do not create a base twin because an unrelated renderer kit was
   bundled into a neutral owner.
+- Base/static kits must not import `platejs/react`, `@platejs/core/react`, or
+  any `@platejs/*/react` entrypoint. Bind static components with
+  `BasePlugin.configure({ component: StaticComponent })`. Reserve
+  `toPlatePlugin(BasePlugin)` for live React adapters.
+- Bind that Base descriptor to the static renderer module, never the live
+  client node component. Registry Base kits should import the owning
+  `*-static` component.
 
 ### React Performance & Effects → [react-performance.md](./rules/react-performance.md)
 
@@ -177,14 +184,18 @@ return <Button disabled={!canToggleBold}>Bold</Button>;
 
 // Good: base/live split stays explicit.
 export const BaseFootnoteKit = [
-  BaseFootnoteReferencePlugin.withComponent(FootnoteReferenceElementStatic),
-  BaseFootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElementStatic),
+  BaseFootnoteReferencePlugin.configure({
+    component: FootnoteReferenceElementStatic,
+  }),
+  BaseFootnoteDefinitionPlugin.configure({
+    component: FootnoteDefinitionElementStatic,
+  }),
 ];
 
 export const FootnoteKit = [
-  FootnoteInputPlugin.withComponent(FootnoteInputElement),
-  FootnoteReferencePlugin.withComponent(FootnoteReferenceElement),
-  FootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElement),
+  FootnoteInputPlugin.configure({ component: FootnoteInputElement }),
+  FootnoteReferencePlugin.configure({ component: FootnoteReferenceElement }),
+  FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
 ];
 
 // Good: runtime-neutral policy is shared by both editor presets.

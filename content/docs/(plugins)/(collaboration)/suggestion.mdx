@@ -99,7 +99,6 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
       hoverId: null,
     },
     render: {
-      node: SuggestionLeaf,
       belowRootNodes: ({ api, element }) => {
         if (!api.isBlockSuggestion(element)) {
           return null;
@@ -109,13 +108,14 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
       },
     },
   })
-);
+).configure({ component: SuggestionLeaf });
 ```
 
 - `options.activeId`: Currently active suggestion ID for visual highlighting
 - `options.currentUserId`: ID of the current user creating suggestions  
 - `options.hoverId`: Currently hovered suggestion ID for hover effects
-- `render.node`: Assigns [`SuggestionLeaf`](/docs/components/suggestion-node) to render suggestion text marks
+- `.configure({ component: SuggestionLeaf })`: Renders suggestion text marks with
+  [`SuggestionLeaf`](/docs/components/suggestion-node)
 - `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-suggestion) for block-level suggestions
 
 ### Add Click Handler

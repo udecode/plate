@@ -5,7 +5,7 @@ import {
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from '../lib/BaseCodeBlockPlugin';
-import { getCodeBlockLanguageChange } from '../lib/withCodeBlock';
+import { getCodeBlockLanguageChange } from '../lib/BaseCodeBlockPlugin';
 
 export const CodeLinePlugin = toPlatePlugin(BaseCodeLinePlugin);
 
@@ -17,13 +17,19 @@ export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
 /** Adds Lowlight syntax highlighting to code blocks. */
 export const CodeHighlightPlugin = toPlatePlugin(BaseCodeHighlightPlugin, {
   dependencies: [CodeBlockPlugin],
-}).extendExtension('react', ({ editor, getOptions }) => ({
-  onTransactionChange(context) {
-    const shouldRefreshDecorations = Boolean(
-      getOptions().lowlight &&
-        getCodeBlockLanguageChange(context, editor.getType(CodeBlockPlugin.key))
-    );
+}).extend(({ editor, getOptions }) => ({
+  extension: {
+    key: 'react',
+    onTransactionChange(context) {
+      const shouldRefreshDecorations = Boolean(
+        getOptions().lowlight &&
+          getCodeBlockLanguageChange(
+            context,
+            editor.getType(CodeBlockPlugin.key)
+          )
+      );
 
-    if (shouldRefreshDecorations) editor.api.react.refreshDecorations();
+      if (shouldRefreshDecorations) editor.api.react.refreshDecorations();
+    },
   },
 }));

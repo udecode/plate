@@ -10,9 +10,10 @@ import { useEditorPlugin } from './useEditorPlugin';
 describe('useEditorPlugin', () => {
   it('infers plugin-owned updates from the descriptor', () => {
     const duplicate = vi.fn();
-    const BlockPlugin = createPlatePlugin({ key: 'block' }).extendTx(
-      () => () => ({ duplicate })
-    );
+    const BlockPlugin = createPlatePlugin({
+      key: 'block',
+      update: () => ({ duplicate }),
+    });
     const editor = createPlateEditor({ plugins: [BlockPlugin] });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>

@@ -66,8 +66,7 @@ const ParagraphPlugin = createPlatePlugin({
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
-  render: { node: ParagraphElement },
-});
+}).configure({ component: ParagraphElement });
 ```
 
 ### 行内元素、Void 元素和文本属性
@@ -132,7 +131,6 @@ H1Plugin.configure({
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
-  key: 'example',
   handlers: {
     onChange: ({ editor, value })  => {
       console.info(editor, value);
@@ -141,6 +139,7 @@ const ExamplePlugin = createPlatePlugin({
       console.info(`You pressed ${event.key}`);
     },
   },
+  key: 'example',
 });
 ```
 
@@ -152,6 +151,28 @@ const ExamplePlugin = createPlatePlugin({
 import { KEYS, property, target } from 'platejs';
 
 const TextAlignPlugin = createPlatePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => element.style.textAlign || undefined,
+        encode: ({ value }) => ({ style: { textAlign: value } }),
+        match: [
+          {
+            style: {
+              textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+            },
+          },
+        ],
+      },
+    }),
+  inject: {
+    isBlock: true,
+    nodeProps: {
+      defaultNodeValue: 'start',
+      styleKey: 'textAlign',
+      validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+    },
+  },
   key: 'align',
   schema: ({ own, plugins, targetPluginKeys }) => ({
     properties: [
@@ -161,31 +182,14 @@ const TextAlignPlugin = createPlatePlugin({
       }),
     ],
   }),
-  inject: {
-    isBlock: true,
-    nodeProps: {
-      defaultNodeValue: 'start',
-      styleKey: 'textAlign',
-      validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
-    },
-  },
   targetPluginKeys: [KEYS.p],
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => element.style.textAlign || undefined,
-  encode: ({ value }) => ({ style: { textAlign: value } }),
-  match: [
-    {
-      style: {
-        textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
-      },
-    },
-  ],
-}));
+});
 ```
 
-`inject.nodeProps` 负责渲染，`.extendHtmlCodec()` 负责双向 HTML 声明。
-两者都使用插件解析后的 `type`，因此最终的 `.configure({ type })` 可以修改存储
-属性，而不需要在 codec 中重复 key。
+`inject.nodeProps` 负责渲染，constructor 的 `codecs` callback 把双向 HTML
+声明绑定到插件 schema。`defineCodecs` 根据 property 声明推断 `value`。两条
+路径都使用插件解析后的 `type`，因此最终的 `.configure({ type })` 可以修改
+存储属性，而不需要在 codec 中重复 key。
 
 受该插件影响的段落节点如下：
 
@@ -199,25 +203,24 @@ const TextAlignPlugin = createPlatePlugin({
 
 ### 扩展 API 和事务命令
 
-使用 `.extendEditorApi()` 添加编辑器级读取或服务，使用 `.extendTx()` 添加插件自己的文档变更。两者保持分离，调用方可以直接看出某个方法是否会修改编辑器。
+插件读取和服务放在 `api`，文档变更放在 `update`。Constructor callback
+直接接收 plugin context。
 
 ```ts
-type CustomConfig = PluginConfig<'custom', { allowDelete: boolean }>;
-
-const CustomPlugin = createPlatePlugin<CustomConfig>({
+const CustomPlugin = createPlatePlugin({
+  api: ({ getOptions }) => ({
+    canDelete: () => getOptions().allowDelete,
+  }),
   key: 'custom',
   options: { allowDelete: true },
-})
-  .extendEditorApi(({ getOptions }) => ({
-    canDelete: () => getOptions().allowDelete,
-  }))
-  .extendTx(({ getOptions }) => (tx) => ({
+  update: ({ getOptions, tx }) => ({
     deleteBackward() {
       if (!getOptions().allowDelete) return;
 
       tx.text.delete({ reverse: true, unit: 'character' });
     },
-  }));
+  }),
+});
 
 editor.api.canDelete();
 editor.update((tx) => tx.custom.deleteBackward());
@@ -225,33 +228,36 @@ editor.update((tx) => tx.custom.deleteBackward());
 
 ### 安装 Plite 扩展（高级）
 
-当 Plate 插件需要安装 Plite 底层能力时使用 `.extendExtension()`：schema、state、tx、command、correction 或运行时服务。
+Plate 插件的 Plite 底层能力放在 `extension` 贡献中：schema、state、
+transaction、command、correction 或运行时服务。
 
 ```ts showLineNumbers
-import { defineEditorExtension } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
-const customState = defineEditorExtension({
-  name: 'custom-state',
-  state: {
-    customState() {
-      return {
-        enabled: () => true,
-      };
+const CustomStatePlugin = createPlatePlugin({
+  extension: {
+    state: {
+      customState() {
+        return {
+          enabled: () => true,
+        };
+      },
     },
   },
-});
-
-const CustomStatePlugin = createPlatePlugin({
   key: 'customState',
-}).extendExtension(customState);
+});
 ```
 
 <Callout type="info" title="扩展、API 与事务">
-- 使用 `.extendExtension()` 安装 Plite 底层能力。
-- 使用 `.extendApi()` 或 `.extendEditorApi()` 添加读取与服务。
-- 使用 `editor.update.*` 或活动事务中的 `tx` 组执行变更。
+- 互相独立的 `extension`、`api`、`read` 和 `update` 放进 constructor。
+  只有 import/prebuilt descriptor、constructor 无法访问的 shared factory
+  或前一阶段类型才使用 `.extend()`。
 </Callout>
+
+Inline extension object 不需要 helper。抽取后可复用的 Plate factory 使用
+callback context 中的 `defineEditorExtension`；standalone Plite extension 从
+`@platejs/plite` import `defineEditorExtension`。详见
+[插件方法](/docs/plugin-methods#install-plite-capabilities)。
 
 ## 高级插件配置
 
@@ -265,13 +271,12 @@ const MyPlugin = createPlatePlugin({
   options: {
     count: 0,
   },
-}).extend(({ editor, plugin, setOption }) => ({
   handlers: {
-    onClick: () => {
+    onClick: ({ setOption }) => {
       setOption('count', 1);
     },
   },
-}));
+});
 ```
 
 您可以使用以下方法访问和更新存储：
@@ -387,46 +392,43 @@ const HtmlCleanupPlugin = createPlatePlugin({
 `createPlatePlugin`函数允许创建类型化插件：
 
 ```ts
-type CodeBlockConfig = PluginConfig<
-  // key
-  'codeBlock',
-  // options
-  { syntax: boolean; syntaxPopularFirst: boolean },
-  // api
-  {
-    plugin: {
-      getSyntaxState: () => boolean;
-    };
-    toggleSyntax: () => void;
-  },
-  // tx
-  {
-    insert: {
-      codeBlock: () => void;
-    };
-  },
-  // selectors
-  {}
->;
+type CodeBlockOptions = {
+  language: string;
+  syntax: boolean;
+  syntaxPopularFirst: boolean;
+};
 
-const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
+type CodeBlockApi = {
+  getLanguage: () => string;
+  getSyntaxState: () => boolean;
+};
+
+type CodeBlockUpdate = {
+  insertCodeBlock: () => void;
+};
+
+const CodeBlockPlugin = createPlatePlugin({
+  api: ({ getOptions }): CodeBlockApi => ({
+    getLanguage: () => getOptions().language,
+    getSyntaxState: () => getOptions().syntax,
+  }),
   key: 'codeBlock',
   type: 'code_block',
-  options: { syntax: true, syntaxPopularFirst: false },
-}).extendEditorApi<CodeBlockConfig['api']>(() => ({
-  plugin: {
-    getSyntaxState: () => true,
-  },
-  toggleSyntax: () => {},
-})).extendTxGroup('insert', ({ getOptions }) => (tx) => ({
-  codeBlock: () => {
-    tx.nodes.insert({
-      type: 'code_block',
-      language: getOptions().language,
-      children: [{ text: '' }],
-    });
-  },
-}));
+  options: {
+    language: 'typescript',
+    syntax: true,
+    syntaxPopularFirst: false,
+  } as CodeBlockOptions,
+  update: ({ getOptions, tx }): CodeBlockUpdate => ({
+    insertCodeBlock: () => {
+      tx.nodes.insert({
+        type: 'code_block',
+        language: getOptions().language,
+        children: [{ text: '' }],
+      });
+    },
+  }),
+});
 ```
 
 ### 使用类型化插件

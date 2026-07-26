@@ -93,11 +93,11 @@ import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    H1Plugin.withComponent(H1Element),
-    H2Plugin.withComponent(H2Element),
-    H3Plugin.withComponent(H3Element),
+    H1Plugin.configure({ component: H1Element }),
+    H2Plugin.configure({ component: H2Element }),
+    H3Plugin.configure({ component: H3Element }),
     TocPlugin.configure({
-      render: { node: TocElement },
+      component: TocElement,
       options: {
         topOffset: 80,
         isScroll: true,
@@ -107,7 +107,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.node`: 指定渲染目录元素的 [`TocElement`](/docs/components/toc-node)
+- `.configure({ component })`: 指定渲染目录元素的 [`TocElement`](/docs/components/toc-node)
 - `options.topOffset`: 设置滚动至标题时的顶部偏移量
 - `options.isScroll`: 启用滚动至标题的行为
 

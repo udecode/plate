@@ -1,5 +1,9 @@
 import type { BaseEditor } from '@platejs/core';
-import { type EditorUpdateTransaction, PathApi } from '@platejs/plite';
+import {
+  type EditorUpdateTransaction,
+  type Path,
+  PathApi,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { TFootnoteElement } from '../types';
@@ -9,7 +13,7 @@ const NUMERIC_IDENTIFIER_REGEX = /^\d+$/;
 export const normalizeDuplicateFootnoteDefinition = (
   editor: BaseEditor,
   tx: EditorUpdateTransaction,
-  { path, identifier }: { path: number[]; identifier?: string }
+  { path, identifier }: { path: Path; identifier?: string }
 ) => {
   const entry = tx.nodes.get<TFootnoteElement>(path);
 

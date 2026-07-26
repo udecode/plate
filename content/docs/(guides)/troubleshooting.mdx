@@ -94,7 +94,7 @@ import { H1Plugin } from '@platejs/basic-nodes/react';
 
 import { H1Element } from '@/components/ui/heading-node';
 
-export const plugins = [H1Plugin.withComponent(H1Element)];
+export const plugins = [H1Plugin.configure({ component: H1Element })];
 ```
 
 For copied Plate UI kits, inspect the kit that owns the feature before adding

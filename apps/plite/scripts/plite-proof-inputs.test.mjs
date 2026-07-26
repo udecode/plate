@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
+import nextConfig from '../next.config.ts';
 import {
   appBuildEntries,
   browserBuildEntries,
@@ -26,6 +27,17 @@ const normalizedEntries = (entries) =>
       path.relative(repoRoot, entry).split(path.sep).join('/')
     )
   );
+
+const entryCoversPath = (entry, target) => {
+  const relative = path.relative(entry, target);
+
+  return (
+    relative === '' ||
+    (relative !== '..' &&
+      !relative.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relative))
+  );
+};
 
 const waitForChange = async (monitor, timeoutMs = 1000) => {
   const startedAt = performance.now();
@@ -52,6 +64,9 @@ test('app build inputs cover styles, config, local dependencies, and tooling', (
     'tooling/scripts/run-bounded-process.mjs',
     'apps/www/src/app/globals.css',
     'tsconfig.json',
+    'packages/media/src',
+    'packages/plate/src',
+    'packages/table/src',
     'packages/udecode/react-hotkeys/src',
     'packages/udecode/react-utils/src',
     'packages/udecode/utils/src',
@@ -61,6 +76,51 @@ test('app build inputs cover styles, config, local dependencies, and tooling', (
     'tooling/scripts/check-package-build-artifacts.mjs',
   ]) {
     assert.ok(entries.has(expected), `missing app build input: ${expected}`);
+  }
+});
+
+test('app build inputs cover every workspace package target aliased by Next', () => {
+  assert.equal(typeof nextConfig.webpack, 'function');
+
+  const config = nextConfig.webpack({ resolve: { alias: {} } });
+  const packagesRoot = path.join(repoRoot, 'packages');
+  const packageAliases = Object.entries(config.resolve.alias).filter(
+    (entry) =>
+      typeof entry[1] === 'string' && entryCoversPath(packagesRoot, entry[1])
+  );
+
+  assert.ok(packageAliases.length > 0);
+
+  for (const [alias, target] of packageAliases) {
+    assert.ok(
+      appBuildEntries.some((entry) => entryCoversPath(entry, target)),
+      `missing app build input for Next alias ${alias}: ${target}`
+    );
+  }
+});
+
+test('app build inputs cover the external collaboration example graph', () => {
+  const entries = normalizedEntries(appBuildEntries);
+
+  for (const expected of [
+    'apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx',
+    'apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx',
+    'apps/www/src/registry/components/editor/plugins/basic-nodes-kit.tsx',
+    'apps/www/src/registry/examples/collaboration-demo.tsx',
+    'apps/www/src/registry/ui/blockquote-node.tsx',
+    'apps/www/src/registry/ui/code-node.tsx',
+    'apps/www/src/registry/ui/editor.tsx',
+    'apps/www/src/registry/ui/heading-node.tsx',
+    'apps/www/src/registry/ui/highlight-node.tsx',
+    'apps/www/src/registry/ui/hr-node.tsx',
+    'apps/www/src/registry/ui/kbd-node.tsx',
+    'apps/www/src/registry/ui/paragraph-node.tsx',
+    'apps/www/src/registry/ui/remote-cursor-overlay.tsx',
+  ]) {
+    assert.ok(
+      entries.has(expected),
+      `missing collaboration build input: ${expected}`
+    );
   }
 });
 

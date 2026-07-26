@@ -26,43 +26,45 @@ type BaseToggleContract = PluginConfig<
 >;
 
 export const BaseTogglePlugin = createBasePlugin({
+  api: ({ setOptions }) =>
+    ({
+      toggleIds: (ids, force = null) => {
+        setOptions((draft) => {
+          if (!draft.openIds) draft.openIds = new Set();
+
+          const { openIds } = draft;
+
+          ids.forEach((id) => {
+            const isCurrentlyOpen = openIds.has(id);
+            const newIsOpen = force === null ? !isCurrentlyOpen : force;
+
+            if (newIsOpen) {
+              openIds.add(id);
+            } else {
+              openIds.delete(id);
+            }
+          });
+        });
+      },
+    }) satisfies BaseToggleContract['pluginApi'],
   key: KEYS.toggle,
+  options: {
+    openIds: new Set<string>(),
+  },
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  options: {
-    openIds: new Set<string>(),
-  },
-})
-  .extendSelectors<BaseToggleContract['selectors']>(({ getOptions }) => ({
-    isOpen: (toggleId) => getOptions().openIds.has(toggleId),
-    someClosed: (toggleIds) => {
-      const { openIds } = getOptions();
+  selectors: ({ getOptions }) =>
+    ({
+      isOpen: (toggleId) => getOptions().openIds.has(toggleId),
+      someClosed: (toggleIds) => {
+        const { openIds } = getOptions();
 
-      return toggleIds.some((id) => !openIds.has(id));
-    },
-  }))
-  .extendApi<BaseToggleContract['pluginApi']>(({ setOptions }) => ({
-    toggleIds: (ids, force = null) => {
-      setOptions((draft) => {
-        if (!draft.openIds) draft.openIds = new Set();
-
-        const { openIds } = draft;
-
-        ids.forEach((id) => {
-          const isCurrentlyOpen = openIds.has(id);
-          const newIsOpen = force === null ? !isCurrentlyOpen : force;
-
-          if (newIsOpen) {
-            openIds.add(id);
-          } else {
-            openIds.delete(id);
-          }
-        });
-      });
-    },
-  }));
+        return toggleIds.some((id) => !openIds.has(id));
+      },
+    }) satisfies BaseToggleContract['selectors'],
+});
 
 export type BaseToggleConfig = InferConfig<typeof BaseTogglePlugin>;

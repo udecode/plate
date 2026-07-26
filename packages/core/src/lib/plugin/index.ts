@@ -8,3 +8,4 @@ export * from './PluginConfig';
 export * from './createBasePlugin';
 export * from './getBasePlugin';
 export * from './getEditorPlugin';
+export * from './pluginAuthoringContext';

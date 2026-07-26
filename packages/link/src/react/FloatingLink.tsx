@@ -1,15 +1,8 @@
 import React from 'react';
 
-import {
-  useEditorPlugin,
-  useEditor,
-  useEditorSelector,
-  usePluginOption,
-} from '@platejs/core/react';
-import type { TLinkElement } from '@platejs/utils';
+import { useEditorPlugin, usePluginOption } from '@platejs/core/react';
 import { createPrimitiveComponent } from '@udecode/react-utils';
 
-import { BaseLinkPlugin } from '../lib';
 import { LinkPlugin } from './LinkPlugin';
 
 export const useFloatingLinkNewTabInputState = () => {
@@ -118,59 +111,4 @@ export const useFloatingLinkUrlInput = (
 export const FloatingLinkUrlInput = createPrimitiveComponent('input')({
   propsHook: useFloatingLinkUrlInput,
   stateHook: useFloatingLinkUrlInputState,
-});
-
-// @deprecated
-export const useLinkOpenButtonState = () => {
-  const entry = useEditorSelector((editor) => {
-    const selection = editor.read.selection();
-
-    if (!selection) return;
-
-    return editor.read.nodes.find<TLinkElement>({
-      at: selection,
-      match: { type: editor.getType(LinkPlugin.key) },
-    });
-  });
-
-  if (!entry) {
-    return {};
-  }
-
-  const [element] = entry;
-
-  return {
-    element,
-  };
-};
-
-// @deprecated
-export const useLinkOpenButton = ({ element }: { element?: TLinkElement }) => {
-  const editor = useEditor();
-
-  if (!element) {
-    return {
-      props: {},
-    };
-  }
-
-  const linkAttributes = editor
-    .plugin(BaseLinkPlugin)
-    .api.getAttributes(element);
-
-  return {
-    props: {
-      ...linkAttributes,
-      'aria-label': 'Open link in a new tab',
-      target: '_blank',
-      onMouseOver: (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
-        e.stopPropagation();
-      },
-    },
-  };
-};
-
-export const LinkOpenButton = createPrimitiveComponent('a')({
-  propsHook: useLinkOpenButton,
-  stateHook: useLinkOpenButtonState,
 });

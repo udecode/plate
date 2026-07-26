@@ -96,17 +96,15 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
       commentingBlock: null,
       hoverId: null,
     },
-    render: {
-      node: CommentLeaf,
-    },
   })
-);
+).configure({ component: CommentLeaf });
 ```
 
 - `options.activeId`: 当前激活的评论 ID,用于视觉高亮
 - `options.commentingBlock`: 当前正在评论的块的路径
 - `options.hoverId`: 当前悬停的评论 ID,用于悬停效果
-- `render.node`: 指定 [`CommentLeaf`](/docs/components/comment-node) 来渲染评论文本标记
+- `.configure({ component: CommentLeaf })`：使用
+  [`CommentLeaf`](/docs/components/comment-node) 渲染评论文本标记
 
 ### 添加点击处理器
 
@@ -173,35 +171,36 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extendTx(
-    ({ editor, setOption, type }) => (tx) => ({
-      setDraft: (options = {}) => {
-        const commentingBlock = editor.selection?.focus.path.slice(0, 1) ?? null;
+  .extend(({ editor, setOption, type }) => ({
+    update: ({ tx }) => ({
+        setDraft: (options = {}) => {
+          const commentingBlock =
+            editor.selection?.focus.path.slice(0, 1) ?? null;
 
-        if (editor.api.isCollapsed()) {
-          const blockEntry = editor.api.block();
+          if (editor.api.isCollapsed()) {
+            const blockEntry = editor.api.block();
 
-          if (blockEntry) {
-            tx.selection.set(blockEntry[1]);
+            if (blockEntry) {
+              tx.selection.set(blockEntry[1]);
+            }
           }
-        }
 
-        tx.nodes.set(
-          {
-            [getDraftCommentKey()]: true,
-            [type]: true,
-          },
-          { match: TextApi.isText, split: true, ...options }
-        );
+          tx.nodes.set(
+            {
+              [getDraftCommentKey()]: true,
+              [type]: true,
+            },
+            { match: TextApi.isText, split: true, ...options }
+          );
 
-        tx.selection.collapse();
-        setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', commentingBlock);
-      },
-    })
-  )
+          tx.selection.collapse();
+          setOption('activeId', getDraftCommentKey());
+          setOption('commentingBlock', commentingBlock);
+        },
+      }),
+  }))
   .configure({
-    render: { node: CommentLeaf },
+    component: CommentLeaf,
     shortcuts: {
       setDraft: { keys: 'mod+shift+m' },
     },

@@ -163,7 +163,7 @@ Do not promote:
      smallest relevant Vision owner;
    - editor behavior law -> `docs/editor-behavior/**` or `plite-plan`;
    - Slate automation loop miss -> `auto`;
-   - research system miss -> `slate-research`;
+   - research system miss -> `plite-research`;
    - migration miss -> `slate-migration`;
    - benchmark truth -> benchmark target/script owner.
 10. Record a decision ledger in the plan or run summary.

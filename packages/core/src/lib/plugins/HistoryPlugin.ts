@@ -4,4 +4,5 @@ import { createBasePlugin } from '../plugin';
 
 export const HistoryPlugin = createBasePlugin({
   key: 'history',
-}).extendExtension(history());
+  extension: history(),
+});

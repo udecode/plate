@@ -24,6 +24,7 @@ import type {
   TResizableProps,
   TVideoElement,
 } from '@platejs/utils';
+import { isUrl as defaultIsUrl } from '@udecode/utils';
 
 export const mediaElementProperties = {
   isUpload: property.boolean(),
@@ -49,6 +50,11 @@ export type MediaPluginOptions = {
   /** Transforms the url. */
   transformUrl?: (url: string) => string;
 };
+
+export type MediaUrlProperties = Pick<
+  TMediaElement,
+  'provider' | 'sourceUrl' | 'url'
+>;
 
 /** Construction input shared by scoped media insert commands. */
 export type MediaInsertInput = {
@@ -80,7 +86,27 @@ export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
   sourceUrl?: string;
 };
 
-export type MediaPluginConfig = PluginConfig<string, MediaPluginOptions>;
+export type MediaPluginConfig = PluginConfig<
+  string,
+  MediaPluginOptions,
+  {},
+  {},
+  {},
+  {},
+  readonly [],
+  never,
+  {
+    normalizeUrl: (url: string) => MediaUrlProperties | undefined;
+  }
+>;
+
+/** Plugin descriptor carrying the scoped media URL API. */
+export type MediaPluginReference = Readonly<{
+  __config: AnyPluginConfig & {
+    pluginApi: MediaPluginConfig['pluginApi'];
+  };
+  key: string;
+}>;
 
 type MediaElementForPluginKey<K extends string> = K extends typeof KEYS.img
   ? TImageElement
@@ -229,23 +255,51 @@ const normalizeMediaDescendant = (
  *
  * @internal
  */
-export const defineMediaPlugin = <C extends AnyPluginConfig>(
+export const defineMediaPlugin = <
+  C extends AnyPluginConfig & { options: MediaPluginOptions },
+>(
   plugin: BasePlugin<C>,
-  normalizeInput?: (
+  normalizeUrlInput?: (
     options: Readonly<InferOptions<C>>,
-    input: MediaInsertInputForPluginKey<C['key']>
-  ) => MediaInsertInputForPluginKey<C['key']>
+    url: string
+  ) => MediaUrlProperties
 ) =>
-  plugin
-    .extend({
-      transformInitialValue: ({ editor, type, value }) => {
+  plugin.extend<{
+    api: {
+      normalizeUrl: (url: string) => MediaUrlProperties | undefined;
+    };
+    update: {
+      insert: (
+        input: MediaInsertInputForPluginKey<C['key']>,
+        options?: NodeInsertNodesOptions<MediaElementForPluginKey<C['key']>>
+      ) => void;
+      setUrl: (input: {
+        element: MediaElementForPluginKey<C['key']>;
+        url: string;
+      }) => boolean;
+    };
+  }>((context) => {
+    const normalizeUrl = (url: string): MediaUrlProperties | undefined => {
+      const options: Readonly<MediaPluginOptions> = context.getOptions();
+      const normalized = normalizeUrlInput?.(context.getOptions(), url) ?? {
+        url: options.transformUrl?.(url) ?? url,
+      };
+
+      return (options.isUrl ?? defaultIsUrl)(normalized.url)
+        ? normalized
+        : undefined;
+    };
+
+    return {
+      api: { normalizeUrl },
+      transformInitialValue: ({ value }) => {
         let changed = false;
         const normalizeChildren = (children: Value, root: string) => {
           let rootChanged = false;
           const normalized = children.map((child, index) => {
             const next = normalizeMediaDescendant(child, `${root}.${index}`, {
-              isInline: editor.read.schema.isInline,
-              type,
+              isInline: context.editor.read.schema.isInline,
+              type: context.type,
             });
 
             if (next !== child) {
@@ -280,35 +334,54 @@ export const defineMediaPlugin = <C extends AnyPluginConfig>(
 
         return { ...value, children, ...(roots ? { roots } : {}) };
       },
-    })
-    .extendTx<{
-      insert: (
-        input: MediaInsertInputForPluginKey<C['key']>,
-        options?: NodeInsertNodesOptions<MediaElementForPluginKey<C['key']>>
-      ) => void;
-    }>(({ editor, ...context }) => (tx) => ({
-      insert(input, options) {
-        if (!tx.selection() && options?.at === undefined) return;
+      update: ({ tx }) => ({
+        insert(input, options?) {
+          if (!tx.selection() && options?.at === undefined) return;
 
-        const { caption, ...properties } =
-          normalizeInput?.(context.getOptions(), input) ?? input;
-        const type = context.type;
-        const children =
-          typeof caption === 'string'
-            ? [{ text: caption }]
-            : caption && caption.length > 0
-              ? caption
-              : [{ text: '' }];
-        const element = {
-          ...properties,
-          children,
-          type,
-        } as unknown as MediaElementForPluginKey<C['key']>;
+          const normalized = normalizeUrlInput?.(
+            context.getOptions(),
+            input.url
+          );
+          const { caption, ...properties } = {
+            ...input,
+            ...normalized,
+          };
+          const type = context.type;
+          const children =
+            typeof caption === 'string'
+              ? [{ text: caption }]
+              : caption && caption.length > 0
+                ? caption
+                : [{ text: '' }];
+          const element = {
+            ...properties,
+            children,
+            type,
+          } as unknown as MediaElementForPluginKey<C['key']>;
 
-        if (options?.at === undefined) {
-          tx.blocks.insertAfter(element, options);
-        } else {
-          tx.nodes.insert(element, options);
-        }
-      },
-    }));
+          if (options?.at === undefined) {
+            tx.blocks.insertAfter(element, options);
+          } else {
+            tx.nodes.insert(element, options);
+          }
+        },
+        setUrl({ element, url }) {
+          const properties = normalizeUrl(url);
+          const at = tx.nodes.path(element);
+
+          if (!properties || !at) return false;
+
+          tx.nodes.set<TMediaElement>(
+            {
+              provider: properties.provider,
+              sourceUrl: properties.sourceUrl,
+              url: properties.url,
+            },
+            { at }
+          );
+
+          return true;
+        },
+      }),
+    };
+  });

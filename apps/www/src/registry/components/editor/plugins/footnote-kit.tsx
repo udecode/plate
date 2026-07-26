@@ -13,7 +13,7 @@ import {
 } from '@/registry/ui/footnote-node';
 
 export const FootnoteKit = [
-  FootnoteInputPlugin.withComponent(FootnoteInputElement),
-  FootnoteReferencePlugin.withComponent(FootnoteReferenceElement),
-  FootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElement),
+  FootnoteInputPlugin.configure({ component: FootnoteInputElement }),
+  FootnoteReferencePlugin.configure({ component: FootnoteReferenceElement }),
+  FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
 ];

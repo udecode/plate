@@ -49,8 +49,8 @@ npm install @platejs/combobox
 import { createBasePlugin } from 'platejs';
 
 const TagInputPlugin = createBasePlugin({
-  key: 'tag_input',
   editOnly: true,
+  key: 'tag_input',
   schema: { element: { void: 'inline' } },
 });
 ```
@@ -60,12 +60,11 @@ const TagInputPlugin = createBasePlugin({
 使用触发器元数据创建主插件：
 
 ```tsx
-import { createBasePlugin, type PluginConfig } from 'platejs';
+import { createBasePlugin } from 'platejs';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
-type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
-
-export const TagPlugin = createBasePlugin<TagConfig>({
+export const TagPlugin = createBasePlugin({
+  dependencies: [TagInputPlugin],
   key: 'tag',
   schema: { element: { void: 'inline' } },
   options: {
@@ -75,8 +74,7 @@ export const TagPlugin = createBasePlugin<TagConfig>({
       children: [{ text: '' }],
       type: 'tag_input',
     }),
-  },
-  plugins: [TagInputPlugin],
+  } satisfies TriggerComboboxPluginOptions,
 });
 ```
 
@@ -179,7 +177,8 @@ import { TagElement, TagInputElement } from './tag-components';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    TagPlugin.withComponent(TagElement).configure({
+    TagPlugin.configure({
+      component: TagElement,
       options: {
         triggerQuery: (editor) => {
           // 在代码块中禁用
@@ -187,7 +186,7 @@ const editor = createPlateEditor({
         },
       },
     }),
-    TagInputPlugin.withComponent(TagInputElement),
+    TagInputPlugin.configure({ component: TagInputElement }),
   ],
 });
 ```

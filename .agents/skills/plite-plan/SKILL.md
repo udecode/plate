@@ -30,24 +30,20 @@ Choose one mode from the arguments. Default to `--standard`.
   phases continuously in the current activation unless interrupted or blocked.
 - `--deep`: use the standard workflow and add only the research, benchmarks,
   browser stress, or red-team work justified by the named risk. Do not add more
-  lifecycle phases or generic editor comparison. A user-named reference
-  architecture and TARGET-specific exhaustive comparison is justified work,
-  not a generic editor checklist.
+  lifecycle phases or generic editor comparison. Use `editor-audit` first when
+  source-level comparison against one or more editor architectures is required.
 
 A plan path does not by itself authorize implementation. Execution starts only
 when the user explicitly accepts a ready plan and invokes `plite-plan` against
 that exact path. Create a new one-shot execution goal for the accepted plan.
-
-A named-reference audit must declare its TARGET and primary owner before broad
-source traversal. Infer them only when the named surface makes both unambiguous;
-otherwise keep the missing TARGET as an open gate instead of inventing scope.
 
 ## Ownership
 
 Read root `VISION.md` and `docs/vision/plite.md` for doctrine; do not duplicate
 their full ownership tables in the plan.
 
-`best-api` owns the ideal public call surface. Plite Plan consumes that target
+`editor-audit` owns exhaustive external editor architecture comparison.
+`best-api` owns the ideal public call surface. Plite Plan consumes those targets
 and owns substrate law, Plate/collaboration adoption, execution slices, and
 proof. If a plan discovers a better call shape, run the `best-api` lens inside
 the same plan and repair the target before continuing.
@@ -111,16 +107,14 @@ execution slices, and Plite-specific proof.
 3. Named Plite source, tests, exports, docs, browser proof, and benchmarks.
 4. Only the Plate or collaboration owners directly consuming or challenging
    the proposal.
-5. Issue/provenance or external sources only when the request names them or
-   local source cannot settle the decision.
+5. The accepted `editor-audit` artifact when external architecture evidence
+   produced the proposal. Reopen reference source only to refresh a stale,
+   decision-critical claim.
 
 Do not scan every Plite and Plate package by default. Expand owner by owner when
-evidence requires it. For an explicitly exhaustive named-reference comparison,
-first define the TARGET boundary and coverage manifest, then follow only the
-transitive owners and consumers whose behavior, types, lifecycle, persistence,
-performance, or ownership could change. Full accounting does not authorize a
-generic repository scan. Use `task` for a narrow implementation bug with no
-architecture decision.
+evidence requires it. External editor inventory and comparison belong to
+`editor-audit`; do not rebuild that ledger here. Use `task` for a narrow
+implementation bug with no architecture decision.
 
 ## Three Phases
 
@@ -148,10 +142,6 @@ Verdicts: `keep`, `cut`, `rearchitect`, `rename`, `move`, `bridge`, `defer`, or
 - Put boundary, architectural value of the break, objection,
   rejected-alternative, migration, and bridge answers in the same row when they
   describe the same decision.
-- For an external architecture comparison, extend this same ledger with
-  `Reference` and `Comparison` columns instead of creating a duplicate ledger.
-  Comparative classifications are `superior`, `inferior`, `equivalent`, or
-  `different tradeoff`; the local verdict remains independent.
 - A break row must name Plate/collaboration adoption, docs/example adoption,
   and proof.
 - `defer` must name missing evidence and the next owner.
@@ -179,17 +169,9 @@ Add only what the scope triggers:
   React subscription, history, collaboration, browser, or generated-contract
   change: record three realistic failures, blast radius, rollback/hard-cut
   answer, and focused proof.
-- External research: record the mechanism accepted or rejected and its local
-  consequence. Do not impose a generic Lexical/ProseMirror/Tiptap thesis.
-- Named Wordgard comparison: treat Wordgard as the primary contemporary
-  reference architecture for the declared TARGET, not as an ordinary donor.
-  Inventory every relevant mechanism inside the TARGET graph and resolve each
-  as adopted, surpassed, rejected, or deferred with exact evidence. Migration
-  cost alone is not a rejection reason. Wordgard receives no automatic pass
-  where Plite's JSON-native data, structural typing, multi-root model, Plate
-  extensibility, collaboration, React, or browser requirements expose a weaker
-  tradeoff. Slate and other editors remain behavioral, ergonomic, or
-  provenance evidence rather than target architecture.
+- External editor architecture: consume the accepted `editor-audit` evidence,
+  material candidates, and owner routing. Refresh only stale claims that can
+  change the plan.
 - Issue or PR provenance: include only for issue-backed work or when the plan
   changes a public claim. Do not run ClawSweeper for ordinary architecture.
 - Browser/device proof: include only for browser-owned claims and state the

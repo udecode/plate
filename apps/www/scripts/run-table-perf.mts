@@ -61,10 +61,6 @@ function parseBenchmarks(value?: string): BenchmarkName[] {
     .filter(Boolean) as BenchmarkName[];
 }
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 function getSmokeJobs(): RunnerJob[] {
   return [
     {
@@ -173,13 +169,22 @@ async function runBenchmark(
     return harness.runBenchmark(nextBenchmark);
   }, benchmark);
 
-  const timeoutPromise = sleep(timeoutMs).then(() => {
-    throw new Error(
-      `Table perf benchmark timed out after ${timeoutMs}ms while running ${benchmark}`
-    );
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(
+        new Error(
+          `Table perf benchmark timed out after ${timeoutMs}ms while running ${benchmark}`
+        )
+      );
+    }, timeoutMs);
   });
 
-  return Promise.race([runPromise, timeoutPromise]);
+  try {
+    return await Promise.race([runPromise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
 }
 
 async function readPressure(page: Page): Promise<RunnerPressure> {

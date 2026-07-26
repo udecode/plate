@@ -60,13 +60,13 @@ import { TagElement } from '@/components/ui/tag-node';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    MultiSelectPlugin.withComponent(TagElement),
+    MultiSelectPlugin.configure({ component: TagElement }),
   ],
 });
 ```
 
 - `MultiSelectPlugin`: Extends TagPlugin and constrains the editor to only contain tag elements
-- `withComponent`: Assigns [`TagElement`](/docs/components/tag-node) to render tag components
+- `component`: Assigns [`TagElement`](/docs/components/tag-node) to render tag components
 
 ### Add SelectEditor
 

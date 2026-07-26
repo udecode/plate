@@ -74,34 +74,35 @@ export function CodeLeaf(props: PlateLeafProps) {
 
 要使用您的自定义组件，需要将它们注册到相应的插件或直接注册到编辑器配置中。
 
-### 方法1：插件的`withComponent`（推荐）
+### 已有插件的 `component`
 
-`withComponent`方法是关联组件与插件最直接的方式。当该调用只需绑定一个 React 组件时，优先使用它。
+`component` 是绑定插件普通节点组件的方法。
 
 ```tsx
 const plugins = [
-  ParagraphPlugin.withComponent(MyParagraphElement),
-  CodeBlockPlugin.withComponent(MyCodeBlockElement),
-  CodeLinePlugin.withComponent(MyCodeLineElement),
-  CodeHighlightPlugin.withComponent(MyCodeSyntaxLeaf),
+  ParagraphPlugin.configure({ component: MyParagraphElement }),
+  CodeBlockPlugin.configure({ component: MyCodeBlockElement }),
+  CodeLinePlugin.configure({ component: MyCodeLineElement }),
+  CodeHighlightPlugin.configure({ component: MyCodeSyntaxLeaf }),
 ]
 ```
 
-### 方法2：`render.node`
+### 组件与用户覆盖
 
-当同一个 `.configure()` 或 `.extend()` 调用还要配置规则、快捷键、选项或解析行为时，在该组合配置中使用 `render.node`。
+同一个插件还需要规则、快捷键、options 或 parser 行为时，把所有覆盖放进同一次
+终结的 `.configure()`。
 
 ```tsx
 const plugins = [
   CodePlugin.configure({
+    component: MyCodeLeaf,
     inputRules: [CodeRules.markdown()],
-    render: { node: MyCodeLeaf },
     shortcuts: { toggle: { keys: 'mod+e' } },
   }),
 ];
 ```
 
-### 方法3：编辑器的`components`选项
+### 编辑器的 `components` 选项
 
 您可以在`createPlateEditor`（或`usePlateEditor`）中全局映射插件键到组件。这对于在一个地方管理所有组件，或由多个插件组成的插件特别有用。
 

@@ -279,14 +279,14 @@ describe('PlateStatic Memoization', () => {
 
   it('renders text node injections when the path is already known', () => {
     const TonePlugin = createBasePlugin({
+      key: 'tone',
+      schema: { mark: { property: property.string() } },
       inject: {
         nodeProps: {
           nodeKey: 'tone',
           styleKey: 'color',
         },
       },
-      key: 'tone',
-      schema: { mark: { property: property.string() } },
     });
     const editor = createBaseEditor({
       plugins: [TonePlugin],

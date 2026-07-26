@@ -98,8 +98,8 @@ import { CodePlugin } from '@platejs/basic-nodes/react';
 import { CodeLeaf } from '@/components/ui/code-node';
 
 export const codePlugin = CodePlugin.configure({
+  component: CodeLeaf,
   inputRules: [CodeRules.markdown()],
-  render: { node: CodeLeaf },
   shortcuts: { toggle: { keys: 'mod+e' } },
 });
 ```

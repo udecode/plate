@@ -40,7 +40,7 @@ import { SearchHighlightLeaf } from '@/components/ui/search-highlight-node';
 
 export const editor = createPlateEditor({
   plugins: [
-    FindReplacePlugin.withComponent(SearchHighlightLeaf),
+    FindReplacePlugin.configure({ component: SearchHighlightLeaf }),
   ],
 });
 ```

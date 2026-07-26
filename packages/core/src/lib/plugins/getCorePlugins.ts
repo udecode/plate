@@ -15,6 +15,7 @@ import { AffinityPlugin } from './affinity';
 import {
   type NodeIdConfig,
   type NodeIdOptions,
+  type NodeIdPluginUpdate,
   NodeIdPlugin,
 } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
@@ -88,8 +89,7 @@ export type CorePluginApi = ElementStateConfig['api'] & {
   InferConfig<typeof HistoryPlugin>['api'];
 
 export type CorePluginTx = DomConfig['tx'] &
-  InferConfig<typeof HistoryPlugin>['tx'] &
-  InferConfig<typeof NodeIdPlugin>['tx'];
+  InferConfig<typeof HistoryPlugin>['tx'] & { nodeId: NodeIdPluginUpdate };
 
 export type CorePluginState = HistoryExtensionTypes['state'];
 

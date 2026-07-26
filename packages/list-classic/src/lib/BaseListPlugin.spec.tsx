@@ -414,7 +414,7 @@ describe('schema', () => {
             BaseListItemPlugin.configure({ enabled: false }),
           ],
         })
-      ).toThrow(/listClassic.*depends on disabled plugin.*li/i);
+      ).toThrow(/listClassic.*requires disabled plugin.*li/i);
     });
   });
 });

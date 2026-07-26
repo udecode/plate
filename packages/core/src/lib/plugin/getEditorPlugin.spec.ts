@@ -135,13 +135,16 @@ describe('getEditorPlugin', () => {
   it('splits plugin-owned API from the root editor API', () => {
     const plugin = createBasePlugin({
       key: 'methodPlugin',
-    })
-      .extendEditorApi(() => ({
-        editorMethod: () => 'editor',
-      }))
-      .extendApi(() => ({
+      extension: {
+        api: {
+          editorMethod: () => 'editor',
+        },
+      },
+    }).extend(() => ({
+      api: {
         pluginMethod: () => 'plugin',
-      }));
+      },
+    }));
 
     const typedEditor = createBaseEditor({
       plugins: [plugin],
@@ -158,37 +161,39 @@ describe('getEditorPlugin', () => {
 
   it('exposes plugin-owned updates without their key namespace', () => {
     let mode: 'edit' | 'view' = 'view';
-    let insertedBy: 'command' | 'other' | null = null;
-    const plugin = createBasePlugin({ key: 'command' })
-      .extendTx(() => () => ({
+    let insertedBy: 'command' | null = null;
+    const plugin = createBasePlugin({
+      key: 'command',
+      update: () => ({
         setMode: (nextMode: 'edit' | 'view') => {
           mode = nextMode;
         },
-      }))
-      .extendTxGroup('insert', () => () => ({
-        node: () => {
-          insertedBy = 'command';
+      }),
+    })
+      .extend(() => ({
+        extension: {
+          tx: {
+            insert: () => ({
+              node: () => {
+                insertedBy = 'command';
+              },
+            }),
+          },
         },
       }))
-      .extendExtension({
-        tx: {
-          editorInsert: () => ({
-            node: () => {
-              insertedBy = 'command';
-            },
-          }),
+      .extend({
+        extension: {
+          tx: {
+            editorInsert: () => ({
+              node: () => {
+                insertedBy = 'command';
+              },
+            }),
+          },
         },
       });
-    const otherPlugin = createBasePlugin({ key: 'other' }).extendTxGroup(
-      'insert',
-      () => () => ({
-        node: () => {
-          insertedBy = 'other';
-        },
-      })
-    );
     const typedEditor = createBaseEditor({
-      plugins: [plugin, otherPlugin],
+      plugins: [plugin],
     });
 
     typedEditor.plugin(plugin).update.setMode('edit');

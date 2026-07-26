@@ -4,7 +4,6 @@ import {
   createBasePlugin,
   createRuleFactory,
   getInjectMatch,
-  type BaseEditor,
   type InferConfig,
 } from '@platejs/core';
 import {
@@ -145,44 +144,6 @@ export type GetSiblingListOptions<N extends Element = Element> = {
   query?: (siblingNode: Element, currentNode: Element) => boolean | undefined;
 };
 
-const isHeadingListNode = (editor: BaseEditor, node: Element) =>
-  KEYS.heading.some((headingKey) => node.type === editor.getType(headingKey));
-
-const isListSequenceBoundary = (
-  editor: BaseEditor,
-  siblingNode: Element,
-  currentNode: Element
-) => {
-  const siblingListType = siblingNode[KEYS.listType];
-
-  return (
-    siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
-    siblingListType != null &&
-    siblingListType === currentNode[KEYS.listType] &&
-    isHeadingListNode(editor, siblingNode) !==
-      isHeadingListNode(editor, currentNode)
-  );
-};
-
-const getListSequenceSiblingOptions = <N extends Element = Element>(
-  editor: BaseEditor,
-  options?: Partial<GetSiblingListOptions<N>>
-): Partial<GetSiblingListOptions<N>> => {
-  const { breakQuery, query, ...rest } = options ?? {};
-
-  return {
-    ...rest,
-    breakQuery: (siblingNode, currentNode) =>
-      isListSequenceBoundary(editor, siblingNode, currentNode) ||
-      !!breakQuery?.(siblingNode, currentNode),
-    query: (siblingNode, currentNode) =>
-      siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
-      isHeadingListNode(editor, siblingNode) ===
-        isHeadingListNode(editor, currentNode) &&
-      (query ? !!query(siblingNode, currentNode) : true),
-  };
-};
-
 export function isOrderedList(element: Element) {
   return (
     !!element.listStyleType &&
@@ -212,6 +173,208 @@ export type BaseListPluginOptions = {
 };
 
 export const BaseListPlugin = createBasePlugin({
+  api: ({ editor }) => {
+    const getSibling = <N extends Element = Element>(
+      [node, path]: NodeEntry<Element>,
+      {
+        breakOnEqIndentNeqListStyleType = true,
+        breakOnListRestart = false,
+        breakOnLowerIndent = true,
+        breakQuery,
+        eqIndent = true,
+        getNextEntry,
+        getPreviousEntry,
+        query,
+      }: GetSiblingListOptions<N>,
+      state: Pick<EditorCoreStateView, 'nodes'> = editor.read
+    ): NodeEntry<N> | undefined => {
+      if (!getPreviousEntry && !getNextEntry) return;
+      const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
+      let nextEntry = getSiblingEntry([node, path], state);
+
+      while (nextEntry) {
+        const [nextNode, nextPath] = nextEntry;
+        const indent = node[KEYS.indent];
+        const nextIndent = nextNode[KEYS.indent];
+
+        if (breakQuery?.(nextNode, node)) return;
+        if (typeof indent !== 'number' || typeof nextIndent !== 'number')
+          return;
+        if (
+          breakOnListRestart &&
+          ((getPreviousEntry && isDefined(node[KEYS.listRestart])) ||
+            (getNextEntry && isDefined(nextNode[KEYS.listRestart])))
+        ) {
+          return;
+        }
+        if (breakOnLowerIndent && nextIndent < indent) return;
+        if (
+          breakOnEqIndentNeqListStyleType &&
+          nextIndent === indent &&
+          nextNode[KEYS.listType] !== node[KEYS.listType]
+        ) {
+          return;
+        }
+        if (
+          (!query || query(nextNode, node)) &&
+          (!eqIndent || nextIndent === indent)
+        ) {
+          return [nextNode, nextPath];
+        }
+        nextEntry = getSiblingEntry(nextEntry, state);
+      }
+    };
+    const isHeading = (node: Element) =>
+      KEYS.heading.some(
+        (headingKey) => node.type === editor.getType(headingKey)
+      );
+    const isSequenceBoundary = (siblingNode: Element, currentNode: Element) => {
+      const siblingListType = siblingNode[KEYS.listType];
+
+      return (
+        siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
+        siblingListType != null &&
+        siblingListType === currentNode[KEYS.listType] &&
+        isHeading(siblingNode) !== isHeading(currentNode)
+      );
+    };
+    const getSequenceSiblingOptions = (
+      options?: Partial<GetSiblingListOptions<Element>>
+    ): Partial<GetSiblingListOptions<Element>> => {
+      const { breakQuery, query, ...rest } = options ?? {};
+
+      return {
+        ...rest,
+        breakQuery: (siblingNode, currentNode) =>
+          isSequenceBoundary(siblingNode, currentNode) ||
+          !!breakQuery?.(siblingNode, currentNode),
+        query: (siblingNode, currentNode) =>
+          siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
+          isHeading(siblingNode) === isHeading(currentNode) &&
+          (query ? !!query(siblingNode, currentNode) : true),
+      };
+    };
+
+    return {
+      /** Get the next indent-list item. */
+      getNext: <N extends Element = Element>(
+        entry: NodeEntry<Element>,
+        options?: Partial<GetSiblingListOptions<N>>,
+        state: Pick<EditorCoreStateView, 'nodes'> = editor.read
+      ): NodeEntry<N> | undefined =>
+        getSibling(
+          entry,
+          {
+            getNextEntry: ([, currentPath]) => {
+              const nextPath = PathApi.next(currentPath);
+              const nextNode = state.nodes.get<N>(nextPath)?.[0];
+
+              if (!nextNode) return;
+
+              return [nextNode, nextPath];
+            },
+            ...options,
+            getPreviousEntry: undefined,
+          },
+          state
+        ),
+      /** Get the previous indent-list item. */
+      getPrevious: <N extends Element = Element>(
+        entry: NodeEntry<Element>,
+        options?: Partial<GetSiblingListOptions<N>>,
+        state: Pick<EditorCoreStateView, 'nodes'> = editor.read
+      ): NodeEntry<N> | undefined =>
+        getSibling(
+          entry,
+          {
+            getPreviousEntry: ([, currentPath]) => {
+              if (!PathApi.hasPrevious(currentPath)) return;
+              const previousPath = PathApi.previous(currentPath);
+              const previousNode = state.nodes.get<N>(previousPath)?.[0];
+
+              if (!previousNode) return;
+
+              return [previousNode, previousPath];
+            },
+            ...options,
+            getNextEntry: undefined,
+          },
+          state
+        ),
+      expandItemsWithChildren: <N extends Element = Element>(
+        entries: readonly NodeEntry<N>[]
+      ) => {
+        const expandedEntries: NodeEntry<N>[] = [];
+        const processedIds = new Set<string>();
+
+        entries.forEach((entry) => {
+          const [node, path] = entry;
+          const id = typeof node.id === 'string' ? node.id : undefined;
+
+          if (id && processedIds.has(id)) return;
+          expandedEntries.push(entry);
+          if (id) processedIds.add(id);
+          const parentIndent = node[KEYS.indent];
+
+          if (
+            typeof parentIndent !== 'number' ||
+            !isDefined(node[KEYS.listType])
+          ) {
+            return;
+          }
+          let currentPath = path;
+
+          while (true) {
+            const nextPath = PathApi.next(currentPath);
+            const nextNode = editor.read.nodes.get<N>(nextPath)?.[0];
+
+            if (!nextNode) break;
+            const nextIndent = nextNode[KEYS.indent];
+
+            if (
+              typeof nextIndent !== 'number' ||
+              !isDefined(nextNode[KEYS.listType]) ||
+              nextIndent <= parentIndent
+            ) {
+              break;
+            }
+            const childId =
+              typeof nextNode.id === 'string' ? nextNode.id : undefined;
+
+            if (!childId || !processedIds.has(childId)) {
+              expandedEntries.push([nextNode, nextPath]);
+              if (childId) processedIds.add(childId);
+            }
+            currentPath = nextPath;
+          }
+        });
+
+        return expandedEntries;
+      },
+      getSequenceSiblingOptions,
+      isActive: (
+        style: ListStyleType | string | readonly string[]
+      ): boolean => {
+        const selection = editor.read.selection();
+
+        if (!selection) return false;
+        const styles = Array.isArray(style) ? style : [style];
+
+        return editor.read.nodes.some({
+          match: (node) => {
+            if (!ElementApi.isElement(node)) return false;
+            const isTodo = Object.hasOwn(node, KEYS.listChecked);
+
+            return (
+              styles.includes(node[KEYS.listType] as string) &&
+              (styles.includes(KEYS.listTodo) ? isTodo : !isTodo)
+            );
+          },
+        });
+      },
+      isSequenceBoundary,
+    };
+  },
   dependencies: [BaseIndentPlugin],
   key: KEYS.list,
   options: {} as BaseListPluginOptions,
@@ -239,6 +402,118 @@ export const BaseListPlugin = createBasePlugin({
       }),
     ],
   }),
+  targetPluginKeys: [KEYS.p],
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        createsElement: true,
+        decode: ({ element }) => {
+          const listParent = element.closest('ul, ol') as HTMLElement | null;
+          const readNumber = (value: null | string | undefined) => {
+            if (!value) return;
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : undefined;
+          };
+          const checkedValue = element.dataset.checked;
+          const checked =
+            checkedValue === '' || checkedValue === 'true'
+              ? true
+              : checkedValue === 'false'
+                ? false
+                : undefined;
+          const listRestart = readNumber(element.dataset.listRestart);
+          const listRestartPolite = readNumber(
+            element.dataset.listRestartPolite
+          );
+          const explicitListStart = readNumber(element.dataset.listStart);
+          const parentListStart = readNumber(listParent?.getAttribute('start'));
+          const listIndex = listParent
+            ? [...listParent.children]
+                .filter((child) => child.tagName === 'LI')
+                .indexOf(element)
+            : -1;
+          const listStart =
+            explicitListStart ??
+            (parentListStart === undefined || listIndex < 0
+              ? undefined
+              : parentListStart + listIndex);
+          const listStyleType =
+            element.dataset.listStyleType ||
+            element.style.listStyleType ||
+            listParent?.style.listStyleType ||
+            (listParent?.tagName === 'UL'
+              ? ListStyleType.Disc
+              : listParent?.tagName === 'OL'
+                ? ListStyleType.Decimal
+                : undefined);
+          return {
+            ...(checked === undefined
+              ? {}
+              : {
+                  [KEYS.listChecked]: checked,
+                }),
+            ...(listRestart === undefined
+              ? {}
+              : {
+                  [KEYS.listRestart]: listRestart,
+                }),
+            ...(listRestartPolite === undefined
+              ? {}
+              : {
+                  [KEYS.listRestartPolite]: listRestartPolite,
+                }),
+            ...(listStart === undefined
+              ? {}
+              : {
+                  [KEYS.listStart]: listStart,
+                }),
+            ...(listStyleType
+              ? {
+                  [KEYS.listType]: listStyleType,
+                }
+              : {}),
+          };
+        },
+        encode: ({ content, node }) => {
+          const checked = node[KEYS.listChecked];
+          const listRestart = node[KEYS.listRestart];
+          const listRestartPolite = node[KEYS.listRestartPolite];
+          const listStart = node[KEYS.listStart];
+          const listStyleType = node[KEYS.listType];
+          return {
+            attributes: {
+              start: listStart,
+            },
+            children: [
+              {
+                attributes: {
+                  'data-checked':
+                    checked === undefined ? undefined : String(checked),
+                  'data-list-restart': listRestart,
+                  'data-list-restart-polite': listRestartPolite,
+                  'data-list-start': listStart,
+                  'data-list-style-type': listStyleType,
+                },
+                children: content,
+                patchTarget: true,
+                tag: 'li',
+              },
+            ],
+            style: {
+              listStyleType,
+            },
+            tag: isOrderedList(node) ? 'ol' : 'ul',
+          };
+        },
+        match: [
+          {
+            tag: 'li',
+          },
+        ],
+        priority: 40,
+      },
+    }),
+
   parsers: {
     html: {
       transformData: ({ data }) => {
@@ -251,7 +526,6 @@ export const BaseListPlugin = createBasePlugin({
           li: globalThis.Element;
           nestedLists: globalThis.Element[];
         }[] = [];
-
         traverseHtmlElements(body, (element) => {
           if (element.tagName === 'LI') {
             const nestedLists: globalThis.Element[] = [];
@@ -261,9 +535,11 @@ export const BaseListPlugin = createBasePlugin({
                 nestedLists.push(child);
               }
             });
-
             if (nestedLists.length > 0) {
-              lisWithNestedLists.push({ li: element, nestedLists });
+              lisWithNestedLists.push({
+                li: element,
+                nestedLists,
+              });
             }
           }
           return true;
@@ -289,7 +565,6 @@ export const BaseListPlugin = createBasePlugin({
 
             // Process li children and flatten block elements
             const liChildren: globalThis.Node[] = [];
-
             childNodes.forEach((child) => {
               if (child.nodeType === Node.ELEMENT_NODE) {
                 const childElement = child as globalThis.Element;
@@ -301,13 +576,11 @@ export const BaseListPlugin = createBasePlugin({
               }
               liChildren.push(child);
             });
-
             element.replaceChildren(...liChildren);
 
             // Keep explicit codec metadata, then honor Google Docs.
             const dataIndent = htmlElement.dataset.indent;
             const ariaLevel = element.getAttribute('aria-level');
-
             if (dataIndent) {
               htmlElement.dataset.indent = dataIndent;
             } else if (ariaLevel) {
@@ -348,13 +621,10 @@ export const BaseListPlugin = createBasePlugin({
                 }
               }
             }
-
             return false;
           }
-
           return true;
         });
-
         return postCleanHtml(body.innerHTML);
       },
     },
@@ -362,11 +632,9 @@ export const BaseListPlugin = createBasePlugin({
   render: {
     belowNodes: (props) => {
       if (!props.element.listStyleType) return;
-
       return (props) => {
         const { listStart, listStyleType } = props.element as TListElement;
         const List = isOrderedList(props.element) ? 'ol' : 'ul';
-
         return (
           <List
             style={{
@@ -396,203 +664,7 @@ export const BaseListPlugin = createBasePlugin({
     },
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
-  targetPluginKeys: [KEYS.p],
 })
-  .extendHtmlCodec(() => ({
-    createsElement: true,
-    decode: ({ element }) => {
-      const listParent = element.closest('ul, ol') as HTMLElement | null;
-      const readNumber = (value: null | string | undefined) => {
-        if (!value) return;
-
-        const parsed = Number(value);
-
-        return Number.isFinite(parsed) ? parsed : undefined;
-      };
-      const checkedValue = element.dataset.checked;
-      const checked =
-        checkedValue === '' || checkedValue === 'true'
-          ? true
-          : checkedValue === 'false'
-            ? false
-            : undefined;
-      const listRestart = readNumber(element.dataset.listRestart);
-      const listRestartPolite = readNumber(element.dataset.listRestartPolite);
-      const explicitListStart = readNumber(element.dataset.listStart);
-      const parentListStart = readNumber(listParent?.getAttribute('start'));
-      const listIndex = listParent
-        ? [...listParent.children]
-            .filter((child) => child.tagName === 'LI')
-            .indexOf(element)
-        : -1;
-      const listStart =
-        explicitListStart ??
-        (parentListStart === undefined || listIndex < 0
-          ? undefined
-          : parentListStart + listIndex);
-      const listStyleType =
-        element.dataset.listStyleType ||
-        element.style.listStyleType ||
-        listParent?.style.listStyleType ||
-        (listParent?.tagName === 'UL'
-          ? ListStyleType.Disc
-          : listParent?.tagName === 'OL'
-            ? ListStyleType.Decimal
-            : undefined);
-
-      return {
-        ...(checked === undefined ? {} : { [KEYS.listChecked]: checked }),
-        ...(listRestart === undefined
-          ? {}
-          : { [KEYS.listRestart]: listRestart }),
-        ...(listRestartPolite === undefined
-          ? {}
-          : { [KEYS.listRestartPolite]: listRestartPolite }),
-        ...(listStart === undefined ? {} : { [KEYS.listStart]: listStart }),
-        ...(listStyleType ? { [KEYS.listType]: listStyleType } : {}),
-      };
-    },
-    encode: ({ content, node }) => {
-      const checked = node[KEYS.listChecked];
-      const listRestart = node[KEYS.listRestart];
-      const listRestartPolite = node[KEYS.listRestartPolite];
-      const listStart = node[KEYS.listStart];
-      const listStyleType = node[KEYS.listType];
-
-      return {
-        attributes: {
-          start: listStart,
-        },
-        children: [
-          {
-            attributes: {
-              'data-checked':
-                checked === undefined ? undefined : String(checked),
-              'data-list-restart': listRestart,
-              'data-list-restart-polite': listRestartPolite,
-              'data-list-start': listStart,
-              'data-list-style-type': listStyleType,
-            },
-            children: content,
-            patchTarget: true,
-            tag: 'li',
-          },
-        ],
-        style: {
-          listStyleType,
-        },
-        tag: isOrderedList(node) ? 'ol' : 'ul',
-      };
-    },
-    match: [{ tag: 'li' }],
-    priority: 40,
-  }))
-  .extend(({ editor }) => {
-    const getSibling = <N extends Element = Element>(
-      [node, path]: NodeEntry<Element>,
-      {
-        breakOnEqIndentNeqListStyleType = true,
-        breakOnListRestart = false,
-        breakOnLowerIndent = true,
-        breakQuery,
-        eqIndent = true,
-        getNextEntry,
-        getPreviousEntry,
-        query,
-      }: GetSiblingListOptions<N>,
-      state: Pick<EditorCoreStateView, 'nodes'> | undefined = editor.read
-    ): NodeEntry<N> | undefined => {
-      if (!getPreviousEntry && !getNextEntry) return;
-
-      const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
-      let nextEntry = getSiblingEntry([node, path], state);
-
-      while (nextEntry) {
-        const [nextNode, nextPath] = nextEntry;
-        const indent = node[KEYS.indent];
-        const nextIndent = nextNode[KEYS.indent];
-
-        if (breakQuery?.(nextNode, node)) return;
-        if (typeof indent !== 'number' || typeof nextIndent !== 'number')
-          return;
-        if (
-          breakOnListRestart &&
-          ((getPreviousEntry && isDefined(node[KEYS.listRestart])) ||
-            (getNextEntry && isDefined(nextNode[KEYS.listRestart])))
-        ) {
-          return;
-        }
-        if (breakOnLowerIndent && nextIndent < indent) return;
-        if (
-          breakOnEqIndentNeqListStyleType &&
-          nextIndent === indent &&
-          nextNode[KEYS.listType] !== node[KEYS.listType]
-        ) {
-          return;
-        }
-
-        if (
-          (!query || query(nextNode, node)) &&
-          (!eqIndent || nextIndent === indent)
-        ) {
-          return [nextNode, nextPath];
-        }
-
-        nextEntry = getSiblingEntry(nextEntry, state);
-      }
-    };
-
-    return {
-      api: {
-        /** Get the next indent-list item. */
-        getNext: <N extends Element = Element>(
-          entry: NodeEntry<Element>,
-          options?: Partial<GetSiblingListOptions<N>>,
-          state: Pick<EditorCoreStateView, 'nodes'> = editor.read
-        ): NodeEntry<N> | undefined =>
-          getSibling(
-            entry,
-            {
-              getNextEntry: ([, currentPath]) => {
-                const nextPath = PathApi.next(currentPath);
-                const nextNode = state.nodes.get<N>(nextPath)?.[0];
-
-                if (!nextNode) return;
-
-                return [nextNode, nextPath];
-              },
-              ...options,
-              getPreviousEntry: undefined,
-            },
-            state
-          ),
-        /** Get the previous indent-list item. */
-        getPrevious: <N extends Element = Element>(
-          entry: NodeEntry<Element>,
-          options?: Partial<GetSiblingListOptions<N>>,
-          state: Pick<EditorCoreStateView, 'nodes'> = editor.read
-        ): NodeEntry<N> | undefined =>
-          getSibling(
-            entry,
-            {
-              getPreviousEntry: ([, currentPath]) => {
-                if (!PathApi.hasPrevious(currentPath)) return;
-
-                const previousPath = PathApi.previous(currentPath);
-                const previousNode = state.nodes.get<N>(previousPath)?.[0];
-
-                if (!previousNode) return;
-
-                return [previousNode, previousPath];
-              },
-              ...options,
-              getNextEntry: undefined,
-            },
-            state
-          ),
-      },
-    };
-  })
   .extend(({ plugin }) => ({
     override: {
       plugins: {
@@ -603,104 +675,21 @@ export const BaseListPlugin = createBasePlugin({
     },
   }))
   .extend<{
-    api: {
-      /**
-       * Expands selected list items with their indented descendants while
-       * preserving input order and removing duplicate ids.
-       */
-      expandItemsWithChildren: <N extends Element = Element>(
-        entries: NodeEntry<N>[]
-      ) => NodeEntry<N>[];
-      isActive: (style: ListStyleType | string | readonly string[]) => boolean;
+    update: {
+      indent: (options?: IndentListOptions) => void;
+      outdent: (options?: OutdentListOptions) => void;
+      toggle: (options: ToggleListOptions) => void;
     };
-  }>(({ editor }) => ({
-    api: {
-      expandItemsWithChildren: <N extends Element = Element>(
-        entries: NodeEntry<N>[]
-      ) => {
-        const expandedEntries: NodeEntry<N>[] = [];
-        const processedIds = new Set<string>();
-
-        entries.forEach((entry) => {
-          const [node, path] = entry;
-          const id = typeof node.id === 'string' ? node.id : undefined;
-
-          if (id && processedIds.has(id)) return;
-
-          expandedEntries.push(entry);
-          if (id) processedIds.add(id);
-
-          const parentIndent = node[KEYS.indent];
-
-          if (
-            typeof parentIndent !== 'number' ||
-            !isDefined(node[KEYS.listType])
-          ) {
-            return;
-          }
-
-          let currentPath = path;
-
-          while (true) {
-            const nextPath = PathApi.next(currentPath);
-            const nextNode = editor.read.nodes.get<N>(nextPath)?.[0];
-
-            if (!nextNode) break;
-
-            const nextIndent = nextNode[KEYS.indent];
-
-            if (
-              typeof nextIndent !== 'number' ||
-              !isDefined(nextNode[KEYS.listType]) ||
-              nextIndent <= parentIndent
-            ) {
-              break;
-            }
-
-            const childId =
-              typeof nextNode.id === 'string' ? nextNode.id : undefined;
-
-            if (!childId || !processedIds.has(childId)) {
-              expandedEntries.push([nextNode, nextPath]);
-              if (childId) processedIds.add(childId);
-            }
-
-            currentPath = nextPath;
-          }
-        });
-
-        return expandedEntries;
-      },
-      isActive: (style: ListStyleType | string | readonly string[]) => {
-        const selection = editor.read.selection();
-
-        if (!selection) return false;
-
-        const styles = Array.isArray(style) ? style : [style];
-
-        return editor.read.nodes.some({
-          match: (node) => {
-            if (!ElementApi.isElement(node)) return false;
-
-            const isTodo = Object.hasOwn(node, KEYS.listChecked);
-
-            return (
-              styles.includes(node[KEYS.listType] as string) &&
-              (styles.includes(KEYS.listTodo) ? isTodo : !isTodo)
-            );
-          },
-        });
-      },
-    },
-  }))
-  .extend(({ api, editor, getOptions }) => ({
+  }>(({ api, editor, getOptions }) => ({
     update: ({ tx }) => ({
       indent: ({
         listStyleType = ListStyleType.Disc,
         ...options
       }: IndentListOptions = {}) => {
         tx.indent.set({
-          nodes: { at: options.at },
+          nodes: {
+            at: options.at,
+          },
           offset: 1,
           setNodeProps: () => ({
             [KEYS.listType]: listStyleType,
@@ -709,7 +698,9 @@ export const BaseListPlugin = createBasePlugin({
       },
       outdent: (options: OutdentListOptions = {}) => {
         tx.indent.set({
-          nodes: { at: options.at },
+          nodes: {
+            at: options.at,
+          },
           offset: -1,
           unsetNodeProps: [
             KEYS.listType,
@@ -727,16 +718,16 @@ export const BaseListPlugin = createBasePlugin({
           listRestartPolite,
           listStyleType,
         } = options;
-
         if (!at || (PathApi.isPath(at) && at.length === 0)) return;
-
         const mergedGetSiblingListOptions = {
           ...getOptions().getSiblingListOptions,
           ...options.getSiblingListOptions,
         };
         const match = getInjectMatch(
           editor,
-          editor.getPlugin({ key: KEYS.list })
+          editor.getPlugin({
+            key: KEYS.list,
+          })
         );
         const entries = tx.nodes.toArray<Element>({
           at,
@@ -746,7 +737,6 @@ export const BaseListPlugin = createBasePlugin({
             match(node, path),
           mode: 'lowest',
         });
-
         if (entries.length === 0) return;
 
         /**
@@ -763,7 +753,6 @@ export const BaseListPlugin = createBasePlugin({
             const [node, path] = entry;
             const indent = Number(node[KEYS.indent] ?? 0);
             const isTodo = listStyleType === KEYS.listTodo;
-
             if (
               !Object.hasOwn(node, KEYS.listChecked) &&
               !node[KEYS.listType]
@@ -771,15 +760,19 @@ export const BaseListPlugin = createBasePlugin({
               tx.nodes.set(
                 {
                   [KEYS.indent]: indent + 1,
-                  ...(isTodo ? { [KEYS.listChecked]: false } : {}),
+                  ...(isTodo
+                    ? {
+                        [KEYS.listChecked]: false,
+                      }
+                    : {}),
                   [KEYS.listType]: listStyleType,
                 },
-                { at: path }
+                {
+                  at: path,
+                }
               );
-
               return true;
             }
-
             if (
               (isTodo && Object.hasOwn(node, KEYS.listChecked)) ||
               listStyleType === node[KEYS.listType]
@@ -787,21 +780,24 @@ export const BaseListPlugin = createBasePlugin({
               tx.nodes.unset(isTodo ? KEYS.listChecked : KEYS.listType, {
                 at: path,
               });
-
               if (indent > 1) {
-                tx.nodes.set({ [KEYS.indent]: indent - 1 }, { at: path });
+                tx.nodes.set(
+                  {
+                    [KEYS.indent]: indent - 1,
+                  },
+                  {
+                    at: path,
+                  }
+                );
               } else {
                 tx.nodes.unset([KEYS.indent, KEYS.listChecked, KEYS.listType], {
                   at: path,
                 });
               }
-
               return false;
             }
-
             const siblings: NodeEntry<Element>[] = [];
             let siblingEntry: NodeEntry<Element> | undefined = entry;
-
             while (siblingEntry) {
               siblingEntry = api.getPrevious(
                 siblingEntry,
@@ -810,10 +806,8 @@ export const BaseListPlugin = createBasePlugin({
               );
               if (siblingEntry) siblings.push(siblingEntry);
             }
-
             siblings.push(entry);
             siblingEntry = entry;
-
             while (siblingEntry) {
               siblingEntry = api.getNext(
                 siblingEntry,
@@ -822,35 +816,38 @@ export const BaseListPlugin = createBasePlugin({
               );
               if (siblingEntry) siblings.push(siblingEntry);
             }
-
             siblings.forEach(([sibling, siblingPath]) => {
               const siblingIndent =
                 (sibling[KEYS.indent] as number | undefined) ?? 0;
-
               if (isTodo) {
-                tx.nodes.unset(KEYS.listType, { at: siblingPath });
+                tx.nodes.unset(KEYS.listType, {
+                  at: siblingPath,
+                });
                 tx.nodes.set(
                   {
                     [KEYS.indent]: siblingIndent || siblingIndent + 1,
                     [KEYS.listChecked]: false,
                     [KEYS.listType]: listStyleType,
                   },
-                  { at: siblingPath }
+                  {
+                    at: siblingPath,
+                  }
                 );
-
                 return;
               }
-
-              tx.nodes.unset(KEYS.listChecked, { at: siblingPath });
+              tx.nodes.unset(KEYS.listChecked, {
+                at: siblingPath,
+              });
               tx.nodes.set(
                 {
                   [KEYS.indent]: siblingIndent || siblingIndent + 1,
                   [KEYS.listType]: listStyleType,
                 },
-                { at: siblingPath }
+                {
+                  at: siblingPath,
+                }
               );
             });
-
             return true;
           }
           if (entries.length > 1) {
@@ -860,25 +857,29 @@ export const BaseListPlugin = createBasePlugin({
                 : !!block[KEYS.listType] &&
                   block[KEYS.listType] === listStyleType
             );
-
             if (eqListStyleType) {
               entries.forEach(([node, path]) => {
                 const indent = node[KEYS.indent] as number;
-
-                tx.nodes.unset(KEYS.listType, { at: path });
-
+                tx.nodes.unset(KEYS.listType, {
+                  at: path,
+                });
                 if (indent > 1) {
-                  tx.nodes.set({ [KEYS.indent]: indent - 1 }, { at: path });
+                  tx.nodes.set(
+                    {
+                      [KEYS.indent]: indent - 1,
+                    },
+                    {
+                      at: path,
+                    }
+                  );
                 } else {
                   tx.nodes.unset([KEYS.indent, KEYS.listChecked], {
                     at: path,
                   });
                 }
               });
-
               return false;
             }
-
             entries.forEach(([node, path]) => {
               const currentIndent =
                 (node[KEYS.indent] as number | undefined) ?? 0;
@@ -886,39 +887,41 @@ export const BaseListPlugin = createBasePlugin({
                 node[KEYS.listType] || Object.hasOwn(node, KEYS.listChecked)
                   ? currentIndent
                   : currentIndent + 1;
-
               if (listStyleType === KEYS.listTodo) {
-                tx.nodes.unset(KEYS.listType, { at: path });
+                tx.nodes.unset(KEYS.listType, {
+                  at: path,
+                });
                 tx.nodes.set(
                   {
                     [KEYS.indent]: indent || indent + 1,
                     [KEYS.listChecked]: false,
                     [KEYS.listType]: listStyleType,
                   },
-                  { at: path }
+                  {
+                    at: path,
+                  }
                 );
-
                 return;
               }
-
-              tx.nodes.unset(KEYS.listChecked, { at: path });
+              tx.nodes.unset(KEYS.listChecked, {
+                at: path,
+              });
               tx.nodes.set(
                 {
                   [KEYS.indent]: indent || indent + 1,
                   [KEYS.listType]: listStyleType,
                 },
-                { at: path }
+                {
+                  at: path,
+                }
               );
             });
-
             return true;
           }
-
           return null;
         })();
         const restartValue = listRestart || listRestartPolite;
         const isRestart = !!listRestart;
-
         if (setList && restartValue) {
           const [targetNode, targetPath] = entries[0];
           const entry = tx.nodes.above<Element>({
@@ -938,7 +941,7 @@ export const BaseListPlugin = createBasePlugin({
           ];
           const isFirst = !api.getPrevious(
             entry,
-            getListSequenceSiblingOptions(editor, {
+            api.getSequenceSiblingOptions({
               breakOnEqIndentNeqListStyleType: false,
               ...mergedGetSiblingListOptions,
             }),
@@ -953,10 +956,15 @@ export const BaseListPlugin = createBasePlugin({
 
           // If restartValue is 1, only apply listRestart if this is not the first
           if (isRestart && restartValue === 1 && isFirst) return;
-
           const prop = isRestart ? KEYS.listRestart : KEYS.listRestartPolite;
-
-          tx.nodes.set({ [prop]: restartValue }, { at: entry[1] });
+          tx.nodes.set(
+            {
+              [prop]: restartValue,
+            },
+            {
+              at: entry[1],
+            }
+          );
         }
       },
     }),
@@ -973,10 +981,8 @@ export const BaseListPlugin = createBasePlugin({
       const restart = (node[KEYS.listRestart] as number | null) ?? null;
       const politeRestart =
         (node[KEYS.listRestartPolite] as number | null) ?? null;
-
       if (restart) return restart;
       if (politeRestart && !previousNode) return politeRestart;
-
       return previousNode
         ? ((previousNode[KEYS.listStart] as number) ?? 1) + 1
         : 1;
@@ -985,7 +991,6 @@ export const BaseListPlugin = createBasePlugin({
       const isHeading = KEYS.heading.some(
         (headingKey) => node.type === editor.getType(headingKey)
       );
-
       return `${node[KEYS.indent]}:${node[KEYS.listType]}:${isHeading}`;
     };
     const resolveAmbiguousListStyleType = (
@@ -1004,7 +1009,6 @@ export const BaseListPlugin = createBasePlugin({
       ) {
         return ListStyleType.UpperAlpha;
       }
-
       return listStyleType;
     };
     const getListStartUpdate = (
@@ -1016,22 +1020,23 @@ export const BaseListPlugin = createBasePlugin({
       const [node] = entry;
       const listStyleType = node[KEYS.listType];
       const listStart = node[KEYS.listStart] as number | undefined;
-
       if (typeof listStyleType !== 'string') return;
-
       if (
         ULIST_STYLE_TYPES.some(
           (unorderedListStyleType) => unorderedListStyleType === listStyleType
         )
       ) {
-        return isDefined(listStart) ? ({ type: 'unset' } as const) : undefined;
+        return isDefined(listStart)
+          ? ({
+              type: 'unset',
+            } as const)
+          : undefined;
       }
-
       const resolvedPreviousEntry =
         previousEntry === undefined
           ? context.api.getPrevious(
               entry,
-              getListSequenceSiblingOptions(editor, {
+              context.api.getSequenceSiblingOptions({
                 breakOnEqIndentNeqListStyleType: false,
                 ...options,
               }),
@@ -1042,21 +1047,23 @@ export const BaseListPlugin = createBasePlugin({
         entry,
         resolvedPreviousEntry
       );
-
       if (isDefined(listStart) && expectedListStart === 1) {
-        return { type: 'unset' } as const;
+        return {
+          type: 'unset',
+        } as const;
       }
       if (listStart !== expectedListStart && expectedListStart > 1) {
-        return { type: 'set', value: expectedListStart } as const;
+        return {
+          type: 'set',
+          value: expectedListStart,
+        } as const;
       }
     };
-
     return {
       extension: {
         commands: ({ around, handle }) => [
           handle(editorCommands.delete, ({ input, state }) => {
             if (input.direction !== 'backward') return false;
-
             const nodeEntry = state.nodes.block<Element>();
             const selection = state.selection();
             const blockStart = nodeEntry
@@ -1071,7 +1078,6 @@ export const BaseListPlugin = createBasePlugin({
                     anchor: blockStart,
                     focus: selection.anchor,
                   }) === ''));
-
             if (
               !nodeEntry ||
               !selection ||
@@ -1081,15 +1087,15 @@ export const BaseListPlugin = createBasePlugin({
             ) {
               return false;
             }
-
             return state.transaction((tx) => {
-              tx.list.outdent({ at: nodeEntry[1] });
+              tx.list.outdent({
+                at: nodeEntry[1],
+              });
             });
           }),
           around(editorCommands.insertBreak, ({ state, next }) => {
             const nodeEntry = state.nodes.block<Element>();
             const selection = state.selection();
-
             if (
               !nodeEntry ||
               !selection ||
@@ -1098,17 +1104,15 @@ export const BaseListPlugin = createBasePlugin({
             ) {
               return false;
             }
-
             if (state.nodes.isEmpty(nodeEntry[0])) {
               return state.transaction((tx) => {
-                tx.list.outdent({ at: nodeEntry[1] });
+                tx.list.outdent({
+                  at: nodeEntry[1],
+                });
               });
             }
-
             const inserted = next();
-
             if (inserted === false) return false;
-
             return state.transaction.extend(inserted, (tx) => {
               const nextPath = PathApi.next(nodeEntry[1]);
               const nextNode = tx.nodes.get<Element>(nextPath)?.[0];
@@ -1116,20 +1120,18 @@ export const BaseListPlugin = createBasePlugin({
                 KEYS.listRestart,
                 KEYS.listRestartPolite,
               ].filter((key) => nextNode && Object.hasOwn(nextNode, key));
-
               if (staleRestartKeys.length > 0) {
-                tx.nodes.unset(staleRestartKeys, { at: nextPath });
+                tx.nodes.unset(staleRestartKeys, {
+                  at: nextPath,
+                });
               }
             });
           }),
           around(editorCommands.insertBreak, ({ state, next }) => {
             const nodeEntry = state.nodes.block<Element>();
-
             if (!nodeEntry) return false;
-
             const [node, path] = nodeEntry;
             const selection = state.selection();
-
             if (
               node[KEYS.listType] !== KEYS.listTodo ||
               !selection ||
@@ -1138,16 +1140,19 @@ export const BaseListPlugin = createBasePlugin({
             ) {
               return false;
             }
-
             const result = next();
-
             if (result === false) return false;
-
             return state.transaction.extend(result, (tx) => {
               const newEntry = tx.nodes.above<Element>();
-
               if (newEntry) {
-                tx.nodes.set({ checked: false }, { at: newEntry[1] });
+                tx.nodes.set(
+                  {
+                    checked: false,
+                  },
+                  {
+                    at: newEntry[1],
+                  }
+                );
               }
             });
           }),
@@ -1156,9 +1161,7 @@ export const BaseListPlugin = createBasePlugin({
         priority: 100,
         onTransactionChange({ after, before, change, changed, tx }) {
           if (editor.runtime.isNormalizing || changeGuard.has(tx)) return;
-
           changeGuard.add(tx);
-
           try {
             const { getSiblingListOptions } = getOptions();
             const roots = new Set<string | null>([
@@ -1167,14 +1170,11 @@ export const BaseListPlugin = createBasePlugin({
               ),
               ...change.createRoots,
             ]);
-
             for (const root of roots) {
               const namedRoot = root ?? undefined;
               const propertiesChanged = changed.has('properties', namedRoot);
               const structureChanged = changed.has('structure', namedRoot);
-
               if (!propertiesChanged && !structureChanged) continue;
-
               const beforeChildren = (
                 root === null ? before.children : (before.roots?.[root] ?? [])
               ) as readonly Descendant[];
@@ -1183,7 +1183,6 @@ export const BaseListPlugin = createBasePlugin({
               ) as readonly Descendant[];
               const paths = changed.paths(namedRoot);
               const insertedIndices = new Set<number>();
-
               if (structureChanged) {
                 const ranges = changed.topLevelRanges(namedRoot);
                 const windows =
@@ -1210,27 +1209,26 @@ export const BaseListPlugin = createBasePlugin({
                       .sort()
                       .map(
                         (key) =>
-                          `${JSON.stringify(key)}:${getStructuralKey(
-                            (value as Record<string, unknown>)[key]
-                          )}`
+                          `${JSON.stringify(key)}:${getStructuralKey((value as Record<string, unknown>)[key])}`
                       )
                       .join(',')}}`;
                   }
-
                   return JSON.stringify(value) ?? 'undefined';
                 };
-
                 for (const range of windows) {
                   if (!range.after) continue;
-
                   const beforeIndices = range.before
                     ? Array.from(
-                        { length: range.before[1] - range.before[0] + 1 },
+                        {
+                          length: range.before[1] - range.before[0] + 1,
+                        },
                         (_, offset) => range.before![0] + offset
                       )
                     : [];
                   const afterIndices = Array.from(
-                    { length: range.after[1] - range.after[0] + 1 },
+                    {
+                      length: range.after[1] - range.after[0] + 1,
+                    },
                     (_, offset) => range.after![0] + offset
                   );
                   const availableBefore = new Set(beforeIndices);
@@ -1239,72 +1237,56 @@ export const BaseListPlugin = createBasePlugin({
                     keyOf: (node: Descendant) => object | string | undefined
                   ) => {
                     const beforeByKey = new Map<object | string, number[]>();
-
                     for (const beforeIndex of availableBefore) {
                       const key = keyOf(beforeChildren[beforeIndex]!);
-
                       if (key === undefined) continue;
-
                       const candidates = beforeByKey.get(key) ?? [];
                       candidates.push(beforeIndex);
                       beforeByKey.set(key, candidates);
                     }
-
                     for (const afterIndex of unmatchedAfter) {
                       const key = keyOf(afterChildren[afterIndex]!);
                       const beforeIndex =
                         key === undefined
                           ? undefined
                           : beforeByKey.get(key)?.shift();
-
                       if (beforeIndex === undefined) continue;
-
                       availableBefore.delete(beforeIndex);
                       unmatchedAfter.delete(afterIndex);
                     }
                   };
-
                   claimByKey((node) => node);
                   claimByKey((node) => {
                     const id = (node as Record<string, unknown>).id;
-
                     return id === undefined
                       ? undefined
-                      : `${
-                          ElementApi.isElement(node) ? node.type : 'text'
-                        }:${String(id)}`;
+                      : `${ElementApi.isElement(node) ? node.type : 'text'}:${String(id)}`;
                   });
                   claimByKey(getStructuralKey);
-
                   for (const afterIndex of [...unmatchedAfter]) {
                     if (!availableBefore.has(afterIndex)) continue;
-
                     const afterNode = afterChildren[afterIndex]!;
                     const beforeNode = beforeChildren[afterIndex]!;
                     const sameNodeKind = TextApi.isText(afterNode)
                       ? TextApi.isText(beforeNode)
                       : ElementApi.isElement(beforeNode) &&
                         afterNode.type === beforeNode.type;
-
                     if (sameNodeKind) {
                       availableBefore.delete(afterIndex);
                       unmatchedAfter.delete(afterIndex);
                     }
                   }
-
                   unmatchedAfter.forEach((index) => {
                     insertedIndices.add(index);
                   });
                 }
               }
-
               const sortedInsertedIndices = [...insertedIndices].sort(
                 (left, right) => left - right
               );
               const affectedIndices = new Set<number>();
               const affectAll =
                 paths.length === 0 || paths.some((path) => path.length === 0);
-
               if (affectAll) {
                 afterChildren.forEach((_, index) => {
                   affectedIndices.add(index);
@@ -1312,9 +1294,7 @@ export const BaseListPlugin = createBasePlugin({
               } else {
                 paths.forEach((path) => {
                   const index = path[0];
-
                   if (index === undefined) return;
-
                   affectedIndices.add(index);
                   if (index > 0) affectedIndices.add(index - 1);
                   if (index + 1 < afterChildren.length) {
@@ -1322,25 +1302,21 @@ export const BaseListPlugin = createBasePlugin({
                   }
                 });
               }
-
               sortedInsertedIndices.forEach((index) => {
                 affectedIndices.add(index);
               });
-
               withEditorUpdateRootScope(editor, root, () => {
                 if (getSiblingListOptions) {
                   const changedPaths: Path[] =
                     paths.length && !paths.some((path) => path.length === 0)
                       ? paths.map((path) => [...path])
                       : [[]];
-
                   for (const path of changedPaths) {
                     const nodeEntry = tx.nodes.get(path);
                     let entry =
                       nodeEntry && ElementApi.isElement(nodeEntry[0])
                         ? ([nodeEntry[0], nodeEntry[1]] as NodeEntry<Element>)
                         : undefined;
-
                     if (!entry || !isListItem(entry[0])) {
                       entry = tx.nodes.find<Element>({
                         at: path,
@@ -1348,23 +1324,26 @@ export const BaseListPlugin = createBasePlugin({
                           ElementApi.isElement(node) && isListItem(node),
                       });
                     }
-
                     while (entry && isListItem(entry[0])) {
                       const update = getListStartUpdate(
                         tx,
                         entry,
                         getSiblingListOptions
                       );
-
                       if (update?.type === 'unset') {
-                        tx.nodes.unset(KEYS.listStart, { at: entry[1] });
+                        tx.nodes.unset(KEYS.listStart, {
+                          at: entry[1],
+                        });
                       } else if (update?.type === 'set') {
                         tx.nodes.set(
-                          { [KEYS.listStart]: update.value },
-                          { at: entry[1] }
+                          {
+                            [KEYS.listStart]: update.value,
+                          },
+                          {
+                            at: entry[1],
+                          }
                         );
                       }
-
                       entry = context.api.getNext<Element>(
                         entry,
                         {
@@ -1377,13 +1356,10 @@ export const BaseListPlugin = createBasePlugin({
                       );
                     }
                   }
-
                   return;
                 }
-
                 for (const index of sortedInsertedIndices) {
                   if (index === 0) continue;
-
                   const beforeNode = beforeChildren[index - 1];
                   const leftNode = afterChildren[index - 1];
                   const rightNode = afterChildren[index];
@@ -1401,18 +1377,17 @@ export const BaseListPlugin = createBasePlugin({
                       [...leftNode.children, ...rightNode.children],
                       beforeNode.children
                     );
-
                   if (!isSplit) continue;
-
                   const path: Path = [index];
                   const node = tx.nodes.get<Element>(path)?.[0];
                   const staleRestartKeys = [
                     KEYS.listRestart,
                     KEYS.listRestartPolite,
                   ].filter((key) => node && Object.hasOwn(node, key));
-
                   if (staleRestartKeys.length > 0) {
-                    tx.nodes.unset(staleRestartKeys, { at: path });
+                    tx.nodes.unset(staleRestartKeys, {
+                      at: path,
+                    });
                   }
                 }
 
@@ -1424,7 +1399,6 @@ export const BaseListPlugin = createBasePlugin({
                   const path: Path = [index];
                   const entry = tx.nodes.get<Element>(path);
                   const listStyleType = entry?.[0][KEYS.listType];
-
                   if (
                     !entry ||
                     typeof listStyleType !== 'string' ||
@@ -1432,7 +1406,6 @@ export const BaseListPlugin = createBasePlugin({
                   ) {
                     continue;
                   }
-
                   const previousEntry = context.api.getPrevious<Element>(
                     entry,
                     {
@@ -1445,21 +1418,22 @@ export const BaseListPlugin = createBasePlugin({
                     listStyleType,
                     previousEntry?.[0][KEYS.listType]
                   );
-
                   if (resolvedListStyleType !== listStyleType) {
                     tx.nodes.set(
-                      { [KEYS.listType]: resolvedListStyleType },
-                      { at: path }
+                      {
+                        [KEYS.listType]: resolvedListStyleType,
+                      },
+                      {
+                        at: path,
+                      }
                     );
                   }
                 }
-
                 for (const index of [...affectedIndices].sort(
                   (left, right) => left - right
                 )) {
                   const affectedPath: Path = [index];
                   let entry = tx.nodes.get<Element>(affectedPath);
-
                   if (entry && !isListItem(entry[0])) {
                     const [affectedNode] = entry;
                     const staleListKeys = [
@@ -1469,21 +1443,23 @@ export const BaseListPlugin = createBasePlugin({
                       KEYS.listStart,
                       KEYS.listType,
                     ].filter((key) => Object.hasOwn(affectedNode, key));
-
                     if (staleListKeys.length > 0) {
-                      tx.nodes.unset(staleListKeys, { at: affectedPath });
+                      tx.nodes.unset(staleListKeys, {
+                        at: affectedPath,
+                      });
                     }
                   }
-
                   if (!entry || !isListItem(entry[0])) {
                     entry = tx.nodes.get<Element>(PathApi.next(affectedPath));
                   }
-
                   if (entry) {
                     const firstEntry = entry;
                     const previousBySequence = new Map<
                       string,
-                      { entry: NodeEntry<Element>; indent: number }
+                      {
+                        entry: NodeEntry<Element>;
+                        indent: number;
+                      }
                     >();
                     let previousPath = firstEntry[1];
                     let minimumIndent = Number.POSITIVE_INFINITY;
@@ -1496,35 +1472,27 @@ export const BaseListPlugin = createBasePlugin({
                       },
                       tx
                     );
-
                     while (PathApi.hasPrevious(previousPath)) {
                       previousPath = PathApi.previous(previousPath);
-
                       const previousEntry = tx.nodes.get<Element>(previousPath);
-
                       if (!previousEntry) break;
-
                       const previousIndent = Number(
                         previousEntry[0][KEYS.indent]
                       );
-
                       if (!Number.isFinite(previousIndent)) break;
                       if (
-                        isListSequenceBoundary(
-                          editor,
+                        context.api.isSequenceBoundary(
                           previousEntry[0],
                           firstNode
                         )
                       ) {
                         break;
                       }
-
                       if (
                         isListItem(previousEntry[0]) &&
                         previousIndent <= minimumIndent
                       ) {
                         const key = getSequenceKey(previousEntry[0]);
-
                         if (!previousBySequence.has(key)) {
                           previousBySequence.set(key, {
                             entry: previousEntry,
@@ -1532,20 +1500,15 @@ export const BaseListPlugin = createBasePlugin({
                           });
                         }
                       }
-
                       minimumIndent = Math.min(minimumIndent, previousIndent);
                     }
-
                     let suffixEntry: NodeEntry<Element> | undefined =
                       firstEntry;
-
                     while (suffixEntry) {
                       let node = suffixEntry[0];
                       const path: Path = suffixEntry[1];
                       const indent = Number(node[KEYS.indent]);
-
                       if (!Number.isFinite(indent)) break;
-
                       const previousStyleNode = previousStyleEntry?.[0];
                       const previousStyleIndent = Number(
                         previousStyleNode?.[KEYS.indent]
@@ -1557,26 +1520,26 @@ export const BaseListPlugin = createBasePlugin({
                             ? previousStyleNode?.[KEYS.listType]
                             : undefined
                         );
-
                       if (resolvedListStyleType !== node[KEYS.listType]) {
                         tx.nodes.set(
-                          { [KEYS.listType]: resolvedListStyleType },
-                          { at: path }
+                          {
+                            [KEYS.listType]: resolvedListStyleType,
+                          },
+                          {
+                            at: path,
+                          }
                         );
                         node = {
                           ...node,
                           [KEYS.listType]: resolvedListStyleType,
                         };
                       }
-
                       const currentEntry: NodeEntry<Element> = [node, path];
-
                       for (const [key, previous] of previousBySequence) {
                         if (
                           previous.indent > indent ||
                           (isListItem(node) &&
-                            isListSequenceBoundary(
-                              editor,
+                            context.api.isSequenceBoundary(
                               previous.entry[0],
                               node
                             ))
@@ -1584,13 +1547,11 @@ export const BaseListPlugin = createBasePlugin({
                           previousBySequence.delete(key);
                         }
                       }
-
                       if (!isListItem(node)) {
                         previousStyleEntry = currentEntry;
                         suffixEntry = tx.nodes.get<Element>(PathApi.next(path));
                         continue;
                       }
-
                       const key = getSequenceKey(node);
                       const previousEntry = previousBySequence.get(key)?.entry;
                       const expectedListStart = getListExpectedListStart(
@@ -1605,13 +1566,14 @@ export const BaseListPlugin = createBasePlugin({
                         (unorderedListStyleType) =>
                           unorderedListStyleType === listStyleType
                       );
-
                       if (
                         isUnordered ||
                         (isDefined(listStart) && expectedListStart === 1)
                       ) {
                         if (isDefined(listStart)) {
-                          tx.nodes.unset(KEYS.listStart, { at: path });
+                          tx.nodes.unset(KEYS.listStart, {
+                            at: path,
+                          });
                         }
                       } else if (
                         typeof listStyleType === 'string' &&
@@ -1619,11 +1581,14 @@ export const BaseListPlugin = createBasePlugin({
                         expectedListStart > 1
                       ) {
                         tx.nodes.set(
-                          { [KEYS.listStart]: expectedListStart },
-                          { at: path }
+                          {
+                            [KEYS.listStart]: expectedListStart,
+                          },
+                          {
+                            at: path,
+                          }
                         );
                       }
-
                       previousBySequence.set(key, {
                         entry: [
                           {
@@ -1654,7 +1619,6 @@ export const BaseListPlugin = createBasePlugin({
             event: 'content',
             correct({ entry, tx }) {
               if (!ElementApi.isElement(entry[0])) return;
-
               if (
                 !isDefined(entry[0][KEYS.indent]) &&
                 (entry[0][KEYS.listType] || entry[0][KEYS.listStart])
@@ -1662,22 +1626,25 @@ export const BaseListPlugin = createBasePlugin({
                 tx.nodes.unset([KEYS.listType, KEYS.listStart], {
                   at: entry[1],
                 });
-
                 return;
               }
-
               const update = getListStartUpdate(
                 tx,
                 [entry[0], entry[1]],
                 getOptions().getSiblingListOptions
               );
-
               if (update?.type === 'unset') {
-                tx.nodes.unset(KEYS.listStart, { at: entry[1] });
+                tx.nodes.unset(KEYS.listStart, {
+                  at: entry[1],
+                });
               } else if (update?.type === 'set') {
                 tx.nodes.set(
-                  { [KEYS.listStart]: update.value },
-                  { at: entry[1] }
+                  {
+                    [KEYS.listStart]: update.value,
+                  },
+                  {
+                    at: entry[1],
+                  }
                 );
               }
             },
@@ -1689,20 +1656,16 @@ export const BaseListPlugin = createBasePlugin({
 
 export type BaseListConfig = InferConfig<typeof BaseListPlugin>;
 
-const isListInputBlocked = (editor: BaseEditor) =>
-  editor.read.nodes.some({
-    match: {
-      type: [editor.getType(KEYS.codeBlock)],
-    },
-  });
-
 const createListRule = createRuleFactory(BaseListPlugin);
 
 export const BulletedListRules = {
   markdown: createListRule<{}, { variant: '*' | '-' }>({
     type: 'blockStart',
     variant: '-',
-    enabled: ({ editor }) => !isListInputBlocked(editor),
+    enabled: ({ editor }) =>
+      !editor.read.nodes.some({
+        match: { type: [editor.getType(KEYS.codeBlock)] },
+      }),
     trigger: ' ',
     match: ({ variant }) => variant,
     apply: ({ tx }, match) => {
@@ -1718,7 +1681,10 @@ export const OrderedListRules = {
   markdown: createListRule<{}, { variant: '.' | ')' }, { start: number }>({
     type: 'blockStart',
     variant: '.',
-    enabled: ({ editor }) => !isListInputBlocked(editor),
+    enabled: ({ editor }) =>
+      !editor.read.nodes.some({
+        match: { type: [editor.getType(KEYS.codeBlock)] },
+      }),
     trigger: ' ',
     match: ({ variant }) =>
       new RegExp(`^(\\d+)${variant === ')' ? '\\)' : '\\.'}$`),
@@ -1741,7 +1707,10 @@ export const TaskListRules = {
   markdown: createListRule<{}, { checked: boolean }>({
     type: 'blockStart',
     checked: false,
-    enabled: ({ editor }) => !isListInputBlocked(editor),
+    enabled: ({ editor }) =>
+      !editor.read.nodes.some({
+        match: { type: [editor.getType(KEYS.codeBlock)] },
+      }),
     trigger: ' ',
     match: ({ checked }) => (checked ? '[x]' : '[]'),
     apply: ({ checked, tx }, match) => {

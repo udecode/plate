@@ -1587,7 +1587,7 @@ test.describe('huge document example', {
       focus: { path: [0, 0], offset: 'auto partial-dom replacement'.length },
     });
 
-    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
+    await editor.undo();
 
     await expect
       .poll(async () => {
@@ -1673,7 +1673,7 @@ test.describe('huge document example', {
       focus: { path: [0, 0], offset: '20k partial-dom replacement'.length },
     });
 
-    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
+    await editor.undo();
 
     await expect
       .poll(async () => {
@@ -2026,7 +2026,7 @@ test.describe('huge document example', {
       focus: { path: [0, 0], offset: 'huge paste replacement'.length },
     });
 
-    await page.keyboard.press(BROWSER_UNDO_HOTKEY);
+    await editor.undo();
 
     await expect.poll(() => editor.get.blockTexts()).toEqual(beforeBlockTexts);
     await editor.assert.selection({

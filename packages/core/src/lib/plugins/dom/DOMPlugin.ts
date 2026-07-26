@@ -15,8 +15,8 @@ import {
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
-import type { BaseEditor } from '../../editor';
 import { type PluginConfig, createBasePlugin } from '../../plugin';
+import type { BaseEditor } from '../../editor';
 
 const AUTO_SCROLL = new WeakMap<object, boolean>();
 
@@ -201,6 +201,17 @@ const scrollChangeIntoView = (
 };
 
 export const DOMPluginBase = createBasePlugin<DomConfig>({
+  extension: ({ editor }) => ({
+    api: {
+      dom: {
+        isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
+      },
+    },
+    key: 'autoScroll',
+    onTransactionChange({ changed, selectionAfterRoot, tx }) {
+      scrollChangeIntoView(editor, tx, changed, selectionAfterRoot);
+    },
+  }),
   key: 'dom',
   options: {
     scrollMode: 'last',
@@ -212,19 +223,8 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
       scrollMode: 'if-needed',
     },
   },
-})
-  .extendExtension('autoScroll', {
-    onTransactionChange({ changed, editor, selectionAfterRoot, tx }) {
-      scrollChangeIntoView(editor, tx, changed, selectionAfterRoot);
-    },
-  })
-  .extendEditorApi(({ editor }) => ({
-    dom: {
-      isAutoScrolling: () => AUTO_SCROLL.get(editor) ?? false,
-    },
-  }))
-  .extendTxGroup('dom', ({ editor }) => (tx) => ({
-    autoScroll: (fn: AutoScrollUpdate, options?: AutoScrollOptions) => {
+  update: ({ editor, tx }) => ({
+    autoScroll: (fn, options) => {
       const restore = beginAutoScroll(editor, options);
 
       try {
@@ -233,10 +233,15 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
         restore();
       }
     },
-  }));
+  }),
+});
 
 /**
  * Plate DOM installs the Plite DOM bridge for base editors, then adds
  * Plate-owned auto-scroll state and transaction ergonomics.
  */
-export const DOMPlugin = DOMPluginBase.extendExtension(pliteDom());
+export const DOMPlugin = DOMPluginBase.extend<{
+  extension: ReturnType<typeof pliteDom>;
+}>(() => ({
+  extension: pliteDom(),
+}));

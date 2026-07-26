@@ -1148,6 +1148,42 @@ describe('scenario helpers', () => {
     ).rejects.toThrow(/not a supported scenario step/);
   });
 
+  test('uses semantic undo for mobile scenarios', async () => {
+    const actions: string[] = [];
+    const snapshot = { text: 'after undo' } as EditorSnapshot;
+    const harness: Pick<
+      PliteBrowserEditorHarness,
+      'press' | 'trace' | 'undo'
+    > = {
+      press: async (key) => {
+        actions.push(key);
+      },
+      trace: {
+        snapshot: async (label, stepIndex = null) => ({
+          label,
+          snapshot,
+          stepIndex,
+        }),
+      },
+      undo: async () => {
+        actions.push('undo');
+      },
+    };
+    const scenario = createEditorHarnessScenario({
+      getHarness: () => harness as PliteBrowserEditorHarness,
+      page: {} as never,
+      root: {} as never,
+      surface: {} as never,
+    });
+
+    await scenario.run('mobile undo', [{ kind: 'undo' }], {
+      metadata: { platform: 'mobile' },
+      runtimeErrors: false,
+    });
+
+    expect(actions).toEqual(['undo']);
+  });
+
   test('runs imperative experiments in an explicitly non-proof lane', async () => {
     const actions: string[] = [];
     const snapshot = { text: 'after type' } as EditorSnapshot;

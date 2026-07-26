@@ -178,7 +178,8 @@ export function useBasicEditor() {
 
 ## Core 事务
 
-mutation 通过 `editor.update` 执行。Core Plite 命令在 transaction 对象上；插件命令由 `extendTx` 或 `extendTxGroup` 添加。
+mutation 通过 `editor.update` 执行。Core Plite 命令位于 transaction 对象上；
+插件通过 constructor 的 `update` 字段添加 key 对应的命令。
 
 <API name="Core transactions">
 <APITransforms>

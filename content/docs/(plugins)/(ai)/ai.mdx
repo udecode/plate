@@ -101,7 +101,7 @@ export const editor = createPlateEditor({
 - `AIPlugin`: Adds the AI mark and transforms for undoing AI batches.
 - `AIChatPlugin`: Supplies the AI combobox, API helpers, and transforms.
 
-Use `AIPlugin.withComponent` with your own element (or [`AILeaf`](/docs/components/ai-leaf)) to highlight AI-generated text.
+Use `AIPlugin.configure({ component })` with your own element (or [`AILeaf`](/docs/components/ai-leaf)) to highlight AI-generated text.
 
 ### Configure AIChatPlugin
 
@@ -385,7 +385,7 @@ Reset the internal `_blockChunks`, `_blockPath`, and `_mdxName` options when str
 
 ### `AIPlugin`
 
-Adds an `ai` mark to streamed text and exposes transforms to remove AI nodes or undo the last AI batch. Use `.withComponent` to render AI-marked text with a custom component.
+Adds an `ai` mark to streamed text and exposes transforms to remove AI nodes or undo the last AI batch. Use `.configure({ component })` to render AI-marked text with a custom component.
 
 <API name="AIPlugin">
   <APIOptions>

@@ -2,7 +2,7 @@ import type { BaseEditor } from '@platejs/core';
 
 import type { TabbableEntry, TabDestination } from './types';
 
-const comparePaths = (a: number[], b: number[]) => {
+const comparePaths = (a: readonly number[], b: readonly number[]) => {
   const minLength = Math.min(a.length, b.length);
 
   for (let index = 0; index < minLength; index++) {
@@ -14,8 +14,10 @@ const comparePaths = (a: number[], b: number[]) => {
   return a.length - b.length;
 };
 
-const isPathBefore = (a: number[], b: number[]) => comparePaths(a, b) < 0;
-const isPathEqual = (a: number[], b: number[]) => comparePaths(a, b) === 0;
+const isPathBefore = (a: readonly number[], b: readonly number[]) =>
+  comparePaths(a, b) < 0;
+const isPathEqual = (a: readonly number[], b: readonly number[]) =>
+  comparePaths(a, b) === 0;
 
 export type FindTabDestinationOptions = {
   activeTabbableEntry: TabbableEntry | null;

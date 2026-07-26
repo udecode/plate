@@ -33,26 +33,27 @@ export const CsvPlugin = createBasePlugin({
     errorTolerance: 0.25,
     parseOptions: { header: true } as CsvParseOptions,
   } satisfies CsvPluginOptions,
-})
-  .extendApi(({ editor }) => ({
-    deserialize: bindFirst(deserializeCsv, editor),
-  }))
-  .extendCodecs(({ editor, plugin }) => ({
-    'text/plain': {
-      priority: 20,
-      scope: 'document',
-      decode: ({ data }) => {
-        const content = deserializeCsvWithContext(
-          {
-            getType: (key) => editor.getType(key),
-            options: editor.plugin(plugin).getOptions(),
-          },
-          { data }
-        );
+  codecs: ({ defineCodecs, editor, plugin }) =>
+    defineCodecs({
+      'text/plain': {
+        priority: 20,
+        scope: 'document',
+        decode: ({ data }) => {
+          const content = deserializeCsvWithContext(
+            {
+              getType: (key) => editor.getType(key),
+              options: editor.plugin(plugin).getOptions(),
+            },
+            { data }
+          );
 
-        return content ? ContentSlice.closed(content) : null;
+          return content ? ContentSlice.closed(content) : null;
+        },
       },
-    },
-  }));
+    }),
+  api: ({ editor }) => ({
+    deserialize: bindFirst(deserializeCsv, editor),
+  }),
+});
 
 export type CsvConfig = InferConfig<typeof CsvPlugin>;

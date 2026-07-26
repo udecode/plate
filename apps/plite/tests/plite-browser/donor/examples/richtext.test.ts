@@ -1299,7 +1299,9 @@ test.describe('On richtext example', () => {
 
   test('applies block, alignment, and clear-formatting hotkeys', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop hotkey proof');
+
     const editor = await openExample(page, 'plite/richtext', {
       ready: {
         editor: 'visible',

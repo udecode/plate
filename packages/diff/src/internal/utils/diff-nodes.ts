@@ -10,8 +10,8 @@ import type { ComputeDiffOptions } from '../../lib/computeDiff';
 import { isEqual } from './is-equal';
 
 export function diffNodes(
-  originNodes: Descendant[],
-  targetNodes: Descendant[],
+  originNodes: readonly Descendant[],
+  targetNodes: readonly Descendant[],
   { elementsAreRelated, ignoreProps }: ComputeDiffOptions
 ) {
   const result: NodeRelatedItem[] = [];

@@ -3,6 +3,4 @@
  */
 
 export * from './BaseAIPlugin';
-export * from './types';
-export * from './transforms/index';
-export * from './utils/index';
+export * from './findTextRangeInBlock';

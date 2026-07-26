@@ -42,9 +42,31 @@ export type DndConfig = PluginConfig<
   }
 >;
 
-const BaseDndPlugin = createPlatePlugin<DndConfig>({
+const DndScrollerAfterEditable = () => {
+  const enableScroller = usePluginOption(DndPlugin, 'enableScroller');
+  const scrollerProps = usePluginOption(DndPlugin, 'scrollerProps');
+
+  if (!enableScroller) return null;
+
+  return <DndScroller {...scrollerProps} />;
+};
+
+export const DndPlugin = createPlatePlugin<DndConfig>({
   key: KEYS.dnd,
+  options: {
+    _isOver: false,
+    draggingId: null,
+    dropTarget: { id: null, line: '' },
+    enableScroller: false,
+    isDragging: false,
+    multiplePreviewRef: null,
+    scrollerProps: {},
+  },
+
   editOnly: true,
+  render: {
+    afterEditable: DndScrollerAfterEditable,
+  },
   handlers: {
     onDragEnd: ({ editor, plugin }) => {
       editor.plugin(plugin).setOption('isDragging', false);
@@ -83,15 +105,6 @@ const BaseDndPlugin = createPlatePlugin<DndConfig>({
         .getOption('multiplePreviewRef')
         ?.current?.replaceChildren();
     },
-  },
-  options: {
-    _isOver: false,
-    draggingId: null,
-    dropTarget: { id: null, line: '' },
-    enableScroller: false,
-    isDragging: false,
-    multiplePreviewRef: null,
-    scrollerProps: {},
   },
   useHooks: ({ editor, setOption }) => {
     useEffect(() => {
@@ -150,20 +163,5 @@ const BaseDndPlugin = createPlatePlugin<DndConfig>({
         document.removeEventListener('drop', handleDrop, true);
       };
     }, [editor, setOption]);
-  },
-});
-
-const DndScrollerAfterEditable = () => {
-  const enableScroller = usePluginOption(BaseDndPlugin, 'enableScroller');
-  const scrollerProps = usePluginOption(BaseDndPlugin, 'scrollerProps');
-
-  if (!enableScroller) return null;
-
-  return <DndScroller {...scrollerProps} />;
-};
-
-export const DndPlugin = BaseDndPlugin.extend({
-  render: {
-    afterEditable: DndScrollerAfterEditable,
   },
 });

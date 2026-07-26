@@ -28,9 +28,10 @@ export const BaseTocPlugin = createBasePlugin({
     },
   },
   options: defaultOptions,
-}).extendTx(({ editor }) => (tx) => ({
-  insert: (options?: Parameters<typeof insertToc>[2]) =>
-    insertToc(editor, tx, options),
-}));
+  update: ({ editor, tx }) => ({
+    insert: (options?: Parameters<typeof insertToc>[2]) =>
+      insertToc(editor, tx, options),
+  }),
+});
 
 export type TocConfig = InferConfig<typeof BaseTocPlugin>;

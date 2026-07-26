@@ -179,20 +179,21 @@ import { MediaUploadToast } from '@/components/ui/media-upload-toast';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    ImagePlugin.withComponent(ImageElement),
-    VideoPlugin.withComponent(VideoElement),
-    AudioPlugin.withComponent(AudioElement),
-    FilePlugin.withComponent(FileElement),
-    MediaEmbedPlugin.withComponent(MediaEmbedElement),
+    ImagePlugin.configure({ component: ImageElement }),
+    VideoPlugin.configure({ component: VideoElement }),
+    AudioPlugin.configure({ component: AudioElement }),
+    FilePlugin.configure({ component: FileElement }),
+    MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
     PlaceholderPlugin.configure({
+      component: PlaceholderElement,
       options: { disableEmptyPlaceholder: true },
-      render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
+      render: { afterEditable: MediaUploadToast },
     }),
   ],
 });
 ```
 
-- `withComponent`: 为每种媒体类型分配自定义渲染组件
+- `component`: 为每种媒体类型分配自定义渲染组件
 - `options.disableEmptyPlaceholder`: 无文件上传时禁止显示占位符
 - `render.afterEditable`: 在编辑器外部渲染上传进度提示
 
@@ -209,7 +210,7 @@ import { ImagePlugin } from '@platejs/media/react';
 import { ImageElement } from '@/components/ui/media-image-node';
 
 export const MediaKit = [
-  ImagePlugin.withComponent(ImageElement),
+  ImagePlugin.configure({ component: ImageElement }),
 ];
 ```
 

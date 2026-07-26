@@ -159,7 +159,7 @@ export type CreatePlateEditorOptions<
  *
  * // Editor with custom components
  * const editor = createPlateEditor({
- *   plugins: [ParagraphPlugin.withComponent(ParagraphElement)],
+ *   plugins: [ParagraphPlugin.configure({ component: ParagraphElement })],
  *   components: { [CodePlugin.key]: CodeLeaf },
  * });
  *

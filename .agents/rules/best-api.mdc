@@ -1,5 +1,5 @@
 ---
-description: Design, review, audit, or repair Plate/Plite public APIs for the best attainable balance of DX, AX, simplicity, cleanliness, and scalability. Use before layer plans when API shape is the real decision.
+description: Design, review, audit, or repair Plate/Plite public APIs for materially better DX, AX, simplicity, and scalability without speculative machinery. Use before layer plans when API shape is the real decision.
 argument-hint: '[design|review|audit|repair] <API surface | diff | plan | correction>'
 ---
 
@@ -12,11 +12,19 @@ Plate and Plite should want long term, then account for adoption cost. Current
 code, compatibility, plans, and machinery are evidence, not requirements.
 Breaking proposals are valid when they buy materially better lasting value.
 
+Here, "best" means the smallest truthful surface that materially improves a
+current user, author, or agent job while preserving hard runtime and type laws.
+It does not mean maximum capability, abstraction, generality, symmetry,
+extensibility, or rubric score. A more sophisticated API with no material
+present value is worse.
+
 This is a taste and decision skill, not an implementation engine:
 
 - `VISION.md` and `docs/vision/**` own durable doctrine.
 - `best-api` applies that doctrine to concrete API shapes and repairs it when
   reusable taste changes.
+- `editor-audit` owns exhaustive comparison against one or more external editor
+  source trees and routes only material public-shape candidates here.
 - `plate-plan` and `plite-plan` own layer architecture, adoption, execution,
   and proof after the target API is chosen.
 - package, `task`, and supervisor skills implement accepted work.
@@ -25,7 +33,8 @@ This is a taste and decision skill, not an implementation engine:
 
 Infer the mode when omitted:
 
-- `design`: choose the best API for a new or materially redesigned surface.
+- `design`: choose the smallest materially justified API for a new or
+  redesigned surface.
 - `review`: judge one current/proposed API, diff, or plan and recommend the
   better target.
 - `audit`: inspect a bounded surface and publish ranked P0-P3 API debt.
@@ -47,8 +56,10 @@ Read only what can change the decision:
    implementation for the named surface.
 3. Existing plans or compatibility constraints only after the ideal target is
    independently clear.
-4. External editor/framework precedent only when local evidence cannot settle
-   a real design question. Familiarity is a useful prior, never a ceiling.
+4. For an exhaustive external editor comparison, consume `editor-audit`
+   evidence. Inspect external precedent directly only when a narrow unresolved
+   call-shape question still needs it. Familiarity is a useful prior, never a
+   ceiling.
 
 User-stated product requirements, correctness, security, serialized data, and
 runtime laws are hard constraints. Incidental implementation structure is not.
@@ -345,11 +356,14 @@ single-owner descriptors colocated until another durable file owner exists.
 For a concrete inferred editor, `editor.api` is the canonical API discovery
 surface. Publish every non-empty plugin API under its human-readable plugin
 key, while `editor.plugin(Plugin).api` exposes the same immutable API for
-generic package code and exact descriptor ownership. Do not duplicate one
-implementation through both `extendApi` and `extendEditorApi`, route document
-mutations outside `editor.update`, or add an API-key alias registry. When a
-serialized node type is a bad public namespace, split the plugin's readable
-identity from its `type`.
+generic package code and exact descriptor ownership. Plugin authors contribute
+that implementation once through the constructor's `api` field. A genuinely
+unkeyed root editor capability belongs under the constructor's
+`extension: { api }`, not a second plugin API implementation. Do not route
+document mutations outside
+`editor.update` or add an API-key alias registry. When a serialized node type
+is a bad public namespace, split the plugin's readable identity from its
+`type`.
 
 Generic code integrating an optional descriptor uses its typed portal as the
 single source of truth:
@@ -399,14 +413,61 @@ plugin surface cannot express honestly. A raw helper that accepts both `tx`
 and the plugin's resolved `type` is evidence that the plugin boundary is
 missing.
 
-Treat a plugin builder chain as a typed capability dependency graph. When later
-plugin stages or required dependents need an earlier capability, publish the
-smallest honest read/service with an earlier `.extendApi()` or mutation with an
-earlier `.extendTx()`, then consume the accumulated inferred surface from later
-builder contexts. Multiple ordered builder calls inside one plugin are not API
-fragmentation. A later active tx stage calls an earlier mutation through that
-same transaction's plugin group, `tx[plugin.key].method(...)`; calling a portal
-one-shot update would open a nested transaction.
+Plugin authoring has one widening vocabulary. Put every independent
+contribution in `createBasePlugin()` / `createPlatePlugin()`: plugin-scoped
+`api`, `read`, `selectors`, or `update`, editor-wide `extension`, format
+`codecs`, and ordinary static fields. Constructor callbacks already receive
+the typed authoring context; context access alone never justifies `.extend()`.
+Use `.extend()` only to adapt an imported/prebuilt descriptor or extension,
+call a shared factory the constructor cannot access, or consume types
+introduced by an earlier contribution. Merge independent contributions into
+the constructor even when the object is large. Treat an exceptional staged
+chain as a typed capability dependency graph: publish the smallest honest
+read/service in the constructor or an earlier stage, then consume the inferred
+surface from the later builder context. A later active update stage
+calls an earlier mutation through that same transaction's plugin group,
+`tx[plugin.key].method(...)`; calling a portal one-shot update would open a
+nested transaction.
+
+Inline constructor and justified `.extend()` `extension` objects receive contextual
+typing and need no helper. That inference does not flow backward into an
+extracted reusable editor-extension factory. Such a factory must receive the
+plugin context (or its `defineEditorExtension` member) and return
+`context.defineEditorExtension({ ... })`. The context-bound identity helper
+preserves nested command, input, state, transaction, and dependency inference;
+it is not another builder stage. Imported Plite `defineEditorExtension` owns
+standalone Plite extensions, not extracted Plate plugin factories. Do not wrap
+inline plugin extension objects merely to use the helper.
+
+Author codecs through the constructor callback that supplies their inference
+context:
+
+```ts
+createBasePlugin({
+  codecs: ({ defineCodecs }) => defineCodecs(map),
+  key: 'example',
+})
+```
+
+`defineCodecs(map)` owns self and product codecs.
+`defineCodecs(TargetPlugin, map)` owns a foreign plugin contribution and
+injects that target into every HTML rule. The map remains MIME-keyed, and
+`'text/html'` accepts one schema-aware rule or a non-empty ordered rule tuple.
+Keep multiple HTML representations owned by one plugin in that single map.
+Move the callback to `.extend()` only when it consumes an earlier-stage
+capability or adapts an imported/prebuilt descriptor. This context-bound helper
+is the one inline inference anchor for
+codecs: do not
+teach direct `codecs: { ... }`, manual `target` fields, a global codec helper,
+casts, or callback annotations.
+
+`createBasePlugin()` owns runtime-neutral declarations.
+`createPlatePlugin()` accepts an ordinary node `component` beside the rest of
+the declaration. Existing Plate descriptors bind or replace that component
+through one terminal `.configure({ component })`; convert base descriptors
+with `toPlatePlugin(BasePlugin).configure({ component })`. Do not expose
+`.withComponent()` or direct public `render.node` authoring. `.configure()` is
+terminal and never widens.
 
 Do not publish a private implementation fragment merely so two builder stages
 can share it. Staging is for an honest scoped capability that a consumer,

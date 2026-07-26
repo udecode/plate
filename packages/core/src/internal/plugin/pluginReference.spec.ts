@@ -43,17 +43,26 @@ describe('plugin references', () => {
       BasePlugin.configure({ options: { nested: { value: 2 } } }),
       BasePlugin.extend({ priority: 101 }),
       BasePlugin.extend(() => ({ priority: 102 })),
-      BasePlugin.extendEditorApi(() => ({ nominalEditorApi: () => true })),
-      BasePlugin.extendApi(() => ({ nominalPluginApi: () => true })),
-      BasePlugin.extendSelectors(() => ({ nominalSelector: () => true })),
-      BasePlugin.extendTx(() => () => ({ nominalTx: () => true })),
-      BasePlugin.extendTxGroup('nominalGroup', () => () => ({
-        nominalTx: () => true,
+      BasePlugin.extend(() => ({
+        extension: { api: { nominalEditorApi: () => true } },
       })),
-      BasePlugin.extendExtension({
-        api: { nominalExtension: { read: () => true } },
+      BasePlugin.extend(() => ({ api: { nominalPluginApi: () => true } })),
+      BasePlugin.extend(() => ({ selectors: { nominalSelector: () => true } })),
+      BasePlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
+      BasePlugin.extend(() => ({
+        extension: {
+          tx: {
+            nominalGroup: () => ({
+              nominalTx: () => true,
+            }),
+          },
+        },
+      })),
+      BasePlugin.extend({
+        extension: {
+          api: { nominalExtension: { read: () => true } },
+        },
       }),
-      BasePlugin.withComponent(() => null),
     ];
     const PlatePlugin = toPlatePlugin(BasePlugin);
     const plateOutputs: NominalPluginOutput[] = [
@@ -68,17 +77,29 @@ describe('plugin references', () => {
       PlatePlugin.configure({ options: { nested: { value: 3 } } }),
       PlatePlugin.extend({ priority: 103 }),
       PlatePlugin.extend(() => ({ priority: 104 })),
-      PlatePlugin.extendEditorApi(() => ({ nominalEditorApi: () => true })),
-      PlatePlugin.extendApi(() => ({ nominalPluginApi: () => true })),
-      PlatePlugin.extendSelectors(() => ({ nominalSelector: () => true })),
-      PlatePlugin.extendTx(() => () => ({ nominalTx: () => true })),
-      PlatePlugin.extendTxGroup('nominalGroup', () => () => ({
-        nominalTx: () => true,
+      PlatePlugin.extend(() => ({
+        extension: { api: { nominalEditorApi: () => true } },
       })),
-      PlatePlugin.extendExtension({
-        api: { nominalExtension: { read: () => true } },
+      PlatePlugin.extend(() => ({ api: { nominalPluginApi: () => true } })),
+      PlatePlugin.extend(() => ({
+        selectors: { nominalSelector: () => true },
+      })),
+      PlatePlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
+      PlatePlugin.extend(() => ({
+        extension: {
+          tx: {
+            nominalGroup: () => ({
+              nominalTx: () => true,
+            }),
+          },
+        },
+      })),
+      PlatePlugin.extend({
+        extension: {
+          api: { nominalExtension: { read: () => true } },
+        },
       }),
-      PlatePlugin.withComponent(() => null),
+      PlatePlugin.configure({ component: () => null }),
     ];
 
     [...baseOutputs, ...plateOutputs].forEach(expectReusableReference);

@@ -1,6 +1,8 @@
+import assert from 'node:assert/strict';
+
 import { createBaseEditor } from '@platejs/core';
 import { ElementApi, SelectionApi, createEditor } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { KEYS, NODES, type TMediaEmbedElement } from '@platejs/utils';
 
 import { parseMediaUrl, parseVideoUrl } from '../media/parseMediaUrl';
 import { BaseMediaEmbedPlugin } from './BaseMediaEmbedPlugin';
@@ -86,6 +88,10 @@ describe('BaseMediaEmbedPlugin', () => {
     expect(iframe?.hasAttribute('allowfullscreen')).toBe(true);
     expect(iframe?.style.width).toBe('640px');
     expect(iframe?.hasAttribute('srcdoc')).toBe(false);
+    expect(figure?.getAttribute('data-plate-media-url')).toBe(
+      'https://example.com/embed'
+    );
+    expect(figure?.getAttribute('data-plate-media-width')).toBe('640px');
     expect(
       iframe?.getAttributeNames().some((name) => name.startsWith('on'))
     ).toBe(false);
@@ -104,6 +110,44 @@ describe('BaseMediaEmbedPlugin', () => {
         width: '640px',
       },
     ]);
+    iframe?.remove();
+    expect(
+      safe.api.html.deserialize({
+        element: figure!.outerHTML,
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Embed caption' }],
+        type: NODES.mediaEmbed,
+        url: 'https://example.com/embed',
+        width: '640px',
+      },
+    ]);
+    expect(
+      safe.api.html.deserialize({
+        element:
+          '<figure class="plate-media-embed" ' +
+          'data-plate-media-url="https://example.com/embed" ' +
+          'data-plate-media-width="not a width">' +
+          '<figcaption>Embed caption</figcaption></figure>',
+      })
+    ).toEqual([
+      {
+        children: [{ text: 'Embed caption' }],
+        type: NODES.mediaEmbed,
+        url: 'https://example.com/embed',
+      },
+    ]);
+    expect(
+      safe.api.html
+        .deserialize({
+          element:
+            '<figure class="plate-media-embed" ' +
+            'data-plate-media-url="javascript:alert(1)">' +
+            '<figcaption>Embed caption</figcaption></figure>',
+        })
+        ?.some((node) => node.type === NODES.mediaEmbed) ?? false
+    ).toBe(false);
 
     const reports: unknown[] = [];
     const unsafe = createBaseEditor({
@@ -193,6 +237,115 @@ describe('BaseMediaEmbedPlugin', () => {
       sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
       type: NODES.mediaEmbed,
       url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
+    });
+  });
+
+  it('updates a media URL through the scoped plugin transaction', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: NODES.mediaEmbed,
+          url: 'https://example.com/old',
+        },
+      ],
+    });
+    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+
+    assert(element);
+    expect(
+      editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
+        element,
+        url: '<blockquote class="twitter-tweet"><a href="https://x.com/platejs/status/1234567890"></a></blockquote><script async src="https://platform.twitter.com/widgets.js"></script>',
+      })
+    ).toBe(true);
+    expect(editor.read.children()[0]).toMatchObject({
+      provider: 'twitter',
+      url: 'https://x.com/platejs/status/1234567890',
+    });
+    expect(editor.read.children()[0]).not.toHaveProperty('id');
+  });
+
+  it('stores canonical provider metadata when updating a media URL', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: NODES.mediaEmbed,
+          url: 'https://example.com/old',
+        },
+      ],
+    });
+    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+
+    assert(element);
+    expect(
+      editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
+        element,
+        url: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+      })
+    ).toBe(true);
+    expect(editor.read.children()[0]).toMatchObject({
+      provider: 'youtube',
+      sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+      url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
+    });
+  });
+
+  it('clears stale provider metadata when updating to a generic URL', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          provider: 'youtube',
+          sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
+          type: NODES.mediaEmbed,
+          url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
+        },
+      ],
+    });
+    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+
+    assert(element);
+    expect(
+      editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
+        element,
+        url: 'https://example.com/current',
+      })
+    ).toBe(true);
+    expect(editor.read.children()[0]).toMatchObject({
+      type: NODES.mediaEmbed,
+      url: 'https://example.com/current',
+    });
+    expect(editor.read.children()[0]).not.toHaveProperty('provider');
+    expect(editor.read.children()[0]).not.toHaveProperty('sourceUrl');
+  });
+
+  it('rejects unsafe media URL updates after transformation', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMediaEmbedPlugin],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: NODES.mediaEmbed,
+          url: 'https://example.com/old',
+        },
+      ],
+    });
+    const element = editor.read.nodes.get<TMediaEmbedElement>([0])?.[0];
+
+    assert(element);
+    expect(
+      editor.plugin(BaseMediaEmbedPlugin).update.setUrl({
+        element,
+        url: '<script async src="https://example.com/widgets.js"></script>',
+      })
+    ).toBe(false);
+    expect(editor.read.children()[0]).toMatchObject({
+      url: 'https://example.com/old',
     });
   });
 

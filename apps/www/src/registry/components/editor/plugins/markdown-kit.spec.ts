@@ -45,10 +45,10 @@ describe('MarkdownKit', () => {
       expect(keys.filter((pluginKey) => pluginKey === key)).toHaveLength(1);
     }
 
-    expect(editor.getPlugin({ key: KEYS.footnoteReference }).render.node).toBe(
+    expect(getPlateRuntime(editor).components[KEYS.footnoteReference]).toBe(
       FootnoteReferenceElement
     );
-    expect(editor.getPlugin({ key: KEYS.footnoteDefinition }).render.node).toBe(
+    expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
       FootnoteDefinitionElement
     );
     expect(typeof editor.api.markdown.serialize).toBe('function');
@@ -64,10 +64,10 @@ describe('MarkdownKit', () => {
       expect(keys.filter((pluginKey) => pluginKey === key)).toHaveLength(1);
     }
 
-    expect(editor.getPlugin({ key: KEYS.footnoteReference }).render.node).toBe(
+    expect(getPlateRuntime(editor).components[KEYS.footnoteReference]).toBe(
       FootnoteReferenceElementStatic
     );
-    expect(editor.getPlugin({ key: KEYS.footnoteDefinition }).render.node).toBe(
+    expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
       FootnoteDefinitionElementStatic
     );
     expect(typeof editor.api.markdown.serialize).toBe('function');

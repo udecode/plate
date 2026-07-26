@@ -107,22 +107,22 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     TablePlugin.configure({
-      render: { node: TableElement },
+      component: TableElement,
       options: {
         initialTableWidth: 600,
         disableMerge: false,
         minColumnWidth: 48,
       },
     }),
-    TableRowPlugin.withComponent(TableRowElement),
-    TableCellPlugin.withComponent(TableCellElement),
-    TableCellHeaderPlugin.withComponent(TableCellHeaderElement),
+    TableRowPlugin.configure({ component: TableRowElement }),
+    TableCellPlugin.configure({ component: TableCellElement }),
+    TableCellHeaderPlugin.configure({ component: TableCellHeaderElement }),
   ],
 });
 ```
 
-- `render.node`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
-- `withComponent`: 为表格行、单元格和表头单元格分配组件
+- `.configure({ component })`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
+- `component`: 为表格行、单元格和表头单元格分配组件
 - `options.initialTableWidth`: 设置新建表格的初始宽度
 - `options.disableMerge`: 禁用单元格合并功能
 - `options.minColumnWidth`: 设置表格列的最小宽度

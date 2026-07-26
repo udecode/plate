@@ -21,6 +21,7 @@ export const BaseCalloutPlugin = createBasePlugin({
       },
     },
   },
+
   rules: {
     break: {
       default: 'lineBreak',
@@ -31,6 +32,8 @@ export const BaseCalloutPlugin = createBasePlugin({
       start: 'reset',
     },
   },
-}).extendTx(({ type }) => (tx) => ({
-  insert: (options?: InsertCalloutOptions) => insertCallout(tx, type, options),
-}));
+  update: ({ tx, type }) => ({
+    insert: (options?: InsertCalloutOptions) =>
+      insertCallout(tx, type, options),
+  }),
+});

@@ -38,13 +38,10 @@ export type TabblableConfig = PluginConfig<
 
 export const BaseTabbablePlugin = createBasePlugin<TabblableConfig>({
   key: KEYS.tabbable,
-  options: {
+  options: ({ editor }) => ({
     globalEventListener: false,
     insertTabbableEntries: () => [],
-    query: () => true,
-  },
-}).extend(({ editor }) => ({
-  options: {
     isTabbable: (entry) => editor.read.schema.isVoid(entry.slateNode),
-  },
-}));
+    query: () => true,
+  }),
+});

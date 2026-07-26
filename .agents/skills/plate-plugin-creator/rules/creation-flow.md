@@ -75,12 +75,26 @@ choice in an app or registry kit array; packages export the descriptors.
 
 ### Plite extension
 
-Use `extendExtension` when the behavior is generic editor substrate. Install the
-narrow command, normalizer, middleware, state, or extension primitive. Do not
-wrap the editor root or hide substrate behavior in Plate event glue.
+Put generic editor substrate in the plugin constructor's `extension` field.
+Use `.extend({ extension })` only when it consumes an earlier-stage capability,
+adapts an imported or prebuilt descriptor, or calls a shared factory the
+constructor cannot access. Install the narrow command, normalizer, middleware,
+state, or extension primitive. Do not wrap the editor root or hide substrate
+behavior in Plate event glue.
 
 If several Plate plugins need the same generic primitive, that is evidence for
 a Plite owner, not a shared Plate helper dump.
+
+### Codec contribution
+
+Keep a plugin's codec map in its semantic owner. Author it only through
+the constructor's context-bound
+`codecs: ({ defineCodecs }) => defineCodecs(map)` callback, or
+`defineCodecs(TargetPlugin, map)` inside that callback when contributing to a
+foreign descriptor. The context helper is the inference owner and injects
+foreign targets; a codec map does not earn another file, builder stage, or
+global helper. Keep it in `.extend()` only when it consumes a real capability
+introduced by an earlier stage.
 
 ## File Owners
 
@@ -89,7 +103,7 @@ a Plite owner, not a shared Plate helper dump.
 One plugin file may own:
 
 - plugin declaration and real public contract types;
-- options and schema/parser callbacks;
+- options and schema/parser/codec callbacks;
 - API and tx builders;
 - commands, corrections, decorators, normalizers, matchers, and handlers;
 - plugin-only constants and implementation helpers.

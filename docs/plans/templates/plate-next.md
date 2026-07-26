@@ -26,6 +26,10 @@ Plate Next source:
 - package review mode: pending
 - package review target: pending
 - package file checklist gate: pending
+- doctrine version: pending
+- package applied version / fingerprint state: pending
+- sync mode / target: pending
+- sync queue row count: pending
 - completion threshold summary: pending
 
 First checkpoint:
@@ -38,6 +42,8 @@ First checkpoint:
 - If package review mode is in scope, generate the package file manifest and
   materialize one checkbox per reviewed file in this plan before
   implementation. A file checkbox may be checked only when its score is `100`.
+- If sync mode is in scope, run `version.mjs validate` and `status` before
+  implementation, then materialize one sync row per stale/drifted target.
 
 Timed checkpoint:
 - requested duration: pending
@@ -59,6 +65,11 @@ Completion threshold:
   checked at score `100` or explicitly deferred for user review with reason,
   owner, proof needed, and next action. Do not move to the next package while
   unchecked package rows remain.
+- Package review or sync mode may close a package only after its final
+  fingerprint, applied doctrine version, verification date, and evidence plan
+  are recorded in `.agents/rules/plate-next/versions.json` and
+  `version.mjs status <package>` reports `current`.
+- All-package sync may close only when `version.mjs check all` exits zero.
 - Core-adjacent package review may close only after
   `tooling/scripts/check-core.mjs` is updated to include that package, or the
   plan records why the package is product-only and does not belong in
@@ -82,6 +93,8 @@ Verification surface:
 - related scoped sweep query / active scope / match count / patched count / deferred count:
   pending
 - package file manifest / row count / checked count / deferred count: pending
+- version registry validation / starting status / final status: pending
+- package fingerprint command / result: pending
 - Plite/Plate gap ledger: pending
 - broad Core drift ledger gate: pending
 - final plan check: `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
@@ -210,17 +223,25 @@ Constraints:
   independent algorithm boundary, recorded in the package rows.
 - Plugin export inference law: plugin constants should infer from
   `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, and chained
-  `.extend*` methods. Do not annotate exports as `BasePlugin<Config>` /
+  `.extend()` calls. Do not annotate exports as `BasePlugin<Config>` /
   `PlatePlugin<Config>` or cast chained plugin results unless the annotation is
   a true external boundary. If inference fails, fix the builder/generic owner.
+- Base/static renderer boundary law: `*-base-kit`, `*-static`, server/static
+  renderers, and other Base/static modules must not import `platejs/react`,
+  `@platejs/core/react`, or any `@platejs/*/react` entrypoint. Bind static
+  components through `BasePlugin.configure({ component })`; keep
+  `toPlatePlugin(BasePlugin)` in live React adapters only. If the Base path
+  lacks a required capability, fix its Core owner instead of crossing layers.
+  Bind Base/static descriptors to static renderer modules, never live/client
+  node components; registry Base kits use the owning `*-static` component.
 - Empty config inference law: do not create `type FooConfig =
   PluginConfig<'foo'>` only to call `createBasePlugin<FooConfig>({ key:
   'foo' })`. Manual plugin config types are only for real options, API, tx,
   selectors, state, or external public contracts.
-- Plugin editor extension law: plugin-owned editor extension options should be
-  returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
-  `extendExtension` must accept both built extensions and raw options; raw
+- Plugin editor extension law: plugin-owned editor extension options belong in
+  `.extend({ extension })`. Do not wrap them in
+  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types. The
+  `extension` contribution accepts built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
 - Inferred local type law: do not annotate local variables whose initializer
@@ -282,6 +303,8 @@ Start Gates:
 | Related scoped sweep policy checked | pending | pending |
 | Review-mode rename freeze checked | pending | pending |
 | Package review checklist initialized when in scope | pending | pending |
+| Doctrine registry validated for package review/sync | pending | pending |
+| Sync queue materialized when sync mode is in scope | pending | pending |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -324,6 +347,20 @@ Work Checklist:
       proof needed, and next action for user review.
 - [ ] For package review mode, no next package is started before the current
       package checklist closes or the user explicitly redirects.
+- [ ] For package review or sync mode, starting doctrine version and source
+      fingerprint state are recorded before package edits.
+- [ ] For sync mode, every target package has one queue row with starting
+      version, required missing-version checks, full-review trigger, proof,
+      final fingerprint, and ledger status.
+- [ ] For sync mode, v0 or source-drifted packages receive a full current
+      package review; unchanged later-version packages receive every missing
+      doctrine version's `migrationChecks`.
+- [ ] For package review or sync mode, the package ledger is patched only after
+      focused proof and autoreview; final plan closure runs only after package
+      registry status is `current`.
+- [ ] If a reusable Plate Next rule changes during the run, doctrine version is
+      bumped, immutable migration checks are appended, generated skill is
+      synced, and the package queue is recomputed.
 - [ ] For Core-adjacent package review, `tooling/scripts/check-core.mjs` is
       updated to include the package, or the plan records why the package is
       product-only and outside `check:core`.
@@ -353,9 +390,9 @@ Work Checklist:
       `createBasePlugin<Config>` generics are removed when the config has no
       typed options, API, tx, selectors, state, or external public contract.
 - [ ] Plugin extension options audit closed: plugin-owned extension options are
-      returned directly from `extendExtension`; `defineEditorExtension` remains
-      only for standalone Plite extensions, existing built extensions, or
-      explicit non-plugin extension identities.
+      contributed through `.extend({ extension })`; `defineEditorExtension`
+      remains only for standalone Plite extensions, existing built extensions,
+      or explicit non-plugin extension identities.
 - [ ] Bridge scoring law applied: forbidden bridges score `0`, direct bridge
       imports/installers are capped, displaced owner files are capped, and no
       capped file is raised to 100 from green checks alone.
@@ -385,6 +422,8 @@ Completion Gates:
 | Plite/Plate gap ledger | pending | Record blockers or N/A when no gap blocks the target | pending |
 | Related scoped sweep after correction | pending | For each correction, run and record same-class search/review results inside the active scope | pending |
 | Package file checklist | pending | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | pending |
+| Package doctrine attestation | pending | Record final applied version, fingerprint, verification date, evidence plan, and `status <package>` result | pending |
+| All-package sync closure | pending | Run `version.mjs check all`, or record N/A when sync-all is not the mode | pending |
 | Helper topology / lexical tx ownership | pending | Audit every helper directory/file and standalone tx-parameter function; inline/delete single-owner rows or prove reuse/independent ownership | pending |
 | Package/API proof | pending | Run focused typecheck/test/build or record N/A | pending |
 | Shared Core gate coverage | pending | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | pending |
@@ -455,6 +494,11 @@ Package file rows:
 - [ ] `pending` — score: pending — verdict: pending — owner: pending —
       evidence: pending — next: pending
 
+Package doctrine / sync ledger:
+| Package | Start version | Latest | Fingerprint state | Required version checks | Full review | Proof | Final fingerprint | Registry status |
+|---------|---------------|--------|-------------------|-------------------------|-------------|-------|-------------------|-----------------|
+| pending | pending | pending | pending | pending | pending | pending | pending | pending |
+
 Packet ledger:
 | Packet | Owner | Hypothesis / smell | Files / commands | Decision | Next |
 |--------|-------|--------------------|------------------|----------|------|
@@ -507,6 +551,8 @@ Final handoff contract:
 - files/APIs reviewed: pending
 - broad Core drift score coverage: pending
 - package file checklist coverage: pending
+- doctrine start/final version and source-fingerprint state: pending
+- version registry evidence and remaining stale/drifted count: pending
 - best Plate v2 recommendation: pending
 - verdict matrix summary: pending
 - Plite/Plate gaps or blockers: pending

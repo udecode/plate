@@ -30,64 +30,11 @@ const navigationFeedbackEffect = defineEffect<NavigationFeedbackEffect>({
 export const NavigationFeedbackPlugin =
   createPlatePlugin<NavigationFeedbackConfig>({
     key: NAVIGATION_FEEDBACK_KEY,
-    inject: {
-      isElement: true,
-      nodeProps: {
-        transformProps: ({ editor, element, path, props, text }) => {
-          const storedTarget = useEditorPluginOption(
-            editor,
-            NavigationFeedbackPlugin,
-            'activeTarget'
-          );
-          const activeTarget = resolveNavigationFeedbackTarget(storedTarget);
-          const target = element ?? text;
-
-          if (!activeTarget || !target) return props;
-
-          if (!path || !PathApi.equals(activeTarget.path, path)) return props;
-
-          return {
-            ...props,
-            'data-nav-cycle': String(activeTarget.cycle),
-            'data-nav-highlight': activeTarget.variant,
-            'data-nav-pulse': String(activeTarget.pulse),
-            'data-nav-target': 'true',
-            style: {
-              ...(props.style ?? {}),
-              '--plate-nav-feedback-duration': `${activeTarget.duration}ms`,
-            },
-          };
-        },
-      },
-    },
     options: {
       activeTarget: null,
       duration: 1600,
     },
-  })
-    .extendExtension(({ editor }) => {
-      const refreshDecorations = () => {
-        editor.api.react.refreshDecorations();
-      };
-
-      return {
-        effects: [navigationFeedbackEffect],
-        onCommit({ commit }) {
-          commit.effects.forEach((effect) => {
-            if (effect.type !== navigationFeedbackEffect) return;
-
-            if (effect.value.type === 'clear') {
-              clearNavigationFeedbackTarget(editor, refreshDecorations);
-            } else if (effect.value.type === 'flash') {
-              flashTarget(editor, effect.value.options, refreshDecorations);
-            } else {
-              navigate(editor, effect.value.options, refreshDecorations);
-            }
-          });
-        },
-      };
-    })
-    .extendEditorApi<NavigationFeedbackConfig['api']>(({ editor }) => {
+    extension: ({ editor }) => {
       const refreshDecorations = () => {
         editor.api.react.refreshDecorations();
       };
@@ -107,51 +54,101 @@ export const NavigationFeedbackPlugin =
       };
 
       return {
-        navigation: {
-          activeTarget: getActiveTarget,
-          clear: () =>
-            clearNavigationFeedbackTarget(editor, refreshDecorations),
-          isTarget: (path) => {
-            const activeTarget = getActiveTarget();
+        api: {
+          navigation: {
+            activeTarget: getActiveTarget,
+            clear: () =>
+              clearNavigationFeedbackTarget(editor, refreshDecorations),
+            isTarget: (path) => {
+              const activeTarget = getActiveTarget();
 
-            return !!activeTarget && PathApi.equals(activeTarget.path, path);
+              return !!activeTarget && PathApi.equals(activeTarget.path, path);
+            },
           },
         },
+        effects: [navigationFeedbackEffect],
+        onCommit({ commit }) {
+          commit.effects.forEach((effect) => {
+            if (effect.type !== navigationFeedbackEffect) return;
+
+            if (effect.value.type === 'clear') {
+              clearNavigationFeedbackTarget(editor, refreshDecorations);
+            } else if (effect.value.type === 'flash') {
+              flashTarget(editor, effect.value.options, refreshDecorations);
+            } else {
+              navigate(editor, effect.value.options, refreshDecorations);
+            }
+          });
+        },
+        tx: {
+          navigation: (tx) => ({
+            clear: () => {
+              tx.effects.emit(navigationFeedbackEffect, { type: 'clear' });
+            },
+            flashTarget: (options: NavigationFlashTargetOptions) => {
+              if (!tx.nodes.get(options.target.path)) return false;
+
+              tx.effects.emit(navigationFeedbackEffect, {
+                options,
+                type: 'flash',
+              });
+
+              return true;
+            },
+            navigate: (options: NavigationNavigateOptions) => {
+              if (!tx.nodes.get(options.target.path)) return false;
+
+              if (options.select) {
+                if ('focus' in options.select) {
+                  tx.selection.set(options.select);
+                } else {
+                  tx.selection.set({
+                    anchor: options.select,
+                    focus: options.select,
+                  });
+                }
+              }
+
+              tx.effects.emit(navigationFeedbackEffect, {
+                options,
+                type: 'navigate',
+              });
+
+              return true;
+            },
+          }),
+        },
       };
-    })
-    .extendTxGroup('navigation', () => (tx) => ({
-      clear: () => {
-        tx.effects.emit(navigationFeedbackEffect, { type: 'clear' });
-      },
-      flashTarget: (options: NavigationFlashTargetOptions) => {
-        if (!tx.nodes.get(options.target.path)) return false;
+    },
+    inject: {
+      isElement: true,
+      nodeProps: {
+        transformProps: ({ editor, element, path, props, text }) => {
+          const storedTarget = useEditorPluginOption(
+            editor,
+            NavigationFeedbackPlugin,
+            'activeTarget'
+          );
+          const activeTarget = resolveNavigationFeedbackTarget(storedTarget);
+          const target = element ?? text;
 
-        tx.effects.emit(navigationFeedbackEffect, {
-          options,
-          type: 'flash',
-        });
-
-        return true;
-      },
-      navigate: (options: NavigationNavigateOptions) => {
-        if (!tx.nodes.get(options.target.path)) return false;
-
-        if (options.select) {
-          if ('focus' in options.select) {
-            tx.selection.set(options.select);
-          } else {
-            tx.selection.set({
-              anchor: options.select,
-              focus: options.select,
-            });
+          if (!activeTarget || !target) return props;
+          if (!path || !PathApi.equals(activeTarget.path, path)) {
+            return props;
           }
-        }
 
-        tx.effects.emit(navigationFeedbackEffect, {
-          options,
-          type: 'navigate',
-        });
-
-        return true;
+          return {
+            ...props,
+            'data-nav-cycle': String(activeTarget.cycle),
+            'data-nav-highlight': activeTarget.variant,
+            'data-nav-pulse': String(activeTarget.pulse),
+            'data-nav-target': 'true',
+            style: {
+              ...(props.style ?? {}),
+              '--plate-nav-feedback-duration': `${activeTarget.duration}ms`,
+            },
+          };
+        },
       },
-    }));
+    },
+  });

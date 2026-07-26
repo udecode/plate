@@ -9,6 +9,8 @@ describe('DocxPlugin', () => {
   });
   const createContext = prepareHtmlPluginContext(editor, DocxPlugin);
   const context = editor.read((state) => createContext(state));
+  const transformData =
+    editor.getPlugin(DocxPlugin).parsers.html?.transformData;
   const source = (dataTransfer: DataTransfer) => ({
     files: dataTransfer.files,
     getData: (format: string) => dataTransfer.getData(format),
@@ -16,7 +18,6 @@ describe('DocxPlugin', () => {
   });
 
   it('routes html transformData through cleanDocx with rtf input', () => {
-    const transformData = DocxPlugin.parsers.html?.transformData;
     const html = '<p class="MsoQuote">Quote</p>';
     const dataTransfer = new DataTransfer();
     dataTransfer.setData('text/rtf', '{\\rtf1}');
@@ -36,7 +37,6 @@ describe('DocxPlugin', () => {
   });
 
   it('normalizes docx list content before node matching', () => {
-    const transformData = DocxPlugin.parsers.html?.transformData;
     const html =
       '<p style="mso-list:l0 level2 lfo1"><span style="mso-list:Ignore">1.</span><!--[if !supportLists]--><span>drop</span><!--[endif]-->Item</p>';
     const dataTransfer = new DataTransfer();
@@ -63,7 +63,6 @@ describe('DocxPlugin', () => {
   });
 
   it('normalizes paragraph indentation and suppresses docx images', () => {
-    const transformData = DocxPlugin.parsers.html?.transformData;
     const dataTransfer = new DataTransfer();
     dataTransfer.setData(
       'text/rtf',
@@ -93,7 +92,6 @@ describe('DocxPlugin', () => {
   });
 
   it('does not suppress images in ordinary html', () => {
-    const transformData = DocxPlugin.parsers.html?.transformData;
     const dataTransfer = new DataTransfer();
     const html = '<p>plain html</p><img src="/plain.png" />';
 

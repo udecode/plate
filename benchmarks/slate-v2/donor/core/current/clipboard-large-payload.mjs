@@ -233,17 +233,12 @@ const createPlateReconfigurationCodecExtension = (label, counters) => {
 
 const createPlateBenchmarkCodecPlugin = (counters) =>
   createBasePlugin({
-    key: 'benchmarkPlateCodec',
-    options: {
-      format: 'application/x-plate-benchmark-unconfigured',
-    },
-  })
-    .extendCodecs(({ editor, plugin }) => {
+    codecs: ({ defineCodecs, getOptions }) => {
       counters.compilation += 1;
 
-      const { format } = editor.plugin(plugin).getOptions();
+      const { format } = getOptions();
 
-      return {
+      return defineCodecs({
         [format]: {
           scope: 'document',
           decode: ({ data }) => {
@@ -272,8 +267,13 @@ const createPlateBenchmarkCodecPlugin = (counters) =>
             return true;
           },
         },
-      };
-    })
+      });
+    },
+    key: 'benchmarkPlateCodec',
+    options: {
+      format: 'application/x-plate-benchmark-unconfigured',
+    },
+  })
     .configure({
       options: {
         format: benchmarkPlateFormat,

@@ -30,6 +30,7 @@ const ledgerRows = classified.map((issue) => {
     exactTest,
     issue: issue.number,
     matrixKey: issue.matrixKey,
+    metadataReview: issue.refreshStatus ?? '',
     owner: issue.owner,
     proofKind: issue.proofKind,
     reason: issue.reason,
@@ -83,6 +84,7 @@ const tsv = [
     'proofKind',
     'exactTest',
     'command',
+    'metadataReview',
     'title',
     'url',
     'reason',
@@ -101,6 +103,7 @@ const tsv = [
       row.proofKind,
       row.exactTest,
       row.command,
+      row.metadataReview,
       row.title,
       row.url,
       row.reason,
@@ -126,6 +129,7 @@ const byDisposition = ledgerRows.reduce((acc, row) => {
 const uncheckedRelevant = ledgerRows.filter(
   (row) => row.relevant && row.closureState !== 'checked'
 )
+const metadataReview = ledgerRows.filter((row) => row.metadataReview)
 const status = uncheckedRelevant.length === 0 ? 'checked' : 'open'
 
 const markdown = [
@@ -148,6 +152,7 @@ const markdown = [
     .sort((a, b) => b[1] - a[1])
     .map(([key, count]) => `| ${key} | ${count} |`),
   `| unchecked relevant | ${uncheckedRelevant.length} |`,
+  `| metadata review flagged | ${metadataReview.length} |`,
   '',
   '## Closure Counts',
   '',

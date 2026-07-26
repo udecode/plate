@@ -6,6 +6,10 @@ import {
 } from '@/registry/ui/column-node-static';
 
 export const BaseColumnKit = [
-  BaseColumnPlugin.withComponent(ColumnGroupElementStatic),
-  BaseColumnItemPlugin.withComponent(ColumnElementStatic),
+  BaseColumnPlugin.configure({
+    component: ColumnGroupElementStatic,
+  }),
+  BaseColumnItemPlugin.configure({
+    component: ColumnElementStatic,
+  }),
 ];

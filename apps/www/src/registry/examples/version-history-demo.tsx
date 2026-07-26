@@ -125,10 +125,10 @@ const DiffPlugin = toPlatePlugin(
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
-  }).extendExtension(createExcludeDiffFragmentExtension()),
+    extension: createExcludeDiffFragmentExtension(),
+  }),
   {
     render: {
-      node: DiffLeaf,
       aboveNodes:
         () =>
         ({ children, editor, element }) => {
@@ -164,7 +164,7 @@ const DiffPlugin = toPlatePlugin(
         },
     },
   }
-);
+).configure({ component: DiffLeaf });
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffIntent = props.leaf.diffIntent as DiffIntent;
@@ -220,8 +220,8 @@ export const createVersionSnapshot = (value: Value): Value => cloneDeep(value);
 
 const basePlugins = [
   ...BasicMarksKit,
-  InlinePlugin.withComponent(InlineElement),
-  InlineVoidPlugin.withComponent(InlineVoidElement),
+  InlinePlugin.configure({ component: InlineElement }),
+  InlineVoidPlugin.configure({ component: InlineVoidElement }),
 ];
 
 const diffPlugins = [...basePlugins, DiffPlugin];

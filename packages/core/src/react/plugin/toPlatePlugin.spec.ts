@@ -45,27 +45,38 @@ describe('toPlatePlugin', () => {
       element: { content: schema.content.open({ default: 'text', min: 1 }) },
     },
     options: { t: 1 },
-  })
-    .extendHtmlCodec(() => ({
-      decode: ({ element }) =>
-        element.style.fontFamily === 'Consolas' ? undefined : {},
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }))
-    .extendEditorApi(() => ({
-      baseApiMethod: () => 'base',
-    }));
+    codecs: ({ defineCodecs }) =>
+      defineCodecs({
+        'text/html': {
+          decode: ({ element }) =>
+            element.style.fontFamily === 'Consolas' ? undefined : {},
+          encode: ({ content }) => ({ children: content, tag: 'p' }),
+          match: [{ tag: 'p' }],
+        },
+      }),
+  }).extend(() => ({
+    extension: {
+      api: {
+        baseApiMethod: () => 'base',
+      },
+    },
+  }));
 
   const MockComponent: NodeComponent = () => null;
   const MockAboveComponent: NodeComponent = () => null;
 
   it('extend a BasePlugin with React-specific properties and API', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
+      component: MockComponent,
       handlers: { onKeyDown: () => true },
       options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
-      render: { aboveEditable: MockAboveComponent, node: MockComponent },
-    }).extendEditorApi(() => ({
-      someApiMethod: () => 'API method result',
+      render: { aboveEditable: MockAboveComponent },
+    }).extend(() => ({
+      extension: {
+        api: {
+          someApiMethod: () => 'API method result',
+        },
+      },
     }));
 
     const editor = createPlateEditor({
@@ -85,14 +96,15 @@ describe('toPlatePlugin', () => {
   });
 
   it('extend with a function configuration', () => {
-    const ParagraphPlugin = toPlatePlugin(
-      BaseParagraphPlugin,
-      ({ editor }) => ({
-        options: { editorId: editor.id },
-        render: { node: MockComponent },
-      })
-    ).extendEditorApi(({ editor }) => ({
-      getEditorId: () => editor.id,
+    const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
+      component: MockComponent,
+    }).extend(({ editor }) => ({
+      options: { editorId: editor.id },
+      extension: {
+        api: {
+          getEditorId: () => editor.id,
+        },
+      },
     }));
 
     const editor = createPlateEditor({
@@ -115,8 +127,12 @@ describe('toPlatePlugin', () => {
         onNodeChange: mockOnNodeChange,
         onKeyDown: mockOnKeyDown,
       },
-    }).extendEditorApi(() => ({
-      customMethod: () => 'custom result',
+    }).extend(() => ({
+      extension: {
+        api: {
+          customMethod: () => 'custom result',
+        },
+      },
     }));
 
     const editor = createPlateEditor({
@@ -137,7 +153,7 @@ describe('toPlatePlugin', () => {
 
     expect(() => {
       toPlatePlugin(NonExistentPlugin as any, {
-        render: { node: MockComponent },
+        options: {},
       });
     }).toThrow();
   });
@@ -217,22 +233,30 @@ describe('toPlatePlugin type tests', () => {
       key: 'codeBlock',
       type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
-    }).extendEditorApi<CodeBlockConfig['api']>(() => ({
-      plugin: {
-        getSyntaxState: () => true,
+    }).extend<{ extension: { api: CodeBlockConfig['api'] } }>(() => ({
+      extension: {
+        api: {
+          plugin: {
+            getSyntaxState: () => true,
+          },
+          toggleSyntax: () => {},
+        },
       },
-      toggleSyntax: () => {},
     }));
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
       handlers: {},
       options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-    }).extendEditorApi(() => ({
-      plugin: {
-        getLanguage: () => 'javascript' as string,
-      },
-      plugin2: {
-        setLanguage: (_: string) => {},
+    }).extend(() => ({
+      extension: {
+        api: {
+          plugin: {
+            getLanguage: () => 'javascript' as string,
+          },
+          plugin2: {
+            setLanguage: (_: string) => {},
+          },
+        },
       },
     }));
 
@@ -376,11 +400,15 @@ describe('toPlatePlugin type tests', () => {
       key: 'codeBlock',
       type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
-    }).extendEditorApi<CodeBlockConfig['api']>(() => ({
-      plugin: {
-        getSyntaxState: () => true,
+    }).extend<{ extension: { api: CodeBlockConfig['api'] } }>(() => ({
+      extension: {
+        api: {
+          plugin: {
+            getSyntaxState: () => true,
+          },
+          toggleSyntax: () => {},
+        },
       },
-      toggleSyntax: () => {},
     }));
 
     const CodeBlockPlugin = toPlatePlugin<CodeBlockConfig2, CodeBlockConfig>(
@@ -390,12 +418,16 @@ describe('toPlatePlugin type tests', () => {
           hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
       }
-    ).extendEditorApi(() => ({
-      plugin: {
-        getLanguage: () => 'javascript',
-      },
-      plugin2: {
-        setLanguage: (_: string) => {},
+    ).extend(() => ({
+      extension: {
+        api: {
+          plugin: {
+            getLanguage: () => 'javascript',
+          },
+          plugin2: {
+            setLanguage: (_: string) => {},
+          },
+        },
       },
     }));
 
@@ -508,7 +540,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     });
   });
 
-  it('keeps withComponent on the Plate wrapper', () => {
+  it('configures a component on the Plate wrapper', () => {
     const NewComponent: NodeComponent = () => null;
 
     const basePlugin = createBasePlugin({
@@ -517,7 +549,7 @@ describe('toPlatePlugin with direct merge for object configs', () => {
 
     const plugin = toPlatePlugin(basePlugin);
 
-    const componentPlugin = plugin.withComponent(NewComponent);
+    const componentPlugin = plugin.configure({ component: NewComponent });
     const resolvedPlugin = resolvePluginTest(componentPlugin);
 
     expect(resolvedPlugin.render.node).toBe(NewComponent);
@@ -530,11 +562,5 @@ describe('toPlatePlugin with direct merge for object configs', () => {
     const plugin = toPlatePlugin(configured);
 
     expect(() => (plugin.extend as any)({})).toThrow('already configured');
-    expect(() => (plugin.extendCodecs as any)(() => ({}))).toThrow(
-      'already configured'
-    );
-    expect(() => (plugin.extendHtmlCodec as any)(() => ({}))).toThrow(
-      'already configured'
-    );
   });
 });

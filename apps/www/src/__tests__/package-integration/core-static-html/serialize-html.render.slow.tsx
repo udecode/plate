@@ -2,6 +2,7 @@ import React from 'react';
 
 import { property } from 'platejs';
 import { createBaseEditor, createBasePlugin } from 'platejs';
+import { toPlatePlugin } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -75,20 +76,23 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies both node and leaf renderers', async () => {
-    const testPlugin = createBasePlugin({
-      key: 'test',
-      schema: {
-        mark: property.boolean({ default: false, omitDefault: true }),
-      },
-      render: {
-        isDecoration: false,
-        node: ({ children }) => (
-          <span data-plite-test="node-wrapper">{children}</span>
-        ),
-        leaf: ({ children }) => (
-          <span data-plite-test="leaf-wrapper">{children}</span>
-        ),
-      },
+    const testPlugin = toPlatePlugin(
+      createBasePlugin({
+        key: 'test',
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
+        render: {
+          isDecoration: false,
+          leaf: ({ children }) => (
+            <span data-plite-test="leaf-wrapper">{children}</span>
+          ),
+        },
+      })
+    ).configure({
+      component: ({ children }) => (
+        <span data-plite-test="node-wrapper">{children}</span>
+      ),
     });
 
     const editor = createBaseEditor({
@@ -112,22 +116,25 @@ describe('core static renderStaticHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-node="text" data-plite-test="true"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-test="leaf-wrapper"><span data-plite-string="true">test content</span></span></span></span></span>'
+      '<span data-plite-node="text"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-test="leaf-wrapper"><span data-plite-string="true">test content</span></span></span></span></span>'
     );
   });
 
   it('applies a component renderer to decoration leaves', async () => {
-    const testPlugin = createBasePlugin({
-      key: 'test',
-      schema: {
-        mark: property.boolean({ default: false, omitDefault: true }),
-      },
-      render: {
-        isDecoration: true,
-        node: ({ children }) => (
-          <span data-plite-test="node-wrapper">{children}</span>
-        ),
-      },
+    const testPlugin = toPlatePlugin(
+      createBasePlugin({
+        key: 'test',
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
+        render: {
+          isDecoration: true,
+        },
+      })
+    ).configure({
+      component: ({ children }) => (
+        <span data-plite-test="node-wrapper">{children}</span>
+      ),
     });
 
     const editor = createBaseEditor({
@@ -151,22 +158,25 @@ describe('core static renderStaticHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-node="text"><span data-plite-leaf="true" data-plite-test="true"><span data-plite-test="node-wrapper"><span data-plite-string="true">test content</span></span></span></span>'
+      '<span data-plite-node="text"><span data-plite-leaf="true"><span data-plite-test="node-wrapper"><span data-plite-string="true">test content</span></span></span></span>'
     );
   });
 
   it('applies a component renderer to non-decoration leaves', async () => {
-    const testPlugin = createBasePlugin({
-      key: 'test',
-      schema: {
-        mark: property.boolean({ default: false, omitDefault: true }),
-      },
-      render: {
-        isDecoration: false,
-        node: ({ children }) => (
-          <span data-plite-test="node-wrapper">{children}</span>
-        ),
-      },
+    const testPlugin = toPlatePlugin(
+      createBasePlugin({
+        key: 'test',
+        schema: {
+          mark: property.boolean({ default: false, omitDefault: true }),
+        },
+        render: {
+          isDecoration: false,
+        },
+      })
+    ).configure({
+      component: ({ children }) => (
+        <span data-plite-test="node-wrapper">{children}</span>
+      ),
     });
 
     const editor = createBaseEditor({
@@ -190,7 +200,7 @@ describe('core static renderStaticHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-node="text" data-plite-test="true"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-string="true">test content</span></span></span></span>'
+      '<span data-plite-node="text"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-string="true">test content</span></span></span></span>'
     );
   });
 });

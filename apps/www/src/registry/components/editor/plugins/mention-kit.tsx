@@ -8,10 +8,11 @@ import {
 } from '@/registry/ui/mention-node';
 
 export const MentionKit = [
-  MentionPlugin.withComponent(MentionElement).configure({
+  MentionPlugin.configure({
+    component: MentionElement,
     options: {
       triggerPreviousCharPattern: /^$|^[\s"']$/,
     },
   }),
-  MentionInputPlugin.withComponent(MentionInputElement),
+  MentionInputPlugin.configure({ component: MentionInputElement }),
 ];

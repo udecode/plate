@@ -40,93 +40,96 @@ const parseCodecProofPayload = (data: string): CodecProofPayload =>
 
 const CodecProofFallbackPlugin = createPlatePlugin({
   key: 'codecProofFallback',
-}).extendCodecs(() => ({
-  [CODEC_PROOF_FORMAT]: {
-    scope: 'document',
-    decode: ({ data }) => {
-      const { kind } = parseCodecProofPayload(data);
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      [CODEC_PROOF_FORMAT]: {
+        scope: 'document',
+        decode: ({ data }) => {
+          const { kind } = parseCodecProofPayload(data);
 
-      if (kind !== 'delegate' && kind !== 'throw') return null;
+          if (kind !== 'delegate' && kind !== 'throw') return null;
 
-      return ContentSlice.closed([
-        {
-          children: [{ text: `fallback:${kind}` }],
-          type: 'p',
+          return ContentSlice.closed([
+            {
+              children: [{ text: `fallback:${kind}` }],
+              type: 'p',
+            },
+          ]);
         },
-      ]);
-    },
-  },
-}));
+      },
+    }),
+});
 
 const CodecProofPlugin = createPlatePlugin<CodecProofConfig>({
   key: 'codecProof',
   options: {
     label: 'initial',
   },
-}).extendCodecs(({ editor, getOptions }) => ({
-  [CODEC_PROOF_FORMAT]: {
-    priority: 20,
-    scope: 'document',
-    decode: ({ data }) => {
-      const { kind } = parseCodecProofPayload(data);
-      const { label } = getOptions();
+  codecs: ({ defineCodecs, editor, getOptions }) =>
+    defineCodecs({
+      [CODEC_PROOF_FORMAT]: {
+        priority: 20,
+        scope: 'document',
+        decode: ({ data }) => {
+          const { kind } = parseCodecProofPayload(data);
+          const { label } = getOptions();
 
-      if (kind === 'delegate') return null;
-      if (kind === 'throw') {
-        throw new Error('Expected Plate codec browser proof failure.');
-      }
-      if (kind === 'inline') {
-        return ContentSlice.fromJSON({
-          content: [
-            {
-              children: [{ bold: true, text: `${label}:inline` }],
-              type: 'p',
-            },
-          ],
-          openEnd: 1,
-          openStart: 1,
-        });
-      }
-      if (kind === 'code') {
-        return ContentSlice.fromJSON({
-          content: [
-            {
-              children: [
+          if (kind === 'delegate') return null;
+          if (kind === 'throw') {
+            throw new Error('Expected Plate codec browser proof failure.');
+          }
+          if (kind === 'inline') {
+            return ContentSlice.fromJSON({
+              content: [
                 {
-                  children: [{ text: `${label}:code` }],
-                  type: editor.getType(CodeLinePlugin.key),
+                  children: [{ bold: true, text: `${label}:inline` }],
+                  type: 'p',
                 },
               ],
-              type: editor.getType(CodeBlockPlugin.key),
-            },
-          ],
-          openEnd: 2,
-          openStart: 2,
-        });
-      }
+              openEnd: 1,
+              openStart: 1,
+            });
+          }
+          if (kind === 'code') {
+            return ContentSlice.fromJSON({
+              content: [
+                {
+                  children: [
+                    {
+                      children: [{ text: `${label}:code` }],
+                      type: editor.getType(CodeLinePlugin.key),
+                    },
+                  ],
+                  type: editor.getType(CodeBlockPlugin.key),
+                },
+              ],
+              openEnd: 2,
+              openStart: 2,
+            });
+          }
 
-      return ContentSlice.closed([
-        {
-          children: [{ text: `${label}:block-a` }],
-          type: 'p',
+          return ContentSlice.closed([
+            {
+              children: [{ text: `${label}:block-a` }],
+              type: 'p',
+            },
+            {
+              children: [{ text: `${label}:block-b` }],
+              type: 'p',
+            },
+          ]);
         },
-        {
-          children: [{ text: `${label}:block-b` }],
-          type: 'p',
-        },
-      ]);
-    },
-    encode: ({ slice }) =>
-      JSON.stringify({
-        label: getOptions().label,
-        slice,
-      }),
-  },
-}));
+        encode: ({ slice }) =>
+          JSON.stringify({
+            label: getOptions().label,
+            slice,
+          }),
+      },
+    }),
+});
 
 const AdvancedMarkPlugin = createPlatePlugin({
   key: 'schemaAdvanced',
-  render: { as: 'mark' },
   schema: {
     mark: {
       inclusive: false,
@@ -135,15 +138,21 @@ const AdvancedMarkPlugin = createPlatePlugin({
       typeChange: 'preserve-if-allowed',
     },
   },
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) =>
-    element.getAttribute('data-schema-advanced') ?? undefined,
-  encode: ({ value }) => ({
-    attributes: { 'data-schema-advanced': value },
-    tag: 'mark',
-  }),
-  match: [{ attributes: { 'data-schema-advanced': true } }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) =>
+          element.getAttribute('data-schema-advanced') ?? undefined,
+        encode: ({ value }) => ({
+          attributes: { 'data-schema-advanced': value },
+          tag: 'mark',
+        }),
+        match: [{ attributes: { 'data-schema-advanced': true } }],
+      },
+    }),
+
+  render: { as: 'mark' },
+});
 
 const PlateSchemaDescriptorControls = () => {
   const editor = useEditor();
@@ -449,7 +458,7 @@ const PlateSchemaDescriptorControls = () => {
 const PlateSchemaDescriptorsExample = () => {
   const editor = usePlateEditor({
     plugins: [
-      ParagraphPlugin.extend({
+      ParagraphPlugin.configure({
         render: { as: 'article' },
       }),
       BoldPlugin,

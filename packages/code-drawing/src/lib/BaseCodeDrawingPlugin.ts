@@ -50,9 +50,10 @@ export const BaseCodeDrawingPlugin = createBasePlugin({
     },
   },
   type: NODES.codeDrawing,
-}).extendTx(({ type }) => (tx) => ({
-  insert: (
-    props?: NodeProps<TCodeDrawingElement>,
-    options?: NodeInsertNodesOptions<TCodeDrawingElement>
-  ) => insertCodeDrawing(tx, type, props, options),
-}));
+  update: ({ tx, type }) => ({
+    insert: (
+      props?: NodeProps<TCodeDrawingElement>,
+      options?: NodeInsertNodesOptions<TCodeDrawingElement>
+    ) => insertCodeDrawing(tx, type, props, options),
+  }),
+});

@@ -11,6 +11,7 @@ import type {
 import type {
   AnyBasePlugin,
   BasePlugin,
+  BasePluginContext,
   PlateEditorExtensionInput,
   PlatePluginReadExtension,
   PlatePluginTxExtension,
@@ -18,7 +19,13 @@ import type {
 
 import { normalizePlateEditorExtensions } from '../../lib/plugin/createBasePlugin';
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
-import { mergePlugins } from '../utils/mergePlugins';
+import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
+import {
+  isNominalPluginDescriptor,
+  mergePlugins,
+  registerHtmlCodecSchemaFamilies,
+} from '../utils/mergePlugins';
+import { snapshotApiValue } from '../utils/snapshotApiValue';
 import { withResolvingPlatePlugin } from './compilePlateModel';
 
 const assertConfiguredInputRules = (config: unknown) => {
@@ -48,7 +55,7 @@ const assertConfiguredInputRules = (config: unknown) => {
  * 4. Reapplying the captured consumer values as the final override
  *
  * @example
- *   const plugin = createBasePlugin({ key: 'myPlugin', ...otherOptions }).extend(...);
+ *   const plugin = createBasePlugin({ key: 'myPlugin', ...otherOptions });
  *   const resolvedPlugin = resolvePlugin(editor, plugin);
  */
 export type ResolvedPluginConfiguration = Readonly<
@@ -69,18 +76,45 @@ const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
 
 type UnifiedExtensionResult = Record<PropertyKey, unknown> & {
   api?: object;
+  codecs?: Readonly<Record<string, object>>;
   extension?: PlateEditorExtensionInput;
   read?: (context: { state: PlatePluginReadState<AnyPluginConfig> }) => object;
   selectors?: object;
-  update?: (context: { tx: PlatePluginTransaction<AnyPluginConfig> }) => object;
+  update?: (context: {
+    context: import('@platejs/plite').EditorUpdateContext;
+    tx: PlatePluginTransaction<AnyPluginConfig>;
+  }) => object;
+};
+
+const snapshotStaticExtensionApis = (
+  input: PlateEditorExtensionInput
+): PlateEditorExtensionInput => {
+  const extensions = Array.isArray(input) ? input : [input];
+
+  return extensions.map((extension) => {
+    if (
+      !extension.api ||
+      typeof extension.api === 'function' ||
+      Array.isArray(extension.api)
+    ) {
+      return extension;
+    }
+
+    return {
+      ...extension,
+      api: snapshotApiValue(extension.api),
+    };
+  });
 };
 
 const applyUnifiedExtension = <P extends AnyBasePlugin>(
   plugin: P,
-  extension: UnifiedExtensionResult
+  extension: UnifiedExtensionResult,
+  pluginContext: BasePluginContext<AnyPluginConfig>
 ): P => {
   const {
     api,
+    codecs,
     extension: editorExtension,
     read,
     selectors,
@@ -89,6 +123,77 @@ const applyUnifiedExtension = <P extends AnyBasePlugin>(
   } = extension;
   const extended = mergePlugins(plugin, configuration);
 
+  if (codecs !== undefined) {
+    if (!codecs || typeof codecs !== 'object' || Array.isArray(codecs)) {
+      throw new Error('Plate plugin `codecs` must be a MIME-keyed object.');
+    }
+    if (
+      (codecs as Record<PropertyKey, unknown>)[pluginCodecMapDeclaration] !==
+      true
+    ) {
+      throw new Error(
+        `Plate plugin "${plugin.key}" codecs must be declared with the context-bound \`defineCodecs(...)\` helper.`
+      );
+    }
+
+    const { 'text/html': htmlCodec, ...productCodecs } = codecs;
+
+    if (Object.keys(productCodecs).length > 0) {
+      extended.__codecExtensions = [
+        ...extended.__codecExtensions,
+        () => productCodecs,
+      ];
+    }
+    if (htmlCodec !== undefined) {
+      const htmlCodecs = Array.isArray(htmlCodec) ? htmlCodec : [htmlCodec];
+
+      if (htmlCodecs.length === 0) {
+        throw new Error(
+          'Plate plugin `codecs["text/html"]` tuples must be non-empty.'
+        );
+      }
+
+      for (const declaration of htmlCodecs) {
+        if (
+          !declaration ||
+          typeof declaration !== 'object' ||
+          Array.isArray(declaration)
+        ) {
+          throw new Error(
+            'Plate plugin `codecs["text/html"]` must contain codec declarations.'
+          );
+        }
+
+        const { target, ...rule } = declaration as Record<PropertyKey, unknown>;
+        const targetPlugin = target ?? extended;
+
+        if (!isNominalPluginDescriptor(targetPlugin)) {
+          throw new Error(
+            'Plate plugin HTML codec `target` must be a plugin descriptor.'
+          );
+        }
+        if (target !== undefined && targetPlugin.key === extended.key) {
+          throw new Error(
+            'Plate plugin HTML codec `target` must be a different plugin descriptor.'
+          );
+        }
+
+        const storedExtension = registerHtmlCodecSchemaFamilies(
+          () => rule,
+          extended,
+          targetPlugin
+        );
+
+        extended.__htmlCodecExtensions = [
+          ...extended.__htmlCodecExtensions,
+          Object.freeze({
+            extension: storedExtension,
+            targetKey: target === undefined ? null : targetPlugin.key,
+          }),
+        ];
+      }
+    }
+  }
   if (api !== undefined) {
     extended.__apiExtensions = [
       ...extended.__apiExtensions,
@@ -104,28 +209,35 @@ const applyUnifiedExtension = <P extends AnyBasePlugin>(
   if (typeof read === 'function') {
     const readExtension: PlatePluginReadExtension = () => ({
       [extended.key]: (state) =>
-        read({
-          state,
-        }),
+        read(
+          Object.assign(Object.create(pluginContext), {
+            state,
+          })
+        ),
     });
 
     extended.__readExtensions = [...extended.__readExtensions, readExtension];
   }
   if (typeof update === 'function') {
     const txExtension: PlatePluginTxExtension = () => ({
-      [extended.key]: (tx) =>
-        update({
-          tx,
-        }),
+      [extended.key]: (tx, _editor, context) =>
+        update(
+          Object.assign(Object.create(pluginContext), {
+            context,
+            tx,
+          })
+        ),
     });
 
     txExtension.__plateOwnTxGroup = true;
     extended.__txExtensions = [...extended.__txExtensions, txExtension];
   }
   if (editorExtension !== undefined) {
+    const snapshottedExtensions = snapshotStaticExtensionApis(editorExtension);
+
     extended.__editorExtensions = [
       ...extended.__editorExtensions,
-      () => normalizePlateEditorExtensions(extended.key, editorExtension),
+      () => normalizePlateEditorExtensions(extended.key, snapshottedExtensions),
     ];
   }
 
@@ -193,12 +305,15 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
     const extensions = [...plugin.__extensions];
 
     for (const extension of extensions) {
-      plugin = applyUnifiedExtension(
-        plugin,
-        withResolvingPlatePlugin(editor, plugin, () =>
-          extension(getEditorPlugin(editor, plugin))
-        )
-      );
+      plugin = withResolvingPlatePlugin(editor, plugin, () => {
+        const pluginContext = getEditorPlugin(editor, plugin);
+
+        return applyUnifiedExtension(
+          plugin,
+          extension(pluginContext),
+          pluginContext
+        );
+      });
     }
     plugin.__extensions = extensions;
   }

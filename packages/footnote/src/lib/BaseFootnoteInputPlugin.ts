@@ -5,7 +5,6 @@ import { KEYS } from '@platejs/utils';
 /** Enables support for inline footnote combobox inputs. */
 export const BaseFootnoteInputPlugin = createBasePlugin({
   key: KEYS.footnoteInput,
-  editOnly: true,
   schema: {
     element: {
       properties: {
@@ -16,4 +15,5 @@ export const BaseFootnoteInputPlugin = createBasePlugin({
       void: 'inline',
     },
   },
+  editOnly: true,
 });

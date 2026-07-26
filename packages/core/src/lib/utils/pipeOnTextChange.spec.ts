@@ -1,17 +1,17 @@
 import type { Descendant, EditorTextChangeContext } from '@platejs/plite';
 
 import { createBaseEditor } from '../editor';
-import { type BasePlugin, createBasePlugin } from '../plugin';
+import { type AnyBasePlugin, createBasePlugin } from '../plugin';
 import { pipeOnTextChange } from './pipeOnTextChange';
 
 type OnTextChange = NonNullable<
-  NonNullable<BasePlugin['handlers']>['onTextChange']
+  NonNullable<AnyBasePlugin['handlers']>['onTextChange']
 >;
 
 const createTextChangePlugin = (key: string, onTextChange: OnTextChange) =>
   createBasePlugin({
-    handlers: { onTextChange },
     key,
+    handlers: { onTextChange },
   });
 
 const node: Descendant = { text: 'node' };

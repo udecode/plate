@@ -309,11 +309,19 @@ kit constant containing that plugin array. Runtime switching, serialization,
 fingerprints, and profile receipts require separate real jobs and separate API
 review; they are not part of behavior authoring by default.
 
+Plate codec declarations stay inside their semantic plugin owner. The
+`.extend()` callback supplies the single inference anchor:
+`defineCodecs(map)` for self/product codecs or
+`defineCodecs(TargetPlugin, map)` for a foreign contribution. The helper
+injects the foreign target, while the map stays MIME-keyed; one HTML rule or a
+non-empty ordered tuple remains one contribution.
+
 ## Table Pressure Test
 
-The current Table owner has seven `.extendExtension(...)` contributions plus
-React clipboard and keyboard handlers. Applying the promotion gates to those
-implementation blocks produces no new public capability plugin today:
+The current Table owner has seven editor-extension contributions authored
+through repeated `.extend()` stages plus React clipboard and keyboard handlers.
+Applying the promotion gates to those implementation blocks produces no new
+public capability plugin today:
 
 - schema validity, grid correction, cache invalidation, selection clamping, and
   destructive-boundary protection are mandatory Table behavior;

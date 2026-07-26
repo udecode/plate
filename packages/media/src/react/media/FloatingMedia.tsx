@@ -1,19 +1,12 @@
 import React from 'react';
 
-import type { BaseEditor, WithRequiredKey } from '@platejs/core';
 import { useEditor, useElement } from '@platejs/core/react';
 import { createZustandStore } from '@platejs/core/react/internal';
 import type { TMediaElement } from '@platejs/utils';
 import { useHotkeys } from '@udecode/react-hotkeys';
 import { createPrimitiveComponent } from '@udecode/react-utils';
-import { isUrl as defaultIsUrl } from '@udecode/utils';
 
-import type { MediaPluginConfig } from '../../lib/media/types';
-import {
-  parseMediaUrl,
-  parseTwitterUrl,
-  parseVideoUrl,
-} from '../../lib/media/parseMediaUrl';
+import type { MediaPluginReference } from '../../lib/media/types';
 
 export const FloatingMediaStore = createZustandStore(
   {
@@ -36,50 +29,6 @@ export const {
   useValue: useFloatingMediaValue,
 } = FloatingMediaStore;
 
-export const submitFloatingMedia = (
-  editor: BaseEditor,
-  {
-    element,
-    plugin,
-  }: {
-    element: TMediaElement;
-    plugin: WithRequiredKey<MediaPluginConfig>;
-  }
-) => {
-  let url = FloatingMediaStore.get('url');
-
-  if (url === element.url) {
-    FloatingMediaStore.actions.reset();
-
-    return true;
-  }
-
-  const { isUrl = defaultIsUrl, transformUrl } = editor
-    .plugin(plugin)
-    .getOptions();
-
-  if (transformUrl) url = transformUrl(url);
-  if (!isUrl(url)) return;
-
-  const normalized = parseMediaUrl(url, {
-    urlParsers: [parseTwitterUrl, parseVideoUrl],
-  });
-
-  editor.update.nodes.set<TMediaElement>(
-    {
-      provider: normalized?.provider,
-      sourceUrl: normalized?.sourceUrl,
-      url: normalized?.url ?? url,
-    },
-    { at: element }
-  );
-
-  FloatingMediaStore.actions.reset();
-  editor.api.dom.focus();
-
-  return true;
-};
-
 export const useFloatingMediaEditButton = () => {
   const element = useElement<TMediaElement>();
 
@@ -96,7 +45,7 @@ export const useFloatingMediaEditButton = () => {
 export const useFloatingMediaUrlInputState = ({
   plugin,
 }: {
-  plugin: WithRequiredKey<MediaPluginConfig>;
+  plugin: MediaPluginReference;
 }) => {
   const editor = useEditor();
   const element = useElement<TMediaElement>();
@@ -104,9 +53,25 @@ export const useFloatingMediaUrlInputState = ({
   useHotkeys(
     'enter',
     (event) => {
-      if (submitFloatingMedia(editor, { element, plugin })) {
-        event.preventDefault();
+      const url = FloatingMediaStore.get('url');
+      const properties = editor.plugin(plugin).api.normalizeUrl(url);
+
+      if (url !== element.url) {
+        if (!properties) return;
+
+        editor.update.nodes.set<TMediaElement>(
+          {
+            provider: properties.provider,
+            sourceUrl: properties.sourceUrl,
+            url: properties.url,
+          },
+          { at: element }
+        );
       }
+
+      FloatingMediaStore.actions.reset();
+      editor.api.dom.focus();
+      event.preventDefault();
     },
     { enableOnFormTags: ['INPUT'] },
     [editor, element, plugin]

@@ -1,7 +1,7 @@
 # Selection Triple-Click Inline Normalization
 
 Date: 2026-06-14
-Owner: slate-auto / slate-research
+Owner: auto / plite-research
 Status: promoted-kept
 
 ## Verdict

@@ -10,11 +10,11 @@ import {
 
 export const MathKit = [
   InlineEquationPlugin.configure({
+    component: InlineEquationElement,
     inputRules: [MathRules.markdown({ variant: '$' })],
-    render: { node: InlineEquationElement },
   }),
   EquationPlugin.configure({
+    component: EquationElement,
     inputRules: [MathRules.markdown({ on: 'break', variant: '$$' })],
-    render: { node: EquationElement },
   }),
 ];

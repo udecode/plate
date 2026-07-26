@@ -90,7 +90,7 @@ type BlockSelectionApi = {
     /** Use the editor selection when block selection is empty. */
     selectionFallback?: boolean;
     sort?: boolean;
-  }) => NodeEntry<TIdElement>[];
+  }) => readonly NodeEntry<TIdElement>[];
   /** Check if a block is selected. */
   has: (id: string[] | string) => boolean;
   /** Check if a block is selectable. */
@@ -167,30 +167,6 @@ export type BlockSelectionConfig = PluginConfig<
 
 export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
   key: KEYS.blockSelection,
-  editOnly: true,
-  handlers: {
-    onMouseDown: ({ api, editor, event, getOptions }) => {
-      const target = event.target as HTMLElement;
-
-      if (target.dataset.platePreventDeselect) return;
-      if (
-        event.button === 0 &&
-        getOptions().selectedIds!.size > 0 &&
-        !isBlockMenuOpen(editor)
-      ) {
-        api.deselect();
-      }
-    },
-  },
-  inject: {
-    isBlock: true,
-    nodeProps: {
-      transformProps: ({ element, path }) => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        return useBlockSelectable({ element, path }).props;
-      },
-    },
-  },
   options: {
     anchorId: null,
     areaOptions: {
@@ -208,16 +184,60 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
     shadowInputRef: { current: null },
     isSelectable: () => true,
   },
+
+  editOnly: true,
+  inject: {
+    isBlock: true,
+    nodeProps: {
+      transformProps: ({ element, path }) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        return useBlockSelectable({ element, path }).props;
+      },
+    },
+  },
   render: {
     afterEditable: BlockSelectionAfterEditable,
   },
-})
-  .extendSelectors<BlockSelectionConfig['selectors']>(({ getOptions }) => ({
-    isSelected: (id?: string) => !!id && getOptions().selectedIds!.has(id),
-    isSelectingSome: () => getOptions().selectedIds!.size > 0,
-  }))
-  .extendApi<Omit<BlockSelectionConfig['pluginApi'], 'selectAll'>>(
-    ({ api, editor, getOption, getOptions, setOption }) => ({
+}).extend<{
+  api: BlockSelectionConfig['pluginApi'];
+  selectors: BlockSelectionConfig['selectors'];
+  update: BlockSelectionConfig['tx']['blockSelection'];
+}>((context) => {
+  const { api, editor, getOption, getOptions, setOption } = context;
+  const getSelectedEntries = (state: Pick<EditorStateView, 'nodes'>) => {
+    const selectedIds = getOptions().selectedIds;
+
+    if (!selectedIds?.size) return [];
+
+    return state.nodes.toArray<TIdElement>({
+      at: [],
+      match: (node) =>
+        ElementApi.isElement(node) &&
+        typeof node.id === 'string' &&
+        selectedIds.has(node.id),
+    });
+  };
+
+  return {
+    handlers: {
+      onMouseDown: ({ api, editor, event, getOptions }) => {
+        const target = event.target as HTMLElement;
+
+        if (target.dataset.platePreventDeselect) return;
+        if (
+          event.button === 0 &&
+          getOptions().selectedIds!.size > 0 &&
+          !isBlockMenuOpen(editor)
+        ) {
+          api.deselect();
+        }
+      },
+    },
+    selectors: {
+      isSelected: (id?: string) => !!id && getOptions().selectedIds!.has(id),
+      isSelectingSome: () => getOptions().selectedIds!.size > 0,
+    },
+    api: {
       addOnContextMenu: ({ disabledWhenFocused = true, element, event }) => {
         const { enableContextMenu, selectedIds } = getOptions();
 
@@ -323,13 +343,15 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
       getNodes: (options) => {
         const selectedIds = getOption('selectedIds');
 
-        const nodes = editor.read.nodes.toArray<TIdElement>({
-          at: [],
-          match: (node) =>
-            ElementApi.isElement(node) &&
-            !!node.id &&
-            !!selectedIds?.has(node.id as string),
-        });
+        const nodes = [
+          ...editor.read.nodes.toArray<TIdElement>({
+            at: [],
+            match: (node) =>
+              ElementApi.isElement(node) &&
+              !!node.id &&
+              !!selectedIds?.has(node.id as string),
+          }),
+        ];
 
         if (options?.sort) {
           nodes.sort(([, pathA], [, pathB]) => PathApi.compare(pathA, pathB));
@@ -361,8 +383,16 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
                 collapsedNodes.push([tableNodeCopy, tableNodeEntry[1]]);
               } else {
                 // Add the row to existing table
-                const existingTable = collapsedNodes[existingTableIndex][0];
-                existingTable.children.push(node);
+                const [existingTable, existingPath] =
+                  collapsedNodes[existingTableIndex];
+
+                collapsedNodes[existingTableIndex] = [
+                  {
+                    ...existingTable,
+                    children: [...existingTable.children, node],
+                  },
+                  existingPath,
+                ];
               }
               return;
             }
@@ -393,10 +423,6 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
       set: (id) => {
         setOption('selectedIds', new Set(Array.isArray(id) ? id : [id]));
       },
-    })
-  )
-  .extendApi<Pick<BlockSelectionConfig['pluginApi'], 'selectAll'>>(
-    ({ api, editor, setOption }) => ({
       selectAll: () => {
         const ids = editor.read.nodes
           .toArray({
@@ -410,54 +436,8 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
         setOption('selectedIds', new Set(ids));
         api.focus();
       },
-    })
-  )
-  .extend(({ editor, getOptions }) => ({
-    shortcuts: {
-      selectAll: {
-        keys: 'mod+a',
-        priority: 0,
-        handler: () => {
-          if (getOptions().disableSelectAll) return false;
-
-          const selection = editor.read.selection();
-          const block = editor.read.nodes.block({ mode: 'highest' });
-
-          if (!selection || !block) return false;
-
-          if (
-            !editor.read.selection.isWithinBlock() ||
-            (editor.read.selection.isAtBlockStart() &&
-              editor.read.selection.isAtBlockEnd())
-          ) {
-            editor.plugin(BlockSelectionPlugin).api.selectAll();
-            return true;
-          }
-
-          editor.update.selection.set(block[1]);
-          return true;
-        },
-      },
     },
-  }))
-  .extendExtension(({ api, editor, getOptions }) => {
-    const getSelectedEntries = (
-      state: Pick<EditorStateView, 'nodes'>
-    ): NodeEntry<TIdElement>[] => {
-      const selectedIds = getOptions().selectedIds;
-
-      if (!selectedIds?.size) return [];
-
-      return state.nodes.toArray<TIdElement>({
-        at: [],
-        match: (node) =>
-          ElementApi.isElement(node) &&
-          typeof node.id === 'string' &&
-          selectedIds.has(node.id),
-      });
-    };
-
-    return {
+    extension: {
       commands: ({ around }) => [
         around(editorCommands.addMark, ({ state, next }) => {
           if (!getOptions().selectedIds?.size) return next();
@@ -532,28 +512,55 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           getOptions().selectedIds!.size > 0 &&
           !isBlockMenuOpen(editor)
         ) {
-          api.deselect();
+          context.api.deselect();
         }
       },
-    };
-  })
-  .extendTx(({ editor }) => (tx, _editor, context) => ({
-    duplicate: () => duplicateBlockSelectionNodes(editor, tx, context),
-    insertBlocksAndSelect: (nodes, { at, insertedCallback }) => {
-      insertBlocksAndSelect(editor, tx, context, nodes, {
-        at,
-        insertedCallback,
-      });
     },
-    removeNodes: () => removeBlockSelectionNodes(editor, tx),
-    select: () => selectBlockSelectionNodes(editor, tx, context),
-    setIndent: (indent, options) =>
-      setBlockSelectionIndent(editor, tx, indent, options),
-    setNodes: (props, options) =>
-      setBlockSelectionNodes(editor, tx, props, options),
-    setTexts: (props, options) =>
-      setBlockSelectionTexts(editor, tx, props, options),
-  }));
+    shortcuts: {
+      selectAll: {
+        keys: 'mod+a',
+        priority: 0,
+        handler: () => {
+          if (getOptions().disableSelectAll) return false;
+
+          const selection = editor.read.selection();
+          const block = editor.read.nodes.block({ mode: 'highest' });
+
+          if (!selection || !block) return false;
+
+          if (
+            !editor.read.selection.isWithinBlock() ||
+            (editor.read.selection.isAtBlockStart() &&
+              editor.read.selection.isAtBlockEnd())
+          ) {
+            editor.plugin(BlockSelectionPlugin).api.selectAll();
+            return true;
+          }
+
+          editor.update.selection.set(block[1]);
+          return true;
+        },
+      },
+    },
+    update: ({ context: updateContext, tx }) => ({
+      duplicate: () => duplicateBlockSelectionNodes(editor, tx, updateContext),
+      insertBlocksAndSelect: (nodes, { at, insertedCallback }) => {
+        insertBlocksAndSelect(editor, tx, updateContext, nodes, {
+          at,
+          insertedCallback,
+        });
+      },
+      removeNodes: () => removeBlockSelectionNodes(editor, tx),
+      select: () => selectBlockSelectionNodes(editor, tx, updateContext),
+      setIndent: (indent, options) =>
+        setBlockSelectionIndent(editor, tx, indent, options),
+      setNodes: (props, options) =>
+        setBlockSelectionNodes(editor, tx, props, options),
+      setTexts: (props, options) =>
+        setBlockSelectionTexts(editor, tx, props, options),
+    }),
+  };
+});
 
 export type BlockSelectionPluginConfig = InferConfig<
   typeof BlockSelectionPlugin

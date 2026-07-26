@@ -16,7 +16,8 @@ export const BaseEquationPlugin = createBasePlugin({
       void: 'block',
     },
   },
-}).extendTx(({ type }) => (tx) => ({
-  insert: (options?: InsertEquationOptions) =>
-    insertEquation(tx, type, options),
-}));
+  update: ({ tx, type }) => ({
+    insert: (options?: InsertEquationOptions) =>
+      insertEquation(tx, type, options),
+  }),
+});

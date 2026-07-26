@@ -2,13 +2,13 @@ import { createBasePlugin } from '@platejs/core';
 
 const ImagePlugin = createBasePlugin({
   key: 'img',
-})
-  .extendTx(() => () => ({
+  update: () => ({
     insert: ({ url }: { url: string }) => {
       void url;
     },
-  }))
-  .extendExtension(() => ({
+  }),
+}).extend(() => ({
+  extension: {
     clipboard: {
       insertData(_data, { tx }) {
         tx.img.insert({ url: 'https://example.com/image.png' });
@@ -19,6 +19,7 @@ const ImagePlugin = createBasePlugin({
         return true;
       },
     },
-  }));
+  },
+}));
 
 void ImagePlugin;

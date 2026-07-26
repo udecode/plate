@@ -20,12 +20,16 @@ const ChildPlugin = createBasePlugin<ChildConfig>({
   options: {
     level: 1,
   },
-}).extendEditorApi(({ plugin, setOption }) => ({
-  plugin: {
-    getLevel: () => plugin.options.level,
-  },
-  setLevel: (level) => {
-    setOption('level', level);
+}).extend(({ plugin, setOption }) => ({
+  extension: {
+    api: {
+      plugin: {
+        getLevel: () => plugin.options.level,
+      },
+      setLevel: (level) => {
+        setOption('level', level);
+      },
+    },
   },
 }));
 
@@ -58,8 +62,12 @@ const DisplayPlugin = createPlatePlugin<DisplayConfig>({
   options: {
     label: 'title',
   },
-}).extendEditorApi(({ getOptions }) => ({
-  getLabel: () => getOptions().label,
+}).extend(({ getOptions }) => ({
+  extension: {
+    api: {
+      getLabel: () => getOptions().label,
+    },
+  },
 }));
 
 const plateEditor = createPlateEditor({

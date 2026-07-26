@@ -40,25 +40,54 @@ Install typed plugin-object dependencies recursively with deterministic
 overrides, dependency-first ordering, and graph validation.
 
 Declare document identity with top-level `type`, element behavior through
-`schema.element`, marks through descriptor-backed `schema.mark`, rendering
-through `render`, and trusted DOM projection through `render.nodeProps`.
+`schema.element`, marks through descriptor-backed `schema.mark`, ordinary node
+components through root-level `component`, advanced rendering through `render`,
+and trusted DOM projection through `render.nodeProps`.
 
 Derive schema identity from compiled plugin semantics when editor creation
 omits `schema`. Pass `{ id, version }` only for application-named History,
 Yjs, or migration lineage. Editor factories derive identity when called
 without a `schema` option.
 
-Keep plugin-owned values in one `options` bag. Define package-owned behavior
-with `create*Plugin()`, `.extend(...)`, and the narrower `.extend*()` methods.
-Compose repeated `.extend()` stages for plugin API, reads, updates, selectors,
-and editor extensions.
+Keep plugin-owned values in one `options` bag. Put every independent author
+contribution in `createBasePlugin()` or `createPlatePlugin()`: plugin-owned
+`api`, `read`, `update`, and `selectors`, editor-wide `extension`, format
+`codecs`, and ordinary static fields. Constructor callbacks receive the typed
+authoring context. Use `.extend()` only for an imported/prebuilt declaration,
+a shared factory the constructor cannot access, or an earlier-stage type
+dependency.
+Move specialized builder contributions into the constructor:
+
+| Before | After |
+| --- | --- |
+| `.extendApi()` | `api` |
+| `.extendEditorApi()` | `extension.api` |
+| `.extendSelectors()` | `selectors` |
+| `.extendTx()` | `update` |
+| `.extendTxGroup()` | `extension.tx` |
+| `.extendExtension()` | `extension` |
+| `.extendCodecs()` | `codecs: ({ defineCodecs }) => defineCodecs(...)` |
+| `.extendHtmlCodec()` | `codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': ... })` |
+
+When upgrading from v53, move `.extendTransforms()` contributions to `update`
+and `.extendEditorTransforms()` contributions to `extension.tx`. Replace
+ordinary `render.node` component registration with `.configure({ component: Component })`.
+Include `component` in that same terminal `.configure()` when other consumer
+overrides are needed. New Plate descriptors declare `component` directly.
+Bind static components to base descriptors with
+`BasePlugin.configure({ component: Component })` without importing the React
+plugin layer. Convert base descriptors with `toPlatePlugin(BasePlugin)` only
+when authoring a live React adapter. Extracted
+reusable editor-wide factories use the callback context's
+`defineEditorExtension(...)` helper so command, state, and transaction
+parameters stay inferred.
 Apply at most one terminal consumer `.configure(...)` call per descriptor:
 object configuration can set descriptor fields, while contextual configuration
-can derive options, handlers, renderers, and shortcuts. Contextual extensions
-read the configured values, and consumer configuration remains the final
-override. Read and update live values through the scoped portal's `getOptions`,
-`setOption`, and `setOptions`; live option updates do not rebuild the compiled
-schema.
+can derive options, handlers, foreign-plugin overrides, renderers, and
+shortcuts. Contextual extensions read the configured values, and consumer
+configuration remains the final override. Read and update live values through
+the scoped portal's `getOptions`, `setOption`, and `setOptions`; live option
+updates do not rebuild the compiled schema.
 
 Declare cross-plugin schema and render targets with the plugin's top-level
 `targetPluginKeys` field.
@@ -124,8 +153,7 @@ createPlatePlugin({
   key: 'link',
   type: 'a',
   schema: { element: { inline: true } },
-  render: { node: LinkElement },
-});
+}).configure({ component: LinkElement });
 ```
 
 Load asynchronous values before editor construction and pass a synchronous
@@ -186,8 +214,9 @@ createPlatePlugin({
 });
 ```
 
-Replace `inject.targetPluginToInject` with
-`.extendHtmlCodec(TargetPlugin, ...)` for HTML mappings or
+Replace `inject.targetPluginToInject` with a typed foreign codec contribution,
+`codecs: ({ defineCodecs }) =>
+defineCodecs(TargetPlugin, { 'text/html': ... })`, or use
 `override.plugins[key]` for package-owned adaptation of an installed peer.
 
 Classify plugin relationships explicitly:
@@ -217,8 +246,9 @@ ignored, topology is immutable, required dependencies cannot be disabled, and
 target configuration wins.
 
 Replace `parsers.html.deserializer`, serializer declarations, and injected HTML
-node-rule projections with schema-inferred `.extendHtmlCodec()` contributions.
-Keep whole-input HTML hooks directly under `parsers.html`:
+node-rule projections with schema-inferred `codecs['text/html']` contributions
+in the constructor callback. Keep whole-input HTML hooks directly under
+`parsers.html`:
 
 ```tsx
 createPlatePlugin({
@@ -229,11 +259,15 @@ createPlatePlugin({
 });
 
 const BoldPlugin = createPlatePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => true,
+        encode: ({ value }) => (value ? { tag: 'strong' } : null),
+        match: [{ tag: ['strong', 'b'] }],
+      },
+    }),
   key: 'bold',
   schema: { mark: property.boolean() },
-}).extendHtmlCodec(() => ({
-  decode: () => true,
-  encode: ({ value }) => (value ? { tag: 'strong' } : null),
-  match: [{ tag: ['strong', 'b'] }],
-}));
+});
 ```

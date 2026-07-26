@@ -1,9 +1,9 @@
 import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
 
-import { CodeDrawingElement } from '@/registry/ui/code-drawing-node';
+import { CodeDrawingElementStatic } from '@/registry/ui/code-drawing-node-static';
 
 export const BaseCodeDrawingKit = [
   BaseCodeDrawingPlugin.configure({
-    render: { node: CodeDrawingElement },
+    component: CodeDrawingElementStatic,
   }),
 ];

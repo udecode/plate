@@ -15,7 +15,7 @@ export const removeBlockSelectionNodes = (
   for (const [node, path] of getBlockSelectionNodes(
     tx,
     selectedIds
-  ).reverse()) {
+  ).toReversed()) {
     if (tx.schema.isBlock(node)) tx.nodes.remove({ at: path });
   }
 };

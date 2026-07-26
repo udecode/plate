@@ -2,9 +2,10 @@ import { createBasePlugin, createRuleFactory } from '@platejs/core';
 
 const ListInputRulePlugin = createBasePlugin({
   key: 'listInputRule',
-}).extendTx(() => () => ({
-  toggle: (style: 'decimal' | 'disc') => style,
-}));
+  update: () => ({
+    toggle: (style: 'decimal' | 'disc') => style,
+  }),
+});
 
 const createListInputRule = createRuleFactory(ListInputRulePlugin);
 

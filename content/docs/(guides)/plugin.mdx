@@ -66,8 +66,7 @@ const ParagraphPlugin = createPlatePlugin({
   schema: {
     element: { content: schema.content.text({ default: "text", min: 1 }) },
   },
-  render: { node: ParagraphElement },
-});
+}).configure({ component: ParagraphElement });
 ```
 
 ### Inline, Void, and Text Properties
@@ -133,7 +132,6 @@ The `onChange` handler, which is called when the editor value changes, is an exc
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
-  key: "example",
   handlers: {
     onChange: ({ editor, value })  => {
       console.info(editor, value);
@@ -142,6 +140,7 @@ const ExamplePlugin = createPlatePlugin({
       console.info(`You pressed ${event.key}`);
     },
   },
+  key: "example",
 });
 ```
 
@@ -153,6 +152,28 @@ You may want to inject a class name or CSS property into any node having a certa
 import { KEYS, property, target } from 'platejs';
 
 const TextAlignPlugin = createPlatePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => element.style.textAlign || undefined,
+        encode: ({ value }) => ({ style: { textAlign: value } }),
+        match: [
+          {
+            style: {
+              textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+            },
+          },
+        ],
+      },
+    }),
+  inject: {
+    isBlock: true,
+    nodeProps: {
+      defaultNodeValue: "start",
+      styleKey: "textAlign",
+      validNodeValues: ["start", "left", "center", "right", "end", "justify"],
+    },
+  },
   key: "align",
   schema: ({ own, plugins, targetPluginKeys }) => ({
     properties: [
@@ -162,32 +183,15 @@ const TextAlignPlugin = createPlatePlugin({
       }),
     ],
   }),
-  inject: {
-    isBlock: true,
-    nodeProps: {
-      defaultNodeValue: "start",
-      styleKey: "textAlign",
-      validNodeValues: ["start", "left", "center", "right", "end", "justify"],
-    },
-  },
   targetPluginKeys: [KEYS.p],
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => element.style.textAlign || undefined,
-  encode: ({ value }) => ({ style: { textAlign: value } }),
-  match: [
-    {
-      style: {
-        textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
-      },
-    },
-  ],
-}));
+});
 ```
 
-`inject.nodeProps` owns rendering, while `.extendHtmlCodec()` owns the
-bidirectional HTML claim. Both use the plugin's resolved `type`, so terminal
-`.configure({ type })` changes the stored property without duplicating a key in
-the codec.
+`inject.nodeProps` owns rendering, while the constructor's `codecs` callback
+binds the bidirectional HTML claim to this plugin's schema. `defineCodecs`
+keeps `value` inferred from the property declaration. Both paths use the
+plugin's resolved `type`, so terminal `.configure({ type })` changes the stored
+property without duplicating a key in the codec.
 
 A paragraph node affected by the plugin looks like this:
 
@@ -201,23 +205,22 @@ A paragraph node affected by the plugin looks like this:
 
 ### Add APIs and Transaction Commands
 
-Use `.extendApi()` or `.extendEditorApi()` for reads and services. Put document mutations in `.extendTx()` or `.extendTxGroup()` so callers run them through `editor.update`.
+Put plugin reads and services under `api`, and document mutations under
+`update`. Constructor callbacks receive the plugin context.
 
 ```ts
-type CustomConfig = PluginConfig<"custom", { prefix: string }>;
-
-const CustomPlugin = createPlatePlugin<CustomConfig>({
+const CustomPlugin = createPlatePlugin({
+  api: ({ getOptions }) => ({
+    getPrefix: () => getOptions().prefix,
+  }),
   key: "custom",
   options: { prefix: "Note: " },
-})
-  .extendApi(({ getOptions }) => ({
-    getPrefix: () => getOptions().prefix,
-  }))
-  .extendTx(({ getOptions }) => (tx) => ({
+  update: ({ getOptions, tx }) => ({
     insertPrefix: () => {
       tx.text.insert(getOptions().prefix);
     },
-  }));
+  }),
+});
 ```
 
 After the plugin resolves, concrete editors infer its reads on the root API and one-shot writes use the keyed update helper:
@@ -232,33 +235,37 @@ Generic package code can reach the same immutable API object through
 
 ### Install Plite Extensions (Advanced)
 
-Use `.extendExtension()` when a Plate plugin needs to install Plite substrate behavior: schema facts, state groups, tx groups, corrections, commands, query middleware, or runtime services.
+Put Plite substrate behavior under the `extension` contribution: schema facts,
+state groups, transaction groups, corrections, commands, query middleware, and
+runtime services.
 
 ```ts showLineNumbers
-import { defineEditorExtension } from "platejs";
 import { createPlatePlugin } from "platejs/react";
 
-const customState = defineEditorExtension({
-  name: "custom-state",
-  state: {
-    customState() {
-      return {
-        enabled: () => true,
-      };
+const CustomStatePlugin = createPlatePlugin({
+  extension: {
+    state: {
+      customState() {
+        return {
+          enabled: () => true,
+        };
+      },
     },
   },
-});
-
-const CustomStatePlugin = createPlatePlugin({
   key: "customState",
-}).extendExtension(customState);
+});
 ```
 
 <Callout type="info" title="Extensions, APIs, and commands">
-  Use `.extendExtension()` for Plite substrate behavior, `.extendApi()` or
-  `.extendEditorApi()` for reads and services, and `.extendTx()` or
-  `.extendTxGroup()` for mutations.
+  Put independent `extension`, `api`, `read`, and `update` fields in the
+  constructor. Use `.extend()` only for an imported/prebuilt descriptor, a
+  shared factory the constructor cannot access, or an earlier-stage type.
 </Callout>
+
+Inline extension objects need no helper. An extracted reusable Plate factory
+uses the callback context's `defineEditorExtension`; a standalone Plite
+extension imports `defineEditorExtension` from `@platejs/plite`. See
+[Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
 ## Advanced Plugin Configuration
 
@@ -272,13 +279,12 @@ const MyPlugin = createPlatePlugin({
   options: {
     count: 0,
   },
-}).extend(({ editor, plugin, setOption }) => ({
   handlers: {
-    onClick: () => {
+    onClick: ({ setOption }) => {
       setOption("count", 1);
     },
   },
-}));
+});
 ```
 
 You can access and update the store using the following methods:
@@ -397,50 +403,43 @@ If you need to pass an explicit type as generic, you can use `createPlatePlugin`
 The `createPlatePlugin` function allows you to create a typed plugin:
 
 ```ts
-type CodeBlockConfig = PluginConfig<
-  // key
-  "codeBlock",
-  // options
-  { language: string; syntax: boolean; syntaxPopularFirst: boolean },
-  // api
-  {
-    codeBlock: {
-      getLanguage: () => string;
-      getSyntaxState: () => boolean;
-    };
-  },
-  // tx
-  {
-    insert: {
-      codeBlock: () => void;
-    };
-  },
-  // selectors
-  {}
->;
+type CodeBlockOptions = {
+  language: string;
+  syntax: boolean;
+  syntaxPopularFirst: boolean;
+};
 
-const CodeBlockPlugin = createPlatePlugin<CodeBlockConfig>({
+type CodeBlockApi = {
+  getLanguage: () => string;
+  getSyntaxState: () => boolean;
+};
+
+type CodeBlockUpdate = {
+  insertCodeBlock: () => void;
+};
+
+const CodeBlockPlugin = createPlatePlugin({
+  api: ({ getOptions }): CodeBlockApi => ({
+    getLanguage: () => getOptions().language,
+    getSyntaxState: () => getOptions().syntax,
+  }),
   key: 'codeBlock',
   type: 'code_block',
   options: {
     language: 'typescript',
     syntax: true,
     syntaxPopularFirst: false,
-  },
-}).extendEditorApi<CodeBlockConfig['api']>(({ getOptions }) => ({
-  codeBlock: {
-    getLanguage: () => getOptions().language,
-    getSyntaxState: () => getOptions().syntax,
-  },
-})).extendTxGroup('insert', ({ getOptions }) => (tx) => ({
-  codeBlock: () => {
-    tx.nodes.insert({
-      type: 'code_block',
-      language: getOptions().language,
-      children: [{ text: '' }],
-    });
-  },
-}));
+  } as CodeBlockOptions,
+  update: ({ getOptions, tx }): CodeBlockUpdate => ({
+    insertCodeBlock: () => {
+      tx.nodes.insert({
+        type: 'code_block',
+        language: getOptions().language,
+        children: [{ text: '' }],
+      });
+    },
+  }),
+});
 ```
 
 ### Using Typed Plugins

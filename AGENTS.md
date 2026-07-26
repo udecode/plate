@@ -6,7 +6,7 @@
 - `.agents/AGENTS.md` and `.agents/rules/*.mdc` are source of truth. After editing them, run `pnpm install` to sync. Never edit `SKILL.md` directly.
 - In all interactions and commit messages, be extremely concise and sacrifice grammar for the sake of concision.
 - Answer in English by default. Switch languages only when the user explicitly asks for another language.
-- Prefer the best long-term architecture fix over the nearest local patch. If the real fix is an API or abstraction change, do that.
+- Prefer the smallest durable architecture that materially fixes the owning problem over the nearest local patch. If the real fix is an API or abstraction change, do that.
 
 ## Git
 
@@ -24,7 +24,7 @@
 
 ## Packages
 
-- DX: Optimize for the absolute best developer experience. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
+- DX: Optimize for clear, low-friction developer experience without speculative machinery. JSDoc must be first-class for agents. Every API surface should be intuitive for both humans and AI agents.
 - Docs: NEVER write changelog-style language ("has been removed", "new feature", "previously", "now supports"). Docs are user-facing reference for the LATEST state only. Write as if no prior version exists. No migration notes, no "what changed" — just document what IS. Follow `.agents/rules/docs-creator.mdc` for writing tone/structure.
 - Templates: `templates/**` is CI-controlled output. Never manually edit or commit template source, manifests, or lockfiles. Fix the source registry, package, or workflow inputs and let CI regenerate templates. If local verification rewrites template files, restore them before handoff.
 - Barrels: If you change package exports, move public files, add/remove files under exported folders, or CI says `pnpm brl` produced changes, run `pnpm brl` before final verification/commit and include the generated barrel updates.
@@ -64,6 +64,8 @@ Primary user-facing entrypoints:
   deslop, simplification, and agent-navigation friction.
 - `best-api` for blank-slate public API design, review, and P0-P3 audits
   across Plate and Plite before adoption/implementation planning.
+- `editor-audit` for exhaustive source-level comparison of one or more local
+  editor architectures against live Plite and Plate.
 - `sync-vision` for updating reusable taste from changed inputs.
 - `openclaw-sync` for syncing agent setup from OpenClaw.
 - `autoreview` for review. Reviewer persona skills are lenses behind
@@ -89,6 +91,9 @@ Default routing:
   benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
 - "best API", "cleanest API", "best DX/AX", public call-shape design/review,
   or whether current API machinery should exist -> `best-api`.
+- "compare", "audit", or "pull from" one or more editor repositories at the
+  architecture/API/runtime level -> `editor-audit`. Test and issue behavior
+  mining stays with the harvesters.
 - Plate v2 cleanup review, "why does this migrated Plate helper exist?",
   old Slate compatibility cuts in Plate/Core, or no-arg autopilot for the next
   Plate-to-Plite cleanup packet -> `plate-next`.
@@ -125,10 +130,16 @@ non-matching findings instead of patching around reviewer hallucinations.
   section into the goal plan as checkable checkpoints before work starts
 - `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
 - `task` for normal repo task execution
-- `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
+- `major-task` for heavyweight architecture, migration, benchmark, or proposal
+  work; source-level editor architecture comparison belongs to `editor-audit`
 - `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
 - `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
 - `best-api` for concrete Plate/Plite public API design, review, and ranked audits. It starts from ideal call sites, treats current machinery and compatibility as evidence rather than requirements, and hands accepted targets to the layer plan or implementation owner.
+- `editor-audit` for exhaustive one-to-many local editor architecture
+  comparison: source-derived atomic concepts, verified commit cursors,
+  material-value ranking, current/proposed shapes, incremental `sync`, and
+  explicit `best-api`/`plite-plan`/`plate-plan` routing. It does not discover
+  candidate repositories, own test/issue ledgers, or implement accepted work.
 - `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
 - `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
 - `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It loops like `autoreview` until no accepted actionable findings remain, patching safe issues and rerunning proof/review. It is not the public queue brain and not the broad internal quality supervisor.
@@ -146,7 +157,11 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `clawsweeper` for Plite issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Plite coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Plite or Plate plan that pauses for review before execution
-- `plite-research` for Plite web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `plite-ar` modes, `plite-patch`, `plite-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
+- `plite-research` for Plite web/GitHub/OSS discovery, scalable repo scans,
+  research ledgers, dedupe, source synthesis, evidence grading, lead
+  prioritization, and promotion into narrower owners. Selected local editor
+  architecture comparisons route to `editor-audit`; it does not run Codex
+  Autoresearch packets
 - `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `plite-patch`, `plite-plan`, `plate-plan`, `plite-ar`, `plite-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Plite automation
 - `plite-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
 - `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
@@ -155,6 +170,8 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
 - @.agents/rules/best-api.mdc when choosing or reviewing reusable public API shape
+- @.agents/rules/editor-audit.mdc when comparing one or more editor source
+  architectures against Plite and Plate
 - @.agents/rules/plate-plan.mdc when turning an accepted Plate API target into a boundary/adoption/proof plan, or when Plate/Plite ownership and editor-behavior law are the actual decision
 
 Skill ownership:

@@ -38,31 +38,33 @@ describe('createBasePlugin', () => {
   it('authors one inferred MIME codec before terminal configuration', () => {
     const descriptor = createBasePlugin({ key: 'records' });
 
-    expect(typeof (descriptor as any).extendCodecs).toBe('function');
+    expect(typeof descriptor.extend).toBe('function');
 
-    const RecordsPlugin = descriptor.extendCodecs(
-      ({ editor: _editor, plugin }) => ({
-        'application/x-plate-records': {
-          decode: ({ data, source, state }) => {
-            data satisfies string;
-            source.types satisfies readonly string[];
-            state.schema satisfies object;
+    const RecordsPlugin = descriptor.extend(
+      ({ defineCodecs, editor: _editor, plugin }) => ({
+        codecs: defineCodecs({
+          'application/x-plate-records': {
+            decode: ({ data, source, state }) => {
+              data satisfies string;
+              source.types satisfies readonly string[];
+              state.schema satisfies object;
 
-            return ContentSlice.closed([
-              {
-                children: [{ text: data }],
-                type: 'p',
-              },
-            ]);
+              return ContentSlice.closed([
+                {
+                  children: [{ text: data }],
+                  type: 'p',
+                },
+              ]);
+            },
+            encode: ({ slice, state }) => {
+              slice.openStart satisfies number;
+              state.schema satisfies object;
+
+              return `${plugin.key}:${slice.content.length}`;
+            },
+            scope: 'document',
           },
-          encode: ({ slice, state }) => {
-            slice.openStart satisfies number;
-            state.schema satisfies object;
-
-            return `${plugin.key}:${slice.content.length}`;
-          },
-          scope: 'document',
-        },
+        }),
       })
     );
     const editor = createBaseEditor({ plugins: [RecordsPlugin] });
@@ -116,11 +118,20 @@ describe('createBasePlugin', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    })
-      .extendHtmlCodec(selfExtension)
-      .extendHtmlCodec(TargetPlugin, foreignExtension);
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({ 'text/html': selfExtension() }),
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs(TargetPlugin, {
+        'text/html': foreignExtension(),
+      }),
+    }));
 
-    expect(plugin.__htmlCodecExtensions).toEqual([
+    const editor = createBaseEditor({
+      plugins: [TargetPlugin, plugin],
+    });
+    const resolvedPlugin = editor.getPlugin(plugin);
+
+    expect(resolvedPlugin.__htmlCodecExtensions).toEqual([
       { extension: expect.any(Function), targetKey: null },
       {
         extension: expect.any(Function),
@@ -128,16 +139,10 @@ describe('createBasePlugin', () => {
       },
     ]);
     expect(
-      plugin.__htmlCodecExtensions.every((extension) =>
+      resolvedPlugin.__htmlCodecExtensions.every((extension) =>
         Object.isFrozen(extension)
       )
     ).toBe(true);
-    expect(() => (plugin.extendHtmlCodec as any)({}, foreignExtension)).toThrow(
-      'requires a plugin descriptor target'
-    );
-    expect(() =>
-      (plugin.extendHtmlCodec as any)(plugin, foreignExtension)
-    ).toThrow('requires a different plugin descriptor target');
     expect(() =>
       (plugin.configure as any)({
         schema: {
@@ -269,7 +274,9 @@ describe('createBasePlugin', () => {
   describe('extend', () => {
     it('keeps semantic identity while merging runtime options', () => {
       const plugin = resolvePluginTest(
-        createBasePlugin({ key: 'a', type: 'a' }).extend({
+        createBasePlugin({
+          key: 'a',
+          type: 'a',
           inject: {
             nodeProps: {
               nodeKey: 'b',
@@ -327,69 +334,81 @@ describe('createBasePlugin', () => {
     });
 
     it('infers tx groups in later plugin extension contexts', () => {
-      createBasePlugin({ key: 'txPlugin' })
-        .extendTx(() => () => ({
+      createBasePlugin({
+        key: 'txPlugin',
+        update: () => ({
           replace: (text: string) => text.length,
-        }))
-        .extend(({ editor, plugin }) => {
-          const replace = (text: string) =>
-            editor.update((tx) => {
-              const length = tx[plugin.key].replace(text);
+        }),
+      }).extend(({ editor, plugin }) => {
+        const replace = (text: string) =>
+          editor.update((tx) => {
+            const length = tx[plugin.key].replace(text);
 
-              return length satisfies number;
-            });
+            return length satisfies number;
+          });
 
-          replace('ok');
+        replace('ok');
 
-          return {};
-        });
+        return {};
+      });
 
       expect(1).toBe(1);
     });
 
     it('infers plugin tx groups in editor extension commands', () => {
-      createBasePlugin({ key: 'txPlugin' })
-        .extendTx(() => () => ({
+      createBasePlugin({
+        key: 'txPlugin',
+        update: () => ({
           replace: (text: string) => text.length,
-        }))
-        .extendExtension('behavior', () => ({
-          commands: ({ handle }) => [
-            handle(editorCommands.insertText, ({ input, state }) =>
-              state.transaction((tx) => {
-                const length = tx.txPlugin.replace(input.text);
+        }),
+      }).extend(() => ({
+        extension: {
+          key: 'behavior',
+          ...{
+            commands: ({ handle }) => [
+              handle(editorCommands.insertText, ({ input, state }) =>
+                state.transaction((tx) => {
+                  const length = tx.txPlugin.replace(input.text);
 
-                return length satisfies number;
-              })
-            ),
-          ],
-        }));
+                  return length satisfies number;
+                })
+              ),
+            ],
+          },
+        },
+      }));
 
       expect(1).toBe(1);
     });
 
     it('infers explicit tx groups in later plugin extension contexts', () => {
-      createBasePlugin({ key: 'sourcePlugin' })
-        .extendTxGroup('foreignTx', () => () => ({
-          replace: (text: string) => text.length,
-        }))
-        .extend(({ editor }) => {
-          const replace = (text: string) => {
-            return editor.update((tx) => {
-              // @ts-expect-error Explicit tx groups should not install an own-key tx group.
-              const sourcePlugin = tx.sourcePlugin;
+      createBasePlugin({
+        key: 'sourcePlugin',
+        extension: {
+          tx: {
+            foreignTx: () => ({
+              replace: (text: string) => text.length,
+            }),
+          },
+        },
+      }).extend(({ editor }) => {
+        const replace = (text: string) => {
+          return editor.update((tx) => {
+            // @ts-expect-error Explicit tx groups should not install an own-key tx group.
+            const sourcePlugin = tx.sourcePlugin;
 
-              const length = tx.foreignTx.replace(text);
+            const length = tx.foreignTx.replace(text);
 
-              expect(sourcePlugin).toBeUndefined();
+            expect(sourcePlugin).toBeUndefined();
 
-              return length satisfies number;
-            });
-          };
+            return length satisfies number;
+          });
+        };
 
-          replace('ok');
+        replace('ok');
 
-          return {};
-        });
+        return {};
+      });
 
       expect(1).toBe(1);
     });
@@ -404,8 +423,20 @@ describe('createBasePlugin', () => {
 
       const plugin = createBasePlugin<DeclaredTxConfig>({
         key: 'sourcePlugin',
-      }).extendTxGroup('foreignTx', () => () => ({
-        replace: (text) => text.length,
+      }).extend<{
+        extension: {
+          tx: {
+            foreignTx: () => DeclaredTxConfig['tx']['foreignTx'];
+          };
+        };
+      }>(() => ({
+        extension: {
+          tx: {
+            foreignTx: () => ({
+              replace: (text) => text.length,
+            }),
+          },
+        },
       }));
       const editor = createBaseEditor({ plugins: [plugin] });
 
@@ -413,17 +444,16 @@ describe('createBasePlugin', () => {
     });
 
     it('adds editor extensions with plugin-derived names', () => {
-      const resolved = resolvePluginTest(
-        createBasePlugin({
-          key: 'runtime',
-        }).extendExtension({
+      const plugin = createBasePlugin({
+        key: 'runtime',
+        extension: {
           api: {
             runtime: { ping: () => true },
           },
-        })
-      );
+        },
+      });
 
-      expect(resolveEditorExtensions(resolved)).toMatchObject([
+      expect(resolveEditorExtensions(plugin)).toMatchObject([
         {
           name: 'runtime',
         },
@@ -431,72 +461,93 @@ describe('createBasePlugin', () => {
     });
 
     it('adds function-returned editor extension options with plugin-derived names', () => {
-      const resolved = resolvePluginTest(
-        createBasePlugin({
-          key: 'runtime',
-        }).extendExtension(({ plugin }) => ({
+      const plugin = createBasePlugin({
+        api: ({ getOption }) => ({
+          label: () => getOption('prefix'),
+        }),
+        extension: ({ plugin }) => ({
           api: {
-            runtime: {
+            runtimeExtension: {
               key: () => plugin.key,
             },
           },
-        }))
-      );
+        }),
+        key: 'runtime',
+        options: {
+          prefix: 'base',
+        },
+        read: ({ getOptions }) => ({
+          readLabel: () => getOptions().prefix,
+        }),
+        selectors: ({ getOption }) => ({
+          label: () => getOption('prefix').toUpperCase(),
+        }),
+        update: ({ getOptions }) => ({
+          updateLabel: () => getOptions().prefix,
+        }),
+      }).configure({
+        options: {
+          prefix: 'consumer',
+        },
+      });
 
-      expect(resolveEditorExtensions(resolved)).toMatchObject([
+      expect(resolveEditorExtensions(plugin)).toMatchObject([
         {
           name: 'runtime',
         },
       ]);
 
       const editor = createBaseEditor({
-        plugins: [resolved],
+        plugins: [plugin],
       });
 
-      expect(editor.api.runtime.key()).toBe('runtime');
+      expect(editor.api.runtimeExtension.key()).toBe('runtime');
+      expect(editor.plugin(plugin).api.label()).toBe('consumer');
+      expect(editor.plugin(plugin).getOption('label')).toBe('CONSUMER');
+      expect(editor.read.runtime.readLabel()).toBe('consumer');
+      expect(editor.update.runtime.updateLabel()).toBe('consumer');
     });
 
     it('keeps built editor extension names', () => {
-      const resolved = resolvePluginTest(
-        createBasePlugin({
-          key: 'runtime',
-        }).extendExtension(
-          defineEditorExtension({
-            name: 'explicit',
-            api: {
-              explicit: {
-                ping: () => 'pong' as const,
-              },
+      const plugin = createBasePlugin({
+        key: 'runtime',
+        extension: defineEditorExtension({
+          name: 'explicit',
+          api: {
+            explicit: {
+              ping: () => 'pong' as const,
             },
-          })
-        )
-      );
+          },
+        }),
+      });
 
-      expect(resolveEditorExtensions(resolved)).toMatchObject([
+      expect(resolveEditorExtensions(plugin)).toMatchObject([
         {
           name: 'explicit',
         },
       ]);
 
       const editor = createBaseEditor({
-        plugins: [resolved],
+        plugins: [plugin],
       });
 
       expect(editor.api.explicit.ping()).toBe('pong');
     });
 
     it('supports plugin-scoped secondary editor extension keys', () => {
-      const resolved = resolvePluginTest(
-        createBasePlugin({
-          key: 'runtime',
-        }).extendExtension('custom', {
-          api: {
-            runtime: { ping: () => true },
+      const plugin = createBasePlugin({
+        key: 'runtime',
+        extension: {
+          key: 'custom',
+          ...{
+            api: {
+              runtime: { ping: () => true },
+            },
           },
-        })
-      );
+        },
+      });
 
-      expect(resolveEditorExtensions(resolved)).toMatchObject([
+      expect(resolveEditorExtensions(plugin)).toMatchObject([
         { name: 'runtime:custom' },
       ]);
     });
@@ -506,12 +557,13 @@ describe('createBasePlugin', () => {
       const resolved = resolvePluginTest(
         createBasePlugin({
           key: 'runtime',
-        }).extendExtension({
-          key: 'custom',
-          [metadata]: 'kept',
-          api: {
-            runtime: {
-              ping: () => 'pong' as const,
+          extension: {
+            key: 'custom',
+            [metadata]: 'kept',
+            api: {
+              runtime: {
+                ping: () => 'pong' as const,
+              },
             },
           },
         })
@@ -529,8 +581,7 @@ describe('createBasePlugin', () => {
     it('merges repeated unnamed editor extensions before Plite install', () => {
       const plugin = createBasePlugin({
         key: 'runtime',
-      })
-        .extendExtension({
+        extension: {
           api: {
             runtime: {
               first: () => 'first' as const,
@@ -541,8 +592,9 @@ describe('createBasePlugin', () => {
               run: () => 'first-tx' as const,
             }),
           },
-        })
-        .extendExtension({
+        },
+      }).extend({
+        extension: {
           api: {
             runtime: {
               second: () => 'second' as const,
@@ -553,7 +605,8 @@ describe('createBasePlugin', () => {
               run: () => 'second-tx' as const,
             }),
           },
-        });
+        },
+      });
 
       const editor = createBaseEditor({
         plugins: [plugin],
@@ -571,8 +624,7 @@ describe('createBasePlugin', () => {
     it('composes repeated unnamed command factories in declaration order', () => {
       const plugin = createBasePlugin({
         key: 'runtime',
-      })
-        .extendExtension({
+        extension: {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, ({ input, state }) =>
               input.text === 'a'
@@ -580,8 +632,9 @@ describe('createBasePlugin', () => {
                 : false
             ),
           ],
-        })
-        .extendExtension({
+        },
+      }).extend({
+        extension: {
           commands: ({ handle }) => [
             handle(editorCommands.insertText, ({ input, state }) =>
               input.text === 'b'
@@ -589,7 +642,8 @@ describe('createBasePlugin', () => {
                 : false
             ),
           ],
-        });
+        },
+      });
       const editor = createBaseEditor({
         plugins: [plugin],
         selection: {
@@ -608,21 +662,28 @@ describe('createBasePlugin', () => {
     it('merges repeated keyed editor extensions before Plite install', () => {
       const plugin = createBasePlugin({
         key: 'runtime',
-      })
-        .extendExtension('secondary', {
-          api: {
-            runtime: {
-              first: () => 'first' as const,
+        extension: {
+          key: 'secondary',
+          ...{
+            api: {
+              runtime: {
+                first: () => 'first' as const,
+              },
             },
           },
-        })
-        .extendExtension('secondary', {
-          api: {
-            runtime: {
-              second: () => 'second' as const,
+        },
+      }).extend({
+        extension: {
+          key: 'secondary',
+          ...{
+            api: {
+              runtime: {
+                second: () => 'second' as const,
+              },
             },
           },
-        });
+        },
+      });
 
       const editor = createBaseEditor({
         plugins: [plugin],
@@ -657,6 +718,26 @@ describe('createBasePlugin', () => {
         optionA: 'initial',
         optionB: 10,
       });
+    });
+
+    it('binds a static component without exposing render.node', () => {
+      const Component = () => null;
+      const BelowRoot = () => null;
+      const configured = basePlugin.configure({
+        component: Component,
+        options: { optionA: 'configured with component' },
+        render: { belowRootNodes: BelowRoot },
+      });
+
+      expect(resolvePluginTest(configured).render.node).toBe(Component);
+      expect(resolvePluginTest(configured).render.belowRootNodes).toBe(
+        BelowRoot
+      );
+      expect(resolvePluginTest(configured).options).toEqual({
+        optionA: 'configured with component',
+        optionB: 10,
+      });
+      expect(basePlugin.render.node).toBeUndefined();
     });
 
     it('keeps consumer configuration final while extensions read it', () => {
@@ -739,33 +820,27 @@ describe('createBasePlugin', () => {
           options: { optionB: 30 },
         })
       ).toThrow('already configured');
-      expect(() =>
-        (configured.extendCodecs as any)(() => ({
-          'application/x-late': {
-            scope: 'document',
-            decode: () => null,
-          },
-        }))
-      ).toThrow('already configured');
-      expect(() =>
-        (configured.extendHtmlCodec as any)(() => ({
-          decode: () => ({}),
-          decodeOnly: true,
-          match: [{ tag: 'p' }],
-        }))
-      ).toThrow('already configured');
       expect(() => (configured.clone as any)()).toThrow('already configured');
     });
 
-    it('rejects codecs in the base plugin object', () => {
+    it('rejects raw codecs in the base plugin object', () => {
       expect(() =>
         (createBasePlugin as any)({
           codecs: {},
           key: 'invalid-codecs',
         })
       ).toThrow(
-        'Plate plugin `codecs` configuration is unsupported. Use `.extendCodecs()`.'
+        'Plate plugin `codecs` must be declared by the constructor callback.'
       );
+    });
+
+    it('rejects component binding in the Base constructor', () => {
+      expect(() =>
+        (createBasePlugin as any)({
+          component: () => null,
+          key: 'renderer-owned-constructor',
+        })
+      ).toThrow('Base plugin constructors are renderer-neutral');
     });
 
     it('rejects model fields from untyped configure callbacks', () => {
@@ -826,10 +901,12 @@ describe('createBasePlugin', () => {
       const TypedPlugin = createBasePlugin({
         key: 'testPlugin',
         type: 'customType',
-      }).extendTx(({ plugin }) => () => ({
-        observeType: () => {
-          observedType = plugin.type;
-        },
+      }).extend(({ plugin }) => ({
+        update: () => ({
+          observeType: () => {
+            observedType = plugin.type;
+          },
+        }),
       }));
 
       const editor = createBaseEditor({
@@ -853,13 +930,13 @@ describe('createBasePlugin', () => {
 
       const editor = createBaseEditor({
         plugins: [
-          linkPlugin.extend({
+          linkPlugin.extend(() => ({
             parsers: {
               html: {
                 transformData: ({ data }) => `configured:${data}`,
               },
             },
-          }),
+          })),
         ],
       });
 

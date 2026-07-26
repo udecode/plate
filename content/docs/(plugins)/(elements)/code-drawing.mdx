@@ -91,12 +91,12 @@ import { CodeDrawingElement } from '@/components/ui/code-drawing-node';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    CodeDrawingPlugin.withComponent(CodeDrawingElement),
+    CodeDrawingPlugin.configure({ component: CodeDrawingElement }),
   ],
 });
 ```
 
-- `withComponent`: Assigns [`CodeDrawingElement`](/docs/components/code-drawing-node) to render code drawing elements.
+- `component`: Assigns [`CodeDrawingElement`](/docs/components/code-drawing-node) to render code drawing elements.
 
 ### Add Toolbar Button
 

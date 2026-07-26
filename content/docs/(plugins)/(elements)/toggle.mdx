@@ -98,12 +98,12 @@ const editor = createPlateEditor({
         TogglePlugin.key,
       ],
     }),
-    TogglePlugin.withComponent(ToggleElement),
+    TogglePlugin.configure({ component: ToggleElement }),
   ],
 });
 ```
 
-- `withComponent`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
+- `component`: Assigns [`ToggleElement`](/docs/components/toggle-node) to render toggle elements.
 - `IndentPlugin.targetPluginKeys`: Configures which element plugin types support indentation, including toggles.
 
 ### Add Toolbar Button

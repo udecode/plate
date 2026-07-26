@@ -94,11 +94,11 @@ import { H1Element, H2Element, H3Element } from '@/components/ui/heading-node';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    H1Plugin.withComponent(H1Element),
-    H2Plugin.withComponent(H2Element),
-    H3Plugin.withComponent(H3Element),
+    H1Plugin.configure({ component: H1Element }),
+    H2Plugin.configure({ component: H2Element }),
+    H3Plugin.configure({ component: H3Element }),
     TocPlugin.configure({
-      render: { node: TocElement },
+      component: TocElement,
       options: {
         topOffset: 80,
         isScroll: true,
@@ -108,7 +108,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.node`: Assigns [`TocElement`](/docs/components/toc-node) to render table of contents elements.
+- `.configure({ component })`: Assigns [`TocElement`](/docs/components/toc-node) to render table of contents elements.
 - `options.topOffset`: Sets the top offset when scrolling to headings.
 - `options.isScroll`: Enables scrolling behavior to headings.
 

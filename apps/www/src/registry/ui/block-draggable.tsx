@@ -489,7 +489,7 @@ const calculatePreviewTop = (
     blocks,
     element,
   }: {
-    blocks: PliteElement[];
+    blocks: readonly PliteElement[];
     element: PliteElement;
   }
 ): number => {

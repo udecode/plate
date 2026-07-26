@@ -12,12 +12,17 @@ export const BaseParagraphPlugin = createBasePlugin({
       ),
     },
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) =>
+          element.style.fontFamily === 'Consolas' ? undefined : {},
+        encode: ({ content }) => ({ children: content, tag: 'p' }),
+        match: [{ tag: 'p' }],
+      },
+    }),
+
   rules: {
     merge: { removeEmpty: true },
   },
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) =>
-    element.style.fontFamily === 'Consolas' ? undefined : {},
-  encode: ({ content }) => ({ children: content, tag: 'p' }),
-  match: [{ tag: 'p' }],
-}));
+});

@@ -73,8 +73,8 @@ export const insertInlineMap = {
 |-------|-------|--------------|
 | `@platejs/date` | Package | Exports `BaseDatePlugin`, `insertDate`, date value helpers, and `isPointNextToNode`. |
 | `@platejs/date/react` | Package | Exports `DatePlugin`. |
-| `date-kit` | Registry | Adds `DatePlugin.withComponent(DateElement)`. |
-| `date-base-kit` | Registry | Adds `BaseDatePlugin.withComponent(DateElementStatic)`. |
+| `date-kit` | Registry | Adds `DatePlugin.configure({ component: DateElement })`. |
+| `date-base-kit` | Registry | Adds `BaseDatePlugin.configure({ component: DateElementStatic })`. |
 | `date-node` | Registry UI | Renders the editable popover/calendar element and static element. |
 | `@platejs/markdown` | Package | Converts date MDX tags to canonical `date` or fallback `rawDate` values. |
 
@@ -101,7 +101,7 @@ import { createPlateEditor } from 'platejs/react';
 import { DateElement } from '@/components/ui/date-node';
 
 export const editor = createPlateEditor({
-  plugins: [DatePlugin.withComponent(DateElement)],
+  plugins: [DatePlugin.configure({ component: DateElement })],
 });
 ```
 

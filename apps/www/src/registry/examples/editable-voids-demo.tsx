@@ -20,9 +20,8 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export const EditableVoidPlugin = createPlatePlugin({
   key: 'editable-void',
-  render: { node: EditableVoidElement },
   schema: { element: { void: 'editable-island' } },
-});
+}).configure({ component: EditableVoidElement });
 
 export function EditableVoidElement({ children, ...props }: PlateElementProps) {
   const [inputValue, setInputValue] = React.useState('');

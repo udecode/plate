@@ -37,9 +37,11 @@ const BlockPlaceholderFixtureSchemaPlugin = createBasePlugin({
     ],
   },
 });
-const ParagraphWithComponentPlugin = ParagraphPlugin.withComponent(
-  ({ attributes, children }) => <div {...attributes}>{children}</div>
-);
+const ParagraphWithComponentPlugin = ParagraphPlugin.configure({
+  component: ({ attributes, children }) => (
+    <div {...attributes}>{children}</div>
+  ),
+});
 
 const renderPlaceholderEditor = (
   editor: PlateEditor,

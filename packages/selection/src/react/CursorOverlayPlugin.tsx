@@ -41,13 +41,7 @@ const getRemoveCursorHandler =
   };
 
 export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
-  key: KEYS.cursorOverlay,
-  editOnly: {
-    render: false,
-  },
-  options: { cursors: {} },
-})
-  .extendApi<CursorOverlayConfig['pluginApi']>(({ editor, plugin }) => ({
+  api: ({ editor, plugin }) => ({
     addCursor: (id, cursor) => {
       const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
       newCursors[id] = {
@@ -64,8 +58,8 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
       delete newCursors[id];
       editor.plugin(plugin).setOption('cursors', newCursors);
     },
-  }))
-  .extendExtension(({ api, editor, getOptions }) => {
+  }),
+  extension: ({ api, editor, getOptions }) => {
     const refreshSelectionCursor = () => {
       if (!getOptions().cursors?.selection) return;
 
@@ -81,55 +75,60 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
         if (commit.selectionChanged) refreshSelectionCursor();
       },
     };
-  })
-  .extend({
-    handlers: {
-      onBlur: ({ api, editor, event }) => {
-        if (!editor.read.selection()) return;
+  },
+  handlers: {
+    onBlur: ({ api, editor, event }) => {
+      if (!editor.read.selection()) return;
 
-        const relatedTarget = event.relatedTarget as HTMLElement;
-        const enabled = relatedTarget?.dataset?.plateFocus === 'true';
+      const relatedTarget = event.relatedTarget as HTMLElement;
+      const enabled = relatedTarget?.dataset?.plateFocus === 'true';
 
-        if (!enabled) return;
+      if (!enabled) return;
 
-        api.addCursor('selection', {
-          selection: editor.read.selection(),
-        });
-      },
-      onDragEnd: getRemoveCursorHandler('drag') as any,
-      onDragLeave: getRemoveCursorHandler('drag') as any,
-      onDragOver: ({ api, editor, event }) => {
-        if (
-          !getPlateRuntime(editor).plugins.dnd ||
-          editor.plugin({ key: KEYS.dnd }).getOptions().isDragging
-        ) {
-          return;
-        }
-
-        const types = event.dataTransfer?.types || [];
-
-        if (types.some((type) => type.startsWith('Files'))) return;
-
-        const range = editor.api.dom.resolveEventRange(event);
-
-        if (!range) return;
-
-        api.addCursor('drag', {
-          selection: range,
-        });
-      },
-      onDrop: getRemoveCursorHandler('drag') as any,
-      onFocus: getRemoveCursorHandler('selection') as any,
+      api.addCursor('selection', {
+        selection: editor.read.selection(),
+      });
     },
-    useHooks: ({ api, setOption }) => {
-      const isSelecting = usePluginOption(BlockSelectionPlugin, 'isSelecting');
+    onDragEnd: getRemoveCursorHandler('drag') as any,
+    onDragLeave: getRemoveCursorHandler('drag') as any,
+    onDragOver: ({ api, editor, event }) => {
+      if (
+        !getPlateRuntime(editor).plugins.dnd ||
+        editor.plugin({ key: KEYS.dnd }).getOptions().isDragging
+      ) {
+        return;
+      }
 
-      useEffect(() => {
-        if (isSelecting) {
-          setTimeout(() => {
-            api.removeCursor('selection');
-          }, 0);
-        }
-      }, [isSelecting, setOption, api]);
+      const types = event.dataTransfer?.types || [];
+
+      if (types.some((type) => type.startsWith('Files'))) return;
+
+      const range = editor.api.dom.resolveEventRange(event);
+
+      if (!range) return;
+
+      api.addCursor('drag', {
+        selection: range,
+      });
     },
-  });
+    onDrop: getRemoveCursorHandler('drag') as any,
+    onFocus: getRemoveCursorHandler('selection') as any,
+  },
+  key: KEYS.cursorOverlay,
+  options: { cursors: {} },
+
+  editOnly: {
+    render: false,
+  },
+  useHooks: ({ api, setOption }) => {
+    const isSelecting = usePluginOption(BlockSelectionPlugin, 'isSelecting');
+
+    useEffect(() => {
+      if (isSelecting) {
+        setTimeout(() => {
+          api.removeCursor('selection');
+        }, 0);
+      }
+    }, [isSelecting, setOption, api]);
+  },
+});

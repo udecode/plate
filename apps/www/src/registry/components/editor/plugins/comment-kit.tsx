@@ -56,33 +56,35 @@ export const commentPlugin = toPlatePlugin<
     hoverId: null,
   },
 })
-  .extendTx(({ setOption, type }) => (tx) => ({
-    setDraft: (options = {}) => {
-      const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
+  .extend(({ setOption, type }) => ({
+    update: ({ tx }) => ({
+      setDraft: (options = {}) => {
+        const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
 
-      if (tx.selection.isCollapsed()) {
-        const blockEntry = tx.nodes.block();
+        if (tx.selection.isCollapsed()) {
+          const blockEntry = tx.nodes.block();
 
-        if (blockEntry) {
-          tx.selection.set(blockEntry[1]);
+          if (blockEntry) {
+            tx.selection.set(blockEntry[1]);
+          }
         }
-      }
 
-      tx.nodes.set(
-        {
-          [getDraftCommentKey()]: true,
-          [type]: true,
-        },
-        { match: TextApi.isText, split: true, ...options }
-      );
+        tx.nodes.set(
+          {
+            [getDraftCommentKey()]: true,
+            [type]: true,
+          },
+          { match: TextApi.isText, split: true, ...options }
+        );
 
-      tx.selection.collapse();
-      setOption('activeId', getDraftCommentKey());
-      setOption('commentingBlock', commentingBlock);
-    },
+        tx.selection.collapse();
+        setOption('activeId', getDraftCommentKey());
+        setOption('commentingBlock', commentingBlock);
+      },
+    }),
   }))
   .configure({
-    render: { node: CommentLeaf },
+    component: CommentLeaf,
     shortcuts: {
       setDraft: { keys: 'mod+shift+m' },
     },

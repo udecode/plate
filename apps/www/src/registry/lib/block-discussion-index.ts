@@ -46,7 +46,7 @@ type BlockDiscussionIndex = {
 };
 
 type BuildBlockDiscussionIndexOptions = {
-  entries: BlockDiscussionEntry[];
+  entries: readonly BlockDiscussionEntry[];
   discussions: readonly DiscussionSnapshot[];
   getCommentId: (node: TCommentText) => string | undefined;
   getSuggestionData: (node: Node) =>

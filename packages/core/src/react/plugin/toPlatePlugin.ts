@@ -9,6 +9,7 @@ import type {
   InferSelectors,
   InferState,
   InferTx,
+  NodeComponent,
   PluginConfig,
   PluginShortcutInput,
   PluginReference,
@@ -57,10 +58,17 @@ type PlatePluginConfig<
       >
     >
   >,
-  keyof PlatePluginMethods | 'api' | 'options' | 'schema' | 'shortcuts'
+  | keyof PlatePluginMethods
+  | 'api'
+  | 'options'
+  | 'render'
+  | 'schema'
+  | 'shortcuts'
 > & {
   api?: EA & Partial<InferApi<C>>;
+  component?: NodeComponent;
   options?: EO & Partial<InferOptions<C>>;
+  render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'node'> | null;
   selectors?: ES & Partial<InferSelectors<C>>;
   shortcuts?: PluginShortcutInput<
     PluginConfig<
@@ -88,11 +96,11 @@ type RuntimePlatePluginConfig<
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
   PlatePluginConfig<C, EO, EA, ES, TShortcuts>,
-  'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
+  'component' | 'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
   render?: Omit<
     NonNullable<PlatePluginConfig<C, EO, EA, ES, TShortcuts>['render']>,
-    'isDecoration'
+    'isDecoration' | 'node'
   > | null;
 };
 
@@ -104,16 +112,7 @@ type BasePluginDescriptorInput = PluginReference & {
 const methodsToWrap = [
   'clone',
   'configure',
-  'extendCodecs',
-  'extendHtmlCodec',
-  'extendEditorApi',
-  'extendExtension',
-  'extendSelectors',
-  'extendApi',
-  'extendTx',
-  'extendTxGroup',
   'extend',
-  'withComponent',
 ] as const satisfies readonly (keyof PlatePluginMethods)[];
 
 const extensionArrayKeys = [
@@ -171,8 +170,10 @@ type ExtendPlatePluginConfig<
       >
     >
   >,
-  keyof PlatePluginMethods | 'schema' | 'shortcuts'
+  keyof PlatePluginMethods | 'render' | 'schema' | 'shortcuts'
 > & {
+  component?: NodeComponent;
+  render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'node'> | null;
   shortcuts?: PluginShortcutInput<C, TShortcuts, Shortcut>;
 };
 
@@ -181,11 +182,11 @@ type RuntimeExtendPlatePluginConfig<
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
   ExtendPlatePluginConfig<C, TShortcuts>,
-  'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
+  'component' | 'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
 > & {
   render?: Omit<
     NonNullable<ExtendPlatePluginConfig<C, TShortcuts>['render']>,
-    'isDecoration'
+    'isDecoration' | 'node'
   > | null;
 };
 
@@ -301,6 +302,20 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
     const originalMethod = plugin[method];
 
     (plugin as any)[method] = (...args: any[]) => {
+      if (
+        method === 'configure' &&
+        typeof args[0] === 'object' &&
+        args[0] !== null &&
+        Object.hasOwn(args[0], 'component')
+      ) {
+        const { component, ...baseConfig } = args[0];
+        const configuredBasePlugin = (
+          originalMethod as unknown as (...args: any[]) => BasePlugin
+        )(baseConfig);
+
+        return toPlatePlugin(configuredBasePlugin, { component });
+      }
+
       const basePlugin = (
         originalMethod as unknown as (...args: any[]) => BasePlugin
       )(...args);
@@ -328,9 +343,33 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
       `Plate plugin '${plugin.key}' cannot define schema through toPlatePlugin(). Declare schema when creating the base plugin.`
     );
   }
+  if (
+    typeof extendConfig === 'object' &&
+    extendConfig !== null &&
+    typeof extendConfig.render === 'object' &&
+    extendConfig.render !== null &&
+    Object.hasOwn(extendConfig.render, 'node')
+  ) {
+    throw new Error(
+      'Plate plugin `render.node` is private. Use top-level `component`.'
+    );
+  }
 
+  let normalizedConfig = extendConfig;
+
+  if (
+    typeof extendConfig === 'object' &&
+    extendConfig !== null &&
+    Object.hasOwn(extendConfig, 'component')
+  ) {
+    const { component, ...configWithoutComponent } = extendConfig;
+
+    normalizedConfig = mergePlugins(configWithoutComponent, {
+      render: { node: component },
+    });
+  }
   const extendedBasePlugin = createBasePlugin(
-    mergePlugins(plugin, extendConfig) as any
+    mergePlugins(plugin, normalizedConfig) as any
   );
 
   return preserveExtensionArrays(

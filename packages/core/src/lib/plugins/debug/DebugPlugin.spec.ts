@@ -4,8 +4,10 @@ import { DebugPlugin, PlateError } from './DebugPlugin';
 
 const SamplePlugin = createBasePlugin({
   key: 'sample',
-  api: {
-    sampleMethod: () => {},
+  extension: {
+    api: {
+      sampleMethod: () => {},
+    },
   },
 });
 

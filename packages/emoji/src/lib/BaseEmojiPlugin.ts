@@ -28,7 +28,6 @@ type EmojiPluginOptions = {
 
 export const BaseEmojiInputPlugin = createBasePlugin({
   key: KEYS.emojiInput,
-  editOnly: true,
   schema: {
     element: {
       properties: {
@@ -40,6 +39,7 @@ export const BaseEmojiInputPlugin = createBasePlugin({
     },
   },
   type: NODES.emojiInput,
+  editOnly: true,
 });
 
 const emojiPluginOptions: EmojiPluginOptions = {
@@ -56,8 +56,10 @@ const emojiPluginOptions: EmojiPluginOptions = {
 export const BaseEmojiPlugin = createBasePlugin({
   key: KEYS.emoji,
   dependencies: [BaseEmojiInputPlugin],
-  editOnly: true,
   options: emojiPluginOptions,
-}).extendExtension(withTriggerCombobox);
+
+  editOnly: true,
+  extension: (context) => withTriggerCombobox(context),
+});
 
 export type EmojiInputConfig = InferConfig<typeof BaseEmojiPlugin>;

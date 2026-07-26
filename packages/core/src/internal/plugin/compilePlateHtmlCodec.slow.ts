@@ -61,25 +61,29 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-paragraph',
-  }).extendHtmlCodec(({ getOptions }) => {
+  }).extend(({ defineCodecs, getOptions }) => {
     counters.codecFactories++;
 
     return {
-      decode: () => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            counters.elementDecode++;
 
-        return {};
-      },
-      encode: ({ content }) => {
-        counters.elementEncode++;
+            return {};
+          },
+          encode: ({ content }) => {
+            counters.elementEncode++;
 
-        return {
-          attributes: { 'data-variant': getOptions().variant },
-          children: content,
-          tag: 'p',
-        };
-      },
-      match: [{ tag: 'p' }],
+            return {
+              attributes: { 'data-variant': getOptions().variant },
+              children: content,
+              tag: 'p',
+            };
+          },
+          match: [{ tag: 'p' }],
+        },
+      }),
     };
   });
   const LinkPlugin = createBasePlugin({
@@ -93,25 +97,29 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-link',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: ({ element }) => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: ({ element }) => {
+            counters.elementDecode++;
 
-        return { url: element.getAttribute('href') || undefined };
-      },
-      encode: ({ content, node }) => {
-        counters.elementEncode++;
+            return { url: element.getAttribute('href') || undefined };
+          },
+          encode: ({ content, node }) => {
+            counters.elementEncode++;
 
-        return {
-          attributes: { href: node.url },
-          children: content,
-          tag: 'a',
-        };
-      },
-      match: [{ tag: 'a' }],
+            return {
+              attributes: { href: node.url },
+              children: content,
+              tag: 'a',
+            };
+          },
+          match: [{ tag: 'a' }],
+        },
+      }),
     };
   });
   const ListItemPlugin = createBasePlugin({
@@ -126,21 +134,25 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-list-item',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: () => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            counters.elementDecode++;
 
-        return {};
-      },
-      encode: ({ content }) => {
-        counters.elementEncode++;
+            return {};
+          },
+          encode: ({ content }) => {
+            counters.elementEncode++;
 
-        return { children: content, tag: 'li' };
-      },
-      match: [{ tag: 'li' }],
+            return { children: content, tag: 'li' };
+          },
+          match: [{ tag: 'li' }],
+        },
+      }),
     };
   });
   const ListPlugin = createBasePlugin({
@@ -154,21 +166,25 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-list',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: () => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            counters.elementDecode++;
 
-        return {};
-      },
-      encode: ({ content }) => {
-        counters.elementEncode++;
+            return {};
+          },
+          encode: ({ content }) => {
+            counters.elementEncode++;
 
-        return { children: content, tag: 'ul' };
-      },
-      match: [{ tag: 'ul' }],
+            return { children: content, tag: 'ul' };
+          },
+          match: [{ tag: 'ul' }],
+        },
+      }),
     };
   });
   const TableCellPlugin = createBasePlugin({
@@ -184,29 +200,33 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-table-cell',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: ({ element }) => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: ({ element }) => {
+            counters.elementDecode++;
 
-        const width = Number.parseFloat(element.style.width);
+            const width = Number.parseFloat(element.style.width);
 
-        return Number.isFinite(width) ? { width } : {};
-      },
-      encode: ({ content, node }) => {
-        counters.elementEncode++;
-
-        return {
-          children: content,
-          style: {
-            width: node.width === undefined ? undefined : `${node.width}px`,
+            return Number.isFinite(width) ? { width } : {};
           },
-          tag: 'td',
-        };
-      },
-      match: [{ tag: 'td' }],
+          encode: ({ content, node }) => {
+            counters.elementEncode++;
+
+            return {
+              children: content,
+              style: {
+                width: node.width === undefined ? undefined : `${node.width}px`,
+              },
+              tag: 'td',
+            };
+          },
+          match: [{ tag: 'td' }],
+        },
+      }),
     };
   });
   const TableRowPlugin = createBasePlugin({
@@ -221,21 +241,25 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-table-row',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: () => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            counters.elementDecode++;
 
-        return {};
-      },
-      encode: ({ content }) => {
-        counters.elementEncode++;
+            return {};
+          },
+          encode: ({ content }) => {
+            counters.elementEncode++;
 
-        return { children: content, tag: 'tr' };
-      },
-      match: [{ tag: 'tr' }],
+            return { children: content, tag: 'tr' };
+          },
+          match: [{ tag: 'tr' }],
+        },
+      }),
     };
   });
   const TablePlugin = createBasePlugin({
@@ -249,24 +273,28 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-table',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: () => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            counters.elementDecode++;
 
-        return {};
-      },
-      encode: ({ content }) => {
-        counters.elementEncode++;
+            return {};
+          },
+          encode: ({ content }) => {
+            counters.elementEncode++;
 
-        return {
-          children: [{ children: content, tag: 'tbody' }],
-          tag: 'table',
-        };
-      },
-      match: [{ tag: 'table' }],
+            return {
+              children: [{ children: content, tag: 'tbody' }],
+              tag: 'table',
+            };
+          },
+          match: [{ tag: 'table' }],
+        },
+      }),
     };
   });
   const MediaPlugin = createBasePlugin({
@@ -281,40 +309,45 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       },
     },
     type: 'benchmark-media',
-  }).extendHtmlCodec(() => {
+  }).extend(({ defineCodecs }) => {
     counters.codecFactories++;
 
     return {
-      decode: ({ element }) => {
-        counters.elementDecode++;
+      codecs: defineCodecs({
+        'text/html': {
+          decode: ({ element }) => {
+            counters.elementDecode++;
 
-        const image = element.querySelector<HTMLElement>(':scope > img');
-        const width = Number.parseFloat(image?.style.width ?? '');
+            const image = element.querySelector<HTMLElement>(':scope > img');
+            const width = Number.parseFloat(image?.style.width ?? '');
 
-        return {
-          url: image?.getAttribute('src') || undefined,
-          ...(Number.isFinite(width) ? { width } : {}),
-        };
-      },
-      encode: ({ content, node }) => {
-        counters.elementEncode++;
+            return {
+              url: image?.getAttribute('src') || undefined,
+              ...(Number.isFinite(width) ? { width } : {}),
+            };
+          },
+          encode: ({ content, node }) => {
+            counters.elementEncode++;
 
-        return {
-          attributes: { class: 'benchmark-media' },
-          children: [
-            {
-              attributes: { src: node.url },
-              style: {
-                width: node.width === undefined ? undefined : `${node.width}px`,
-              },
-              tag: 'img',
-            },
-            { children: content, tag: 'figcaption' },
-          ],
-          tag: 'figure',
-        };
-      },
-      match: [{ className: 'benchmark-media', tag: 'figure' }],
+            return {
+              attributes: { class: 'benchmark-media' },
+              children: [
+                {
+                  attributes: { src: node.url },
+                  style: {
+                    width:
+                      node.width === undefined ? undefined : `${node.width}px`,
+                  },
+                  tag: 'img',
+                },
+                { children: content, tag: 'figcaption' },
+              ],
+              tag: 'figure',
+            };
+          },
+          match: [{ className: 'benchmark-media', tag: 'figure' }],
+        },
+      }),
     };
   });
   const markPlugins = Array.from({ length: MARK_COUNT }, (_, index) =>
@@ -323,31 +356,35 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    }).extendHtmlCodec(() => {
+    }).extend(({ defineCodecs }) => {
       counters.codecFactories++;
 
       return {
-        decode: () => {
-          counters.markDecode++;
+        codecs: defineCodecs({
+          'text/html': {
+            decode: () => {
+              counters.markDecode++;
 
-          return true;
-        },
-        encode: ({ value }) => {
-          counters.markEncode++;
+              return true;
+            },
+            encode: ({ value }) => {
+              counters.markEncode++;
 
-          return value
-            ? {
-                attributes: { class: `benchmark-mark-${index}` },
+              return value
+                ? {
+                    attributes: { class: `benchmark-mark-${index}` },
+                    tag: 'span',
+                  }
+                : null;
+            },
+            match: [
+              {
+                className: `benchmark-mark-${index}`,
                 tag: 'span',
-              }
-            : null;
-        },
-        match: [
-          {
-            className: `benchmark-mark-${index}`,
-            tag: 'span',
+              },
+            ],
           },
-        ],
+        }),
       };
     })
   );
@@ -362,17 +399,21 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
           },
         },
         type: `benchmark-unrelated-${index}`,
-      }).extendHtmlCodec(() => {
+      }).extend(({ defineCodecs }) => {
         counters.codecFactories++;
 
         return {
-          decode: () => {
-            counters.unrelatedDecode++;
+          codecs: defineCodecs({
+            'text/html': {
+              decode: () => {
+                counters.unrelatedDecode++;
 
-            return {};
-          },
-          decodeOnly: true,
-          match: [{ tag: `x-benchmark-${index}` }],
+                return {};
+              },
+              decodeOnly: true,
+              match: [{ tag: `x-benchmark-${index}` }],
+            },
+          }),
         };
       })
   );

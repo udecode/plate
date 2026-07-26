@@ -150,6 +150,9 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
   already applied.
 - `plite-research`: external discovery, OSS/GitHub source synthesis, durable
   research ledgers, and promotion into owners.
+- `editor-audit`: exhaustive comparison of selected local editor source trees,
+  verified commit tracking, incremental sync, and material change dossiers
+  routed to `best-api`, `plite-plan`, or `plate-plan`.
 - `plite-patch`: direct bug fix, reproduction, class-level behavior coverage,
   proof, and autoreview.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt

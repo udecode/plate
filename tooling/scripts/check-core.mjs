@@ -18,7 +18,6 @@ const reviewedPackageSlugs = [
   'basic-nodes',
   'basic-styles',
   'callout',
-  'caption',
   'code-block',
   'code-drawing',
   'combobox',

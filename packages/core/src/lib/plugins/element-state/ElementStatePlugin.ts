@@ -41,7 +41,10 @@ export type ElementStateConfig = PluginConfig<
 >;
 
 export const ElementStatePlugin = createBasePlugin<ElementStateConfig>({
+  extension: ({ editor }) => ({
+    api: {
+      isElementStateEmpty: (element) => isElementStateEmpty(editor, element),
+    },
+  }),
   key: 'elementState',
-}).extendEditorApi<ElementStateConfig['api']>(({ editor }) => ({
-  isElementStateEmpty: (element) => isElementStateEmpty(editor, element),
-}));
+});

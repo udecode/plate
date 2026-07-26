@@ -575,9 +575,9 @@ import { MyCustomCodeBlockElement } from './my-custom-code-block'; // Your custo
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // Base plugin for structure/logic
-    CodeLinePlugin.withComponent(MyCustomCodeLineElement),
-    CodeHighlightPlugin.withComponent(MyCustomCodeSyntaxElement),
+    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }), // Base plugin for structure/logic
+    CodeLinePlugin.configure({ component: MyCustomCodeLineElement }),
+    CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
     MarkdownPlugin, // For Markdown conversion
     // ... other plugins
   ],
@@ -1037,7 +1037,7 @@ Refer to [`defaultRules.ts`](https://github.com/udecode/plate/blob/main/packages
 
 ## Appendix C: Components for Rendering
 
-While `rules` handle MD ↔ Plate conversion, Plate uses React components to _render_ Plate nodes. Configure these in `createPlateEditor` via the `components` option or plugin `withComponent` method.
+While `rules` handle MD ↔ Plate conversion, Plate uses React components to _render_ Plate nodes. Configure these in `createPlateEditor` via the `components` option or plugin `component` method.
 
 **Example:**
 
@@ -1050,8 +1050,8 @@ import { CodeBlockElement } from '@/components/ui/code-block-node'; // Example U
 
 const editor = createPlateEditor({
   plugins: [
-    ParagraphPlugin.withComponent(ParagraphElement),
-    CodeBlockPlugin.withComponent(CodeBlockElement),
+    ParagraphPlugin.configure({ component: ParagraphElement }),
+    CodeBlockPlugin.configure({ component: CodeBlockElement }),
     BoldPlugin,
     /* ... */
   ],

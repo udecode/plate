@@ -12,7 +12,7 @@ import type { TabbableEntry } from '../lib/types';
 import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
 import { findTabDestination } from '../lib/findTabDestination';
 
-const comparePaths = (a: number[], b: number[]) => {
+const comparePaths = (a: readonly number[], b: readonly number[]) => {
   const minLength = Math.min(a.length, b.length);
 
   for (let index = 0; index < minLength; index++) {

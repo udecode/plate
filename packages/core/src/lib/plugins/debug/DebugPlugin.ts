@@ -25,6 +25,40 @@ export class PlateError extends Error {
 }
 
 export const DebugPlugin = createBasePlugin<DebugConfig>({
+  extension: ({ getOptions }) => {
+    const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
+
+    const log = (
+      level: LogLevel,
+      message: any,
+      type?: DebugErrorType,
+      details?: any
+    ) => {
+      if (process.env.NODE_ENV === 'production') return;
+
+      const options = getOptions();
+
+      if (options.isProduction && level === 'log') return;
+      if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
+        if (level === 'error' && options.throwErrors) {
+          throw new PlateError(message, type);
+        }
+        options.logger[level]?.(message, type, details);
+      }
+    };
+
+    return {
+      api: {
+        debug: {
+          error: (message, type, details) =>
+            log('error', message, type, details),
+          info: (message, type, details) => log('info', message, type, details),
+          log: (message, type, details) => log('log', message, type, details),
+          warn: (message, type, details) => log('warn', message, type, details),
+        },
+      },
+    };
+  },
   key: 'debug',
   options: {
     isProduction: process.env.NODE_ENV === 'production',
@@ -43,34 +77,4 @@ export const DebugPlugin = createBasePlugin<DebugConfig>({
       process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
     throwErrors: true,
   },
-}).extendEditorApi<DebugConfig['api']>(({ getOptions }) => {
-  const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
-
-  const log = (
-    level: LogLevel,
-    message: any,
-    type?: DebugErrorType,
-    details?: any
-  ) => {
-    if (process.env.NODE_ENV === 'production') return;
-
-    const options = getOptions();
-
-    if (options.isProduction && level === 'log') return;
-    if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
-      if (level === 'error' && options.throwErrors) {
-        throw new PlateError(message, type);
-      }
-      options.logger[level]?.(message, type, details);
-    }
-  };
-
-  return {
-    debug: {
-      error: (message, type, details) => log('error', message, type, details),
-      info: (message, type, details) => log('info', message, type, details),
-      log: (message, type, details) => log('log', message, type, details),
-      warn: (message, type, details) => log('warn', message, type, details),
-    },
-  };
 });

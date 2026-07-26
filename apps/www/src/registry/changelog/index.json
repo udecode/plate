@@ -2,6 +2,42 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-25-static-base-plugin-components",
+      "href": "/registry/changelog/2026-07-25-static-base-plugin-components.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Bind static components without React plugin imports",
+      "change": {
+        "type": "source",
+        "date": "2026-07-25",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "basic-blocks-base-kit",
+        "basic-marks-base-kit",
+        "callout-base-kit",
+        "code-block-base-kit",
+        "code-drawing-base-kit",
+        "column-base-kit",
+        "comment-base-kit",
+        "date-base-kit",
+        "footnote-base-kit",
+        "link-base-kit",
+        "math-base-kit",
+        "media-base-kit",
+        "mention-base-kit",
+        "suggestion-base-kit",
+        "table-base-kit",
+        "toc-base-kit",
+        "toggle-base-kit"
+      ],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-24-collaboration-runtime",
       "href": "/registry/changelog/2026-07-24-collaboration-runtime.json",
       "status": "draft",

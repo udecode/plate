@@ -2,6 +2,7 @@ import type { BaseEditor } from '@platejs/core';
 import {
   type EditorUpdateTransaction,
   type Element,
+  type Path,
   type Point,
   TextApi,
 } from '@platejs/plite';
@@ -11,7 +12,7 @@ import { getFootnoteReferences } from '../queries/getFootnoteReferences';
 
 export const getFootnoteReferenceSelectionPoint = (
   tx: EditorUpdateTransaction,
-  path: number[]
+  path: Path
 ) => {
   const parentEntry = tx.nodes.parent<Element>(path);
 

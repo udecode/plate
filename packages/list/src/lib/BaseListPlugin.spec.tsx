@@ -117,7 +117,8 @@ describe('BaseListPlugin', () => {
     });
     const createContext = prepareHtmlPluginContext(editor, BaseListPlugin);
     const context = editor.read((state) => createContext(state));
-    const transformData = BaseListPlugin.parsers.html?.transformData;
+    const transformData =
+      editor.getPlugin(BaseListPlugin).parsers.html?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');
@@ -282,13 +283,15 @@ describe('BaseListPlugin', () => {
     const ListDependentPlugin = createBasePlugin({
       dependencies: [BaseListPlugin],
       key: 'listDependent',
-    }).extendApi(({ editor }) => ({
-      getPreviousType: () => {
-        const entry = editor.read.nodes.get<Element>([1]);
+    }).extend(({ editor }) => ({
+      api: {
+        getPreviousType: () => {
+          const entry = editor.read.nodes.get<Element>([1]);
 
-        if (!entry) return;
+          if (!entry) return;
 
-        return editor.api.list.getPrevious(entry)?.[0].type;
+          return editor.api.list.getPrevious(entry)?.[0].type;
+        },
       },
     }));
     const editor = createBaseEditor({

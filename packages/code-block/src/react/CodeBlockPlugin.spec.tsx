@@ -87,14 +87,16 @@ describe('CodeBlockPlugin', () => {
           CodeBlockPlugin,
           createBasePlugin({
             key: 'a',
-          }).extendCodecs(() => ({
-            'text/plain': {
-              scope: 'document',
-              decode() {
-                return ContentSlice.closed([{ text: 'test' }]);
-              },
-            },
-          })),
+            codecs: ({ defineCodecs }) =>
+              defineCodecs({
+                'text/plain': {
+                  scope: 'document',
+                  decode() {
+                    return ContentSlice.closed([{ text: 'test' }]);
+                  },
+                },
+              }),
+          }),
         ],
         selection: input.selection,
         initialValue: input.children,

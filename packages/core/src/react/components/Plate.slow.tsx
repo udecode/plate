@@ -323,8 +323,7 @@ describe('Plate', () => {
       const plugins = [
         createBasePlugin({
           key: 'a',
-        }).extendExtension(
-          defineEditorExtension({
+          extension: defineEditorExtension({
             name: 'test:path-normalizer',
             corrections: [
               {
@@ -340,8 +339,8 @@ describe('Plate', () => {
                 },
               },
             ],
-          })
-        ),
+          }),
+        }),
       ];
 
       const editor = createPlateEditor({
@@ -445,15 +444,9 @@ describe('Plate', () => {
 
     const getParagraphPlugin = (projectAttributes: boolean) =>
       createPlatePlugin({
+        component: ParagraphElement,
         key: 'p',
-        schema: {
-          element: {
-            content: schema.content.open({ default: 'text', min: 1 }),
-            properties: { attributes: property.json() },
-          },
-        },
         render: {
-          node: ParagraphElement,
           nodeProps: projectAttributes
             ? ({ element }) => {
                 const value =
@@ -472,13 +465,19 @@ describe('Plate', () => {
               }
             : undefined,
         },
+        schema: {
+          element: {
+            content: schema.content.open({ default: 'text', min: 1 }),
+            properties: { attributes: property.json() },
+          },
+        },
       });
 
     const getBoldPlugin = (projectAttributes: boolean) =>
       createPlatePlugin({
+        component: BoldLeaf,
         key: 'bold',
         render: {
-          node: BoldLeaf,
           nodeProps: projectAttributes
             ? ({ text }) => {
                 const value =
@@ -625,9 +624,10 @@ describe('Plate', () => {
 
       const InitialValuePlugin = createPlatePlugin({
         key: 'initial-value',
-      }).extendApi(() => ({
-        decode: () => syncValue,
-      }));
+        api: {
+          decode: () => syncValue,
+        },
+      });
 
       const SyncEditor = () => {
         const editor = usePlateEditor({

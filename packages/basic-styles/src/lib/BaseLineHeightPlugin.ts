@@ -40,23 +40,26 @@ export const BaseLineHeightPlugin = createBasePlugin({
       ),
     ],
   }),
+  targetPluginKeys: defaultTargetPluginKeys,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) =>
+          element.style.lineHeight
+            ? parseLineHeight(element.style.lineHeight)
+            : undefined,
+        encode: ({ value }) => ({ style: { lineHeight: value } }),
+        match: [{ style: { lineHeight: '*' } }],
+      },
+    }),
+
   inject: {
     isBlock: true,
     nodeProps: {
       defaultNodeValue: 1.5,
     },
   },
-  targetPluginKeys: defaultTargetPluginKeys,
-})
-  .extendHtmlCodec(() => ({
-    decode: ({ element }) =>
-      element.style.lineHeight
-        ? parseLineHeight(element.style.lineHeight)
-        : undefined,
-    encode: ({ value }) => ({ style: { lineHeight: value } }),
-    match: [{ style: { lineHeight: '*' } }],
-  }))
-  .extendTx(({ editor, plugin, type }) => (tx) => ({
+  update: ({ editor, plugin, tx, type }) => ({
     set: (value: number, options?: NodeSetNodesOptions<Element>) => {
       const { defaultNodeValue } = editor.getInjectProps(plugin);
       const match = getInjectMatch(editor, plugin);
@@ -77,6 +80,7 @@ export const BaseLineHeightPlugin = createBasePlugin({
         }
       );
     },
-  }));
+  }),
+});
 
 export type LineHeightConfig = InferConfig<typeof BaseLineHeightPlugin>;

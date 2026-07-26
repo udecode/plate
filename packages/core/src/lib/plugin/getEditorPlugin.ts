@@ -13,6 +13,10 @@ import type {
   InferConfig,
 } from './BasePlugin';
 import {
+  createDefineEditorExtension,
+  createDefinePluginCodecs,
+} from './pluginAuthoringContext';
+import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
   hasCompiledPlatePluginCandidate,
@@ -110,8 +114,9 @@ export function getEditorPlugin(
     const plugin = getPlugin();
 
     if (
-      isResolvingPlatePlugin(editor, plugin) &&
-      !hasCompiledPlatePluginApiCandidate(editor)
+      !hasCompiledPlatePluginApiCandidate(editor) &&
+      (isResolvingPlatePlugin(editor, plugin) ||
+        getCompiledPlatePluginApi(editor, plugin.key) === undefined)
     ) {
       return api;
     }
@@ -221,7 +226,11 @@ export function getEditorPlugin(
       },
     }
   );
+  const defineCodecs = createDefinePluginCodecs<AnyPluginConfig>();
+  const defineEditorExtension = createDefineEditorExtension<AnyPluginConfig>();
   const context = {
+    defineCodecs,
+    defineEditorExtension,
     editor,
     setOption: ((key: keyof InferOptions<AnyPluginConfig>, value: unknown) => {
       const plugin = getPlugin();

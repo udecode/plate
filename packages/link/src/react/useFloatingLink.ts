@@ -7,7 +7,6 @@ import {
   useVirtualFloating,
 } from '@platejs/floating';
 import {
-  useEditorFocused,
   useEditorPlugin,
   useEditorReadOnly,
   useEditorSelection,
@@ -238,7 +237,6 @@ export const useFloatingLinkInsertState = ({
     'triggerFloatingLinkHotkeys'
   );
   const readOnly = useEditorReadOnly();
-  const focused = useEditorFocused();
   const mode = usePluginOption(LinkPlugin, 'mode');
   const isOpen = usePluginOption(LinkPlugin, 'isOpen', editor.id);
 
@@ -252,7 +250,6 @@ export const useFloatingLinkInsertState = ({
 
   return {
     floating,
-    focused,
     isOpen,
     readOnly,
     triggerFloatingLinkHotkeys,
@@ -272,7 +269,6 @@ export type FloatingLinkInsertProps = {
 
 export const useFloatingLinkInsert = ({
   floating,
-  focused,
   isOpen,
   readOnly,
   triggerFloatingLinkHotkeys,
@@ -313,14 +309,18 @@ export const useFloatingLinkInsert = ({
   useHotkeys(
     triggerFloatingLinkHotkeys ?? 'meta+k, ctrl+k',
     (e) => {
-      if (editor.plugin(LinkPlugin).api.triggerInsert({ focused })) {
+      if (
+        editor
+          .plugin(LinkPlugin)
+          .api.triggerInsert({ focused: editor.read.view.isFocused() })
+      ) {
         e.preventDefault();
       }
     },
     {
       enableOnContentEditable: true,
     },
-    [focused]
+    []
   );
 
   useFloatingLinkEscape();

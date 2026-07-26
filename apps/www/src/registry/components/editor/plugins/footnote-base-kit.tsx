@@ -9,6 +9,10 @@ import {
 } from '@/registry/ui/footnote-node-static';
 
 export const BaseFootnoteKit = [
-  BaseFootnoteReferencePlugin.withComponent(FootnoteReferenceElementStatic),
-  BaseFootnoteDefinitionPlugin.withComponent(FootnoteDefinitionElementStatic),
+  BaseFootnoteReferencePlugin.configure({
+    component: FootnoteReferenceElementStatic,
+  }),
+  BaseFootnoteDefinitionPlugin.configure({
+    component: FootnoteDefinitionElementStatic,
+  }),
 ];

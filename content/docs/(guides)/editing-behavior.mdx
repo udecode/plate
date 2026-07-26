@@ -29,8 +29,8 @@ Most editing behavior belongs in `plugin.rules`. Reach for an explicit transacti
 | Remove empty nodes during normalization. | `rules.normalize` |
 | Control mark or inline boundaries while typing and moving. | `rules.selection` |
 | Apply one plugin's rules to another node type. | `rules.match` |
-| Run a product-specific mutation that rules cannot express. | `.extendTx()`, `.extendTxGroup()`, or an explicit `editor.update(...)` |
-| Compose reusable Enter, Delete, or text-input behavior. | A Plite command handler installed with `.extendExtension()` |
+| Run a product-specific mutation that rules cannot express. | A constructor `update` contribution or an explicit `editor.update(...)` |
+| Compose reusable Enter, Delete, or text-input behavior. | A Plite command handler contributed through the constructor's `extension` field |
 
 Rules keep common editor policy close to the plugin that owns the node. Transaction commands are the right tool for toolbar actions and behavior that depends on app state.
 
@@ -139,13 +139,13 @@ import { createPlatePlugin } from 'platejs/react';
 
 export const QuoteItemPlugin = createPlatePlugin({
   key: 'quote_item',
-  schema: {
-    element: { content: schema.content.text({ default: 'text', min: 1 }) },
-  },
   rules: {
     delete: {
       start: 'lift',
     },
+  },
+  schema: {
+    element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
 });
 ```
@@ -220,7 +220,9 @@ export const AppLinkPlugin = LinkPlugin.configure({
 });
 ```
 
-Keep normalization rules boring. If a node needs a richer structural repair, write a convergent Plite correction and install it with `.extendExtension()` so the behavior is explicit and testable.
+Keep normalization rules boring. If a node needs a richer structural repair,
+write a convergent Plite correction and contribute it through
+the constructor's `extension` field so the behavior is explicit and testable.
 
 ## Selection Behavior
 

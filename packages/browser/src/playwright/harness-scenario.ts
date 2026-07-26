@@ -111,6 +111,21 @@ export const createEditorHarnessScenario = ({
       options.runtimeErrors === false
         ? null
         : recordPliteBrowserRuntimeErrors(page, options.runtimeErrors);
+    const undoWithScenarioTransport = async () => {
+      if (options.metadata?.platform === 'mobile') {
+        await getHarness().undo();
+        return;
+      }
+
+      const hotkey = await page.evaluate(() =>
+        /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
+        navigator.userAgent.includes('Mac OS X')
+          ? 'Meta+Z'
+          : 'Control+Z'
+      );
+
+      await getHarness().press(hotkey);
+    };
 
     try {
       for (const [stepIndex, step] of steps.entries()) {
@@ -710,14 +725,7 @@ export const createEditorHarnessScenario = ({
               .poll(() => getHarness().get.modelText())
               .toContain(step.expectedModelTextAfterType);
 
-            const hotkey = await page.evaluate(() =>
-              /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-              navigator.userAgent.includes('Mac OS X')
-                ? 'Meta+Z'
-                : 'Control+Z'
-            );
-
-            await getHarness().press(hotkey);
+            await undoWithScenarioTransport();
             await assertDOMCaretExpectation(root, step.caretAfterUndo);
             await expect
               .poll(() => getHarness().get.modelText())
@@ -734,14 +742,7 @@ export const createEditorHarnessScenario = ({
                 .toContain(step.expectedModelTextBefore);
             }
 
-            const hotkey = await page.evaluate(() =>
-              /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-              navigator.userAgent.includes('Mac OS X')
-                ? 'Meta+Z'
-                : 'Control+Z'
-            );
-
-            await getHarness().press(hotkey);
+            await undoWithScenarioTransport();
             break;
           }
           default: {

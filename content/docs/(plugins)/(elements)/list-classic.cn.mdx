@@ -156,15 +156,15 @@ const editor = createPlateEditor({
       ],
     }),
     BulletedListPlugin.configure({
-      render: { node: BulletedListElement },
+      component: BulletedListElement,
       shortcuts: { toggle: { keys: 'mod+alt+5' } },
     }),
     NumberedListPlugin.configure({
-      render: { node: NumberedListElement },
+      component: NumberedListElement,
       shortcuts: { toggle: { keys: 'mod+alt+6' } },
     }),
     TaskListPlugin.configure({
-      render: { node: TaskListElement },
+      component: TaskListElement,
       shortcuts: { toggle: { keys: 'mod+alt+7' } },
     }),
   ],
@@ -172,7 +172,7 @@ const editor = createPlateEditor({
 ```
 
 - `inputRules`：注册项目符号、编号和任务列表的 classic markdown entry rules。
-- `render.node`：分配 [`BulletedListElement`](/docs/components/list-classic-node)、[`NumberedListElement`](/docs/components/list-classic-node) 和 [`TaskListElement`](/docs/components/list-classic-node) 来渲染列表元素。
+- `.configure({ component })`：分配 [`BulletedListElement`](/docs/components/list-classic-node)、[`NumberedListElement`](/docs/components/list-classic-node) 和 [`TaskListElement`](/docs/components/list-classic-node) 来渲染列表元素。
 - `shortcuts.toggle`：定义键盘[快捷键](/docs/plugin-shortcuts)来切换列表类型（`mod+alt+5` 用于项目符号，`mod+alt+6` 用于编号，`mod+alt+7` 用于任务列表）。
 
 ### 添加工具栏按钮

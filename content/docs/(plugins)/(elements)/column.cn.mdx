@@ -86,13 +86,13 @@ import { ColumnGroupElement, ColumnElement } from '@/components/ui/column-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    ColumnPlugin.withComponent(ColumnGroupElement),
-    ColumnItemPlugin.withComponent(ColumnElement),
+    ColumnPlugin.configure({ component: ColumnGroupElement }),
+    ColumnItemPlugin.configure({ component: ColumnElement }),
   ],
 });
 ```
 
-- `withComponent`: 指定 [`ColumnGroupElement`](/docs/components/column-node) 渲染分栏组容器，[`ColumnElement`](/docs/components/column-node) 渲染单个分栏。
+- `component`: 指定 [`ColumnGroupElement`](/docs/components/column-node) 渲染分栏组容器，[`ColumnElement`](/docs/components/column-node) 渲染单个分栏。
 
 ### 转换为工具栏按钮
 

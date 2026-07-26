@@ -24,7 +24,7 @@ const OP_INSERT = 1;
 type Op = -1 | 0 | 1;
 
 export function transformDiffDescendants(
-  diff: [Op, string][],
+  diff: readonly [Op, string][],
   { stringCharMapping, ...options }: TransformDiffDescendantsOptions
 ): Descendant[] {
   const { getDeleteProps, getInsertProps, ignoreProps, isInline } = options;

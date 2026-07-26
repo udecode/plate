@@ -59,11 +59,11 @@ pure.
 
 Keep the abstractions honest.
 
-### 1. Queue live updates in `NodeIdPlugin.extendTx`
+### 1. Queue live updates in `NodeIdPlugin.extend({ update })`
 
-`NodeIdPlugin.extendTx` gives its `normalize()` method the active transaction.
-The transform traverses the document first and queues each missing id as an
-exact path plus its new properties.
+The plugin's `.extend()` `update` contribution gives `normalize()` the active
+transaction. The transform traverses the document first and queues each missing
+id as an exact path plus its new properties.
 
 That keeps discovery separate from mutation without inventing another public
 batch transform.

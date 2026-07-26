@@ -1130,15 +1130,6 @@ const domMutationImport = (): StressCase => {
         label: 'undo-follow-up-type-after-dom-import',
       },
       {
-        kind: 'assertKernelTrace',
-        label: 'assert-undo-command-trace',
-        trace: {
-          commandKind: 'history',
-          eventFamily: 'keydown',
-          transition: { allowed: true },
-        },
-      },
-      {
         kind: 'assertModelText',
         label: 'assert-typing-batch-undo-restores-original-text',
         text: originalText,

@@ -86,13 +86,13 @@ import { ColumnGroupElement, ColumnElement } from '@/components/ui/column-node';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    ColumnPlugin.withComponent(ColumnGroupElement),
-    ColumnItemPlugin.withComponent(ColumnElement),
+    ColumnPlugin.configure({ component: ColumnGroupElement }),
+    ColumnItemPlugin.configure({ component: ColumnElement }),
   ],
 });
 ```
 
-- `withComponent`: Assigns [`ColumnGroupElement`](/docs/components/column-node) to render column group containers and [`ColumnElement`](/docs/components/column-node) to render individual columns.
+- `component`: Assigns [`ColumnGroupElement`](/docs/components/column-node) to render column group containers and [`ColumnElement`](/docs/components/column-node) to render individual columns.
 
 ### Turn Into Toolbar Button
 

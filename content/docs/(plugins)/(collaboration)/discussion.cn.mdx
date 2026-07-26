@@ -92,11 +92,11 @@ export const discussionPlugin = createPlatePlugin({
     discussions: [],
     users: usersData,
   },
-})
-  .extendSelectors(({ getOption }) => ({
+  selectors: ({ getOption }) => ({
     currentUser: () => getOption('users')[getOption('currentUserId')],
     user: (id: string) => getOption('users')[id],
-  }))
+  }),
+})
   .configure({
     render: { aboveNodes: BlockDiscussion },
   });

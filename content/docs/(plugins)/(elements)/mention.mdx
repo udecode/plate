@@ -70,7 +70,7 @@ export const editor = createPlateEditor({
 | `@platejs/mention/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
 | `@platejs/combobox` | Package | Provides trigger options and combobox input hooks. |
 | `mention-kit` | Registry | Adds mention plugins with editable mention and input components. |
-| `mention-base-kit` | Registry | Adds `BaseMentionPlugin.withComponent(MentionElementStatic)`. |
+| `mention-base-kit` | Registry | Adds `BaseMentionPlugin.configure({ component: MentionElementStatic })`. |
 | `mention-node` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
 | `inline-combobox` | Registry UI | Renders the Ariakit-backed popover, input, groups, items, and empty state. |
 | `@platejs/markdown` | Package | Serializes mentions as `mention:` links and deserializes mention links or bare mentions. |
@@ -100,12 +100,13 @@ import {
 
 export const editor = createPlateEditor({
   plugins: [
-    MentionPlugin.withComponent(MentionElement).configure({
+    MentionPlugin.configure({
+      component: MentionElement,
       options: {
         triggerPreviousCharPattern: /^$|^[\s"']$/,
       },
     }),
-    MentionInputPlugin.withComponent(MentionInputElement),
+    MentionInputPlugin.configure({ component: MentionInputElement }),
   ],
 });
 ```

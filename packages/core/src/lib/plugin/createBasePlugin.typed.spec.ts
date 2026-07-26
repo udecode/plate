@@ -140,7 +140,7 @@ const assertTypedContextualConfiguration = () => {
   const WrappedConfiguredBasePlugin = toPlatePlugin(ConfiguredBasePlugin);
 
   // @ts-expect-error Base-to-Plate wrapping preserves terminal authoring state
-  WrappedConfiguredBasePlugin.withComponent(() => null);
+  WrappedConfiguredBasePlugin.configure({ component: () => null });
   // @ts-expect-error React extension config must be applied before consumer configure
   toPlatePlugin(ConfiguredBasePlugin, { render: { node: () => null } });
 
@@ -169,7 +169,7 @@ const assertTypedContextualConfiguration = () => {
   // @ts-expect-error configured descriptors accept one consumer configuration
   ConfiguredPlatePlugin.configure({ options: { enabled: false } });
   // @ts-expect-error configured descriptors are terminal authoring inputs
-  ConfiguredPlatePlugin.withComponent(() => null);
+  ConfiguredPlatePlugin.configure({ component: () => null });
 
   // @ts-expect-error contextual configure cannot add option fields
   PlatePlugin.configure(() => ({ options: { missing: true } }));
@@ -179,9 +179,107 @@ const assertTypedContextualConfiguration = () => {
 
 void assertTypedContextualConfiguration;
 
-const assertTypedWeakPluginOverrides = () => {
-  type TargetConfig = PluginConfig<'typedWeakTarget', { allowed: boolean }>;
+const assertTypedInitialAuthoringContext = () => {
+  const BasePlugin = createBasePlugin({
+    key: 'baseInitialContext',
+    options: {
+      prefix: 'base',
+    },
+    api: ({ editor, getOption, plugin, type }) => ({
+      label: () => `${editor.id}:${plugin.key}:${type}:${getOption('prefix')}`,
+    }),
+    extension: ({ defineEditorExtension, plugin }) =>
+      defineEditorExtension({
+        api: {
+          baseInitialExtension: {
+            key: () => plugin.key,
+          },
+        },
+      }),
+    read: ({ editor, getOptions, state }) => ({
+      readLabel: () => {
+        state satisfies object;
 
+        return `${editor.id}:${getOptions().prefix}`;
+      },
+    }),
+    selectors: ({ getOption }) => ({
+      label: () => getOption('prefix').toUpperCase(),
+    }),
+    update: ({ context, getOptions, tx }) => ({
+      updateLabel: () => {
+        context satisfies object;
+        getOptions().prefix satisfies string;
+        tx satisfies object;
+      },
+    }),
+  });
+  const baseEditor = createBaseEditor({
+    id: 'base-constructor',
+    plugins: [BasePlugin],
+  });
+
+  baseEditor.plugin(BasePlugin).api.label() satisfies string;
+  baseEditor.plugin(BasePlugin).getOption('label') satisfies string;
+  baseEditor.read.baseInitialContext.readLabel() satisfies string;
+  baseEditor.update.baseInitialContext.updateLabel() satisfies void;
+  baseEditor.api.baseInitialExtension.key() satisfies 'baseInitialContext';
+
+  const BehaviorOnlyPlugin = createBasePlugin({
+    extension: {
+      onCommit: () => {},
+    },
+    key: 'behaviorOnly',
+  });
+  const ExactRootApiPlugin = createBasePlugin({
+    extension: {
+      api: {
+        exactRoot: {
+          value: () => 1 as const,
+        },
+      },
+    },
+    key: 'exactRootApi',
+  });
+  const exactEditor = createBaseEditor({
+    plugins: [BehaviorOnlyPlugin, ExactRootApiPlugin],
+  });
+
+  exactEditor.api.exactRoot.value() satisfies 1;
+  // @ts-expect-error behavior-only extensions cannot widen root API
+  exactEditor.api.missingRootApi;
+
+  const PlatePlugin = createPlatePlugin({
+    key: 'plateInitialContext',
+    options: {
+      prefix: 'plate',
+    },
+    api: ({ editor, getOption }) => ({
+      label: () => `${editor.id}:${getOption('prefix')}`,
+    }),
+    selectors: ({ getOptions }) => ({
+      label: () => getOptions().prefix.toUpperCase(),
+    }),
+    update: ({ editor, tx }) => ({
+      focus: () => {
+        editor.id satisfies string;
+        tx satisfies object;
+      },
+    }),
+  });
+
+  PlatePlugin.options.prefix satisfies string;
+};
+
+void assertTypedInitialAuthoringContext;
+
+const assertTypedWeakPluginOverrides = () => {
+  type TargetConfig = PluginConfig<
+    'typedWeakTarget',
+    { allowed: boolean; requiredMode: string }
+  >;
+
+  // Foreign configuration patches only the options it owns.
   const exactOverride = {
     options: { allowed: true },
   } satisfies BasePluginOverride<TargetConfig>;
@@ -256,19 +354,22 @@ const assertTypedPlateShortcutTargets = () => {
     >
   >({
     key: 'explicitShortcutConfig',
-    // @ts-expect-error explicitly typed factories declare shortcuts after capabilities
+  }).extend({
     shortcuts: { run: { keys: 'mod+r' } },
   });
 
-  const Plugin = createPlatePlugin({ key: 'plateShortcutTargets' })
-    .extendTx(() => () => ({
+  const Plugin = createPlatePlugin({
+    key: 'plateShortcutTargets',
+    update: () => ({
       both: () => true,
       update: () => true,
-    }))
-    .extendApi(() => ({
+    }),
+  }).extend(() => ({
+    api: {
       api: () => true,
       both: () => true,
-    }));
+    },
+  }));
 
   Plugin.extend({
     shortcuts: {
@@ -308,8 +409,12 @@ const assertTypedPlateShortcutTargets = () => {
     },
   });
 
-  const ApiScopeCollisionPlugin = Plugin.extendEditorApi(() => ({
-    api: () => true,
+  const ApiScopeCollisionPlugin = Plugin.extend(() => ({
+    extension: {
+      api: {
+        api: () => true,
+      },
+    },
   }));
 
   ApiScopeCollisionPlugin.extend({
@@ -326,13 +431,21 @@ const assertTypedRenderOwnership = () => {
   const CustomNode: NodeComponent = () => null;
 
   createBasePlugin({
+    // @ts-expect-error Base constructors stay renderer-neutral
+    component: CustomNode,
     key: 'intrinsicRender',
-    // @ts-expect-error custom renderers belong in withComponent
     render: {
+      // @ts-expect-error custom node components use the Plate component field
       as: CustomNode,
     },
   });
-  createBasePlugin({ key: 'customRender' }).withComponent(CustomNode);
+  createBasePlugin({ key: 'staticRender' }).configure({
+    component: CustomNode,
+  });
+  createPlatePlugin({
+    component: CustomNode,
+    key: 'customRender',
+  });
 };
 
 void assertTypedRenderOwnership;
@@ -357,9 +470,12 @@ describe('createBasePlugin', () => {
         optionA: 'initial',
         optionB: 10,
       },
-    }).extendEditorApi(() => ({
-      testMethod: () => {},
-    }));
+      extension: {
+        api: {
+          testMethod: () => {},
+        },
+      },
+    });
 
     const baseEditor = createBaseEditor({
       plugins: [basePlugin],
@@ -398,16 +514,6 @@ describe('createBasePlugin', () => {
       optionA: 'initial',
       optionB: 20,
     });
-
-    // Test the component convenience facade
-    const MockComponent: NodeComponent = () => null;
-    const componentPlugin = basePlugin.withComponent(MockComponent);
-    const editorWithComponent = createBaseEditor({
-      plugins: [componentPlugin],
-    });
-    expect(editorWithComponent.getPlugin(componentPlugin).render.node).toBe(
-      MockComponent
-    );
 
     // Test multiple extensions before the one consumer configuration
     const multiExtendedPlugin = basePlugin

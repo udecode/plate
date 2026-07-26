@@ -265,6 +265,12 @@ const skipMobileDesktopProjectedSelectionProof = (testInfo: {
   );
 };
 
+const skipMobileDesktopShortcutProof = (testInfo: {
+  project: { name: string };
+}) => {
+  test.skip(testInfo.project.name === 'mobile', 'Desktop shortcut proof');
+};
+
 test.describe('synced blocks example', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     if (testInfo.project.name !== 'mobile') {
@@ -373,7 +379,7 @@ test.describe('synced blocks example', () => {
 
   test('undo and redo restore focus while walking history across main and synced roots', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const runtimeErrors = recordPliteBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
@@ -420,14 +426,23 @@ test.describe('synced blocks example', () => {
 
       const undoHotkey = await getBrowserUndoHotkey(outerEditor);
       const redoHotkey = await getBrowserRedoHotkey(outerEditor);
+      const useSemanticHistory = testInfo.project.name === 'mobile';
 
       await focusRoot(outerEditor);
-      await outerEditor.press(undoHotkey);
+      if (useSemanticHistory) {
+        await outer.undo();
+      } else {
+        await outerEditor.press(undoHotkey);
+      }
       await expect(outerEditor).toBeFocused();
       await expect(page.getByText('p2 tail')).toHaveCount(0);
       await expect(page.getByText('p2')).toBeVisible();
 
-      await page.keyboard.press(undoHotkey);
+      if (useSemanticHistory) {
+        await second.undo();
+      } else {
+        await page.keyboard.press(undoHotkey);
+      }
       await expect(secondEditor).toBeFocused();
       await expect(firstEditor).not.toContainText(
         ' syncedShared mission statement'
@@ -436,16 +451,28 @@ test.describe('synced blocks example', () => {
         ' syncedShared mission statement'
       );
 
-      await page.keyboard.press(undoHotkey);
+      if (useSemanticHistory) {
+        await outer.undo();
+      } else {
+        await page.keyboard.press(undoHotkey);
+      }
       await expect(outerEditor).toBeFocused();
       await expect(page.getByText('p1 main')).toHaveCount(0);
       await expect(page.getByText('p1')).toBeVisible();
 
-      await page.keyboard.press(redoHotkey);
+      if (useSemanticHistory) {
+        await outer.redo();
+      } else {
+        await page.keyboard.press(redoHotkey);
+      }
       await expect(outerEditor).toBeFocused();
       await expect(page.getByText('p1 main')).toBeVisible();
 
-      await page.keyboard.press(redoHotkey);
+      if (useSemanticHistory) {
+        await second.redo();
+      } else {
+        await page.keyboard.press(redoHotkey);
+      }
       await expect(secondEditor).toBeFocused();
       await expect(secondEditor).toContainText(
         ' syncedShared mission statement'
@@ -2100,7 +2127,9 @@ test.describe('synced blocks example', () => {
 
   test('extends word selection from the projected synced-block focus', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopShortcutProof(testInfo);
+
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -2892,7 +2921,9 @@ test.describe('synced blocks example', () => {
 
   test('moves word navigation into synced root blocks instead of skipping them', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopShortcutProof(testInfo);
+
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -2929,7 +2960,9 @@ test.describe('synced blocks example', () => {
 
   test('Cmd+Arrow jumps between the active synced copy and document boundaries', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopShortcutProof(testInfo);
+
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -2977,7 +3010,9 @@ test.describe('synced blocks example', () => {
 
   test('Cmd+Shift+Arrow extends selection between synced copies and document boundaries', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopShortcutProof(testInfo);
+
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -3030,7 +3065,9 @@ test.describe('synced blocks example', () => {
 
   test('Cmd+Shift+ArrowRight extends projected synced-block focus to block end', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopShortcutProof(testInfo);
+
     await openExample(page, 'plite/synced-blocks', {
       ready: { editor: 'visible' },
     });

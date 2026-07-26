@@ -308,103 +308,87 @@ const shouldRemoveEmptyMergeTarget = (
 /** Override the editor based on resolved Plate plugin node behavior. */
 export const OverridePlugin = createBasePlugin({
   key: 'override',
-})
-  .extendExtension(({ editor }) => {
-    const hasBreakRules = getPlateRuntime(editor).pluginList.some(
-      (plugin) => plugin.rules?.break || plugin.rules?.match
-    );
+  extension: ({ editor }) => ({
+    commands: ({ around, handle }) => [
+      around(editorCommands.insertBreak, ({ next, state }) => {
+        const selection = state.selection();
+        const block = state.nodes.block();
 
-    if (!hasBreakRules) return;
+        if (!selection || !block) return false;
 
-    return {
-      commands: ({ around }) => [
-        around(editorCommands.insertBreak, ({ next, state }) => {
-          const selection = state.selection();
-          const block = state.nodes.block();
+        const [blockNode, blockPath] = block;
+        const runAction = (action: string | undefined) => {
+          let handled = false;
+          const transaction = state.transaction((tx) => {
+            handled = executeBreakRuleAction(editor, tx, action, blockPath);
+          });
 
-          if (!selection || !block) return false;
+          return handled ? transaction : null;
+        };
 
-          const [blockNode, blockPath] = block;
-          const runAction = (action: string | undefined) => {
-            let handled = false;
-            const transaction = state.transaction((tx) => {
-              handled = executeBreakRuleAction(editor, tx, action, blockPath);
-            });
-
-            return handled ? transaction : null;
-          };
-
-          if (state.selection.isCollapsed() && state.nodes.isEmpty(blockNode)) {
-            const rules = getEffectiveBreakRules(
-              editor,
-              'break.empty',
-              blockNode,
-              blockPath
-            );
-            const action = runAction(rules?.empty);
-
-            if (action) return action;
-          }
-
-          if (
-            state.selection.isCollapsed() &&
-            !state.nodes.isEmpty(blockNode) &&
-            state.points.isEnd(selection.anchor, blockPath) &&
-            getPreviousCharacter(state) === '\n'
-          ) {
-            const rules = getEffectiveBreakRules(
-              editor,
-              'break.emptyLineEnd',
-              blockNode,
-              blockPath
-            );
-            const action = runAction(rules?.emptyLineEnd);
-
-            if (action) return action;
-          }
-
-          const defaultRules = getEffectiveBreakRules(
+        if (state.selection.isCollapsed() && state.nodes.isEmpty(blockNode)) {
+          const rules = getEffectiveBreakRules(
             editor,
-            'break.default',
+            'break.empty',
             blockNode,
             blockPath
           );
-          const defaultAction = runAction(defaultRules?.default);
+          const action = runAction(rules?.empty);
 
-          if (defaultAction) return defaultAction;
+          if (action) return action;
+        }
 
-          const splitResetRules = getEffectiveBreakRules(
+        if (
+          state.selection.isCollapsed() &&
+          !state.nodes.isEmpty(blockNode) &&
+          state.points.isEnd(selection.anchor, blockPath) &&
+          getPreviousCharacter(state) === '\n'
+        ) {
+          const rules = getEffectiveBreakRules(
             editor,
-            'break.splitReset',
+            'break.emptyLineEnd',
             blockNode,
             blockPath
           );
+          const action = runAction(rules?.emptyLineEnd);
 
-          if (
-            splitResetRules?.splitReset &&
-            !state.selection.isAcrossBlocks()
-          ) {
-            const isAtStart = state.selection.isAtBlockStart();
-            const result = next();
+          if (action) return action;
+        }
 
-            if (result === false) return false;
+        const defaultRules = getEffectiveBreakRules(
+          editor,
+          'break.default',
+          blockNode,
+          blockPath
+        );
+        const defaultAction = runAction(defaultRules?.default);
 
-            return state.transaction.extend(result, (tx) => {
-              resetBlock(
-                editor,
-                tx,
-                isAtStart ? blockPath : PathApi.next(blockPath)
-              );
-            });
-          }
+        if (defaultAction) return defaultAction;
 
-          return false;
-        }),
-      ],
-    };
-  })
-  .extendExtension(({ editor }) => ({
-    commands: ({ handle }) => [
+        const splitResetRules = getEffectiveBreakRules(
+          editor,
+          'break.splitReset',
+          blockNode,
+          blockPath
+        );
+
+        if (splitResetRules?.splitReset && !state.selection.isAcrossBlocks()) {
+          const isAtStart = state.selection.isAtBlockStart();
+          const result = next();
+
+          if (result === false) return false;
+
+          return state.transaction.extend(result, (tx) => {
+            resetBlock(
+              editor,
+              tx,
+              isAtStart ? blockPath : PathApi.next(blockPath)
+            );
+          });
+        }
+
+        return false;
+      }),
       handle(editorCommands.delete, ({ input, state }) => {
         const selection = state.selection();
 
@@ -513,84 +497,65 @@ export const OverridePlugin = createBasePlugin({
       }),
     ],
     priority: -100,
-  }))
-  .extendExtension(({ editor }) => {
-    const hasMergeRules = getPlateRuntime(editor).pluginList.some(
-      (plugin) => plugin.rules?.merge || plugin.rules?.match
-    );
+    queries: {
+      nodes: {
+        shouldMergeNodesRemovePrevNode({ current, next, previous }) {
+          const [previousNode, previousPath] = previous;
+          const [, currentPath] = current;
 
-    if (!hasMergeRules) return;
+          if (
+            isRuntimeTextNode(previousNode) &&
+            previousNode.text === '' &&
+            previousPath.at(-1) !== 0
+          ) {
+            return true;
+          }
 
-    return {
-      queries: {
-        nodes: {
-          shouldMergeNodesRemovePrevNode({ current, next, previous }) {
-            const [previousNode, previousPath] = previous;
-            const [, currentPath] = current;
+          if (
+            ElementApi.isElement(previousNode) &&
+            getRuntimeNodeText(previousNode).length === 0 &&
+            PathApi.isSibling(previousPath, currentPath)
+          ) {
+            return shouldRemoveEmptyMergeTarget(
+              editor,
+              previousNode,
+              previousPath
+            );
+          }
 
-            if (
-              isRuntimeTextNode(previousNode) &&
-              previousNode.text === '' &&
-              previousPath.at(-1) !== 0
-            ) {
-              return true;
-            }
-
-            if (
-              ElementApi.isElement(previousNode) &&
-              getRuntimeNodeText(previousNode).length === 0 &&
-              PathApi.isSibling(previousPath, currentPath)
-            ) {
-              return shouldRemoveEmptyMergeTarget(
-                editor,
-                previousNode,
-                previousPath
-              );
-            }
-
-            return next({ current, previous });
-          },
+          return next({ current, previous });
         },
       },
-    };
-  })
-  .extendExtension(({ editor }) => {
-    const hasNormalizeRules = getPlateRuntime(editor).pluginList.some(
-      (plugin) => plugin.rules?.normalize || plugin.rules?.match
-    );
+    },
+    corrections: [
+      {
+        event: 'content',
+        correct({ entry, tx }) {
+          const [node, path] = entry;
 
-    if (!hasNormalizeRules) return;
+          if (!ElementApi.isElement(node) || typeof node.type !== 'string') {
+            return;
+          }
 
-    return {
-      corrections: [
-        {
-          event: 'content',
-          correct({ entry, tx }) {
-            const [node, path] = entry;
+          const plugin = getPluginByType(editor, node.type);
+          const normalizeRules = plugin?.rules.normalize;
+          const overridePlugin = getRuleOverridePlugin(
+            editor,
+            'normalize.removeEmpty',
+            node,
+            path,
+            (candidate) => !!candidate.rules?.normalize
+          );
+          const effectiveNormalizeRules =
+            overridePlugin?.rules.normalize ?? normalizeRules;
+          const text = getRuntimeNodeText(node);
 
-            if (!ElementApi.isElement(node) || typeof node.type !== 'string') {
-              return;
-            }
-
-            const plugin = getPluginByType(editor, node.type);
-            const normalizeRules = plugin?.rules.normalize;
-            const overridePlugin = getRuleOverridePlugin(
-              editor,
-              'normalize.removeEmpty',
-              node,
-              path,
-              (candidate) => !!candidate.rules?.normalize
-            );
-            const effectiveNormalizeRules =
-              overridePlugin?.rules.normalize ?? normalizeRules;
-            const text = tx.text.string(path);
-
-            if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
-              tx.nodes.remove({ at: path });
-              return;
-            }
-          },
+          if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
+            tx.nodes.remove({ at: path });
+            return;
+          }
         },
-      ],
-    };
-  });
+      },
+    ],
+  }),
+});

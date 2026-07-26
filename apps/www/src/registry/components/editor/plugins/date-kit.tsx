@@ -4,4 +4,4 @@ import { DatePlugin } from '@platejs/date/react';
 
 import { DateElement } from '@/registry/ui/date-node';
 
-export const DateKit = [DatePlugin.withComponent(DateElement)];
+export const DateKit = [DatePlugin.configure({ component: DateElement })];

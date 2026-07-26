@@ -22,8 +22,10 @@ describe('usePluginOption', () => {
       options: {
         value: 1,
       },
-    }).extendSelectors(({ getOptions }) => ({
-      doubleValue: (factor: number) => getOptions().value * factor,
+    }).extend(({ getOptions }) => ({
+      selectors: {
+        doubleValue: (factor: number) => getOptions().value * factor,
+      },
     }));
 
     const editor = createPlateEditor({
@@ -100,9 +102,11 @@ describe('usePluginOption', () => {
       options: {
         value: 2,
       },
-    }).extendSelectors<OptionalSelectorConfig['selectors']>(
+    }).extend<{ selectors: OptionalSelectorConfig['selectors'] }>(
       ({ getOptions }) => ({
-        isEven: () => getOptions().value % 2 === 0,
+        selectors: {
+          isEven: () => getOptions().value % 2 === 0,
+        },
       })
     );
 

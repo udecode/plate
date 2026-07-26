@@ -7,6 +7,11 @@ import { writeHostFragmentData } from '@platejs/plite-dom';
 import { createBaseEditor } from '../editor';
 import { createBasePlugin } from '../plugin';
 
+const extendUnsafeCodecs = (
+  plugin: ReturnType<typeof createBasePlugin>,
+  codecs: () => unknown
+) => (plugin.extend as any)(() => ({ codecs: codecs() }));
+
 const createParagraph = (text: string) => ({
   children: [{ text }],
   type: 'p',
@@ -58,12 +63,16 @@ describe('product codecs', () => {
         },
       },
       type: 'card',
-    }).extendCodecs(() => ({
-      'application/x-card': {
-        decode: ({ data }) =>
-          ContentSlice.closed([{ children: [{ text: data }], type: 'card' }]),
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-card': {
+            decode: ({ data }) =>
+              ContentSlice.closed([
+                { children: [{ text: data }], type: 'card' },
+              ]),
+          },
+        }),
+    });
     const editor = createBaseEditor({ plugins: [CardPlugin] });
 
     expect(
@@ -81,30 +90,34 @@ describe('product codecs', () => {
     const LowerPlugin = createBasePlugin({
       key: 'lowerCodec',
       priority: 100,
-    }).extendCodecs(() => ({
-      'application/x-fallback': {
-        priority: 1000,
-        scope: 'document',
-        decode: ({ data }) => {
-          calls.push('lower');
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'application/x-fallback': {
+          priority: 1000,
+          scope: 'document',
+          decode: ({ data }) => {
+            calls.push('lower');
 
-          return ContentSlice.closed([createParagraph(`lower:${data}`)]);
+            return ContentSlice.closed([createParagraph(`lower:${data}`)]);
+          },
         },
-      },
+      }),
     }));
     const HigherPlugin = createBasePlugin({
       key: 'higherCodec',
       priority: 200,
-    }).extendCodecs(() => ({
-      'application/x-fallback': {
-        priority: -1000,
-        scope: 'document',
-        decode: () => {
-          calls.push('higher');
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'application/x-fallback': {
+          priority: -1000,
+          scope: 'document',
+          decode: () => {
+            calls.push('higher');
 
-          return null;
+            return null;
+          },
         },
-      },
+      }),
     }));
 
     for (const plugins of [
@@ -130,21 +143,25 @@ describe('product codecs', () => {
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    }).extendCodecs(() => ({
-      'application/x-disjoint': {
-        decode: () => ContentSlice.closed([createParagraph('alpha')]),
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-disjoint': {
+            decode: () => ContentSlice.closed([createParagraph('alpha')]),
+          },
+        }),
+    });
     const ZuluPlugin = createBasePlugin({
       key: 'zuluCodec',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    }).extendCodecs(() => ({
-      'application/x-disjoint': {
-        decode: () => ContentSlice.closed([createParagraph('zulu')]),
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-disjoint': {
+            decode: () => ContentSlice.closed([createParagraph('zulu')]),
+          },
+        }),
+    });
 
     for (const plugins of [
       [AlphaPlugin, ZuluPlugin],
@@ -165,29 +182,31 @@ describe('product codecs', () => {
     const createFormatPlugin = (reverse: boolean) =>
       createBasePlugin({
         key: reverse ? 'reverseFormats' : 'forwardFormats',
-      }).extendCodecs(() =>
-        reverse
-          ? {
-              'application/x-order-z': {
-                scope: 'document',
-                encode: () => 'z',
-              },
-              'application/x-order-a': {
-                scope: 'document',
-                encode: () => 'a',
-              },
-            }
-          : {
-              'application/x-order-a': {
-                scope: 'document',
-                encode: () => 'a',
-              },
-              'application/x-order-z': {
-                scope: 'document',
-                encode: () => 'z',
-              },
-            }
-      );
+        codecs: ({ defineCodecs }) =>
+          defineCodecs(
+            reverse
+              ? {
+                  'application/x-order-z': {
+                    scope: 'document',
+                    encode: () => 'z',
+                  },
+                  'application/x-order-a': {
+                    scope: 'document',
+                    encode: () => 'a',
+                  },
+                }
+              : {
+                  'application/x-order-a': {
+                    scope: 'document',
+                    encode: () => 'a',
+                  },
+                  'application/x-order-z': {
+                    scope: 'document',
+                    encode: () => 'z',
+                  },
+                }
+          ),
+      });
     const results = [false, true].map((reverse) => {
       const editor = createBaseEditor({
         plugins: [createFormatPlugin(reverse)],
@@ -221,18 +240,20 @@ describe('product codecs', () => {
         createBasePlugin({
           key,
           priority: pluginPriority,
-        }).extendCodecs(() => ({
-          'application/x-generated-order': {
-            priority: codecPriority,
-            scope: 'document',
-            decode: ({ data }) => {
-              calls.push(key);
+        }).extend(({ defineCodecs }) => ({
+          codecs: defineCodecs({
+            'application/x-generated-order': {
+              priority: codecPriority,
+              scope: 'document',
+              decode: ({ data }) => {
+                calls.push(key);
 
-              return index === definitions.length - 1
-                ? ContentSlice.closed([createParagraph(`winner:${data}`)])
-                : null;
+                return index === definitions.length - 1
+                  ? ContentSlice.closed([createParagraph(`winner:${data}`)])
+                  : null;
+              },
             },
-          },
+          }),
         }))
     );
 
@@ -269,14 +290,18 @@ describe('product codecs', () => {
           schema: {
             mark: property.boolean({ default: false, omitDefault: true }),
           },
-        }).extendCodecs(() => ({
-          [format]: {
-            decode: () =>
-              index === 0
-                ? ContentSlice.closed([createParagraph(`disjoint:${width}`)])
-                : null,
-          },
-        }))
+          codecs: ({ defineCodecs }) =>
+            defineCodecs({
+              [format]: {
+                decode: () =>
+                  index === 0
+                    ? ContentSlice.closed([
+                        createParagraph(`disjoint:${width}`),
+                      ])
+                    : null,
+              },
+            }),
+        })
       );
       const editor = createBaseEditor({
         plugins: seededShuffle(disjoint, width * 97),
@@ -294,19 +319,23 @@ describe('product codecs', () => {
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
-      }).extendCodecs(() => ({
-        [format]: {
-          decode: () => null,
-        },
-      }));
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            [format]: {
+              decode: () => null,
+            },
+          }),
+      });
       const documentOwner = createBasePlugin({
         key: `generatedDocumentOwner${width}`,
-      }).extendCodecs(() => ({
-        [format]: {
-          scope: 'document',
-          decode: () => null,
-        },
-      }));
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            [format]: {
+              scope: 'document',
+              decode: () => null,
+            },
+          }),
+      });
 
       expect(() =>
         createBaseEditor({
@@ -317,22 +346,26 @@ describe('product codecs', () => {
   });
 
   it('rejects equal-priority competing document claims', () => {
-    const FirstPlugin = createBasePlugin({ key: 'firstCodec' }).extendCodecs(
-      () => ({
-        'application/x-conflict': {
-          scope: 'document',
-          decode: () => ContentSlice.closed([createParagraph('first')]),
-        },
-      })
-    );
-    const SecondPlugin = createBasePlugin({ key: 'secondCodec' }).extendCodecs(
-      () => ({
-        'application/x-conflict': {
-          scope: 'document',
-          decode: () => ContentSlice.closed([createParagraph('second')]),
-        },
-      })
-    );
+    const FirstPlugin = createBasePlugin({
+      key: 'firstCodec',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-conflict': {
+            scope: 'document',
+            decode: () => ContentSlice.closed([createParagraph('first')]),
+          },
+        }),
+    });
+    const SecondPlugin = createBasePlugin({
+      key: 'secondCodec',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-conflict': {
+            scope: 'document',
+            decode: () => ContentSlice.closed([createParagraph('second')]),
+          },
+        }),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [FirstPlugin, SecondPlugin] })
@@ -342,19 +375,23 @@ describe('product codecs', () => {
   });
 
   it('rejects split declarations for one owner and format', () => {
-    const SplitPlugin = createBasePlugin({ key: 'splitCodec' })
-      .extendCodecs(() => ({
-        'application/x-split': {
-          scope: 'document',
-          decode: () => ContentSlice.closed([createParagraph('decode')]),
-        },
-      }))
-      .extendCodecs(() => ({
+    const SplitPlugin = createBasePlugin({
+      key: 'splitCodec',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-split': {
+            scope: 'document',
+            decode: () => ContentSlice.closed([createParagraph('decode')]),
+          },
+        }),
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
         'application/x-split': {
           scope: 'document',
           encode: () => 'encode',
         },
-      }));
+      }),
+    }));
 
     expect(() => createBaseEditor({ plugins: [SplitPlugin] })).toThrow(
       'Plate codec owner "splitCodec" must declare "application/x-split" once with decode and encode in the same object.'
@@ -363,29 +400,31 @@ describe('product codecs', () => {
 
   it('rejects public identity fields and non-callable callbacks', () => {
     for (const field of ['key', 'owner', 'target'] as const) {
-      const InvalidPlugin = (
-        createBasePlugin({ key: `invalid-${field}` }).extendCodecs as any
-      )(() => ({
-        'application/x-invalid': {
-          decode: () => null,
-          [field]: 'public-identity',
-          scope: 'document',
-        },
-      }));
+      const InvalidPlugin = extendUnsafeCodecs(
+        createBasePlugin({ key: `invalid-${field}` }),
+        () => ({
+          'application/x-invalid': {
+            decode: () => null,
+            [field]: 'public-identity',
+            scope: 'document',
+          },
+        })
+      );
 
       expect(() => createBaseEditor({ plugins: [InvalidPlugin] })).toThrow(
         `Plate codec "invalid-${field}/application/x-invalid" has unknown field "${field}".`
       );
     }
 
-    const InvalidCallbackPlugin = (
-      createBasePlugin({ key: 'invalidCallback' }).extendCodecs as any
-    )(() => ({
-      'application/x-invalid': {
-        decode: true,
-        scope: 'document',
-      },
-    }));
+    const InvalidCallbackPlugin = extendUnsafeCodecs(
+      createBasePlugin({ key: 'invalidCallback' }),
+      () => ({
+        'application/x-invalid': {
+          decode: true,
+          scope: 'document',
+        },
+      })
+    );
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidCallbackPlugin] })
@@ -395,11 +434,12 @@ describe('product codecs', () => {
   });
 
   it('rejects malformed author callbacks and codec descriptors', () => {
-    const InvalidAuthorCallbackPlugin = (
+    const InvalidAuthorCallbackPlugin = extendUnsafeCodecs(
       createBasePlugin({
         key: 'invalidAuthorCallback',
-      }).extendCodecs as any
-    )(() => null);
+      }),
+      () => null
+    );
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidAuthorCallbackPlugin] })
@@ -407,13 +447,14 @@ describe('product codecs', () => {
       'Plate codec owner "invalidAuthorCallback" callback must return an object.'
     );
 
-    const InvalidDescriptorPlugin = (
+    const InvalidDescriptorPlugin = extendUnsafeCodecs(
       createBasePlugin({
         key: 'invalidDescriptor',
-      }).extendCodecs as any
-    )(() => ({
-      'application/x-invalid': null,
-    }));
+      }),
+      () => ({
+        'application/x-invalid': null,
+      })
+    );
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidDescriptorPlugin] })
@@ -421,15 +462,16 @@ describe('product codecs', () => {
       'Plate codec "invalidDescriptor/application/x-invalid" must be an object.'
     );
 
-    const MissingDirectionPlugin = (
+    const MissingDirectionPlugin = extendUnsafeCodecs(
       createBasePlugin({
         key: 'missingDirection',
-      }).extendCodecs as any
-    )(() => ({
-      'application/x-invalid': {
-        scope: 'document',
-      },
-    }));
+      }),
+      () => ({
+        'application/x-invalid': {
+          scope: 'document',
+        },
+      })
+    );
 
     expect(() =>
       createBaseEditor({ plugins: [MissingDirectionPlugin] })
@@ -439,27 +481,30 @@ describe('product codecs', () => {
 
     const InvalidFormatPlugin = createBasePlugin({
       key: 'invalidFormat',
-    }).extendCodecs(() => ({
-      invalid: {
-        scope: 'document',
-        decode: () => null,
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          invalid: {
+            scope: 'document',
+            decode: () => null,
+          },
+        }),
+    });
 
     expect(() => createBaseEditor({ plugins: [InvalidFormatPlugin] })).toThrow(
       'Plate codec owner "invalidFormat" must use a MIME format key.'
     );
 
-    const InvalidScopePlugin = (
+    const InvalidScopePlugin = extendUnsafeCodecs(
       createBasePlugin({
         key: 'invalidScope',
-      }).extendCodecs as any
-    )(() => ({
-      'application/x-invalid': {
-        scope: 'node',
-        decode: () => null,
-      },
-    }));
+      }),
+      () => ({
+        'application/x-invalid': {
+          scope: 'node',
+          decode: () => null,
+        },
+      })
+    );
 
     expect(() => createBaseEditor({ plugins: [InvalidScopePlugin] })).toThrow(
       'Plate codec owner "invalidScope" has unknown scope "node".'
@@ -467,13 +512,15 @@ describe('product codecs', () => {
 
     const InvalidPriorityPlugin = createBasePlugin({
       key: 'invalidPriority',
-    }).extendCodecs(() => ({
-      'application/x-invalid': {
-        priority: Number.NaN,
-        scope: 'document',
-        decode: () => null,
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-invalid': {
+            priority: Number.NaN,
+            scope: 'document',
+            decode: () => null,
+          },
+        }),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidPriorityPlugin] })
@@ -483,11 +530,13 @@ describe('product codecs', () => {
 
     const MissingClaimPlugin = createBasePlugin({
       key: 'missingClaim',
-    }).extendCodecs(() => ({
-      'application/x-invalid': {
-        decode: () => null,
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-invalid': {
+            decode: () => null,
+          },
+        }),
+    });
 
     expect(() => createBaseEditor({ plugins: [MissingClaimPlugin] })).toThrow(
       'Plate codec owner "missingClaim" must declare an element or property schema binding, or use document scope.'
@@ -498,22 +547,25 @@ describe('product codecs', () => {
     const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
     const FallbackPlugin = createBasePlugin({
       key: 'arrayFallback',
-    }).extendCodecs(() => ({
-      'application/x-array': {
-        scope: 'document',
-        decode: ({ data }) =>
-          ContentSlice.closed([createParagraph(`fallback:${data}`)]),
-      },
-    }));
-    const ArrayPlugin = (
-      createBasePlugin({ key: 'arrayCodec' }).extendCodecs as any
-    )(() => ({
-      'application/x-array': {
-        priority: 20,
-        scope: 'document',
-        decode: () => [createParagraph('invalid')],
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-array': {
+            scope: 'document',
+            decode: ({ data }) =>
+              ContentSlice.closed([createParagraph(`fallback:${data}`)]),
+          },
+        }),
+    });
+    const ArrayPlugin = extendUnsafeCodecs(
+      createBasePlugin({ key: 'arrayCodec' }),
+      () => ({
+        'application/x-array': {
+          priority: 20,
+          scope: 'document',
+          decode: () => [createParagraph('invalid')],
+        },
+      })
+    );
     const editor = createBaseEditor({
       plugins: [FallbackPlugin, ArrayPlugin],
     });
@@ -536,148 +588,164 @@ describe('product codecs', () => {
     };
     const QueryThrowPlugin = createBasePlugin({
       key: 'queryThrowCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 70,
-          scope: 'document',
-          query: () => {
-            count('queryThrow.query');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 70,
+            scope: 'document',
+            query: () => {
+              count('queryThrow.query');
 
-            throw new Error('query failure');
-          },
-          decode: () => {
-            count('queryThrow.decode');
+              throw new Error('query failure');
+            },
+            decode: () => {
+              count('queryThrow.decode');
 
-            return ContentSlice.closed([createParagraph('unreachable')]);
+              return ContentSlice.closed([createParagraph('unreachable')]);
+            },
           },
-        },
+        }),
       };
     });
     const QueryFalsePlugin = createBasePlugin({
       key: 'queryFalseCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 60,
-          scope: 'document',
-          query: () => {
-            count('queryFalse.query');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 60,
+            scope: 'document',
+            query: () => {
+              count('queryFalse.query');
 
-            return false;
-          },
-          decode: () => {
-            count('queryFalse.decode');
+              return false;
+            },
+            decode: () => {
+              count('queryFalse.decode');
 
-            return ContentSlice.closed([createParagraph('unreachable')]);
+              return ContentSlice.closed([createParagraph('unreachable')]);
+            },
           },
-        },
+        }),
       };
     });
     const DecodeThrowPlugin = createBasePlugin({
       key: 'decodeThrowCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 50,
-          scope: 'document',
-          decode: () => {
-            count('decodeThrow');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 50,
+            scope: 'document',
+            decode: () => {
+              count('decodeThrow');
 
-            throw new Error('decode failure');
+              throw new Error('decode failure');
+            },
           },
-        },
+        }),
       };
     });
     const DecodeNullPlugin = createBasePlugin({
       key: 'decodeNullCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 40,
-          scope: 'document',
-          decode: () => {
-            count('decodeNull');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 40,
+            scope: 'document',
+            decode: () => {
+              count('decodeNull');
 
-            return null;
+              return null;
+            },
           },
-        },
+        }),
       };
     });
     const DecodeFallbackPlugin = createBasePlugin({
       key: 'decodeFallbackCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 30,
-          scope: 'document',
-          decode: ({ data }) => {
-            count('decodeFallback');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 30,
+            scope: 'document',
+            decode: ({ data }) => {
+              count('decodeFallback');
 
-            return ContentSlice.closed([createParagraph(`fallback:${data}`)]);
+              return ContentSlice.closed([createParagraph(`fallback:${data}`)]);
+            },
           },
-        },
+        }),
       };
     });
     const EncodeThrowPlugin = createBasePlugin({
       key: 'encodeThrowCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 50,
-          scope: 'document',
-          encode: () => {
-            count('encodeThrow');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 50,
+            scope: 'document',
+            encode: () => {
+              count('encodeThrow');
 
-            throw new Error('encode failure');
+              throw new Error('encode failure');
+            },
           },
-        },
+        }),
       };
     });
     const EncodeNullPlugin = createBasePlugin({
       key: 'encodeNullCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 40,
-          scope: 'document',
-          encode: () => {
-            count('encodeNull');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 40,
+            scope: 'document',
+            encode: () => {
+              count('encodeNull');
 
-            return null;
+              return null;
+            },
           },
-        },
+        }),
       };
     });
     const EncodeFallbackPlugin = createBasePlugin({
       key: 'encodeFallbackCodec',
-    }).extendCodecs(() => {
+    }).extend(({ defineCodecs }) => {
       declarationCalls++;
 
       return {
-        'application/x-delegation': {
-          priority: 30,
-          scope: 'document',
-          encode: () => {
-            count('encodeFallback');
+        codecs: defineCodecs({
+          'application/x-delegation': {
+            priority: 30,
+            scope: 'document',
+            encode: () => {
+              count('encodeFallback');
 
-            return 'encoded:fallback';
+              return 'encoded:fallback';
+            },
           },
-        },
+        }),
       };
     });
     const editor = createBaseEditor({
@@ -739,23 +807,25 @@ describe('product codecs', () => {
     const calls = { decode: 0, encode: 0 };
     const RecordsPlugin = createBasePlugin({
       key: 'recordsCodec',
-    }).extendCodecs(() => ({
-      'application/x-records': {
-        scope: 'document',
-        decode: ({ data }) => {
-          calls.decode++;
-          decodedSlice = ContentSlice.fromJSON(JSON.parse(data));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-records': {
+            scope: 'document',
+            decode: ({ data }) => {
+              calls.decode++;
+              decodedSlice = ContentSlice.fromJSON(JSON.parse(data));
 
-          return decodedSlice as ReturnType<typeof ContentSlice.fromJSON>;
-        },
-        encode: ({ slice }) => {
-          calls.encode++;
-          encodedSlice = slice;
+              return decodedSlice as ReturnType<typeof ContentSlice.fromJSON>;
+            },
+            encode: ({ slice }) => {
+              calls.encode++;
+              encodedSlice = slice;
 
-          return JSON.stringify(slice);
-        },
-      },
-    }));
+              return JSON.stringify(slice);
+            },
+          },
+        }),
+    });
     const editor = createBaseEditor({
       initialValue: [createParagraph('initial')],
       plugins: [RecordsPlugin],
@@ -810,19 +880,21 @@ describe('product codecs', () => {
       let decodedSlice: unknown;
       const CodecPlugin = createBasePlugin({
         key: `generatedSliceCodec${seed}`,
-      }).extendCodecs(() => ({
-        [format]: {
-          scope: 'document',
-          decode: ({ data }) => {
-            const decoded = ContentSlice.fromJSON(JSON.parse(data));
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            [format]: {
+              scope: 'document',
+              decode: ({ data }) => {
+                const decoded = ContentSlice.fromJSON(JSON.parse(data));
 
-            decodedSlice = decoded;
+                decodedSlice = decoded;
 
-            return decoded;
-          },
-          encode: ({ slice }) => JSON.stringify(slice),
-        },
-      }));
+                return decoded;
+              },
+              encode: ({ slice }) => JSON.stringify(slice),
+            },
+          }),
+      });
       const editor = createBaseEditor({
         initialValue: [createParagraph('initial')],
         plugins: [CodecPlugin],
@@ -855,16 +927,18 @@ describe('product codecs', () => {
     let decodeCalls = 0;
     const MalformedPlugin = createBasePlugin({
       key: 'malformedCodec',
-    }).extendCodecs(() => ({
-      'application/x-malformed': {
-        scope: 'document',
-        decode: ({ data }) => {
-          decodeCalls++;
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-malformed': {
+            scope: 'document',
+            decode: ({ data }) => {
+              decodeCalls++;
 
-          return JSON.parse(data);
-        },
-      },
-    }));
+              return JSON.parse(data);
+            },
+          },
+        }),
+    });
     const initialValue = [createParagraph('initial')];
     const editor = createBaseEditor({
       initialValue,
@@ -899,16 +973,18 @@ describe('product codecs', () => {
     let decodeCalls = 0;
     const MalformedPlugin = createBasePlugin({
       key: 'generatedMalformedCodec',
-    }).extendCodecs(() => ({
-      [format]: {
-        scope: 'document',
-        decode: ({ data }) => {
-          decodeCalls++;
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          [format]: {
+            scope: 'document',
+            decode: ({ data }) => {
+              decodeCalls++;
 
-          return ContentSlice.fromJSON(JSON.parse(data));
-        },
-      },
-    }));
+              return ContentSlice.fromJSON(JSON.parse(data));
+            },
+          },
+        }),
+    });
     const initialValue = [createParagraph('initial')];
     const editor = createBaseEditor({
       initialValue,
@@ -946,15 +1022,17 @@ describe('product codecs', () => {
   });
 
   it('falls back to plain-text insertion when codecs return null', () => {
-    const NullPlugin = createBasePlugin({ key: 'nullCodec' }).extendCodecs(
-      () => ({
-        'text/plain': {
-          priority: 20,
-          scope: 'document',
-          decode: () => null,
-        },
-      })
-    );
+    const NullPlugin = createBasePlugin({
+      key: 'nullCodec',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/plain': {
+            priority: 20,
+            scope: 'document',
+            decode: () => null,
+          },
+        }),
+    });
     const editor = createBaseEditor({
       initialValue: [createParagraph('initial')],
       plugins: [NullPlugin],

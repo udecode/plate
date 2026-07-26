@@ -50,20 +50,24 @@ const TestLinkPlugin = createBasePlugin({
     },
   },
   type: KEYS.link,
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => {
-    const url = element.getAttribute('href');
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => {
+          const url = element.getAttribute('href');
 
-    if (!url) return;
+          if (!url) return;
 
-    return {
-      target: element.getAttribute('target') || '_blank',
-      url,
-    };
-  },
-  decodeOnly: true,
-  match: [{ tag: 'a' }],
-}));
+          return {
+            target: element.getAttribute('target') || '_blank',
+            url,
+          };
+        },
+        decodeOnly: true,
+        match: [{ tag: 'a' }],
+      },
+    }),
+});
 
 const TestTableRowPlugin = createBasePlugin({
   key: KEYS.tr,
@@ -79,11 +83,15 @@ const TestTableRowPlugin = createBasePlugin({
       },
     };
   },
-}).extendHtmlCodec(() => ({
-  decode: () => ({}),
-  decodeOnly: true,
-  match: [{ tag: 'tr' }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        decodeOnly: true,
+        match: [{ tag: 'tr' }],
+      },
+    }),
+});
 
 const TestTableCellPlugin = createBasePlugin({
   key: KEYS.td,
@@ -95,11 +103,15 @@ const TestTableCellPlugin = createBasePlugin({
       }),
     },
   }),
-}).extendHtmlCodec(() => ({
-  decode: () => ({}),
-  decodeOnly: true,
-  match: [{ tag: 'td' }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        decodeOnly: true,
+        match: [{ tag: 'td' }],
+      },
+    }),
+});
 
 const TestTablePlugin = createBasePlugin({
   key: KEYS.table,
@@ -116,11 +128,15 @@ const TestTablePlugin = createBasePlugin({
       },
     };
   },
-}).extendHtmlCodec(() => ({
-  decode: () => ({}),
-  decodeOnly: true,
-  match: [{ tag: 'table' }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        decodeOnly: true,
+        match: [{ tag: 'table' }],
+      },
+    }),
+});
 
 /** Read .docx file from docx package's __tests__ directory */
 export const readDocxFixture = (filename: string): Buffer => {

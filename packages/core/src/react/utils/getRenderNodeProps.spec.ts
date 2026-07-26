@@ -66,12 +66,6 @@ describe('getRenderNodeProps', () => {
     });
     const AlignPlugin = createBasePlugin({
       targetPluginKeys: ['p'],
-      inject: {
-        nodeProps: {
-          nodeKey: 'align',
-          styleKey: 'textAlign',
-        },
-      },
       key: 'align',
       schema: {
         properties: [
@@ -79,6 +73,12 @@ describe('getRenderNodeProps', () => {
             target: target.type('p'),
           }),
         ],
+      },
+      inject: {
+        nodeProps: {
+          nodeKey: 'align',
+          styleKey: 'textAlign',
+        },
       },
     });
     const editor = createPlateEditor({

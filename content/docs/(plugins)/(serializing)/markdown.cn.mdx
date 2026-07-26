@@ -543,9 +543,9 @@ import { MyCustomCodeBlockElement } from './my-custom-code-block'; // 你的自�
 
 const editor = createPlateEditor({
   plugins: [
-    CodeBlockPlugin.withComponent(MyCustomCodeBlockElement), // 基础插件 + 自定义渲染
-    CodeLinePlugin.withComponent(MyCustomCodeLineElement),
-    CodeHighlightPlugin.withComponent(MyCustomCodeSyntaxElement),
+    CodeBlockPlugin.configure({ component: MyCustomCodeBlockElement }), // 基础插件 + 自定义渲染
+    CodeLinePlugin.configure({ component: MyCustomCodeLineElement }),
+    CodeHighlightPlugin.configure({ component: MyCustomCodeSyntaxElement }),
     MarkdownPlugin, // 用于 Markdown 转换
     // ... 其他插件
   ],
@@ -987,7 +987,7 @@ MarkdownPlugin.configure({
 
 ## 附录C：渲染 Plate 节点的组件配置
 
-`rules` 主要负责 MD ↔ Plate 的数据转换，而 Plate 实际渲染节点时，使用 React 组件。可以通过 `createPlateEditor` 的 `components` 选项或插件的 `withComponent` 方法配置。
+`rules` 主要负责 MD ↔ Plate 的数据转换，而 Plate 实际渲染节点时，使用 React 组件。可以通过 `createPlateEditor` 的 `components` 选项或插件的 `component` 方法配置。
 
 **示例：**
 
@@ -1000,8 +1000,8 @@ import { CodeBlockElement } from '@/components/ui/code-block-node'; // UI组件�
 
 const editor = createPlateEditor({
   plugins: [
-    ParagraphPlugin.withComponent(ParagraphElement),
-    CodeBlockPlugin.withComponent(CodeBlockElement),
+    ParagraphPlugin.configure({ component: ParagraphElement }),
+    CodeBlockPlugin.configure({ component: CodeBlockElement }),
     BoldPlugin,
     /* ... 其他插件 ... */
   ],

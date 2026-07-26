@@ -250,19 +250,6 @@ const mergeDefinedProperties = (
   return merged;
 };
 
-const moveEditorApiDeclaration = (value: unknown) => {
-  if (!value || typeof value !== 'object' || !Object.hasOwn(value, 'api')) {
-    return value;
-  }
-
-  const { api, ...descriptor } = value as Record<PropertyKey, unknown>;
-
-  return {
-    ...descriptor,
-    __editorApi: mergeWith({}, descriptor.__editorApi ?? {}, api ?? {}),
-  };
-};
-
 export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
   const identitySources = [basePlugin, ...sourcePlugins].filter(
     isNominalPluginDescriptor
@@ -277,7 +264,7 @@ export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
       'Plate cannot merge plugin descriptors from different schema families.'
     );
   }
-  const plugins = [basePlugin, ...sourcePlugins].map(moveEditorApiDeclaration);
+  const plugins = [basePlugin, ...sourcePlugins];
   const opaqueHostResources = new WeakSet<object>();
 
   plugins.forEach((plugin) => {

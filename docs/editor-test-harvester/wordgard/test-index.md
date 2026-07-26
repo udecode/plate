@@ -1,9 +1,8 @@
 # Wordgard Test-Name Index
 
-This is a source-declared `it(...)` call-site index for the complete local
-Wordgard test tree. Dynamic factories are preserved as their source
-expression and line; the behavior matrix expands their invariant families.
-Harness-only files are recorded as having no runnable assertion names.
+Source checkout: `../wordgard` at `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`.
+
+This is the complete source-declared `it(...)` call-site index for the test tree. Dynamic factories keep their source expression and line; the behavior matrix expands those families. Harness-only files are recorded explicitly.
 
 ## `generate.ts` — harness — 0 call sites
 
@@ -50,7 +49,7 @@ Harness-only files are recorded as having no runnable assertion names.
 - L173: `"extend when hitting a colspan node"`
 - L176: `"extend when hitting a rowspan node"`
 
-## `test-change.ts` — portable — 63 call sites
+## `test-change.ts` — portable — 69 call sites
 
 - L29: `"can apply inline insertions"`
 - L33: `"can apply inline deletions"`
@@ -115,24 +114,32 @@ Harness-only files are recorded as having no runnable assertion names.
 - L523: `"can map over an insertion"`
 - L531: `"can map over a replacement"`
 - L541: `"maps properly after another change"`
+- L555: `"handles insertion"`
+- L557: `"handles deletion"`
+- L559: `"handles adding a mark"`
+- L561: `"handles removing a mark"`
+- L564: `"handles removing a mark with parameter"`
+- L567: `"can serialize random changes"`
 
-## `test-collab.ts` — portable-mixed — 15 call sites
+## `test-collab.ts` — portable-mixed — 17 call sites
 
-- L83: `"converges for simple changes"`
-- L92: `"converges for multiple local changes"`
-- L104: `"converges with three peers"`
-- L115: `"converges with three peers with multiple steps"`
-- L128: `"supports undo"`
-- L140: `"supports redo"`
-- L152: `"supports deep undo"`
-- L182: `"support undo with clashing events"`
-- L198: `"handles conflicting steps"`
-- L210: `"can undo simultaneous typing"`
-- L225: `"allows you to set the initial version"`
-- L229: `"client ids survive reconfiguration"`
-- L236: `"supports shared effects"`
-- L282: `"holds up on random input"`
-- L310: `"can handle corrections kicking in for merged steps"`
+- L115: `"converges for simple changes"`
+- L124: `"converges for multiple local changes"`
+- L136: `"converges with three peers"`
+- L147: `"converges with three peers with multiple steps"`
+- L160: `"supports undo"`
+- L172: `"supports redo"`
+- L184: `"supports deep undo"`
+- L214: `"support undo with clashing events"`
+- L230: `"can distribute mark changes"`
+- L236: `"handles conflicting steps"`
+- L248: `"can undo simultaneous typing"`
+- L263: `"allows you to set the initial version"`
+- L267: `"client ids survive reconfiguration"`
+- L274: `"supports shared effects"`
+- L320: `"holds up on random input"`
+- L343: `"can handle corrections kicking in for merged steps"`
+- L355: `"can apply corrections eagerly"`
 
 ## `test-commands.ts` — portable-mixed — 158 call sites
 
@@ -459,8 +466,8 @@ Harness-only files are recorded as having no runnable assertion names.
 - L91: `"creates positions inside inline content nodes with inside bounds"`
 - L94: `"exits text nodes"`
 - L98: `"enters tables"`
-- L104: `"moves LTR through "`
-- L107: `"moves RTL through "`
+- L104: `"moves LTR through " + JSON.stringify(text)`
+- L107: `"moves RTL through " + JSON.stringify(text)`
 - L163: `name`
 - L193: `name`
 
@@ -547,20 +554,20 @@ Harness-only files are recorded as having no runnable assertion names.
 
 ## `webtest-composition.ts` — portable — 12 call sites
 
-- L91: `"supports composition inside existing text"`
-- L97: `"supports composition on an empty line"`
-- L106: `"supports composition at end of block in existing node"`
-- L112: `"supports composition at end of block in a new node"`
-- L118: `"supports composition at start of block in a new node"`
-- L127: `"supports composition at start of line"`
-- L133: `"handles replacement of existing words"`
-- L139: `"can compose inside a wrapping mark"`
-- L146: `"can compose at the end of a wrapping mark"`
-- L153: `"can compose at the start of a wrapping mark"`
-- L160: `"handles composition in a wrapper that has multiple children"`
-- L166: `"supports composition in a cursor wrapper"`
+- L96: `"supports composition inside existing text"`
+- L102: `"supports composition on an empty line"`
+- L111: `"supports composition at end of block in existing node"`
+- L117: `"supports composition at end of block in a new node"`
+- L123: `"supports composition at start of block in a new node"`
+- L132: `"supports composition at start of line"`
+- L138: `"handles replacement of existing words"`
+- L144: `"can compose inside a wrapping mark"`
+- L151: `"can compose at the end of a wrapping mark"`
+- L158: `"can compose at the start of a wrapping mark"`
+- L165: `"handles composition in a wrapper that has multiple children"`
+- L171: `"supports composition in a cursor wrapper"`
 
-## `webtest-content.ts` — portable-mixed — 60 call sites
+## `webtest-content.ts` — portable-mixed — 72 call sites
 
 - L51: `"can draw a simple document"`
 - L55: `"can draw basic structure"`
@@ -600,28 +607,40 @@ Harness-only files are recorded as having no runnable assertion names.
 - L314: `"can update widgets from a point set"`
 - L324: `"can update widgets in place"`
 - L334: `"orders widgets by side"`
-- L341: `"doesn't duplicate widgets on section boundaries"`
-- L352: `"can decorate tags"`
-- L359: `"can add attributes to tags"`
-- L363: `"can remove attributes from tags"`
-- L370: `"preserves DOM nodes when adding attributes"`
-- L377: `"can take wrappers from spans"`
-- L383: `"can take attributes from spans"`
-- L389: `"can override a specific leaf node's shape"`
-- L395: `"can override a specific non-leaf node's shape"`
-- L401: `"can replace a non-leaf node with an atom shape"`
-- L407: `"can add attributes to a specific node"`
-- L413: `"won't try to add attributes to a text node"`
-- L418: `"doesn't leave stale decorations on complex changes"`
-- L432: `"can add wrapping structure to a specific node"`
-- L438: `"can handle a change modifying the depth of a plot's wrapper"`
-- L446: `"supports selectors for wrapper decorations"`
-- L453: `"can reuse DOM structure when adding a shape wrapper"`
-- L462: `"can override shapes by tag"`
-- L467: `"makes by-point shapes override by-tag ones"`
-- L476: `"properly updates when tag shapes change"`
-- L484: `"properly updates when positional shapes change"`
-- L494: `"supports dynamic shapes"`
+- L341: `"can redraw widgets at the end of the document"`
+- L357: `"doesn't duplicate widgets on section boundaries"`
+- L368: `"can decorate tags"`
+- L375: `"updates wrappers when they change"`
+- L386: `"can handle changes from range and point decorations in a single transactions"`
+- L397: `"can add attributes to tags"`
+- L401: `"can remove attributes from tags"`
+- L408: `"preserves DOM nodes when adding attributes"`
+- L415: `"can take wrappers from spans"`
+- L421: `"can take attributes from spans"`
+- L427: `"can override a specific leaf node's shape"`
+- L433: `"can override a specific non-leaf node's shape"`
+- L439: `"can give a plot with atomic shape"`
+- L445: `"can dynamically redraw a plot as an atom"`
+- L453: `"can dynamically redraw an atom plot as a regular plot"`
+- L461: `"can add attributes to a specific node"`
+- L467: `"won't try to add attributes to a text node"`
+- L472: `"doesn't leave stale decorations on complex changes"`
+- L486: `"can add wrapping structure to a specific node"`
+- L492: `"can handle a change modifying the depth of a plot's wrapper"`
+- L500: `"can replace the shape of a node type"`
+- L505: `"can handle changes inside atomic plots"`
+- L513: `"can handle deletion inside an atomic plot"`
+- L520: `"can handle changes covering parts of atomic plots"`
+- L526: `"can handle changes covering parts of wrapped atomic plots"`
+- L535: `"can handle changes covering the start of atomic plots"`
+- L541: `"supports selectors for wrapper decorations"`
+- L548: `"can reuse DOM structure when adding a shape wrapper"`
+- L557: `"makes isAtom aware of tag shapes"`
+- L563: `"can override shapes by tag"`
+- L568: `"makes by-point shapes override by-tag ones"`
+- L577: `"properly updates when tag shapes change"`
+- L585: `"properly updates when positional shapes change"`
+- L595: `"supports dynamic shapes"`
 
 ## `webtest-coords.ts` — portable — 14 call sites
 
@@ -639,6 +658,16 @@ Harness-only files are recorded as having no runnable assertion names.
 - L141: `"can move across atom blocks"`
 - L147: `"can enter nested blocks"`
 - L162: `"can move through rows in a table"`
+
+## `webtest-dom-changes.ts` — portable — 7 call sites
+
+- L52: `"can combine stacked changes"`
+- L66: `"properly corrects for changes in earlier nodes"`
+- L76: `"properly corrects for changes in adjacent nodes"`
+- L85: `"integrates non-DOM changes"`
+- L95: `"can handle DOM changes being interpreted differently"`
+- L107: `"works for newly created text nodes"`
+- L117: `"survives random input"`
 
 ## `webtest-editor.ts` — portable — 9 call sites
 
@@ -662,7 +691,7 @@ Harness-only files are recorded as having no runnable assertion names.
 - L91: `"does not resolve into inner node structure"`
 - L99: `"can handle node structure inside content wrappers"`
 
-## `webtest-serialize.ts` — portable-mixed — 37 call sites
+## `webtest-serialize.ts` — portable-mixed — 38 call sites
 
 - L32: `"can serialize simple nodes"`
 - L36: `"can serialize tag parameters"`
@@ -701,10 +730,11 @@ Harness-only files are recorded as having no runnable assertion names.
 - L242: `"opens nested nodes"`
 - L246: `"doesn't open leaf nodes"`
 - L255: `"can query the DOM for open structure"`
+- L260: `"creates a block parent when seeing multiple unmatched block elements"`
 
 ## Accounting
 
-- Files indexed: 26/26.
-- Runnable files indexed: 23/23.
-- Source-declared `it(...)` call sites: 616.
-- Uncertain files: 0.
+- Files indexed: 27/27
+- Runnable files indexed: 24/24
+- Declared `it(...)` call sites: 644
+- Unresolved files: 0

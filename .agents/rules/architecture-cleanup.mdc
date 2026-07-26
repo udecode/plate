@@ -45,7 +45,7 @@ keep.
 - The task is post-merge/current-tree until-clean closure: use
   `autoclosure`, which may invoke this skill for source-shape findings.
 - The task is public queue selection: use `maintainer`.
-- The task is broad OSS/source discovery: use `slate-research` first.
+- The task is broad OSS/source discovery: use `plite-research` first.
 
 ## Read Order
 

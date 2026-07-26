@@ -1,6 +1,35 @@
 {
   "schemaVersion": 1,
   "components": {
+    "basic-blocks-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "basic-marks-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "callout-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "code-block-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "code-drawing-base-kit": [
+      "2026-07-25-static-base-plugin-components",
+      "2026-01-28-add-code-drawing-node"
+    ],
+    "column-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "comment-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "date-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "footnote-base-kit": [
+      "2026-07-25-static-base-plugin-components",
+      "2026-04-23-redesign-blockquotes-container-blocks"
+    ],
+    "link-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "math-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "media-base-kit": [
+      "2026-07-25-static-base-plugin-components",
+      "2026-07-23-rich-media-caption-children"
+    ],
+    "mention-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "suggestion-base-kit": [
+      "2026-07-25-static-base-plugin-components",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions"
+    ],
+    "table-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "toc-base-kit": ["2026-07-25-static-base-plugin-components"],
+    "toggle-base-kit": ["2026-07-25-static-base-plugin-components"],
     "collaboration-demo": [
       "2026-07-24-collaboration-runtime",
       "2025-11-20-biome-ultracite"
@@ -142,7 +171,6 @@
     ],
     "single-block-demo": ["2026-07-23-explicit-editor-kit-composition"],
     "caption": ["2026-07-23-rich-media-caption-children"],
-    "media-base-kit": ["2026-07-23-rich-media-caption-children"],
     "media-image-node": [
       "2026-07-23-rich-media-caption-children",
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
@@ -231,9 +259,6 @@
       "2025-10-21-add-rejectaisuggestions"
     ],
     "suggestion": ["2026-04-29-codex-fix-discussion-suggestion-regressions"],
-    "suggestion-base-kit": [
-      "2026-04-29-codex-fix-discussion-suggestion-regressions"
-    ],
     "suggestion-node": [
       "2026-04-29-codex-fix-discussion-suggestion-regressions",
       "2025-11-20-biome-ultracite",
@@ -271,7 +296,6 @@
       "2025-10-17-fix-react-decouple"
     ],
     "footnote-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
-    "footnote-base-kit": ["2026-04-23-redesign-blockquotes-container-blocks"],
     "insert-toolbar-button": [
       "2026-04-23-redesign-blockquotes-container-blocks",
       "2026-01-28-add-code-drawing-node",
@@ -302,7 +326,6 @@
       "2026-03-27-snapshot-ai-streaming-preview-task-pr-flow",
       "2025-11-20-biome-ultracite"
     ],
-    "code-drawing-base-kit": ["2026-01-28-add-code-drawing-node"],
     "code-drawing-demo": ["2026-01-28-add-code-drawing-node"],
     "block-context-menu": ["2026-01-28-add-code-drawing-node"],
     "turn-into-toolbar-button": ["2026-01-28-add-code-drawing-node"],

@@ -46,7 +46,7 @@ describe('Plate model publication', () => {
       shortcuts: {
         run: { handler: () => {}, keys: 'mod+k' },
       },
-    }).extendExtension(ObserverExtension);
+    }).extend({ extension: ObserverExtension });
     const editor = createBaseEditor({ plugins: [Plugin] });
 
     expect(observedRuntime?.pluginList.length).toBeGreaterThan(0);
@@ -68,7 +68,7 @@ describe('Plate model publication', () => {
     const editor = createEditor();
     const BrokenPlugin = createBasePlugin({
       key: 'brokenExtension',
-    }).extendExtension(() => {
+    }).extend(() => {
       throw new Error('broken extension');
     });
 
@@ -100,7 +100,7 @@ describe('Plate model publication', () => {
     };
     const Plugin = createBasePlugin({
       key: 'retryableBootstrap',
-    }).extendExtension(Correction);
+    }).extend({ extension: Correction });
     const initialSelection = {
       anchor: { offset: 2, path: [0, 0] },
       focus: { offset: 2, path: [0, 0] },
@@ -266,6 +266,7 @@ describe('Plate model publication', () => {
 
   it('keeps private compiled registries safe for reserved property names', () => {
     const Plugin = createBasePlugin({
+      key: 'toString',
       inputRules: ({ rule }) => [
         rule.insertText({
           apply: () => true,
@@ -273,7 +274,6 @@ describe('Plate model publication', () => {
           trigger: 'constructor',
         }),
       ],
-      key: 'toString',
     });
     const editor = createBaseEditor({ plugins: [Plugin] });
     const runtime = getPlateRuntime(editor);
@@ -329,15 +329,19 @@ describe('Plate model publication', () => {
   });
 
   it('keeps root and keyed API projection scoped to its owning plugin', () => {
-    const FirstPlugin = createBasePlugin({ key: 'firstApi' })
-      .extendEditorApi(() => ({
-        firstNested: { read: () => 'first-nested' },
-        firstRoot: () => 'first-root',
-      }))
-      .extendApi(() => ({ firstOwn: () => 'first-own' }));
-    const SecondPlugin = createBasePlugin({ key: 'secondApi' })
-      .extendEditorApi(() => ({ secondRoot: () => 'second-root' }))
-      .extendApi(() => ({ secondOwn: () => 'second-own' }));
+    const FirstPlugin = createBasePlugin({
+      key: 'firstApi',
+      extension: {
+        api: {
+          firstNested: { read: () => 'first-nested' },
+          firstRoot: () => 'first-root',
+        },
+      },
+    }).extend(() => ({ api: { firstOwn: () => 'first-own' } }));
+    const SecondPlugin = createBasePlugin({
+      key: 'secondApi',
+      extension: { api: { secondRoot: () => 'second-root' } },
+    }).extend(() => ({ api: { secondOwn: () => 'second-own' } }));
     const editor = createBaseEditor({
       plugins: [FirstPlugin, SecondPlugin],
     });
@@ -372,13 +376,16 @@ describe('Plate model publication', () => {
 
   it('projects compiled plugin API into transaction extension factories', () => {
     const writes: string[] = [];
-    const Plugin = createBasePlugin({ key: 'txCandidateApi' })
-      .extendApi(() => ({ current: () => 'compiled' }))
-      .extendTx(({ api }) => () => ({
+    const Plugin = createBasePlugin({
+      key: 'txCandidateApi',
+      api: { current: () => 'compiled' },
+    }).extend(({ api }) => ({
+      update: () => ({
         write: () => {
           writes.push(api.current());
         },
-      }));
+      }),
+    }));
     const editor = createBaseEditor({ plugins: [Plugin] });
 
     editor.plugin(Plugin).update.write();
@@ -517,7 +524,9 @@ describe('Plate model publication', () => {
     const plugin = createBasePlugin({
       key: 'candidateLookup',
       options: { label: 'one' },
-    }).extendApi(({ getOptions }) => ({ current: () => getOptions().label }));
+    }).extend(({ getOptions }) => ({
+      api: { current: () => getOptions().label },
+    }));
     const firstEditor = createBaseEditor({ plugins: [plugin] });
     const secondEditor = createBaseEditor({ plugins: [plugin] });
     const firstPublished = firstEditor.getPlugin(plugin);

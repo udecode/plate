@@ -87,14 +87,15 @@ import { MentionElement, MentionInputElement } from '@/components/ui/mention-nod
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    MentionPlugin.withComponent(MentionElement).configure({
+    MentionPlugin.configure({
+      component: MentionElement,
       options: {
         trigger: '@',
         triggerPreviousCharPattern: /^$|^[\s"']$/,
         insertSpaceAfterMention: false,
       },
     }),
-    MentionInputPlugin.withComponent(MentionInputElement),
+    MentionInputPlugin.configure({ component: MentionInputElement }),
   ],
 });
 ```
@@ -102,7 +103,7 @@ const editor = createPlateEditor({
 - `options.trigger`: 触发提及组合框的字符
 - `options.triggerPreviousCharPattern`: 触发字符前一个字符的正则表达式模式。套件使用 `/^$|^[\s"']$/` 允许在行首、空白符后或引号后触发提及
 - `options.insertSpaceAfterMention`: 是否在插入提及后自动添加空格
-- `withComponent`: 分配用于渲染提及和提及输入的UI组件
+- `component`: 分配用于渲染提及和提及输入的UI组件
 
 </Steps>
 

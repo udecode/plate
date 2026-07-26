@@ -49,8 +49,8 @@ First, create an input plugin that will be inserted when the trigger is activate
 import { createBasePlugin } from 'platejs';
 
 const TagInputPlugin = createBasePlugin({
-  key: 'tag_input',
   editOnly: true,
+  key: 'tag_input',
   schema: { element: { void: 'inline' } },
 });
 ```
@@ -60,12 +60,11 @@ const TagInputPlugin = createBasePlugin({
 Create your main plugin with trigger metadata:
 
 ```tsx
-import { createBasePlugin, type PluginConfig } from 'platejs';
+import { createBasePlugin } from 'platejs';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
-type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
-
-export const TagPlugin = createBasePlugin<TagConfig>({
+export const TagPlugin = createBasePlugin({
+  dependencies: [TagInputPlugin],
   key: 'tag',
   schema: { element: { void: 'inline' } },
   options: {
@@ -75,8 +74,7 @@ export const TagPlugin = createBasePlugin<TagConfig>({
       children: [{ text: '' }],
       type: 'tag_input',
     }),
-  },
-  plugins: [TagInputPlugin],
+  } satisfies TriggerComboboxPluginOptions,
 });
 ```
 
@@ -178,7 +176,8 @@ import { TagElement, TagInputElement } from './tag-components';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    TagPlugin.withComponent(TagElement).configure({
+    TagPlugin.configure({
+      component: TagElement,
       options: {
         triggerQuery: (editor) => {
           // Disable in code blocks
@@ -186,7 +185,7 @@ const editor = createPlateEditor({
         },
       },
     }),
-    TagInputPlugin.withComponent(TagInputElement),
+    TagInputPlugin.configure({ component: TagInputElement }),
   ],
 });
 ```

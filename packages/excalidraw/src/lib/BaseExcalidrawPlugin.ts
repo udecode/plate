@@ -43,9 +43,10 @@ export const BaseExcalidrawPlugin = createBasePlugin({
       void: 'block',
     },
   },
-}).extendTx(({ type }) => (tx) => ({
-  insert: (
-    props?: NodeProps<TExcalidrawElement>,
-    options?: NodeInsertNodesOptions<TExcalidrawElement>
-  ) => insertExcalidraw(tx, type, props, options),
-}));
+  update: ({ tx, type }) => ({
+    insert: (
+      props?: NodeProps<TExcalidrawElement>,
+      options?: NodeInsertNodesOptions<TExcalidrawElement>
+    ) => insertExcalidraw(tx, type, props, options),
+  }),
+});

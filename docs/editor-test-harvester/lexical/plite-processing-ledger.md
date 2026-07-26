@@ -7,6 +7,8 @@ plan: [Plite Lexical Harvest Test Processing Ralplan](../../plans/2026-05-09-pli
 status: done
 generated_at: 2026-05-09
 consolidated_at: 2026-05-09
+authority: historical extraction record; use `report.md` plus current source
+for any present-tense coverage claim
 
 ## Verdict
 
@@ -1058,7 +1060,7 @@ Source: `../lexical/packages/lexical-playground/__tests__/regression/1083-backsp
 ## Verification Gates For Future Apply Slices
 
 ```bash
-cd /Users/zbeyens/git/plite
+cd /Users/zbeyens/git/plate-2
 bun test ./packages/plite/test/text-units-contract.ts
 bun test ./packages/plite-dom/test/clipboard-boundary.ts
 bun test ./packages/plite-history/test/history-contract.ts
@@ -1071,6 +1073,6 @@ bun check
 Raw device rows need:
 
 ```bash
-cd /Users/zbeyens/git/plite
+cd /Users/zbeyens/git/plate-2
 PLITE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw
 ```

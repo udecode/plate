@@ -10,13 +10,7 @@ const BlockSelectionApiFixture = createPlatePlugin<BlockSelectionConfig>({
   options: {
     selectedIds: new Set<string>(),
   },
-}).extendApi<Pick<BlockSelectionConfig['pluginApi'], 'set'>>(
-  ({ setOption }) => ({
-    set: (id) => {
-      setOption('selectedIds', new Set(Array.isArray(id) ? id : [id]));
-    },
-  })
-);
+});
 
 describe('BlockMenuPlugin', () => {
   it('exposes option-state api on the Plite runtime route', () => {

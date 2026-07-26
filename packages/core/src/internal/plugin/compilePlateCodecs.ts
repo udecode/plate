@@ -328,7 +328,7 @@ export const compilePlateCodecs = (
       return Object.entries(codecs).map(([format, declaration]) => {
         if (format.trim().toLowerCase() === 'text/html') {
           throw new Error(
-            `Plate codec owner "${plugin.key}" cannot register "text/html" through extendCodecs. Use extendHtmlCodec.`
+            `Plate codec owner "${plugin.key}" must register "text/html" through the schema-aware \`codecs["text/html"]\` declaration.`
           );
         }
 

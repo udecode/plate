@@ -138,7 +138,7 @@ const classifyProductPath = (path) => {
     return result(
       'plate-table-owner',
       tableConcepts,
-      'Table schema, grid, mutation, selection, ingress, public API, and proof.'
+      'Table schema, grid, mutation, selection, flat HTML input, public API, and proof.'
     );
   }
   if (codeBlockPathPattern.test(path)) {
@@ -251,7 +251,11 @@ const classify = (path) => {
       'Current Plate and Plite ownership, API, composition, and proof doctrine.'
     );
   }
-  if (path.startsWith('.agents/')) {
+  if (
+    path === 'AGENTS.md' ||
+    path.startsWith('.agents/') ||
+    path.startsWith('.claude/')
+  ) {
     return result(
       'agent-tooling',
       [],
@@ -277,6 +281,51 @@ const classify = (path) => {
       [],
       'Repository tooling, lock state, and unrelated planning documents are outside the architecture source census.',
       'repository control or planning file'
+    );
+  }
+  if (
+    path.startsWith('docs/performance/') ||
+    path.startsWith('docs/solutions/performance-issues/')
+  ) {
+    return result(
+      'performance-proof',
+      ['META-004', 'VIEW-013', 'VIEW-028'],
+      'Performance workload, interpretation, and regression-proof guidance.'
+    );
+  }
+  if (
+    path.startsWith('docs/plite/research/') ||
+    path.startsWith('docs/research/')
+  ) {
+    return result(
+      'editor-behavior-research',
+      [
+        'META-004',
+        'META-005',
+        'DOC-013',
+        'HC-032',
+        'VIEW-003',
+        'VIEW-004',
+        'VIEW-005',
+        'VIEW-006',
+        'VIEW-008',
+        'VIEW-009',
+        'VIEW-010',
+        'VIEW-012',
+        'VIEW-013',
+        'VIEW-028',
+      ],
+      'Current research evidence for editor input, selection, DOM, performance, and proof ownership.'
+    );
+  }
+  if (path.startsWith('docs/solutions/logic-errors/')) {
+    return classifyProductPath(path);
+  }
+  if (path.startsWith('docs/solutions/test-failures/')) {
+    return result(
+      'proof-infrastructure-guidance',
+      ['META-002', 'META-004', 'META-005', 'VIEW-028'],
+      'Current package, typecheck, and test-runner failure guidance.'
     );
   }
   if (path.startsWith('packages/plite-history/')) {
@@ -513,10 +562,26 @@ const anchors = [
   {
     path: 'packages/core/src/lib/plugin/BasePlugin.ts',
     patterns: [
-      'editor.api[plugin.key]',
-      'editor.plugin(plugin).api',
-      'extendEditorApi<',
-      'extendTx(',
+      'defineCodecs: DefinePluginCodecs<C>;',
+      "type PluginAuthoringMethod = 'clone' | 'configure' | 'extend' | 'withComponent';",
+      'UnifiedRuntimeBasePluginConfig<',
+    ],
+  },
+  {
+    path: 'packages/core/src/lib/plugin/pluginAuthoringContext.ts',
+    patterns: [
+      'export function createDefinePluginCodecs<',
+      'function defineCodecs(',
+      'const target = args.length === 2 ? args[0] : undefined;',
+      '[pluginCodecMapDeclaration]: true',
+    ],
+  },
+  {
+    path: 'packages/core/src/internal/plugin/resolvePlugin.ts',
+    patterns: [
+      'const applyUnifiedExtension =',
+      'codecs must be declared with the context-bound',
+      '{ extension: () => api, isPluginSpecific: true }',
     ],
   },
   {
@@ -532,6 +597,25 @@ const anchors = [
     patterns: [
       'splits plugin-owned API from the root editor API',
       'exposes plugin-owned updates without their key namespace',
+      "typedEditor.plugin(plugin).update.setMode('edit');",
+      "expect(context.api.pluginMethod()).toBe('plugin');",
+    ],
+  },
+  {
+    path: 'packages/core/src/internal/plugin/prepareHtmlRegistry.ts',
+    patterns: [
+      'Snapshot the flat whole-input HTML hooks',
+      'plugin.parsers.html?.query',
+      'plugin.parsers.html?.transformData',
+      'plugin.parsers.html?.transformFragment',
+    ],
+  },
+  {
+    path: 'packages/basic-nodes/src/lib/BaseBoldPlugin.ts',
+    patterns: [
+      '.extend(({ defineCodecs, type }) => ({',
+      'codecs: defineCodecs({',
+      'update: ({ tx }) => ({',
     ],
   },
   {
@@ -544,15 +628,28 @@ const anchors = [
   },
   {
     path: 'packages/list/src/lib/BaseListPlugin.tsx',
-    patterns: ['.extendApi<{', '.extendTx('],
+    patterns: [
+      '.extend(({ defineCodecs, editor, plugin }) => {',
+      'codecs: defineCodecs({',
+      'update: ({ tx }) => ({',
+    ],
   },
   {
     path: 'packages/link/src/lib/BaseLinkPlugin.ts',
-    patterns: ['.extendApi<BaseLinkApi>', '.extendTxGroup<'],
+    patterns: [
+      '}).extend<{ api: BaseLinkApi }>(({ defineCodecs, getOptions }) => ({',
+      'codecs: defineCodecs({',
+      'BaseLinkPluginDefinition.extend<{',
+      'extension: {',
+    ],
   },
   {
     path: 'apps/www/src/registry/ui/mark-toolbar-button.tsx',
     patterns: ['plugin: MarkPlugin', 'editor.plugin(plugin).update.toggle()'],
+  },
+  {
+    path: 'apps/www/src/registry/ui/link-toolbar.tsx',
+    patterns: ['editor.plugin(LinkPlugin).api.getAttributes(element)'],
   },
   {
     path: 'apps/www/src/registry/ui/turn-into-toolbar-button.tsx',
@@ -626,10 +723,14 @@ const manifest = {
     unmappedSourcePaths: unmappedSource.length,
   },
   conclusions: {
+    pluginAuthoring:
+      'Use one .extend() author contribution by default; declare codec maps with its context-bound defineCodecs helper.',
+    htmlInput:
+      'Keep whole-input query, transformData, and transformFragment hooks flat under parsers.html.',
     normalAppApi:
-      'Use inferred editor.api[pluginKey] and editor.update[pluginKey] namespaces.',
-    genericEscape:
-      'Use editor.plugin(Plugin).api/update only when generic package code knows the descriptor but not the concrete editor type.',
+      'Use inferred editor.api.<pluginKey> and editor.update.<pluginKey> namespaces in user-app code whose editor type contains the plugin.',
+    decoupledPortal:
+      'Use editor.plugin(Plugin).api/update in decoupled registry and reusable package code that owns the descriptor but not the concrete editor type.',
     residualAdoption:
       'The public API migration is landed; remaining product work is bounded caller conversion, duplicate deletion, and proof.',
   },

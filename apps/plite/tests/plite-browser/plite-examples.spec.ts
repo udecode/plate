@@ -40,19 +40,6 @@ const openPliteExample = async (
     },
   });
 
-const getHistoryHotkeys = async (page: Parameters<typeof openExample>[0]) => {
-  const isMac = await page.evaluate(
-    () =>
-      /Mac|iPad|iPhone|iPod/.test(navigator.platform) ||
-      /Mac OS X/.test(navigator.userAgent)
-  );
-
-  return {
-    redo: isMac ? 'Meta+Shift+Z' : 'Control+Shift+Z',
-    undo: isMac ? 'Meta+Z' : 'Control+Z',
-  };
-};
-
 test.describe('Plite app example routes', () => {
   for (const id of pliteExampleIds) {
     test(`${id} loads with Plite browser handle`, async ({ page }) => {
@@ -118,7 +105,6 @@ test.describe('Plite app example routes', () => {
 
     try {
       const editor = await openPliteExample(page, 'richtext');
-      const hotkeys = await getHistoryHotkeys(page);
       const insertedText = ' history proof';
 
       await editor.click();
@@ -126,12 +112,12 @@ test.describe('Plite app example routes', () => {
       await page.keyboard.type(insertedText);
       await expect.poll(() => editor.get.modelText()).toContain(insertedText);
 
-      await editor.press(hotkeys.undo);
+      await editor.undo();
       await expect
         .poll(() => editor.get.modelText())
         .not.toContain(insertedText);
 
-      await editor.press(hotkeys.redo);
+      await editor.redo();
       await expect.poll(() => editor.get.modelText()).toContain(insertedText);
       runtimeErrors.assertNone();
     } finally {

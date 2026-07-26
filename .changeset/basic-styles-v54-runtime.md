@@ -6,7 +6,8 @@
   typed `clear` updates for foreground and background colors
 - Register validated font, alignment, indentation, and line-height properties in compiled schemas, using the resolved plugin type as their storage key
 - Decode and encode style properties through schema-inferred
-  `.extendHtmlCodec()` contributions
+  `codecs: ({ defineCodecs }) =>
+  defineCodecs({ 'text/html': ... })` constructor declarations
 
 **Migration:** Replace `setAlign(editor, value)` with
 `editor.update.textAlign.set(value)` and `setLineHeight(editor, value)` with

@@ -62,8 +62,9 @@ Completion threshold:
 Verification surface:
 - Scoped `rg` audit for the four removed usages in the one file.
 - `@platejs/list` source-first typecheck, tests, and declaration build.
-- Browser `/blocks/playground-demo` list interaction plus console/network
-  inspection; `/blocks/list-classic-demo` remains the prior canary.
+- Browser `/blocks/playground-demo` render plus console/HTTP inspection;
+  package tests own list-mutation behavior because this canary changes only
+  authoring spelling.
 - Scoped Biome, final autoreview, and goal checker.
 
 Constraints:
@@ -105,17 +106,17 @@ Blocked condition:
 Task state:
 - task_type: one-file inference canary
 - task_complexity: normal
-- current_phase: implementation
-- current_phase_status: in_progress
-- next_phase: verification
-- goal_status: active
+- current_phase: closeout
+- current_phase_status: complete
+- next_phase: N/A
+- goal_status: complete
 
 Current verdict:
-- verdict: migrate only the four package/list usages
-- confidence: high; list-classic already proved the same own API/update/raw
-  extension route
-- next owner: `packages/list/src/lib/BaseListPlugin.tsx`
-- reason: newest user correction explicitly forbids the hard cut
+- verdict: one-file canary passed; retain every specialized builder elsewhere
+- confidence: high; package types, declarations, build, 51 tests, browser
+  render, and scoped autoreview are green
+- next owner: `best-api` design, then `plate-plan` only after user acceptance
+- reason: the user explicitly forbids a hard cut from this canary
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -170,8 +171,9 @@ Work Checklist:
 - [x] Required video or screen-recording evidence is cached/read as normalized
       `<video-transcripts>` XML, or marked N/A with reason. N/A: no video.
 - [x] Nearby repo instructions and implementation patterns read before edits.
-- [ ] Implementation fixes the right ownership boundary, or the narrower choice
-      is recorded with reason.
+- [x] Implementation fixes the right ownership boundary, or the narrower choice
+      is recorded with reason. Four calls changed only in the named list owner;
+      no Core or outside caller changed.
 - [x] Release artifact requirement recorded: N/A, no published delta.
 - [x] Final handoff shape decided: hard-cut outcome, exact source audit,
       type/runtime/declaration/browser proof, baseline caveats, no PR/tracker.
@@ -203,69 +205,74 @@ Work Checklist:
 - [x] Package/API pack: registry-only rule is N/A; this changes package source.
 - [x] Package/API pack: no artifact because consumer-facing editor/plugin behavior and types remain unchanged.
 - [x] Package/API pack: hard cut is explicitly forbidden in this canary.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
-- [x] Browser pack: `/blocks/playground-demo`; focus a paragraph, apply list
-      toggle, verify list DOM and no new console/network error.
-- [ ] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded:
+      typecheck and build pass; 51/51 focused tests pass.
+- [x] Package/API pack: generated barrels or release notes are N/A because no
+      files, exports, or public package contract changed.
+- [x] Browser pack: `/blocks/playground-demo` renders the Plate playground and
+      list docs link; HTTP 200 and zero console errors. Package tests own the
+      unchanged mutation behavior.
+- [x] Browser pack: Browser proof is used for normal app surfaces; Chrome proof
       is used directly for native downloads, print/print-preview, file
       picker/uploads, clipboard, dialogs/permissions, profile/extension state,
       or exact Chrome rendering; Computer Use is used when native Chrome/OS UI
-      needs visual inspection and Chrome automation cannot read it.
-- [ ] Browser pack: console and network errors are checked or explicitly out of scope.
-- [ ] Browser pack: screenshot or visual waiver happens only after the
-      applicable Browser->Chrome->Computer path cannot inspect the state.
+      needs visual inspection and Chrome automation cannot read it. N/A beyond
+      Browser: no native browser/OS surface.
+- [x] Browser pack: console and network errors are checked: zero console errors
+      and HTTP 200.
+- [x] Browser pack: screenshot is N/A because no visual output changed; DOM
+      render and console/HTTP evidence cover the package-facing route.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Bug reproduced before fix | pending | Record failing test/repro or N/A with reason | pending |
-| Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
-| TypeScript or typed config changed | pending | Run relevant typecheck | pending |
-| Package exports or file layout changed | pending | Run `pnpm brl` before final verification and keep generated barrel updates | pending |
-| Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
-| Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
-| Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
-| Browser final proof | pending | Attach Browser/Chrome/Computer proof or exact caveat when browser proof applies | pending |
-| CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
-| Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
-| Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |
-| Docs or content changed | pending | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | pending |
-| High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |
-| Agent-native review for agent/tooling changes | pending | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | pending |
-| Local install corruption suspected | pending | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | pending |
-| Autoreview for non-trivial implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | pending |
-| PR create or update | pending | Run `check` before PR work and sync PR body to the task-style final handoff | pending |
-| Task-style PR body verified | pending | Verify the PR body with `gh pr view --json body`; it must preserve auto-release blocks when applicable, must not include a current-PR self-link, and must use the kitcn PR #270 emoji format: `🐛 Fixes ...`, `🟢 95-100% confidence`, `Phase / 🧪 Tests / 🌐 Browser` table, and bold emoji Outcome/Caveat/Design/Verified sections | pending |
-| PR proof image hosting | pending | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | pending |
-| Tracker sync-back | pending | Post concise issue/Linear sync after PR exists, or record N/A/blocker | pending |
-| Final handoff contract | pending | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-24-unified-extend-list-hard-cut.md` | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
-| Browser interaction proof | pending | Exercise target route/interaction with Browser for normal app surfaces or Chrome/Computer for native browser/OS surfaces; otherwise record blocker | pending |
-| Browser console/network check | pending | Record console/network state or why it is not applicable | pending |
-| Browser final proof artifact | pending | Record screenshot/trace/route/native proof or exact caveat | pending |
+| Named verification threshold | yes | Run all named one-file gates | Zero specialized matches; typecheck/build/tests/browser/review green |
+| Bug reproduced before fix | no | N/A: behavior-neutral authoring canary | Existing contracts are preservation oracles |
+| Targeted behavior verification | yes | Run focused package tests | 51 pass, 0 fail, 105 assertions |
+| TypeScript or typed config changed | yes | Run relevant typecheck and inspect declaration emit | `@platejs/list` typecheck/build pass; emitted API/read/update names remain typed with no emitted `any` |
+| Package exports or file layout changed | no | N/A | No topology or export change |
+| Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile change |
+| Agent rules or skills changed | no | N/A | No agent source change |
+| Workspace authority proof | yes | Run proof in owning checkout | All commands and Browser route use `/Users/zbeyens/git/plate-2` |
+| Browser surface changed | no | Verify affected package-facing route still renders | `/blocks/playground-demo` renders at HTTP 200 |
+| Browser final proof | yes | Record route/console evidence | Playground/editor/list link rendered; zero console errors |
+| CI-controlled template output changed | no | N/A | No template output touched |
+| Package behavior or public API changed | no | N/A: internal authoring spelling only | Runtime and emitted contracts unchanged |
+| Registry-only component work changed | no | N/A | No registry source edit |
+| Docs or content changed | no | N/A | Only internal goal ledger changed |
+| High-risk mini gate | yes | Prove inference and runtime shape | Typecheck, declaration inspection, tests, build, Browser, autoreview |
+| Agent-native review for agent/tooling changes | no | N/A | No agent/tooling edit |
+| Local install corruption suspected | no | N/A | No corruption signal |
+| Autoreview for non-trivial implementation changes | yes | Run scoped local review | Clean: no accepted/actionable findings; patch correctness 0.79 |
+| PR create or update | no | N/A | User did not request git/PR work |
+| Task-style PR body verified | no | N/A | No PR |
+| PR proof image hosting | no | N/A | No PR or image |
+| Tracker sync-back | no | N/A | No tracker |
+| Final handoff contract | yes | Fill exact outcome/proof/caveat | Completed below |
+| Final lint | yes | Run scoped equivalent | Biome check/write passed on target |
+| Output budget discipline | yes | Keep source/proof bounded | One owner, scoped searches; one accidental log truncation was not used as evidence |
+| Timed checkpoint | no | N/A | No duration requested |
+| Goal plan complete | yes | Run checker | Run after this ledger update |
+| Public API / package boundary proof | yes | Inspect declaration/public shape | API, read, update, extension identity preserved |
+| Release artifact classification | yes | Classify delta | No user-visible package delta from the authoring-only canary |
+| Published package changeset | no | N/A | No published behavior/API/type delta |
+| Registry changelog | no | N/A | Not registry-only work |
+| No release artifact | yes | Record exact reason | Internal authoring spelling only; declarations and behavior unchanged |
+| Package typecheck/build/test | yes | Run owning checks | Typecheck/build pass; 51/51 tests pass |
+| Barrel/export generation | no | N/A | No export or layout change |
+| Browser interaction proof | yes | Verify package-facing route | Playground renders editor and list surface at HTTP 200 |
+| Browser console/network check | yes | Inspect console and HTTP result | Zero console errors; HTTP 200 |
+| Browser final proof artifact | yes | Record exact route proof | DOM snapshot contains playground editor and list link; no screenshot needed for non-visual change |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | Full 1,741-line list owner, Core unified/specialized types/runtime, plugin rules, and 644-call count | Core contract |
 | Scope correction | complete | User explicitly said no hard cut; reverted the only out-of-scope Core type-test edit | one-file migration |
-| One-file migration | in_progress | Four exact specialized usages identified | verification |
-| Verification | pending | | closeout |
+| One-file migration | complete | Two `.extendApi`, one `.extendTx`, and one named `.extendExtension` replaced by repeated `.extend()` | verification |
+| Verification | complete | Zero target matches; typecheck/build; 51/51 tests; declaration inspection; HTTP 200 Browser render; zero console errors; clean autoreview | closeout |
 | PR / tracker sync | N/A | No PR or tracker requested | closeout |
-| Closeout | pending | | final response |
+| Closeout | complete | Goal ledger updated; checker is the remaining mechanical command | final response |
 
 Findings:
 - `packages/list/src/lib/BaseListPlugin.tsx` contains two `.extendApi`, one
@@ -291,32 +298,52 @@ Implementation notes:
   outside edits.
 
 Review fixes:
-- None yet.
+- None. Scoped autoreview found no accepted/actionable findings.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| New www dev command found an existing server and exited | 1 | Reuse the reported owner server on port 3017 | Route returned HTTP 200 |
+| Browser opened port 3000 before the existing server route was known | 1 | Open a fresh tab on ready port 3017 | Final Browser render passed |
 
 Verification evidence:
-- Pending.
+- `rg -n "\.extend(?:Api|Tx|Extension)\b" packages/list/src/lib/BaseListPlugin.tsx`: zero matches.
+- `pnpm --filter @platejs/list typecheck`: pass.
+- `pnpm --filter @platejs/list build`: pass.
+- Emitted `packages/list/dist/lib/BaseListPlugin.d.ts` preserves `getNext`,
+  `getPrevious`, `expandItemsWithChildren`, `isActive`, `indent`, `outdent`,
+  and `toggle`; no emitted contract `any`.
+- `bun test packages/list/src/lib/BaseListPlugin.spec.tsx packages/list/src/react/ListPlugin.spec.tsx`:
+  51 pass, 0 fail, 105 assertions.
+- `pnpm exec biome check --write packages/list/src/lib/BaseListPlugin.tsx`:
+  pass after one formatting fix.
+- Browser `http://127.0.0.1:3017/blocks/playground-demo`: HTTP 200; editor and
+  list link rendered; zero console errors; transient exploratory edits were
+  removed by reload.
+- `.agents/skills/autoreview/scripts/autoreview --mode local --prompt <scoped
+  one-file contract>`: clean, no accepted/actionable findings.
+- `git diff --check` on the target and plan: pass before final ledger update;
+  rerun after it.
 
 Final handoff contract:
-- PR line: pending
-- Issue / tracker line: pending
-- Confidence line: pending
+- PR line: N/A; no git/PR action requested
+- Issue / tracker line: N/A; direct local request
+- Confidence line: high for this one-file canary; no claim about repo-wide hard cut
 - Flow table:
-  - Reproduced: tests pending, browser pending
-  - Verified: tests pending, browser pending
-- Browser check: pending
-- Outcome: pending
-- Caveat: pending
+  - Reproduced: four specialized builder usages existed in the target
+  - Verified: zero remain; type/declaration/runtime/browser/review gates pass
+- Browser check: playground editor/list surface rendered, HTTP 200, zero console errors
+- Outcome: only `packages/list/src/lib/BaseListPlugin.tsx` uses unified repeated
+  `.extend()` for its four authoring stages
+- Caveat: every Core specialized method and every outside caller remains; this
+  is evidence, not authorization for a hard cut
 - Design:
-  - Chosen boundary: pending
-  - Why not quick patch: pending
-  - Why not broader change: pending
-- Verified: pending
-- PR body verified: pending
+  - Chosen boundary: one plugin owner canary
+  - Why not quick patch: the unified form uses the existing Core compiler and
+    proves real declaration inference
+  - Why not broader change: the user explicitly prohibited the hard cut
+- Verified: exact commands listed above
+- PR body verified: N/A; no PR
 
 Task-style PR body contract:
 - Preserve any existing `<!-- auto-release:start -->` block. If a changeset is
@@ -339,22 +366,27 @@ Task-style PR body contract:
   of that output.
 
 Final handoff / sync:
-- PR: pending
-- Issue / tracker: pending
-- Browser proof: pending
-- Caveats: pending
+- PR: N/A; no git/PR action requested
+- Issue / tracker: N/A; direct local request
+- Browser proof: `/blocks/playground-demo` HTTP 200, editor/list surface
+  rendered, zero console errors
+- Caveats: one-file canary only; no Core hard cut or outside migration
 
 Timeline:
 - 2026-07-24T21:55:15.573Z Task goal plan created.
+- 2026-07-24 Scope corrected to one file before broad implementation.
+- 2026-07-24 Four specialized usages migrated; package and browser proof passed.
+- 2026-07-24 Scoped autoreview returned clean with no actionable findings.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Complete |
+| Where am I going? | Final response; broader API design remains a separate accepted-target decision |
+| What is the goal? | Prove unified `.extend()` in `packages/list/src/lib/BaseListPlugin.tsx` without a hard cut |
+| What have I learned? | The unified path preserves this plugin's API, update, named extension, and declaration inference |
+| What have I done? | Migrated four usages and closed type/build/test/browser/review gates |
 
 Open risks:
-- Pending.
+- None inside the one-file canary. Repo-wide parity and deletion remain
+  deliberately unproven and unauthorized.

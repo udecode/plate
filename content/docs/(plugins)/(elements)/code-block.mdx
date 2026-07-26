@@ -99,14 +99,14 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin.configure({
+      component: CodeBlockElement,
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
-      render: { node: CodeBlockElement },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
+      component: CodeSyntaxLeaf,
       options: { lowlight },
-      render: { node: CodeSyntaxLeaf },
     }),
   ],
 });
@@ -136,28 +136,30 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CodeBlockPlugin.configure({
+      component: CodeBlockElement,
       inputRules: [CodeBlockRules.markdown({ on: 'match' })],
-      render: { node: CodeBlockElement },
       shortcuts: { toggle: { keys: 'mod+alt+8' } },
     }),
-    CodeLinePlugin.withComponent(CodeLineElement),
+    CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
+      component: CodeSyntaxLeaf,
       options: {
         lowlight,
         defaultLanguage: 'js', // Set default language (optional)
       },
-      render: { node: CodeSyntaxLeaf },
     }),
   ],
 });
 ```
 
-- `CodeBlockPlugin.render.node`: Assigns [`CodeBlockElement`](/docs/components/code-block-node) to render code block containers.
+- `CodeBlockPlugin.configure({ component })`: Assigns
+  [`CodeBlockElement`](/docs/components/code-block-node) to render code block
+  containers.
 - `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
 - `CodeHighlightPlugin.options.lowlight`: Lowlight instance for syntax highlighting.
 - `CodeHighlightPlugin.options.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
-- `withComponent`: Assigns components for code lines and syntax highlighting.
+- `component`: Assigns components for code lines and syntax highlighting.
 
 For plain code blocks, omit `CodeHighlightPlugin`:
 

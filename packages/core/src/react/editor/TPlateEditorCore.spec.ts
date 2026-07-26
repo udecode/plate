@@ -11,46 +11,56 @@ import { createPlateEditor, extendPlateEditor } from './withPlate';
 describe('PlateEditor core package', () => {
   const MyCustomPlugin = createBasePlugin({
     key: 'myCustom',
-    api: { myCustomMethod: () => {} },
+    extension: { api: { myCustomMethod: () => {} } },
   });
 
   const TextFormattingPlugin = createBasePlugin({
     key: 'textFormatting',
-    api: {
-      bold: () => {},
-      italic: () => {},
-      underline: () => {},
+    extension: {
+      api: {
+        bold: () => {},
+        italic: () => {},
+        underline: () => {},
+      },
     },
   });
 
   const ListPlugin = createBasePlugin({
     key: 'list',
-    api: {
-      createBulletedList: () => {},
+    extension: {
+      api: {
+        createBulletedList: () => {},
+      },
     },
   });
 
   const TablePlugin = createBasePlugin({
     key: 'table',
-    api: {
-      addRow: () => {},
-      insertTable: () => {},
+    extension: {
+      api: {
+        addRow: () => {},
+        insertTable: () => {},
+      },
     },
   });
 
   const ImagePlugin = createBasePlugin({
     key: 'image',
-    api: {
-      insertImage: () => {},
-      resizeImage: () => {},
+    extension: {
+      api: {
+        insertImage: () => {},
+        resizeImage: () => {},
+      },
     },
   });
 
   const LinkPlugin = createPlatePlugin({
     key: 'link',
-    api: {
-      link: {
-        getAttributes: () => ({}),
+    extension: {
+      api: {
+        link: {
+          getAttributes: () => ({}),
+        },
       },
     },
   });
@@ -185,9 +195,11 @@ describe('PlateEditor core package', () => {
     it('merges overlapping api names on createPlateEditor', () => {
       const OverlappingPlugin = createBasePlugin({
         key: 'overlapping',
-        api: {
-          bold: (_: number) => {},
-          insertImage: (_: number) => {},
+        extension: {
+          api: {
+            bold: (_: number) => {},
+            insertImage: (_: number) => {},
+          },
         },
       });
 
@@ -209,17 +221,24 @@ describe('PlateEditor core package', () => {
     const BoldPlugin = createBasePlugin({
       key: 'bold',
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) =>
-        someHtmlElement(element, (node) => node.style.fontWeight === 'normal')
-          ? undefined
-          : true,
-      encode: ({ value }) => (value ? { tag: 'strong' } : null),
-      match: [
-        { tag: ['strong', 'b'] },
-        { style: { fontWeight: ['600', '700', 'bold'] } },
-      ],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) =>
+              someHtmlElement(
+                element,
+                (node) => node.style.fontWeight === 'normal'
+              )
+                ? undefined
+                : true,
+            encode: ({ value }) => (value ? { tag: 'strong' } : null),
+            match: [
+              { tag: ['strong', 'b'] },
+              { style: { fontWeight: ['600', '700', 'bold'] } },
+            ],
+          },
+        }),
+    });
 
     it('supports specific plugin generics on createPlateEditor', () => {
       const editor = createPlateEditor<Value, readonly [typeof BoldPlugin]>({

@@ -48,8 +48,8 @@ export const BasicMarksKit = [
     inputRules: [UnderlineRules.markdown()],
   }),
   CodePlugin.configure({
+    component: CodeLeaf,
     inputRules: [CodeRules.markdown()],
-    render: { node: CodeLeaf },
     shortcuts: { toggle: { keys: 'mod+e' } },
   }),
   StrikethroughPlugin.configure({
@@ -65,12 +65,12 @@ export const BasicMarksKit = [
     shortcuts: { toggle: { keys: 'mod+period' } },
   }),
   HighlightPlugin.configure({
+    component: HighlightLeaf,
     inputRules: [
       HighlightRules.markdown({ variant: '==' }),
       HighlightRules.markdown({ variant: '≡' }),
     ],
-    render: { node: HighlightLeaf },
     shortcuts: { toggle: { keys: 'mod+shift+h' } },
   }),
-  KbdPlugin.withComponent(KbdLeaf),
+  KbdPlugin.configure({ component: KbdLeaf }),
 ];

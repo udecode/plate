@@ -1,5 +1,19 @@
 # Research Log
 
+## [2026-07-25] maintain | context-bound Plate codec inference
+
+- documented the callback-local `defineCodecs(map)` inference anchor for
+  self/product codecs and `defineCodecs(TargetPlugin, map)` for foreign codecs
+- kept codec maps MIME-keyed, foreign targets helper-injected, and multiple
+  HTML representations in one non-empty ordered tuple
+
+## [2026-07-25] maintain | unified Plate plugin authoring terminology
+
+- refreshed the behavior-architecture system map to describe repeated
+  `.extend()` stages instead of deleted specialized plugin builders
+- preserved the existing Table capability-promotion conclusion; only the live
+  Plate authoring terminology changed
+
 ## [2026-05-23] maintain | TanStack Virtual perf and iOS refresh
 
 - refreshed

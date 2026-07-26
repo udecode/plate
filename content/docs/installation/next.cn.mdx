@@ -181,10 +181,10 @@ export default function MyEditorPage() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.withComponent(H1Element),
-      H2Plugin.withComponent(H2Element),
-      H3Plugin.withComponent(H3Element),
-      BlockquotePlugin.withComponent(BlockquoteElement),
+      H1Plugin.configure({ component: H1Element }),
+      H2Plugin.configure({ component: H2Element }),
+      H3Plugin.configure({ component: H3Element }),
+      BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue,
   });
@@ -213,7 +213,7 @@ export default function MyEditorPage() {
 <ComponentPreview name="installation-next-03-elements-demo" height="200px" />
 
 <Callout type="info" title="组件注册">
-  注意我们如何使用 `Plugin.withComponent(Component)` 将组件注册到各自的插件。这是将 React 组件与 Plate 插件关联的推荐方法。
+  注意我们如何使用 `Plugin.configure({ component: Component })` 将组件注册到各自的插件。这是将 React 组件与 Plate 插件关联的推荐方法。
 
   如需快速开始并预配置常用插件和组件，请使用 `editor-basic` 区块：
   ```bash
@@ -283,10 +283,10 @@ export default function MyEditorPage() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.withComponent(H1Element),
-      H2Plugin.withComponent(H2Element),
-      H3Plugin.withComponent(H3Element),
-      BlockquotePlugin.withComponent(BlockquoteElement),
+      H1Plugin.configure({ component: H1Element }),
+      H2Plugin.configure({ component: H2Element }),
+      H3Plugin.configure({ component: H3Element }),
+      BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue: () => {
       const savedValue = localStorage.getItem('installation-next-demo');

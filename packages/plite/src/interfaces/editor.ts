@@ -1050,8 +1050,6 @@ export type EditorElementSlicePolicy = Readonly<{
   replaceWhenCovered: boolean;
 }>;
 
-declare const EDITOR_EXTENSION_TYPES: unique symbol;
-
 export type EditorCoreStateView<V extends Value = Value> = {
   /**
    * Read the primary document children without cloning the full serializable
@@ -1734,12 +1732,9 @@ export type EditorCommandAroundHandler<Input, TEditor = Editor> = (
   }
 ) => EditorCommandResult;
 
-declare const EDITOR_COMMAND_REGISTRATION_TYPES: unique symbol;
-declare const EDITOR_COMMAND_TYPES: unique symbol;
-
 export type EditorCommandRegistration<TEditor = Editor> = Readonly<{
   /** @internal Compile-time editor requirement; runtime data is private. */
-  readonly [EDITOR_COMMAND_REGISTRATION_TYPES]: (
+  readonly __editorCommandRegistrationTypes: (
     capabilities: EditorCommandCapabilities<TEditor>
   ) => void;
 }>;
@@ -1764,7 +1759,7 @@ export type EditorCommand<
   TEditor extends BaseEditor<any, any> = Editor,
 > = Readonly<{
   /** @internal Carries input and editor requirements without runtime metadata. */
-  readonly [EDITOR_COMMAND_TYPES]: Readonly<{
+  readonly __editorCommandTypes: Readonly<{
     editor: TEditor;
     input: Input;
   }>;
@@ -1784,7 +1779,7 @@ export type EditorCommand<
 
 /** Minimal descriptor shape shared by every semantic editor command. */
 export type EditorCommandDescriptor = Readonly<{
-  readonly [EDITOR_COMMAND_TYPES]: Readonly<{
+  readonly __editorCommandTypes: Readonly<{
     editor: unknown;
     input: unknown;
   }>;
@@ -1793,12 +1788,12 @@ export type EditorCommandDescriptor = Readonly<{
 
 /** Input accepted by one semantic command descriptor. */
 export type EditorCommandInput<TCommand extends EditorCommandDescriptor> =
-  TCommand[typeof EDITOR_COMMAND_TYPES]['input'];
+  TCommand['__editorCommandTypes']['input'];
 
 /** @internal Editor capability required by one semantic command descriptor. */
 export type EditorCommandRequiredEditor<
   TCommand extends EditorCommandDescriptor,
-> = TCommand[typeof EDITOR_COMMAND_TYPES]['editor'];
+> = TCommand['__editorCommandTypes']['editor'];
 
 /** @internal Pure capabilities visible while building a semantic command. */
 export type EditorCommandCapabilities<TEditor> =
@@ -2214,7 +2209,7 @@ export type EditorExtensionTypeProvider<
     editor: Editor
   ) => EditorExtensionTypes,
 > = {
-  readonly [EDITOR_EXTENSION_TYPES]?: TProvider;
+  readonly __editorExtensionTypes?: TProvider;
 };
 
 type UnionToIntersection<T> = (
@@ -2328,7 +2323,7 @@ type EditorProvidedTypesFromExtension<
   V extends Value,
   TExtension,
 > = TExtension extends {
-  readonly [EDITOR_EXTENSION_TYPES]?: infer TProvider;
+  readonly __editorExtensionTypes?: infer TProvider;
 }
   ? TProvider extends (editor: Editor<V>) => infer TTypes
     ? TTypes

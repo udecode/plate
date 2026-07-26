@@ -217,7 +217,8 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 ### Plugin HTML Codec Overview
 
 Each Plate plugin owns the HTML tags, styles, and attributes for its schema
-claim. The same `.extendHtmlCodec()` declaration handles decode and encode.
+claim. The same `'text/html'` map returned by context-bound `defineCodecs`
+handles decode and encode.
 
 | HTML Element / Style                                       | Plate Plugin (Typical)  | Notes                                                                    |
 | :--------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------- |
@@ -255,10 +256,12 @@ claim. The same `.extendHtmlCodec()` declaration handles decode and encode.
   The exact Plate type (e.g., `ParagraphPlugin.key` vs. `'p'`) depends on how plugins are configured. The table shows typical associations. Ensure the corresponding Plate plugins are included in your editor for these rules to apply.
 </Callout>
 
-### `.extendHtmlCodec()`
+### `defineCodecs`
 
-Package authors declare node-level HTML meaning with `.extendHtmlCodec()`
-before the app's terminal `.configure()` call:
+Package authors declare node-level HTML meaning in the constructor's `codecs`
+callback before the app's terminal `.configure()` call. Destructure the
+context-bound `defineCodecs` and pass it the MIME-keyed map. This is the one
+inline inference anchor for the plugin schema and codec callbacks:
 
 - `match` is a non-empty array of tag, class, attribute, or style matchers.
 - `decode` returns only the value or properties owned by the plugin. Element
@@ -269,6 +272,8 @@ before the app's terminal `.configure()` call:
   silently.
 - `priority` resolves intentional overlap. Equal-priority exclusive claims
   fail model compilation instead of depending on plugin array order.
+- One plugin may provide a non-empty ordered rule tuple when it owns multiple
+  HTML representations. Keep that tuple in the same codec map.
 
 This element codec maps `<aside>` to a callout and preserves an app-configured
 storage type:
@@ -278,6 +283,20 @@ import { property, schema } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
 const CalloutPlugin = createPlatePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => ({
+          variant: element.dataset.variant || undefined,
+        }),
+        encode: ({ content, node }) => ({
+          attributes: { 'data-variant': node.variant },
+          children: content,
+          tag: 'aside',
+        }),
+        match: [{ tag: 'aside' }],
+      },
+    }),
   key: 'callout',
   schema: {
     element: {
@@ -288,23 +307,19 @@ const CalloutPlugin = createPlatePlugin({
     },
   },
   type: 'callout',
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => ({
-    variant: element.dataset.variant || undefined,
-  }),
-  encode: ({ content, node }) => ({
-    attributes: { 'data-variant': node.variant },
-    children: content,
-    tag: 'aside',
-  }),
-  match: [{ tag: 'aside' }],
-}));
+});
 
 export const NotePlugin = CalloutPlugin.configure({ type: 'note' });
 ```
 
 `NotePlugin` decodes `<aside>` as a `note` element because the codec targets
 the installed descriptor, not a hard-coded type string.
+
+Use `defineCodecs(map)` for self and product codecs. A plugin contributing HTML
+behavior to another descriptor uses `defineCodecs(TargetPlugin, map)`; the
+helper injects that target into every rule. Do not put `target` in the rule
+manually. One plugin may keep multiple HTML representations in a non-empty
+ordered `'text/html'` tuple inside the same map.
 
 ### Whole-Input HTML Hooks
 

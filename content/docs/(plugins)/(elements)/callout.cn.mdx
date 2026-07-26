@@ -87,12 +87,12 @@ import { CalloutElement } from '@/components/ui/callout-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    CalloutPlugin.withComponent(CalloutElement),
+    CalloutPlugin.configure({ component: CalloutElement }),
   ],
 });
 ```
 
-- `withComponent`: 指定 [`CalloutElement`](/docs/components/callout-node) 来渲染提示框元素
+- `component`: 指定 [`CalloutElement`](/docs/components/callout-node) 来渲染提示框元素
 
 </Steps>
 

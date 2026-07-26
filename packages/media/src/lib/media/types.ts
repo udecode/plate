@@ -5,5 +5,6 @@ export {
   type MediaInsertInput,
   type MediaPluginConfig,
   type MediaPluginOptions,
+  type MediaPluginReference,
   type ProviderMediaInsertInput,
 } from './MediaPlugin.internal';

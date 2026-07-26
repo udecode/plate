@@ -14,7 +14,7 @@ export default function CodeDrawingDemo() {
   const editor = usePlateEditor({
     plugins: [
       ...EditorKit,
-      CodeDrawingPlugin.withComponent(CodeDrawingElement),
+      CodeDrawingPlugin.configure({ component: CodeDrawingElement }),
     ],
     initialValue: codeDrawingValue,
   });

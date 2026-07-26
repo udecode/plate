@@ -14,6 +14,9 @@ export type HtmlApi = {
  */
 export const HtmlPlugin = createBasePlugin<
   PluginConfig<'html', {}, {}, {}, {}, {}, readonly [], never, HtmlApi>
->({ key: 'html' }).extendApi(({ editor }) => ({
-  deserialize: bindFirst(deserializeHtml, editor),
-}));
+>({
+  api: ({ editor }) => ({
+    deserialize: bindFirst(deserializeHtml, editor),
+  }),
+  key: 'html',
+});

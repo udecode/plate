@@ -17,6 +17,7 @@ export const BaseDatePlugin = createBasePlugin({
       void: 'inline',
     },
   },
-}).extendTx(({ type }) => (tx) => ({
-  insert: (options?: InsertDateOptions) => insertDate(tx, type, options),
-}));
+  update: ({ tx, type }) => ({
+    insert: (options?: InsertDateOptions) => insertDate(tx, type, options),
+  }),
+});

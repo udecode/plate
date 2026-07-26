@@ -1,31 +1,27 @@
 import type {
-  AnyPluginTx,
-  BasePluginContext,
-  PlateEditorExtensionInput,
-  PluginConfig,
-  PluginReference,
+  AnyPluginConfig,
+  BasePluginAuthoringContext,
+  BasePluginExtensionContract,
+  NormalizePluginOption,
 } from '@platejs/core';
 import { editorCommands, type Element } from '@platejs/plite';
 
 import type { TriggerComboboxPluginOptions } from './types';
 
 export const withTriggerCombobox = <
-  C extends PluginConfig<
-    string,
-    TriggerComboboxPluginOptions,
-    unknown,
-    AnyPluginTx,
-    unknown,
-    unknown,
-    readonly PluginReference[],
-    unknown,
-    unknown
-  >,
+  C extends AnyPluginConfig,
+  TContract extends BasePluginExtensionContract = {},
 >({
+  defineEditorExtension,
   editor,
   getOptions,
   type,
-}: BasePluginContext<C>): PlateEditorExtensionInput<C> => {
+}: Pick<
+  BasePluginAuthoringContext<C, TContract>,
+  'defineEditorExtension' | 'editor' | 'type'
+> & {
+  getOptions: () => NormalizePluginOption<TriggerComboboxPluginOptions>;
+}) => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -39,7 +35,7 @@ export const withTriggerCombobox = <
     return text === trigger;
   };
 
-  return {
+  return defineEditorExtension({
     commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {
         const {
@@ -89,5 +85,5 @@ export const withTriggerCombobox = <
         return false;
       }),
     ],
-  };
+  });
 };

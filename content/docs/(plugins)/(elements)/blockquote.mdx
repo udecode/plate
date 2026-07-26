@@ -86,14 +86,14 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     BlockquotePlugin.configure({
-      render: { node: BlockquoteElement },
+      component: BlockquoteElement,
       shortcuts: { toggle: { keys: 'mod+shift+.' } },
     }),
   ],
 });
 ```
 
-- `render.node`: Assigns [`BlockquoteElement`](/docs/components/blockquote-node) to render blockquote elements.
+- `.configure({ component })`: Assigns [`BlockquoteElement`](/docs/components/blockquote-node) to render blockquote elements.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle blockquote formatting.
 
 ### Turn Into Toolbar Button

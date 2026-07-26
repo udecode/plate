@@ -402,7 +402,7 @@ That showed:
 
 The landed fast path now skips the heavier `pluginRenderElement` wrapper when the matched element plugin is plain:
 
-- no `render.node`
+- no custom component bound through `.withComponent()`
 - no `render.as`
 - no global `aboveNodes` / `belowNodes` wrappers
 
@@ -462,7 +462,8 @@ That is safe in this path because:
 - `getRenderNodeProps` already ran before any provider existed
 - `PlateElement` does not read element context
 - `BelowRootNodes` only reads editor context
-- the path still excludes `render.node`, `render.as`, and global node wrappers
+- the path still excludes components bound through `.withComponent()`,
+  `render.as`, and global node wrappers
 
 Measured improvement versus the previous iteration:
 
@@ -792,8 +793,8 @@ Guard test:
 
 - [pluginRenderElement.spec.tsx](/Users/zbeyens/git/plate-2/packages/core/src/react/utils/pluginRenderElement.spec.tsx)
 - verifies default paragraph rendering still works
-- verifies custom `render.node` components still receive element context through
-  the provider
+- verifies custom components bound through `.withComponent()` still receive
+  element context through the provider
 
 Targeted `5,000`-block reruns after the production fix:
 

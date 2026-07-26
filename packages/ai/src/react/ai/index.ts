@@ -3,4 +3,3 @@
  */
 
 export * from './AIPlugin';
-export * from './utils/index';

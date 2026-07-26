@@ -50,6 +50,7 @@ export const suggestionPlugin = toPlatePlugin<
     hoverId: null,
   },
 })).configure({
+  component: SuggestionLeaf,
   handlers: {
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ api, event, setOption, type }) => {
@@ -122,7 +123,6 @@ export const suggestionPlugin = toPlatePlugin<
   render: {
     belowNodes: SuggestionLineBreak,
     belowRootNodes: VoidRemoveSuggestionOverlay,
-    node: SuggestionLeaf,
   },
   targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
 });

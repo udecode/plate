@@ -25,8 +25,6 @@ import type { TxReadMethod } from '@platejs/plite/internal';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 
-declare const pluginReferenceDescriptor: unique symbol;
-
 export type AnyPluginTx = Record<string, unknown>;
 
 export type AnyPluginConfig = {
@@ -188,7 +186,7 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
     /** Type-only config anchor used by public helper inference. */
     readonly __config: C;
     /** Type-only witness for a Plate-owned plugin descriptor. */
-    readonly __pluginReference: typeof pluginReferenceDescriptor;
+    readonly __pluginReference: 'plate-plugin-descriptor';
     /** Unique identifier for this plugin. */
     key: C['key'];
     /** Plugins that must be installed before this plugin. */
@@ -240,23 +238,27 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
       abovePlite?: React.FC<{ children: React.ReactNode }>;
       /**
        * Specifies the HTML tag name to use when rendering the node component.
-       * Only used when no custom `render.node` is provided for the plugin.
+       * Only used when the resolved plugin has no custom node component.
        *
        * @default 'div' for elements, 'span' for leaves
        */
       as?: keyof HTMLElementTagNameMap;
       /**
        * Renders a component below marked leaves when `schema.mark` is declared and
-       * `isDecoration: false`. Use `render.node` instead when `isDecoration:
-       * true`.
+       * `isDecoration: false`. The plugin's root `component` renders decoration
+       * leaves when `isDecoration: true`.
        */
       leaf?: NodeComponent;
       /**
+       * Internal resolved slot for the plugin's root `component`.
+       *
        * Renders a component for:
        *
        * - Element nodes when `schema.element` is declared
        * - Below text nodes when `schema.mark` and `isDecoration: false`
        * - Below leaves when `schema.mark` and `isDecoration: true`
+       *
+       * @internal
        */
       node?: NodeComponent;
       /** Render marked values as leaves by default, or once per text node. */
@@ -326,7 +328,7 @@ export interface PluginReference<
   TDocumentType extends string = string,
 > {
   /** Type-only witness for a Plate-owned plugin descriptor. */
-  readonly __pluginReference: typeof pluginReferenceDescriptor;
+  readonly __pluginReference: 'plate-plugin-descriptor';
   readonly key: TKey;
   readonly type: TDocumentType;
 }
@@ -672,6 +674,64 @@ export type InferDependencies<P> = P extends {
 }
   ? D
   : readonly [];
+
+/**
+ * Declaration-safe dependency witness.
+ *
+ * Plugin dependencies need their config tree for capability inference, not the
+ * dependency descriptor's authoring methods and runtime fields. Keeping that
+ * full structural descriptor in another package's emitted declaration can
+ * exceed TypeScript's serializer depth and collapse the dependency to `any`.
+ */
+export type PluginDependencyReference<
+  P extends PluginReference = PluginReference,
+> = P extends {
+  readonly __config: infer C extends AnyPluginConfig;
+}
+  ? PluginReference<P['key'], P['type']> & {
+      readonly __config: PluginDependencyConfig<C>;
+    }
+  : P;
+
+export type PluginDependencyReferences<
+  D extends readonly PluginReference[] = readonly PluginReference[],
+> = {
+  readonly [TIndex in keyof D]: D[TIndex] extends PluginReference
+    ? PluginDependencyReference<D[TIndex]>
+    : never;
+};
+
+/** Declaration-safe references produced from inferred dependency configs. */
+export type PluginDependencyConfigReferences<
+  C extends readonly AnyPluginConfig[] = readonly AnyPluginConfig[],
+> = {
+  readonly [TIndex in keyof C]: PluginReference<
+    C[TIndex]['key'],
+    InferPluginDocumentType<C[TIndex]>
+  > & {
+    readonly __config: PluginDependencyConfig<C[TIndex]>;
+  };
+};
+
+/**
+ * Editor-capability view of a dependency.
+ *
+ * Runtime options stay on the dependency descriptor itself; copying them into
+ * every dependent editor type leaks UI/provider implementation types into
+ * downstream declarations without adding an editor capability.
+ */
+type PluginDependencyConfig<C extends AnyPluginConfig> = PluginConfig<
+  C['key'],
+  InferState<C>,
+  InferApi<C>,
+  InferTx<C>,
+  InferSelectors<C>,
+  {},
+  PluginDependencyReferences<InferDependencies<C>> & readonly PluginReference[],
+  InferPluginSchemaModel<C>,
+  InferPluginApi<C>,
+  InferEnabled<C>
+>;
 
 type InferDependencyConfig<P> = P extends {
   readonly __config: infer C extends AnyPluginConfig;

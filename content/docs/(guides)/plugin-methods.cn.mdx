@@ -1,52 +1,258 @@
 ---
 title: 插件方法
-description: 探索可用于扩展Plate插件的各种方法。
+description: 编写和配置 Plate 插件。
 ---
 
-## 配置方法
+插件作者把互相独立的字段放进插件 constructor。应用和 registry 通过一次终结的
+`.configure()` 完成用户覆盖，其中可以包含普通节点的 `component`。
 
-扩展插件时，默认情况下所有属性都会进行深度合并，但有两个例外：数组会被完全替换，而`options`对象会进行浅合并。
+## 方法概览
 
-### .configure
+| 方法 | 用途 | 类型行为 |
+| --- | --- | --- |
+| `.extend()` | 适配 import/prebuilt descriptor、使用 constructor 无法访问的 shared factory，或消费前一阶段类型。 | 扩展插件类型。 |
+| `.configure()` | 为一个用户覆盖现有字段。 | 终结调用，不扩展类型。 |
+| `.clone()` | 复制插件定义。 | 返回新的插件对象。 |
 
-`.configure` 用于应用或 registry 安装插件时的一次最终覆盖。包内默认值和可复用行为应通过
-`create*Plugin()`、`.extend()` 或更具体的 `.extend*()` 方法声明。
+`createBasePlugin()` 和 `createPlatePlugin()` 拥有所有互相独立的作者贡献：
+
+| 字段 | 所有权 |
+| --- | --- |
+| `api` | 插件作用域内的不可变服务和查询。 |
+| `read` | 快照或事务内的读取。 |
+| `selectors` | 派生 option 值，包括 React 订阅。 |
+| `update` | 绑定事务的插件变更。 |
+| `extension` | Plite 运行时能力，包括编辑器级分组。 |
+| `codecs` | 插件拥有的格式解码和编码。 |
+
+回调接收推断后的[插件上下文](/docs/plugin-context)，包括 `editor`、`plugin`、
+`api`、`read`、`defineCodecs`、`defineEditorExtension`、`getOption`、
+`getOptions`，以及 update 贡献中的活动 `tx`。
+
+## 使用 Constructor Context
+
+互相独立的字段及其 context callback 放进 constructor。只有 import/prebuilt
+declaration 或前一阶段新增的类型才使用 `.extend()`。
+
+```tsx title="counter-plugin.tsx" showLineNumbers
+import { createPlatePlugin, usePluginOption } from 'platejs/react';
+
+type CounterOptions = {
+  value: number;
+};
+
+type CounterApi = {
+  isEmpty: () => boolean;
+};
+
+type CounterUpdate = {
+  insertLabel: () => void;
+};
+
+type CounterSelectors = {
+  doubled: (factor: number) => number;
+  isEven: () => boolean;
+};
+
+export const CounterPlugin = createPlatePlugin({
+  api: ({ getOption }): CounterApi => ({
+    isEmpty: () => getOption('value') === 0,
+  }),
+  key: 'counter',
+  options: {
+    value: 0,
+  },
+  selectors: ({ getOptions }): CounterSelectors => ({
+    doubled: (factor) => getOptions().value * factor,
+    isEven: () => getOptions().value % 2 === 0,
+  }),
+  update: ({ getOption, tx }): CounterUpdate => ({
+    insertLabel: () => {
+      tx.text.insert(`Count: ${getOption('value')}`);
+    },
+  }),
+});
+
+export function CounterValue() {
+  const doubled = usePluginOption(CounterPlugin, 'doubled', 2);
+  const isEven = usePluginOption(CounterPlugin, 'isEven');
+
+  return (
+    <span>
+      {doubled} / {isEven ? 'even' : 'odd'}
+    </span>
+  );
+}
+```
+
+可选返回类型描述所添加的字段。对 `update` 来说，它描述 callback
+返回的命令对象，而不是 callback 本身。完整合约可推断时不要写。
+
+解析后，具体编辑器通过可读 key 暴露插件 API。通用包代码使用类型化 portal。
 
 ```ts
-const ConfiguredPlugin = MyPlugin.configure({
-  options: {
-    myOption: 'new value',
+editor.api.counter.isEmpty();
+editor.plugin(CounterPlugin).api.isEmpty();
+editor.plugin(CounterPlugin).update.insertLabel();
+```
+
+后续 update 贡献通过活动事务组复用前一个 update：
+
+```ts
+.extend(({ plugin }) => ({
+  update: ({ tx }) => ({
+    insertPair: () => {
+      tx[plugin.key].insertLabel();
+      tx[plugin.key].insertLabel();
+    },
+  }),
+}))
+```
+
+在这里调用 portal 的一次性 update 会打开嵌套事务。
+
+## 安装 Plite 能力
+
+通用编辑器底层行为放在 `extension` 字段：schema 事实、state、command、
+correction、query middleware 和运行时服务。没有 `name` 的原始 extension options
+继承插件 key。
+
+```ts title="single-line-plugin.ts" showLineNumbers
+import { createBasePlugin, editorCommands } from 'platejs';
+
+export const SingleLinePlugin = createBasePlugin({
+  extension: {
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) =>
+        state.transaction(() => {})
+      ),
+    ],
+  },
+  key: 'singleLine',
+});
+```
+
+Inline extension object 不需要 helper。若 extension declaration 是抽取后可复用的
+factory，contextual typing 无法从 `extension` 字段反向流入 factory。传入 plugin
+context，并返回其中的 `defineEditorExtension` identity helper：
+
+```ts title="trigger-plugin.ts" showLineNumbers
+import {
+  type BasePluginContext,
+  createBasePlugin,
+  editorCommands,
+  type PluginConfig,
+} from 'platejs';
+
+type TriggerConfig = PluginConfig<
+  'trigger',
+  { enabled: boolean }
+>;
+
+const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
+  context.defineEditorExtension({
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) => {
+        if (!context.getOption('enabled')) return false;
+
+        return state.transaction(() => {});
+      }),
+    ],
+  });
+
+export const TriggerPlugin = createBasePlugin<TriggerConfig>({
+  extension: (context) => withTriggerExtension(context),
+  key: 'trigger',
+  options: { enabled: true },
+});
+```
+
+constructor 的 context helper 保留嵌套 command、input、state、transaction 和
+dependency inference。从
+`@platejs/plite` import 的 `defineEditorExtension` 用于 standalone Plite
+extension，不能替代这里的 Plate plugin context。
+
+真正无 key 的编辑器级能力也属于 `extension`。插件专用 API 保持在 `api`，
+不要发布两份实现。
+
+## 声明产品 Codec
+
+使用 callback 中的 `defineCodecs` 构建 MIME-keyed map。它是 codec callback
+唯一的 inline inference anchor。
+
+```ts title="records-plugin.ts" showLineNumbers
+import { ContentSlice } from '@platejs/plite';
+import { createBasePlugin } from 'platejs';
+
+export const RecordsPlugin = createBasePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'application/json': {
+        scope: 'document',
+        decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
+        encode: ({ slice }) => JSON.stringify(slice),
+      },
+    }),
+  key: 'records',
+});
+```
+
+只有格式表示完整文档时才使用 document scope。
+Self/product codec 使用 `defineCodecs(map)`。Foreign codec 使用
+`defineCodecs(TargetPlugin, map)`；helper 会把 target 注入每个 HTML rule。
+Map 中的 `'text/html'` 接受单个 schema-aware rule 或非空有序 rule tuple。
+一个插件拥有多个 HTML 表示时，该 tuple 保持在同一个 map 中。不要直接声明
+codec map，也不要手动添加 `target`。
+
+## 绑定组件
+
+普通节点组件与其他用户覆盖放进同一次终结的 `.configure()`。
+
+```tsx title="plugins.tsx" showLineNumbers
+import { ParagraphPlugin } from 'platejs/react';
+
+import { ParagraphElement } from '@/components/ui/paragraph-node';
+
+export const AppParagraphPlugin = ParagraphPlugin.configure({
+  component: ParagraphElement,
+  shortcuts: {
+    toggle: { keys: 'mod+alt+0' },
   },
 });
 ```
 
-现有字段依赖运行时上下文时，可以使用 `.configure()` 的回调形式：
+组件绑定不会扩展插件类型。不要通过 renderer registry 字段分配节点组件。
 
-```ts
-const ConfiguredPlugin = MyPlugin.configure(({ getOptions }) => ({
+## 配置现有字段
+
+应用或 registry 安装插件时，用一次 `.configure()` 修改作者已经声明的字段。
+
+```tsx title="plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+export const AppH1Plugin = H1Plugin.configure({
   options: {
-    ...getOptions(),
-    myOption: `${getOptions().myOption} + extra`,
+    levels: [1, 2],
   },
-}));
+  shortcuts: {
+    toggle: { keys: 'mod+alt+1' },
+  },
+});
 ```
 
-- 用于修改插件的现有属性
-- 不会向插件添加新属性
-- 每个描述符只能调用一次，并且必须是最后一个插件创作方法
-- 运行时扩展可以读取已配置的值，重叠字段最终仍以用户配置为准
-- 不返回扩展类型，保持原始插件类型
+对象配置遵循 Plate 合并规则：对象深度合并，数组替换，`options` 浅合并。
+`.configure()` 不能发布新能力，并且必须是最后一次调用。
 
-### 配置关联插件
+## 配置关联插件
 
-直接配置必需依赖的描述符，并将完整描述符放入同一个应用或 registry 插件数组。具有
-相同 key 的显式描述符会替换依赖定义，无需从父级向下修改。
+直接配置必需依赖的描述符，并把完整描述符放在同一个应用或 registry 插件数组中。
 
 ```ts
 const CellPlugin = createPlatePlugin({
   key: 'cell',
   options: { padding: 12 },
 });
+
 const GridPlugin = createPlatePlugin({
   key: 'grid',
   dependencies: [CellPlugin],
@@ -54,298 +260,36 @@ const GridPlugin = createPlatePlugin({
 
 export const AppGridPlugins = [
   GridPlugin,
-  CellPlugin.configure({
-    options: { padding: 8 },
-  }),
+  CellPlugin.configure({ options: { padding: 8 } }),
 ];
 ```
 
-包作者通过 `dependencies` 声明必需能力。可选能力是应用或 registry 数组中的普通
-插件；增强能力可以依赖宿主，但宿主不会捆绑增强能力。两个具有相同 key 的不同显式
-描述符会报错；数组顺序不是覆盖机制。
+可选能力是普通数组项。两个相同 key 的显式描述符会报错；数组顺序不是覆盖机制。
 
-### .extend
+## 将 Plite 插件转换为 Plate 插件
 
-`.extend`方法允许你扩展插件的配置和功能。
+语义基础已经存在、剩余工作仅属于 React 时，使用 `toPlatePlugin()`。
 
-```ts
-const ExtendedPlugin = MyPlugin.extend({
-  options: {
-    newOption: 'new value',
-  },
-});
-```
+```tsx title="mention-plugin.tsx" showLineNumbers
+import { createBasePlugin, schema } from 'platejs';
+import { toPlatePlugin } from 'platejs/react';
 
-你也可以使用函数来访问当前配置和编辑器：
+import { MentionElement } from '@/components/ui/mention-node';
 
-```ts
-const ExtendedPlugin = MyPlugin.extend(({ editor, plugin }) => ({
-  options: {
-    newOption: 'new value',
-  },
-  handlers: {
-    onKeyDown: () => {
-      // 自定义按键逻辑
-    },
-  },
-}));
-```
-
-- 用于向插件添加新属性或修改现有属性
-- 返回具有扩展类型的新插件实例
-- 支持链式调用，允许多个扩展顺序应用；所有扩展必须位于最终 `.configure()` 之前
-
-### .configure与.extend的区别
-
-虽然这两种方法都可以用于修改插件配置，但存在一些关键差异：
-
-1. 所有权：包作者使用 `.extend` 定义行为，应用或 registry 使用一次 `.configure`
-2. 类型扩展：`.extend`返回具有扩展类型的新插件实例，而`.configure`保持原始类型
-3. 新属性：`.extend`可以向插件配置添加新属性，而`.configure`仅修改现有属性
-4. 顺序：`.configure` 必须最后调用；扩展解析时可读取配置值，但用户配置是最终覆盖
-
-先用 `.extend*()` 完成插件定义，再用一次 `.configure()` 完成用户配置。
-
-### .extendSelectors
-
-`extendSelectors`方法允许你向插件添加可订阅的选择器：
-
-```ts
-const CounterPlugin = createPlatePlugin({
-  key: 'counter',
-  options: {
-    count: 0,
-  },
-}).extendSelectors(({ getOptions }) => ({
-  doubleCount: () => getOptions().count * 2,
-  isEven: () => getOptions().count % 2 === 0,
-}));
-```
-
-然后你可以在组件或其他插件方法中使用这些选择器：
-
-```tsx
-const CounterComponent = () => {
-  const count = usePluginOption(CounterPlugin, 'count');
-  const doubleCount = usePluginOption(CounterPlugin, 'doubleCount');
-  const isEven = usePluginOption(CounterPlugin, 'isEven');
-
-  return (
-    <div>
-      <p>Count: {count}</p>
-      <p>Double Count: {doubleCount}</p>
-      <p>Is Even: {isEven ? 'Yes' : 'No'}</p>
-    </div>
-  );
-};
-```
-
-- 允许你从插件选项创建派生状态或计算值
-- 使用`getOption`读取值
-- 使用`usePluginOption`订阅值，当选项变化时重新计算，仅在结果变化时重新渲染。**这是与`.extendApi`的主要区别**
-
-### .withComponent
-
-`withComponent`方法允许你设置或替换与插件关联的组件。
-
-```ts
-import { schema } from 'platejs';
-
-const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  type: 'p',
+const BaseMentionPlugin = createBasePlugin({
+  key: 'mention',
   schema: {
-    element: { content: schema.content.text({ default: 'text', min: 1 }) },
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+      inline: true,
+    },
   },
-}).withComponent(ParagraphElement);
-```
-
-## API 和事务命令
-
-插件可以定义自己的 API 方法和事务命令。具体编辑器会把已安装插件的 API 按 key 推断到 `editor.api`；通用包代码也可以通过 `editor.plugin(Plugin).api` 访问同一个不可变 API 对象。事务命令在 `editor.update((tx) => ...)` 内使用。
-
-### .extendApi
-
-使用`extendApi`添加插件特定的API方法：
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).extendApi(() => ({
-  pluginMethod: () => 'plugin method result',
-}));
-
-// 访问插件的 API
-editor.api.myPlugin.pluginMethod();
-```
-
-### .extendEditorApi
-
-使用`extendEditorApi`添加根级API方法：
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).extendEditorApi(({ getOptions }) => ({
-  editorMethod: () => getOptions().someOption,
-}));
-
-// 访问插件的API
-editor.api.editorMethod();
-```
-
-### .extendTx
-
-使用 `extendTx` 添加插件自己的事务命令：
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).extendTx(() => (tx) => ({
-  pluginCommand: () => {
-    tx.text.insert('text');
-  },
-}));
-
-editor.update((tx) => tx.myPlugin.pluginCommand());
-```
-
-### .extendTxGroup
-
-使用 `extendTxGroup` 给指定命名空间添加事务命令：
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-}).extendTxGroup('insert', () => (tx) => ({
-  mention: () => {
-    tx.text.insert('@');
-  },
-}));
-
-editor.update((tx) => tx.insert.mention());
-```
-
-### .extendExtension
-
-使用 `.extendExtension()` 安装需要参与 Plite 运行时阶段的能力，例如 schema、command 或 correction。下面的扩展把结构化换行命令改为软换行：
-
-```ts
-import { editorCommands } from 'platejs';
-
-const SingleLinePlugin = createPlatePlugin({
-  key: 'singleLine',
-}).extendExtension({
-  commands: ({ handle }) => [
-    handle(editorCommands.insertBreak, ({ state }) =>
-      state.transaction((tx) => {
-        tx.break.insertSoft();
-      })
-    ),
-  ],
 });
+
+export const MentionPlugin =
+  toPlatePlugin(BaseMentionPlugin).configure({ component: MentionElement });
 ```
 
-普通读取与服务使用 `.extendApi()` 或 `.extendEditorApi()`；插件文档变更使用 `.extendTx()` 或 `.extendTxGroup()`。只有需要参与命令、校正、查询中间件或生命周期时才安装 Plite 扩展。
-
-### .extendCodecs
-
-当插件拥有 MIME 格式与 Plate 内容之间的转换时，使用 `.extendCodecs()`。
-回调中的 key 是 MIME 类型；`decode` 返回精确的 `ContentSlice` 或 `null`，
-`encode` 接收需要转换的精确 slice。
-
-```ts
-import { ContentSlice } from '@platejs/plite';
-import { createBasePlugin } from 'platejs';
-
-const RecordsPlugin = createBasePlugin({
-  key: 'records',
-}).extendCodecs(() => ({
-  'application/json': {
-    scope: 'document',
-    decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
-    encode: ({ slice }) => JSON.stringify(slice),
-  },
-}));
-```
-
-Plate 会从插件推断 codec owner 和 schema claims。只有格式表示完整 schema 时才
-使用 `scope: 'document'`。`.extendCodecs()` 必须位于最终 `.configure()` 之前；
-基础插件对象不接受 `codecs` 字段。
-
-### API 与事务命令的区别
-
-API 和事务命令服务于不同目的：
-
-- **事务命令：**
-  - 用于修改编辑器状态。
-  - 在 `editor.update((tx) => ...)` 内运行。
-  - 示例：`editor.update((tx) => tx.insert.tableRow())`
-
-- **API方法：**
-  - 存储所有查询、实用函数和其他不直接修改编辑器状态的方法。
-  - 示例：`editor.api.save()`、`editor.api.debug.log()`
-
-### 链式扩展
-
-你可以链式调用这些方法来创建全面的插件：
-
-```ts
-const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: {
-    baseValue: 5,
-  },
-})
-  .extendApi(() => ({
-    pluginMethod: () => 'plugin method',
-  }))
-  .extendEditorApi(({ getOptions }) => ({
-    multiply: (factor: number) => getOptions().baseValue * factor,
-  }))
-  .extendTx(() => (tx) => ({
-    pluginCommand: () => {
-      tx.text.insert('text');
-    },
-  }))
-  .extendTxGroup('insert', () => (tx) => ({
-    mention: () => {
-      tx.text.insert('@');
-    },
-  }));
-
-editor.api.myPlugin.pluginMethod();
-editor.api.multiply(3);
-editor.update((tx) => tx.myPlugin.pluginCommand());
-editor.update((tx) => tx.insert.mention());
-```
-
-当代码只知道插件描述符而不知道完整编辑器 kit 时，使用
-`editor.plugin(MyPlugin).api.pluginMethod()` 访问同一个 API 对象。
-
-## 将Plite插件转换为Plate插件
-
-要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
-
-```ts
-import { schema } from 'platejs';
-
-const CodeBlockPlugin = toPlatePlugin(
-  createBasePlugin({
-    key: 'codeBlock',
-    type: 'code_block',
-    schema: {
-      element: { content: schema.content.text({ default: 'text', min: 1 }) },
-    },
-  }),
-  {
-    handlers: {},
-    options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-  }
-);
-```
-
-`toPlatePlugin()` 会保留基础插件的方法，包括 `.configure()`、`.extend()`、
-`.extendCodecs()`、`.extendExtension()`、`.extendApi()`、
-`.extendEditorApi()`、`.extendTx()`、`.extendTxGroup()` 和
-`.withComponent()`。
+转换后的插件保持同一个创作模型：互相独立的字段放进 constructor，只有适配
+import/prebuilt declaration、使用 constructor 无法访问的 shared factory，或需要
+前一阶段类型时才使用 `.extend()`，最后调用一次 `.configure({ component })`。

@@ -57,7 +57,7 @@ Wire quote rules and the plugin's semantic command to the transaction primitive:
 - let list behavior win first for quoted list items
 - keep plain paragraph `Tab` editor-owned through indent behavior
 - keep quoted paragraph `Tab` editor-owned through the same indent behavior
-- define reverse `Tab` with `.extendTx(...)` and lift eligible blocks through its active `tx`
+- define reverse `Tab` as an `update` contribution in `.extend()` and lift eligible blocks through its active `tx`
 - let reverse `Tab` remove paragraph indent before lifting the quote
 
 Inside the `untab` command's active transaction, the algorithm stays narrow on

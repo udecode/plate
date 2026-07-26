@@ -146,7 +146,8 @@ describe('table grid queries', () => {
       const warn = mock();
       const DebugPlugin = createPlatePlugin({
         key: 'table-test-debug',
-      }).extendEditorApi(() => ({ debug: { warn } }));
+        extension: { api: { debug: { warn } } },
+      });
       const orphanValue: Value = [{ children: [{ text: '' }], type: 'p' }];
       const editor = createPlateEditor({
         plugins: [...getTestTablePlugins(), DebugPlugin],

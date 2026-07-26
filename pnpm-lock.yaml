@@ -880,9 +880,6 @@ importers:
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
       fastest-levenshtein:
         specifier: 1.0.16
         version: 1.0.16

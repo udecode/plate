@@ -10,7 +10,6 @@ type SlashPluginOptions = TriggerComboboxPluginOptions;
 
 export const BaseSlashInputPlugin = createBasePlugin({
   key: KEYS.slashInput,
-  editOnly: true,
   schema: {
     element: {
       properties: {
@@ -22,6 +21,7 @@ export const BaseSlashInputPlugin = createBasePlugin({
     },
   },
   type: NODES.slashInput,
+  editOnly: true,
 });
 
 const slashPluginOptions: SlashPluginOptions = {
@@ -36,8 +36,10 @@ const slashPluginOptions: SlashPluginOptions = {
 export const BaseSlashPlugin = createBasePlugin({
   key: KEYS.slashCommand,
   dependencies: [BaseSlashInputPlugin],
-  editOnly: true,
   options: slashPluginOptions,
-}).extendExtension(withTriggerCombobox);
+
+  editOnly: true,
+  extension: (context) => withTriggerCombobox(context),
+});
 
 export type SlashConfig = InferConfig<typeof BaseSlashPlugin>;

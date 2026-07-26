@@ -6,11 +6,13 @@ import {
   defineMediaPlugin,
   mediaElementContent,
   mediaElementProperties,
+  type MediaPluginOptions,
 } from './media/MediaPlugin.internal';
 
 export const BaseVideoPlugin = defineMediaPlugin(
   createBasePlugin({
     key: KEYS.video,
+    options: {} as MediaPluginOptions,
     schema: {
       element: {
         content: mediaElementContent,

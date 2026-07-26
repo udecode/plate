@@ -99,7 +99,7 @@ export function SelectEditorContent({
 
   const editor = usePlateEditor(
     {
-      plugins: [MultiSelectPlugin.withComponent(TagElement)],
+      plugins: [MultiSelectPlugin.configure({ component: TagElement })],
       initialValue: createEditorValue(value),
     },
     []

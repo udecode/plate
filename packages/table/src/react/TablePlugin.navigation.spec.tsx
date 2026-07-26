@@ -78,18 +78,21 @@ const domRanges = new WeakMap<
 >();
 
 const TestDOMRangePlugin = createPlatePlugin({
-  key: 'table-test-dom-range',
-}).extendEditorApi(({ editor }) => ({
-  dom: {
-    resolveDOMRange: () => {
-      const state = domRanges.get(editor);
+  extension: ({ editor }) => ({
+    api: {
+      dom: {
+        resolveDOMRange: () => {
+          const state = domRanges.get(editor);
 
-      if (!state) return null;
+          if (!state) return null;
 
-      return state.ranges[state.index++] ?? null;
+          return state.ranges[state.index++] ?? null;
+        },
+      },
     },
-  },
-}));
+  }),
+  key: 'table-test-dom-range',
+});
 
 const mockToDOMRange = <V extends Value>(
   editor: BaseEditor<V, any>,

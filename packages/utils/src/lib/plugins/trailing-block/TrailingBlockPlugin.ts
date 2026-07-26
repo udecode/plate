@@ -1,5 +1,4 @@
 import {
-  type BasePlugin,
   createBasePlugin,
   type BaseEditor,
   type PluginConfig,
@@ -42,56 +41,51 @@ export type TrailingBlockConfig = PluginConfig<
   }
 >;
 
-export const TrailingBlockPlugin: BasePlugin<TrailingBlockConfig> =
-  createBasePlugin<TrailingBlockConfig>({
-    key: KEYS.trailingBlock,
-  })
-    .extend(({ editor }) => ({
-      options: {
-        level: 0,
-        type: editor.getType(KEYS.p),
-      },
-    }))
-    .extendExtension(({ editor, getOptions }) => ({
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct({ tx }) {
-            const { insert, level, match, type } = getOptions();
-            const lastChild =
-              tx.nodes.children().length > 0
-                ? tx.nodes.last([], { level })
-                : undefined;
-            const lastChildNode = lastChild?.[0];
-            const lastChildType = ElementApi.isElement(lastChildNode)
-              ? lastChildNode.type
+export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
+  extension: ({ editor, getOptions }) => ({
+    corrections: [
+      {
+        event: 'children',
+        query: 'root',
+        correct({ tx }) {
+          const { insert, level, match, type } = getOptions();
+          const lastChild =
+            tx.nodes.children().length > 0
+              ? tx.nodes.last([], { level })
               : undefined;
+          const lastChildNode = lastChild?.[0];
+          const lastChildType = ElementApi.isElement(lastChildNode)
+            ? lastChildNode.type
+            : undefined;
 
-            if (
-              !lastChildNode ||
-              (lastChildType !== type &&
-                (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
-            ) {
-              const at = lastChild ? PathApi.next(lastChild[1]) : [0];
-              const insertTrailingBlock = () => {
-                tx.nodes.insert({ children: [{ text: '' }], type }, { at });
-              };
+          if (
+            !lastChildNode ||
+            (lastChildType !== type &&
+              (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
+          ) {
+            const at = lastChild ? PathApi.next(lastChild[1]) : [0];
+            const insertTrailingBlock = () => {
+              tx.nodes.insert({ children: [{ text: '' }], type }, { at });
+            };
 
-              if (insert) {
-                insert(editor, {
-                  at,
-                  insert: insertTrailingBlock,
-                  tx,
-                  type,
-                });
-              } else {
-                insertTrailingBlock();
-              }
-
-              return;
+            if (insert) {
+              insert(editor, {
+                at,
+                insert: insertTrailingBlock,
+                tx,
+                type,
+              });
+            } else {
+              insertTrailingBlock();
             }
-          },
+          }
         },
-      ],
-    }));
+      },
+    ],
+  }),
+  key: KEYS.trailingBlock,
+  options: ({ editor }) => ({
+    level: 0,
+    type: editor.getType(KEYS.p),
+  }),
+});

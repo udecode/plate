@@ -6,6 +6,10 @@ import {
 } from '@/registry/ui/equation-node-static';
 
 export const BaseMathKit = [
-  BaseInlineEquationPlugin.withComponent(InlineEquationElementStatic),
-  BaseEquationPlugin.withComponent(EquationElementStatic),
+  BaseInlineEquationPlugin.configure({
+    component: InlineEquationElementStatic,
+  }),
+  BaseEquationPlugin.configure({
+    component: EquationElementStatic,
+  }),
 ] as const;

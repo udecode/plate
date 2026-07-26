@@ -18,10 +18,12 @@ export const BaseBasicMarksKit = [
   BaseBoldPlugin,
   BaseItalicPlugin,
   BaseUnderlinePlugin,
-  BaseCodePlugin.withComponent(CodeLeafStatic),
+  BaseCodePlugin.configure({ component: CodeLeafStatic }),
   BaseStrikethroughPlugin,
   BaseSubscriptPlugin,
   BaseSuperscriptPlugin,
-  BaseHighlightPlugin.withComponent(HighlightLeafStatic),
-  BaseKbdPlugin.withComponent(KbdLeafStatic),
+  BaseHighlightPlugin.configure({
+    component: HighlightLeafStatic,
+  }),
+  BaseKbdPlugin.configure({ component: KbdLeafStatic }),
 ];

@@ -91,7 +91,13 @@ builder context or a scoped API can own the behavior.
 Copy:
 
 - plugin values use `options`;
-- `extendApi` and `extendTx` publish one owner implementation;
+- repeated `.extend()` contributions publish one owner implementation through
+  `api`, `read`, `selectors`, `update`, `extension`, or `codecs`;
+- codec owners destructure `defineCodecs` inline, use
+  `defineCodecs(map)` for self/product maps, and use
+  `defineCodecs(TargetPlugin, map)` for foreign maps without manual targets;
+- inline extension objects stay plain, while extracted reusable extension
+  factories return the callback context's `defineEditorExtension(...)`;
 - concrete editors expose `editor.api.<pluginKey>`;
 - generic package code can use `editor.plugin(Plugin).api` / `.update`;
 - optional generic integrations check `.installed` before any other portal
@@ -123,8 +129,11 @@ Reject:
   options, or `tx`;
 - top-level Plate plugin `config`;
 - root editor option helpers or arbitrary plugin fields;
-- duplicate `extendApi` / `extendEditorApi` implementations;
+- duplicate plugin API and editor-extension API implementations;
 - redundant portal nesting such as `table.update.insert.table`;
+- direct public `render.node` assignment instead of root `component`;
+- direct codec maps, manual codec `target` fields, or a global codec helper
+  instead of the callback's context-bound `defineCodecs`;
 - `editor.update.*` inside an active transaction;
 - broad normalization without a named invariant;
 - render subscriptions used only by later callbacks;

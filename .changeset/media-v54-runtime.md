@@ -33,6 +33,8 @@
   them as direct media children.
 - Use `mediaEmbed` as the media-embed plugin identity while preserving
   `media_embed` elements and relative media widths.
+- Preserve standalone media embeds through clipboard sanitization by carrying
+  sanitized URL and normalized width metadata on the owning figure.
 
 **Migration:** Remove `@platejs/caption` imports and caption plugin
 registration. Store captions in each media element's direct children and render

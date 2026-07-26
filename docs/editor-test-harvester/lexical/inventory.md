@@ -2,9 +2,11 @@
 
 source report: [report.md](./report.md)
 target: `../lexical`
-generated_at: 2026-05-08
-last_consolidated_at: 2026-05-09
-consolidation: live inventory rerun returned 271 rows; no new or removed rows.
+generated_at: 2026-07-26
+last_consolidated_at: 2026-07-26
+source_commit: `d52f66e250e031a6c6fd8836d160373b0df557c7`
+inventory_mode: full
+consolidation: live inventory returned 271 rows; no new, removed, or unresolved rows.
 
 Inventory command:
 

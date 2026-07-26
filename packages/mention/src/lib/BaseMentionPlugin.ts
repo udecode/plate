@@ -55,9 +55,8 @@ export const BaseMentionPlugin = createBasePlugin({
     },
   },
   options: defaultOptions,
-})
-  .extendExtension(withTriggerCombobox)
-  .extendTx(({ type }) => (tx) => ({
+  extension: (context) => withTriggerCombobox(context),
+  update: ({ tx, type }) => ({
     insert: ({ key, value }: InsertMentionOptions) => {
       tx.nodes.insert({
         key,
@@ -66,6 +65,7 @@ export const BaseMentionPlugin = createBasePlugin({
         value,
       });
     },
-  }));
+  }),
+});
 
 export type MentionConfig = InferConfig<typeof BaseMentionPlugin>;

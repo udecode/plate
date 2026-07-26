@@ -70,7 +70,7 @@ export const insertBlockMap = {
 |-------|-------|--------------|
 | `@platejs/excalidraw` | Package | Exports `BaseExcalidrawPlugin`, `TExcalidrawElement`, and `ExcalidrawDataState`. |
 | `@platejs/excalidraw/react` | Package | Exports `ExcalidrawPlugin`, `useExcalidrawElement`, and React Excalidraw prop types. |
-| `excalidraw-kit` | Registry | Adds `ExcalidrawPlugin.withComponent(ExcalidrawElement)`. |
+| `excalidraw-kit` | Registry | Adds `ExcalidrawPlugin.configure({ component: ExcalidrawElement })`. |
 | `excalidraw-node` | Registry UI | Dynamically renders `@excalidraw/excalidraw` inside a Plate element. |
 | App persistence | App code | Stores the Plate value that contains Excalidraw element data. |
 
@@ -97,7 +97,7 @@ import { createPlateEditor } from 'platejs/react';
 import { ExcalidrawElement } from '@/components/ui/excalidraw-node';
 
 export const editor = createPlateEditor({
-  plugins: [ExcalidrawPlugin.withComponent(ExcalidrawElement)],
+  plugins: [ExcalidrawPlugin.configure({ component: ExcalidrawElement })],
 });
 ```
 

@@ -22,8 +22,10 @@ Plugin keys targeted by the plugin's schema contributions and injected behavior.
 <APIItem name="api" type="Record<string, Function>">
   Plugin-owned API functions exposed through `editor.api[MyPlugin.key]` and the
   exact `editor.plugin(MyPlugin).api` portal. Both paths reference the same
-  immutable API object. Use `.extendEditorApi()` only for an intentionally
-  editor-wide API that is not owned by the plugin-key namespace.
+  immutable API object. Authors declare independent methods in the constructor
+  and use `.extend({ api })` only when they need an earlier-stage type or are
+  adapting an imported/prebuilt descriptor.
+  Genuinely editor-wide capabilities belong under the `extension` contribution.
 </APIItem>
 
 <APIItem name="tx" type="Record<string, Function>">
@@ -34,11 +36,18 @@ Plugin keys targeted by the plugin's schema contributions and injected behavior.
 
 <APIItem name="options" type="Record<string, any>">
 Plugin-owned values used by schema factories, parsers, codecs, and runtime
-behavior. Package authors declare defaults with `create*Plugin()` or
-`.extend()`. App consumers apply one final
+behavior. Package authors declare independent defaults with `create*Plugin()`.
+App consumers apply one final
 `.configure({ options: { ... } })`; live values use
 `editor.plugin(MyPlugin).getOptions()`, `.setOption()`, or `.setOptions()`.
 Updating options does not rebuild the compiled schema.
+</APIItem>
+
+<APIItem name="component" type="NodeComponent" optional>
+The ordinary React component for this plugin's node. Declare it in
+`createPlatePlugin({ component })`, or bind an existing Plate descriptor with
+one terminal `.configure({ component })`. Static consumers bind an existing
+Base descriptor directly with `BasePlugin.configure({ component })`.
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
@@ -262,7 +271,8 @@ Defines whole-input HTML parsing behavior.
 <APISubList>
 <APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyKey<C>>>" optional>
 Whole-input HTML hooks. `query`, `transformData`, and `transformFragment` are
-flat siblings. Node, mark, and property mappings use `.extendHtmlCodec()`.
+flat siblings. Node, mark, and property mappings use the schema-aware
+`'text/html'` map returned by context-bound `defineCodecs`.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -294,20 +304,8 @@ Renders a component after the direct children of the root element. This differs 
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
 Renders a component below leaf nodes when `schema.mark` is declared and
-`render.isDecoration: false`. Use `render.node` when
-`render.isDecoration: true`.
-</APISubListItem>
-<APISubListItem parent="render" name="node" type="NodeComponent" optional>
-Renders a component for:
-- Element nodes when `schema.element` is declared
-- Below text nodes when `schema.mark` and `render.isDecoration: false`
-- Below leaves when `schema.mark` and `render.isDecoration: true`
-
-Prefer `.withComponent(Component)` when component attachment is the only
-change, and call it before `.configure()`. Set `render.node` in `.extend()` for
-reusable behavior, or in the final `.configure()` call when the consumer owns
-other overrides too.
-
+`render.isDecoration: false`. Bind the ordinary node component through
+`.configure({ component: Component })`.
 </APISubListItem>
 <APISubListItem parent="render" name="nodeProps" type="NodeProps" optional>
 Explicitly maps model values to rendered element or leaf props in interactive
@@ -322,7 +320,8 @@ when `false`.
 </APISubListItem>
 
 <APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
-Specifies the HTML tag name to use when rendering the node component. Only used when no custom `render.node` is provided for the plugin.
+Specifies the HTML tag name used when no component is bound through
+`.configure({ component })`.
 
 - **Default:** `'div'` for elements, `'span'` for leaves
 
@@ -426,119 +425,58 @@ H1Plugin.configure({
 </APIItem>
 
 <APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
-Creates a new plugin instance with package-owned or reusable behavior. Complete
-every `.extend*()` call before applying consumer `.configure()`.
+Adds a contribution to an imported/prebuilt descriptor, a shared factory the
+constructor cannot access, or types introduced by an earlier contribution. Put independent
+fields directly in `createBasePlugin()` or `createPlatePlugin()`. Complete
+every `.extend()` call before applying consumer `.configure()`.
 
 ```ts
-(
-  extendConfig:
-    | Partial<PlatePlugin>
-    | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
+type PluginContribution = {
+  api?: Record<string, Function>;
+  read?: Record<string, Function>;
+  selectors?: Record<string, Function>;
+  update?: (context: { tx: EditorUpdateTransaction }) => Record<string, Function>;
+  extension?: PlateEditorExtensionInput;
+  codecs?: PluginCodecMapDeclaration;
+};
+
+<TContract extends PluginContribution>(
+  extendConfig: (
+    context: PlatePluginContext<C> & {
+      defineCodecs: DefinePluginCodecs<C>;
+      defineEditorExtension: DefineEditorExtension<C>;
+    }
+  ) => TContract
 ) => PlatePlugin;
 ```
 
-</APIItem>
+The contribution fields have distinct owners:
 
-<APIItem name="extendHtmlCodec" type="function">
-Declares the plugin's bidirectional HTML element, mark, or property mapping.
-The self overload infers the schema claim from the owning descriptor. Pass a
-different typed plugin descriptor only when this extension genuinely owns that
-foreign plugin's HTML mapping.
+- `api`: plugin-scoped immutable services
+- `read`: snapshot or transaction-local reads
+- `selectors`: derived option values
+- `update`: plugin-scoped transaction-bound mutations
+- `extension`: Plite runtime capabilities and true editor-wide groups; inline
+  objects are contextually typed without a helper
+- `codecs`: the declaration returned by context-bound `defineCodecs`
 
-```ts
-extendHtmlCodec(extension: ExtendHtmlCodec<C>): BasePlugin<C>;
+An extracted reusable editor-extension factory receives the plugin context and
+returns `context.defineEditorExtension({ ... })`. This identity helper preserves
+nested command, input, state, transaction, and dependency inference that cannot
+flow backward from the `extension` return field. It does not add another
+builder stage. The function imported from `@platejs/plite` is for standalone
+Plite extensions.
 
-extendHtmlCodec<TTarget extends PluginReference>(
-  target: ForeignHtmlCodecTarget<C, TTarget>,
-  extension: ExtendForeignHtmlCodec<C, InferConfig<TTarget>>
-): BasePlugin<C>;
-```
+Use `defineCodecs(map)` for self/product codecs and
+`defineCodecs(TargetPlugin, map)` for foreign codecs. The helper injects the
+foreign target. The map remains MIME-keyed; its `'text/html'` value accepts one
+schema-aware rule or a non-empty ordered rule tuple. `defineCodecs` is the one
+inline inference anchor—do not author direct codec maps or manual `target`
+fields.
 
-Call `.extendHtmlCodec()` during package authoring, before terminal
-`.configure()`. Element decoders return owned properties, not `type`; the
-runtime supplies the installed target's configured type.
-
-</APIItem>
-
-<APIItem name="extendExtension" type="function">
-Installs a Plite editor extension when the Plate plugin resolves. Use it for schema facts, state and tx groups, commands, corrections, query middleware, and runtime services.
-
-```ts
-extendExtension(
-  extension:
-    | PlateEditorExtensionInput
-    | ((ctx: PlatePluginContext<C>) => PlateEditorExtensionInput | undefined)
-): PlatePlugin<C>;
-
-extendExtension(
-  key: string,
-  extension:
-    | PlateEditorExtensionInput
-    | ((ctx: PlatePluginContext<C>) => PlateEditorExtensionInput | undefined)
-): PlatePlugin<C>;
-```
-
-The keyed overload gives an unnamed extension fragment a stable name under the plugin.
-
-</APIItem>
-
-<APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-Extends the plugin's API.
-
-```ts
-(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendEditorApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-Extends the editor's API with plugin-specific methods.
-
-```ts
-(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendTx" type="(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
-Extends the plugin's transaction group. The group is available inside `editor.update` at `tx[plugin.key]`.
-
-```ts
-(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) =>
-  PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendTxGroup" type="(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
-Extends a named transaction group. Use this when one plugin contributes commands to another plugin's tx namespace.
-
-```ts
-(
-  key: string,
-  tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>
-) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendSelectors" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
-Extends the plugin with selectors.
-
-```ts
-(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="withComponent" type="function">
-Sets or replaces the component associated with a plugin. This is the preferred
-facade when component attachment is the only change. Call it before terminal
-consumer configuration.
-
-```ts
-(component: NodeComponent) => PlatePlugin<C>;
-```
+`createBasePlugin()` / `createPlatePlugin()` own every independent declaration
+field, including `api`, `read`, `selectors`, `update`, `extension`, and
+`codecs`.
 
 </APIItem>
 
@@ -557,6 +495,17 @@ Returns a merged copy of an unconfigured plugin definition.
 </APIItem>
 <APIItem name="plugin" type="EditorPlatePlugin<C>">
       The current plugin instance.
+</APIItem>
+<APIItem name="defineCodecs" type="DefinePluginCodecs<C>">
+      Creates a schema-checked codec declaration inside the constructor's
+      `codecs` callback, or inside `.extend()` when the codec needs an earlier
+      capability. Pass one MIME-keyed map for self/product codecs, or pass a
+      target plugin plus the map for a foreign contribution.
+</APIItem>
+<APIItem name="defineEditorExtension" type="DefineEditorExtension<C>">
+      Identity helper for an extracted reusable Plate editor-extension factory.
+      Inline extension objects need no helper. The same-named import from
+      `@platejs/plite` owns standalone Plite extensions.
 </APIItem>
 <APIItem name="getOption" type="function">
       Function to get a specific option value.

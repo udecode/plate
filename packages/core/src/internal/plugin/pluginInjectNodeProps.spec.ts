@@ -5,13 +5,13 @@ import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 describe('pluginInjectNodeProps', () => {
   it('returns default class and style props for matching elements', () => {
     const AlignPlugin = createBasePlugin({
+      key: 'align',
       inject: {
         nodeProps: {
           nodeKey: 'align',
           styleKey: 'textAlign',
         },
       },
-      key: 'align',
     });
 
     const editor = createBaseEditor({
@@ -41,13 +41,13 @@ describe('pluginInjectNodeProps', () => {
 
   it('returns undefined when the query fails or the node is missing', () => {
     const BoldPlugin = createBasePlugin({
+      key: 'bold',
       inject: {
         nodeProps: {
           nodeKey: 'bold',
           query: () => false,
         },
       },
-      key: 'bold',
     });
 
     const editor = createBaseEditor({
@@ -71,13 +71,13 @@ describe('pluginInjectNodeProps', () => {
     const transformProps = mock(({ props }) => props);
     const TargetPlugin = createBasePlugin({
       targetPluginKeys: ['quote'],
+      key: 'target',
       inject: {
         nodeProps: {
           nodeKey: 'tone',
           transformProps,
         },
       },
-      key: 'target',
     });
 
     const editor = createBaseEditor({
@@ -106,6 +106,7 @@ describe('pluginInjectNodeProps', () => {
   it('keeps transformProps hook order when the query rejects the node', () => {
     const transformProps = mock(({ props }) => props);
     const QueryPlugin = createBasePlugin({
+      key: 'query',
       inject: {
         nodeProps: {
           nodeKey: 'tone',
@@ -113,7 +114,6 @@ describe('pluginInjectNodeProps', () => {
           transformProps,
         },
       },
-      key: 'query',
     });
 
     const editor = createBaseEditor({
@@ -135,6 +135,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('suppresses default node values unless transformProps forces an injection', () => {
     const ForcedPlugin = createBasePlugin({
+      key: 'forced',
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -146,16 +147,15 @@ describe('pluginInjectNodeProps', () => {
           }),
         },
       },
-      key: 'forced',
     });
     const SilentPlugin = createBasePlugin({
+      key: 'silent',
       inject: {
         nodeProps: {
           defaultNodeValue: false,
           nodeKey: 'bold',
         },
       },
-      key: 'silent',
     });
 
     const editor = createBaseEditor({
@@ -184,6 +184,7 @@ describe('pluginInjectNodeProps', () => {
 
   it('uses transform callbacks in precedence order', () => {
     const TonePlugin = createBasePlugin({
+      key: 'tone',
       inject: {
         nodeProps: {
           classNames: {
@@ -200,7 +201,6 @@ describe('pluginInjectNodeProps', () => {
           transformStyle: ({ value }) => ({ color: value }),
         },
       },
-      key: 'tone',
     });
 
     const editor = createBaseEditor({
@@ -226,6 +226,7 @@ describe('pluginInjectNodeProps', () => {
   it('does not resolve a path when inject matching is pathless', () => {
     const ListishPlugin = createBasePlugin({
       targetPluginKeys: ['p'],
+      key: 'list',
       inject: {
         nodeProps: {
           nodeKey: 'listStyleType',
@@ -239,7 +240,6 @@ describe('pluginInjectNodeProps', () => {
           }),
         },
       },
-      key: 'list',
     });
 
     const editor = createBaseEditor({
@@ -275,13 +275,13 @@ describe('pluginInjectNodeProps', () => {
 
   it('does not resolve a path for inject matching when the plugin has no path-based filters', () => {
     const PathlessPlugin = createBasePlugin({
+      key: 'pathless',
       inject: {
         nodeProps: {
           styleKey: '',
           transformProps: ({ props }) => props,
         },
       },
-      key: 'pathless',
     });
 
     const editor = createBaseEditor({
@@ -302,6 +302,7 @@ describe('pluginInjectNodeProps', () => {
   it('skips path-based injection when the live node no longer resolves', () => {
     const transformProps = mock(({ props }) => props);
     const PathPlugin = createBasePlugin({
+      key: 'path',
       inject: {
         excludeBelowPlugins: ['quote'],
         nodeProps: {
@@ -309,7 +310,6 @@ describe('pluginInjectNodeProps', () => {
           transformProps,
         },
       },
-      key: 'path',
     });
     const editor = createBaseEditor({
       plugins: [PathPlugin],

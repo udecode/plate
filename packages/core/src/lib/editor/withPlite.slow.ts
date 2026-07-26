@@ -47,11 +47,15 @@ const coreKeys = [
 const TestBoldPlugin = createBasePlugin({
   key: 'bold',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-}).extendHtmlCodec(() => ({
-  decode: () => true,
-  encode: ({ value }) => (value ? { tag: 'strong' } : null),
-  match: [{ tag: ['strong', 'b'] }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => true,
+        encode: ({ value }) => (value ? { tag: 'strong' } : null),
+        match: [{ tag: ['strong', 'b'] }],
+      },
+    }),
+});
 
 const TestItalicPlugin = createBasePlugin({
   key: 'italic',
@@ -176,9 +180,10 @@ describe('extendPlateEditor', () => {
     it('executes tx-backed plugin commands through update on the current editor runtime', () => {
       const TxPlugin = createBasePlugin({
         key: 'txPlugin',
-      }).extendTx(() => (tx) => ({
-        bold: () => tx.marks.add('bold', true),
-      }));
+        update: ({ tx }) => ({
+          bold: () => tx.marks.add('bold', true),
+        }),
+      });
       const editor = extendPlateEditor(createEditor(), {
         plugins: [TxPlugin, TestBoldPlugin],
         selection: {
@@ -219,25 +224,25 @@ describe('extendPlateEditor', () => {
     it('runs shared dependency factories once and keeps distinct extensions', () => {
       const calls = { api: 0, distinct: 0, selectors: 0, tx: 0 };
       const DependencyPlugin = createBasePlugin({ key: 'dependency' })
-        .extendApi(() => {
+        .extend(() => {
           calls.api += 1;
 
-          return { shared: () => true };
+          return { api: { shared: () => true } };
         })
-        .extendSelectors(() => {
+        .extend(() => {
           calls.selectors += 1;
 
-          return { shared: () => true };
+          return { selectors: { shared: () => true } };
         })
-        .extendTx(() => {
+        .extend(() => {
           calls.tx += 1;
 
-          return () => ({ shared: () => undefined });
+          return { update: () => ({ shared: () => undefined }) };
         });
-      const ExplicitDependencyPlugin = DependencyPlugin.extendApi(() => {
+      const ExplicitDependencyPlugin = DependencyPlugin.extend(() => {
         calls.distinct += 1;
 
-        return { distinct: () => true };
+        return { api: { distinct: () => true } };
       });
       const DependentPlugin = createBasePlugin({
         dependencies: [DependencyPlugin],
@@ -283,10 +288,15 @@ describe('extendPlateEditor', () => {
             void: 'inline',
           },
         },
-      }).extendTx(({ type }) => (tx) => ({
-        insert: () => {
-          tx.nodes.insert([{ children: [{ text: '' }], type }, { text: ' ' }]);
-        },
+      }).extend(({ type }) => ({
+        update: ({ tx }) => ({
+          insert: () => {
+            tx.nodes.insert([
+              { children: [{ text: '' }], type },
+              { text: ' ' },
+            ]);
+          },
+        }),
       }));
       const editor = extendPlateEditor(createEditor(), {
         plugins: [InlineTxPlugin],
@@ -741,9 +751,9 @@ describe('extendPlateEditor', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
       const HeadingPlugin = createPlatePlugin({
+        component: originalComponent,
         key: 'h1',
         priority: 100,
-        render: { node: originalComponent },
       });
 
       // Test with low priority override

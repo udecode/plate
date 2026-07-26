@@ -104,7 +104,9 @@ test.describe('code highlighting', () => {
 
   test('converts a selected paragraph into a code block with a shortcut', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop shortcut proof');
+
     const editor = await openExample(page, 'plite/code-highlighting', {
       ready: {
         editor: 'visible',

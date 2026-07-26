@@ -14,12 +14,14 @@ jsxt;
 
 const BaseCommentCodecPlugin = createBasePlugin({
   key: 'comment_parser',
-}).extendCodecs(() => ({
-  'text/plain': {
-    scope: 'document',
-    decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
-  },
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/plain': {
+        scope: 'document',
+        decode: () => ContentSlice.closed([{ text: 'comment parser' }]),
+      },
+    }),
+});
 
 const createEditor = (input: TestEditor) =>
   createBaseEditor({
@@ -209,12 +211,14 @@ describe('when pasting text into a code block', () => {
     const deserialize = mock(() => [{ text: 'mixed parser' }]);
     const MixedSelectionCodecPlugin = createBasePlugin({
       key: 'mixed_selection_parser',
-    }).extendCodecs(() => ({
-      'text/plain': {
-        scope: 'document',
-        decode: () => ContentSlice.closed(deserialize()),
-      },
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/plain': {
+            scope: 'document',
+            decode: () => ContentSlice.closed(deserialize()),
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [
         BaseParagraphPlugin,

@@ -95,8 +95,8 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     LinkPlugin.configure({
+      component: LinkElement,
       render: {
-        node: LinkElement,
         afterEditable: () => <LinkFloatingToolbar />,
       },
     }),
@@ -105,7 +105,8 @@ const editor = createPlateEditor({
 ```
 
 - `render.afterEditable`: Renders [`LinkFloatingToolbar`](/docs/components/link-toolbar) after the editable area for link editing.
-- `render.node`: Assigns [`LinkElement`](/docs/components/link-node) to render link elements.
+- `.configure({ component: LinkElement })`: Renders link elements with
+  [`LinkElement`](/docs/components/link-node).
 
 ### Input Rules
 

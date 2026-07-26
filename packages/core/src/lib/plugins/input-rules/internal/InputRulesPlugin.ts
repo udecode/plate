@@ -135,145 +135,153 @@ const isTriggerMatch = (trigger: readonly string[] | string, text: string) =>
   Array.isArray(trigger) ? trigger.includes(text) : trigger === text;
 
 export const InputRulesPlugin = createBasePlugin({
-  editOnly: true,
   key: 'inputRules',
-}).extendExtension(({ editor }) => ({
-  clipboard: {
-    insertData(data, { next, tx }) {
-      const text = data.getData('text/plain') || null;
-      const selectionContext = createSelectionContext({ editor, state: tx });
-      let handled = false;
 
-      for (const rule of getPlateRuntime(editor).inputRules.insertData) {
-        const context: InsertDataInputRuleContext = {
-          cause: 'insertData',
-          data,
-          insertData: (nextData) => {
-            next(nextData);
-          },
-          pluginKey: rule.pluginKey,
-          text,
-          tx,
-          ...selectionContext,
-        };
-        if (rule.enabled?.(context) === false) continue;
-        if (
-          rule.mimeTypes?.length &&
-          !rule.mimeTypes.some((type) => dataTransferHasMime(data, type))
-        ) {
-          continue;
+  editOnly: true,
+  extension: ({ editor }) => ({
+    clipboard: {
+      insertData(data, { next, tx }) {
+        const text = data.getData('text/plain') || null;
+        const selectionContext = createSelectionContext({ editor, state: tx });
+        let handled = false;
+
+        for (const rule of getPlateRuntime(editor).inputRules.insertData) {
+          const context: InsertDataInputRuleContext = {
+            cause: 'insertData',
+            data,
+            insertData: (nextData) => {
+              next(nextData);
+            },
+            pluginKey: rule.pluginKey,
+            text,
+            tx,
+            ...selectionContext,
+          };
+          if (rule.enabled?.(context) === false) continue;
+          if (
+            rule.mimeTypes?.length &&
+            !rule.mimeTypes.some((type) => dataTransferHasMime(data, type))
+          ) {
+            continue;
+          }
+
+          const match = rule.resolve ? rule.resolve(context) : true;
+
+          if (match === undefined) continue;
+          if (rule.apply(context, match) !== false) {
+            handled = true;
+
+            break;
+          }
         }
 
-        const match = rule.resolve ? rule.resolve(context) : true;
+        if (handled) return true;
 
-        if (match === undefined) continue;
-        if (rule.apply(context, match) !== false) {
-          handled = true;
-
-          break;
-        }
-      }
-
-      if (handled) return true;
-
-      return next(data);
+        return next(data);
+      },
     },
-  },
-  commands: ({ around }) => [
-    around(editorCommands.insertBreak, ({ state, next }) => {
-      let handled = false;
-      let continueInsertion = false;
-      const prefix = state.transaction((tx) => {
-        const selectionContext = createSelectionContext({ editor, state: tx });
+    commands: ({ around }) => [
+      around(editorCommands.insertBreak, ({ state, next }) => {
+        let handled = false;
+        let continueInsertion = false;
+        const prefix = state.transaction((tx) => {
+          const selectionContext = createSelectionContext({
+            editor,
+            state: tx,
+          });
 
-        for (const rule of getPlateRuntime(editor).inputRules.insertBreak) {
-          const context: InsertBreakInputRuleContext = {
-            cause: 'insertBreak',
-            insertBreak: () => {
-              if (continueInsertion) {
-                throw new Error(
-                  'An input rule cannot continue insertBreak more than once.'
-                );
-              }
+          for (const rule of getPlateRuntime(editor).inputRules.insertBreak) {
+            const context: InsertBreakInputRuleContext = {
+              cause: 'insertBreak',
+              insertBreak: () => {
+                if (continueInsertion) {
+                  throw new Error(
+                    'An input rule cannot continue insertBreak more than once.'
+                  );
+                }
 
-              continueInsertion = true;
-            },
-            pluginKey: rule.pluginKey,
-            tx,
-            ...selectionContext,
-          };
-          if (rule.enabled?.(context) === false) continue;
-          const match = rule.resolve ? rule.resolve(context) : true;
+                continueInsertion = true;
+              },
+              pluginKey: rule.pluginKey,
+              tx,
+              ...selectionContext,
+            };
+            if (rule.enabled?.(context) === false) continue;
+            const match = rule.resolve ? rule.resolve(context) : true;
 
-          if (match === undefined) continue;
-          if (rule.apply(context, match) !== false) {
-            handled = true;
+            if (match === undefined) continue;
+            if (rule.apply(context, match) !== false) {
+              handled = true;
 
-            break;
+              break;
+            }
           }
-        }
-      });
+        });
 
-      if (handled && !continueInsertion) return prefix;
+        if (handled && !continueInsertion) return prefix;
 
-      return next.after(prefix);
-    }),
-    around(editorCommands.insertText, ({ input, state, next }) => {
-      const rules =
-        getPlateRuntime(editor).inputRules.insertText.byTrigger[input.text] ??
-        [];
-      const target = input.options?.at;
-      const resolvedTarget = NodeApi.isNode(target)
-        ? state.nodes.path(target)
-        : target;
+        return next.after(prefix);
+      }),
+      around(editorCommands.insertText, ({ input, state, next }) => {
+        const rules =
+          getPlateRuntime(editor).inputRules.insertText.byTrigger[input.text] ??
+          [];
+        const target = input.options?.at;
+        const resolvedTarget = NodeApi.isNode(target)
+          ? state.nodes.path(target)
+          : target;
 
-      if (NodeApi.isNode(target) && !resolvedTarget) return next();
+        if (NodeApi.isNode(target) && !resolvedTarget) return next();
 
-      const commandOptions = input.options
-        ? { ...input.options, at: resolvedTarget }
-        : undefined;
-      let handled = false;
-      let continuation: typeof input | undefined;
-      const prefix = state.transaction((tx) => {
-        const selectionContext = createSelectionContext({ editor, state: tx });
+        const commandOptions = input.options
+          ? { ...input.options, at: resolvedTarget }
+          : undefined;
+        let handled = false;
+        let continuation: typeof input | undefined;
+        const prefix = state.transaction((tx) => {
+          const selectionContext = createSelectionContext({
+            editor,
+            state: tx,
+          });
 
-        for (const rule of rules) {
-          const context: InsertTextInputRuleContext = {
-            cause: 'insertText',
-            insertText: (text, options) => {
-              if (continuation) {
-                throw new Error(
-                  'An input rule cannot continue insertText more than once.'
-                );
-              }
+          for (const rule of rules) {
+            const context: InsertTextInputRuleContext = {
+              cause: 'insertText',
+              insertText: (text, options) => {
+                if (continuation) {
+                  throw new Error(
+                    'An input rule cannot continue insertText more than once.'
+                  );
+                }
 
-              continuation = { ...input, options, text };
-            },
-            options: commandOptions,
-            pluginKey: rule.pluginKey,
-            text: input.text,
-            tx,
-            ...selectionContext,
-          };
-          if (!isTriggerMatch(rule.trigger, context.text)) continue;
-          if (rule.enabled?.(context) === false) continue;
+                continuation = { ...input, options, text };
+              },
+              options: commandOptions,
+              pluginKey: rule.pluginKey,
+              text: input.text,
+              tx,
+              ...selectionContext,
+            };
+            if (!isTriggerMatch(rule.trigger, context.text)) continue;
+            if (rule.enabled?.(context) === false) continue;
 
-          const match = rule.resolve ? rule.resolve(context) : true;
+            const match = rule.resolve ? rule.resolve(context) : true;
 
-          if (match === undefined) continue;
-          if (rule.apply(context, match) !== false) {
-            handled = true;
+            if (match === undefined) continue;
+            if (rule.apply(context, match) !== false) {
+              handled = true;
 
-            break;
+              break;
+            }
           }
-        }
-      });
+        });
 
-      if (handled && !continuation) return prefix;
+        if (handled && !continuation) return prefix;
 
-      return continuation
-        ? next.after(prefix, continuation)
-        : next.after(prefix);
-    }),
-  ],
-}));
+        return continuation
+          ? next.after(prefix, continuation)
+          : next.after(prefix);
+      }),
+    ],
+  }),
+});

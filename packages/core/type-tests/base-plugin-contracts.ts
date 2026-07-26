@@ -35,47 +35,52 @@ const BoldPlugin = createBasePlugin({
     enabled: true as const,
     hotkey: 'mod+b',
   },
-})
-  .extendExtension(baseSingleExtension)
-  .extendEditorApi(({ getOptions }) => ({
-    toggleBold: () => getOptions().hotkey,
-  }));
-
-const CodecContractPlugin = createBasePlugin({
-  key: 'codecContract',
-}).extendCodecs(({ editor, plugin }) => ({
-  'application/x-codec-contract': {
-    scope: 'document',
-    decode: ({ data, format, source, state }) => {
-      const exactData: string = data;
-      const exactEditorId: string = editor.id;
-      const exactFormat: string = format;
-      const exactPluginKey: 'codecContract' = plugin.key;
-      const exactSchema: object = state.schema;
-      const exactTypes: readonly string[] = source.types;
-
-      void exactData;
-      void exactEditorId;
-      void exactFormat;
-      void exactPluginKey;
-      void exactSchema;
-      void exactTypes;
-
-      return ContentSlice.closed([{ text: data }]);
-    },
-    encode: ({ format, slice, state }) => {
-      const exactFormat: string = format;
-      const exactOpenStart: number = slice.openStart;
-      const exactSchema: object = state.schema;
-
-      void exactFormat;
-      void exactOpenStart;
-      void exactSchema;
-
-      return 'encoded';
+  extension: baseSingleExtension,
+}).extend(({ getOptions }) => ({
+  extension: {
+    api: {
+      toggleBold: () => getOptions().hotkey,
     },
   },
 }));
+
+const CodecContractPlugin = createBasePlugin({
+  key: 'codecContract',
+  codecs: ({ defineCodecs, editor, plugin }) =>
+    defineCodecs({
+      'application/x-codec-contract': {
+        scope: 'document',
+        decode: ({ data, format, source, state }) => {
+          const exactData: string = data;
+          const exactEditorId: string = editor.id;
+          const exactFormat: string = format;
+          const exactPluginKey: 'codecContract' = plugin.key;
+          const exactSchema: object = state.schema;
+          const exactTypes: readonly string[] = source.types;
+
+          void exactData;
+          void exactEditorId;
+          void exactFormat;
+          void exactPluginKey;
+          void exactSchema;
+          void exactTypes;
+
+          return ContentSlice.closed([{ text: data }]);
+        },
+        encode: ({ format, slice, state }) => {
+          const exactFormat: string = format;
+          const exactOpenStart: number = slice.openStart;
+          const exactSchema: object = state.schema;
+
+          void exactFormat;
+          void exactOpenStart;
+          void exactSchema;
+
+          return 'encoded';
+        },
+      },
+    }),
+});
 
 const HtmlParagraphContractPlugin = createBasePlugin({
   key: 'htmlParagraphContract',
@@ -85,30 +90,34 @@ const HtmlParagraphContractPlugin = createBasePlugin({
     },
   },
   type: 'html-paragraph-contract',
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => {
-    const readonlyElement: Readonly<HTMLElement> = element;
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => {
+          const readonlyElement: Readonly<HTMLElement> = element;
 
-    // @ts-expect-error Decode callbacks receive a read-only DOM view.
-    element.id = 'mutated';
+          // @ts-expect-error Decode callbacks receive a read-only DOM view.
+          element.id = 'mutated';
 
-    void readonlyElement;
+          void readonlyElement;
 
-    return {};
-  },
-  encode: ({ content, node }) => {
-    const configuredType: string = node.type;
+          return {};
+        },
+        encode: ({ content, node }) => {
+          const configuredType: string = node.type;
 
-    // @ts-expect-error Terminal configuration can replace the authored type.
-    const staleAuthoredType: 'html-paragraph-contract' = node.type;
+          // @ts-expect-error Terminal configuration can replace the authored type.
+          const staleAuthoredType: 'html-paragraph-contract' = node.type;
 
-    void configuredType;
-    void staleAuthoredType;
+          void configuredType;
+          void staleAuthoredType;
 
-    return { children: content, tag: 'p' };
-  },
-  match: [{ tag: 'p' }],
-}));
+          return { children: content, tag: 'p' };
+        },
+        match: [{ tag: 'p' }],
+      },
+    }),
+});
 
 void HtmlParagraphContractPlugin;
 
@@ -155,11 +164,14 @@ const assertForeignHtmlTarget = () => {
     schema: { mark: property.boolean() },
   });
 
-  // @ts-expect-error The descriptor overload requires a genuinely foreign key.
-  Owner.extendHtmlCodec(Owner, () => ({
-    decode: () => true,
-    decodeOnly: true,
-    match: [{ tag: 'strong' }],
+  Owner.extend(({ defineCodecs }) => ({
+    codecs: defineCodecs(Owner, {
+      'text/html': {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
+      },
+    }),
   }));
 };
 
@@ -170,31 +182,72 @@ const HtmlBoldContractPlugin = createBasePlugin({
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => (element.tagName === 'STRONG' ? true : undefined),
-  encode: ({ node, value }) => {
-    const exactText: string = node.text;
-    const exactValue: boolean = value;
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) =>
+          element.tagName === 'STRONG' ? true : undefined,
+        encode: ({ node, value }) => {
+          const exactText: string = node.text;
+          const exactValue: boolean = value;
 
-    void exactText;
-    void exactValue;
+          void exactText;
+          void exactValue;
 
-    return value ? { tag: 'strong' } : null;
-  },
-  match: [{ tag: ['strong', 'b'] }],
-}));
+          return value ? { tag: 'strong' } : null;
+        },
+        match: [{ tag: ['strong', 'b'] }],
+      },
+    }),
+});
 
 void HtmlBoldContractPlugin;
 
 createBasePlugin({
+  key: 'rawHtmlCodecContract',
+  // @ts-expect-error Codec declarations must be branded by defineCodecs. @plate-schema-adoption-negative-codec
+  codecs: () => ({
+    'text/html': {
+      decode: () => true,
+      decodeOnly: true,
+      match: [{ tag: 'strong' }],
+    },
+  }),
+});
+
+createBasePlugin({
+  key: 'tupleHtmlCodecContract',
+  schema: { mark: property.boolean() },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': [
+        {
+          decode: () => true,
+          decodeOnly: true,
+          match: [{ tag: 'strong' }],
+        },
+        {
+          decode: () => true,
+          decodeOnly: true,
+          match: [{ tag: 'b' }],
+        },
+      ],
+    }),
+});
+
+createBasePlugin({
   key: 'invalidHtmlMarkOutput',
   schema: { mark: property.boolean() },
-}).extendHtmlCodec(() => ({
-  decode: () => true,
-  // @ts-expect-error Mark encoders return a childless wrapper with a tag.
-  encode: () => ({ style: { fontWeight: 'bold' } }),
-  match: [{ tag: 'strong' }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      // @ts-expect-error Mark encoders return a childless wrapper with a tag.
+      'text/html': {
+        decode: () => true,
+        encode: () => ({ style: { fontWeight: 'bold' } }),
+        match: [{ tag: 'strong' }],
+      },
+    }),
+});
 
 const HtmlAlignContractPlugin = createBasePlugin({
   key: 'htmlAlignContract',
@@ -205,19 +258,23 @@ const HtmlAlignContractPlugin = createBasePlugin({
       }),
     ],
   },
-}).extendHtmlCodec(() => ({
-  decode: ({ element }) => element.style.textAlign || undefined,
-  encode: ({ node, value }) => {
-    const exactType: string = node.type;
-    const exactValue: string = value;
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => element.style.textAlign || undefined,
+        encode: ({ node, value }) => {
+          const exactType: string = node.type;
+          const exactValue: string = value;
 
-    void exactType;
-    void exactValue;
+          void exactType;
+          void exactValue;
 
-    return { style: { textAlign: value } };
-  },
-  match: [{ style: { textAlign: '*' } }],
-}));
+          return { style: { textAlign: value } };
+        },
+        match: [{ style: { textAlign: '*' } }],
+      },
+    }),
+});
 
 void HtmlAlignContractPlugin;
 
@@ -230,12 +287,16 @@ createBasePlugin({
       }),
     ],
   },
-  // @ts-expect-error Ordinary element-property encoders cannot replace the tag.
-}).extendHtmlCodec(() => ({
-  decode: () => 'left',
-  encode: () => ({ tag: 'p' }),
-  match: [{ style: { textAlign: '*' } }],
-}));
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      // @ts-expect-error Ordinary element-property encoders cannot replace the tag.
+      'text/html': {
+        decode: () => 'left',
+        encode: () => ({ tag: 'p' }),
+        match: [{ style: { textAlign: '*' } }],
+      },
+    }),
+});
 
 const HtmlListContractPlugin = createBasePlugin({
   key: 'htmlListContract',
@@ -250,39 +311,43 @@ const HtmlListContractPlugin = createBasePlugin({
     ],
   },
   targetPluginKeys: [HtmlParagraphContractPlugin.key],
-}).extendHtmlCodec(() => ({
-  createsElement: true,
-  decode: ({ element }) => ({
-    listStart: Number(element.getAttribute('start')) || undefined,
-    listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
-  }),
-  encode: ({ content, node }) => {
-    const exactStart: number | undefined = node.listStart;
-    const exactStyle: string | undefined = node.listStyle;
-    const configuredType: string = node.type;
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        createsElement: true,
+        decode: ({ element }) => ({
+          listStart: Number(element.getAttribute('start')) || undefined,
+          listStyle: element.tagName === 'OL' ? 'decimal' : 'disc',
+        }),
+        encode: ({ content, node }) => {
+          const exactStart: number | undefined = node.listStart;
+          const exactStyle: string | undefined = node.listStyle;
+          const configuredType: string = node.type;
 
-    void exactStart;
-    void exactStyle;
-    void configuredType;
+          void exactStart;
+          void exactStyle;
+          void configuredType;
 
-    // @ts-expect-error Runtime targetPluginKeys configuration can replace it.
-    const stalePrimaryType: 'html-paragraph-contract' = node.type;
+          // @ts-expect-error Runtime targetPluginKeys configuration can replace it.
+          const stalePrimaryType: 'html-paragraph-contract' = node.type;
 
-    void stalePrimaryType;
+          void stalePrimaryType;
 
-    return {
-      children: [
-        {
-          children: content,
-          patchTarget: true,
-          tag: 'li',
+          return {
+            children: [
+              {
+                children: content,
+                patchTarget: true,
+                tag: 'li',
+              },
+            ],
+            tag: 'ol',
+          };
         },
-      ],
-      tag: 'ol',
-    };
-  },
-  match: [{ tag: ['ol', 'ul'] }],
-}));
+        match: [{ tag: ['ol', 'ul'] }],
+      },
+    }),
+});
 
 void HtmlListContractPlugin;
 
@@ -297,11 +362,15 @@ const PrefixHtmlContractPlugin = createBasePlugin({
   },
 });
 
-// @ts-expect-error HTML codecs require exact owned schema-property keys.
-PrefixHtmlContractPlugin.extendHtmlCodec(() => ({
-  decode: () => ({}),
-  decodeOnly: true,
-  match: [{ tag: 'p' }],
+PrefixHtmlContractPlugin.extend(({ defineCodecs }) => ({
+  codecs: defineCodecs({
+    // @ts-expect-error HTML codecs require exact owned schema-property keys.
+    'text/html': {
+      decode: () => ({}),
+      decodeOnly: true,
+      match: [{ tag: 'p' }],
+    },
+  }),
 }));
 
 const ConfiguredHtmlForeignTarget = createBasePlugin({
@@ -316,74 +385,100 @@ const ConfiguredHtmlForeignTarget = createBasePlugin({
 
 const HtmlForeignContractPlugin = createBasePlugin({
   key: 'htmlForeignContract',
-}).extendHtmlCodec(ConfiguredHtmlForeignTarget, () => ({
-  decode: ({ element }) => ({ variant: element.dataset.variant }),
-  encode: ({ content, node }) => {
-    const configuredType: string = node.type;
-    const exactVariant: string | undefined = node.variant;
+  codecs: ({ defineCodecs }) =>
+    defineCodecs(ConfiguredHtmlForeignTarget, {
+      'text/html': {
+        decode: ({ element }) => ({ variant: element.dataset.variant }),
+        encode: ({ content, node }) => {
+          const configuredType: string = node.type;
+          const exactVariant: string | undefined = node.variant;
 
-    // @ts-expect-error Key-based installation cannot prove one terminal type.
-    const staleDescriptorType: 'configured-html-foreign-target' = node.type;
+          // @ts-expect-error Key-based installation cannot prove one terminal type.
+          const staleDescriptorType: 'configured-html-foreign-target' =
+            node.type;
 
-    void configuredType;
-    void exactVariant;
-    void staleDescriptorType;
+          void configuredType;
+          void exactVariant;
+          void staleDescriptorType;
 
-    return { children: content, tag: 'aside' };
-  },
-  match: [{ tag: 'aside' }],
-}));
+          return { children: content, tag: 'aside' };
+        },
+        match: [{ tag: 'aside' }],
+      },
+    }),
+});
 
 void HtmlForeignContractPlugin;
 
-createBasePlugin({ key: 'invalidForeignCreatesElement' }).extendHtmlCodec(
-  HtmlAlignContractPlugin,
-  () => ({
-    // @ts-expect-error Foreign property codecs cannot create element identity.
-    createsElement: true,
-    decode: () => 'left',
-    encode: () => ({ style: { textAlign: 'left' } }),
-    match: [{ tag: 'p' }],
-  })
-);
+createBasePlugin({
+  key: 'invalidForeignCreatesElement',
+  codecs: ({ defineCodecs }) =>
+    defineCodecs(HtmlAlignContractPlugin, {
+      // @ts-expect-error Foreign property codecs cannot create element identity.
+      'text/html': {
+        createsElement: true,
+        decode: () => 'left',
+        encode: () => ({ style: { textAlign: 'left' } }),
+        match: [{ tag: 'p' }],
+      },
+    }),
+});
 
-createBasePlugin({ key: 'arrayCodecContract' }).extendCodecs(() => ({
-  'application/x-array-contract': {
-    // @ts-expect-error Codec decode returns an exact ContentSlice, never an array.
-    decode: () => [{ text: 'invalid' }],
-    scope: 'document',
-  },
-}));
+createBasePlugin({
+  key: 'arrayCodecContract',
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'application/x-array-contract': {
+        // @ts-expect-error Codec decode returns an exact ContentSlice, never an array.
+        decode: () => [{ text: 'invalid' }],
+        scope: 'document',
+      },
+    }),
+});
 
-createBasePlugin({ key: 'identityCodecContract' }).extendCodecs(() => ({
-  'application/x-identity-contract': {
-    decode: () => null,
-    // @ts-expect-error Codec owner identity is inferred from the plugin.
-    owner: 'manual',
-    scope: 'document',
-  },
-}));
+createBasePlugin({
+  key: 'identityCodecContract',
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'application/x-identity-contract': {
+        decode: () => null,
+        // @ts-expect-error Codec owner identity is inferred from the plugin.
+        owner: 'manual',
+        scope: 'document',
+      },
+    }),
+});
 
-createBasePlugin({ key: 'invalidGenericHtmlContract' }).extendCodecs(() => ({
-  // @ts-expect-error Generic product codecs cannot claim text/html.
-  'text/html': {
-    decode: () => null,
-    scope: 'document',
-  },
-}));
+createBasePlugin({
+  key: 'invalidGenericHtmlContract',
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      // @ts-expect-error Generic product codecs cannot claim text/html.
+      'text/html': {
+        decode: () => null,
+        scope: 'document',
+      },
+    }),
+});
 
 const ConfiguredCodecContractPlugin = CodecContractPlugin.configure({});
 
 // @ts-expect-error Consumer configuration is terminal for codec authoring.
-ConfiguredCodecContractPlugin.extendCodecs(() => ({}));
+ConfiguredCodecContractPlugin.extend(({ defineCodecs }) => ({
+  codecs: defineCodecs({}),
+}));
 
 const ConfiguredHtmlContractPlugin = HtmlParagraphContractPlugin.configure({});
 
 // @ts-expect-error Consumer configuration is terminal for HTML codec authoring.
-ConfiguredHtmlContractPlugin.extendHtmlCodec(() => ({
-  decode: () => ({}),
-  decodeOnly: true,
-  match: [{ tag: 'p' }],
+ConfiguredHtmlContractPlugin.extend(({ defineCodecs }) => ({
+  codecs: defineCodecs({
+    'text/html': {
+      decode: () => ({}),
+      decodeOnly: true,
+      match: [{ tag: 'p' }],
+    },
+  }),
 }));
 
 type CalloutConfig = PluginConfig<
@@ -491,13 +586,19 @@ const CalloutPlugin = createBasePlugin<CalloutConfig>({
     variant: 'info',
   },
 })
-  .extendEditorApi(({ setOption }) => ({
-    setVariant: (variant) => {
-      setOption('variant', variant);
+  .extend(({ setOption }) => ({
+    extension: {
+      api: {
+        setVariant: (variant) => {
+          setOption('variant', variant);
+        },
+      },
     },
   }))
-  .extendApi(({ getOptions }) => ({
-    getVariant: () => getOptions().variant,
+  .extend(({ getOptions }) => ({
+    api: {
+      getVariant: () => getOptions().variant,
+    },
   }));
 
 const ConfiguredCalloutPlugin = CalloutPlugin.extend({
@@ -505,7 +606,7 @@ const ConfiguredCalloutPlugin = CalloutPlugin.extend({
     dismissible: true,
   },
 })
-  .extendExtension(baseArrayExtension)
+  .extend({ extension: baseArrayExtension })
   .configure({
     options: {
       variant: 'warning',
@@ -524,30 +625,34 @@ CalloutPlugin.configure(({ getOptions, plugin }) => {
 
 const ShortcutTargetPlugin = createBasePlugin({
   key: 'shortcutTargetContracts',
-})
-  .extendTx(() => () => ({
+  update: () => ({
     both: () => true,
     update: () => true,
-  }))
-  .extendApi(() => ({
+  }),
+}).extend(() => ({
+  api: {
     api: () => true,
     both: () => true,
-  }));
+  },
+}));
 
 type DeclaredBaseTx = {
   run: (value: 'typed', options?: { count?: number }) => number;
 };
 
-const DeclaredBaseTxPlugin = createBasePlugin({
+const DeclaredBaseTxPlugin = createBasePlugin<
+  PluginConfig<'declaredBaseTx', {}, {}, { declaredBaseTx: DeclaredBaseTx }>
+>({
   key: 'declaredBaseTx',
-}).extendTx<DeclaredBaseTx>(() => () => ({
-  run: (value, options = {}) => {
-    const exactValue: 'typed' = value;
-    const exactCount: number | undefined = options.count;
+  update: () => ({
+    run: (value, options = {}) => {
+      const exactValue: 'typed' = value;
+      const exactCount: number | undefined = options.count;
 
-    return exactValue.length + (exactCount ?? 0);
-  },
-}));
+      return exactValue.length + (exactCount ?? 0);
+    },
+  }),
+});
 
 void DeclaredBaseTxPlugin;
 
@@ -560,11 +665,13 @@ ShortcutTargetPlugin.extend({
   },
 });
 
-const ShortcutApiScopeCollisionPlugin = ShortcutTargetPlugin.extendEditorApi(
-  () => ({
-    api: () => true,
-  })
-);
+const ShortcutApiScopeCollisionPlugin = ShortcutTargetPlugin.extend(() => ({
+  extension: {
+    api: {
+      api: () => true,
+    },
+  },
+}));
 
 ShortcutApiScopeCollisionPlugin.extend({
   shortcuts: {
@@ -582,7 +689,6 @@ createBasePlugin<
   >
 >({
   key: 'explicitShortcutContracts',
-  // @ts-expect-error Explicitly typed factories declare shortcuts after capabilities.
   shortcuts: { run: { keys: 'mod+r' } },
 });
 
@@ -623,15 +729,19 @@ const FactoryExtensionPlugin = createBasePlugin({
   options: {
     enabled: true,
   },
-}).extendExtension(({ getOptions }) => {
+}).extend(({ getOptions }) => {
   const enabled: boolean = getOptions().enabled;
 
   void enabled;
 
-  return [baseFactoryExtension] as const;
+  return { extension: [baseFactoryExtension] as const };
 });
 
 createBasePlugin({
+  key: 'contextualInput',
+  options: {
+    tone: 'warm' as const,
+  },
   handlers: {
     onTextChange: ({ plugin, text }) => {
       const exactTone: 'warm' = plugin.options.tone;
@@ -652,15 +762,12 @@ createBasePlugin({
       },
     },
   },
-  key: 'contextualInput',
-  options: {
-    tone: 'warm' as const,
-  },
 });
 
 const InlineHistoryPlugin = createBasePlugin({
   key: 'inlineHistory',
-}).extendExtension(history());
+  extension: history(),
+});
 
 const basePlateEditor = createBaseEditor({
   plugins: [BoldPlugin, ConfiguredCalloutPlugin, FactoryExtensionPlugin],
@@ -680,29 +787,36 @@ const coreHistoryEditor = createBaseEditor({
 
 const OriginalOverridePlugin = createBasePlugin({
   key: 'originalOverride',
-})
-  .extendEditorApi(() => ({
-    overrideLabel: () => 'original' as const,
-    scopedLabel: () => 'scoped' as const,
-  }))
-  .extendApi(({ editor }) => {
-    const rootLabel: 'original' = editor.api.overrideLabel();
+  extension: {
+    api: {
+      overrideLabel: () => 'original' as const,
+      scopedLabel: () => 'scoped' as const,
+    },
+  },
+}).extend(({ editor }) => {
+  const rootLabel: 'original' = editor.api.overrideLabel();
 
-    // @ts-expect-error root editor API arguments stay typed in plugin contexts
-    editor.api.overrideLabel('invalid');
+  // @ts-expect-error root editor API arguments stay typed in plugin contexts
+  editor.api.overrideLabel('invalid');
 
-    void rootLabel;
+  void rootLabel;
 
-    return {
+  return {
+    api: {
       pluginScopedLabel: () => 'plugin-scoped' as const,
-    };
-  });
+    },
+  };
+});
 
 const ReplacementOverridePlugin = createBasePlugin({
   dependencies: [OriginalOverridePlugin],
   key: 'replacementOverride',
-}).extendEditorApi(({ editor }) => ({
-  overrideLabel: () => `overridden:${editor.api.scopedLabel()}`,
+}).extend(({ editor }) => ({
+  extension: {
+    api: {
+      overrideLabel: () => `overridden:${editor.api.scopedLabel()}`,
+    },
+  },
 }));
 
 const overrideEditor = createBaseEditor({

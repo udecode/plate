@@ -44,6 +44,20 @@ describe('compilePlateHtmlCodec', () => {
 
   it('decodes and encodes one inferred element rule', () => {
     const ParagraphPlugin = createBasePlugin({
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => ({
+              align: element.dataset.align || undefined,
+            }),
+            encode: ({ content, node }) => ({
+              attributes: node.align ? { 'data-align': node.align } : undefined,
+              children: content,
+              tag: 'p',
+            }),
+            match: [{ tag: 'p' }],
+          },
+        }),
       key: 'p',
       schema: {
         element: {
@@ -52,17 +66,7 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
       type: 'custom-paragraph',
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({
-        align: element.dataset.align || undefined,
-      }),
-      encode: ({ content, node }) => ({
-        attributes: node.align ? { 'data-align': node.align } : undefined,
-        children: content,
-        tag: 'p',
-      }),
-      match: [{ tag: 'p' }],
-    }));
+    });
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin],
     });
@@ -146,11 +150,15 @@ describe('compilePlateHtmlCodec', () => {
           }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
-      match: [{ tag: 'blockquote' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
+            match: [{ tag: 'blockquote' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({ plugins: [QuotePlugin] });
 
     expect(
@@ -188,11 +196,15 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
       type: 'root-block',
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const AlignPlugin = createBasePlugin({
       key: 'rootAlign',
       schema: {
@@ -203,11 +215,15 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: [RootBlockPlugin.key],
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => element.style.textAlign || undefined,
-      encode: ({ value }) => ({ style: { textAlign: value } }),
-      match: [{ style: { textAlign: '*' } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => element.style.textAlign || undefined,
+            encode: ({ value }) => ({ style: { textAlign: value } }),
+            match: [{ style: { textAlign: '*' } }],
+          },
+        }),
+    });
     const LineHeightPlugin = createBasePlugin({
       key: 'rootLineHeight',
       schema: {
@@ -218,11 +234,15 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: [RootBlockPlugin.key],
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => Number(element.style.lineHeight),
-      encode: ({ value }) => ({ style: { lineHeight: value } }),
-      match: [{ style: { lineHeight: '*' } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => Number(element.style.lineHeight),
+            encode: ({ value }) => ({ style: { lineHeight: value } }),
+            match: [{ style: { lineHeight: '*' } }],
+          },
+        }),
+    });
     const IndentPlugin = createBasePlugin({
       key: 'rootIndent',
       schema: {
@@ -233,14 +253,18 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: [RootBlockPlugin.key],
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) =>
-        Number(element.style.marginLeft.replace('px', '')) / 24,
-      encode: ({ value }) => ({
-        style: { marginLeft: `${value * 24}px` },
-      }),
-      match: [{ style: { marginLeft: '*' } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) =>
+              Number(element.style.marginLeft.replace('px', '')) / 24,
+            encode: ({ value }) => ({
+              style: { marginLeft: `${value * 24}px` },
+            }),
+            match: [{ style: { marginLeft: '*' } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [AlignPlugin, IndentPlugin, LineHeightPlugin, RootBlockPlugin],
     });
@@ -279,11 +303,15 @@ describe('compilePlateHtmlCodec', () => {
           }),
         },
       }),
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'td' }),
-      match: [{ tag: 'td' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'td' }),
+            match: [{ tag: 'td' }],
+          },
+        }),
+    });
     const RowPlugin = createBasePlugin({
       key: 'tr',
       schema: ({ plugins }) => {
@@ -298,11 +326,15 @@ describe('compilePlateHtmlCodec', () => {
           },
         };
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'tr' }),
-      match: [{ tag: 'tr' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'tr' }),
+            match: [{ tag: 'tr' }],
+          },
+        }),
+    });
     const TablePlugin = createBasePlugin({
       key: 'table',
       dependencies: [RowPlugin, CellPlugin],
@@ -318,14 +350,18 @@ describe('compilePlateHtmlCodec', () => {
           },
         };
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({
-        children: [{ children: content, tag: 'tbody' }],
-        tag: 'table',
-      }),
-      match: [{ tag: 'table' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({
+              children: [{ children: content, tag: 'tbody' }],
+              tag: 'table',
+            }),
+            match: [{ tag: 'table' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [TablePlugin],
     });
@@ -373,18 +409,18 @@ describe('compilePlateHtmlCodec', () => {
   it('reserves text/html for the inferred HTML compiler', () => {
     const InvalidPlugin = createBasePlugin({
       key: 'invalidGenericHtml',
-    }).extendCodecs(
-      () =>
+      // @plate-schema-adoption-negative-codec
+      codecs: () =>
         ({
           'text/html': {
             decode: () => null,
             scope: 'document',
           },
-        }) as any
-    );
+        }) as any,
+    });
 
     expect(() => createBaseEditor({ plugins: [InvalidPlugin] })).toThrow(
-      'cannot register "text/html" through extendCodecs'
+      'codecs must be declared with the context-bound `defineCodecs(...)` helper'
     );
   });
 
@@ -397,21 +433,29 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
       type: 'paragraph-codec',
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const BoldPlugin = createBasePlugin({
       key: 'boldCodec',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => true,
-      encode: ({ value }) => (value ? { tag: 'strong' } : null),
-      match: [{ tag: ['strong', 'b'] }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => true,
+            encode: ({ value }) => (value ? { tag: 'strong' } : null),
+            match: [{ tag: ['strong', 'b'] }],
+          },
+        }),
+    });
     const AlignPlugin = createBasePlugin({
       key: 'alignCodec',
       schema: {
@@ -422,11 +466,15 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: [ParagraphPlugin.key],
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => element.style.textAlign || undefined,
-      encode: ({ value }) => ({ style: { textAlign: value } }),
-      match: [{ style: { textAlign: '*' } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => element.style.textAlign || undefined,
+            encode: ({ value }) => ({ style: { textAlign: value } }),
+            match: [{ style: { textAlign: '*' } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [AlignPlugin, BoldPlugin, ParagraphPlugin],
     });
@@ -474,17 +522,22 @@ describe('compilePlateHtmlCodec', () => {
           properties: { brandColor: property.string() },
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({
-        brandColor: element.style.getPropertyValue('--brandColor') || undefined,
-      }),
-      encode: ({ content, node }) => ({
-        children: content,
-        style: { '--brandColor': node.brandColor },
-        tag: 'p',
-      }),
-      match: [{ style: { '--brandColor': '*' } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => ({
+              brandColor:
+                element.style.getPropertyValue('--brandColor') || undefined,
+            }),
+            encode: ({ content, node }) => ({
+              children: content,
+              style: { '--brandColor': node.brandColor },
+              tag: 'p',
+            }),
+            match: [{ style: { '--brandColor': '*' } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({ plugins: [ParagraphPlugin] });
     const fragment = editor.api.html.deserialize({
       element: '<p style="--brandColor: coral">Custom</p>',
@@ -519,15 +572,19 @@ describe('compilePlateHtmlCodec', () => {
           },
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content, node }) => ({
-        children: content,
-        style: { [String(node.cssName)]: node.cssValue },
-        tag: 'p',
-      }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content, node }) => ({
+              children: content,
+              style: { [String(node.cssName)]: node.cssValue },
+              tag: 'p',
+            }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({ plugins: [ParagraphPlugin] });
     const serialize = (cssName: string, cssValue: string) => {
       const output = new DataTransfer();
@@ -592,11 +649,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const HooksPlugin = createBasePlugin({
       key: 'htmlHooks',
       parsers: {
@@ -642,15 +703,19 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => {
-        calls.push('decode');
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => {
+              calls.push('decode');
 
-        return {};
-      },
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+              return {};
+            },
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const HooksPlugin = createBasePlugin({
       key: 'rejectHtml',
       parsers: {
@@ -692,21 +757,23 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    })
-      .extendHtmlCodec(() => ({
-        decode: () => ({}),
-        encode: ({ content, node }) => {
-          const configuredType: string = node.type;
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content, node }) => {
+              const configuredType: string = node.type;
 
-          void configuredType;
+              void configuredType;
 
-          return { children: content, tag: 'p' };
-        },
-        match: [{ tag: 'p' }],
-      }))
-      .configure({
-        type: 'configured-list-paragraph',
-      });
+              return { children: content, tag: 'p' };
+            },
+            match: [{ tag: 'p' }],
+          },
+        }),
+    }).configure({
+      type: 'configured-list-paragraph',
+    });
     const ListPlugin = createBasePlugin({
       key: 'listCodec',
       schema: {
@@ -719,34 +786,37 @@ describe('compilePlateHtmlCodec', () => {
           }),
         ],
       },
-    })
-      .extendHtmlCodec(() => ({
-        createsElement: true,
-        decode: ({ element }) => ({
-          listStart: Number(element.parentElement?.getAttribute('start')) || 1,
-          listStyle:
-            element.parentElement?.tagName === 'OL' ? 'decimal' : 'disc',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            createsElement: true,
+            decode: ({ element }) => ({
+              listStart:
+                Number(element.parentElement?.getAttribute('start')) || 1,
+              listStyle:
+                element.parentElement?.tagName === 'OL' ? 'decimal' : 'disc',
+            }),
+            encode: ({ content, node }) => ({
+              attributes:
+                node.listStart && node.listStart !== 1
+                  ? { start: node.listStart }
+                  : undefined,
+              children: [
+                {
+                  children: content,
+                  patchTarget: true,
+                  tag: 'li',
+                },
+              ],
+              tag: node.listStyle === 'decimal' ? 'ol' : 'ul',
+            }),
+            match: [{ tag: 'li' }],
+            priority: 20,
+          },
         }),
-        encode: ({ content, node }) => ({
-          attributes:
-            node.listStart && node.listStart !== 1
-              ? { start: node.listStart }
-              : undefined,
-          children: [
-            {
-              children: content,
-              patchTarget: true,
-              tag: 'li',
-            },
-          ],
-          tag: node.listStyle === 'decimal' ? 'ol' : 'ul',
-        }),
-        match: [{ tag: 'li' }],
-        priority: 20,
-      }))
-      .configure({
-        targetPluginKeys: [ParagraphPlugin.key],
-      });
+    }).configure({
+      targetPluginKeys: [ParagraphPlugin.key],
+    });
     const IndentPlugin = createBasePlugin({
       key: 'indentCodec',
       schema: {
@@ -757,14 +827,18 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: [ParagraphPlugin.key],
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) =>
-        Number.parseInt(element.style.marginLeft, 10) / 12 || undefined,
-      encode: ({ value }) => ({
-        style: { marginLeft: `${value * 12}px` },
-      }),
-      match: [{ style: { marginLeft: '*' } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) =>
+              Number.parseInt(element.style.marginLeft, 10) / 12 || undefined,
+            encode: ({ value }) => ({
+              style: { marginLeft: `${value * 12}px` },
+            }),
+            match: [{ style: { marginLeft: '*' } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [IndentPlugin, ListPlugin, ParagraphPlugin],
     });
@@ -817,11 +891,15 @@ describe('compilePlateHtmlCodec', () => {
         },
       },
       type: 'configured-primary',
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const ListPlugin = createBasePlugin({
       key: 'missingPrimaryList',
       schema: {
@@ -832,12 +910,16 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: ['missing-primary', ParagraphPlugin.key],
-    }).extendHtmlCodec(() => ({
-      createsElement: true,
-      decode: () => ({ listStyle: 'disc' }),
-      decodeOnly: true,
-      match: [{ tag: 'li' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            createsElement: true,
+            decode: () => ({ listStyle: 'disc' }),
+            decodeOnly: true,
+            match: [{ tag: 'li' }],
+          },
+        }),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [ListPlugin, ParagraphPlugin] })
@@ -852,31 +934,43 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const AlphaPlugin = createBasePlugin({
       key: 'alphaMark',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => true,
-      encode: () => ({ tag: 'strong' }),
-      match: [{ tag: 'strong' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => true,
+            encode: () => ({ tag: 'strong' }),
+            match: [{ tag: 'strong' }],
+          },
+        }),
+    });
     const ZuluPlugin = createBasePlugin({
       key: 'zuluMark',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => true,
-      encode: () => ({ tag: 'em' }),
-      match: [{ tag: 'em' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => true,
+            encode: () => ({ tag: 'em' }),
+            match: [{ tag: 'em' }],
+          },
+        }),
+    });
     const outputs = [
       [AlphaPlugin, ZuluPlugin, ParagraphPlugin],
       [ZuluPlugin, ParagraphPlugin, AlphaPlugin],
@@ -912,22 +1006,30 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const mark = (key: string, tag: string) =>
       createBasePlugin({
         key,
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
-      }).extendHtmlCodec(() => ({
-        decode: () => true,
-        encode: ({ value }) => (value ? { tag } : null),
-        match: [{ tag }],
-      }));
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            'text/html': {
+              decode: () => true,
+              encode: ({ value }) => (value ? { tag } : null),
+              match: [{ tag }],
+            },
+          }),
+      });
     const AlphaPlugin = mark('alphaGeneratedMark', 'strong');
     const BetaPlugin = mark('betaGeneratedMark', 'em');
     const GammaPlugin = mark('gammaGeneratedMark', 'u');
@@ -994,17 +1096,21 @@ describe('compilePlateHtmlCodec', () => {
           properties: { label: property.string() },
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({
-        label: element.getAttribute('data-label') || undefined,
-      }),
-      encode: ({ content, node }) => ({
-        attributes: { 'data-label': node.label },
-        children: content,
-        tag: 'p',
-      }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => ({
+              label: element.getAttribute('data-label') || undefined,
+            }),
+            encode: ({ content, node }) => ({
+              attributes: { 'data-label': node.label },
+              children: content,
+              tag: 'p',
+            }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({ plugins: [ParagraphPlugin] });
     const safeString = fc.stringOf(
       fc.constantFrom('a', 'b', '&', '<', '>', '"', "'"),
@@ -1054,15 +1160,19 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => {
-        paragraphCalls++;
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => {
+              paragraphCalls++;
 
-        return {};
-      },
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+              return {};
+            },
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const unrelated = Array.from({ length: 48 }, (_, index) =>
       createBasePlugin({
         key: `indexedUnrelated${index}`,
@@ -1071,15 +1181,19 @@ describe('compilePlateHtmlCodec', () => {
             content: schema.content.text({ default: 'text', min: 1 }),
           },
         },
-      }).extendHtmlCodec(() => ({
-        decode: () => {
-          unrelatedCalls++;
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            'text/html': {
+              decode: () => {
+                unrelatedCalls++;
 
-          return {};
-        },
-        decodeOnly: true,
-        match: [{ tag: `x-index-${index}` }],
-      }))
+                return {};
+              },
+              decodeOnly: true,
+              match: [{ tag: `x-index-${index}` }],
+            },
+          }),
+      })
     );
     const editor = createBaseEditor({
       plugins: [ParagraphPlugin, ...unrelated],
@@ -1109,11 +1223,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            decodeOnly: true,
+            match: [{ tag: 'section' }],
+          },
+        }),
+    });
     const ZuluPlugin = createBasePlugin({
       key: 'zuluElementCodec',
       schema: {
@@ -1121,11 +1239,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      decodeOnly: true,
-      match: [{ className: 'callout', tag: 'section' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            decodeOnly: true,
+            match: [{ className: 'callout', tag: 'section' }],
+          },
+        }),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [ZuluPlugin, AlphaPlugin] })
@@ -1140,38 +1262,50 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const HigherPlugin = createBasePlugin({
       key: 'higherElementCodec',
-      priority: 200,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => {
-        throw new Error('delegate this candidate');
-      },
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
+      priority: 200,
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            throw new Error('delegate this candidate');
+          },
+          decodeOnly: true,
+          match: [{ tag: 'section' }],
+        },
+      }),
     }));
     const LowerPlugin = createBasePlugin({
       key: 'lowerElementCodec',
-      priority: 100,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
+      priority: 100,
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => ({}),
+          decodeOnly: true,
+          match: [{ tag: 'section' }],
+        },
+      }),
     }));
     const editor = createBaseEditor({
       plugins: [LowerPlugin, HigherPlugin, ParagraphPlugin],
@@ -1203,32 +1337,42 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const BoldPlugin = createBasePlugin({
       key: 'winnerBold',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
-    })
-      .extendHtmlCodec(() => ({
-        decode: () => true,
-        decodeOnly: true,
-        match: [{ tag: 'strong' }],
-        priority: 20,
-      }))
-      .extendHtmlCodec(() => ({
-        decode: () => {
-          lowerMarkCalls++;
-          throw new Error('resolved mark decoder must not run');
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => true,
+            decodeOnly: true,
+            match: [{ tag: 'strong' }],
+            priority: 20,
+          },
+        }),
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            lowerMarkCalls++;
+            throw new Error('resolved mark decoder must not run');
+          },
+          decodeOnly: true,
+          match: [{ tag: 'strong' }],
+          priority: 10,
         },
-        decodeOnly: true,
-        match: [{ tag: 'strong' }],
-        priority: 10,
-      }));
+      }),
+    }));
     const AlignPlugin = createBasePlugin({
       key: 'winnerAlign',
       schema: {
@@ -1239,22 +1383,28 @@ describe('compilePlateHtmlCodec', () => {
         ],
       },
       targetPluginKeys: [ParagraphPlugin.key],
-    })
-      .extendHtmlCodec(() => ({
-        decode: () => 'center',
-        decodeOnly: true,
-        match: [{ attributes: { 'data-align': true } }],
-        priority: 20,
-      }))
-      .extendHtmlCodec(() => ({
-        decode: () => {
-          lowerPropertyCalls++;
-          throw new Error('resolved element-property decoder must not run');
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => 'center',
+            decodeOnly: true,
+            match: [{ attributes: { 'data-align': true } }],
+            priority: 20,
+          },
+        }),
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => {
+            lowerPropertyCalls++;
+            throw new Error('resolved element-property decoder must not run');
+          },
+          decodeOnly: true,
+          match: [{ attributes: { 'data-align': true } }],
+          priority: 10,
         },
-        decodeOnly: true,
-        match: [{ attributes: { 'data-align': true } }],
-        priority: 10,
-      }));
+      }),
+    }));
     const editor = createBaseEditor({
       editor: createEditor({
         lifecycleErrorSink: (error) => reports.push(error),
@@ -1286,36 +1436,48 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const HigherPlugin = createBasePlugin({
       key: 'invalidHigherElementCodec',
-      priority: 200,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({ foreign: 'must-not-leak' }) as any,
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
+      priority: 200,
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => ({ foreign: 'must-not-leak' }) as any,
+          decodeOnly: true,
+          match: [{ tag: 'section' }],
+        },
+      }),
     }));
     const LowerPlugin = createBasePlugin({
       key: 'validLowerElementCodec',
-      priority: 100,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
+      priority: 100,
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => ({}),
+          decodeOnly: true,
+          match: [{ tag: 'section' }],
+        },
+      }),
     }));
     const editor = createBaseEditor({
       plugins: [LowerPlugin, HigherPlugin, ParagraphPlugin],
@@ -1345,43 +1507,55 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const HigherPlugin = createBasePlugin({
       key: 'invalidChildrenHigher',
-      priority: 200,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({
-        children: [
-          {
-            children: [{ text: 'invalid' }],
-            type: 'undeclared-child',
-          },
-        ],
+      priority: 200,
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => ({
+            children: [
+              {
+                children: [{ text: 'invalid' }],
+                type: 'undeclared-child',
+              },
+            ],
+          }),
+          decodeOnly: true,
+          match: [{ tag: 'section' }],
+        },
       }),
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
     }));
     const LowerPlugin = createBasePlugin({
       key: 'validChildrenLower',
-      priority: 100,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      decodeOnly: true,
-      match: [{ tag: 'section' }],
+      priority: 100,
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs({
+        'text/html': {
+          decode: () => ({}),
+          decodeOnly: true,
+          match: [{ tag: 'section' }],
+        },
+      }),
     }));
     const editor = createBaseEditor({
       editor: createEditor({
@@ -1426,11 +1600,15 @@ describe('compilePlateHtmlCodec', () => {
           },
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({ unstable: 'value' }),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({ unstable: 'value' }),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       editor: createEditor({
         lifecycleErrorSink: (error) => reports.push(error),
@@ -1457,13 +1635,17 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: () => {
-        throw new Error('encoder failed');
-      },
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: () => {
+              throw new Error('encoder failed');
+            },
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       editor: createEditor({
         lifecycleErrorSink: (error) => reports.push(error),
@@ -1498,11 +1680,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const FramePlugin = createBasePlugin({
       key: 'safeFrame',
       schema: {
@@ -1515,22 +1701,26 @@ describe('compilePlateHtmlCodec', () => {
           void: 'block',
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({
-        onload: element.getAttribute('onload') || undefined,
-        src: element.getAttribute('src') || undefined,
-        srcdoc: element.getAttribute('srcdoc') || undefined,
-      }),
-      encode: ({ node }) => ({
-        attributes: {
-          ...(node.onload ? { onload: node.onload } : {}),
-          ...(node.src ? { src: node.src } : {}),
-          ...(node.srcdoc ? { srcdoc: node.srcdoc } : {}),
-        },
-        tag: 'iframe',
-      }),
-      match: [{ tag: 'iframe' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => ({
+              onload: element.getAttribute('onload') || undefined,
+              src: element.getAttribute('src') || undefined,
+              srcdoc: element.getAttribute('srcdoc') || undefined,
+            }),
+            encode: ({ node }) => ({
+              attributes: {
+                ...(node.onload ? { onload: node.onload } : {}),
+                ...(node.src ? { src: node.src } : {}),
+                ...(node.srcdoc ? { srcdoc: node.srcdoc } : {}),
+              },
+              tag: 'iframe',
+            }),
+            match: [{ tag: 'iframe' }],
+          },
+        }),
+    });
     const ImagePlugin = createBasePlugin({
       key: 'safeImage',
       schema: {
@@ -1539,16 +1729,20 @@ describe('compilePlateHtmlCodec', () => {
           void: 'block',
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({
-        src: element.getAttribute('src') || undefined,
-      }),
-      encode: ({ node }) => ({
-        attributes: { src: node.src },
-        tag: 'img',
-      }),
-      match: [{ tag: 'img' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => ({
+              src: element.getAttribute('src') || undefined,
+            }),
+            encode: ({ node }) => ({
+              attributes: { src: node.src },
+              tag: 'img',
+            }),
+            match: [{ tag: 'img' }],
+          },
+        }),
+    });
     const BaseUrlPlugin = createBasePlugin({
       key: 'baseUrl',
       schema: {
@@ -1557,16 +1751,20 @@ describe('compilePlateHtmlCodec', () => {
           void: 'block',
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({
-        href: element.getAttribute('href') || undefined,
-      }),
-      encode: ({ node }) => ({
-        attributes: { href: node.href },
-        tag: 'base',
-      }),
-      match: [{ tag: 'base' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: ({ element }) => ({
+              href: element.getAttribute('href') || undefined,
+            }),
+            encode: ({ node }) => ({
+              attributes: { href: node.href },
+              tag: 'base',
+            }),
+            match: [{ tag: 'base' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       editor: createEditor({
         lifecycleErrorSink: (error) => reports.push(error),
@@ -1673,11 +1871,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const ColorPlugin = createBasePlugin({
       key: 'colorCodec',
       schema: {
@@ -1687,11 +1889,15 @@ describe('compilePlateHtmlCodec', () => {
           }),
         ],
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => 'red',
-      encode: ({ value }) => ({ style: { color: value } }),
-      match: [{ attributes: { 'data-color': true } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => 'red',
+            encode: ({ value }) => ({ style: { color: value } }),
+            match: [{ attributes: { 'data-color': true } }],
+          },
+        }),
+    });
     const TonePlugin = createBasePlugin({
       key: 'toneCodec',
       schema: {
@@ -1701,11 +1907,15 @@ describe('compilePlateHtmlCodec', () => {
           }),
         ],
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => 'blue',
-      encode: ({ value }) => ({ style: { color: value } }),
-      match: [{ attributes: { 'data-tone': true } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => 'blue',
+            encode: ({ value }) => ({ style: { color: value } }),
+            match: [{ attributes: { 'data-tone': true } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [TonePlugin, ParagraphPlugin, ColorPlugin],
     });
@@ -1738,15 +1948,19 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({
-        attributes: { style: 'color: red' },
-        children: content,
-        tag: 'p',
-      }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({
+              attributes: { style: 'color: red' },
+              children: content,
+              tag: 'p',
+            }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const TonePlugin = createBasePlugin({
       key: 'toneStyleChannel',
       schema: {
@@ -1756,11 +1970,15 @@ describe('compilePlateHtmlCodec', () => {
           }),
         ],
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => 'blue',
-      encode: ({ value }) => ({ style: { color: value } }),
-      match: [{ attributes: { 'data-tone': true } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => 'blue',
+            encode: ({ value }) => ({ style: { color: value } }),
+            match: [{ attributes: { 'data-tone': true } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [TonePlugin, ParagraphPlugin],
     });
@@ -1793,17 +2011,21 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: () => {
-        const spec: any = { tag: 'p' };
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: () => {
+              const spec: any = { tag: 'p' };
 
-        spec.children = [spec];
+              spec.children = [spec];
 
-        return spec;
-      },
-      match: [{ tag: 'p' }],
-    }));
+              return spec;
+            },
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({ plugins: [ParagraphPlugin] });
     const output = new DataTransfer();
     const formats = writeHostFragmentData(
@@ -1827,21 +2049,25 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({
-        children: [
-          { children: content, patchTarget: true, tag: 'span' },
-          {
-            children: [{ text: 'duplicate' }],
-            patchTarget: true,
-            tag: 'span',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({
+              children: [
+                { children: content, patchTarget: true, tag: 'span' },
+                {
+                  children: [{ text: 'duplicate' }],
+                  patchTarget: true,
+                  tag: 'span',
+                },
+              ],
+              tag: 'div',
+            }),
+            match: [{ tag: 'p' }],
           },
-        ],
-        tag: 'div',
-      }),
-      match: [{ tag: 'p' }],
-    }));
+        }),
+    });
     const editor = createBaseEditor({ plugins: [ParagraphPlugin] });
     const output = new DataTransfer();
     const formats = writeHostFragmentData(
@@ -1864,11 +2090,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const UnmappedPlugin = createBasePlugin({
       key: 'unmappedProperty',
       schema: {
@@ -1928,11 +2158,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const DecodeOnlyPlugin = createBasePlugin({
       key: 'decodeOnlyProperty',
       schema: {
@@ -1942,11 +2176,15 @@ describe('compilePlateHtmlCodec', () => {
           }),
         ],
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => 'quiet',
-      decodeOnly: true,
-      match: [{ attributes: { 'data-tone': true } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => 'quiet',
+            decodeOnly: true,
+            match: [{ attributes: { 'data-tone': true } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [DecodeOnlyPlugin, ParagraphPlugin],
     });
@@ -1979,11 +2217,15 @@ describe('compilePlateHtmlCodec', () => {
           content: schema.content.text({ default: 'text', min: 1 }),
         },
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => ({}),
-      encode: ({ content }) => ({ children: content, tag: 'p' }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => ({}),
+            encode: ({ content }) => ({ children: content, tag: 'p' }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const NullablePlugin = createBasePlugin({
       key: 'nullableCodec',
       schema: {
@@ -1993,12 +2235,16 @@ describe('compilePlateHtmlCodec', () => {
           }),
         ],
       },
-    }).extendHtmlCodec(() => ({
-      decode: () => null,
-      encode: ({ value }) =>
-        value === null ? { attributes: { 'data-null': true } } : null,
-      match: [{ attributes: { 'data-null': true } }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'text/html': {
+            decode: () => null,
+            encode: ({ value }) =>
+              value === null ? { attributes: { 'data-null': true } } : null,
+            match: [{ attributes: { 'data-null': true } }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [NullablePlugin, ParagraphPlugin],
     });
@@ -2045,18 +2291,26 @@ describe('compilePlateHtmlCodec', () => {
     });
     const AlphaPlugin = createBasePlugin({
       key: 'alphaForeignAlign',
-    }).extendHtmlCodec(AlignPlugin, () => ({
-      decode: () => 'left',
-      encode: () => ({ attributes: { 'data-align': 'left' } }),
-      match: [{ tag: 'p' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs(AlignPlugin, {
+          'text/html': {
+            decode: () => 'left',
+            encode: () => ({ attributes: { 'data-align': 'left' } }),
+            match: [{ tag: 'p' }],
+          },
+        }),
+    });
     const ZuluPlugin = createBasePlugin({
       key: 'zuluForeignAlign',
-    }).extendHtmlCodec(AlignPlugin, () => ({
-      decode: () => 'right',
-      encode: () => ({ attributes: { 'data-align': 'right' } }),
-      match: [{ tag: 'div' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs(AlignPlugin, {
+          'text/html': {
+            decode: () => 'right',
+            encode: () => ({ attributes: { 'data-align': 'right' } }),
+            match: [{ tag: 'div' }],
+          },
+        }),
+    });
 
     expect(() =>
       createBaseEditor({
@@ -2080,17 +2334,23 @@ describe('compilePlateHtmlCodec', () => {
     });
     const OwnerPlugin = createBasePlugin({
       key: 'tiedForeignMarkOwner',
-    })
-      .extendHtmlCodec(AlphaMark, () => ({
-        decode: () => true,
-        encode: () => ({ tag: 'strong' }),
-        match: [{ tag: 'strong' }],
-      }))
-      .extendHtmlCodec(BetaMark, () => ({
-        decode: () => true,
-        encode: () => ({ tag: 'em' }),
-        match: [{ tag: 'em' }],
-      }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs(AlphaMark, {
+          'text/html': {
+            decode: () => true,
+            encode: () => ({ tag: 'strong' }),
+            match: [{ tag: 'strong' }],
+          },
+        }),
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs(BetaMark, {
+        'text/html': {
+          decode: () => true,
+          encode: () => ({ tag: 'em' }),
+          match: [{ tag: 'em' }],
+        },
+      }),
+    }));
 
     expect(() =>
       createBaseEditor({ plugins: [OwnerPlugin, AlphaMark, BetaMark] })
@@ -2112,21 +2372,25 @@ describe('compilePlateHtmlCodec', () => {
     });
     const ForeignOwner = createBasePlugin({
       key: 'foreignElementOwner',
-    }).extendHtmlCodec(TargetBasePlugin, () => ({
-      decode: ({ element }) => ({ variant: element.dataset.variant }),
-      encode: ({ content, node }) => {
-        const configuredType: string = node.type;
+      codecs: ({ defineCodecs }) =>
+        defineCodecs(TargetBasePlugin, {
+          'text/html': {
+            decode: ({ element }) => ({ variant: element.dataset.variant }),
+            encode: ({ content, node }) => {
+              const configuredType: string = node.type;
 
-        void configuredType;
+              void configuredType;
 
-        return {
-          attributes: { 'data-variant': node.variant },
-          children: content,
-          tag: 'aside',
-        };
-      },
-      match: [{ tag: 'aside' }],
-    }));
+              return {
+                attributes: { 'data-variant': node.variant },
+                children: content,
+                tag: 'aside',
+              };
+            },
+            match: [{ tag: 'aside' }],
+          },
+        }),
+    });
     const editor = createBaseEditor({
       plugins: [ForeignOwner, TargetPlugin],
     });
@@ -2178,93 +2442,22 @@ describe('compilePlateHtmlCodec', () => {
     });
     const ForeignOwner = createBasePlugin({
       key: 'foreignFamilyOwner',
-    }).extendHtmlCodec(AuthoredTarget, () => ({
-      decode: ({ element }) => ({ variant: element.dataset.variant }),
-      encode: ({ content, node }) => ({
-        attributes: { 'data-variant': node.variant },
-        children: content,
-        tag: 'aside',
-      }),
-      match: [{ tag: 'aside' }],
-    }));
+      codecs: ({ defineCodecs }) =>
+        defineCodecs(AuthoredTarget, {
+          'text/html': {
+            decode: ({ element }) => ({ variant: element.dataset.variant }),
+            encode: ({ content, node }) => ({
+              attributes: { 'data-variant': node.variant },
+              children: content,
+              tag: 'aside',
+            }),
+            match: [{ tag: 'aside' }],
+          },
+        }),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [ForeignOwner, InstalledTarget] })
-    ).toThrow('belongs to a different schema family');
-
-    const SpreadSpoof = createBasePlugin({
-      ...AuthoredTarget,
-      schema: InstalledTarget.schema,
-    } as any);
-
-    expect(() =>
-      createBaseEditor({ plugins: [ForeignOwner, SpreadSpoof] })
-    ).toThrow('belongs to a different schema family');
-  });
-
-  it('rejects a self codec copied onto an incompatible schema family', () => {
-    const AuthoredPlugin = createBasePlugin({
-      key: 'selfFamilyTarget',
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-          properties: { variant: property.string() },
-        },
-      },
-    }).extendHtmlCodec(() => ({
-      decode: ({ element }) => ({ variant: element.dataset.variant }),
-      encode: ({ content, node }) => ({
-        attributes: { 'data-variant': node.variant },
-        children: content,
-        tag: 'aside',
-      }),
-      match: [{ tag: 'aside' }],
-    }));
-    const SpreadSpoof = createBasePlugin({
-      ...AuthoredPlugin,
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-          properties: { count: property.number() },
-        },
-      },
-    } as any);
-
-    expect(() => createBaseEditor({ plugins: [SpreadSpoof] })).toThrow(
-      'belongs to a different schema family'
-    );
-  });
-
-  it('rejects a foreign codec copied onto an incompatible owner family', () => {
-    const TargetPlugin = createBasePlugin({
-      key: 'foreignOwnerFamilyTarget',
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-      },
-    });
-    const AuthoredOwner = createBasePlugin({
-      key: 'foreignOwnerFamily',
-      schema: {
-        mark: property.boolean({ default: false, omitDefault: true }),
-      },
-    }).extendHtmlCodec(TargetPlugin, () => ({
-      decode: () => ({}),
-      decodeOnly: true,
-      match: [{ tag: 'aside' }],
-    }));
-    const SpreadSpoof = createBasePlugin({
-      ...AuthoredOwner,
-      schema: {
-        element: {
-          content: schema.content.text({ default: 'text', min: 1 }),
-        },
-      },
-    } as any);
-
-    expect(() =>
-      createBaseEditor({ plugins: [SpreadSpoof, TargetPlugin] })
     ).toThrow('belongs to a different schema family');
   });
 
@@ -2286,9 +2479,21 @@ describe('compilePlateHtmlCodec', () => {
       decodeOnly: true as const,
       match: [{ tag: 'strong' }] as const,
     });
-    const Owner = createBasePlugin({ key: 'reusedForeignOwner' })
-      .extendHtmlCodec(AlphaMark, sharedDecoder)
-      .extendHtmlCodec(BetaMark, sharedDecoder);
+    const Owner = createBasePlugin({
+      key: 'reusedForeignOwner',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs(AlphaMark, {
+          'text/html': {
+            ...sharedDecoder(),
+          },
+        }),
+    }).extend(({ defineCodecs }) => ({
+      codecs: defineCodecs(BetaMark, {
+        'text/html': {
+          ...sharedDecoder(),
+        },
+      }),
+    }));
 
     expect(() =>
       createBaseEditor({ plugins: [Owner, AlphaMark, BetaMark] })

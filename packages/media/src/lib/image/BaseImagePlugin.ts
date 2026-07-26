@@ -45,107 +45,113 @@ export const BaseImagePlugin = defineMediaPlugin(
         },
       },
     },
-  }),
-  (options, input) => ({
-    ...input,
-    url: options.transformUrl?.(input.url) ?? input.url,
-  })
-)
-  .extendHtmlCodec(() => ({
-    decode: ({ element }) => {
-      const image = element.querySelector<HTMLElement>(':scope > img');
-
-      if (!image) return;
-
-      const url = image.getAttribute('src');
-
-      if (!url) return;
-
-      const alt = image.getAttribute('alt');
-      const initialHeight = Number(image.getAttribute('height'));
-      const initialWidth = Number(image.getAttribute('width'));
-      const width = image.style.width || undefined;
-
-      return {
-        ...(alt === null ? {} : { alt }),
-        ...(Number.isFinite(initialHeight) && initialHeight > 0
-          ? { initialHeight }
-          : {}),
-        ...(Number.isFinite(initialWidth) && initialWidth > 0
-          ? { initialWidth }
-          : {}),
-        ...(width === undefined ? {} : { width }),
-        url,
-      };
-    },
-    encode: ({ content, node }) => {
-      if (
-        typeof node.url !== 'string' ||
-        node.url.length === 0 ||
-        node.isUpload !== undefined ||
-        node.name !== undefined ||
-        node.placeholderId !== undefined
-      ) {
-        return null;
-      }
-
-      return {
-        attributes: { class: 'plate-image' },
-        children: [
+    codecs: ({ defineCodecs }) =>
+      defineCodecs({
+        'text/html': [
           {
-            attributes: {
-              alt: node.alt,
-              height: node.initialHeight,
-              src: node.url,
-              width: node.initialWidth,
+            decode: ({ element }) => {
+              const image = element.querySelector<HTMLElement>(':scope > img');
+
+              if (!image) return;
+
+              const url = image.getAttribute('src');
+
+              if (!url) return;
+
+              const alt = image.getAttribute('alt');
+              const initialHeight = Number(image.getAttribute('height'));
+              const initialWidth = Number(image.getAttribute('width'));
+              const width = image.style.width || undefined;
+
+              return {
+                ...(alt === null ? {} : { alt }),
+                ...(Number.isFinite(initialHeight) && initialHeight > 0
+                  ? { initialHeight }
+                  : {}),
+                ...(Number.isFinite(initialWidth) && initialWidth > 0
+                  ? { initialWidth }
+                  : {}),
+                ...(width === undefined ? {} : { width }),
+                url,
+              };
             },
-            style: {
-              width:
-                typeof node.width === 'number' ? `${node.width}px` : node.width,
+            encode: ({ content, node }) => {
+              if (
+                typeof node.url !== 'string' ||
+                node.url.length === 0 ||
+                node.isUpload !== undefined ||
+                node.name !== undefined ||
+                node.placeholderId !== undefined
+              ) {
+                return null;
+              }
+
+              return {
+                attributes: { class: 'plate-image' },
+                children: [
+                  {
+                    attributes: {
+                      alt: node.alt,
+                      height: node.initialHeight,
+                      src: node.url,
+                      width: node.initialWidth,
+                    },
+                    style: {
+                      width:
+                        typeof node.width === 'number'
+                          ? `${node.width}px`
+                          : node.width,
+                    },
+                    tag: 'img',
+                  },
+                  { children: content, tag: 'figcaption' },
+                ],
+                tag: 'figure',
+              };
             },
-            tag: 'img',
+            match: [{ className: 'plate-image', tag: 'figure' }],
+            priority: 20,
           },
-          { children: content, tag: 'figcaption' },
+          {
+            decode: ({ element }) => {
+              if (element.parentElement?.matches('figure.plate-image')) return;
+
+              const url = element.getAttribute('src');
+
+              if (!url) return;
+
+              const alt = element.getAttribute('alt');
+              const initialHeight = Number(element.getAttribute('height'));
+              const initialWidth = Number(element.getAttribute('width'));
+              const width = element.style.width || undefined;
+
+              return {
+                ...(alt === null ? {} : { alt }),
+                children: [{ text: '' }],
+                ...(Number.isFinite(initialHeight) && initialHeight > 0
+                  ? { initialHeight }
+                  : {}),
+                ...(Number.isFinite(initialWidth) && initialWidth > 0
+                  ? { initialWidth }
+                  : {}),
+                ...(width === undefined ? {} : { width }),
+                url,
+              };
+            },
+            decodeOnly: true,
+            match: [{ tag: 'img' }],
+          },
         ],
-        tag: 'figure',
-      };
-    },
-    match: [{ className: 'plate-image', tag: 'figure' }],
-    priority: 20,
-  }))
-  .extendHtmlCodec(() => ({
-    decode: ({ element }) => {
-      if (element.parentElement?.matches('figure.plate-image')) return;
+      }),
+  }),
+  (options, url) => ({
+    url: options.transformUrl?.(url) ?? url,
+  })
+).extend(({ editor, getOptions, plugin }) => {
+  const queryInsertData = prepareHtmlParserQuery(editor, plugin);
 
-      const url = element.getAttribute('src');
-
-      if (!url) return;
-
-      const alt = element.getAttribute('alt');
-      const initialHeight = Number(element.getAttribute('height'));
-      const initialWidth = Number(element.getAttribute('width'));
-      const width = element.style.width || undefined;
-
-      return {
-        ...(alt === null ? {} : { alt }),
-        children: [{ text: '' }],
-        ...(Number.isFinite(initialHeight) && initialHeight > 0
-          ? { initialHeight }
-          : {}),
-        ...(Number.isFinite(initialWidth) && initialWidth > 0
-          ? { initialWidth }
-          : {}),
-        ...(width === undefined ? {} : { width }),
-        url,
-      };
-    },
-    decodeOnly: true,
-    match: [{ tag: 'img' }],
-  }))
-  .extendExtension(({ editor, getOptions, plugin }) => {
-    const queryInsertData = prepareHtmlParserQuery(editor, plugin);
-
-    return {
+  return {
+    extension: {
       clipboard: {
         insertData(dataTransfer, { next, tx }) {
           const format = 'text/plain';
@@ -217,8 +223,9 @@ export const BaseImagePlugin = defineMediaPlugin(
           return next(dataTransfer);
         },
       },
-    };
-  });
+    },
+  };
+});
 
 export type ImageConfig = InferConfig<typeof BaseImagePlugin>;
 

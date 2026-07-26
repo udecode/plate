@@ -18,3 +18,4 @@ export * from './lib/plugins/override/index';
 export * from './lib/plugins/paragraph/index';
 export * from './lib/types/index';
 export * from './lib/utils/index';
+export type { PliteElementProps } from './static/components/plite-nodes';

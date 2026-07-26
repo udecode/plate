@@ -97,7 +97,6 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
       hoverId: null,
     },
     render: {
-      node: SuggestionLeaf,
       belowRootNodes: ({ api, element }) => {
         if (!api.isBlockSuggestion(element)) {
           return null;
@@ -107,13 +106,14 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
       },
     },
   })
-);
+).configure({ component: SuggestionLeaf });
 ```
 
 - `options.activeId`：当前活跃建议ID，用于视觉高亮
 - `options.currentUserId`：创建建议的当前用户ID  
 - `options.hoverId`：当前悬停建议ID，用于悬停效果
-- `render.node`：指定 [`SuggestionLeaf`](/docs/components/suggestion-node) 渲染建议文本标记
+- `.configure({ component: SuggestionLeaf })`：使用
+  [`SuggestionLeaf`](/docs/components/suggestion-node) 渲染建议文本标记
 - `render.belowRootNodes`：为区块级建议渲染 [`BlockSuggestion`](/docs/components/block-suggestion)
 
 ### 添加点击处理器

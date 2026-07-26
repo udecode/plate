@@ -14,5 +14,5 @@ export const SlashKit = [
         }),
     },
   }),
-  SlashInputPlugin.withComponent(SlashInputElement),
+  SlashInputPlugin.configure({ component: SlashInputElement }),
 ];

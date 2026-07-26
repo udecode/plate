@@ -60,13 +60,13 @@ import { TagElement } from '@/components/ui/tag-node';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    MultiSelectPlugin.withComponent(TagElement),
+    MultiSelectPlugin.configure({ component: TagElement }),
   ],
 });
 ```
 
 - `MultiSelectPlugin`：扩展 TagPlugin 并将编辑器限制为仅包含标签元素
-- `withComponent`：分配 [`TagElement`](/docs/components/tag-node) 来渲染标签组件
+- `component`：分配 [`TagElement`](/docs/components/tag-node) 来渲染标签组件
 
 ### 添加 SelectEditor
 

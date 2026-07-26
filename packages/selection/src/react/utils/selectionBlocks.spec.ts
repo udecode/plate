@@ -91,10 +91,11 @@ describe('selection block utils', () => {
     it('rolls back the spacer and block-selection side effect when clipboard insertion throws', () => {
       const throwingClipboardPlugin = createBasePlugin({
         key: 'throwing-clipboard',
-      }).extendExtension({
-        clipboard: {
-          insertData() {
-            throw new Error('clipboard failed');
+        extension: {
+          clipboard: {
+            insertData() {
+              throw new Error('clipboard failed');
+            },
           },
         },
       });

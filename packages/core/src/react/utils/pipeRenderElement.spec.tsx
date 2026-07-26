@@ -14,6 +14,7 @@ import {
 import { PlateRoot } from '../components/PlateRoot';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { createPlateEditor } from '../editor/withPlate';
+import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import { useElement, useElementSelector, usePath } from '../stores';
 import { pipeRenderElement } from './pipeRenderElement';
 
@@ -176,7 +177,8 @@ describe('pipeRenderElement', () => {
     };
     const editor = createPlateEditor({
       plugins: [
-        createBasePlugin({
+        createPlatePlugin({
+          component: CustomElement,
           key: 'p',
           type: 'p',
           schema: {
@@ -184,7 +186,7 @@ describe('pipeRenderElement', () => {
               content: schema.content.open({ default: 'text', min: 1 }),
             },
           },
-        }).withComponent(CustomElement),
+        }),
       ],
       initialValue: createValue(),
     });
@@ -325,6 +327,7 @@ describe('pipeRenderElement', () => {
         ListStylePropertyPlugin,
         createBasePlugin({
           targetPluginKeys: ['p'],
+          key: 'list',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -332,7 +335,6 @@ describe('pipeRenderElement', () => {
               styleKey: 'listStyleType',
             },
           },
-          key: 'list',
         }),
       ],
       initialValue: [
@@ -356,6 +358,7 @@ describe('pipeRenderElement', () => {
         ListStylePropertyPlugin,
         createBasePlugin({
           targetPluginKeys: ['p'],
+          key: 'hook-inject',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -374,7 +377,6 @@ describe('pipeRenderElement', () => {
               },
             },
           },
-          key: 'hook-inject',
         }),
       ],
       initialValue: [
@@ -399,6 +401,7 @@ describe('pipeRenderElement', () => {
         ListStylePropertyPlugin,
         createBasePlugin({
           targetPluginKeys: ['p'],
+          key: 'selector-inject',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -414,7 +417,6 @@ describe('pipeRenderElement', () => {
               },
             },
           },
-          key: 'selector-inject',
         }),
       ],
       initialValue: [
@@ -438,6 +440,7 @@ describe('pipeRenderElement', () => {
         ListStylePropertyPlugin,
         createBasePlugin({
           targetPluginKeys: ['p'],
+          key: 'list',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -453,7 +456,6 @@ describe('pipeRenderElement', () => {
               }),
             },
           },
-          key: 'list',
         }),
         createBasePlugin({
           key: 'p',
@@ -493,6 +495,7 @@ describe('pipeRenderElement', () => {
         ListStylePropertyPlugin,
         createBasePlugin({
           targetPluginKeys: ['p'],
+          key: 'list',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -508,7 +511,6 @@ describe('pipeRenderElement', () => {
               }),
             },
           },
-          key: 'list',
         }),
         createBasePlugin({
           key: 'active-below',
@@ -582,7 +584,6 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          editOnly: true,
           key: 'p',
           type: 'p',
           schema: {
@@ -590,6 +591,7 @@ describe('pipeRenderElement', () => {
               content: schema.content.open({ default: 'text', min: 1 }),
             },
           },
+          editOnly: true,
         }),
       ],
       readOnly: true,

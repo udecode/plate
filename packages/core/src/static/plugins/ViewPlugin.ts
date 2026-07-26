@@ -1,8 +1,12 @@
 import { DOMPlugin } from '../../lib';
 import { getSelectedDomFragment } from '../utils/getSelectedDomFragment';
 
-export const ViewPlugin = DOMPlugin.extendEditorApi(({ editor }) => ({
-  getFragment() {
-    return getSelectedDomFragment(editor);
+export const ViewPlugin = DOMPlugin.extend(({ editor }) => ({
+  extension: {
+    api: {
+      getFragment() {
+        return getSelectedDomFragment(editor);
+      },
+    },
   },
 }));

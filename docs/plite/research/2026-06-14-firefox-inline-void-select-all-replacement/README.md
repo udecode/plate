@@ -1,7 +1,7 @@
 # Firefox Inline Void Select-All Replacement
 
 Date: 2026-06-14
-Owner: slate-auto / slate-research
+Owner: auto / plite-research
 Status: promoted-kept
 
 ## Question

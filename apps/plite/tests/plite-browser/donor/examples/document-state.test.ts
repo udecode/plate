@@ -269,7 +269,9 @@ test.describe('document state example', () => {
 
   test('keeps title input undo outside editor focus repair', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop shortcut proof');
+
     const pageErrors: Error[] = [];
     page.on('pageerror', (error) => pageErrors.push(error));
 
@@ -309,7 +311,9 @@ test.describe('document state example', () => {
 
   test('keeps title input undo redo outside editor focus repair', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop shortcut proof');
+
     const pageErrors: Error[] = [];
     page.on('pageerror', (error) => pageErrors.push(error));
 
@@ -355,7 +359,9 @@ test.describe('document state example', () => {
 
   test('keeps title input focused while repeated undo crosses editor history', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'Desktop shortcut proof');
+
     const pageErrors: Error[] = [];
     page.on('pageerror', (error) => pageErrors.push(error));
 

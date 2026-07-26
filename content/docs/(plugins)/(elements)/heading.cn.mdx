@@ -90,15 +90,15 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     H1Plugin.configure({
-      render: { node: H1Element },
+      component: H1Element,
       shortcuts: { toggle: { keys: 'mod+alt+1' } },
     }),
     H2Plugin.configure({
-      render: { node: H2Element },
+      component: H2Element,
       shortcuts: { toggle: { keys: 'mod+alt+2' } },
     }),
     H3Plugin.configure({
-      render: { node: H3Element },
+      component: H3Element,
       shortcuts: { toggle: { keys: 'mod+alt+3' } },
     }),
     // 类似地配置 H4Plugin、H5Plugin、H6Plugin
@@ -106,7 +106,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `render.node`: 分配自定义 React 组件如 [`H1Element`](/docs/components/heading-node) 来渲染特定级别的标题。
+- `.configure({ component })`: 分配自定义 React 组件如 [`H1Element`](/docs/components/heading-node) 来渲染特定级别的标题。
 - `shortcuts.toggle`: 定义键盘[快捷键](/docs/plugin-shortcuts)（例如 `mod+alt+1`）来切换相应的标题级别。
 
 ### 转换为工具栏按钮

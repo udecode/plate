@@ -56,7 +56,7 @@ const element = (key: string, options: TestElementOptions = {}) => {
   return createBasePlugin({
     key,
     schema: { element: descriptor },
-    ...(options.type ? { type: options.type } : {}),
+    type: options.type ?? key,
   });
 };
 

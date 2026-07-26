@@ -13,8 +13,14 @@ import {
 } from '@/registry/ui/table-node-static';
 
 export const BaseTableKit = [
-  BaseTablePlugin.withComponent(TableElementStatic),
-  BaseTableRowPlugin.withComponent(TableRowElementStatic),
-  BaseTableCellPlugin.withComponent(TableCellElementStatic),
-  BaseTableCellHeaderPlugin.withComponent(TableCellHeaderElementStatic),
+  BaseTablePlugin.configure({ component: TableElementStatic }),
+  BaseTableRowPlugin.configure({
+    component: TableRowElementStatic,
+  }),
+  BaseTableCellPlugin.configure({
+    component: TableCellElementStatic,
+  }),
+  BaseTableCellHeaderPlugin.configure({
+    component: TableCellHeaderElementStatic,
+  }),
 ];

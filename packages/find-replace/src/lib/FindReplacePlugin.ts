@@ -17,6 +17,11 @@ export type FindReplacePluginOptions = {
 
 export const FindReplacePlugin = createBasePlugin({
   key: KEYS.searchHighlight,
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
+  type: NODES.searchHighlight,
+  options: { search: '' } satisfies FindReplacePluginOptions,
   decorate: ({ editor, entry: [node, path], getOptions, type }) => {
     const { search } = getOptions();
 
@@ -115,11 +120,6 @@ export const FindReplacePlugin = createBasePlugin({
 
     return ranges;
   },
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-  },
-  type: NODES.searchHighlight,
-  options: { search: '' } satisfies FindReplacePluginOptions,
 });
 
 export type FindReplaceConfig = InferConfig<typeof FindReplacePlugin>;

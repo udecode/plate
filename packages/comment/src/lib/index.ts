@@ -3,5 +3,4 @@
  */
 
 export * from './BaseCommentPlugin';
-export * from './withComments';
 export * from './utils/index';

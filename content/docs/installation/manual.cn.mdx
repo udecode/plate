@@ -218,10 +218,10 @@ export default function App() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.withComponent(H1Element),
-      H2Plugin.withComponent(H2Element),
-      H3Plugin.withComponent(H3Element),
-      BlockquotePlugin.withComponent(BlockquoteElement),
+      H1Plugin.configure({ component: H1Element }),
+      H2Plugin.configure({ component: H2Element }),
+      H3Plugin.configure({ component: H3Element }),
+      BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue,
   });
@@ -236,7 +236,7 @@ export default function App() {
 ```
 
 <Callout type="note">
-  注意我们如何使用`Plugin.withComponent(Component)`为标题和引用块等块元素插件注册组件。当需要自定义样式或行为时，这是关联React组件与Plate插件的推荐方式。
+  注意我们如何使用`Plugin.configure({ component: Component })`为标题和引用块等块元素插件注册组件。当需要自定义样式或行为时，这是关联React组件与Plate插件的推荐方式。
 </Callout>
 
 <ComponentPreview name="installation-next-03-elements-demo" height="200px" />
@@ -321,10 +321,10 @@ export default function App() {
       BoldPlugin,
       ItalicPlugin,
       UnderlinePlugin,
-      H1Plugin.withComponent(H1Element),
-      H2Plugin.withComponent(H2Element),
-      H3Plugin.withComponent(H3Element),
-      BlockquotePlugin.withComponent(BlockquoteElement),
+      H1Plugin.configure({ component: H1Element }),
+      H2Plugin.configure({ component: H2Element }),
+      H3Plugin.configure({ component: H3Element }),
+      BlockquotePlugin.configure({ component: BlockquoteElement }),
     ],
     initialValue: () => {
       const savedValue = localStorage.getItem('plate-manual-demo');

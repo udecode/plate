@@ -8,6 +8,7 @@ import { LinkFloatingToolbar } from '@/registry/ui/link-toolbar';
 
 export const LinkKit = [
   LinkPlugin.configure({
+    component: LinkElement,
     inputRules: [
       LinkRules.markdown(),
       LinkRules.autolink({ variant: 'paste' }),
@@ -15,7 +16,6 @@ export const LinkKit = [
       LinkRules.autolink({ variant: 'break' }),
     ],
     render: {
-      node: LinkElement,
       afterEditable: () => <LinkFloatingToolbar />,
     },
   }),

@@ -96,17 +96,15 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
       commentingBlock: null,
       hoverId: null,
     },
-    render: {
-      node: CommentLeaf,
-    },
   })
-);
+).configure({ component: CommentLeaf });
 ```
 
 - `options.activeId`: Currently active comment ID for visual highlighting
 - `options.commentingBlock`: Path of the block currently being commented
 - `options.hoverId`: Currently hovered comment ID for hover effects
-- `render.node`: Assigns [`CommentLeaf`](/docs/components/comment-node) to render comment text marks
+- `.configure({ component: CommentLeaf })`: Renders comment text marks with
+  [`CommentLeaf`](/docs/components/comment-node)
 
 ### Add Click Handler
 
@@ -173,35 +171,36 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extendTx(
-    ({ editor, setOption, type }) => (tx) => ({
-      setDraft: (options = {}) => {
-        const commentingBlock = editor.selection?.focus.path.slice(0, 1) ?? null;
+  .extend(({ editor, setOption, type }) => ({
+    update: ({ tx }) => ({
+        setDraft: (options = {}) => {
+          const commentingBlock =
+            editor.selection?.focus.path.slice(0, 1) ?? null;
 
-        if (editor.api.isCollapsed()) {
-          const blockEntry = editor.api.block();
+          if (editor.api.isCollapsed()) {
+            const blockEntry = editor.api.block();
 
-          if (blockEntry) {
-            tx.selection.set(blockEntry[1]);
+            if (blockEntry) {
+              tx.selection.set(blockEntry[1]);
+            }
           }
-        }
 
-        tx.nodes.set(
-          {
-            [getDraftCommentKey()]: true,
-            [type]: true,
-          },
-          { match: TextApi.isText, split: true, ...options }
-        );
+          tx.nodes.set(
+            {
+              [getDraftCommentKey()]: true,
+              [type]: true,
+            },
+            { match: TextApi.isText, split: true, ...options }
+          );
 
-        tx.selection.collapse();
-        setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', commentingBlock);
-      },
-    })
-  )
+          tx.selection.collapse();
+          setOption('activeId', getDraftCommentKey());
+          setOption('commentingBlock', commentingBlock);
+        },
+      }),
+  }))
   .configure({
-    render: { node: CommentLeaf },
+    component: CommentLeaf,
     shortcuts: {
       setDraft: { keys: 'mod+shift+m' },
     },

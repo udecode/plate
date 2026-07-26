@@ -18,6 +18,7 @@ are defer-only and must not trigger Plate edits.
 | keep-portable | 321 |
 | plate-owned | 25 |
 | unchecked relevant | 0 |
+| metadata review flagged | 13 |
 
 ## Closure Counts
 

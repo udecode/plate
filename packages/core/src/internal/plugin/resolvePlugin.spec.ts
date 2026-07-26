@@ -70,6 +70,7 @@ describe('resolvePlugin', () => {
       trigger: 'extension',
     });
     const plugin = createBasePlugin({
+      key: 'configuredInputRulesFinal',
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -77,7 +78,6 @@ describe('resolvePlugin', () => {
           trigger: 'base',
         }),
       ],
-      key: 'configuredInputRulesFinal',
     })
       .extend(() => ({
         inputRules: [extensionRule],
@@ -99,6 +99,7 @@ describe('resolvePlugin', () => {
       trigger: 'configured',
     });
     const plugin = createBasePlugin({
+      key: 'configuredInputRulesFactory',
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -106,7 +107,6 @@ describe('resolvePlugin', () => {
           trigger: 'base',
         }),
       ],
-      key: 'configuredInputRulesFactory',
     }).configure({
       inputRules: () => [configuredRule],
     });

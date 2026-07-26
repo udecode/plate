@@ -12,7 +12,8 @@ fragments and `excludeDiffFromFragment` for direct fragment cleanup.
 Install the extension through a Plate plugin:
 
 ```tsx
-createBasePlugin({ key: 'diff' }).extendExtension(
-  createExcludeDiffFragmentExtension()
-);
+createBasePlugin({
+  extension: createExcludeDiffFragmentExtension(),
+  key: 'diff',
+});
 ```

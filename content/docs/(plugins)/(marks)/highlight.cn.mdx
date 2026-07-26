@@ -86,14 +86,14 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     HighlightPlugin.configure({
-      render: { node: HighlightLeaf },
+      component: HighlightLeaf,
       shortcuts: { toggle: { keys: 'mod+shift+h' } },
     }),
   ],
 });
 ```
 
-- `render.node`: 分配 [`HighlightLeaf`](/docs/components/highlight-node) 来渲染高亮文本元素
+- `.configure({ component })`: 分配 [`HighlightLeaf`](/docs/components/highlight-node) 来渲染高亮文本元素
 - `shortcuts.toggle`: 定义用于切换高亮格式的键盘[快捷键](/docs/plugin-shortcuts)
 
 ### 添加工具栏按钮

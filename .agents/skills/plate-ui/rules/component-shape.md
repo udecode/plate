@@ -111,15 +111,26 @@ If a surface has both static/base and live renderers, keep the split explicit:
 
 ```tsx
 export const BaseMathKit = [
-  BaseInlineEquationPlugin.withComponent(InlineEquationElementStatic),
-  BaseEquationPlugin.withComponent(EquationElementStatic),
+  BaseInlineEquationPlugin.configure({
+    component: InlineEquationElementStatic,
+  }),
+  BaseEquationPlugin.configure({
+    component: EquationElementStatic,
+  }),
 ];
 
 export const MathKit = [
-  InlineEquationPlugin.withComponent(InlineEquationElement),
-  EquationPlugin.withComponent(EquationElement),
+  InlineEquationPlugin.configure({ component: InlineEquationElement }),
+  EquationPlugin.configure({ component: EquationElement }),
 ];
 ```
+
+Base/static files must not import `platejs/react`, `@platejs/core/react`, or
+any `@platejs/*/react` entrypoint. `BasePlugin.configure({ component })` is the
+static binding path; `toPlatePlugin(BasePlugin)` belongs only in live React
+adapters.
+Bind Base/static descriptors to static renderer modules, never live/client
+node components. Registry Base kits use the owning `*-static` component.
 
 Do not hide this behind a factory if the explicit array is clearer.
 

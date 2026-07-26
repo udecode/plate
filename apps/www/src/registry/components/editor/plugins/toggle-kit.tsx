@@ -7,5 +7,5 @@ import { ToggleElement } from '@/registry/ui/toggle-node';
 
 export const ToggleKit = [
   ...IndentKit,
-  TogglePlugin.withComponent(ToggleElement),
+  TogglePlugin.configure({ component: ToggleElement }),
 ];

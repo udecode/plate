@@ -2,8 +2,10 @@
 "@platejs/ai": major
 ---
 
-Move AI, AI Chat, and Copilot behavior to Plite reads, state, and transactions,
-register AI marks as boolean text properties in compiled schemas, and install
-Markdown and block-selection capabilities through `AIChatPlugin` dependencies.
+Expose AI, AI Chat, and Copilot behavior through flat plugin capabilities and
+remove their standalone command, streaming, prompt, and suggestion helpers.
 
-**Migration:** Use `editor.update.ai.*` and `editor.update.copilot.*` for mutations. Use `editor.api.ai` and `editor.api.aiChat` for preview and chat orchestration.
+**Migration:** Use `tx.ai.*` and `tx.copilot.*` inside grouped updates. Use
+`editor.plugin(BaseAIPlugin).api.*`,
+`editor.plugin(AIChatPlugin).api.*`, and
+`editor.plugin(CopilotPlugin).api.*` for one-shot behavior.

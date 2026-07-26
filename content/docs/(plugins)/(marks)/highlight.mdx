@@ -98,11 +98,11 @@ import { HighlightPlugin } from '@platejs/basic-nodes/react';
 import { HighlightLeaf } from '@/components/ui/highlight-node';
 
 export const highlightPlugin = HighlightPlugin.configure({
+  component: HighlightLeaf,
   inputRules: [
     HighlightRules.markdown({ variant: '==' }),
     HighlightRules.markdown({ variant: '≡' }),
   ],
-  render: { node: HighlightLeaf },
   shortcuts: { toggle: { keys: 'mod+shift+h' } },
 });
 ```

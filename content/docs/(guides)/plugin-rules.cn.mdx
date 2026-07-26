@@ -612,11 +612,12 @@ const CodeBlockPlugin = createPlatePlugin({
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
-}).extendTx(({ type }) => (tx) => ({
-  unwrap() {
-    tx.nodes.unwrap({ match: { type } });
-  },
-}));
+  update: ({ tx, type }) => ({
+    unwrap() {
+      tx.nodes.unwrap({ match: { type } });
+    },
+  }),
+});
 
 editor.update((tx) => tx.codeBlock.unwrap());
 ```
@@ -688,21 +689,24 @@ const plugins = [
 
 ## 高级用法
 
-当规则表无法表达核心命令行为时，使用 [`.extendExtension()`](/docs/plugin-methods#extendextension) 安装纯 Plite command handler。下面的单行插件把结构化换行命令转换为软换行：
+当规则表无法表达核心命令行为时，通过 constructor 的 `extension` 添加纯
+Plite command handler。下面的单行插件把结构化
+换行命令转换为软换行：
 
 ```tsx
 import { editorCommands } from 'platejs';
 
 const SingleLinePlugin = createPlatePlugin({
   key: 'singleLine',
-}).extendExtension({
-  commands: ({ handle }) => [
-    handle(editorCommands.insertBreak, ({ state }) =>
-      state.transaction((tx) => {
-        tx.break.insertSoft();
-      })
-    ),
-  ],
+  extension: {
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) =>
+        state.transaction((tx) => {
+          tx.break.insertSoft();
+        })
+      ),
+    ],
+  },
 });
 ```
 

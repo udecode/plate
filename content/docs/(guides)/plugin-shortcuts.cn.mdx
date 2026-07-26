@@ -18,7 +18,10 @@ description: 配置 Plate 插件的键盘快捷键。
 
 显式 `target` 必须指向存在的方法。自定义 `handler` 自己负责分发，因此不能同时设置 `target`。
 
-请在被链接的方法之后声明无 `handler` 的快捷键。TypeScript 根据当前插件描述符已经携带的能力进行验证，所以 `.extendTx()` 或 `.extendApi()` 应位于 `.extend({ shortcuts })` 之前。自定义处理函数不需要同名方法。
+请在被链接的方法之后声明无 `handler` 的快捷键。TypeScript 根据当前插件描述符已经
+携带的能力进行验证，所以 constructor 中的 `update` 或 `api` 贡献应位于
+`.extend({ shortcuts })` 之前。这个真实类型依赖正是示例使用后续阶段的原因。
+自定义处理函数不需要同名方法。
 
 | 字段 | 含义 |
 | --- | --- |
@@ -38,12 +41,12 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
   key: 'signature',
-})
-  .extendTx(() => (tx) => ({
+  update: ({ tx }) => ({
     insertSignature: () => {
       tx.text.insert(' - Plate');
     },
-  }))
+  }),
+})
   .extend({
     shortcuts: {
       insertSignature: {
@@ -64,12 +67,12 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const InspectPlugin = createPlatePlugin({
   key: 'inspect',
-})
-  .extendApi(({ editor }) => ({
+  api: ({ editor }) => ({
     logText: () => {
       editor.api.debug.info('Editor text', editor.api.string([]));
     },
-  }))
+  }),
+})
   .extend({
     shortcuts: {
       logText: {
@@ -94,7 +97,6 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const DraftPlugin = createPlatePlugin({
   key: 'draft',
-}).extend({
   shortcuts: {
     saveDraft: {
       keys: [[Key.Mod, 's']],
@@ -163,11 +165,11 @@ import { Key, createPlatePlugin } from 'platejs/react';
 
 export const ReviewPlugin = createPlatePlugin({
   key: 'review',
-})
-  .extendTx(() => (tx) => ({
+  update: ({ tx }) => ({
     accept: () => tx.text.insert('Accepted'),
     reject: () => tx.text.insert('Rejected'),
-  }))
+  }),
+})
   .extend({
     shortcuts: {
       accept: { keys: [[Key.Mod, Key.Alt, 'a']] },
@@ -188,7 +190,6 @@ import { createPlatePlugin } from 'platejs/react';
 export const PriorityPlugin = createPlatePlugin({
   key: 'priority',
   priority: 20,
-}).extend({
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',

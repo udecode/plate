@@ -1,6 +1,6 @@
 ---
 description: Mine external editor repositories and issue corpora for portable editor-behavior tests with ClawSweeper-style discipline, then optionally turn a completed harvest into a lane-specific Slate v2 or Plate plan that pauses for review before execution.
-argument-hint: '[<repo-path-or-owner/repo> [--issues [--state all|open|closed]] [--apply] [surface/tag/filter] | plan <slate-v2|plate> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <slate-v2|plate>]'
+argument-hint: '[<repo-path-or-owner/repo> [--since <commit>] [--issues [--state all|open|closed]] [--apply] [surface/tag/filter] | plan <slate-v2|plate> <harvest-report-or-repo-key> | <harvest-report-or-repo-key> --lane <slate-v2|plate>]'
 disable-model-invocation: true
 name: editor-test-harvester
 metadata:
@@ -18,6 +18,9 @@ The job is not to clone their framework. The job is to extract portable editor
 behavior proof and route it to the right owner: raw Slate v2 substrate or Plate
 packages, kits, examples, and docs.
 
+Use `editor-audit` for source-level architecture, model, runtime, or API
+comparison. Do not expand a test harvest into that audit.
+
 When `--issues` is present, the job is to mine the target editor's issue corpus
 for robustness pressure, not to mirror their backlog. Use open and closed issues
 by default (`--state all`) unless the user explicitly narrows it. Cluster first,
@@ -34,6 +37,38 @@ This follows the ClawSweeper method and the goal-plan confidence model:
 source-first, exhaustive inventory, explicit skip reasons, evidence rows, scored
 passes, narrow claims, license-aware invariant extraction, then implementation
 only when asked.
+
+## Incremental Test Sync
+
+When `--since <commit>` is present, update an existing harvest from the exact
+git range `<commit>..HEAD`.
+
+1. Require a complete prior report, inventory, and test index. If the baseline
+   is absent or incomplete, run the full inventory instead.
+2. Require `<commit>` to be an ancestor of `HEAD`. A rewritten or unrelated
+   history requires a full harvest.
+3. Inspect added, modified, renamed, and deleted test files with:
+
+   ```bash
+   git -C <target> diff --name-status --find-renames <commit>..HEAD -- \
+     '*test*' '*spec*' '*/tests/*' '*/__tests__/*' '*/fixtures/*'
+   ```
+
+4. Also inspect changed shared fixtures, test helpers, harness configuration,
+   and source files imported by changed tests. Expand to dependent test files
+   when a helper or fixture changed.
+5. Reclassify every changed/new test and remove or redirect deleted/renamed
+   inventory rows. Preserve unaffected rows from the verified baseline.
+6. Re-run local coverage search for every changed portable invariant. A source
+   diff narrows candidates; it does not prove local coverage stayed equivalent.
+7. Rewrite the stable report, inventory, and test index in place. Record
+   `previous_source_commit`, `source_commit`, diff command, changed counts, and
+   whether the run was delta-complete or fell back to full.
+8. Do not patch local tests unless `--apply` is also present.
+
+The caller may advance a `testHarvestCommit` only after the updated artifacts
+and focused verification pass. An interrupted or failed delta keeps the prior
+cursor.
 
 When the user asks to process an existing harvest report into "all Slate tests",
 "all Plate rows", "a lane plan", or "the execution plan", stay in this skill and

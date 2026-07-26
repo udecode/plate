@@ -12,7 +12,10 @@ import { ExcalidrawElement } from '@/registry/ui/excalidraw-node';
 
 export default function ExcalidrawDemo() {
   const editor = usePlateEditor({
-    plugins: [...EditorKit, ExcalidrawPlugin.withComponent(ExcalidrawElement)],
+    plugins: [
+      ...EditorKit,
+      ExcalidrawPlugin.configure({ component: ExcalidrawElement }),
+    ],
     initialValue: excalidrawValue,
   });
 

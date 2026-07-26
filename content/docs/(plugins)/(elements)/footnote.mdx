@@ -160,7 +160,7 @@ The transform returns the newly assigned identifier string on success, or `false
 
 ### Customize Rendering
 
-Swap in your own React components with `withComponent`:
+Swap in your own React components with `component`:
 
 ```tsx
 import {
@@ -171,8 +171,8 @@ import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    FootnoteReferencePlugin.withComponent(MyFootnoteReference),
-    FootnoteDefinitionPlugin.withComponent(MyFootnoteDefinition),
+    FootnoteReferencePlugin.configure({ component: MyFootnoteReference }),
+    FootnoteDefinitionPlugin.configure({ component: MyFootnoteDefinition }),
   ],
 });
 ```

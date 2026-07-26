@@ -43,16 +43,28 @@ const LayoutPlugin = createPlatePlugin<LayoutConfig>({
     variant: 'full',
   },
 })
-  .extendSelectors(({ getOptions }) => ({
-    isDense: () => getOptions().density === 2,
-  }))
-  .extendEditorApi(({ getOptions }) => ({
-    getVariant: () => getOptions().variant,
-  }))
-  .extendTx(({ setOption }) => () => ({
-    setDensity: (density) => {
-      setOption('density', density);
+  .extend(({ getOptions }) => ({
+    selectors: {
+      isDense: () => getOptions().density === 2,
     },
+  }))
+  .extend(({ getOptions }) => ({
+    extension: {
+      api: {
+        getVariant: () => getOptions().variant,
+      },
+    },
+  }))
+  .extend<{
+    update: {
+      setDensity: (density: 1 | 2) => void;
+    };
+  }>(({ setOption }) => ({
+    update: () => ({
+      setDensity: (density) => {
+        setOption('density', density);
+      },
+    }),
   }));
 
 const ConfiguredLayoutPlugin = LayoutPlugin.extend({
@@ -70,19 +82,26 @@ const MentionPlugin = createPlatePlugin({
   options: {
     trigger: '@' as const,
   },
-}).extendEditorApi(({ getOptions }) => ({
-  getTrigger: () => getOptions().trigger,
+}).extend(({ getOptions }) => ({
+  extension: {
+    api: {
+      getTrigger: () => getOptions().trigger,
+    },
+  },
 }));
 
 const ToolbarPlugin = createPlatePlugin({
   key: 'toolbar',
-})
-  .extendEditorApi(() => ({
-    describeToolbar: () => 'toolbar' as const,
-  }))
-  .extendTx(() => () => ({
+  extension: {
+    api: {
+      describeToolbar: () => 'toolbar' as const,
+    },
+  },
+}).extend(() => ({
+  update: () => ({
     setCompact: () => undefined,
-  }));
+  }),
+}));
 
 const initialValue = [
   {

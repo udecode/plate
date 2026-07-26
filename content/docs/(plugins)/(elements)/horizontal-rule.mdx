@@ -68,7 +68,7 @@ Use `BaseBasicBlocksKit` when rendering read-only content with `platejs/static`.
 | `@platejs/basic-nodes` | Package | Exports `BaseHorizontalRulePlugin` and `HorizontalRuleRules`. |
 | `@platejs/basic-nodes/react` | Package | Exports `HorizontalRulePlugin`. |
 | `basic-blocks-kit` | Registry | Adds `HorizontalRulePlugin` with dash and underscore input rules plus `HrElement`. |
-| `basic-blocks-base-kit` | Registry | Adds `BaseHorizontalRulePlugin.withComponent(HrElementStatic)`. |
+| `basic-blocks-base-kit` | Registry | Adds `BaseHorizontalRulePlugin.configure({ component: HrElementStatic })`. |
 | `hr-node` | Registry UI | Renders editable and static divider components. |
 | Insert toolbar | Registry UI | Inserts `KEYS.hr` through the generic `insertBlock` path. |
 
@@ -98,11 +98,11 @@ import { HrElement } from '@/components/ui/hr-node';
 export const editor = createPlateEditor({
   plugins: [
     HorizontalRulePlugin.configure({
+      component: HrElement,
       inputRules: [
         HorizontalRuleRules.markdown({ variant: '-' }),
         HorizontalRuleRules.markdown({ variant: '_' }),
       ],
-      render: { node: HrElement },
     }),
   ],
 });
@@ -119,7 +119,9 @@ import { createStaticEditor } from 'platejs';
 import { HrElementStatic } from '@/components/ui/hr-node-static';
 
 export const staticEditor = createStaticEditor({
-  plugins: [BaseHorizontalRulePlugin.withComponent(HrElementStatic)],
+  plugins: [
+    BaseHorizontalRulePlugin.configure({ component: HrElementStatic }),
+  ],
 });
 ```
 

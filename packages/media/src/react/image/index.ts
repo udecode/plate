@@ -3,6 +3,3 @@
  */
 
 export * from './Image';
-export * from './ImagePreviewStore';
-export * from './PreviewImage';
-export * from './useImagePreview';

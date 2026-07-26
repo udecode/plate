@@ -45,7 +45,7 @@ Use this as the single Slate v2 wrapper around
   module consolidation, or testability/agent-navigation improvement. Use
   `architecture-cleanup`, then route broad accepted decisions.
 - The request is broad external discovery, web/GitHub, OSS research, or source
-  synthesis. Use `slate-research` first.
+  synthesis. Use `plite-research` first.
 - The target is Plate product code instead of raw Slate v2.
 
 ## Boundary
@@ -54,7 +54,7 @@ Use this as the single Slate v2 wrapper around
   dashboard, quality-gap, drift, finalization, and CLI mechanics.
 - `slate-ar`: Slate v2 cwd, state, correctness routing, natural modes,
   benchmark-backed performance policy, and operator handoff.
-- `slate-research`: external discovery and source synthesis.
+- `plite-research`: external discovery and source synthesis.
 - `architecture-cleanup`: source-backed architecture/code cleanup before
   measured AR packets.
 - `slate-patch`: concrete bugs, missing oracles, and direct correctness fixes.
@@ -123,7 +123,7 @@ Interpret short user text before picking commands:
 | `finalize`, `finalize preview`, `current-tree preview` | preview-only finalization | `slate-ar` |
 | `ship`, `reviewable`, `ready to commit` | readiness flow | `slate-ar` |
 | `fast`, `fastest`, `max perf`, `pagination`, `virtualization`, `benchmark` | perf lane | `slate-ar perf` |
-| `research`, `web/GitHub`, `OSS`, `scan repos`, `find gaps` | discovery | `slate-research` |
+| `research`, `web/GitHub`, `OSS`, `scan repos`, `find gaps` | discovery | `plite-research` |
 | `architecture improvement`, `cleanup`, `deslop`, `refactor opportunities`, `testability`, `agent-navigable` | cleanup candidate ranking | `architecture-cleanup` |
 
 If a mutating Slate AR loop is already running in another thread, default to
@@ -210,7 +210,7 @@ Routing:
 - clear perf target: `slate-ar perf <target>`;
 - architecture cleanup, deslop, or refactor discovery:
   `architecture-cleanup`;
-- broad API/DX/architecture/test gap with unknown owner: `slate-research`;
+- broad API/DX/architecture/test gap with unknown owner: `plite-research`;
 - accepted quality-gap checklist: `slate-ar quality`;
 - broad surface improvement: `slate-ar perfect <surface>`;
 - ambiguous loop shape: `slate-ar recipe`;
@@ -290,7 +290,7 @@ Use this when Slate already has an accepted quality-gap checklist, slug, or
 concrete gap set to execute through Codex Autoresearch.
 
 For broad discovery, web/GitHub/OSS scans, external prior art, source synthesis,
-and durable research ledgers, use `slate-research` first.
+and durable research ledgers, use `plite-research` first.
 
 Commands:
 
@@ -478,7 +478,7 @@ Use `autogoal` with `docs/plans/templates/slate-ar.md`. The goal must name:
 
 Start with status, then choose owners in this order:
 
-1. `slate-research` for unknown current-state gaps, external prior art, OSS
+1. `plite-research` for unknown current-state gaps, external prior art, OSS
    evidence, or source synthesis;
 2. quality mode for accepted quality-gap checklist execution;
 3. `best-api` when the remaining issue needs public API design; `plite-plan`

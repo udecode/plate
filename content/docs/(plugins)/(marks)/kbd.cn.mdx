@@ -85,12 +85,12 @@ import { KbdLeaf } from '@/components/ui/kbd-node';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    KbdPlugin.withComponent(KbdLeaf),
+    KbdPlugin.configure({ component: KbdLeaf }),
   ],
 });
 ```
 
-- `withComponent`: Assigns [`KbdLeaf`](/docs/components/kbd-node) to render keyboard shortcut elements.
+- `component`: Assigns [`KbdLeaf`](/docs/components/kbd-node) to render keyboard shortcut elements.
 
 ### Add Toolbar Button
 

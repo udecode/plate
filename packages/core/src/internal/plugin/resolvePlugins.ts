@@ -27,6 +27,7 @@ import {
   isNominalPluginDescriptor,
   mergePlugins,
 } from '../utils/mergePlugins';
+import { snapshotApiValue } from '../utils/snapshotApiValue';
 import type {
   CompiledPlateModel,
   PlateModelPublication,
@@ -655,55 +656,15 @@ const resolvePluginApi = (
   plugin: AnyBasePlugin,
   pluginApi: Record<string, any>
 ) => {
-  const editorApi = merge({}, plugin.__editorApi) as Record<string, any>;
-
-  plugin.__apiExtensions.forEach(({ extension, isPluginSpecific }: any) => {
+  plugin.__apiExtensions.forEach(({ extension }: any) => {
     const context = {
       ...getEditorPlugin(editor, plugin),
       api: pluginApi,
     };
     const extensionApi = extension(context);
 
-    merge(isPluginSpecific ? pluginApi : editorApi, extensionApi);
+    merge(pluginApi, extensionApi);
   });
-
-  return editorApi;
-};
-
-const snapshotApiValue = <T>(
-  value: T,
-  snapshots = new WeakMap<object, unknown>()
-): T => {
-  if (!value || typeof value !== 'object') return value;
-
-  const existing = snapshots.get(value);
-
-  if (existing !== undefined) return existing as T;
-  if (Array.isArray(value)) {
-    const snapshot: unknown[] = [];
-
-    snapshots.set(value, snapshot);
-    snapshot.push(...value.map((item) => snapshotApiValue(item, snapshots)));
-
-    return Object.freeze(snapshot) as T;
-  }
-  const prototype = Object.getPrototypeOf(value);
-
-  if (prototype !== Object.prototype && prototype !== null) return value;
-  const snapshot: Record<PropertyKey, unknown> = Object.create(prototype);
-
-  snapshots.set(value, snapshot);
-  for (const key of Reflect.ownKeys(value)) {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key);
-
-    if (!descriptor || !Object.hasOwn(descriptor, 'value')) continue;
-    Object.defineProperty(snapshot, key, {
-      enumerable: descriptor.enumerable,
-      value: snapshotApiValue(descriptor.value, snapshots),
-    });
-  }
-
-  return Object.freeze(snapshot) as T;
 };
 
 const collectPluginTxGroups = (
@@ -733,7 +694,19 @@ const collectPluginTxGroups = (
     });
   });
 
-  let probe: any;
+  const updateMethods = inspectUpdateMethods(editor, txGroups);
+
+  return Object.freeze({
+    groups: txGroups,
+    updateMethods,
+  });
+};
+
+const inspectUpdateMethods = (
+  editor: BaseEditor,
+  txGroups: ReadonlyMap<string, readonly PlatePluginTxGroup[]>
+) => {
+  let probe: unknown;
 
   probe = new Proxy(() => probe, {
     apply: () => probe,
@@ -768,10 +741,28 @@ const collectPluginTxGroups = (
     updateMethods[groupKey] = Object.freeze([...methods]);
   });
 
-  return Object.freeze({
-    groups: txGroups,
-    updateMethods: Object.freeze(updateMethods),
-  });
+  return Object.freeze(updateMethods);
+};
+
+/** Inspect static editor-extension update groups for shortcut ownership. */
+export const collectEditorExtensionUpdateMethods = (
+  editor: BaseEditor,
+  extensions: readonly EditorExtension[]
+) => {
+  const txGroups = new Map<string, PlatePluginTxGroup[]>();
+
+  for (const extension of extensions) {
+    for (const [groupKey, groupFactory] of Object.entries(extension.tx ?? {})) {
+      if (!groupFactory) continue;
+
+      const groups = txGroups.get(groupKey) ?? [];
+
+      groups.push(groupFactory as PlatePluginTxGroup);
+      txGroups.set(groupKey, groups);
+    }
+  }
+
+  return inspectUpdateMethods(editor, txGroups);
 };
 
 const collectPluginReadGroups = (
@@ -800,7 +791,13 @@ const collectPluginReadGroups = (
 /** Stage plugin API and transaction factories in the Plate model revision. */
 export const createPlateRuntimeExtension = (
   editor: BaseEditor,
-  pluginList: readonly AnyBasePlugin[]
+  pluginList: readonly AnyBasePlugin[],
+  editorApiByPlugin: Readonly<
+    Record<string, Readonly<Record<string, unknown>> | undefined>
+  > = {},
+  editorUpdateMethods: Readonly<
+    Record<string, readonly string[] | undefined>
+  > = {}
 ) => {
   const api = {} as Record<string, unknown>;
   const apiSnapshots = new WeakMap<object, unknown>();
@@ -809,6 +806,7 @@ export const createPlateRuntimeExtension = (
     Readonly<Record<string, unknown>>
   > = Object.create(null);
   const pluginApiNamespaces = new Set<string>();
+  const editorApiNamespaces = new Set<string>();
   const shortcutApiByPlugin: Record<string, ShortcutApiOwner> =
     Object.create(null);
 
@@ -817,7 +815,8 @@ export const createPlateRuntimeExtension = (
       const pluginApi: Record<string, unknown> = {};
 
       apiByPlugin[plugin.key] = pluginApi;
-      const editorApi = resolvePluginApi(editor, plugin, pluginApi);
+      resolvePluginApi(editor, plugin, pluginApi);
+      const editorApi = editorApiByPlugin[plugin.key] ?? {};
       const frozenPluginApi = snapshotApiValue(pluginApi, apiSnapshots);
       const hasPluginApi = Object.keys(pluginApi).length > 0;
 
@@ -827,10 +826,13 @@ export const createPlateRuntimeExtension = (
             `Plate API namespace "${key}" is declared by both plugin API and editor API owners while resolving plugin "${plugin.key}".`
           );
         }
+        editorApiNamespaces.add(key);
       });
       if (
         hasPluginApi &&
-        (Object.hasOwn(api, plugin.key) || Object.hasOwn(editorApi, plugin.key))
+        (Object.hasOwn(api, plugin.key) ||
+          Object.hasOwn(editorApi, plugin.key) ||
+          editorApiNamespaces.has(plugin.key))
       ) {
         throw new Error(
           `Plate API namespace "${plugin.key}" is declared by both plugin API and editor API owners while resolving plugin "${plugin.key}".`
@@ -842,7 +844,6 @@ export const createPlateRuntimeExtension = (
         editor: snapshotApiValue(editorApi),
         plugin: frozenPluginApi,
       });
-      merge(api, editorApi);
       if (hasPluginApi) {
         api[plugin.key] = pluginApi;
         pluginApiNamespaces.add(plugin.key);
@@ -854,6 +855,24 @@ export const createPlateRuntimeExtension = (
     editor,
     apiByPlugin,
     () => collectPluginTxGroups(editor, pluginList)
+  );
+  const updateMethods = Object.freeze(
+    Object.fromEntries(
+      [
+        ...new Set([
+          ...Object.keys(txRuntime.updateMethods),
+          ...Object.keys(editorUpdateMethods),
+        ]),
+      ].map((groupKey) => [
+        groupKey,
+        Object.freeze([
+          ...new Set([
+            ...(txRuntime.updateMethods[groupKey] ?? []),
+            ...(editorUpdateMethods[groupKey] ?? []),
+          ]),
+        ]),
+      ])
+    )
   );
   const readRuntime = withCompiledPlatePluginApiCandidate(
     editor,
@@ -922,7 +941,7 @@ export const createPlateRuntimeExtension = (
       ...(readRuntime.size > 0 || txRuntime.groups.size > 0 ? { tx } : {}),
     }),
     shortcutApiByPlugin: Object.freeze(shortcutApiByPlugin),
-    updateMethods: txRuntime.updateMethods,
+    updateMethods,
   });
 };
 
@@ -1352,7 +1371,6 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   '__schemaFamily',
   '__config',
   '__configurationLayers',
-  '__editorApi',
   '__editorExtensions',
   '__extensions',
   '__pluginReference',
@@ -1363,19 +1381,10 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   'configure',
   'dependencies',
   'extend',
-  'extendApi',
-  'extendCodecs',
-  'extendHtmlCodec',
-  'extendEditorApi',
-  'extendExtension',
-  'extendSelectors',
-  'extendTx',
-  'extendTxGroup',
   'key',
   'override',
   'plugins',
   'schema',
-  'withComponent',
 ]);
 
 const assertWeakPluginOverride = (

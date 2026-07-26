@@ -4,7 +4,7 @@ import { TabbablePlugin } from '@platejs/tabbable/react';
 import { ElementApi, getPluginTypes, KEYS } from 'platejs';
 
 export const TabbableKit = [
-  TabbablePlugin.extend({
+  TabbablePlugin.configure(({ editor }) => ({
     override: {
       plugins: {
         [KEYS.indent]: {
@@ -15,7 +15,6 @@ export const TabbableKit = [
         },
       },
     },
-  }).configure(({ editor }) => ({
     options: {
       query: () => {
         if (

@@ -3,8 +3,7 @@ import { createPlateEditor, toPlatePlugin } from '@platejs/core/react';
 
 const RuntimeExtensionPlugin = createBasePlugin({
   key: 'runtimeExtension',
-})
-  .extendExtension({
+  extension: {
     api: {
       runtimeExtension: {
         first: () => 'first' as const,
@@ -15,8 +14,9 @@ const RuntimeExtensionPlugin = createBasePlugin({
         run: () => 'first-tx' as const,
       }),
     },
-  })
-  .extendExtension({
+  },
+}).extend({
+  extension: {
     api: {
       runtimeExtension: {
         second: () => 'second' as const,
@@ -27,7 +27,8 @@ const RuntimeExtensionPlugin = createBasePlugin({
         run: () => 'second-tx' as const,
       }),
     },
-  });
+  },
+});
 
 const editor = createBaseEditor({
   plugins: [RuntimeExtensionPlugin],
@@ -56,15 +57,20 @@ editor.api.runtimeExtension.missing();
 const RuntimeStatePlugin = toPlatePlugin(
   createBasePlugin({
     key: 'runtimeState',
-  }).extendExtension({
-    state: {
-      runtimeState: () => ({
-        value: 'runtime-state' as const,
-      }),
+    extension: {
+      state: {
+        runtimeState: () => ({
+          value: 'runtime-state' as const,
+        }),
+      },
     },
   })
-).extendEditorApi(() => ({
-  runtimeStatePing: () => 'runtime-state-ping' as const,
+).extend(() => ({
+  extension: {
+    api: {
+      runtimeStatePing: () => 'runtime-state-ping' as const,
+    },
+  },
 }));
 
 const plateEditor = createPlateEditor({

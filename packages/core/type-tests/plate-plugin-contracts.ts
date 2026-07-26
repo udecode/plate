@@ -8,17 +8,19 @@ import { ContentSlice } from '@platejs/plite';
 
 const ConfiguredPlateCodecContractPlugin = createPlatePlugin({
   key: 'configuredPlateCodecContract',
-})
-  .extendCodecs(() => ({
-    'application/x-plate-codec-contract': {
-      decode: () => ContentSlice.closed([{ text: 'value' }]),
-      scope: 'document',
-    },
-  }))
-  .configure({});
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'application/x-plate-codec-contract': {
+        decode: () => ContentSlice.closed([{ text: 'value' }]),
+        scope: 'document',
+      },
+    }),
+}).configure({});
 
 // @ts-expect-error Consumer configuration is terminal for React codec authoring.
-ConfiguredPlateCodecContractPlugin.extendCodecs(() => ({}));
+ConfiguredPlateCodecContractPlugin.extend(({ defineCodecs }) => ({
+  codecs: defineCodecs({}),
+}));
 
 type ExtendDeclarationBoundaryConfig =
   PluginConfig<'extendDeclarationBoundary'>;
@@ -26,7 +28,8 @@ type ExtendDeclarationBoundaryConfig =
 export const ExtendDeclarationBoundaryPlugin =
   createPlatePlugin<ExtendDeclarationBoundaryConfig>({
     key: 'extendDeclarationBoundary',
-  }).extend({ editOnly: true });
+    editOnly: true,
+  });
 
 const exactExtendDeclarationBoundary: ExtendedPlatePlugin<
   ExtendDeclarationBoundaryConfig,
@@ -55,11 +58,15 @@ const ToolbarPlugin = createPlatePlugin<ToolbarConfig>({
   options: {
     floating: true,
   },
-}).extendEditorApi(({ getOptions }) => ({
-  plugin: {
-    isFloating: () => getOptions().floating,
+}).extend(({ getOptions }) => ({
+  extension: {
+    api: {
+      plugin: {
+        isFloating: () => getOptions().floating,
+      },
+      toggleFloating: () => getOptions().floating,
+    },
   },
-  toggleFloating: () => getOptions().floating,
 }));
 
 const MentionPlugin = createPlatePlugin({
@@ -67,8 +74,12 @@ const MentionPlugin = createPlatePlugin({
   options: {
     trigger: '@' as const,
   },
-}).extendEditorApi(({ getOptions }) => ({
-  getTrigger: () => getOptions().trigger,
+}).extend(({ getOptions }) => ({
+  extension: {
+    api: {
+      getTrigger: () => getOptions().trigger,
+    },
+  },
 }));
 
 type ExplicitPluginConfig = PluginConfig<
@@ -92,24 +103,29 @@ const ExplicitPlugin = createPlatePlugin<ExplicitPluginConfig>({
   options: {
     enabled: false,
   },
-}).extendApi<ExplicitPluginConfig['pluginApi']>(({ getOptions }) => ({
-  isEnabled: () => getOptions().enabled,
+}).extend<{ api: ExplicitPluginConfig['pluginApi'] }>(({ getOptions }) => ({
+  api: {
+    isEnabled: () => getOptions().enabled,
+  },
 }));
 
 type DeclaredPlateTx = {
   run: (value: 'typed', options?: { count?: number }) => number;
 };
 
-const DeclaredPlateTxPlugin = createPlatePlugin({
+const DeclaredPlateTxPlugin = createPlatePlugin<
+  PluginConfig<'declaredPlateTx', {}, {}, { declaredPlateTx: DeclaredPlateTx }>
+>({
   key: 'declaredPlateTx',
-}).extendTx<DeclaredPlateTx>(() => () => ({
-  run: (value, options = {}) => {
-    const exactValue: 'typed' = value;
-    const exactCount: number | undefined = options.count;
+  update: () => ({
+    run: (value, options = {}) => {
+      const exactValue: 'typed' = value;
+      const exactCount: number | undefined = options.count;
 
-    return exactValue.length + (exactCount ?? 0);
-  },
-}));
+      return exactValue.length + (exactCount ?? 0);
+    },
+  }),
+});
 
 void DeclaredPlateTxPlugin;
 
@@ -122,22 +138,25 @@ const ReactFactoryExtensionPlugin = createPlatePlugin({
 
 const DependencyApiPlugin = createPlatePlugin({
   key: 'dependencyApi',
-}).extendApi(() => ({
-  read: () => true,
-}));
+  api: {
+    read: () => true,
+  },
+});
 
 const DependencyEditorApiPlugin = createPlatePlugin({
   key: 'dependencyEditorApi',
-}).extendEditorApi(() => ({
-  dependencyEditorApi: {
-    read: () => true,
+  extension: {
+    api: {
+      dependencyEditorApi: {
+        read: () => true,
+      },
+    },
   },
-}));
+});
 
 const DependentHooksPlugin = createPlatePlugin({
   dependencies: [DependencyApiPlugin, DependencyEditorApiPlugin],
   key: 'dependentHooks',
-}).extend({
   useHooks: ({ editor }) => {
     const dependencyValue: boolean = editor.api.dependencyApi.read();
     const dependencyEditorValue: boolean =

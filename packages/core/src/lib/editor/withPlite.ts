@@ -40,6 +40,7 @@ import {
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
 import { clearPluginOptionsStores } from '../../internal/plugin/pluginOptionsStore';
 import { isNominalPluginReference } from '../../internal/utils/mergePlugins';
+import { snapshotApiValue } from '../../internal/utils/snapshotApiValue';
 import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
 import type {
   AnyPluginConfig,
@@ -64,6 +65,7 @@ import type {
 } from './BaseEditor';
 
 import {
+  collectEditorExtensionUpdateMethods,
   createPlateModelPublication,
   createPlateRuntimeExtension,
   plateReactCorePlugins,
@@ -254,6 +256,13 @@ const mergeEditorExtensionObjects = (
   for (const [key, value] of Object.entries(next)) {
     merged[key] = mergeEditorExtensionValue(key, merged[key], value);
   }
+  if (
+    merged.api &&
+    typeof merged.api === 'object' &&
+    !Array.isArray(merged.api)
+  ) {
+    merged.api = snapshotApiValue(merged.api);
+  }
 
   return markImplicitPlateEditorExtension(merged);
 };
@@ -329,6 +338,24 @@ const groupPlateEditorExtensions = (extensions: readonly EditorExtension[]) => {
   );
 };
 
+const collectStaticEditorApi = (
+  extensions: readonly EditorExtension[]
+): Readonly<Record<string, unknown>> => {
+  const api: Record<string, unknown> = Object.create(null);
+
+  for (const extension of extensions) {
+    if (
+      extension.api &&
+      typeof extension.api === 'object' &&
+      !Array.isArray(extension.api)
+    ) {
+      Object.assign(api, extension.api);
+    }
+  }
+
+  return Object.freeze(api);
+};
+
 export type PlateSchemaOptions = PlateSchemaIdentity;
 
 const createPlateSchemaExtensions = (
@@ -361,15 +388,30 @@ const createPlateSchemaExtensions = (
     : defineEditorSchema(definition);
   const { codecExtension, extensionGroups, runtime } =
     withCompiledPlateModelCandidate(editor, model, () => {
-      const runtime = createPlateRuntimeExtension(editor, pluginList);
+      const resolvedExtensions = pluginList.map(
+        (plugin) =>
+          [plugin, resolvePlateEditorExtensions(editor, plugin)] as const
+      );
+      const editorExtensions = resolvedExtensions.flatMap(
+        ([, extensions]) => extensions
+      );
+      const runtime = createPlateRuntimeExtension(
+        editor,
+        pluginList,
+        Object.freeze(
+          Object.fromEntries(
+            resolvedExtensions.map(([plugin, extensions]) => [
+              plugin.key,
+              collectStaticEditorApi(extensions),
+            ])
+          )
+        ),
+        collectEditorExtensionUpdateMethods(editor, editorExtensions)
+      );
 
       return {
         codecExtension: compilePlateCodecs(editor, model, pluginList),
-        extensionGroups: groupPlateEditorExtensions(
-          pluginList.flatMap((plugin) =>
-            resolvePlateEditorExtensions(editor, plugin)
-          )
-        ),
+        extensionGroups: groupPlateEditorExtensions(editorExtensions),
         runtime,
       };
     });
@@ -813,10 +855,10 @@ export const extendBaseEditor = <
     nodeId,
   });
 
-  const internalRootDescriptor: AnyBasePlugin = (createBasePlugin as any)({
+  const internalRootDescriptor: AnyBasePlugin = createBasePlugin({
     key: 'root',
-    priority: 10_000,
     ...pluginConfig,
+    priority: 10_000,
     override: {
       ...pluginConfig.override,
       components: {
@@ -824,7 +866,7 @@ export const extendBaseEditor = <
         ...pluginConfig.override?.components,
       },
     },
-  }) as AnyBasePlugin;
+  });
 
   const sourcePlugins = snapshotPlatePluginSources({
     baseCore: baseCorePlugins as unknown as readonly AnyBasePlugin[],

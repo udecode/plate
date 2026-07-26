@@ -16,14 +16,14 @@ Default to inferred plugin chains:
 
 ```ts
 export const BaseFooPlugin = createBasePlugin({
+  api: ({ editor, getOptions }) => ({
+    // inferred
+  }),
   key: KEYS.foo,
-})
-  .extendApi(({ editor, getOptions }) => ({
+  update: ({ tx }) => ({
     // inferred
-  }))
-  .extendTx(({ editor, getOptions }) => (tx) => ({
-    // inferred
-  }));
+  }),
+});
 ```
 
 Pass an explicit config generic only when exported options, API, tx, selectors,
@@ -55,11 +55,60 @@ Plugin callbacks already expose the typed owner context:
 - `getOption`
 - `setOption`
 - `setOptions`
+- `defineCodecs`
+- `defineEditorExtension`
 - active `tx` where the callback is transaction-backed
 
 Keep one-owner behavior inline and capture those values. Do not move a callback
 into another file by inventing context/config/extension ferry types or threading
 `BaseEditor`, resolved plugin type, options, and `tx` through helper signatures.
+
+`defineCodecs` is the one inline inference anchor for codec maps:
+
+```ts
+export const BaseFooPlugin = createBasePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
+      },
+    }),
+  key: KEYS.foo,
+  schema: { mark: property.boolean() },
+});
+```
+
+Use `defineCodecs(map)` for self/product codecs and
+`defineCodecs(TargetPlugin, map)` for foreign codecs. The foreign overload
+injects `TargetPlugin`; do not add `target` to the rule. Keep the map
+MIME-keyed. Its `'text/html'` value is one schema-aware rule or a non-empty
+ordered tuple. Direct `codecs: { ... }`, casts, and callback annotations bypass
+the owner inference and are invalid.
+
+Inline constructor and justified `.extend()` `extension` objects receive
+contextual typing directly. An extracted reusable editor-extension factory
+does not receive that context backward from its return position. Pass it the
+plugin context and return the context-bound identity helper:
+
+```ts
+const withFooExtension = (context: BasePluginContext<FooConfig>) =>
+  context.defineEditorExtension({
+    commands: ({ handle }) => [
+      // nested callbacks remain inferred
+    ],
+  });
+
+BaseFooPlugin.extend((context) => ({
+  extension: withFooExtension(context),
+}));
+```
+
+The factory may accept only `context.defineEditorExtension` when it needs
+nothing else. Do not use a helper for an inline extension object, add another
+`.extend()` stage, or import Plite's standalone `defineEditorExtension` to
+simulate the Plate plugin context.
 
 ## Stage Capabilities, Not Plumbing
 
@@ -69,45 +118,51 @@ accumulated inferred surface from later stages:
 
 ```ts
 export const BaseFooPlugin = createBasePlugin({
+  api: ({ getOptions }) => ({
+    getLabel: (id: string) =>
+      getOptions().labels.find((label) => label.id === id)?.value,
+  }),
   key: KEYS.foo,
   options: {
     labels: [{ id: "alpha", value: "Alpha" }],
   },
 })
-  .extendApi(({ getOptions }) => ({
-    getLabel: (id: string) =>
-      getOptions().labels.find((label) => label.id === id)?.value,
-  }))
-  .extendTx(({ api }) => (tx) => ({
-    insertFoo: (id: string) => {
-      const label = api.getLabel(id);
+  .extend(({ api }) => ({
+    update: ({ tx }) => ({
+      insertFoo: (id: string) => {
+        const label = api.getLabel(id);
 
-      if (!label) return;
+        if (!label) return;
 
-      tx.nodes.insert({
-        children: [{ text: label }],
-        type: KEYS.foo,
-      });
-    },
+        tx.nodes.insert({
+          children: [{ text: label }],
+          type: KEYS.foo,
+        });
+      },
+    }),
   }))
-  .extendTx(({ plugin }) => (tx) => ({
-    insertFooPair: (firstId: string, secondId: string) => {
-      tx[plugin.key].insertFoo(firstId);
-      tx[plugin.key].insertFoo(secondId);
-    },
+  .extend(({ plugin }) => ({
+    update: ({ tx }) => ({
+      insertFooPair: (firstId: string, secondId: string) => {
+        tx[plugin.key].insertFoo(firstId);
+        tx[plugin.key].insertFoo(secondId);
+      },
+    }),
   }));
 
 export const FooConsumerPlugin = createBasePlugin({
+  api: ({ editor }) => ({
+    hasLabel: (id: string) => editor.api.foo.getLabel(id) !== undefined,
+  }),
   key: "fooConsumer",
   dependencies: [BaseFooPlugin],
-}).extendApi(({ editor }) => ({
-  hasLabel: (id: string) => editor.api.foo.getLabel(id) !== undefined,
-}));
+});
 ```
 
-Repeated `.extendApi()` / `.extendTx()` calls are correct when their order
-expresses a real capability dependency. They preserve local inference and make
-the accumulated capability visible to required dependents.
+Keep independent contributions together in the constructor. Repeated
+`.extend()` calls are correct only when their order expresses a real capability
+dependency. They preserve local inference and make the accumulated capability
+visible to required dependents.
 
 Stage only an honest scoped capability such as the dependent-facing `getLabel`
 query above. Do not publish a private implementation fragment merely to share
@@ -133,7 +188,9 @@ stale `editor.read` merely to remove a parameter.
 Do not add:
 
 ```ts
-extendTx(({ editor }: { editor: BaseEditor }) => (tx) => ...)
+.extend(({ editor }: { editor: BaseEditor }) => ({
+  update: ({ tx }) => ({ ... }),
+}))
 targetParserToInject: ({ editor }: { editor: BaseEditor }) => ...
 const plugin: BasePlugin<FooConfig> = createBasePlugin(...)
 const plugin = createBasePlugin(...) as BasePlugin<FooConfig>
@@ -182,20 +239,20 @@ type FooTx = {
 };
 
 export const BaseFooPlugin = createBasePlugin({
-  key: KEYS.foo,
-})
-  .extendApi<FooApi>(({ editor }) => ({
+  api: ({ editor }): FooApi => ({
     getValue: () => editor.read.string(),
-  }))
-  .extendTx<FooTx>(({ editor }) => (tx) => ({
+  }),
+  key: KEYS.foo,
+  update: ({ tx }): FooTx => ({
     insertFoo: (options) => {
       // `options` and `tx` are contextual
     },
-  }));
+  }),
+});
 ```
 
-The `extendTx` generic is the returned command object, not the factory function.
-Omit the generic when the full contract can be inferred.
+The `update` generic is the command object returned by `update({ tx })`, not the
+factory function. Omit the generic when the full contract can be inferred.
 
 ## Plugin Export Law
 
@@ -204,7 +261,7 @@ The exported plugin value must infer from:
 - `createBasePlugin(...)`;
 - `createPlatePlugin(...)`;
 - `toPlatePlugin(...)`;
-- chained `.extend*` calls.
+- chained `.extend()` calls.
 
 Never annotate or cast that result merely to preserve a desired type. If the
 chain widens, loses dependencies, or drops API/tx capability, repair the owning

@@ -7,7 +7,8 @@ common doctrine after the lane is selected.
 
 ## Taste
 
-- Best long-term architecture beats the nearest symptom patch.
+- Prefer the smallest durable architecture that materially fixes the owning
+  problem over a local symptom patch.
 - Package/runtime ownership beats example glue when the bug is systemic.
 - Examples should expose the real API and DX at the call site.
 - Breaking changes are acceptable when they produce the better API, behavior,
@@ -19,8 +20,10 @@ common doctrine after the lane is selected.
   stable, and worth their long-term compatibility cost.
 - Public API design starts from ideal call sites. Current implementation,
   compatibility, machinery, ecosystem precedent, and accepted plans inform
-  adoption; they do not define the best target. `best-api` owns that concrete
-  design/review step before layer planning.
+  adoption; they do not define the target. Quality does not mean maximum
+  capability, abstraction, generality, symmetry, or rubric score. `best-api`
+  owns the smallest materially justified concrete design/review step before
+  layer planning.
 - Do not hide latency behind debounce, delayed repair, or benchmark tricks.
 - Do not call browser/editor behavior correct from model-only proof.
 - Do not call perf closed from rerender/locality evidence alone.
@@ -155,6 +158,11 @@ tests for package ownership, API intent, and public teaching surfaces.
 - External editors are pressure sources, not architecture to clone. Translate
   their lessons into local model, change, selection, DOM, browser, and
   package-owner proof vocabulary.
+- `$editor-audit` owns exhaustive source-level comparison against one or more
+  local editor repositories. It maps every relevant atomic concept, proposes
+  only materially valuable changes with concrete current/proposed shapes, then
+  routes public shape to `best-api` and accepted work to `plite-plan` or
+  `plate-plan`. Test and issue invariants remain harvester work.
 - Research is a compiled agent layer, not a scrapbook: stable paths, one
   concept per file, outward claims, durable promotion only.
 
@@ -214,6 +222,8 @@ honest", "all next", "go next", or reports visible editor weirdness.
   `docs/vision/*.md`;
 - bad API -> `best-api` design/review, then the layer plan or accepted
   implementation owner;
+- external editor architecture comparison -> `editor-audit`, then `best-api`,
+  `plite-plan`, or `plate-plan` for accepted rows;
 - wrong/missing/overlapping skill -> patch `.agents/rules/**`, sync, verify;
 - output-budget miss -> split the goal into smaller checkpoints.
 

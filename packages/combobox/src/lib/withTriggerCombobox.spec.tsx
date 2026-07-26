@@ -36,7 +36,9 @@ const createExampleComboboxPlugin = <const K extends string>(
     key,
     dependencies: [ExampleComboboxInputPlugin],
     options,
-  }).extendExtension(withTriggerCombobox);
+  }).extend((context) => ({
+    extension: withTriggerCombobox(context),
+  }));
 
 const readonlyTriggers = ['@', '#'] as const;
 
@@ -82,7 +84,9 @@ const RegexComboboxPlugin = createBasePlugin({
     },
   },
   type: 'exampleCombobox',
-}).extendExtension(withTriggerCombobox);
+}).extend((context) => ({
+  extension: withTriggerCombobox(context),
+}));
 
 const QueryComboboxPlugin = createExampleComboboxPlugin('queryCombobox', {
   trigger: '@',

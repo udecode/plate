@@ -61,6 +61,15 @@ export const BaseBlockquotePlugin = createBasePlugin({
       }),
     },
   }),
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
+        match: [{ tag: 'blockquote' }],
+      },
+    }),
+
   render: { as: 'blockquote' },
   rules: {
     break: {
@@ -83,13 +92,7 @@ export const BaseBlockquotePlugin = createBasePlugin({
       return isLiftableBlockquoteChild(editor, node, path, blockquoteType);
     },
   },
-})
-  .extendHtmlCodec(() => ({
-    decode: () => ({}),
-    encode: ({ content }) => ({ children: content, tag: 'blockquote' }),
-    match: [{ tag: 'blockquote' }],
-  }))
-  .extendTx(({ editor, type }) => (tx) => ({
+  update: ({ editor, tx, type }) => ({
     toggle: () => {
       tx.blocks.toggle(type, { wrap: true });
     },
@@ -119,9 +122,9 @@ export const BaseBlockquotePlugin = createBasePlugin({
 
       return true;
     },
-  }))
-  .extend({
-    shortcuts: {
-      untab: { keys: 'shift+tab' },
-    },
-  });
+  }),
+}).extend({
+  shortcuts: {
+    untab: { keys: 'shift+tab' },
+  },
+});

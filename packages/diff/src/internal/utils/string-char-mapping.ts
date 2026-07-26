@@ -21,7 +21,7 @@ export class StringCharMapping {
     return entry[0];
   }
 
-  nodesToString(nodes: Descendant[]): string {
+  nodesToString(nodes: readonly Descendant[]): string {
     return nodes.map(this.nodeToChar.bind(this)).join('');
   }
 

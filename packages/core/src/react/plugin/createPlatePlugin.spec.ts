@@ -6,29 +6,30 @@ import { createPlateEditor } from '../editor';
 import { createPlatePlugin } from './createPlatePlugin';
 
 describe('createPlatePlugin', () => {
-  it('uses withComponent as a facade for render.node only', () => {
+  it('normalizes component to render.node', () => {
     const Component: NodeComponent = () => null;
-    const plugin = createPlatePlugin({ key: 'testPlugin' }).withComponent(
-      Component
-    );
+    const plugin = createPlatePlugin({
+      component: Component,
+      key: 'testPlugin',
+    });
     const resolvedPlugin = resolvePluginTest(plugin);
 
     expect(resolvedPlugin.render.node).toBe(Component);
   });
 
-  it('replaces an existing render.node through withComponent', () => {
+  it('lets terminal configuration replace the component', () => {
     const OriginalComponent: NodeComponent = () => null;
     const NewComponent: NodeComponent = () => null;
     const plugin = createPlatePlugin({
+      component: OriginalComponent,
       key: 'testPlugin',
-      render: { node: OriginalComponent },
-    }).withComponent(NewComponent);
+    }).configure({ component: NewComponent });
     const resolvedPlugin = resolvePluginTest(plugin);
 
     expect(resolvedPlugin.render.node).toBe(NewComponent);
   });
 
-  it('extendEditorApi', () => {
+  it('publishes root API through extension', () => {
     type CodeBlockConfig = PluginConfig<
       'codeBlock',
       { syntax: boolean; syntaxPopularFirst: boolean },
@@ -40,55 +41,63 @@ describe('createPlatePlugin', () => {
       }
     >;
 
-    createPlatePlugin({
+    createPlatePlugin<CodeBlockConfig>({
       key: 'codeBlock',
       type: 'code_block',
       options: { syntax: true, syntaxPopularFirst: false },
-    })
-      .extendEditorApi<CodeBlockConfig['api']>(() => ({
-        plugin: {
-          getSyntaxState: () => true,
+      extension: {
+        api: {
+          plugin: {
+            getSyntaxState: () => true,
+          },
+          toggleSyntax: () => {},
         },
-        toggleSyntax: () => {},
-      }))
-      .extend(() => ({
-        options: {
-          hotkey: ['mod+opt+8', 'mod+shift+8'],
-        },
-      }));
+      },
+    }).extend(() => ({
+      options: {
+        hotkey: ['mod+opt+8', 'mod+shift+8'],
+      },
+    }));
 
     expect(1).toBe(1);
   });
 
-  it('extendTx keeps the Plate plugin wrapper chain', () => {
-    const plugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
-      () => () => ({
-        replace: () => undefined,
-      })
-    );
+  it('keeps the Plate wrapper when publishing updates', () => {
+    const plugin = createPlatePlugin({
+      key: 'txPlugin',
+      update: () => ({
+        replace: () => 'replace' as const,
+      }),
+    }).extend(() => ({
+      update: () => ({
+        insert: () => 'insert' as const,
+      }),
+    }));
+    const editor = createPlateEditor({ plugins: [plugin] });
 
-    expect(plugin.__txExtensions).toHaveLength(1);
-    expect(plugin.extendTx(() => () => ({})).__txExtensions).toHaveLength(2);
+    expect(editor.plugin(plugin).update.replace()).toBe('replace');
+    expect(editor.plugin(plugin).update.insert()).toBe('insert');
   });
 
-  it('extendExtension keeps the Plate plugin wrapper chain', () => {
-    const RuntimePlugin = createPlatePlugin({ key: 'runtime' })
-      .extendExtension({
+  it('keeps the Plate wrapper when publishing editor behavior', () => {
+    const RuntimePlugin = createPlatePlugin({
+      key: 'runtime',
+      extension: {
         api: {
           runtime: {
             key: () => 'runtime' as const,
           },
         },
-      })
-      .extendExtension({
+      },
+    }).extend(() => ({
+      extension: {
         api: {
           runtime: {
             label: () => 'Runtime' as const,
           },
         },
-      });
-
-    expect(RuntimePlugin.__editorExtensions).toHaveLength(2);
+      },
+    }));
 
     const editor = createPlateEditor({
       plugins: [RuntimePlugin],
@@ -99,11 +108,12 @@ describe('createPlatePlugin', () => {
   });
 
   it('infers Plate tx groups on createPlateEditor update callbacks', () => {
-    const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
-      () => () => ({
+    const TxPlugin = createPlatePlugin({
+      key: 'txPlugin',
+      update: () => ({
         replace: (text: string) => text.length,
-      })
-    );
+      }),
+    });
 
     const editor = createPlateEditor({
       plugins: [TxPlugin],
@@ -119,32 +129,42 @@ describe('createPlatePlugin', () => {
   });
 
   it('infers Plate tx groups in editor extension commands', () => {
-    createPlatePlugin({ key: 'txPlugin' })
-      .extendTx(() => () => ({
+    createPlatePlugin({
+      key: 'txPlugin',
+      update: () => ({
         replace: (text: string) => text.length,
-      }))
-      .extendExtension('behavior', () => ({
-        commands: ({ handle }) => [
-          handle(editorCommands.insertText, ({ input, state }) =>
-            state.transaction((tx) => {
-              const length = tx.txPlugin.replace(input.text);
+      }),
+    }).extend(() => ({
+      extension: {
+        key: 'behavior',
+        ...{
+          commands: ({ handle }) => [
+            handle(editorCommands.insertText, ({ input, state }) =>
+              state.transaction((tx) => {
+                const length = tx.txPlugin.replace(input.text);
 
-              return length satisfies number;
-            })
-          ),
-        ],
-      }));
+                return length satisfies number;
+              })
+            ),
+          ],
+        },
+      },
+    }));
 
     expect(1).toBe(1);
   });
 
   it('infers explicit Plate tx groups on createPlateEditor update callbacks', () => {
-    const TxPlugin = createPlatePlugin({ key: 'sourcePlugin' }).extendTxGroup(
-      'foreignTx',
-      () => () => ({
-        replace: (text: string) => text.length,
-      })
-    );
+    const TxPlugin = createPlatePlugin({
+      key: 'sourcePlugin',
+      extension: {
+        tx: {
+          foreignTx: () => ({
+            replace: (text: string) => text.length,
+          }),
+        },
+      },
+    });
 
     const editor = createPlateEditor({
       plugins: [TxPlugin],
@@ -177,8 +197,20 @@ describe('createPlatePlugin', () => {
 
     const plugin = createPlatePlugin<DeclaredTxConfig>({
       key: 'sourcePlugin',
-    }).extendTxGroup('foreignTx', () => () => ({
-      replace: (text) => text.length,
+    }).extend<{
+      extension: {
+        tx: {
+          foreignTx: () => DeclaredTxConfig['tx']['foreignTx'];
+        };
+      };
+    }>(() => ({
+      extension: {
+        tx: {
+          foreignTx: () => ({
+            replace: (text) => text.length,
+          }),
+        },
+      },
     }));
     const editor = createPlateEditor({ plugins: [plugin] });
 
@@ -195,9 +227,13 @@ describe('createPlatePlugin', () => {
     const MethodPlugin = createPlatePlugin<MethodConfig>({
       key: 'methodPlugin',
       options: { enabled: true },
-    }).extendEditorApi<MethodConfig['api']>(({ getOption }) => ({
-      method: {
-        isEnabled: () => getOption('enabled'),
+    }).extend<{ extension: { api: MethodConfig['api'] } }>(({ getOption }) => ({
+      extension: {
+        api: {
+          method: {
+            isEnabled: () => getOption('enabled'),
+          },
+        },
       },
     }));
 

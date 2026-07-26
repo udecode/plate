@@ -70,7 +70,7 @@ export const editor = createPlateEditor({
 | `@platejs/emoji/react` | Package | Exports `EmojiPlugin`, `EmojiInputPlugin`, picker hooks, and frequent emoji storage. |
 | `@platejs/combobox` | Package | Provides trigger detection and transient input cleanup for the `:` flow. |
 | `@emoji-mart/data` | Dependency | Provides the emoji dataset used by the registry kit. |
-| `emoji-kit` | Registry | Adds `EmojiPlugin` with emoji-mart data and `EmojiInputPlugin.withComponent(EmojiInputElement)`. |
+| `emoji-kit` | Registry | Adds `EmojiPlugin` with emoji-mart data and `EmojiInputPlugin.configure({ component: EmojiInputElement })`. |
 | `emoji-node` | Registry UI | Renders inline emoji search with `InlineCombobox`. |
 | `emoji-toolbar-button` | Registry UI | Renders the toolbar popover, category grid, search bar, and preview. |
 | `inline-combobox` | Registry UI | Renders the inline trigger input and popover primitives. |
@@ -106,7 +106,7 @@ export const editor = createPlateEditor({
         data: emojiMartData as any,
       },
     }),
-    EmojiInputPlugin.withComponent(EmojiInputElement),
+    EmojiInputPlugin.configure({ component: EmojiInputElement }),
   ],
 });
 ```

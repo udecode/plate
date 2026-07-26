@@ -3,7 +3,4 @@
  */
 
 export * from './CopilotPlugin';
-export * from './renderCopilotBelowNodes';
-export * from './withCopilot';
-export * from './transforms/index';
-export * from './utils/index';
+export * from './getNextWord';

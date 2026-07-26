@@ -13,10 +13,12 @@ import { ImageElementStatic } from '@/registry/ui/media-image-node-static';
 import { VideoElementStatic } from '@/registry/ui/media-video-node-static';
 
 export const BaseMediaKit = [
-  BaseImagePlugin.withComponent(ImageElementStatic),
-  BaseVideoPlugin.withComponent(VideoElementStatic),
-  BaseAudioPlugin.withComponent(AudioElementStatic),
-  BaseFilePlugin.withComponent(FileElementStatic),
-  BaseMediaEmbedPlugin.withComponent(MediaEmbedElementStatic),
+  BaseImagePlugin.configure({ component: ImageElementStatic }),
+  BaseVideoPlugin.configure({ component: VideoElementStatic }),
+  BaseAudioPlugin.configure({ component: AudioElementStatic }),
+  BaseFilePlugin.configure({ component: FileElementStatic }),
+  BaseMediaEmbedPlugin.configure({
+    component: MediaEmbedElementStatic,
+  }),
   BasePlaceholderPlugin,
 ];

@@ -484,17 +484,19 @@ describe('table clipboard slow contracts', () => {
         ) as TestEditor;
 
         const plugins = getTestTablePlugins(options, (plugin) =>
-          plugin.extendApi(() => ({
-            createCell: () => ({
-              background: 'custom',
-              children: [
-                {
-                  children: [{ text: '' }],
-                  type: 'p',
-                },
-              ],
-              type: 'td',
-            }),
+          plugin.extend(() => ({
+            api: {
+              createCell: () => ({
+                background: 'custom',
+                children: [
+                  {
+                    children: [{ text: '' }],
+                    type: 'p',
+                  },
+                ],
+                type: 'td',
+              }),
+            },
           }))
         );
 

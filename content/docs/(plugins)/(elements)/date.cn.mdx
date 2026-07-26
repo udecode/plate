@@ -84,12 +84,12 @@ import { DateElement } from '@/components/ui/date-node';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件
-    DatePlugin.withComponent(DateElement),
+    DatePlugin.configure({ component: DateElement }),
   ],
 });
 ```
 
-- `withComponent`: 指定 [`DateElement`](/docs/components/date-node) 来渲染内联日期元素
+- `component`: 指定 [`DateElement`](/docs/components/date-node) 来渲染内联日期元素
 
 ### 插入工具栏按钮
 

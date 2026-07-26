@@ -113,69 +113,58 @@ export const BaseFootnoteReferencePlugin = createBasePlugin({
       void: 'inline',
     },
   },
+
   render: { as: 'sup' },
-})
-  .extendExtension(withTriggerCombobox)
-  .extendExtension(({ editor }) => ({
+  extension: (context) => ({
+    ...withTriggerCombobox(context),
+    api: {
+      footnote: {
+        definition: (options) => getFootnoteDefinition(context.editor, options),
+        definitions: (options) =>
+          getFootnoteDefinitionsByIdentifier(context.editor, options),
+        definitionText: (options) =>
+          getFootnoteDefinitionText(context.editor, options),
+        duplicateDefinitions: (options) =>
+          getDuplicateFootnoteDefinitions(context.editor, options),
+        duplicateIdentifiers: () =>
+          getDuplicateFootnoteIdentifiers(context.editor),
+        hasDuplicateDefinitions: (options) =>
+          hasDuplicateFootnoteDefinitions(context.editor, options),
+        identifiers: () => getFootnoteIdentifiers(context.editor),
+        isDuplicateDefinition: (options) =>
+          isDuplicateFootnoteDefinition(context.editor, options),
+        isResolved: (options) => isFootnoteResolved(context.editor, options),
+        nextId: () => getNextFootnoteIdentifier(context.editor),
+        references: (options) => getFootnoteReferences(context.editor, options),
+      },
+    } satisfies FootnoteContract['api'],
     onTransactionChange({ after, before, changed }) {
-      if (shouldInvalidateFootnoteRegistry(editor, before, after, changed)) {
-        invalidateFootnoteRegistry(editor);
+      if (
+        shouldInvalidateFootnoteRegistry(context.editor, before, after, changed)
+      ) {
+        invalidateFootnoteRegistry(context.editor);
       }
     },
-  }))
-  .extendEditorApi<FootnoteContract['api']>(({ editor }) => ({
-    footnote: {
-      definition(options) {
-        return getFootnoteDefinition(editor, options);
-      },
-      definitions(options) {
-        return getFootnoteDefinitionsByIdentifier(editor, options);
-      },
-      definitionText(options) {
-        return getFootnoteDefinitionText(editor, options);
-      },
-      duplicateDefinitions(options) {
-        return getDuplicateFootnoteDefinitions(editor, options);
-      },
-      duplicateIdentifiers() {
-        return getDuplicateFootnoteIdentifiers(editor);
-      },
-      identifiers() {
-        return getFootnoteIdentifiers(editor);
-      },
-      hasDuplicateDefinitions(options) {
-        return hasDuplicateFootnoteDefinitions(editor, options);
-      },
-      isDuplicateDefinition(options) {
-        return isDuplicateFootnoteDefinition(editor, options);
-      },
-      isResolved(options) {
-        return isFootnoteResolved(editor, options);
-      },
-      nextId() {
-        return getNextFootnoteIdentifier(editor);
-      },
-      references(options) {
-        return getFootnoteReferences(editor, options);
-      },
+    tx: {
+      footnote: (tx) => ({
+        createDefinition: (options) =>
+          createFootnoteDefinition(context.editor, tx, options),
+        focusDefinition: (options) =>
+          focusFootnoteDefinition(context.editor, tx, options),
+        focusReference: (options) =>
+          focusFootnoteReference(context.editor, tx, options),
+        normalizeDuplicateDefinition: (options) =>
+          normalizeDuplicateFootnoteDefinition(context.editor, tx, options),
+      }),
+      insert: (tx) => ({
+        footnote: (options = {}) =>
+          insertFootnote(context.editor, tx, context.type, options),
+      }),
+    } satisfies {
+      footnote: PlatePluginTxGroup<FootnoteContract['tx']['footnote']>;
+      insert: PlatePluginTxGroup<FootnoteContract['tx']['insert']>;
     },
-  }))
-  .extendTxGroup<
-    'footnote',
-    PlatePluginTxGroup<FootnoteContract['tx']['footnote']>
-  >('footnote', ({ editor }) => (tx) => ({
-    createDefinition: (options) =>
-      createFootnoteDefinition(editor, tx, options),
-    focusDefinition: (options) => focusFootnoteDefinition(editor, tx, options),
-    focusReference: (options) => focusFootnoteReference(editor, tx, options),
-    normalizeDuplicateDefinition: (options) =>
-      normalizeDuplicateFootnoteDefinition(editor, tx, options),
-  }))
-  .extendTxGroup<
-    'insert',
-    PlatePluginTxGroup<FootnoteContract['tx']['insert']>
-  >('insert', ({ editor, type }) => (tx) => ({
-    footnote: (options) => insertFootnote(editor, tx, type, options),
-  }));
+  }),
+});
 
 export type FootnoteConfig = InferConfig<typeof BaseFootnoteReferencePlugin>;

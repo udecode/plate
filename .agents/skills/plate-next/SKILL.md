@@ -1,6 +1,6 @@
 ---
 description: 'Plate Next cleanup supervisor: deeply review and migrate Plate surfaces to be Plite-perfect, hard-cut old Slate/Plate compatibility sludge, route plans vs implementation, and run auto-style timed/full loops.'
-argument-hint: '[specific API|path|package|current tree|hours|full-loop|batch-loop]'
+argument-hint: '[sync [package]|specific API|path|package|current tree|hours|full-loop|batch-loop]'
 disable-model-invocation: true
 name: plate-next
 metadata:
@@ -11,6 +11,48 @@ metadata:
 # Plate Next
 
 Handle $ARGUMENTS.
+
+## Doctrine Version
+
+Current doctrine version: `11`.
+
+The machine-readable source is
+`.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
+the applied version, source fingerprint, verification date, and evidence plan
+for every completed Plate Next package review. Active `packages` must exactly
+match `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs`. Deleted
+packages stay under `retiredPackages` with retirement date/evidence, remain
+visible in history, and are excluded from sync.
+
+Use the read-only helper:
+
+```bash
+node .agents/rules/plate-next/scripts/version.mjs validate
+node .agents/rules/plate-next/scripts/version.mjs status [all|<package>]
+node .agents/rules/plate-next/scripts/version.mjs pending [all|<package>]
+node .agents/rules/plate-next/scripts/version.mjs fingerprint <package>
+node .agents/rules/plate-next/scripts/version.mjs check [all|<package>]
+node .agents/rules/plate-next/scripts/version.mjs doctrine-fingerprint
+```
+
+Version law:
+
+- Use monotonic integers. Do not use semver or infer fake historical versions.
+- Every change to a reusable Plate Next pattern, review rule, topology law,
+  completion gate, or package-facing proof requirement increments
+  `latestVersion` by one and appends one immutable `versions` entry with
+  concrete `migrationChecks`.
+- The latest version entry stores a doctrine fingerprint over
+  `.agents/rules/plate-next.mdc` and `docs/plans/templates/plate-next.md`.
+  `validate` fails when either source changes without a version bump. Treat any
+  edit to those doctrine surfaces as a bump; generated mirror regeneration is
+  not a bump.
+- Never edit or reorder an older version entry. Correct a bad reusable rule by
+  adding the next version.
+- A doctrine bump never mass-updates package entries. Packages remain at their
+  last proven version until `sync` closes them.
+- Keep the visible `Current doctrine version` here equal to `latestVersion`,
+  then run `pnpm install` to regenerate the skill mirror.
 
 Use this when the user wants Codex to do the review they keep doing manually:
 open a migrated Plate file/API, ask why every compatibility helper exists, and
@@ -35,6 +77,8 @@ the final API.
 - The user gives no target and expects autopilot to find the next Plate cleanup
   risk.
 - The user gives a duration such as `1h`, `8h`, or `overnight`.
+- The user invokes `plate-next sync` to bring tracked packages to the current
+  doctrine.
 
 ## Do Not Use When
 
@@ -54,12 +98,54 @@ Same user-facing shape as `auto`:
 - `plate-next packages/core/src/lib/utils/isType.ts`
 - `plate-next packages/table`
 - `plate-next packages/basic-nodes`
+- `plate-next sync`
+- `plate-next sync table`
 - `plate-next current tree`
 - `plate-next 2h`
 - `plate-next all core packages full-loop`
 
 No argument means autopilot: scan the highest-risk Plate Next surfaces and pick
 the next cleanup packet without asking.
+
+## Sync Mode
+
+`plate-next sync` is an execution mode, not a status summary. With no package
+argument it continues until every active tracked package is current.
+`sync <package>` does the same for one active tracked package. Retired packages
+are reported but never queued.
+
+1. Run `version.mjs validate`, then `status`. Freeze the queue from the
+   machine-readable result: oldest `appliedVersion` first, then package slug.
+2. Create one Plate Next autogoal plan with a row for every queued package.
+   Record starting version, latest version, fingerprint state, missing doctrine
+   versions, required checks, proof, final fingerprint, and ledger update.
+3. Process one package at a time. Do not attest or start the next package while
+   the active package has unchecked/deferred file rows.
+4. A v0 package has no trustworthy current-doctrine attestation: rerun the full
+   package review against the latest skill. For a later version with unchanged
+   source, run every `migrationChecks` row after its applied version plus the
+   normal focused proof. Any source-fingerprint mismatch forces a full current
+   package review.
+5. After package proof and package-local autoreview close, run
+   `fingerprint <package>`. Patch that package entry with the latest version,
+   exact digest, local verification date, and evidence plan. Never pre-attest a
+   package or copy another package's digest.
+6. Rerun `status` after every attestation. If the package is not `current`, keep
+   it active and repair the cause.
+7. If sync exposes a missing reusable rule and the rule is repaired, bump the
+   doctrine version before continuing, append its migration checks, and
+   recompute the entire queue. Packages attested earlier in the same run are
+   stale again; that is correct.
+8. Run the final goal-plan checker only after registry status is current.
+   All-package sync closes only when `version.mjs check all` exits zero. A
+   blocked/deferred package keeps its old version and blocks the all-current
+   claim.
+
+The helper is deliberately read-only. The version registry is reviewed source,
+not mutable hidden state. Package fingerprints include package code, tests,
+type-tests, fixtures, examples, manifests, and config. They exclude generated
+output, dependency/cache directories, logs, `.npmignore`, changelogs, and
+readmes so releases and prose-only edits do not trigger fake code drift.
 
 ## Review Mode: Best Plate V2, Main As Evidence
 
@@ -143,8 +229,8 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   exported/public signatures, or external boundary callbacks.
 - Do not declare plugin export types or cast plugin chains to hide inference
   loss. A plugin export should infer from `createBasePlugin(...)`,
-  `createPlatePlugin(...)`, `toPlatePlugin(...)`, and chained `.extend*`
-  methods. Smells like
+  `createPlatePlugin(...)`, `toPlatePlugin(...)`, and chained `.extend()`
+  calls. Smells like
   `export const FooPlugin: BasePlugin<FooConfig> = ...`,
   `export const FooPlugin: PlatePlugin<FooConfig> = ...`, or
   `...) as BasePlugin<FooConfig>` are type regressions unless the annotation is
@@ -172,14 +258,23 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
 - The options-only rule owns Plate plugin descriptors. A Plite editor extension
   may keep its own `config` contract; do not mechanically rename unrelated
   framework, parser-library, provider, build, or test-fixture config objects.
-- Do not wrap plugin-owned editor extension options in
-  `defineEditorExtension({ name: pluginKey, ... })`. `extendExtension` should
-  accept a built editor extension or raw extension options; raw options without
-  `name` default to the owning plugin key. Use an explicit `name` only for a
-  genuinely separate extension identity, keyed secondary extension, or
-  standalone Plite extension.
+- Inline constructor and justified `.extend()` `extension` options are already
+  contextually typed and need no helper. Contextual typing does not flow
+  backward into an extracted reusable editor-extension factory. Such a factory
+  receives the plugin context (or its `defineEditorExtension` member) and
+  returns `context.defineEditorExtension({ ... })`, preserving nested command,
+  input, state, transaction, and dependency inference. Put the contribution in
+  the constructor when the factory is accessible there; use one `.extend()`
+  stage only when the factory needs the whole accumulated plugin context,
+  adapts an imported or prebuilt descriptor, or consumes an earlier capability.
+- Distinguish the callback's context-bound `defineEditorExtension` from the
+  function imported from `@platejs/plite`. The imported helper authors
+  standalone Plite extensions; it is not the inference owner for an extracted
+  Plate plugin factory. Raw options without `name` default to the owning plugin
+  key. Use an explicit `name` only for a genuinely separate extension identity,
+  keyed secondary extension, or standalone Plite extension.
 - Colocation is the default. Plugin behavior with exactly one production owner
-  belongs inline in that plugin's `create*Plugin` / `.extend*` chain. This
+  belongs inline in that plugin's `create*Plugin` / `.extend()` chain. This
   includes one-use `with*`, `decorate*`, normalize, parser, command,
   correction, option, API, and tx callbacks. Tests, barrels, and old public
   exports do not count as additional owners.
@@ -233,34 +328,76 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   inferred callback into another file. Keep explicit types when they are a real
   exported contract, recursive shape, external boundary, or reused API/tx
   contract.
-- Let plugin builders own contextual typing. When a real API or transaction
-  contract already exists, pass the method object to the builder generic, for
-  example `.extendApi<ApiContract>(...)` or `.extendTx<TxContract>(...)`. Do not
-  append `satisfies TxContract` to the returned object, cast the callback, or
-  annotate each method parameter. For `.extendTx`, the explicit generic is the
-  command object returned by the transaction factory, not the factory function
-  type. Omit the generic when the complete contract can be inferred. If a
+- Let plugin builders own contextual typing. Constructors own the initial
+  widening contribution. `.extend()` is the only continuation verb after
+  construction. A contribution may contain plugin-scoped `api`, `read`,
+  `selectors`, or `update`, editor-wide `extension`, and format `codecs`. When
+  a real capability contract already exists for a justified later stage, pass
+  the contribution shape to the builder generic, for example
+  `.extend<{ api: ApiContract }>(...)` or
+  `.extend<{ update: UpdateContract }>(...)`. The explicit `update` contract is
+  the command object returned by `update({ tx })`, not the factory function.
+  Do not append `satisfies`, cast the callback, or annotate each method
+  parameter. Omit the generic when the complete contract can be inferred. If a
   builder generic cannot contextually type the inline callback in this shape,
   repair the Core builder signature instead of adding a call-site workaround.
-- Treat a plugin chain as a typed capability dependency graph. When a later
-  API, tx, extension, handler, or required dependent needs an earlier
-  capability, add an earlier `.extendApi()` or `.extendTx()` stage and consume
-  its accumulated inferred surface. Multiple ordered builder stages in one
-  plugin are the preferred composition shape, not fragmentation.
+- Put every independent author contribution directly in
+  `createBasePlugin()` / `createPlatePlugin()`: `api`, `read`, `selectors`,
+  `update`, `extension`, `codecs`, and ordinary static fields. Use `.extend()`
+  only for an imported/prebuilt descriptor or extension, a shared factory the
+  constructor cannot access, or a real earlier-stage type dependency.
+  Constructor callbacks already receive typed authoring context; context
+  access alone never justifies `.extend()`.
+- Treat an exceptional plugin chain as a typed capability dependency graph. When a later
+  API, read, update, extension, handler, or required dependent needs an earlier
+  capability, publish it in the constructor when possible; otherwise add the
+  smallest earlier `.extend()` stage and consume its accumulated inferred
+  surface. Multiple stages require a real type dependency.
+- Author codec declarations as
+  `codecs: ({ defineCodecs }) => defineCodecs(map)` in the constructor.
+  `defineCodecs(map)` handles self and product maps;
+  `defineCodecs(TargetPlugin, map)` handles a foreign map and injects the
+  target. The map stays MIME-keyed. Its `'text/html'` value accepts one
+  schema-aware rule or a non-empty ordered rule tuple. Multiple HTML
+  representations owned by one plugin stay in that single map. Move the codec
+  callback to `.extend()` only when it needs an earlier-stage capability. This
+  context-bound helper is the sole
+  inline codec inference anchor. Reject direct `codecs: { ... }`, manual
+  `target` fields, global helpers, casts, and callback annotations.
 - Stage only an honest scoped capability that consumers, required dependents,
   or durable plugin operations should discover. Do not publish a private
   implementation fragment merely to share it between stages. Keep it lexical,
   keep a shared pure domain algorithm private, coalesce stages, or record the
   missing builder capability.
-- Later API/tx factories may destructure the accumulated `api`.
-  `extendExtension` is assembled before API publication, so extension runtime
-  callbacks must retain the typed context and read `context.api` lazily.
+- Later `.extend()` factories may destructure accumulated capabilities. An
+  `extension` contribution is assembled before API publication, so extension
+  runtime callbacks must retain the typed context and read `context.api` lazily.
   Eagerly destructuring `api` in that factory can capture the pre-publication
   empty value.
 - Inside a later tx method, call an earlier staged mutation through the same
   active transaction: `tx[plugin.key].method(...)`. A portal one-shot,
   `context.update`, or `editor.update.*` would reopen/nest the transaction and
   is not capability composition.
+- `createBasePlugin()` owns runtime-neutral declarations.
+  `createPlatePlugin()` accepts root-level `component`.
+  Existing Plate descriptors bind or replace it through one terminal
+  `.configure({ component })`. Base/static consumers bind a static component
+  directly through `BasePlugin.configure({ component })`;
+  `createBasePlugin()` itself stays renderer-neutral.
+  `toPlatePlugin(BasePlugin)` is only for live React adapter construction.
+  Never import `platejs/react`, `@platejs/core/react`, or any
+  `@platejs/*/react` entrypoint from a `*-base-kit`, `*-static`, server/static
+  renderer, or other Base/static module. Repair a missing Base/static Core
+  capability instead of crossing into the React layer.
+  A Base/static kit must bind the static renderer module, never a live/client
+  node component. Registry Base kits should import the owning `*-static`
+  component.
+  `.configure()` never widens. Hard-delete `.withComponent()` and do not
+  author, document, or preserve direct public `render.node` assignment.
+- Hard-delete `extendApi`, `extendEditorApi`, `extendSelectors`, `extendTx`,
+  `extendTxGroup`, `extendExtension`, `extendCodecs`, and `extendHtmlCodec`.
+  Do not keep aliases, shims, deprecations, forwarding wrappers, or old
+  documentation.
 - When colocation makes a helper obsolete, delete its file and barrel export.
   Do not preserve a helper export, forwarding wrapper, alias, or old filename
   for compatibility. Route a genuine public API fork through `best-api`, then
@@ -646,15 +783,17 @@ Default suspicion list:
   the exception, not the default.
 - plugin export annotations/casts that replace inference from
   `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, or chained
-  `.extend*` calls. They cap the file below `100` until removed or justified as
+  `.extend()` calls. They cap the file below `100` until removed or justified as
   a real external boundary.
 - empty config aliases such as `type FooConfig = PluginConfig<'foo'>` paired
   with `createBasePlugin<FooConfig>`. They cap the file below `100` unless the
   config type carries a real public contract.
-- `defineEditorExtension({ name: plugin.key, ... })` or
-  `defineEditorExtension({ name: KEYS.foo, ... })` inside a plugin
-  `extendExtension` callback. The plugin builder owns default names and raw
-  option normalization.
+- imported Plite `defineEditorExtension({ name: plugin.key, ... })` or
+  `defineEditorExtension({ name: KEYS.foo, ... })` around an inline plugin
+  `extension` contribution. The plugin builder owns inline contextual typing,
+  default names, and raw option normalization. Only an extracted reusable
+  Plate extension factory uses the callback context's
+  `defineEditorExtension`.
 - one-line `editor.read((state) => state.*())` or `editor.update((tx) => {
 tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   file below `100` until replaced or justified as grouped transaction/snapshot
@@ -865,6 +1004,16 @@ Rules:
   `reviewedPackageSlugs` in `tooling/scripts/check-core.mjs` before closure.
   Exclude only a deferred/blocked review or a package whose plan explicitly
   records why it does not belong in `check:core`.
+- Every completed package review must also have an entry in
+  `.agents/rules/plate-next/versions.json`. A newly reviewed package may be
+  attested directly at `latestVersion` only after its full current-doctrine
+  review closes. Record the final source fingerprint, local verification date,
+  and evidence plan, then run `version.mjs validate` and
+  `version.mjs status <package>`. The package is not complete unless status is
+  `current`.
+- When a package is hard-deleted, remove it from `reviewedPackageSlugs`, move
+  its version entry to `retiredPackages`, and record retirement date/evidence.
+  Do not erase its history or leave it in the active sync queue.
 - Broad Plate v2 redesign, cross-package migrations, or package-to-package
   fallout are out of scope unless the current package exposes a real blocker
   that cannot be fixed in its owner.
@@ -926,8 +1075,10 @@ Then loop:
 12. For full Core sweep, close the autogoal template's drift-ledger score gate.
 13. For package review mode, close the package file checklist or defer
     unchecked rows for user review before considering the next package.
-14. Keep/revert/quarantine the packet in the plan.
-15. Pick the next packet. In timed mode, keep going until the minimum runtime
+14. For a completed package review, update the version registry from the final
+    package fingerprint and prove that package reports `current`.
+15. Keep/revert/quarantine the packet in the plan.
+16. Pick the next packet. In timed mode, keep going until the minimum runtime
     elapsed, then finish or quarantine the active packet.
 
 ## Autopilot Priority
@@ -995,6 +1146,9 @@ Report:
 - files/APIs reviewed;
 - package file checklist summary when package review mode applies: total rows,
   score-100 rows, unchecked rows, deferred rows, and next package block;
+- doctrine version summary when package review or sync mode applies: starting
+  version, final applied version, source-fingerprint state, registry evidence,
+  and remaining stale/drifted package count;
 - verdict matrix: main-parity-cleanup, move-to-plite, keep-in-plate, hard-cut,
   Plite gap, Plate gap, private-bridge, defer-with-owner;
 - changes made;

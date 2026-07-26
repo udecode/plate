@@ -48,16 +48,16 @@ const createMatchEditor = (plugin: AnyBasePlugin) =>
 describe('getInjectMatch', () => {
   it('respects isElement, isBlock, and isLeaf filters', () => {
     const elementPlugin = createBasePlugin({
-      inject: { isElement: true },
       key: 'elementFilter',
+      inject: { isElement: true },
     });
     const blockPlugin = createBasePlugin({
-      inject: { isBlock: true },
       key: 'blockFilter',
+      inject: { isBlock: true },
     });
     const leafPlugin = createBasePlugin({
-      inject: { isLeaf: true },
       key: 'leafFilter',
+      inject: { isLeaf: true },
     });
 
     const editor = createMatchEditor(elementPlugin);
@@ -105,8 +105,8 @@ describe('getInjectMatch', () => {
       key: 'targetFilter',
     });
     const excludePlugin = createBasePlugin({
-      inject: { excludePlugins: ['quote'] },
       key: 'excludeFilter',
+      inject: { excludePlugins: ['quote'] },
     });
     const missingTargetPlugin = createBasePlugin({
       key: 'missingTargetFilter',
@@ -157,11 +157,11 @@ describe('getInjectMatch', () => {
 
   it('respects excludeBelowPlugins and maxLevel', () => {
     const plugin = createBasePlugin({
+      key: 'depthFilter',
       inject: {
         excludeBelowPlugins: ['quote'],
         maxLevel: 1,
       },
-      key: 'depthFilter',
     });
 
     const editor = createMatchEditor(plugin);

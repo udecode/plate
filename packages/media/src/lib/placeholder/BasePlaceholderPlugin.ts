@@ -33,21 +33,20 @@ export const BasePlaceholderPlugin = createBasePlugin({
       void: 'block',
     },
   },
-}).extendTx<{
-  insert: (
-    mediaType: string,
-    options?: NodeInsertNodesOptions<TPlaceholderElement>
-  ) => void;
-}>(({ type }) => (tx) => ({
-  insert: (mediaType, options) =>
-    tx.nodes.insert<TPlaceholderElement>(
-      {
-        children: [{ text: '' }],
-        mediaType,
-        type,
-      },
-      options
-    ),
-}));
+  update: ({ tx, type }) => ({
+    insert: (
+      mediaType: string,
+      options?: NodeInsertNodesOptions<TPlaceholderElement>
+    ) =>
+      tx.nodes.insert<TPlaceholderElement>(
+        {
+          children: [{ text: '' }],
+          mediaType,
+          type,
+        },
+        options
+      ),
+  }),
+});
 
 export type PlaceholderConfig = InferConfig<typeof BasePlaceholderPlugin>;

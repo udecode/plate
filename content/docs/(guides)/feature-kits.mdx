@@ -99,9 +99,9 @@ import { H1Element } from '@/components/ui/heading-node';
 import { ParagraphElement } from '@/components/ui/paragraph-node';
 
 export const MyBasicKit = [
-  ParagraphPlugin.withComponent(ParagraphElement),
+  ParagraphPlugin.configure({ component: ParagraphElement }),
   H1Plugin.configure({
-    render: { node: H1Element },
+    component: H1Element,
     shortcuts: {
       toggle: { keys: 'mod+alt+1' },
     },

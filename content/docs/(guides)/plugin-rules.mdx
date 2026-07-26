@@ -683,7 +683,10 @@ After `Backspace`:
 
 ## Advanced
 
-Use a Plite command handler when behavior must compose with the built-in Enter, Delete, or text-input command pipeline. Install the handler with `.extendExtension()`; return `false` when the plugin does not own the command.
+Use a Plite command handler when behavior must compose with the built-in Enter,
+Delete, or text-input command pipeline. Contribute the handler through the
+constructor's `extension` field; return `false` when the plugin does not own the
+command.
 
 ```tsx
 import { editorCommands } from 'platejs';
@@ -691,15 +694,16 @@ import { createBasePlugin } from 'platejs';
 
 const SingleLinePlugin = createBasePlugin({
   key: 'singleLine',
-}).extendExtension({
-  commands: ({ handle }) => [
-    handle(editorCommands.insertBreak, ({ state }) =>
-      state.transaction(() => {})
-    ),
-    handle(editorCommands.insertSoftBreak, ({ state }) =>
-      state.transaction(() => {})
-    ),
-  ],
+  extension: {
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) =>
+        state.transaction(() => {})
+      ),
+      handle(editorCommands.insertSoftBreak, ({ state }) =>
+        state.transaction(() => {})
+      ),
+    ],
+  },
 });
 ```
 

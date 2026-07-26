@@ -119,7 +119,7 @@ Execution owners still do the work:
 - `architecture-cleanup`: repo-grounded architecture/code cleanup for
   cross-package refactors, testability gaps, shallow modules, over-splits,
   deslop, and agent-navigation friction before a plan or patch owner is chosen.
-- `slate-research`: external OSS/GitHub discovery before local proof.
+- `plite-research`: external OSS/GitHub discovery before local proof.
 - `docs-creator`, `plate-plugin-creator`, `plate-ui`, and package owners:
   Plate docs/product/framework execution.
 
@@ -154,7 +154,7 @@ explicitly requested.
 - The task is a local code patch with no maintainer queue decision: use `task`,
   `slate-patch`, `plate-plan`, or the package owner.
 - The task asks for broad external research, not queue triage: use
-  `slate-research`.
+  `plite-research`.
 
 ## Goal Contract
 
@@ -250,7 +250,7 @@ Read the exact item first. Then classify route:
 | PR review | `autoreview` |
 | PR review feedback | `resolve-pr-feedback` |
 | External corpus/issue ledger | `issue-harvester` or `clawsweeper` |
-| Unclear prior art | `slate-research` |
+| Unclear prior art | `plite-research` |
 
 ## Read Order
 

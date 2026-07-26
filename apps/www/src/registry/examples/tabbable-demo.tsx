@@ -20,9 +20,8 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const TabbableElementPlugin = createPlatePlugin({
   key: 'tabbable-element',
-  render: { node: TabbableElement },
   schema: { element: { void: 'block' } },
-});
+}).configure({ component: TabbableElement });
 
 export default function TabbableDemo() {
   const editor = usePlateEditor({

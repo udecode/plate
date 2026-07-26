@@ -13,7 +13,6 @@ describe('plate change handlers', () => {
   it('dispatches node change handlers from Plite node change events', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
-      handlers: { onNodeChange },
       key: 'nodeObserver',
       schema: {
         properties: [
@@ -22,6 +21,7 @@ describe('plate change handlers', () => {
           }),
         ],
       },
+      handlers: { onNodeChange },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -49,8 +49,8 @@ describe('plate change handlers', () => {
   it('dispatches inserted and removed node payloads', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
-      handlers: { onNodeChange },
       key: 'nodeObserver',
+      handlers: { onNodeChange },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -91,8 +91,8 @@ describe('plate change handlers', () => {
   it('does not dispatch node handlers for text intents', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
-      handlers: { onNodeChange },
       key: 'nodeObserver',
+      handlers: { onNodeChange },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -114,8 +114,8 @@ describe('plate change handlers', () => {
   it('dispatches text change handlers from Plite text change events', () => {
     const onTextChange = mock();
     const TextObserverPlugin = createBasePlugin({
-      handlers: { onTextChange },
       key: 'textObserver',
+      handlers: { onTextChange },
     });
     const editor = createBaseEditor({
       plugins: [TextObserverPlugin],
@@ -148,8 +148,8 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
-          handlers: { onTextChange: pluginHandler },
           key: 'textHandler',
+          handlers: { onTextChange: pluginHandler },
         }),
       ],
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],

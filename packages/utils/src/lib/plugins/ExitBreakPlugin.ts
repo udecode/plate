@@ -15,53 +15,62 @@ type ExitBreakOptions = {
  */
 export const ExitBreakPlugin = createBasePlugin({
   key: KEYS.exitBreak,
+
   editOnly: true,
-}).extendTxGroup('exitBreak', ({ editor }) => (tx) => {
-  const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {
-    const selection = tx.selection();
+  extension: ({ editor }) => ({
+    tx: {
+      exitBreak: (tx) => {
+        const insertExitBreak = ({ match, reverse }: ExitBreakOptions = {}) => {
+          const selection = tx.selection();
 
-    if (!selection || !tx.selection.isCollapsed()) return;
+          if (!selection || !tx.selection.isCollapsed()) return;
 
-    const block = tx.nodes.block();
+          const block = tx.nodes.block();
 
-    if (!block) return;
+          if (!block) return;
 
-    const paragraphType = editor.getType(KEYS.p);
+          const paragraphType = editor.getType(KEYS.p);
 
-    const target = tx.nodes.above({
-      at: block[1],
-      match: (node, path) => {
-        if (match && !match(node, path)) return false;
-        if (path.length === 1) return true;
+          const target = tx.nodes.above({
+            at: block[1],
+            match: (node, path) => {
+              if (match && !match(node, path)) return false;
+              if (path.length === 1) return true;
 
-        const parent = tx.nodes.parent<Element>(path);
+              const parent = tx.nodes.parent<Element>(path);
 
-        return (
-          !!parent && tx.schema.allowsElementType(parent[0].type, paragraphType)
-        );
+              return (
+                !!parent &&
+                tx.schema.allowsElementType(parent[0].type, paragraphType)
+              );
+            },
+          });
+          const ancestorPath = target?.[1] ?? block[1];
+          const targetPath = reverse
+            ? ancestorPath
+            : PathApi.next(ancestorPath);
+
+          tx.nodes.insert(
+            {
+              children: [{ text: '' }],
+              type: paragraphType,
+            },
+            {
+              at: targetPath,
+              select: true,
+            }
+          );
+
+          return true;
+        };
+
+        return {
+          insert: (options: Omit<ExitBreakOptions, 'reverse'>) =>
+            insertExitBreak(options),
+          insertBefore: (options: Omit<ExitBreakOptions, 'reverse'>) =>
+            insertExitBreak({ ...options, reverse: true }),
+        };
       },
-    });
-    const ancestorPath = target?.[1] ?? block[1];
-    const targetPath = reverse ? ancestorPath : PathApi.next(ancestorPath);
-
-    tx.nodes.insert(
-      {
-        children: [{ text: '' }],
-        type: paragraphType,
-      },
-      {
-        at: targetPath,
-        select: true,
-      }
-    );
-
-    return true;
-  };
-
-  return {
-    insert: (options: Omit<ExitBreakOptions, 'reverse'>) =>
-      insertExitBreak(options),
-    insertBefore: (options: Omit<ExitBreakOptions, 'reverse'>) =>
-      insertExitBreak({ ...options, reverse: true }),
-  };
+    },
+  }),
 });

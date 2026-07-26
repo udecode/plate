@@ -31,8 +31,8 @@ export type ComputeDiffOptions = {
 };
 
 export const computeDiff = (
-  doc0: Descendant[],
-  doc1: Descendant[],
+  doc0: readonly Descendant[],
+  doc1: readonly Descendant[],
   {
     elementsAreRelated,
     getDeleteProps = defaultGetDeleteProps,

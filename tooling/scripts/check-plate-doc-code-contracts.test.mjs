@@ -156,7 +156,7 @@ test('requires typed handles for known schema properties', () => {
 test('accepts contextual configure runtime fields and rejects model fields', () => {
   const source = [
     '```ts',
-    'ParagraphPlugin.configure(({ editor }) => ({ options: { editor } }));',
+    'ParagraphPlugin.configure(({ editor }) => ({ options: { editor }, override: { plugins: {} } }));',
     'ParagraphPlugin.configure(() => ({ schema: { element: {} } }));',
     "ParagraphPlugin.configure(() => { return { type: 'other' }; });",
     'ParagraphPlugin.configure(() => runtimeConfig);',
@@ -183,7 +183,7 @@ test('requires configure to be the final plugin authoring call in docs', () => {
     '```ts',
     'ParagraphPlugin.configure({}).configure({});',
     'ParagraphPlugin.configure({}).extend({});',
-    'ParagraphPlugin.configure({}).withComponent(ParagraphElement);',
+    'ParagraphPlugin.configure({}).configure({ component: ParagraphElement });',
     'ParagraphPlugin.extend({}).configure({});',
     '```',
   ].join('\n');
@@ -195,4 +195,105 @@ test('requires configure to be the final plugin authoring call in docs', () => {
     ).length,
     3
   );
+});
+
+test('rejects deleted plugin builders in docs', () => {
+  const source = [
+    '```ts',
+    ...[
+      'extendApi',
+      'extendCodecs',
+      'extendEditorApi',
+      'extendExtension',
+      'extendHtmlCodec',
+      'extendSelectors',
+      'extendTx',
+      'extendTxGroup',
+      'withComponent',
+    ].map((method) => `ParagraphPlugin.${method}(() => ({}));`),
+    `createZustandStore({}, { name: 'store' }).extendSelectors(() => ({}));`,
+    '```',
+  ].join('\n');
+  const issues = auditPlateDocCode(source);
+
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('deleted plugin builder'))
+      .length,
+    9
+  );
+});
+
+test('accepts the full independent plugin declaration vocabulary in docs', () => {
+  const accepted = [
+    '```ts',
+    "createBasePlugin({ api: {}, handlers: {}, key: 'p', read: {}, render: { leaf: Leaf }, selectors: {}, update: () => ({}) });",
+    "createPlatePlugin({ component: ParagraphElement, key: 'p' });",
+    "createBasePlugin({ key: 'p', ...behavior });",
+    '```',
+  ].join('\n');
+  const rejected = [
+    '```ts',
+    "createBasePlugin({ component: ParagraphElement, key: 'p' });",
+    '```',
+  ].join('\n');
+
+  assert.deepEqual(auditPlateDocCode(accepted), []);
+  assert.equal(
+    auditPlateDocCode(rejected).filter((issue) =>
+      issue.reason.includes('only in createPlatePlugin')
+    ).length,
+    1
+  );
+});
+
+test('requires context-bound codec declarations in docs', () => {
+  const rejected = [
+    '```ts',
+    `Plugin.extend(() => ({ codecs: { 'text/html': rule } }));`,
+    `Plugin.extend({ codecs: productCodecs });`,
+    '```',
+  ].join('\n');
+  const accepted = [
+    '```ts',
+    `createBasePlugin({ key: 'p', codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) });`,
+    `createPlatePlugin({ key: 'p', codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': rule }) });`,
+    `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }));`,
+    `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs(TargetPlugin, { 'text/html': rule }) }));`,
+    '```',
+  ].join('\n');
+
+  assert.equal(
+    auditPlateDocCode(rejected).filter((issue) =>
+      issue.reason.includes('context-bound defineCodecs')
+    ).length,
+    2
+  );
+  assert.deepEqual(auditPlateDocCode(accepted), []);
+});
+
+test('requires root-level component for plugin node components in docs', () => {
+  const rejected = [
+    '```tsx',
+    "createPlatePlugin({ key: 'p', render: { node: ParagraphElement } });",
+    'ParagraphPlugin.extend({ render: { node: ParagraphElement } });',
+    'ParagraphPlugin.configure({ render: { node: ParagraphElement } });',
+    '```',
+  ].join('\n');
+  const accepted = [
+    '```tsx',
+    "createPlatePlugin({ component: ParagraphElement, key: 'p' });",
+    'ParagraphPlugin.configure({ component: ParagraphElement });',
+    'toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement });',
+    'ParagraphPlugin.extend({ render: { leaf: Leaf, aboveNodes } });',
+    'const component = editor.getPlugin(ParagraphPlugin).render.node;',
+    '```',
+  ].join('\n');
+
+  assert.equal(
+    auditPlateDocCode(rejected).filter((issue) =>
+      issue.reason.includes('root-level component')
+    ).length,
+    3
+  );
+  assert.deepEqual(auditPlateDocCode(accepted), []);
 });

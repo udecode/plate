@@ -98,12 +98,12 @@ const editor = createPlateEditor({
         TogglePlugin.key,
       ],
     }),
-    TogglePlugin.withComponent(ToggleElement),
+    TogglePlugin.configure({ component: ToggleElement }),
   ],
 });
 ```
 
-- `withComponent`: 指定 [`ToggleElement`](/docs/components/toggle-node) 渲染折叠元素
+- `component`: 指定 [`ToggleElement`](/docs/components/toggle-node) 渲染折叠元素
 - `IndentPlugin.targetPluginKeys`: 配置支持缩进的元素插件类型（包括折叠项）
 
 ### 添加工具栏按钮

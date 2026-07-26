@@ -87,7 +87,7 @@ const snapshotPluginOptionValue = (
     if (!descriptor) continue;
     if (!Object.hasOwn(descriptor, 'value')) {
       throw new Error(
-        'Plate plugin options must be data-only. Accessor properties are not supported; use .extendSelectors() for computed values.'
+        'Plate plugin options must be data-only. Accessor properties are not supported; declare computed values in the constructor `selectors` callback.'
       );
     }
     Object.defineProperty(snapshot, key, {

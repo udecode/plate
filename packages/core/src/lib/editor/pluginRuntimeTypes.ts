@@ -99,7 +99,7 @@ type InferHiddenPlugin<
 > =
   InferPluginConfig<P> extends infer C extends AnyPluginConfig
     ? IsAny<C['key']> extends true
-      ? C
+      ? never
       : C['key'] extends ExplicitKeys | Seen
         ? never
         : IsLiteralDisabled<C> extends true

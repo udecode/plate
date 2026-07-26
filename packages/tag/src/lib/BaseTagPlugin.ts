@@ -15,21 +15,22 @@ export const BaseTagPlugin = createBasePlugin({
       void: 'inline',
     },
   },
-}).extendTx(({ type }) => (tx) => ({
-  insert: (
-    props: TTagProps,
-    options?: NodeInsertNodesOptions<TTagElement | Text>
-  ) => {
-    tx.nodes.insert(
-      [
-        {
-          children: [{ text: '' }],
-          type,
-          ...props,
-        },
-        { text: '' },
-      ],
-      options
-    );
-  },
-}));
+  update: ({ tx, type }) => ({
+    insert: (
+      props: TTagProps,
+      options?: NodeInsertNodesOptions<TTagElement | Text>
+    ) => {
+      tx.nodes.insert(
+        [
+          {
+            children: [{ text: '' }],
+            type,
+            ...props,
+          },
+          { text: '' },
+        ],
+        options
+      );
+    },
+  }),
+});

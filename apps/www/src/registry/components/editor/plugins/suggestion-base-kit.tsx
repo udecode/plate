@@ -15,6 +15,7 @@ const INLINE_SUGGESTION_RENDER_TARGETS = [
 
 export const BaseSuggestionKit = [
   BaseSuggestionPlugin.configure({
+    component: SuggestionLeafStatic,
     inject: {
       isElement: true,
       nodeProps: {
@@ -47,7 +48,6 @@ export const BaseSuggestionKit = [
     },
     render: {
       belowRootNodes: VoidRemoveSuggestionOverlayStatic,
-      node: SuggestionLeafStatic,
     },
     targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
   }),

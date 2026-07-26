@@ -31,19 +31,33 @@ export const ListKit = [
       TaskListRules.markdown({ checked: false }),
       TaskListRules.markdown({ checked: true }),
     ],
+    shortcuts: {
+      toggleBulleted: {
+        handler: ({ editor }) =>
+          editor.plugin(ListPlugin).update.toggle({
+            type: editor.getType(BulletedListPlugin.key),
+          }),
+        keys: 'mod+alt+5',
+      },
+      toggleNumbered: {
+        handler: ({ editor }) =>
+          editor.plugin(ListPlugin).update.toggle({
+            type: editor.getType(NumberedListPlugin.key),
+          }),
+        keys: 'mod+alt+6',
+      },
+      toggleTask: {
+        handler: ({ editor }) =>
+          editor.plugin(ListPlugin).update.toggle({
+            type: editor.getType(TaskListPlugin.key),
+          }),
+        keys: 'mod+alt+7',
+      },
+    },
   }),
   ListItemContentPlugin,
-  BulletedListPlugin.configure({
-    render: { node: BulletedListElement },
-    shortcuts: { toggle: { keys: 'mod+alt+5' } },
-  }),
-  NumberedListPlugin.configure({
-    render: { node: NumberedListElement },
-    shortcuts: { toggle: { keys: 'mod+alt+6' } },
-  }),
-  TaskListPlugin.configure({
-    render: { node: TaskListElement },
-    shortcuts: { toggle: { keys: 'mod+alt+7' } },
-  }),
-  ListItemPlugin.withComponent(ListItemElement),
+  BulletedListPlugin.configure({ component: BulletedListElement }),
+  NumberedListPlugin.configure({ component: NumberedListElement }),
+  TaskListPlugin.configure({ component: TaskListElement }),
+  ListItemPlugin.configure({ component: ListItemElement }),
 ];

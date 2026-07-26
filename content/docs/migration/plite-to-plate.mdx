@@ -23,8 +23,8 @@ instead of rebuilding every component by hand.
 | --- | --- |
 | `createEditor()` plus `withReact()` | `usePlateEditor({ ... })` in React components, or `createPlateEditor({ ... })` in factories and tests. |
 | `<Plite>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
-| `renderElement` / `renderLeaf` switch statements | Plugin components through `.withComponent()` or `render.node`. |
-| `withX(editor)` plugin functions | `.extendApi()` for reads and services, `.extendTx()` for plugin commands, `.extendTxGroup()` for shared command groups, or `.extendExtension()` for Plite command handlers, corrections, and query middleware. |
+| `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
+| `withX(editor)` plugin functions | Constructor `api`, `read`, `selectors`, or `update`; Plite `extension`; and constructor codec declarations built by `defineCodecs`. |
 | Top-level event handlers on `Editable` | Plugin `handlers` or `shortcuts`. |
 | `Transforms.*` imports | `editor.update((tx) => tx.*)`. |
 | `Editor.*` imports | `editor.read((state) => state.*)`, or a plugin-owned `editor.api.*` service. |
@@ -75,7 +75,7 @@ export const editor = createPlateEditor({
 
 ## Custom Elements
 
-Replace `renderElement` branches with node plugins. Use `.withComponent()` when the only change is the React component.
+Replace `renderElement` branches with node plugins. Use `.configure({ component })` when the only change is the React component.
 
 ```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
 import {
@@ -95,36 +95,34 @@ export function ParagraphElement({
   );
 }
 
-export const AppParagraphPlugin = ParagraphPlugin.withComponent(
-  ParagraphElement
-);
+export const AppParagraphPlugin = ParagraphPlugin.configure({ component: ParagraphElement });
 ```
 
 If your Plite document stores a custom type like `paragraph`, keep that type on the plugin.
 
 ```tsx title="components/editor/paragraph-plugin.tsx" showLineNumbers
-export const AppParagraphPlugin = ParagraphPlugin.withComponent(
-  ParagraphElement
-).configure({
+export const AppParagraphPlugin = ParagraphPlugin.configure({
+  component: ParagraphElement,
   type: 'paragraph',
 });
 ```
 
 ## Custom Behavior
 
-Use `.extendTx()` when a plugin owns a reusable document command. The command is
-available inside `editor.update(...)` under the plugin key.
+Put a reusable document command under the plugin's `update` contribution. The
+command is available inside `editor.update(...)` under the plugin key.
 
 ```tsx title="components/editor/limit-exclamation-plugin.tsx" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
   key: 'signature',
-}).extendTx(() => (tx) => ({
-  insert() {
-    tx.text.insert(' - Plate');
-  },
-}));
+  update: ({ tx }) => ({
+    insert() {
+      tx.text.insert(' - Plate');
+    },
+  }),
+});
 ```
 
 Call it from a shortcut, toolbar, menu item, or test:
@@ -135,34 +133,37 @@ editor.update((tx) => {
 });
 ```
 
-Use `.extendTxGroup()` when a plugin adds a command to a shared command group.
-That keeps related commands together without making a global alias.
+Keep plugin portal methods flat and task-shaped. The portal already owns the
+plugin noun, so a separate shared insert group adds taxonomy without clarity.
 
 ```tsx title="components/editor/callout-plugin.tsx" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
 export const CalloutPlugin = createPlatePlugin({
   key: 'callout',
-}).extendTxGroup('insert', () => (tx) => ({
-  callout() {
-    tx.nodes.insert({
-      children: [{ text: '' }],
-      type: 'callout',
-    });
-  },
-}));
+  update: ({ tx }) => ({
+    insertCallout() {
+      tx.nodes.insert({
+        children: [{ text: '' }],
+        type: 'callout',
+      });
+    },
+  }),
+});
 ```
 
 ```ts title="commands.ts"
 editor.update((tx) => {
-  tx.insert.callout();
+  tx.callout.insertCallout();
 });
 ```
 
-Use `.extendApi()` for plugin-scoped reads or services. Use
-`.extendEditorApi()` when the method belongs on the root `editor.api`. Install
-behavior that participates in Plite's command, correction, or query pipeline
-with `.extendExtension()`.
+Use `api` for plugin-scoped immutable services, `read` for snapshot-local
+queries, and `extension` for true editor-wide groups or behavior that
+participates in Plite's command, correction, or query pipeline. Combine
+independent fields in the constructor. Use `.extend()` only for an
+imported/prebuilt declaration, a shared factory the constructor cannot access,
+or an earlier-stage type dependency.
 
 ## Handlers And Shortcuts
 
@@ -192,7 +193,6 @@ import { createPlatePlugin } from 'platejs/react';
 
 export const SavePlugin = createPlatePlugin({
   key: 'save',
-}).extend({
   shortcuts: {
     draft: {
       keys: 'mod+s',
@@ -244,5 +244,5 @@ export const editor = createBaseEditor({
 
 - [Editor](/docs/editor) for editor creation options.
 - [Plugin Components](/docs/plugin-components) for replacing `renderElement` and `renderLeaf`.
-- [Plugin Methods](/docs/plugin-methods) for `.configure()` and the typed `.extend*()` methods.
+- [Plugin Methods](/docs/plugin-methods) for `.configure()` and typed `.extend()` contributions.
 - [Plugin Shortcuts](/docs/plugin-shortcuts) for keyboard command wiring.

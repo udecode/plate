@@ -96,7 +96,7 @@ const editor = createPlateEditor({
         createEmojiNode: (emoji) => ({ text: emoji.skins[0].native }),
       },
     }),
-    EmojiInputPlugin.withComponent(EmojiInputElement),
+    EmojiInputPlugin.configure({ component: EmojiInputElement }),
   ],
 });
 ```
@@ -105,7 +105,7 @@ const editor = createPlateEditor({
 - `options.trigger`: 触发表情组合框的字符（默认：`:`）
 - `options.triggerPreviousCharPattern`: 匹配触发字符前一个字符的正则表达式
 - `options.createEmojiNode`: 选择表情时创建表情节点的函数。默认插入Unicode字符作为文本
-- `withComponent`: 为表情输入组合框分配UI组件
+- `component`: 为表情输入组合框分配UI组件
 
 ### 添加工具栏按钮
 

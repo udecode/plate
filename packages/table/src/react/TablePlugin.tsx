@@ -17,39 +17,12 @@ import {
 const tableDragCaptures = new WeakMap<PlateEditor, TableDragCapture>();
 const TABLE_CELL_DRAG_MIME = 'application/x-plate-table-cell-selection';
 
-const getTableDragCellId = (target: EventTarget | null) => {
-  const candidate = target as {
-    closest?: (selector: string) => Element | null;
-  } | null;
-  const handle = candidate?.closest?.('[data-table-cell-drag-handle="true"]');
-
-  return handle?.getAttribute('data-table-cell-drag-for') ?? undefined;
-};
-
 const consumeTableDragEvent = (event: {
   preventDefault: () => void;
   stopPropagation: () => void;
 }) => {
   event.preventDefault();
   event.stopPropagation();
-};
-
-const promoteNativeTableCellSelection = (editor: PlateEditor) => {
-  const domSelection = getSelection(editor.api.dom.findDocumentOrShadowRoot());
-
-  if (!domSelection || domSelection.rangeCount === 0) return false;
-
-  const range = editor.api.dom.resolvePliteRange(domSelection, {
-    exactMatch: false,
-  });
-  const selection =
-    range && editor.plugin(BaseTablePlugin).api.createCellSelection(range);
-
-  if (!selection) return false;
-
-  editor.update.selection.set(selection);
-
-  return true;
 };
 
 export const TableRowPlugin = toPlatePlugin(BaseTableRowPlugin);
@@ -89,7 +62,14 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     onDragStart: ({ editor, event }) => {
       tableDragCaptures.delete(editor);
 
-      const dragCellId = getTableDragCellId(event.target);
+      const dragCellId =
+        (
+          event.target as {
+            closest?: (selector: string) => Element | null;
+          } | null
+        )
+          ?.closest?.('[data-table-cell-drag-handle="true"]')
+          ?.getAttribute('data-table-cell-drag-for') ?? undefined;
 
       if (!dragCellId) return;
 
@@ -203,7 +183,23 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       return true;
     },
     onMouseUp: ({ editor }) => {
-      if (promoteNativeTableCellSelection(editor)) return true;
+      const domSelection = getSelection(
+        editor.api.dom.findDocumentOrShadowRoot()
+      );
+
+      if (!domSelection || domSelection.rangeCount === 0) return;
+
+      const range = editor.api.dom.resolvePliteRange(domSelection, {
+        exactMatch: false,
+      });
+      const selection =
+        range && editor.plugin(BaseTablePlugin).api.createCellSelection(range);
+
+      if (!selection) return;
+
+      editor.update.selection.set(selection);
+
+      return true;
     },
     onKeyDown: ({ editor, event }) => {
       if (event.defaultPrevented) return;

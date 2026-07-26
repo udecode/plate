@@ -12,6 +12,9 @@ Repair malformed grids and paste rectangular cell fragments across merged-cell
 boundaries. Keep paste, drag-and-drop, and compound table commands targeting
 the intended rows and cells after earlier edits.
 
+Represent multi-cell pointer drags as structural table selections, preserve
+them when clearing cells, and leave same-cell text drags native.
+
 **Migration:** Replace direct table helper imports and root table APIs with
 `editor.api.table.*`. Run mutations through `editor.update.table`:
 

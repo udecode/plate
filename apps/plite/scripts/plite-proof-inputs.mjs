@@ -20,20 +20,7 @@ const boundedProcessScript = path.join(
 
 export const appRoot = path.resolve(scriptRoot, '..');
 export const repoRoot = path.resolve(appRoot, '../..');
-
-const plitePackageNames = [
-  'browser',
-  'core',
-  'plite',
-  'plite-dom',
-  'plite-history',
-  'plite-hyperscript',
-  'plite-layout',
-  'plite-react',
-  'yjs',
-];
-
-const udecodePackageNames = ['react-hotkeys', 'react-utils', 'utils'];
+const packagesRoot = path.join(repoRoot, 'packages');
 
 const packageBuildEntries = (packageRoot) => [
   path.join(packageRoot, 'src'),
@@ -43,6 +30,24 @@ const packageBuildEntries = (packageRoot) => [
   path.join(packageRoot, 'tsdown.config.mts'),
   path.join(packageRoot, 'tsdown.config.ts'),
 ];
+
+const workspacePackageBuildEntries = fs
+  .readdirSync(packagesRoot, { withFileTypes: true })
+  .flatMap((entry) => {
+    if (!entry.isDirectory()) return [];
+    const packageRoot = path.join(packagesRoot, entry.name);
+
+    if (entry.name !== 'udecode') {
+      return packageBuildEntries(packageRoot);
+    }
+
+    return fs
+      .readdirSync(packageRoot, { withFileTypes: true })
+      .filter((child) => child.isDirectory())
+      .flatMap((child) =>
+        packageBuildEntries(path.join(packageRoot, child.name))
+      );
+  });
 
 const pliteToolchainEntries = [
   path.join(repoRoot, 'tsconfig.json'),
@@ -73,7 +78,29 @@ export const appBuildEntries = [
   path.join(repoRoot, 'apps/www/src/hooks/use-copy-to-clipboard.ts'),
   path.join(repoRoot, 'apps/www/src/hooks/use-mobile.ts'),
   path.join(repoRoot, 'apps/www/src/lib/utils.ts'),
+  path.join(
+    repoRoot,
+    'apps/www/src/registry/components/editor/plugins/basic-blocks-kit.tsx'
+  ),
+  path.join(
+    repoRoot,
+    'apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx'
+  ),
+  path.join(
+    repoRoot,
+    'apps/www/src/registry/components/editor/plugins/basic-nodes-kit.tsx'
+  ),
+  path.join(repoRoot, 'apps/www/src/registry/examples/collaboration-demo.tsx'),
   path.join(repoRoot, 'apps/www/src/registry/hooks/use-mounted.ts'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/blockquote-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/code-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/editor.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/heading-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/highlight-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/hr-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/kbd-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/paragraph-node.tsx'),
+  path.join(repoRoot, 'apps/www/src/registry/ui/remote-cursor-overlay.tsx'),
   path.join(repoRoot, 'apps/www/src/types'),
   path.join(repoRoot, 'apps/www/src/utils/cn.ts'),
   path.join(repoRoot, 'package.json'),
@@ -81,16 +108,7 @@ export const appBuildEntries = [
   path.join(repoRoot, 'pnpm-lock.yaml'),
   path.join(repoRoot, 'pnpm-workspace.yaml'),
   ...pliteToolchainEntries,
-  ...plitePackageNames.flatMap((packageName) => {
-    const packageRoot = path.join(repoRoot, 'packages', packageName);
-
-    return packageBuildEntries(packageRoot);
-  }),
-  ...udecodePackageNames.flatMap((packageName) => {
-    const packageRoot = path.join(repoRoot, 'packages', 'udecode', packageName);
-
-    return packageBuildEntries(packageRoot);
-  }),
+  ...workspacePackageBuildEntries,
 ].filter(fs.existsSync);
 
 export const browserBuildEntries = [

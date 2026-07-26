@@ -23,13 +23,19 @@ import { HrElementStatic } from '@/registry/ui/hr-node-static';
 import { ParagraphElementStatic } from '@/registry/ui/paragraph-node-static';
 
 export const BaseBasicBlocksKit = [
-  BaseParagraphPlugin.withComponent(ParagraphElementStatic),
-  BaseH1Plugin.withComponent(H1ElementStatic),
-  BaseH2Plugin.withComponent(H2ElementStatic),
-  BaseH3Plugin.withComponent(H3ElementStatic),
-  BaseH4Plugin.withComponent(H4ElementStatic),
-  BaseH5Plugin.withComponent(H5ElementStatic),
-  BaseH6Plugin.withComponent(H6ElementStatic),
-  BaseBlockquotePlugin.withComponent(BlockquoteElementStatic),
-  BaseHorizontalRulePlugin.withComponent(HrElementStatic),
+  BaseParagraphPlugin.configure({
+    component: ParagraphElementStatic,
+  }),
+  BaseH1Plugin.configure({ component: H1ElementStatic }),
+  BaseH2Plugin.configure({ component: H2ElementStatic }),
+  BaseH3Plugin.configure({ component: H3ElementStatic }),
+  BaseH4Plugin.configure({ component: H4ElementStatic }),
+  BaseH5Plugin.configure({ component: H5ElementStatic }),
+  BaseH6Plugin.configure({ component: H6ElementStatic }),
+  BaseBlockquotePlugin.configure({
+    component: BlockquoteElementStatic,
+  }),
+  BaseHorizontalRulePlugin.configure({
+    component: HrElementStatic,
+  }),
 ];

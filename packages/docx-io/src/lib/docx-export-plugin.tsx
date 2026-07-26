@@ -32,7 +32,11 @@
 
 'use client';
 
-import type { BasePlugins, InferConfig, NodeComponents } from '@platejs/core';
+import type {
+  BasePluginInput,
+  InferConfig,
+  NodeComponents,
+} from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import type { Value } from '@platejs/plite';
 import type {
@@ -237,7 +241,7 @@ export type DocxExportPluginOptions = {
    *
    * This should match the plugins used in your editor for accurate serialization.
    */
-  editorPlugins?: BasePlugins;
+  editorPlugins?: readonly BasePluginInput[];
 
   /**
    * The React component to use for static rendering.
@@ -324,7 +328,7 @@ type SerializeToHtmlInternalOptions = {
   /** Component overrides by plugin key */
   components?: NodeComponents;
   fontFamily?: string;
-  plugins?: BasePlugins;
+  plugins?: readonly BasePluginInput[];
   value: DocxValue;
 };
 
@@ -390,7 +394,7 @@ function wrapHtmlForDocx(bodyHtml: string, customStyles?: string): string {
 interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
   /** Component overrides by plugin key */
   components?: NodeComponents;
-  editorPlugins?: BasePlugins;
+  editorPlugins?: readonly BasePluginInput[];
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
   value: DocxValue;
 }
@@ -600,37 +604,40 @@ export async function exportEditorToDocx(
 const defaultDocxExportPluginOptions: DocxExportPluginOptions = {};
 
 export const DocxExportPlugin = createBasePlugin({
+  extension: ({ editor, getOptions, plugin }) => {
+    const exportToBlob = async (
+      options: DocxExportOperationOptions = {}
+    ): Promise<Blob> => {
+      const pluginOptions = getOptions();
+
+      return exportToDocxInternal({
+        ...options,
+        components: plugin.override.components,
+        editorPlugins: pluginOptions.editorPlugins?.map((pluginReference) =>
+          editor.getPlugin(pluginReference)
+        ),
+        editorStaticComponent: pluginOptions.editorStaticComponent,
+        value: [...editor.read.children()],
+      });
+    };
+
+    return {
+      api: {
+        docxExport: {
+          download: downloadDocx,
+          exportAndDownload: async (
+            filename: string,
+            options: DocxExportOperationOptions = {}
+          ): Promise<void> => {
+            downloadDocx(await exportToBlob(options), filename);
+          },
+          exportToBlob,
+        },
+      },
+    };
+  },
   key: 'docxExport',
   options: defaultDocxExportPluginOptions,
-}).extendEditorApi(({ editor, getOptions, plugin }) => {
-  const exportToBlob = async (
-    options: DocxExportOperationOptions = {}
-  ): Promise<Blob> => {
-    const pluginOptions = getOptions();
-
-    return exportToDocxInternal({
-      ...options,
-      components: plugin.override.components,
-      editorPlugins: pluginOptions.editorPlugins?.map((pluginReference) =>
-        editor.getPlugin(pluginReference)
-      ),
-      editorStaticComponent: pluginOptions.editorStaticComponent,
-      value: [...editor.read.children()],
-    });
-  };
-
-  return {
-    docxExport: {
-      download: downloadDocx,
-      exportAndDownload: async (
-        filename: string,
-        options: DocxExportOperationOptions = {}
-      ): Promise<void> => {
-        downloadDocx(await exportToBlob(options), filename);
-      },
-      exportToBlob,
-    },
-  };
 });
 
 export type DocxExportPluginConfig = InferConfig<typeof DocxExportPlugin>;

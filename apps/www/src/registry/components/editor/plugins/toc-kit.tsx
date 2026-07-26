@@ -5,7 +5,8 @@ import { TocPlugin } from '@platejs/toc/react';
 import { TocElement } from '@/registry/ui/toc-node';
 
 export const TocKit = [
-  TocPlugin.withComponent(TocElement).configure({
+  TocPlugin.configure({
+    component: TocElement,
     options: {
       // isScroll: true,
       topOffset: 80,

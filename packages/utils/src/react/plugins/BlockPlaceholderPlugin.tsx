@@ -36,7 +36,6 @@ export type BlockPlaceholderConfig = PluginConfig<
 export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
   {
     key: KEYS.blockPlaceholder,
-    editOnly: true,
     options: {
       _target: null,
       className: undefined,
@@ -45,6 +44,8 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
       },
       query: ({ path }) => path.length === 1,
     },
+
+    editOnly: true,
     useHooks: (ctx) => {
       const { editor, getOptions, setOption } = ctx;
       const focused = useEditorFocused();
@@ -114,18 +115,6 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
         // eslint-disable-next-line react-hooks/exhaustive-deps
       }, [editor, entry, setOption]);
     },
-  }
-)
-  .extendSelectors(({ getOption }) => ({
-    placeholder: (path?: Path) => {
-      const target = getOption('_target');
-
-      if (target && path && PathApi.equals(target.path, path)) {
-        return target.placeholder;
-      }
-    },
-  }))
-  .extend({
     inject: {
       isBlock: true,
       nodeProps: {
@@ -139,11 +128,21 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
 
           if (props.element && placeholder) {
             return {
-              className: props.getOption('className'),
+              className: props.getOptions().className,
               placeholder,
             };
           }
         },
       },
     },
-  });
+    selectors: ({ getOption }) => ({
+      placeholder: (path?: Path) => {
+        const target = getOption('_target');
+
+        if (target && path && PathApi.equals(target.path, path)) {
+          return target.placeholder;
+        }
+      },
+    }),
+  }
+);

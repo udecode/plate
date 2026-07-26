@@ -42,6 +42,34 @@ export const BaseTextIndentPlugin = createBasePlugin({
       }),
     ],
   }),
+  options: {
+    offset: 24,
+    unit: 'px',
+  },
+  targetPluginKeys: defaultTargetPluginKeys,
+  codecs: ({ defineCodecs, getOptions }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => {
+          const { offset, unit } = getOptions();
+
+          return parseTextIndent(element, offset, unit);
+        },
+        encode: ({ value }) => {
+          const { offset, unit } = getOptions();
+
+          return {
+            attributes: { 'data-text-indent': value },
+            style: { textIndent: value * offset + unit },
+          };
+        },
+        match: [
+          { attributes: { 'data-text-indent': true } },
+          { style: { textIndent: '*' } },
+        ],
+      },
+    }),
+
   inject: {
     isBlock: true,
     nodeProps: {
@@ -53,38 +81,14 @@ export const BaseTextIndentPlugin = createBasePlugin({
       },
     },
   },
-  options: {
-    offset: 24,
-    unit: 'px',
-  },
-  targetPluginKeys: defaultTargetPluginKeys,
-})
-  .extendHtmlCodec(({ getOptions }) => ({
-    decode: ({ element }) => {
-      const { offset, unit } = getOptions();
-
-      return parseTextIndent(element, offset, unit);
-    },
-    encode: ({ value }) => {
-      const { offset, unit } = getOptions();
-
-      return {
-        attributes: { 'data-text-indent': value },
-        style: { textIndent: value * offset + unit },
-      };
-    },
-    match: [
-      { attributes: { 'data-text-indent': true } },
-      { style: { textIndent: '*' } },
-    ],
-  }))
-  .extendTx(({ type }) => (tx) => ({
+  update: ({ tx, type }) => ({
     set: (value: number, options?: NodeSetNodesOptions<Element>) => {
       tx.nodes.set({ [type]: value }, options);
     },
     unset: (options?: NodeUnsetNodesOptions<Element>) => {
       tx.nodes.unset(type, options);
     },
-  }));
+  }),
+});
 
 export type TextIndentConfig = InferConfig<typeof BaseTextIndentPlugin>;

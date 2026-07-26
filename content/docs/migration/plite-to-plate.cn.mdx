@@ -94,49 +94,57 @@ const ParagraphPlugin = createPlatePlugin({
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
   },
-  render: { node: ParagraphElement },
-});
+}).configure({ component: ParagraphElement });
 ```
 
 在[插件配置指南](/docs/plugin)和[插件组件指南](/docs/plugin-components)中了解更多关于创建插件的信息。
 
 ## 6. 将 Plite 插件转换为 Plate 插件
 
-如果自定义行为需要可复用的文档命令，使用 `.extendTx()`。命令会出现在
+如果自定义行为需要可复用的文档命令，把它放在插件的 `update` 贡献中。命令会出现在
 `editor.update(...)` 的事务对象上：
 
 ```ts
 const SignaturePlugin = createPlatePlugin({
   key: 'signature',
-}).extendTx(() => (tx) => ({
-  insert() {
-    tx.text.insert(' - Plate');
-  }
-}));
+  update: ({ tx }) => ({
+    insert() {
+      tx.text.insert(' - Plate');
+    },
+  }),
+});
 
 editor.update((tx) => {
   tx.signature.insert();
 });
 ```
 
-如果插件要把命令放进共享命令组，使用 `.extendTxGroup()`：
+插件 portal 已经拥有插件名，因此方法应保持扁平并直接描述任务：
 
 ```ts
 const CalloutPlugin = createPlatePlugin({
   key: 'callout',
-}).extendTxGroup('insert', () => (tx) => ({
-  callout() {
-    tx.nodes.insert({
-      children: [{ text: '' }],
-      type: 'callout',
-    });
-  },
-}));
+  update: ({ tx }) => ({
+    insertCallout() {
+      tx.nodes.insert({
+        children: [{ text: '' }],
+        type: 'callout',
+      });
+    },
+  }),
+});
 
 editor.update((tx) => {
-  tx.insert.callout();
+  tx.callout.insertCallout();
 });
 ```
+
+插件专属的不可变服务放在 `api`，快照内查询放在 `read`，真正编辑器级或参与
+Plite command、correction、query pipeline 的行为放在 `extension`。互相独立的
+字段放进 constructor。只有 import/prebuilt declaration、constructor 无法访问的
+shared factory 或前一阶段类型需要 `.extend()`。Codec declaration 通过 constructor 的
+`codecs: ({ defineCodecs }) => defineCodecs(map)` 构建；foreign codec 使用
+`defineCodecs(TargetPlugin, map)`。
 
 有关插件上下文的更多信息，请参阅[插件上下文指南](/docs/plugin-context)。
 

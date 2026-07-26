@@ -8,7 +8,12 @@ const createEditor = (
   rule: ReturnType<typeof createTextSubstitutionInputRule>
 ) =>
   createBaseEditor({
-    plugins: [createBasePlugin({ key: 'shortcuts', inputRules: [rule] })],
+    plugins: [
+      createBasePlugin({
+        key: 'shortcuts',
+        inputRules: [rule],
+      }),
+    ],
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },

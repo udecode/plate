@@ -5,6 +5,7 @@ import type { PluginConfig, PluginReference } from '../../lib/plugin';
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
+import { createPlatePlugin, toPlatePlugin } from '../../react/plugin';
 import {
   getPlateRuntime,
   getPlateModelPublication,
@@ -109,7 +110,6 @@ describe('compilePlateModel', () => {
     const BlockPlugin = createElementPlugin('modelBlock', 'model-block');
     const MarkPlugin = createBasePlugin({
       key: 'modelMark',
-      render: { isDecoration: false },
       schema: {
         mark: {
           inclusive: false,
@@ -118,6 +118,7 @@ describe('compilePlateModel', () => {
         },
       },
       type: 'model-mark',
+      render: { isDecoration: false },
     });
     const PropertyPlugin = createBasePlugin({
       key: 'modelProperty',
@@ -338,16 +339,22 @@ describe('compilePlateModel', () => {
   it('publishes render indexes only for schema-owned types', () => {
     const ElementComponent = () => null;
     const MarkComponent = () => null;
-    const ElementPlugin = createElementPlugin(
-      'renderElement',
-      'render-element'
-    ).withComponent(ElementComponent);
-    const MarkPlugin = createBasePlugin({
+    const ElementPlugin = createPlatePlugin({
+      component: ElementComponent,
+      key: 'renderElement',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+      type: 'render-element',
+    });
+    const MarkPlugin = createPlatePlugin({
+      component: MarkComponent,
       key: 'renderMark',
       render: {
         isDecoration: false,
         leafProps: { 'data-leaf': 'mark' },
-        node: MarkComponent,
         textProps: { 'data-text': 'mark' },
       },
       schema: {
@@ -355,9 +362,9 @@ describe('compilePlateModel', () => {
       },
       type: 'render-mark',
     });
-    const RuntimeOnlyPlugin = createBasePlugin({
+    const RuntimeOnlyPlugin = createPlatePlugin({
+      component: () => null,
       key: 'runtimeOnly',
-      render: { node: () => null },
       type: 'runtime-only',
     });
     const editor = createBaseEditor({
@@ -547,7 +554,6 @@ describe('compilePlateModel', () => {
   it('compiles top-level target keys into schema bindings', () => {
     const HeadingPlugin = createElementPlugin('configuredHeading', 'heading');
     const PropertyPlugin = createBasePlugin({
-      inject: { nodeProps: {} },
       key: 'configuredProperty',
       schema: ({ own, plugins, targetPluginKeys }) => ({
         properties: [
@@ -557,6 +563,7 @@ describe('compilePlateModel', () => {
         ],
       }),
       targetPluginKeys: [BaseParagraphPlugin.key],
+      inject: { nodeProps: {} },
     });
     const configuredPropertyPlugin = PropertyPlugin.configure({
       targetPluginKeys: [
@@ -675,10 +682,10 @@ describe('compilePlateModel', () => {
   it('keeps render-only changes out of the schema fingerprint', () => {
     const plugin = createElementPlugin('fingerprintElement');
     const first = createBaseEditor({
-      plugins: [plugin.withComponent(() => null)],
+      plugins: [toPlatePlugin(plugin).configure({ component: () => null })],
     });
     const second = createBaseEditor({
-      plugins: [plugin.withComponent(() => null)],
+      plugins: [toPlatePlugin(plugin).configure({ component: () => null })],
     });
 
     expect(first.read.schema.identity()?.fingerprint).toBe(

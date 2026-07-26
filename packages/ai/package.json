@@ -48,7 +48,6 @@
     "@platejs/suggestion": "workspace:^",
     "@platejs/table": "workspace:^",
     "@platejs/utils": "workspace:^",
-    "@udecode/utils": "workspace:^",
     "fastest-levenshtein": "1.0.16",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"

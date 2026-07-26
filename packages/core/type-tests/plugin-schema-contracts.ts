@@ -256,18 +256,20 @@ const ReferenceChildPlugin = createBasePlugin({
 });
 const DependencyInferencePlugin = createBasePlugin({
   key: 'schemaDependencyInference',
-})
-  .extendApi(() => ({
+  api: {
     readDependencyInference: () => 'dependency' as const,
-  }))
-  .extendTx(() => () => ({
+  },
+}).extend(() => ({
+  update: () => ({
     writeDependencyInference: () => undefined,
-  }));
+  }),
+}));
 const NestedInferencePlugin = createBasePlugin({
   key: 'schemaNestedInference',
-})
-  .extendApi(() => ({ readNestedInference: () => 'nested' as const }))
-  .extendTx(() => () => ({ writeNestedInference: () => undefined }));
+  api: { readNestedInference: () => 'nested' as const },
+}).extend(() => ({
+  update: () => ({ writeNestedInference: () => undefined }),
+}));
 export const InferenceTreePlugin = createBasePlugin({
   dependencies: [DependencyInferencePlugin, NestedInferencePlugin],
   key: 'schemaInferenceTree',
@@ -352,38 +354,51 @@ requirePluginReference(TargetPlugin.configure({ priority: 101 }));
 requirePluginReference(TargetPlugin.extend({ priority: 102 }));
 requirePluginReference(TargetPlugin.extend(() => ({ priority: 103 })));
 requirePluginReference(
-  TargetPlugin.extendEditorApi(() => ({ nominalEditorApi: () => true }))
-);
-requirePluginReference(
-  TargetPlugin.extendApi(() => ({ nominalPluginApi: () => true }))
-);
-requirePluginReference(
-  TargetPlugin.extendSelectors(() => ({ nominalSelector: () => true }))
-);
-requirePluginReference(
-  TargetPlugin.extendTx(() => () => ({ nominalTx: () => true }))
-);
-requirePluginReference(
-  TargetPlugin.extendTxGroup('nominalGroup', () => () => ({
-    nominalTx: () => true,
+  TargetPlugin.extend(() => ({
+    extension: { api: { nominalEditorApi: () => true } },
   }))
 );
 requirePluginReference(
-  TargetPlugin.extendExtension({
-    api: { nominalExtension: { read: () => true } },
+  TargetPlugin.extend(() => ({ api: { nominalPluginApi: () => true } }))
+);
+requirePluginReference(
+  TargetPlugin.extend(() => ({ selectors: { nominalSelector: () => true } }))
+);
+requirePluginReference(
+  TargetPlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) }))
+);
+requirePluginReference(
+  TargetPlugin.extend(() => ({
+    extension: {
+      tx: {
+        nominalGroup: () => ({
+          nominalTx: () => true,
+        }),
+      },
+    },
+  }))
+);
+requirePluginReference(
+  TargetPlugin.extend({
+    extension: {
+      api: { nominalExtension: { read: () => true } },
+    },
   })
 );
-requirePluginReference(TargetPlugin.withComponent(() => null));
 const PlateTargetPlugin = toPlatePlugin(TargetPlugin);
 const PlateReferenceChildPlugin = toPlatePlugin(ReferenceChildPlugin);
-const ExtendedSchemaTargetPlugin = TargetPlugin.extendApi(() => ({
-  schemaModelProof: () => true,
-})).extendExtension({
-  api: { schemaModelProof: { read: () => true } },
+const ExtendedSchemaTargetPlugin = TargetPlugin.extend(() => ({
+  api: {
+    schemaModelProof: () => true,
+  },
+})).extend({
+  extension: {
+    api: { schemaModelProof: { read: () => true } },
+  },
 });
 const PlateExtendedSchemaTargetPlugin = toPlatePlugin(
   ExtendedSchemaTargetPlugin
-).extendSelectors(() => ({ schemaModelProof: () => true }));
+).extend(() => ({ selectors: { schemaModelProof: () => true } }));
 const schemaModelEditor = createBaseEditor({
   plugins: [ExtendedSchemaTargetPlugin, PlateExtendedSchemaTargetPlugin],
 });
@@ -403,28 +418,42 @@ requirePluginReference(PlateTargetPlugin.configure({ priority: 106 }));
 requirePluginReference(PlateTargetPlugin.extend({ priority: 107 }));
 requirePluginReference(PlateTargetPlugin.extend(() => ({ priority: 108 })));
 requirePluginReference(
-  PlateTargetPlugin.extendEditorApi(() => ({ nominalEditorApi: () => true }))
-);
-requirePluginReference(
-  PlateTargetPlugin.extendApi(() => ({ nominalPluginApi: () => true }))
-);
-requirePluginReference(
-  PlateTargetPlugin.extendSelectors(() => ({ nominalSelector: () => true }))
-);
-requirePluginReference(
-  PlateTargetPlugin.extendTx(() => () => ({ nominalTx: () => true }))
-);
-requirePluginReference(
-  PlateTargetPlugin.extendTxGroup('nominalPlateGroup', () => () => ({
-    nominalTx: () => true,
+  PlateTargetPlugin.extend(() => ({
+    extension: { api: { nominalEditorApi: () => true } },
   }))
 );
 requirePluginReference(
-  PlateTargetPlugin.extendExtension({
-    api: { nominalPlateExtension: { read: () => true } },
+  PlateTargetPlugin.extend(() => ({ api: { nominalPluginApi: () => true } }))
+);
+requirePluginReference(
+  PlateTargetPlugin.extend(() => ({
+    selectors: { nominalSelector: () => true },
+  }))
+);
+requirePluginReference(
+  PlateTargetPlugin.extend(() => ({
+    update: () => ({ nominalTx: () => true }),
+  }))
+);
+requirePluginReference(
+  PlateTargetPlugin.extend(() => ({
+    extension: {
+      tx: {
+        nominalPlateGroup: () => ({
+          nominalTx: () => true,
+        }),
+      },
+    },
+  }))
+);
+requirePluginReference(
+  PlateTargetPlugin.extend({
+    extension: {
+      api: { nominalPlateExtension: { read: () => true } },
+    },
   })
 );
-requirePluginReference(PlateTargetPlugin.withComponent(() => null));
+requirePluginReference(PlateTargetPlugin.configure({ component: () => null }));
 requirePluginReference(PlateReferenceChildPlugin);
 requirePluginReference(editor.getPlugin(TargetPlugin));
 requirePluginReference(editor.plugin(TargetPlugin).plugin);

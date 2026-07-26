@@ -663,12 +663,6 @@ const syncPeerSelectionAfterHistory = (
   network.syncAwareness();
 };
 
-const getBlockText = (editor: YjsEditor, index: number) => {
-  const node = editor.read.children()[index];
-
-  return node ? NodeApi.string(node) : '';
-};
-
 const documentText = (editor: YjsEditor) =>
   getEditorValue(editor)
     .map((node) => NodeApi.string(node))

@@ -109,22 +109,22 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     TablePlugin.configure({
-      render: { node: TableElement },
+      component: TableElement,
       options: {
         initialTableWidth: 600,
         disableMerge: false,
         minColumnWidth: 48,
       },
     }),
-    TableRowPlugin.withComponent(TableRowElement),
-    TableCellPlugin.withComponent(TableCellElement),
-    TableCellHeaderPlugin.withComponent(TableCellHeaderElement),
+    TableRowPlugin.configure({ component: TableRowElement }),
+    TableCellPlugin.configure({ component: TableCellElement }),
+    TableCellHeaderPlugin.configure({ component: TableCellHeaderElement }),
   ],
 });
 ```
 
-- `render.node`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
-- `withComponent`: Assigns components for table rows, cells, and header cells.
+- `.configure({ component })`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
+- `component`: Assigns components for table rows, cells, and header cells.
 - `options.initialTableWidth`: Sets the initial width for new tables.
 - `options.disableMerge`: Disables cell merging functionality.
 - `options.minColumnWidth`: Sets the minimum width for table columns.

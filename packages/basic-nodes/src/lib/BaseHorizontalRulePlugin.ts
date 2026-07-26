@@ -8,9 +8,14 @@ export const BaseHorizontalRulePlugin = createBasePlugin({
       void: 'block',
     },
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => ({}),
+        encode: () => ({ tag: 'hr' }),
+        match: [{ tag: 'hr' }],
+      },
+    }),
+
   render: { as: 'hr' },
-}).extendHtmlCodec(() => ({
-  decode: () => ({}),
-  encode: () => ({ tag: 'hr' }),
-  match: [{ tag: 'hr' }],
-}));
+});

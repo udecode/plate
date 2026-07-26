@@ -15,6 +15,7 @@
 - Expose frozen snapshot identities through `snapshot.index.entries()`, `idAt()`, and `pathOf()` with bounded lazy structural mapping
 - Store pending insertion marks only on collapsed text selections and preserve earlier writes across composed commands
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
+- Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
 - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
 - Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates

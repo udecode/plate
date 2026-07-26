@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-25-static-base-plugin-components",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-25-static-base-plugin-components.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-25",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Bind static components without React plugin imports",
+  "targets": [
+    {
+      "name": "basic-blocks-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-marks-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-marks-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "callout-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/callout-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-block-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-drawing-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-drawing-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/column-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/comment-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "date-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/date-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "footnote-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/footnote-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/link-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "math-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/math-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/media-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/mention-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/table-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/toc-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toggle-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/toggle-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-25-basic-blocks-bind-components-without-react-7fd048fb",
+      "kind": "wiring",
+      "summary": "Bind static components without React plugin imports",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "basic-blocks-base-kit",
+        "basic-marks-base-kit",
+        "callout-base-kit",
+        "code-block-base-kit",
+        "code-drawing-base-kit",
+        "column-base-kit",
+        "comment-base-kit",
+        "date-base-kit",
+        "footnote-base-kit",
+        "link-base-kit",
+        "math-base-kit",
+        "media-base-kit",
+        "mention-base-kit",
+        "suggestion-base-kit",
+        "table-base-kit",
+        "toc-base-kit",
+        "toggle-base-kit"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-25",
+          "entry": "2026-07-25-static-base-plugin-components",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

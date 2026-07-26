@@ -4,7 +4,6 @@ import type { Node as UnistNode } from 'unist';
 
 import {
   type BaseEditor,
-  type InferConfig,
   type PluginConfig,
   createBasePlugin,
 } from '@platejs/core';
@@ -49,7 +48,25 @@ export type MarkdownPluginOptions = {
   rules?: MdRules | null;
 };
 
-type MarkdownContract = PluginConfig<'markdown', MarkdownPluginOptions>;
+type MarkdownApi = {
+  markdown: {
+    deserialize: (
+      data: string,
+      options?: DeserializeMdOptions
+    ) => ReturnType<typeof deserializeMdWithRuntime>;
+    deserializeInline: (
+      text: string,
+      options?: DeserializeMdOptions
+    ) => ReturnType<typeof deserializeInlineMd>;
+    serialize: (options?: SerializeMdOptions) => string;
+  };
+};
+
+export type MarkdownConfig = PluginConfig<
+  'markdown',
+  MarkdownPluginOptions,
+  MarkdownApi
+>;
 
 const shouldParseMarkdown = (
   data: string,
@@ -61,31 +78,8 @@ const shouldParseMarkdown = (
   return true;
 };
 
-export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
-  key: KEYS.markdown,
-  options: {
-    allowedNodes: null,
-    disallowedNodes: null,
-    plainMarks: null,
-    remarkPlugins: [],
-    remarkStringifyOptions: null,
-    rules: null,
-  },
-})
-  .extendEditorApi(({ editor }) => ({
-    markdown: {
-      deserialize: (data: string, options?: DeserializeMdOptions) =>
-        withMarkdownRuntime(editor, (runtime) =>
-          deserializeMdWithRuntime(runtime, data, options)
-        ),
-      deserializeInline: bindFirst(deserializeInlineMd, editor),
-      serialize: (options?: SerializeMdOptions) =>
-        withMarkdownRuntime(editor, (runtime) =>
-          serializeMdWithRuntime(runtime, options)
-        ),
-    },
-  }))
-  .extendCodecs(({ editor, plugin }) => {
+export const MarkdownPlugin = createBasePlugin<MarkdownConfig>({
+  codecs: ({ defineCodecs, editor, plugin }) => {
     const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
         createMarkdownRuntime(editor, plugin.key, state),
@@ -103,7 +97,7 @@ export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
         }
       );
 
-    return {
+    return defineCodecs({
       'text/markdown': {
         scope: 'document',
         decode: ({ data, state }) => decode(data, state),
@@ -115,10 +109,33 @@ export const MarkdownPlugin = createBasePlugin<MarkdownContract>({
         decode: ({ data, state }) => decode(data, state),
         query: ({ data, source }) => shouldParseMarkdown(data, source),
       },
-    };
-  });
-
-export type MarkdownConfig = InferConfig<typeof MarkdownPlugin>;
+    });
+  },
+  key: KEYS.markdown,
+  options: {
+    allowedNodes: null,
+    disallowedNodes: null,
+    plainMarks: null,
+    remarkPlugins: [],
+    remarkStringifyOptions: null,
+    rules: null,
+  },
+  extension: ({ editor }) => ({
+    api: {
+      markdown: {
+        deserialize: (data: string, options?: DeserializeMdOptions) =>
+          withMarkdownRuntime(editor, (runtime) =>
+            deserializeMdWithRuntime(runtime, data, options)
+          ),
+        deserializeInline: bindFirst(deserializeInlineMd, editor),
+        serialize: (options?: SerializeMdOptions) =>
+          withMarkdownRuntime(editor, (runtime) =>
+            serializeMdWithRuntime(runtime, options)
+          ),
+      },
+    },
+  }),
+});
 
 export type MarkdownEditor<E extends BaseEditor = BaseEditor> = E & {
   readonly api: E['api'] & MarkdownConfig['api'];

@@ -224,9 +224,11 @@ describe('BasePlugin store', () => {
       const p1 = createBasePlugin({
         key: 'plugin1',
         options: { value: 1 },
-      }).extendSelectors(({ getOptions }) => ({
-        doubleValue: () => getOptions().value * 2,
-        param: (a1: number, a2: number) => getOptions().value + a1 + a2,
+      }).extend(({ getOptions }) => ({
+        selectors: {
+          doubleValue: () => getOptions().value * 2,
+          param: (a1: number, a2: number) => getOptions().value + a1 + a2,
+        },
       }));
 
       const editor = createStoreEditor([p1]);
@@ -240,11 +242,15 @@ describe('BasePlugin store', () => {
         key: 'plugin1',
         options: { value: 1 },
       })
-        .extendSelectors(({ getOptions }) => ({
-          doubleValue: (mul: number) => getOptions().value * mul,
+        .extend(({ getOptions }) => ({
+          selectors: {
+            doubleValue: (mul: number) => getOptions().value * mul,
+          },
         }))
-        .extendSelectors(({ getOption }) => ({
-          tripleValue: () => getOption('doubleValue', 2) * 3,
+        .extend(({ getOption }) => ({
+          selectors: {
+            tripleValue: () => getOption('doubleValue', 2) * 3,
+          },
         }));
 
       const editor = createStoreEditor([p1]);
@@ -257,8 +263,10 @@ describe('BasePlugin store', () => {
       const p1 = createBasePlugin({
         key: 'plugin1',
         options: { value: 1 },
-      }).extendSelectors(({ getOptions }) => ({
-        doubleValue: () => getOptions().value * 2,
+      }).extend(({ getOptions }) => ({
+        selectors: {
+          doubleValue: () => getOptions().value * 2,
+        },
       }));
 
       const editor = createStoreEditor([p1]);
@@ -437,8 +445,10 @@ describe('PlatePlugin usePluginOption', () => {
       const p1 = createPlatePlugin({
         key: 'plugin1',
         options: { value: 1 },
-      }).extendSelectors(({ getOptions }) => ({
-        doubleValue: (mul: number) => getOptions().value * mul,
+      }).extend(({ getOptions }) => ({
+        selectors: {
+          doubleValue: (mul: number) => getOptions().value * mul,
+        },
       }));
 
       const editor = createPlateEditor({

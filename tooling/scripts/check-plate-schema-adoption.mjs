@@ -9,7 +9,7 @@ import { parse } from '@babel/parser';
 import { extractJavaScriptCodeFences } from './check-plate-doc-code-contracts.mjs';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const sourceRoots = ['packages', 'apps', 'content'];
+const sourceRoots = ['packages', 'apps', 'benchmarks', 'content'];
 export const ciGeneratedPlateSchemaOutputRoots = Object.freeze([
   'apps/www/public/r',
   'apps/www/public/rd',
@@ -26,23 +26,29 @@ const pluginConfigurationMethods = new Set([
   'extend',
   'extendPlugin',
 ]);
-const pluginAuthoringMethods = new Set([
-  'clone',
-  'configure',
-  'configurePlugin',
-  'extend',
+const deletedPluginBuilderMethods = new Set([
   'extendApi',
+  'extendCodecs',
   'extendEditorApi',
   'extendExtension',
-  'extendPlugin',
+  'extendHtmlCodec',
   'extendSelectors',
   'extendTx',
   'extendTxGroup',
   'withComponent',
 ]);
+const pluginAuthoringMethods = new Set([
+  'clone',
+  'configure',
+  'configurePlugin',
+  'extend',
+  'extendPlugin',
+  ...deletedPluginBuilderMethods,
+]);
 const contextualConfigureKeys = new Set([
   'handlers',
   'options',
+  'override',
   'render',
   'shortcuts',
 ]);
@@ -98,6 +104,22 @@ const deletedSymbols = new Set([
 const privateSchemaGroupOwners = new Set([
   'packages/core/src/internal/plugin/compilePlateModel.ts',
 ]);
+const internalRenderNodeOwners = new Set([
+  'packages/core/src/internal/plugin/resolvePlugins.ts',
+  'packages/core/src/lib/plugin/createBasePlugin.ts',
+  'packages/core/src/react/plugin/toPlatePlugin.ts',
+]);
+const intentionalRenderNodeNegativeContract =
+  'packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts';
+const intentionalRawCodecNegativeMarker =
+  '@plate-schema-adoption-negative-codec';
+const intentionalRawCodecNegativeContractCounts = new Map([
+  ['packages/core/src/internal/plugin/compilePlateHtmlCodec.spec.ts', 1],
+  ['packages/core/type-tests/base-plugin-contracts.ts', 1],
+]);
+const intentionalProductionExtendCodecOwners = new Set([
+  'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
+]);
 const packageConfigureInstallationOwners = new Set([
   'packages/core/src/lib/plugins/getCorePlugins.ts',
   'packages/core/src/react/editor/getPlateCorePlugins.ts',
@@ -106,6 +128,47 @@ const packagePluginSourcePattern =
   /^packages\/[^/]+\/src\/.*\.(?:cjs|cts|js|jsx|mjs|mts|ts|tsx)$/;
 const packageTestSourcePattern =
   /(?:^|\/)(?:__tests__|type-tests)(?:\/|$)|\.(?:slow|spec|test)\.[cm]?[jt]sx?$/;
+const baseOrStaticSourcePattern =
+  /(?:^|\/)(?:[^/]*-base-kit|[^/]*-static)\.[cm]?[jt]sx?$|(?:^|\/)static(?:\/|$)/;
+const reactPluginEntrypointPattern = /^(?:platejs|@platejs\/[^/]+)\/react$/;
+const liveRegistryNodeModulePattern = /^@\/registry\/ui\/.*-node$/;
+const historicalOrGeneratedSourcePattern =
+  /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
+const intentionalProductionExtendStageFields = new Map([
+  ['packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts', [['shortcuts']]],
+  ['packages/code-block/src/lib/BaseCodeBlockPlugin.ts', [['shortcuts']]],
+  ['packages/comment/src/lib/BaseCommentPlugin.ts', [['update']]],
+  ['packages/indent/src/lib/BaseIndentPlugin.ts', [['shortcuts']]],
+  ['packages/layout/src/lib/BaseColumnPlugin.ts', [['shortcuts']]],
+  [
+    'packages/list/src/lib/BaseListPlugin.tsx',
+    [['override'], ['update'], ['extension']],
+  ],
+  [
+    'packages/list-classic/src/lib/BaseListPlugin.ts',
+    [['update'], ['extension']],
+  ],
+  [
+    'packages/table/src/lib/BaseTablePlugin.ts',
+    [
+      ['api'],
+      ['api'],
+      ['api'],
+      ['api'],
+      ['api', 'selectors', 'update'],
+      ['extension', 'update'],
+    ],
+  ],
+  [
+    'packages/ai/src/react/copilot/CopilotPlugin.tsx',
+    [['api'], ['extension', 'handlers', 'render', 'selectors', 'shortcuts']],
+  ],
+  ['packages/ai/src/react/ai-chat/AIChatPlugin.ts', [['extension']]],
+  [
+    'packages/selection/src/react/BlockSelectionPlugin.tsx',
+    [['api', 'extension', 'handlers', 'selectors', 'shortcuts', 'update']],
+  ],
+]);
 const allowedSchemaFactoryBindings = new Set([
   'key',
   'options',
@@ -117,18 +180,19 @@ const allowedSchemaFactoryBindings = new Set([
 // Raw queries are reserved for runtime discovery and contextual contract laws.
 // Every owning file has an exact reviewed count so tests cannot hide new drift.
 const intentionalRawSchemaQueryCounts = new Map([
-  ['packages/ai/src/lib/transforms/aiStreamSnapshot.spec.ts', 6],
+  ['packages/ai/src/lib/BaseAIPlugin.preview.spec.ts', 6],
   ['packages/basic-styles/src/lib/BaseLineHeightPlugin.spec.ts', 2],
   ['packages/basic-styles/src/lib/BaseTextAlignPlugin.spec.ts', 2],
   ['packages/basic-styles/src/lib/BaseTextIndentPlugin.spec.ts', 2],
   ['packages/comment/src/lib/BaseCommentPlugin.spec.ts', 5],
+  ['packages/core/src/internal/plugin/compilePlateHtmlCodec.ts', 5],
   ['packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
-  ['packages/plite-dom/test/host-codec.test.ts', 2],
   ['packages/plite/test/editor-foundation-contract.ts', 2],
   ['packages/plite/test/schema-contract.ts', 5],
   ['packages/plite/test/schema-inference-contract.ts', 2],
   ['packages/plite/test/schema-validation-diagnostics.test.ts', 4],
-  ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts', 10],
+  ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts', 12],
+  ['packages/table/src/lib/BaseTablePlugin.schema.spec.ts', 5],
 ]);
 const intentionalExplicitSchemaFactoryCounts = new Map([
   ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 1],
@@ -180,9 +244,9 @@ if (
   [...intentionalRawSchemaQueryCounts.values()].reduce(
     (total, count) => total + count,
     0
-  ) !== 43
+  ) !== 53
 ) {
-  throw new Error('Plate raw schema query allowlist must contain 43 calls.');
+  throw new Error('Plate raw schema query allowlist must contain 53 calls.');
 }
 
 const toPosixPath = (path) => path.split(sep).join('/');
@@ -416,6 +480,113 @@ const inspectContextualConfigure = (callback) => {
   return { invalidReturns, properties };
 };
 
+const getStaticExtensionProperties = (contribution) => {
+  const value = unwrapTypedExpression(contribution);
+
+  if (value?.type === 'ObjectExpression') return value.properties;
+  if (isFunction(value)) return inspectContextualConfigure(value).properties;
+
+  return [];
+};
+
+const isDirectCreatorExtendChain = (node) => {
+  let current = unwrapTypedExpression(node);
+
+  while (current?.type === 'CallExpression') {
+    const callee = unwrapTypedExpression(current.callee);
+
+    if (
+      callee?.type === 'Identifier' &&
+      ['createBasePlugin', 'createPlatePlugin'].includes(callee.name)
+    ) {
+      return true;
+    }
+    if (callee?.type !== 'MemberExpression') return false;
+
+    current = unwrapTypedExpression(callee.object);
+  }
+
+  return false;
+};
+
+const isDefineCodecsCall = (property) => {
+  if (property?.type !== 'ObjectProperty') return false;
+
+  let value = unwrapTypedExpression(property.value);
+
+  if (isFunction(value)) {
+    const body = unwrapTypedExpression(value.body);
+
+    if (body?.type === 'BlockStatement') {
+      const returns = body.body.filter(
+        (statement) => statement.type === 'ReturnStatement'
+      );
+
+      value =
+        returns.length === 1
+          ? unwrapTypedExpression(returns[0].argument)
+          : undefined;
+    } else {
+      value = body;
+    }
+  }
+
+  return (
+    value?.type === 'CallExpression' &&
+    value.callee.type === 'Identifier' &&
+    value.callee.name === 'defineCodecs'
+  );
+};
+
+const getExtensionStageFields = (contribution) =>
+  getStaticExtensionProperties(contribution)
+    .map((property) =>
+      property.type === 'SpreadElement'
+        ? '...'
+        : (getPropertyName(property.key) ?? '?')
+    )
+    .sort();
+
+const getExtendChainStages = (node) => {
+  const stages = [];
+  let current = unwrapTypedExpression(node);
+
+  while (
+    current?.type === 'CallExpression' &&
+    readMemberCallName(current) === 'extend'
+  ) {
+    stages.unshift(getExtensionStageFields(current.arguments[0]));
+    current = unwrapTypedExpression(current.callee.object);
+  }
+
+  return stages;
+};
+
+const hasExactExtendStageFields = (actual, expected) =>
+  actual.length === expected.length &&
+  actual.every(
+    (fields, index) =>
+      fields.length === expected[index].length &&
+      fields.every((field, fieldIndex) => field === expected[index][fieldIndex])
+  );
+
+const isNestedInLaterExtend = (node, ancestors) => {
+  const parent = ancestors.at(-1);
+  const grandparent = ancestors.at(-2);
+
+  return (
+    parent?.type === 'MemberExpression' &&
+    parent.object === node &&
+    grandparent?.type === 'CallExpression' &&
+    grandparent.callee === parent &&
+    readMemberCallName(grandparent) === 'extend'
+  );
+};
+
+const isProductionPluginAuthoringFile = (file) =>
+  !packageTestSourcePattern.test(file) &&
+  !historicalOrGeneratedSourcePattern.test(file);
+
 const isSchemaApiCall = (node, method) =>
   node?.type === 'CallExpression' &&
   node.callee.type === 'MemberExpression' &&
@@ -552,6 +723,18 @@ const hasExpectError = (source, node) => {
     .includes('@ts-expect-error');
 };
 
+const hasPrecedingMarker = (source, node, marker) => {
+  const lineStart = source.lastIndexOf('\n', Math.max(0, node.start - 1));
+  const previousLineStart = source.lastIndexOf(
+    '\n',
+    Math.max(0, lineStart - 1)
+  );
+
+  return source
+    .slice(Math.max(0, previousLineStart), node.start)
+    .includes(marker);
+};
+
 const readCallName = (callee) => {
   if (
     callee?.type !== 'MemberExpression' ||
@@ -588,6 +771,26 @@ const readMemberCallName = (node) =>
   !node.callee.computed
     ? getPropertyName(node.callee.property)
     : undefined;
+
+const readCallChainRootName = (node) => {
+  let current = unwrapTypedExpression(node);
+
+  while (current?.type === 'CallExpression') {
+    if (current.callee.type === 'Identifier') return current.callee.name;
+    if (current.callee.type !== 'MemberExpression' || current.callee.computed) {
+      return;
+    }
+
+    current = unwrapTypedExpression(current.callee.object);
+  }
+};
+
+const isForeignStoreSelectorExtension = (node, file) =>
+  readMemberCallName(node) === 'extendSelectors' &&
+  (readCallChainRootName(node) === 'createZustandStore' ||
+    (file === 'packages/core/src/internal/plugin/resolvePlugins.ts' &&
+      node.callee.object?.type === 'Identifier' &&
+      node.callee.object.name === 'store'));
 
 const isPackagePluginDefinitionSource = (file) =>
   packagePluginSourcePattern.test(file) &&
@@ -646,16 +849,42 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const issues = [];
   const allowedExplicitSchemaFactoryCount =
     intentionalExplicitSchemaFactoryCounts.get(file) ?? 0;
+  const allowedRawCodecNegativeContractCount =
+    intentionalRawCodecNegativeContractCounts.get(file) ?? 0;
   const allowedRawSchemaQueryCount =
     intentionalRawSchemaQueryCounts.get(file) ?? 0;
   let explicitSchemaFactoryCount = 0;
   const namedSchemaLineageCounts = new Map();
+  let productionExtendChainCount = 0;
+  let rawCodecNegativeContractCount = 0;
   let rawSchemaQueryCount = 0;
 
   const report = (node, reason) => issues.push(createIssue(file, node, reason));
 
   const visit = (node, ancestors = []) => {
     if (!node || typeof node !== 'object') return;
+
+    if (
+      node.type === 'ImportDeclaration' &&
+      baseOrStaticSourcePattern.test(file) &&
+      reactPluginEntrypointPattern.test(node.source.value)
+    ) {
+      report(
+        node,
+        'Base/static modules cannot import the React plugin layer; bind static components through BasePlugin.configure({ component })'
+      );
+    }
+
+    if (
+      node.type === 'ImportDeclaration' &&
+      baseOrStaticSourcePattern.test(file) &&
+      liveRegistryNodeModulePattern.test(node.source.value)
+    ) {
+      report(
+        node,
+        'Base/static kits cannot bind live registry node modules; import the static renderer'
+      );
+    }
 
     if (node.type === 'Identifier' && deletedSymbols.has(node.name)) {
       report(node, `deleted Plate schema symbol ${node.name}`);
@@ -697,6 +926,31 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
     if (node.type === 'ObjectProperty') {
       const key = getPropertyName(node.key);
+      const nodeComponent =
+        key === 'render' && node.value?.type === 'ObjectExpression'
+          ? getObjectProperty(node.value, 'node')
+          : undefined;
+      const isIntentionalNegativeRenderNode =
+        file === intentionalRenderNodeNegativeContract &&
+        nodeComponent &&
+        hasExpectError(source, nodeComponent) &&
+        ancestors.some(
+          (ancestor) =>
+            ancestor.type === 'CallExpression' &&
+            ancestor.callee.type === 'Identifier' &&
+            ancestor.callee.name === 'toPlatePlugin'
+        );
+
+      if (
+        nodeComponent &&
+        !internalRenderNodeOwners.has(file) &&
+        !isIntentionalNegativeRenderNode
+      ) {
+        report(
+          nodeComponent,
+          'plugin node components must use root-level component instead of render.node authoring'
+        );
+      }
 
       if (key === 'node' && node.value?.type === 'ObjectExpression') {
         const keys = node.value.properties
@@ -806,12 +1060,142 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           : undefined;
 
       if (
+        baseOrStaticSourcePattern.test(file) &&
+        node.callee.type === 'Identifier' &&
+        node.callee.name === 'toPlatePlugin'
+      ) {
+        report(
+          node,
+          'Base/static modules use BasePlugin.configure({ component }); toPlatePlugin belongs in live React adapters'
+        );
+      }
+
+      if (
+        memberCallName &&
+        deletedPluginBuilderMethods.has(memberCallName) &&
+        !isForeignStoreSelectorExtension(node, file)
+      ) {
+        report(
+          node,
+          memberCallName === 'withComponent'
+            ? 'deleted plugin builder .withComponent(); use root-level component'
+            : `deleted plugin builder .${memberCallName}(); use constructor fields or .extend() only for imported/prebuilt adaptation or a real staged dependency`
+        );
+      }
+
+      if (memberCallName === 'extend') {
+        for (const property of getStaticExtensionProperties(
+          node.arguments[0]
+        )) {
+          if (getPropertyName(property.key) !== 'codecs') continue;
+
+          if (!isDefineCodecsCall(property)) {
+            const isIntentionalNegativeContract =
+              rawCodecNegativeContractCount <
+                allowedRawCodecNegativeContractCount &&
+              hasPrecedingMarker(
+                source,
+                property,
+                intentionalRawCodecNegativeMarker
+              );
+
+            if (isIntentionalNegativeContract) {
+              rawCodecNegativeContractCount++;
+            } else {
+              report(
+                property,
+                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+              );
+            }
+          }
+
+          if (
+            packagePluginSourcePattern.test(file) &&
+            isProductionPluginAuthoringFile(file) &&
+            !intentionalProductionExtendCodecOwners.has(file)
+          ) {
+            report(
+              property,
+              'independent plugin codecs belong in the constructor callback'
+            );
+          }
+        }
+
+        if (
+          !isNestedInLaterExtend(node, ancestors) &&
+          isProductionPluginAuthoringFile(file) &&
+          (packagePluginSourcePattern.test(file) || file.startsWith('apps/')) &&
+          isDirectCreatorExtendChain(node.callee.object)
+        ) {
+          const stages = getExtendChainStages(node);
+
+          productionExtendChainCount++;
+          const expected =
+            intentionalProductionExtendStageFields.get(file) ?? [];
+
+          if (!hasExactExtendStageFields(stages, expected)) {
+            report(
+              node,
+              `direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found ${stages
+                .map((fields) => `[${fields.join(', ')}]`)
+                .join(' -> ')}`
+            );
+          }
+        }
+      }
+
+      if (
+        node.callee.type === 'Identifier' &&
+        ['createBasePlugin', 'createPlatePlugin'].includes(node.callee.name) &&
+        node.arguments[0]?.type === 'ObjectExpression'
+      ) {
+        for (const property of node.arguments[0].properties) {
+          const key =
+            property.type === 'ObjectProperty' ||
+            property.type === 'ObjectMethod'
+              ? getPropertyName(property.key)
+              : undefined;
+
+          if (
+            node.callee.name === 'createBasePlugin' &&
+            key === 'component' &&
+            !hasExpectError(source, property)
+          ) {
+            report(
+              property,
+              'createBasePlugin stays renderer-neutral; bind static components through terminal BasePlugin.configure({ component })'
+            );
+          }
+
+          if (key === 'codecs' && !isDefineCodecsCall(property)) {
+            const isIntentionalNegativeContract =
+              rawCodecNegativeContractCount <
+                allowedRawCodecNegativeContractCount &&
+              hasPrecedingMarker(
+                source,
+                property,
+                intentionalRawCodecNegativeMarker
+              );
+
+            if (isIntentionalNegativeContract) {
+              rawCodecNegativeContractCount++;
+            } else {
+              report(
+                property,
+                'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+              );
+            }
+          }
+        }
+      }
+
+      if (
         memberCallName === 'configure' &&
         isPackagePluginDefinitionSource(file)
       ) {
         report(
           node,
-          'package plugin definitions must use extend; reserve configure for consumer installation'
+          'package plugin definitions must use constructor fields or a justified imported/prebuilt or staged extend; reserve configure for consumer installation'
         );
       }
 
@@ -967,10 +1351,25 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       `raw schema query allowlist expects ${allowedRawSchemaQueryCount} calls but found ${rawSchemaQueryCount}`
     );
   }
+  if (rawCodecNegativeContractCount < allowedRawCodecNegativeContractCount) {
+    report(
+      ast,
+      `raw codec negative-contract allowlist expects ${allowedRawCodecNegativeContractCount} marked declaration${allowedRawCodecNegativeContractCount === 1 ? '' : 's'} but found ${rawCodecNegativeContractCount}`
+    );
+  }
   if (explicitSchemaFactoryCount < allowedExplicitSchemaFactoryCount) {
     report(
       ast,
       `explicit schema factory allowlist expects ${allowedExplicitSchemaFactoryCount} calls but found ${explicitSchemaFactoryCount}`
+    );
+  }
+  if (
+    intentionalProductionExtendStageFields.has(file) &&
+    productionExtendChainCount !== 1
+  ) {
+    report(
+      ast,
+      `production extend-stage allowlist expects exactly one audited chain but found ${productionExtendChainCount}`
     );
   }
   for (const [signature, count] of intentionalNamedSchemaLineages.get(file) ??

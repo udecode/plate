@@ -77,7 +77,7 @@ test('detects removed root mutation facades in current teaching docs', () => {
   for (const source of [
     'editor.update.text.insert("x")',
     'editor.update((tx) => tx.text.insert("x"))',
-    '.extendTx(() => (tx) => ({ insertText() {} }))',
+    '.extend(() => ({ update: ({ tx }) => ({ insertText() {} }) }))',
   ]) {
     assert.doesNotMatch(source, removedRootMutationFacadePattern, source);
   }
@@ -99,8 +99,8 @@ test('detects removed Plate schema flags without banning parser overrides', () =
   for (const source of [
     'deserializer: { isElement: true }',
     'inject: { isLeaf: true }',
-    'ParagraphPlugin.withComponent(ParagraphElement)',
-    'render: { node: ParagraphElement }',
+    'ParagraphPlugin.configure({ component: ParagraphElement })',
+    'render: { leaf: ParagraphLeaf }',
     "schema: { element: { void: 'markable-inline' } }",
     'state.schema.markableVoid(element)',
   ]) {
@@ -123,7 +123,7 @@ test('detects the deleted Plate node bag without matching unrelated node or mark
   }
 
   for (const source of [
-    'render: { node: LinkElement }',
+    'LinkPlugin.configure({ component: LinkElement })',
     'match: ({ node }) => ElementApi.isElement(node)',
     'deserializer: { parse: ({ node }) => node }',
     'rules: { emphasis: { mark: true } }',

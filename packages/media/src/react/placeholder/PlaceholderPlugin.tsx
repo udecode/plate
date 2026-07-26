@@ -1,5 +1,6 @@
 import { type InferConfig, nanoid } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
+import { createAtomStore } from '@platejs/core/react/internal';
 import {
   type NodeInsertNodesOptions,
   NodeApi,
@@ -25,6 +26,11 @@ import {
 import { lookup } from './internal/mimeTypes';
 
 const fileSizePattern = /^(\d+)(\.\d+)?\s*(B|KB|MB|GB)$/i;
+
+export const { PlaceholderProvider } = createAtomStore(
+  {},
+  { name: 'placeholder' as const }
+);
 
 export const ALLOWED_FILE_TYPES = [
   'image',
@@ -118,7 +124,7 @@ export type PlaceholderApi = {
   removeUploadingFile: (id: string) => void;
 };
 
-export type PlaceholderTransforms = {
+export type PlaceholderUpdates = {
   insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) => void;
   replaceMedia: (
     input:
@@ -209,24 +215,26 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
     uploadingFiles: {},
   } as PlaceholderPluginOptions,
 })
-  .extendApi<PlaceholderApi>(({ getOption, setOption }) => ({
-    addUploadingFile: (id, file) => {
-      setOption('uploadingFiles', {
-        ...getOption('uploadingFiles'),
-        [id]: file,
-      });
-    },
-    getUploadingFile: (id) => getOption('uploadingFiles')[id],
-    removeUploadingFile: (id) => {
-      const uploadingFiles = { ...getOption('uploadingFiles') };
+  .extend<{ api: PlaceholderApi }>(({ getOption, setOption }) => ({
+    api: {
+      addUploadingFile: (id, file) => {
+        setOption('uploadingFiles', {
+          ...getOption('uploadingFiles'),
+          [id]: file,
+        });
+      },
+      getUploadingFile: (id) => getOption('uploadingFiles')[id],
+      removeUploadingFile: (id) => {
+        const uploadingFiles = { ...getOption('uploadingFiles') };
 
-      delete uploadingFiles[id];
-      setOption('uploadingFiles', uploadingFiles);
+        delete uploadingFiles[id];
+        setOption('uploadingFiles', uploadingFiles);
+      },
     },
   }))
-  .extendTx<PlaceholderTransforms>(
-    ({ api, editor, getOption, setOption, type }) =>
-      (tx, _editor, { afterCommit }) => ({
+  .extend<{ update: PlaceholderUpdates }>(
+    ({ api, editor, getOption, setOption, type }) => ({
+      update: ({ context: { afterCommit }, tx }) => ({
         insertMedia: (files, options) => {
           const uploadConfig = getOption('uploadConfig');
           let fileTypes: Map<File, AllowedFileType>;
@@ -438,7 +446,8 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
             tx.video.insert(input, { ...options, at });
           }
         },
-      })
+      }),
+    })
   )
   .extend(({ getOption, update }) => ({
     handlers: {
@@ -472,7 +481,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         const ancestor = editor.read.nodes.block();
 
         if (ancestor && NodeApi.string(ancestor[0]).length === 0) {
-          editor.update<{ placeholder: PlaceholderTransforms }>((tx) => {
+          editor.update<{ placeholder: PlaceholderUpdates }>((tx) => {
             tx.nodes.remove({ at: ancestor[1] });
             tx.placeholder.insertMedia(files, { at: ancestor[1] });
           });

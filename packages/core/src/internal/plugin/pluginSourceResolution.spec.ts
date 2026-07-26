@@ -133,7 +133,10 @@ describe('plugin source resolution', () => {
   });
 
   it('uses stable Kahn ordering by priority then canonical source order', () => {
-    const Shared = createBasePlugin({ key: 'shared', priority: 1 });
+    const Shared = createBasePlugin({
+      key: 'shared',
+      priority: 1,
+    });
     const First = createBasePlugin({
       dependencies: [Shared],
       key: 'first',

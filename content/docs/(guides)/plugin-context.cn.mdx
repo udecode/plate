@@ -166,3 +166,42 @@ const MyPlugin = createPlatePlugin({
   },
 });
 ```
+
+### `defineCodecs`
+
+在 constructor 的 `codecs` callback 中使用 `defineCodecs`。它是 codec map
+唯一的 inference anchor：
+
+```ts
+import { createBasePlugin, property } from 'platejs';
+
+const StrongPlugin = createBasePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
+      },
+    }),
+  key: 'strong',
+  schema: { mark: property.boolean() },
+});
+```
+
+Self/product map 使用 `defineCodecs(map)`。Foreign contribution 使用
+`defineCodecs(TargetPlugin, map)`，Plate 会把 target 注入每个 HTML rule。
+Map 保持 MIME-keyed；`'text/html'` 使用单个 rule 或非空有序 rule tuple。
+不要直接声明 codec map，也不要标注 callback 参数。
+
+### `defineEditorExtension`
+
+Inline constructor 中的 `extension` object 有 contextual typing。抽取后可复用
+的 factory 必须接收 `BasePluginContext<C>`，并返回 callback context 中的
+`context.defineEditorExtension({ ... })` identity helper。完整示例见
+[插件方法](/docs/plugin-methods#install-plite-capabilities)。
+
+把抽取后的 factory 传给 constructor 的 `extension` callback。Inline extension
+object 不需要 helper。从 `@platejs/plite` import 的同名
+`defineEditorExtension` 用于
+standalone Plite extension，不携带抽取后 Plate plugin 的 context。

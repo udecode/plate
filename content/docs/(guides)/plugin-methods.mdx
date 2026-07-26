@@ -1,164 +1,56 @@
 ---
 title: Plugin Methods
-description: Configure and extend Plate plugins.
+description: Author and configure Plate plugins.
 ---
 
-Plugin methods return new plugin instances, so package authors can keep a base plugin stable and compose behavior with `.extend*()`. An app or registry consumer can finish that descriptor with one `.configure()` call. Configuration is terminal: call every authoring method before it.
-
-## On This Page
-
-- [Method Map](#method-map)
-- [Configure Existing Fields](#configure-existing-fields)
-- [Configure Related Plugins](#configure-related-plugins)
-- [Extend The Plugin](#extend-the-plugin)
-- [Selectors](#selectors)
-- [API And Transactions](#api-and-transactions)
-- [Install Plite Extensions](#install-plite-extensions)
-- [Declare Product Codecs](#declare-product-codecs)
-- [Components](#components)
-- [Convert Plite Plugins](#convert-plite-plugins)
-- [API Reference](#api-reference)
+Plugin authors put independent fields in the plugin constructor. Apps and
+registries finish a descriptor with one terminal `.configure()` call, including
+`component` when it renders an ordinary node.
 
 ## Method Map
 
-| Method | Use it for | Writes to |
+| Method | Use it for | Type behavior |
 | --- | --- | --- |
-| `.configure()` | Apply one final consumer override without widening the public type. | The current plugin. |
-| `.extend()` | Add typed options, handlers, renderers, rules, or runtime hooks. | The current plugin. |
-| `.extendExtension()` | Install a Plite extension descriptor or factory. | Plite schema, state, tx, command, correction, query, or service slots. |
-| `.extendSelectors()` | Add computed option selectors. | `getOption()` and `usePluginOption()`. |
-| `.extendApi()` | Add plugin-specific API methods. | `editor.api[plugin.key]`; exact generic code can use `editor.plugin(plugin).api`. |
-| `.extendEditorApi()` | Add editor-wide API methods. | `editor.api`. |
-| `.extendTx()` | Add plugin-owned transaction commands. | `editor.update((tx) => tx[plugin.key])`. |
-| `.extendTxGroup()` | Add commands to a named transaction group. | `editor.update((tx) => tx[groupKey])`. |
-| `.extendCodecs()` | Declare MIME-keyed import and export behavior owned by the plugin. | Plate's compiled product codec registry. |
-| `.withComponent()` | Attach a node component to a plugin. | `plugin.render.node`. |
-| `.clone()` | Copy a plugin definition. | A new plugin object. |
+| `.extend()` | Adapt an imported/prebuilt descriptor, use a constructor-inaccessible shared factory, or consume an earlier-stage type. | Widens the plugin type. |
+| `.configure()` | Override existing fields for one consumer. | Terminal and non-widening. |
+| `.clone()` | Copy a plugin definition. | Returns a new plugin object. |
 
-Plugin method callbacks receive the same context described in [Plugin Context](/docs/plugin-context): `editor`, `plugin`, `api`, `getOption`, `getOptions`, `setOption`, `setOptions`, and `type`.
+`createBasePlugin()` and `createPlatePlugin()` own every independent author
+contribution:
 
-## Configure Existing Fields
+| Field | Owns |
+| --- | --- |
+| `api` | Immutable plugin-scoped services and queries. |
+| `read` | Snapshot or transaction-local reads. |
+| `selectors` | Derived option values, including React subscriptions. |
+| `update` | Transaction-bound plugin mutations. |
+| `extension` | Plite runtime capabilities, including editor-wide groups. |
+| `codecs` | Plugin-owned format decoding and encoding. |
 
-Use `.configure()` once, where an app or registry installs a plugin, to change
-values already declared by the plugin. Keep package defaults and reusable
-behavior in `create*Plugin()`, `.extend()`, or a narrower `.extend*()` method.
+Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
+`editor`, `plugin`, `api`, `read`, `defineCodecs`,
+`defineEditorExtension`, `getOption`, `getOptions`, and the active `tx` inside
+update contributions.
 
-```tsx title="plugins.tsx" showLineNumbers
-import { H1Plugin } from '@platejs/basic-nodes/react';
+## Use Constructor Context
 
-export const AppH1Plugin = H1Plugin.configure({
-  shortcuts: {
-    toggle: { keys: 'mod+alt+1' },
-  },
-});
-```
-
-The callback form keeps the same non-widening contract when existing fields
-depend on runtime context.
-
-```tsx title="plugins.tsx" showLineNumbers
-import { NavigationFeedbackPlugin } from 'platejs/react';
-
-const LongerFlashPlugin = NavigationFeedbackPlugin.configure(
-  ({ getOption }) => ({
-    options: {
-      duration: getOption('duration') + 400,
-    },
-  })
-);
-```
-
-Object configs use Plate's plugin merge rules: objects merge deeply, arrays are
-replaced, and `options` are shallow merged. During resolution, contextual
-extensions can read the configured values, while the consumer configuration
-remains the final override for overlapping fields.
-
-Call `.configure()` last. The returned descriptor cannot be configured, cloned,
-or extended again.
-
-<Callout type="info" title="Author first, configure last">
-  `.configure()` does not widen types. If a package adds an option, API method,
-  transaction command, selector, handler, renderer, or Plite extension, declare
-  it with `.extend()` or the narrower `.extend*()` method before the consumer
-  configuration.
-</Callout>
-
-## Configure Related Plugins
-
-Configure a required dependency on its own descriptor and place that complete
-descriptor in the same app or registry plugin array. The explicit same-key
-descriptor replaces the dependency definition without parent reach-through.
-
-```tsx title="plugins.tsx" showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
-
-const CellPlugin = createPlatePlugin({
-  key: 'cell',
-  options: { padding: 12 },
-});
-const GridPlugin = createPlatePlugin({
-  key: 'grid',
-  dependencies: [CellPlugin],
-});
-
-export const AppGridPlugins = [
-  GridPlugin,
-  CellPlugin.configure({
-    options: {
-      padding: 8,
-    },
-  }),
-];
-```
-
-Package authors declare required capabilities with `dependencies`. Optional
-capabilities are ordinary app or registry array entries; an enhancement may
-depend on its host, but the host does not bundle the enhancement. Two distinct
-explicit descriptors with one key are an error; array order is not an override
-mechanism.
-
-## Extend The Plugin
-
-Use `.extend()` for package-owned definitions and broad plugin additions. Object extensions merge immediately; function extensions run during plugin resolution with the current editor context. Finish all extensions before an app applies its terminal `.configure()`.
-
-```tsx title="plugins.tsx" showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
-
-export const MentionPlugin = createPlatePlugin({
-  key: 'mention',
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
-    },
-  },
-}).extend(({ editor }) => ({
-  handlers: {
-    onKeyDown: ({ event }) => {
-      if (event.key === 'Escape') {
-        editor.update((tx) => tx.selection.clear());
-        event.preventDefault();
-      }
-    },
-  },
-  options: {
-    trigger: '@',
-  },
-}));
-```
-
-Use `.extend()` when one extension naturally touches several plugin fields. Use the narrower methods below when the addition is specifically an API method, transaction command, selector, or Plite extension.
-
-## Selectors
-
-Use `.extendSelectors()` for derived option values that components can subscribe to. Selectors are available through `getOption()` and React hooks such as `usePluginOption()`.
+Put independent fields and their context callbacks in the constructor. Use
+`.extend()` for an imported/prebuilt declaration or types introduced by an
+earlier stage.
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
-import { type PluginConfig } from 'platejs';
 import { createPlatePlugin, usePluginOption } from 'platejs/react';
 
 type CounterOptions = {
   value: number;
+};
+
+type CounterApi = {
+  isEmpty: () => boolean;
+};
+
+type CounterUpdate = {
+  insertLabel: () => void;
 };
 
 type CounterSelectors = {
@@ -166,208 +58,236 @@ type CounterSelectors = {
   isEven: () => boolean;
 };
 
-type CounterConfig = PluginConfig<
-  'counter',
-  CounterOptions,
-  {},
-  {},
-  CounterSelectors
->;
-
-export const CounterPlugin = createPlatePlugin<CounterConfig>({
+export const CounterPlugin = createPlatePlugin({
+  api: ({ getOption }): CounterApi => ({
+    isEmpty: () => getOption('value') === 0,
+  }),
   key: 'counter',
   options: {
-    value: 1,
+    value: 0,
   },
-}).extendSelectors<CounterSelectors>(({ getOptions }) => ({
-  doubled: (factor) => getOptions().value * factor,
-  isEven: () => getOptions().value % 2 === 0,
-}));
+  selectors: ({ getOptions }): CounterSelectors => ({
+    doubled: (factor) => getOptions().value * factor,
+    isEven: () => getOptions().value % 2 === 0,
+  }),
+  update: ({ getOption, tx }): CounterUpdate => ({
+    insertLabel: () => {
+      tx.text.insert(`Count: ${getOption('value')}`);
+    },
+  }),
+});
 
 export function CounterValue() {
   const doubled = usePluginOption(CounterPlugin, 'doubled', 2);
   const isEven = usePluginOption(CounterPlugin, 'isEven');
-  const value = usePluginOption(CounterPlugin, 'value');
 
   return (
     <span>
-      {value} / {doubled} / {isEven ? 'even' : 'odd'}
+      {doubled} / {isEven ? 'even' : 'odd'}
     </span>
   );
 }
 ```
 
-Selectors are the right place for derived state. Use `.extendApi()` when the method is a query or utility that should not subscribe React components to option changes.
+Optional return annotations describe each contributed field. For `update`, the
+annotation is the command object returned by the callback, not the callback
+itself. Omit it when the full contract is inferred.
 
-## API And Transactions
-
-Use API methods for reads and utilities. Use transaction commands for operations that mutate editor state.
-
-| Method | Access path | Typical use |
-| --- | --- | --- |
-| `.extendApi()` | `editor.api.counter.isEmpty()` | Plugin-specific query or utility. |
-| `.extendEditorApi()` | `editor.api.counterLabel()` | Editor-wide query or utility. |
-| `.extendTx()` | `editor.update((tx) => tx.counter.increment())` | Plugin-specific mutation. |
-| `.extendTxGroup()` | `editor.update((tx) => tx.insert.tableRow())` | Mutation in a shared namespace. |
-
-```tsx title="counter-plugin.tsx" showLineNumbers
-import { type PluginConfig } from 'platejs';
-import { createPlatePlugin } from 'platejs/react';
-
-type CounterOptions = {
-  value: number;
-};
-
-type CounterPluginApi = {
-  isEmpty: () => boolean;
-};
-
-type CounterEditorApi = {
-  counterLabel: () => string;
-};
-
-type CounterPluginTx = {
-  insertLabel: () => void;
-};
-
-type CounterConfig = PluginConfig<'counter', CounterOptions>;
-
-export const CounterPlugin = createPlatePlugin<CounterConfig>({
-  key: 'counter',
-  options: {
-    value: 0,
-  },
-})
-  .extendApi<CounterPluginApi>(({ getOption }) => ({
-    isEmpty: () => getOption('value') === 0,
-  }))
-  .extendEditorApi<CounterEditorApi>(({ getOption }) => ({
-    counterLabel: () => `Count: ${getOption('value')}`,
-  }))
-  .extendTx<CounterPluginTx>(({ getOption }) => (tx) => ({
-    insertLabel: () => {
-      tx.text.insert(`Count: ${getOption('value')}`);
-    },
-  }));
-```
-
-After the plugin resolves in an editor, call those methods from their resolved surfaces.
+After resolution, concrete editors expose the plugin API on its readable key.
+Generic package code uses the typed portal.
 
 ```ts
 editor.api.counter.isEmpty();
-editor.api.counterLabel();
-editor.update((tx) => tx.counter.insertLabel());
+editor.plugin(CounterPlugin).api.isEmpty();
+editor.plugin(CounterPlugin).update.insertLabel();
 ```
 
-Concrete editor types infer installed plugin APIs on `editor.api`. Generic
-package code can call the same immutable API object through
-`editor.plugin(CounterPlugin).api.isEmpty()`.
+Inside a later update contribution, reuse an earlier update through the active
+transaction group:
 
-Transaction commands run inside `editor.update`. Keep app services and reads on `editor.api`.
-
-## Install Plite Extensions
-
-Use `.extendExtension()` for behavior owned by the Plite runtime: schema facts, state or tx groups, command handlers, corrections, query middleware, and runtime services. Command handlers compose semantic actions; corrections repair changed content to a fixed point.
-
-```tsx title="single-line-plugin.ts" showLineNumbers
-import {
-  defineEditorExtension,
-  editorCommands,
-  TextApi,
-} from 'platejs';
-import { createBasePlugin } from 'platejs';
-
-const singleLineBehavior = defineEditorExtension({
-  name: 'single-line-behavior',
-  commands: ({ handle }) => [
-    handle(editorCommands.insertBreak, ({ state }) =>
-      state.transaction(() => {})
-    ),
-  ],
-  corrections: [
-    {
-      event: 'content',
-      correct({ entry: [node, path], tx }) {
-        if (!TextApi.isText(node)) return;
-
-        const text = node.text.replace(/[\r\n\u2028\u2029]/g, '');
-
-        if (text === node.text) return;
-
-        tx.text.delete({
-          at: {
-            anchor: { offset: 0, path },
-            focus: { offset: node.text.length, path },
-          },
-        });
-
-        if (text.length > 0) {
-          tx.text.insert(text, { at: { offset: 0, path } });
-        }
-      },
+```ts
+.extend(({ plugin }) => ({
+  update: ({ tx }) => ({
+    insertPair: () => {
+      tx[plugin.key].insertLabel();
+      tx[plugin.key].insertLabel();
     },
-  ],
-});
+  }),
+}))
+```
+
+Calling a portal one-shot update there would open a nested transaction.
+
+## Install Plite Capabilities
+
+Put generic editor substrate under the `extension` field: schema facts, state,
+commands, corrections, query middleware, and runtime services. Raw extension
+options without `name` inherit the plugin key.
+
+```ts title="single-line-plugin.ts" showLineNumbers
+import { createBasePlugin, editorCommands } from 'platejs';
 
 export const SingleLinePlugin = createBasePlugin({
+  extension: {
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) =>
+        state.transaction(() => {})
+      ),
+    ],
+  },
   key: 'singleLine',
-}).extendExtension(singleLineBehavior);
+});
 ```
 
-Use the keyed overload, `.extendExtension(key, extension)`, when one plugin installs several unnamed extension fragments and each needs a stable name. Keep ordinary reads in `.extendApi()` or `.extendEditorApi()`, and ordinary mutations in `.extendTx()` or `.extendTxGroup()`.
+Inline extension objects need no helper. If the extension declaration is an
+extracted reusable factory, contextual typing cannot flow backward from the
+`extension` field. Pass the plugin context and return its
+`defineEditorExtension` identity helper:
+
+```ts title="trigger-plugin.ts" showLineNumbers
+import {
+  type BasePluginContext,
+  createBasePlugin,
+  editorCommands,
+  type PluginConfig,
+} from 'platejs';
+
+type TriggerConfig = PluginConfig<
+  'trigger',
+  { enabled: boolean }
+>;
+
+const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
+  context.defineEditorExtension({
+    commands: ({ handle }) => [
+      handle(editorCommands.insertBreak, ({ state }) => {
+        if (!context.getOption('enabled')) return false;
+
+        return state.transaction(() => {});
+      }),
+    ],
+  });
+
+export const TriggerPlugin = createBasePlugin<TriggerConfig>({
+  extension: (context) => withTriggerExtension(context),
+  key: 'trigger',
+  options: { enabled: true },
+});
+```
+
+The constructor context helper preserves nested command, input, state,
+transaction, and dependency inference.
+`defineEditorExtension` imported from `@platejs/plite` is for
+standalone Plite extensions; it does not replace this Plate plugin context.
+
+A genuinely unkeyed editor-wide capability also belongs under `extension`.
+Plugin-specific API stays under `api`; do not publish the same implementation
+twice.
 
 ## Declare Product Codecs
 
-Use `.extendCodecs()` when a plugin owns conversion between a MIME format and
-Plate content. The callback key is the MIME type; `decode` returns an exact
-`ContentSlice` or `null`, while `encode` receives the exact slice to convert.
+Build the MIME-keyed map with the callback's `defineCodecs`. This is the one
+inline inference anchor for codec callbacks.
 
 ```ts title="records-plugin.ts" showLineNumbers
 import { ContentSlice } from '@platejs/plite';
 import { createBasePlugin } from 'platejs';
 
 export const RecordsPlugin = createBasePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'application/json': {
+        scope: 'document',
+        decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
+        encode: ({ slice }) => JSON.stringify(slice),
+      },
+    }),
   key: 'records',
-}).extendCodecs(() => ({
-  'application/json': {
-    scope: 'document',
-    decode: ({ data }) => ContentSlice.fromJSON(JSON.parse(data)),
-    encode: ({ slice }) => JSON.stringify(slice),
-  },
-}));
+});
 ```
 
-Plate infers the codec owner and schema claims from the plugin. Use
-`scope: 'document'` only when the format represents the whole schema. Keep
-codec authoring before the terminal `.configure()` call; a base plugin object
-does not accept a `codecs` field.
+Use document scope only when the format represents the complete document.
+Use `defineCodecs(map)` for self and product codecs. Use
+`defineCodecs(TargetPlugin, map)` for a foreign codec; the helper injects the
+target into every HTML rule. The map's `'text/html'` value accepts one
+schema-aware rule or a non-empty ordered rule tuple when the plugin owns
+multiple HTML representations. Keep that tuple in the same map. Do not author
+a direct codec map or add `target` manually.
 
-## Components
+## Bind A Component
 
-Use `.withComponent()` to bind a Plate UI node component to a plugin. It writes
-`render.node`, the single component owner used by the editor renderer.
+Bind an ordinary node component in the same terminal `.configure()` call as
+the descriptor's other consumer overrides.
 
 ```tsx title="plugins.tsx" showLineNumbers
 import { ParagraphPlugin } from 'platejs/react';
 
 import { ParagraphElement } from '@/components/ui/paragraph-node';
 
-export const AppParagraphPlugin =
-  ParagraphPlugin.withComponent(ParagraphElement);
+export const AppParagraphPlugin = ParagraphPlugin.configure({
+  component: ParagraphElement,
+  shortcuts: {
+    toggle: { keys: 'mod+alt+0' },
+  },
+});
 ```
 
-Use `.withComponent()` for the common one-component case, before any terminal
-`.configure()` call. Put `render.node` in `.extend()` for reusable plugin
-behavior, or in the final `.configure()` call when the app owns it alongside
-other consumer overrides.
+Component binding preserves the plugin type. Do not assign the node component
+through a renderer registry field.
+
+## Configure Existing Fields
+
+Use `.configure()` once, where an app or registry installs a plugin, to change
+fields already declared by the author.
+
+```tsx title="plugins.tsx" showLineNumbers
+import { H1Plugin } from '@platejs/basic-nodes/react';
+
+export const AppH1Plugin = H1Plugin.configure({
+  options: {
+    levels: [1, 2],
+  },
+  shortcuts: {
+    toggle: { keys: 'mod+alt+1' },
+  },
+});
+```
+
+Object configs use Plate's merge rules: objects merge deeply, arrays replace,
+and `options` shallow-merge. `.configure()` cannot publish a new capability and
+must be the final call.
+
+## Configure Related Plugins
+
+Configure a required dependency on its own descriptor and place that complete
+descriptor beside the owner in the app or registry plugin array.
+
+```ts
+const CellPlugin = createPlatePlugin({
+  key: 'cell',
+  options: { padding: 12 },
+});
+
+const GridPlugin = createPlatePlugin({
+  key: 'grid',
+  dependencies: [CellPlugin],
+});
+
+export const AppGridPlugins = [
+  GridPlugin,
+  CellPlugin.configure({ options: { padding: 8 } }),
+];
+```
+
+Optional capabilities are ordinary array entries. Two explicit descriptors
+with the same key are an error; array order is not an override mechanism.
 
 ## Convert Plite Plugins
 
-Use `toPlatePlugin()` when you have a headless Plite plugin and need to add React-only fields such as `render`, `handlers`, or `useHooks`.
+Use `toPlatePlugin()` for a semantic base whose remaining work is React-only.
 
 ```tsx title="mention-plugin.tsx" showLineNumbers
-import { schema } from 'platejs';
-import { createBasePlugin } from 'platejs';
+import { createBasePlugin, schema } from 'platejs';
 import { toPlatePlugin } from 'platejs/react';
 
 import { MentionElement } from '@/components/ui/mention-node';
@@ -382,32 +302,10 @@ const BaseMentionPlugin = createBasePlugin({
   },
 });
 
-export const MentionPlugin = toPlatePlugin(BaseMentionPlugin, {
-  render: {
-    node: MentionElement,
-  },
-});
+export const MentionPlugin =
+  toPlatePlugin(BaseMentionPlugin).configure({ component: MentionElement });
 ```
 
-`toPlatePlugin()` preserves the base plugin methods, including `.configure()`,
-`.extend()`, `.extendCodecs()`, `.extendExtension()`, `.extendApi()`,
-`.extendEditorApi()`, `.extendTx()`, `.extendTxGroup()`, and
-`.withComponent()`.
-
-## API Reference
-
-| Method | Accepts | Resolution behavior |
-| --- | --- | --- |
-| `.configure(config)` | One object or callback returning a partial existing plugin config. | Resolves once per descriptor and editor, lets contextual extensions read configured values, and remains the final override. |
-| `.extend(config)` | Object or callback returning a partial plugin config. | Object configs merge immediately; callback configs run during plugin resolution. |
-| `.extendCodecs(callback)` | Callback returning MIME-keyed codec declarations. | Compiles plugin-owned decode and encode declarations into the product codec registry. |
-| `.extendExtension(extension)` | Plite extension descriptor or callback; accepts an optional key as the first argument. | Installs the extension when the Plate plugin resolves. |
-| `.extendSelectors(callback)` | Callback returning selector functions. | Extends the plugin option store selectors. |
-| `.extendApi(callback)` | Callback returning functions. | Exposes plugin-owned methods through `editor.api[plugin.key]`; exact generic code can use `editor.plugin(plugin).api`. |
-| `.extendEditorApi(callback)` | Callback returning functions or one-level nested function objects. | Exposes editor-wide methods through `editor.api`. |
-| `.extendTx(callback)` | Callback returning a transaction factory. | Merges into `tx[plugin.key]` inside `editor.update`. |
-| `.extendTxGroup(key, callback)` | Named transaction group and transaction factory. | Merges into `tx[key]` inside `editor.update`. |
-| `.withComponent(component)` | A node component. | Sets `render.node`. |
-| `.clone()` | No arguments. | Returns a merged copy of the plugin definition. |
-
-Done. Use configuration for existing fields, API extensions for reads and services, tx extensions for mutations, and Plite extensions for runtime commands and corrections.
+The converted plugin keeps the same authoring model: initial behavior in the
+constructor, imported or staged work in `.extend()`, then one terminal
+`.configure({ component })`.

@@ -107,19 +107,16 @@ try {
 使用 Plite 扩展的 `onCommit` 观察已发布的规范变更：
 
 ```ts
-import { defineEditorExtension } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
-
-const commitLogger = defineEditorExtension({
-  name: 'commit-logger',
-  onCommit({ commit }) {
-    console.debug('Document change:', commit.changes);
-  },
-});
 
 const LoggingPlugin = createPlatePlugin({
   key: 'logging',
-}).extendExtension(commitLogger);
+  extension: {
+    onCommit({ commit }) {
+      console.debug('Document change:', commit.changes);
+    },
+  },
+});
 
 const editor = createPlateEditor({
   plugins: [LoggingPlugin],

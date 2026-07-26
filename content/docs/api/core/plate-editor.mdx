@@ -182,7 +182,9 @@ These APIs exist on every Plate editor because core plugins are always resolved 
 
 ## Core Transactions
 
-Mutations run through `editor.update`. Core Plite commands live on the transaction object, and plugin commands are added by `extendTx` or `extendTxGroup`.
+Mutations run through `editor.update`. Core Plite commands live on the
+transaction object, and plugins contribute their keyed commands through
+the constructor's `update` field.
 
 <API name="Core transactions">
 <APITransforms>
@@ -220,7 +222,7 @@ Some core behavior is exposed by routing browser/editor events into the Plite tr
 
 | Surface | Effect |
 | --- | --- |
-| Product codec registry | Compiles plugin `.extendCodecs()` declarations and delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
+| Product codec registry | Compiles constructor codec declarations created by context-bound `defineCodecs(map)` or `defineCodecs(TargetPlugin, map)`, then delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
 | Plite change events | Emits committed node and text change contexts so Plate handlers can receive previous and next node or text state. |
 | Plite React runtime | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior. |
 | `HtmlPlugin` | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`. |

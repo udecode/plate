@@ -8,7 +8,7 @@ import type { PlateElementProps } from 'platejs/react';
 import {
   PlaceholderPlugin,
   PlaceholderProvider,
-  type PlaceholderTransforms,
+  type PlaceholderUpdates,
 } from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { KEYS } from 'platejs';
@@ -95,7 +95,7 @@ export const PlaceholderElement = withHOC(
 
       if (!path) return;
 
-      editor.update<{ placeholder: PlaceholderTransforms }>(
+      editor.update<{ placeholder: PlaceholderUpdates }>(
         { history: 'skip' },
         (tx) => {
           tx.placeholder.replaceMedia(

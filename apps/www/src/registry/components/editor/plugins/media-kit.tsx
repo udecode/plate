@@ -19,15 +19,17 @@ import { VideoElement } from '@/registry/ui/media-video-node';
 
 export const MediaKit = [
   ImagePlugin.configure({
+    component: ImageElement,
     options: { disableUploadInsert: true },
-    render: { afterEditable: MediaPreviewDialog, node: ImageElement },
+    render: { afterEditable: MediaPreviewDialog },
   }),
-  MediaEmbedPlugin.withComponent(MediaEmbedElement),
-  VideoPlugin.withComponent(VideoElement),
-  AudioPlugin.withComponent(AudioElement),
-  FilePlugin.withComponent(FileElement),
+  MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
+  VideoPlugin.configure({ component: VideoElement }),
+  AudioPlugin.configure({ component: AudioElement }),
+  FilePlugin.configure({ component: FileElement }),
   PlaceholderPlugin.configure({
+    component: PlaceholderElement,
     options: { disableEmptyPlaceholder: true },
-    render: { afterEditable: MediaUploadToast, node: PlaceholderElement },
+    render: { afterEditable: MediaUploadToast },
   }),
 ];

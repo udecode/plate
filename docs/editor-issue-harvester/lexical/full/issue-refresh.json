@@ -1,0 +1,1058 @@
+{
+  "schemaVersion": 1,
+  "repository": "facebook/lexical",
+  "provider": "gitcrawl 0.5.0 backed by GitHub REST metadata",
+  "rawCommand": "gitcrawl search issues \"\" -R facebook/lexical --state all --json number,title,state,url,labels,updatedAt --limit 10000",
+  "stateCoverage": "all",
+  "providerLimit": 10000,
+  "providerLimitReached": false,
+  "refreshedAt": "2026-07-25T22:59:04Z",
+  "rawPath": ".tmp/editor-issue-harvester/lexical/raw/issues-refresh-2026-07-26.json",
+  "rawSha256": "b613b4f64dd8794c4b010fcbfabddab47719042f4c2f9f19c1c6f1884d13f9aa",
+  "cursorDeltaSemantics": "Counts include only rows whose lastMetadataRefreshAt matches refreshedAt.",
+  "previousLedgerCount": 2741,
+  "providerIssueCount": 2775,
+  "hostVerification": {
+    "closedIssueCount": 2472,
+    "countCommand": "gh api graphql -f query='query { repository(owner:\"facebook\", name:\"lexical\") { all: issues { totalCount } open: issues(states:OPEN) { totalCount } closed: issues(states:CLOSED) { totalCount } } }' --jq '.data.repository'",
+    "issueCount": 2782,
+    "omissionCommand": "gh api graphql -f query='query { repository(owner:\"facebook\", name:\"lexical\") { i1045: issue(number:1045){number state title updatedAt url labels(first:100){nodes{name}}} i1046: issue(number:1046){number state title updatedAt url labels(first:100){nodes{name}}} i1113: issue(number:1113){number state title updatedAt url labels(first:100){nodes{name}}} i1117: issue(number:1117){number state title updatedAt url labels(first:100){nodes{name}}} i2194: issue(number:2194){number state title updatedAt url labels(first:100){nodes{name}}} i2195: issue(number:2195){number state title updatedAt url labels(first:100){nodes{name}}} i6721: issue(number:6721){number state title updatedAt url labels(first:100){nodes{name}}} } }' --jq '.data.repository'",
+    "omittedIssues": [
+      {
+        "labels": [],
+        "number": 1045,
+        "state": "CLOSED",
+        "title": "Indent logic should merge Sibling ListNodes",
+        "updatedAt": "2021-12-31T20:31:01Z",
+        "url": "https://github.com/facebook/lexical/issues/1045"
+      },
+      {
+        "labels": [],
+        "number": 1046,
+        "state": "CLOSED",
+        "title": "Indenting multiple list nodes on different levels of indentation doesn't work correctly",
+        "updatedAt": "2021-12-31T21:06:49Z",
+        "url": "https://github.com/facebook/lexical/issues/1046"
+      },
+      {
+        "labels": [
+          "all-platforms-bug"
+        ],
+        "number": 1113,
+        "state": "CLOSED",
+        "title": "Selection is left behind when moving nodes",
+        "updatedAt": "2022-06-14T11:31:06Z",
+        "url": "https://github.com/facebook/lexical/issues/1113"
+      },
+      {
+        "labels": [
+          "copy+paste"
+        ],
+        "number": 1117,
+        "state": "CLOSED",
+        "title": "Pasting to google doc/quip needs improvement for quote block and code block.",
+        "updatedAt": "2022-11-25T12:07:59Z",
+        "url": "https://github.com/facebook/lexical/issues/1117"
+      },
+      {
+        "labels": [
+          "enhancement"
+        ],
+        "number": 2194,
+        "state": "CLOSED",
+        "title": "Feature: Support for replace with multiple nodes",
+        "updatedAt": "2022-11-24T13:23:13Z",
+        "url": "https://github.com/facebook/lexical/issues/2194"
+      },
+      {
+        "labels": [],
+        "number": 2195,
+        "state": "CLOSED",
+        "title": "Bug: Custom Decorator nodes not rendered after editor state is restored from local storage",
+        "updatedAt": "2022-05-18T14:40:18Z",
+        "url": "https://github.com/facebook/lexical/issues/2195"
+      },
+      {
+        "labels": [
+          "enhancement"
+        ],
+        "number": 6721,
+        "state": "CLOSED",
+        "title": "Feature: TableNode does not retain the cell width when copying and pasting a table from another spreadsheet",
+        "updatedAt": "2024-10-10T16:29:57Z",
+        "url": "https://github.com/facebook/lexical/issues/6721"
+      }
+    ],
+    "openIssueCount": 310,
+    "provider": "GitHub GraphQL v4 metadata",
+    "verifiedAt": "2026-07-25T23:13:33Z"
+  },
+  "resultingLedgerCount": 2782,
+  "addedUncheckedCount": 41,
+  "addedUncheckedIssues": [
+    8664,
+    8670,
+    8677,
+    8679,
+    8681,
+    8685,
+    8687,
+    8697,
+    8700,
+    8707,
+    8712,
+    8713,
+    8718,
+    8721,
+    8722,
+    8724,
+    8727,
+    8729,
+    8730,
+    8731,
+    8736,
+    8738,
+    8743,
+    8745,
+    8749,
+    8754,
+    8766,
+    8770,
+    8776,
+    8777,
+    8785,
+    8804,
+    8805,
+    8812,
+    8814,
+    8817,
+    8823,
+    8832,
+    8834,
+    8860,
+    8875
+  ],
+  "metadataChangedNeedsRereadCount": 132,
+  "metadataChangedNeedsReread": [
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 1527
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 2033
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 2208
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 2214
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 2369
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 2495
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 3290
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 3305
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 3382
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 3833
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 3899
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 3980
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4222
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4326
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4327
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4355
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4396
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 4403
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4418
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4457
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4550
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4572
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4636
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4665
+    },
+    {
+      "fields": [
+        "updatedAt",
+        "labels"
+      ],
+      "number": 4680
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4685
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4692
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4729
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4734
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4829
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 4837
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4838
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4851
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4895
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4909
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 4943
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5026
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5040
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5046
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5047
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5065
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5072
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5092
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5096
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5099
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 5105
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 5109
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5162
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 5218
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5268
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5304
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5320
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5424
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5505
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5509
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5525
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5572
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5629
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5631
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 5646
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5655
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5786
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5837
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5930
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 5968
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6006
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6122
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6296
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 6305
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6328
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6329
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6334
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6345
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6354
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6407
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6492
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6613
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6632
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6661
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt",
+        "labels"
+      ],
+      "number": 6775
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6784
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6913
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6935
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 6936
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7025
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7083
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7084
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 7106
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7153
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7247
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7257
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7301
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7346
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7355
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7383
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 7407
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7414
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 7492
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7537
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7546
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7551
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7565
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7614
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7625
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7649
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7663
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7712
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7716
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7779
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7787
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7826
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7876
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7883
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7912
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7916
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7929
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7938
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7966
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 7994
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8005
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8014
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8026
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8047
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8086
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8120
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8125
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8359
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8576
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 8592
+    },
+    {
+      "fields": [
+        "state",
+        "updatedAt"
+      ],
+      "number": 8609
+    },
+    {
+      "fields": [
+        "updatedAt"
+      ],
+      "number": 8610
+    },
+    {
+      "fields": [
+        "updatedAt",
+        "labels"
+      ],
+      "number": 8623
+    }
+  ],
+  "providerMissingLiveVerifiedCount": 7,
+  "providerMissingLiveVerified": [
+    1045,
+    1046,
+    1113,
+    1117,
+    2194,
+    2195,
+    6721
+  ]
+}

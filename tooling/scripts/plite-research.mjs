@@ -22,7 +22,7 @@ const [command, ...rawArgs] = process.argv.slice(2);
 
 if (!command) {
   console.error(
-    'Usage: node tooling/scripts/slate-research.mjs <command> [...args]'
+    'Usage: node tooling/scripts/plite-research.mjs <command> [...args]'
   );
   process.exit(1);
 }
@@ -532,7 +532,7 @@ if (compactFinalizePreview) {
           }
         : null,
       fullOutput:
-        'Run `node tooling/scripts/slate-research.mjs finalize-preview --full` for raw JSON.',
+        'Run `node tooling/scripts/plite-research.mjs finalize-preview --full` for raw JSON.',
     };
     console.log(JSON.stringify(compact, null, 2));
   } catch {

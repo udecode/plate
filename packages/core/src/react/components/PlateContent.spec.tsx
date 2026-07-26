@@ -37,6 +37,9 @@ const VariantPlugin = createBasePlugin({
 
 const AtomicParserBPlugin = createBasePlugin({
   key: 'atomicParserB',
+  schema: {
+    mark: property.boolean({ default: false, omitDefault: true }),
+  },
   render: {
     as: 'u',
     abovePlite: ({ children }) => (
@@ -45,20 +48,19 @@ const AtomicParserBPlugin = createBasePlugin({
     beforeContainer: () => <span data-testid="container-renderer-b" />,
     beforeEditable: () => <span data-testid="renderer-b" />,
   },
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-  },
-}).extendCodecs(() => ({
-  'application/x-plate-atomic-parser': {
-    scope: 'document',
-    decode: () =>
-      ContentSlice.closed([
-        {
-          children: [{ atomicParserB: true, text: 'parsed-b' }],
-          type: 'p',
-        },
-      ]),
-  },
+}).extend(({ defineCodecs }) => ({
+  codecs: defineCodecs({
+    'application/x-plate-atomic-parser': {
+      scope: 'document',
+      decode: () =>
+        ContentSlice.closed([
+          {
+            children: [{ atomicParserB: true, text: 'parsed-b' }],
+            type: 'p',
+          },
+        ]),
+    },
+  }),
 }));
 
 const ReadOnlyProbe = () => {
@@ -310,8 +312,8 @@ describe('PlateContent', () => {
           },
         }),
         createBasePlugin({ key: 'documentState' })
-          .extendExtension(revision)
-          .extendExtension(localState),
+          .extend({ extension: revision })
+          .extend({ extension: localState }),
       ],
       initialValue: {
         children: [

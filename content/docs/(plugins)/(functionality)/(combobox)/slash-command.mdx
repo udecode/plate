@@ -99,7 +99,7 @@ const editor = createPlateEditor({
           }),
       },
     }),
-    SlashInputPlugin.withComponent(SlashInputElement),
+    SlashInputPlugin.configure({ component: SlashInputElement }),
   ],
 });
 ```
@@ -107,7 +107,7 @@ const editor = createPlateEditor({
 - `options.trigger`: Character that triggers the slash command combobox (default: `/`)
 - `options.triggerPreviousCharPattern`: RegExp pattern for character before trigger
 - `options.triggerQuery`: Function to determine when slash commands should be enabled
-- `withComponent`: Assigns the UI component for the slash command interface
+- `component`: Assigns the UI component for the slash command interface
 
 </Steps>
 

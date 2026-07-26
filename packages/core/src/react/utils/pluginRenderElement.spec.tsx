@@ -9,6 +9,7 @@ import { createBasePlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { PlateRoot } from '../components/PlateRoot';
 import { createPlateEditor } from '../editor/withPlate';
+import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement';
 
@@ -72,27 +73,25 @@ describe('pluginRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         MarkerPlugin,
-        createBasePlugin({
+        createPlatePlugin({
+          component: ({ attributes, children }) => {
+            const element = useElement<any>();
+
+            return (
+              <p
+                {...attributes}
+                data-marker={element.marker}
+                data-testid="paragraph"
+              >
+                {children}
+              </p>
+            );
+          },
           key: 'p',
           type: 'p',
           schema: {
             element: {
               content: schema.content.open({ default: 'text', min: 1 }),
-            },
-          },
-          render: {
-            node: ({ attributes, children }) => {
-              const element = useElement<any>();
-
-              return (
-                <p
-                  {...attributes}
-                  data-marker={element.marker}
-                  data-testid="paragraph"
-                >
-                  {children}
-                </p>
-              );
             },
           },
         }),
@@ -106,20 +105,21 @@ describe('pluginRenderElement', () => {
   });
 
   it('passes each wrapper its own plugin API', () => {
-    const WrapperPlugin = createBasePlugin({ key: 'wrapper' })
-      .extendApi(() => ({
+    const WrapperPlugin = createBasePlugin({
+      key: 'wrapper',
+      api: {
         isMarked: (element: Element) => element.marker === 'yes',
-      }))
-      .extend({
-        render: {
-          belowNodes: ({ api, element }) =>
-            api.isMarked(element)
-              ? ({ children }) => (
-                  <section data-testid="wrapper">{children}</section>
-                )
-              : undefined,
-        },
-      });
+      },
+    }).extend({
+      render: {
+        belowNodes: ({ api, element }) =>
+          api.isMarked(element)
+            ? ({ children }) => (
+                <section data-testid="wrapper">{children}</section>
+              )
+            : undefined,
+      },
+    });
     const editor = createPlateEditor({
       plugins: [MarkerPlugin, WrapperPlugin],
       initialValue: createValue(),

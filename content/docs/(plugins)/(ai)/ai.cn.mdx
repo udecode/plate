@@ -101,7 +101,7 @@ export const editor = createPlateEditor({
 - `AIPlugin`：添加 AI 标记和用于撤销 AI 批处理的变换。
 - `AIChatPlugin`：提供 AI 组合框、API 助手和变换。
 
-使用 `AIPlugin.withComponent` 配合您自己的元素（或 [`AILeaf`](/docs/components/ai-leaf)）来高亮 AI 生成的文本。
+使用 `AIPlugin.configure({ component })` 配合您自己的元素（或 [`AILeaf`](/docs/components/ai-leaf)）来高亮 AI 生成的文本。
 
 ### 配置 AIChatPlugin
 
@@ -513,7 +513,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 
 ### `AIPlugin`
 
-向流式文本添加 `ai` 标记，并暴露变换以移除 AI 节点或撤销最后一个 AI 批次。使用 `.withComponent` 以自定义组件渲染 AI 标记的文本。
+向流式文本添加 `ai` 标记，并暴露变换以移除 AI 节点或撤销最后一个 AI 批次。使用 `.configure({ component })` 以自定义组件渲染 AI 标记的文本。
 
 <API name="AIPlugin">
   <APIOptions>

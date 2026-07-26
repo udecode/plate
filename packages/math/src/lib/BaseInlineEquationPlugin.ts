@@ -15,7 +15,8 @@ export const BaseInlineEquationPlugin = createBasePlugin({
     },
   },
   type: NODES.inlineEquation,
-}).extendTx(({ type }) => (tx) => ({
-  insert: (options?: InsertInlineEquationOptions) =>
-    insertInlineEquation(tx, type, options),
-}));
+  update: ({ tx, type }) => ({
+    insert: (options?: InsertInlineEquationOptions) =>
+      insertInlineEquation(tx, type, options),
+  }),
+});

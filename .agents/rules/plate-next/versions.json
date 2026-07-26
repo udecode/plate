@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "latestVersion": 11,
+  "versions": [
+    {
+      "version": 0,
+      "date": null,
+      "doctrineFingerprint": null,
+      "summary": "Pre-versioned Plate Next package review. This is historical enrollment, not a current-pattern attestation.",
+      "migrationChecks": [
+        "Run a full package review against the latest Plate Next doctrine."
+      ]
+    },
+    {
+      "version": 1,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:5896c4521b7d5cf3ac5a3053ffb8fb390f9808193b9144be28053772b5343ea2",
+      "summary": "Versioned Plate Next baseline with package-level proof and source-fingerprint drift detection.",
+      "migrationChecks": [
+        "For a v0 package, rerun the full current package-review checklist.",
+        "Record focused proof, autoreview closure, the final package source fingerprint, current registry status, and then plan-checker closure."
+      ]
+    },
+    {
+      "version": 2,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:fbbbe879698289bf61366c723d784da0a8fcf281d220d738b3887b4435a48a0e",
+      "summary": "Unified plugin authoring through repeated .extend() contributions with .withComponent() as the sole ordinary node binding.",
+      "migrationChecks": [
+        "Migrate every specialized plugin builder declaration and usage in the package to repeated .extend() contributions.",
+        "Prove applicable api, read, selectors, update, extension, and codecs inference, including dependencies between ordered stages.",
+        "Replace ordinary direct render.node binding with .withComponent() before the terminal consumer .configure() call.",
+        "Audit the package for compatibility aliases, shims, deprecations, forwarding wrappers, and stale documentation for the rejected builder methods."
+      ]
+    },
+    {
+      "version": 3,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:cc04029f5da60c682b4462610d79b97916ea3fa9eb9a147ea9dcb7aaab3dfcd6",
+      "summary": "One .extend() call per plugin by default; repeat only for a genuine typed capability dependency.",
+      "migrationChecks": [
+        "Merge independent plugin author contributions into one .extend() object or callback.",
+        "Keep multiple ordered .extend() stages only when a later contribution genuinely consumes a type introduced by an earlier stage.",
+        "Prove every surviving multi-stage chain through source inspection and focused type or runtime coverage."
+      ]
+    },
+    {
+      "version": 4,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:910a889e2c3327d32439461f5c348b09ffe862d21fc7cc9cf672a69cfb9893d1",
+      "summary": "Plate Next plan templates use the unified .extend({ extension }) contribution and reject stale specialized-builder wording.",
+      "migrationChecks": [
+        "Audit plugin-owned editor extension contributions for .extend({ extension }) authoring.",
+        "Reject extendExtension declarations, calls, compatibility aliases, and plan evidence.",
+        "Audit plugin export inference wording and source for specialized .extend* builder assumptions."
+      ]
+    },
+    {
+      "version": 5,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:f810cfab2b7d24a6d29dadaffa57d4d4049cb549b80adbe0a0136e29b093a3cb",
+      "summary": "One plugin-owned HTML codec contribution may carry a non-empty ordered rule tuple without another .extend() stage.",
+      "migrationChecks": [
+        "Keep one schema-aware text/html rule or one non-empty ordered rule tuple under the plugin's codecs contribution.",
+        "Merge multiple HTML representations owned by one plugin into that single contribution.",
+        "Reject repeated .extend() stages justified only by representation count rather than an actual earlier-stage type dependency."
+      ]
+    },
+    {
+      "version": 6,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:69931ab88f934e14f65eeda39a8e64035cfd8cb687e65a64156c8772aabf94cd",
+      "summary": "Plugin codec authoring uses the context-bound defineCodecs helper as the sole inference anchor.",
+      "migrationChecks": [
+        "Author codec maps only through .extend(({ defineCodecs }) => ({ codecs: defineCodecs(...) })).",
+        "Use defineCodecs(map) for self and product maps and defineCodecs(TargetPlugin, map) for foreign maps.",
+        "Reject direct codecs objects, specialized codec builders, manual target fields, casts, and callback annotations."
+      ]
+    },
+    {
+      "version": 7,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:64da9bcb05cac856789d68e4d6711515954e8bec9d65361b4c857ad660a9e727",
+      "summary": "Extracted reusable Plate editor-extension factories use the callback context's defineEditorExtension inference anchor.",
+      "migrationChecks": [
+        "Keep inline extension objects plain because .extend() already contextually types them.",
+        "Make extracted reusable Plate extension factories return context.defineEditorExtension(...) so nested command, input, state, transaction, and dependency types remain inferred.",
+        "Keep the factory in the plugin's default single .extend() contribution and distinguish the context helper from the standalone defineEditorExtension imported from @platejs/plite."
+      ]
+    },
+    {
+      "version": 8,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:d138105df48d714d17d97e27426dad173713f58f39022c84e0519642690a44aa",
+      "summary": "Plugin constructors own every independent declaration field; root-level component replaces withComponent.",
+      "migrationChecks": [
+        "Move independent api, read, selectors, update, extension, codecs, and static contributions into createBasePlugin or createPlatePlugin.",
+        "Keep .extend() only for builder context, imported or prebuilt declarations, or a real earlier-stage type dependency.",
+        "Declare component in createPlatePlugin or one terminal .configure({ component }); convert base descriptors through toPlatePlugin first.",
+        "Delete withComponent and reject public render.node authoring across source, docs, tests, and release guidance.",
+        "Prove constructor inference through source typecheck, declaration emit, dependency composition, conversion, and terminal configuration."
+      ]
+    },
+    {
+      "version": 9,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:00ce368a24cda04c620847308462ad39b16d8ea597749a80e800f4ce23271eec",
+      "summary": "Base and static consumers bind components without importing the React plugin layer.",
+      "migrationChecks": [
+        "Reject platejs/react, @platejs/core/react, and @platejs/*/react imports from Base kits, static renderers, and other Base/static modules.",
+        "Bind static components through terminal BasePlugin.configure({ component }) while keeping createBasePlugin renderer-neutral.",
+        "Bind Base/static descriptors to static renderer modules rather than live/client node components.",
+        "Keep toPlatePlugin(BasePlugin) only in live React adapter construction and delete conversion calls used solely by Base/static component binding.",
+        "Prove the Base terminal component type and runtime publication, static HTML rendering, zero forbidden imports, and live React kit preservation."
+      ]
+    },
+    {
+      "version": 10,
+      "date": "2026-07-25",
+      "doctrineFingerprint": "sha256:c7b92c973c4ccd0112a077f4d3cc6b87722b5af00fcc2c2928f9ef52bdfdcd61",
+      "summary": "Plugin constructors own every independent contribution and its typed context callback.",
+      "migrationChecks": [
+        "Move constructor-accessible api, read, selectors, update, extension, codecs, handlers, renderers, shortcuts, rules, and other static fields out of .extend().",
+        "Reject builder context alone as a reason for .extend(); constructor callbacks already receive the typed authoring context.",
+        "Keep .extend() only for imported or prebuilt descriptor adaptation, a shared factory inaccessible from the constructor, or a real earlier-stage type dependency.",
+        "Prove every surviving direct constructor .extend() chain through exact source enforcement, package typecheck, declaration emit, and focused runtime coverage."
+      ]
+    },
+    {
+      "version": 11,
+      "date": "2026-07-26",
+      "doctrineFingerprint": "sha256:25d58903e794052011004901491d620aa96bb751b592125e533826c6cf5eca68",
+      "summary": "Extracted editor-extension factories remain constructor-owned unless they require accumulated plugin context.",
+      "migrationChecks": [
+        "Keep an extracted editor-extension factory in the plugin constructor when constructor context can invoke it.",
+        "Use one .extend() stage only when the factory needs accumulated plugin context, adapts an imported or prebuilt descriptor, or consumes an earlier capability.",
+        "Prove every surviving factory-owned .extend() stage through exact source enforcement, package typecheck, declaration emit, and focused runtime coverage."
+      ]
+    }
+  ],
+  "retiredPackages": {
+    "caption": {
+      "appliedVersion": 0,
+      "retiredAt": "2026-07-23",
+      "evidence": "docs/plans/2026-07-23-schema-api-hard-cuts.md"
+    }
+  },
+  "packages": {
+    "ai": {
+      "appliedVersion": 11,
+      "fingerprint": "sha256:f2dbd24879babb3a38895f58e5ed5aaa4d603d40b1b4ffa1b3b60560b748331a",
+      "verifiedAt": "2026-07-26",
+      "evidence": "docs/plans/2026-07-25-plate-next-ai-colocation.md"
+    },
+    "basic-nodes": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "basic-styles": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "callout": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "code-block": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "code-drawing": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "combobox": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "comment": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "csv": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "cursor": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "date": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "diff": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "dnd": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "docx": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "docx-io": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "emoji": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "excalidraw": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "find-replace": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:dc4eea12c27e180d5c51b8db9cdf0c3e577d0a0caa64231f63fdca658c6bd92e",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+    },
+    "floating": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "footnote": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "indent": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "juice": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "layout": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "link": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:819409230c09cd265565fb5def7cd1e6ee9055cbcbaabc8238416570332731a5",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+    },
+    "list": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:2e42f7a0f30703f5f60f38696dff9f0e161a6a298ad34cd4adc2d3ee47e326ad",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md"
+    },
+    "list-classic": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:617786c74dea6197a9d78191be0734ea64df541374e93bd95ca60f7ba73c2482",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+    },
+    "markdown": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "math": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "media": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:1490143a1a6a11d618a7777c3ff8bcac45f8e04010146f0b82a37dd96bbdcf41",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md"
+    },
+    "mention": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "plate": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "resizable": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "selection": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "slash-command": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "suggestion": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:00f2fa5fca4fbef94b004be39a0eae0774eeccb090e9763893ef9ad06324d6b5",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md"
+    },
+    "tabbable": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "table": {
+      "appliedVersion": 7,
+      "fingerprint": "sha256:9c4583bc620cd71ef2abf977df08be37155d3e7d7ea43d5f2f56caa390d7af8f",
+      "verifiedAt": "2026-07-25",
+      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+    },
+    "tag": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "test-utils": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "toc": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    },
+    "toggle": {
+      "appliedVersion": 0,
+      "fingerprint": null,
+      "verifiedAt": null,
+      "evidence": null
+    }
+  }
+}

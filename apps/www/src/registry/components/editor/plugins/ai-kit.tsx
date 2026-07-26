@@ -28,7 +28,6 @@ export const aiChatPlugin = AIChatPlugin.extend({
   render: {
     afterContainer: AILoadingBar,
     afterEditable: AIMenu,
-    node: AIAnchorElement,
   },
   shortcuts: { show: { keys: 'mod+j' } },
   useHooks: ({ editor, getOption }) => {
@@ -91,6 +90,6 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
 export const AIKit = [
   ...CursorOverlayKit,
-  AIPlugin.withComponent(AILeaf),
-  aiChatPlugin,
+  AIPlugin.configure({ component: AILeaf }),
+  aiChatPlugin.configure({ component: AIAnchorElement }),
 ];

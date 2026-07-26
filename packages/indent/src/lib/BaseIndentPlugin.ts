@@ -81,6 +81,62 @@ const parseIndent = (
 
 export const BaseIndentPlugin = createBasePlugin({
   key: KEYS.indent,
+  options: defaultOptions,
+  schema: ({ own, plugins, targetPluginKeys }) => ({
+    properties: [
+      own.elementProperty(property.number(), {
+        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        typeChange: 'preserve-if-allowed',
+      }),
+    ],
+  }),
+  targetPluginKeys: defaultTargetPluginKeys,
+  codecs: ({ defineCodecs, getOptions }) =>
+    defineCodecs({
+      'text/html': {
+        decode: ({ element }) => {
+          const { offset = 24, unit = 'px' } = getOptions();
+
+          return parseIndent(element, offset, unit);
+        },
+        encode: ({ value }) => {
+          const { offset = 24, unit = 'px' } = getOptions();
+
+          return {
+            attributes: { 'data-indent': value },
+            style: { marginLeft: value * offset + unit },
+          };
+        },
+        match: [
+          { attributes: { 'aria-level': true } },
+          { attributes: { 'data-indent': true } },
+          { style: { marginLeft: '*' } },
+        ],
+      },
+    }),
+  extension: ({ getOptions, type }) => ({
+    corrections: [
+      {
+        event: 'properties',
+        correct({ entry, tx }) {
+          const [node, path] = entry;
+
+          if (!ElementApi.isElement(node)) return;
+
+          const { indentMax } = getOptions();
+          const indent = node[type];
+
+          if (
+            typeof indentMax === 'number' &&
+            typeof indent === 'number' &&
+            indent > indentMax
+          ) {
+            tx.nodes.set({ [type]: indentMax }, { at: path });
+          }
+        },
+      },
+    ],
+  }),
   inject: {
     isBlock: true,
     nodeProps: {
@@ -92,38 +148,7 @@ export const BaseIndentPlugin = createBasePlugin({
       },
     },
   },
-  options: defaultOptions,
-  schema: ({ own, plugins, targetPluginKeys }) => ({
-    properties: [
-      own.elementProperty(property.number(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
-        typeChange: 'preserve-if-allowed',
-      }),
-    ],
-  }),
-  targetPluginKeys: defaultTargetPluginKeys,
-})
-  .extendHtmlCodec(({ getOptions }) => ({
-    decode: ({ element }) => {
-      const { offset = 24, unit = 'px' } = getOptions();
-
-      return parseIndent(element, offset, unit);
-    },
-    encode: ({ value }) => {
-      const { offset = 24, unit = 'px' } = getOptions();
-
-      return {
-        attributes: { 'data-indent': value },
-        style: { marginLeft: value * offset + unit },
-      };
-    },
-    match: [
-      { attributes: { 'aria-level': true } },
-      { attributes: { 'data-indent': true } },
-      { style: { marginLeft: '*' } },
-    ],
-  }))
-  .extendTx(({ editor, plugin, type }) => (tx) => {
+  update: ({ editor, plugin, tx, type }) => {
     const set = ({
       nodes,
       offset = 1,
@@ -199,36 +224,12 @@ export const BaseIndentPlugin = createBasePlugin({
         return true;
       },
     };
-  })
-  .extend({
-    shortcuts: {
-      tab: { keys: 'tab' },
-      untab: { keys: 'shift+tab' },
-    },
-  })
-  .extendExtension(({ getOptions, type }) => ({
-    corrections: [
-      {
-        event: 'properties',
-        correct({ entry, tx }) {
-          const [node, path] = entry;
-
-          if (!ElementApi.isElement(node)) {
-            return;
-          }
-
-          const { indentMax } = getOptions();
-          const indent = node[type];
-          if (
-            typeof indentMax === 'number' &&
-            typeof indent === 'number' &&
-            indent > indentMax
-          ) {
-            tx.nodes.set({ [type]: indentMax }, { at: path });
-          }
-        },
-      },
-    ],
-  }));
+  },
+}).extend({
+  shortcuts: {
+    tab: { keys: 'tab' },
+    untab: { keys: 'shift+tab' },
+  },
+});
 
 export type IndentConfig = InferConfig<typeof BaseIndentPlugin>;

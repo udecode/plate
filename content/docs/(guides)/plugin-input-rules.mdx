@@ -449,8 +449,8 @@ const arrowsRule = createTextSubstitutionInputRule({
 });
 
 export const ArrowsShortcutsPlugin = createBasePlugin({
-  key: 'arrowsShortcuts',
   inputRules: [arrowsRule],
+  key: 'arrowsShortcuts',
 });
 ```
 
@@ -507,8 +507,8 @@ const smartQuotesRule = createAutoformatTextSubstitutionRule({
 });
 
 const AutoformatShortcutsPlugin = createBasePlugin({
-  key: 'autoformatShortcuts',
   inputRules: [legalRule, smartQuotesRule],
+  key: 'autoformatShortcuts',
 });
 
 export const AutoformatKit = [AutoformatShortcutsPlugin];

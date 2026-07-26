@@ -1,10 +1,8 @@
 import type {
   BorderDirection,
   BorderStylesDefault,
-  SetBorderSizeOptions,
   TableBorderStates,
 } from '../lib/types';
-import { BaseTablePlugin } from '../lib/BaseTablePlugin';
 import { useTableColSizes } from './useTableElement';
 import {
   useOverrideColSize,
@@ -13,7 +11,6 @@ import {
   useTableValue,
 } from './useTableStore';
 import { TablePlugin } from './TablePlugin';
-import type { BaseEditor } from '@platejs/core';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -22,7 +19,7 @@ import {
   useOptionalElement,
   usePluginOption,
 } from '@platejs/core/react';
-import type { Element, NodeEntry, Path, Value } from '@platejs/plite';
+import type { Element, NodeEntry } from '@platejs/plite';
 import {
   type ResizeEvent,
   type ResizeHandle,
@@ -69,167 +66,6 @@ export function useTableCellBorders({
   );
 }
 
-/** Helper: sets one cell's specific border(s) to `size`. */
-function setCellBorderSize(
-  updates: SetBorderSizeOptions[],
-  at: Path | null,
-  directions: BorderDirection[] | 'all',
-  size: number
-) {
-  if (!at) return;
-  if (directions === 'all') {
-    updates.push({ at, border: 'all', size });
-  } else {
-    for (const dir of directions) {
-      updates.push({ at, border: dir, size });
-    }
-  }
-}
-
-/**
- * Toggle logic for `'none'`, `'outer'`, `'top'|'bottom'|'left'|'right'`.
- * `'none'` toggles no borders ↔ all borders, `'outer'` toggles the bounding
- * rectangle's outer edges on/off, `'top'|'bottom'|'left'|'right'` toggles only
- * that side of the bounding rect.
- */
-export function setSelectedCellsBorder<V extends Value>(
-  editor: BaseEditor<V, any>,
-  {
-    border,
-    cells,
-  }: {
-    border: BorderDirection | 'none' | 'outer';
-    cells: TTableCellElement[];
-  }
-) {
-  if (cells.length === 0) return;
-  const table = editor.plugin(BaseTablePlugin);
-  const targets = cells.map((cell) => {
-    const path = editor.read.nodes.path(cell) ?? null;
-    const { col, row } = table.api.getCellIndices(cell);
-
-    return {
-      cSpan: table.api.getColSpan(cell),
-      col,
-      leftCellPath: path
-        ? (table.api.getLeftCell({ at: path })?.[1] ?? null)
-        : null,
-      path,
-      rSpan: table.api.getRowSpan(cell),
-      row,
-      topCellPath: path
-        ? (table.api.getTopCell({ at: path })?.[1] ?? null)
-        : null,
-    };
-  });
-  const updates: SetBorderSizeOptions[] = [];
-  const applyUpdates = () => table.update.setBorderSizes(updates);
-
-  // 1) none => toggle all edges vs none
-  if (border === 'none') {
-    const { none: allNone } = table.api.getSelectedCellsBorders(cells);
-    const newSize = allNone ? 1 : 0;
-
-    for (const target of targets) {
-      if (!target.path) continue;
-
-      const edges: BorderDirection[] = [];
-
-      // For first row or first column cells, we set their top/left borders
-      if (target.row === 0) edges.push('top');
-      if (target.col === 0) edges.push('left');
-
-      // Always set bottom and right borders
-      edges.push('bottom', 'right');
-
-      // For non-first row/column cells, set borders on adjacent cells
-      if (target.row > 0) {
-        setCellBorderSize(updates, target.topCellPath, ['bottom'], newSize);
-      }
-      if (target.col > 0) {
-        setCellBorderSize(updates, target.leftCellPath, ['right'], newSize);
-      }
-      if (edges.length > 0) {
-        setCellBorderSize(updates, target.path, edges, newSize);
-      }
-    }
-
-    return applyUpdates();
-  }
-  // 2) outer => bounding rectangle edges only
-  if (border === 'outer') {
-    const { outer: allOut } = table.api.getSelectedCellsBorders(cells);
-    const newSize = allOut ? 0 : 1;
-
-    const { maxCol, maxRow, minCol, minRow } =
-      table.api.getSelectedCellsBoundingBox(cells);
-
-    for (const target of targets) {
-      if (!target.path) continue;
-
-      for (let rr = target.row; rr < target.row + target.rSpan; rr++) {
-        for (let cc = target.col; cc < target.col + target.cSpan; cc++) {
-          const edges: BorderDirection[] = [];
-
-          if (rr === minRow) edges.push('top');
-          if (rr === maxRow) edges.push('bottom');
-          if (cc === minCol) edges.push('left');
-          if (cc === maxCol) edges.push('right');
-          if (edges.length > 0) {
-            setCellBorderSize(updates, target.path, edges, newSize);
-          }
-        }
-      }
-    }
-
-    return applyUpdates();
-  }
-
-  // 3) single side => bounding rectangle but only that side
-  const allSet = table.api.isSelectedCellBorder(cells, border);
-  const newSize = allSet ? 0 : 1;
-
-  // bounding box
-  const { maxCol, maxRow, minCol, minRow } =
-    table.api.getSelectedCellsBoundingBox(cells);
-
-  for (const target of targets) {
-    if (!target.path) continue;
-
-    const edges: BorderDirection[] = [];
-
-    if (border === 'top' && target.row === minRow) {
-      const isFirstRow = target.row === 0;
-
-      if (isFirstRow) {
-        edges.push('top');
-      } else {
-        setCellBorderSize(updates, target.topCellPath, ['bottom'], newSize);
-      }
-    }
-    if (border === 'bottom' && target.row + target.rSpan - 1 === maxRow) {
-      edges.push('bottom');
-    }
-    if (border === 'left' && target.col === minCol) {
-      const isFirstCell = target.col === 0;
-
-      if (isFirstCell) {
-        edges.push('left');
-      } else {
-        setCellBorderSize(updates, target.leftCellPath, ['right'], newSize);
-      }
-    }
-    if (border === 'right' && target.col + target.cSpan - 1 === maxCol) {
-      edges.push('right');
-    }
-    if (edges.length > 0) {
-      setCellBorderSize(updates, target.path, edges, newSize);
-    }
-  }
-
-  applyUpdates();
-}
-
 export const useTableBordersDropdownMenuContentState = () => {
   const { editor } = useEditorPlugin(TablePlugin);
   const borderStates = useEditorSelector<TableBorderStates>((editor) =>
@@ -239,23 +75,7 @@ export const useTableBordersDropdownMenuContentState = () => {
   return {
     getOnSelectTableBorder:
       (border: BorderDirection | 'none' | 'outer') => () => {
-        const table = editor.plugin(BaseTablePlugin).api;
-        let cells = table.getSelectedCells();
-
-        if (!cells || cells.length === 0) {
-          const cell = editor.read.nodes.block({
-            match: { type: table.getCellTypes() },
-          });
-
-          if (!cell) return;
-
-          cells = [cell[0]];
-        }
-
-        setSelectedCellsBorder(editor, {
-          border,
-          cells: cells as TTableCellElement[],
-        });
+        editor.plugin(TablePlugin).update.toggleBorders({ border });
       },
     hasBottomBorder: borderStates.bottom,
     hasLeftBorder: borderStates.left,

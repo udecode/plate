@@ -1723,7 +1723,7 @@ describe('computeDiff', () => {
           ...options,
         });
 
-        expect(output).toEqual(expected);
+        expect(output).toEqual([...expected]);
       });
     }
   );

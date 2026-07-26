@@ -1,4 +1,5 @@
 import { schema, property } from '@platejs/plite';
+import { createElement } from 'react';
 
 import { BaseParagraphPlugin } from '../lib/plugins';
 import { createBasePlugin } from '../lib/plugin';
@@ -65,6 +66,41 @@ const plugins = [
 ];
 
 describe('static HTML plugin node props', () => {
+  it('renders a component bound through Base terminal configuration', async () => {
+    const staticEditor = createStaticEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'static-callout',
+          render: {
+            nodeProps: () => ({ 'data-static-plugin-prop': 'preserved' }),
+          },
+          schema: { element: { void: 'block' } },
+        }).configure({
+          component: ({ attributes, children }) =>
+            createElement(
+              'aside',
+              {
+                ...attributes,
+                'data-static-component': 'callout',
+              },
+              children
+            ),
+        }),
+      ],
+      initialValue: [
+        {
+          children: [{ text: '' }],
+          type: 'static-callout',
+        },
+      ],
+    });
+
+    const html = await renderStaticHtml(staticEditor);
+
+    expect(html).toContain('data-static-component="callout"');
+    expect(html).toContain('data-static-plugin-prop="preserved"');
+  });
+
   it('renders link props returned by plugin callbacks', async () => {
     const staticEditor = createStaticEditor({
       plugins,

@@ -1,7 +1,7 @@
 # Selection Input Oracles
 
 Date: 2026-06-14
-Owner: slate-auto / slate-research
+Owner: auto / plite-research
 Status: covered-existing
 
 ## Verdict

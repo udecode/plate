@@ -90,8 +90,8 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     LinkPlugin.configure({
+      component: LinkElement,
       render: {
-        node: LinkElement,
         afterEditable: () => <LinkFloatingToolbar />,
       },
     }),
@@ -100,7 +100,8 @@ const editor = createPlateEditor({
 ```
 
 - `render.afterEditable`: 在可编辑区域后渲染 [`LinkFloatingToolbar`](/docs/components/link-toolbar) 用于链接编辑
-- `render.node`: 指定 [`LinkElement`](/docs/components/link-node) 来渲染链接元素
+- `.configure({ component: LinkElement })`：使用
+  [`LinkElement`](/docs/components/link-node) 渲染链接元素
 
 ### Input Rules
 

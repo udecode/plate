@@ -59,6 +59,21 @@ Current priorities:
   projection, and declaration emit. If it only carries a type through, fix the
   owning generic or keep the stage; callback annotations, casts, and `any` are
   not parity.
+- Plugin constructors own every independent author contribution: `api`,
+  `read`, `selectors`, `update`, `extension`, `codecs`, and ordinary static
+  fields and their context callbacks. Codec maps use the constructor callback's context-bound
+  `defineCodecs`: one argument for self/product maps, or
+  `defineCodecs(TargetPlugin, map)` for a foreign contribution with injected
+  targets. This is the one inline codec inference anchor; do not expose direct
+  maps, manual targets, or a global helper. Constructor context alone never
+  justifies `.extend()`. Use `.extend()` only for an imported/prebuilt
+  declaration, a shared factory the constructor cannot access, or a real
+  earlier-stage type dependency. Keep `.configure()` terminal and non-widening.
+  `createPlatePlugin()` accepts root-level `component`; existing Plate
+  descriptors bind it with `.configure({ component })`. Base/static consumers
+  bind static components through `BasePlugin.configure({ component })` without
+  importing the React plugin layer; Base constructors stay renderer-neutral.
+  Do not expose `.withComponent()` or the renderer registry shape.
 - Plugin schema is creation-owned. Declare it in the plugin constructor, using
   a schema factory over typed options for authored variability; neither
   `.extend()` nor terminal `.configure()` replaces it. Schema-derived callbacks
@@ -110,9 +125,11 @@ Current priorities:
   target-only, both, and both with explicit target configuration. Bare-key use
   is intentionally erased; exact target-option inference requires importing
   the descriptor or config type. Keep component replacement and typed
-  `.extendHtmlCodec(TargetPlugin, ...)` contributions as distinct paths. Do not
-  add a central key registry, ancestor reach-through methods, recursive child
-  registries, or add/replace verbs.
+  root-level `component` binding and typed foreign codec contributions authored
+  as `defineCodecs(TargetPlugin, map)` inside the owning declaration callback
+  as distinct paths. The
+  codec helper injects the target. Do not add a central key registry, ancestor
+  reach-through methods, recursive child registries, or add/replace verbs.
 - Resolve peer conflicts at the smallest behavior surface. Remove or replace
   one conflicting shortcut, handler, parser, or render contribution instead of
   disabling its whole plugin. Required dependencies cannot be disabled, and
@@ -123,8 +140,8 @@ Current priorities:
   Generic package code may use `editor.plugin(Plugin).api`; both paths expose
   the same immutable plugin-owned API. Keep plugin keys human-readable and
   split serialized node `type` when needed. Do not duplicate implementations
-  with `extendEditorApi`, add API-key aliases, or move mutations outside
-  `editor.update`.
+  through root editor extensions, add API-key aliases, or move mutations
+  outside `editor.update`.
 - Generic code that accepts an optional descriptor checks
   `editor.plugin(Plugin).installed` before using that portal. Disabled plugins
   count as absent. Do not infer plugin availability from root `editor.api`,
@@ -138,13 +155,13 @@ Current priorities:
   Standalone functions need a real cross-plugin, cross-layer, or
   transaction-composition job that one plugin cannot own honestly.
 - Express intra-plugin capability dependencies through ordered builder stages.
-  An earlier `.extendApi()` or `.extendTx()` publishes the smallest honest
-  capability; later stages and required dependents consume the accumulated
-  inferred surface. New scoped methods take domain inputs instead of threading
-  `editor`, `api`, `read`, `tx`, resolved plugin option values, or resolved
-  plugin types through helper signatures; operation options remain valid
-  domain input. A later tx stage reuses an earlier mutation through the active
-  `tx[plugin.key]` group, never a portal one-shot that opens another
+  The constructor publishes the smallest honest `api`, `read`, or `update`
+  capability whenever possible; later stages and required dependents consume the
+  accumulated inferred surface. New scoped methods take domain inputs instead
+  of threading `editor`, `api`, `read`, `tx`, resolved plugin option values, or
+  resolved plugin types through helper signatures; operation options remain
+  valid domain input. A later update stage reuses an earlier mutation through
+  the active `tx[plugin.key]` group, never a portal one-shot that opens another
   transaction. Do not publish a private implementation fragment merely to
   share it between stages: keep it lexical/private, coalesce stages, or name a
   builder gap. Keep an explicit active-state boundary only when uncommitted

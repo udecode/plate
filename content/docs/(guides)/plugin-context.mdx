@@ -21,6 +21,9 @@ but the editor type is `BaseEditor`.
 | `plugin` | The resolved plugin configuration for the current plugin. |
 | `type` | The plugin document type, available as `plugin.type`. |
 | `api` | Editor API plus plugin-specific API methods. |
+| `defineCodecs(map)` | Bind a self/product codec map to this plugin's inferred schema. |
+| `defineCodecs(TargetPlugin, map)` | Bind a foreign codec map to an exact descriptor and inject its target. |
+| `defineEditorExtension(extension)` | Preserve this plugin's nested inference for an extracted reusable extension factory. |
 | `getOption(key, ...args)` | Read an option, selector, or `'state'` from the current plugin. |
 | `getOptions()` | Read the full option state for the current plugin. |
 | `setOption(key, value)` | Update one option in the current plugin store. |
@@ -68,17 +71,58 @@ export const CounterPlugin = createPlatePlugin({
   options: {
     count: 0,
   },
-})
-  .extendSelectors(({ getOptions }) => ({
-    label: () => `Count: ${getOptions().count}`,
-  }))
-  .extendApi(({ getOption }) => ({
+  api: ({ getOption }) => ({
     isEmpty: () => getOption('count') === 0,
-  }));
+  }),
+  selectors: ({ getOptions }) => ({
+    label: () => `Count: ${getOptions().count}`,
+  }),
+});
 ```
 
 Selectors are readable through `getOption` and subscribable through
 `usePluginOption`.
+
+## Extension Factory Inference
+
+Inline constructor `extension` objects receive contextual typing.
+An extracted reusable factory must return the callback context's identity
+helper: accept `BasePluginContext<C>`, then return
+`context.defineEditorExtension({ ... })`. See the complete extracted-factory
+example in [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
+
+Pass the extracted factory to the constructor's `extension` callback. Do not
+use the helper for an inline extension object. The function named
+`defineEditorExtension` imported from `@platejs/plite` authors standalone
+Plite extensions; it does not carry an extracted Plate plugin's context.
+
+## Codec Inference
+
+Use `defineCodecs` in the constructor's `codecs` callback. It is the codec
+map's single inference anchor:
+
+```ts title="strong-plugin.ts" showLineNumbers
+import { createBasePlugin, property } from 'platejs';
+
+export const StrongPlugin = createBasePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/html': {
+        decode: () => true,
+        decodeOnly: true,
+        match: [{ tag: 'strong' }],
+      },
+    }),
+  key: 'strong',
+  schema: { mark: property.boolean() },
+});
+```
+
+The one-argument form owns self and product maps. For a foreign contribution,
+call `defineCodecs(TargetPlugin, map)`; Plate injects the target into every HTML
+rule. Keep the map MIME-keyed, and use either one `'text/html'` rule or a
+non-empty ordered rule tuple. Do not author direct codec maps or annotate the
+callbacks.
 
 ## Another Plugin
 

@@ -32,45 +32,46 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
   options: {
     rules: [],
   },
-}).extendExtension(({ getOptions }) => ({
-  corrections: [
-    {
-      event: 'children',
-      query: 'root',
-      correct({ tx }) {
-        const { onError, rules = [] } = getOptions();
+  extension: ({ getOptions }) => ({
+    corrections: [
+      {
+        event: 'children',
+        query: 'root',
+        correct({ tx }) {
+          const { onError, rules = [] } = getOptions();
 
-        rules.forEach(({ path, strictType, type }) => {
-          const at = [...path];
-          const entry = tx.nodes.get(at);
-          const node = entry?.[0];
+          rules.forEach(({ path, strictType, type }) => {
+            const at = [...path];
+            const entry = tx.nodes.get(at);
+            const node = entry?.[0];
 
-          if (node) {
-            if (
-              strictType &&
-              ElementApi.isElement(node) &&
-              node.type !== strictType
-            ) {
-              tx.nodes.set({ type: strictType }, { at });
+            if (node) {
+              if (
+                strictType &&
+                ElementApi.isElement(node) &&
+                node.type !== strictType
+              ) {
+                tx.nodes.set({ type: strictType }, { at });
+              }
+
+              return;
             }
 
-            return;
-          }
+            const nextType = strictType ?? type;
 
-          const nextType = strictType ?? type;
+            if (!nextType) return;
 
-          if (!nextType) return;
-
-          try {
-            tx.nodes.insert(
-              { children: [{ text: '' }], type: nextType },
-              { at }
-            );
-          } catch (error) {
-            onError?.(error);
-          }
-        });
+            try {
+              tx.nodes.insert(
+                { children: [{ text: '' }], type: nextType },
+                { at }
+              );
+            } catch (error) {
+              onError?.(error);
+            }
+          });
+        },
       },
-    },
-  ],
-}));
+    ],
+  }),
+});

@@ -22,8 +22,9 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 <APIItem name="api" type="Record<string, Function>">
   插件拥有的 API 函数，可通过 `editor.api[MyPlugin.key]` 和精确的
   `editor.plugin(MyPlugin).api` portal 访问。两个路径引用同一个不可变 API
-  对象。只有不属于插件 key 命名空间、且确实面向整个编辑器的 API 才使用
-  `.extendEditorApi()`。
+  对象。互相独立的方法放进 constructor；只有方法需要前一阶段类型或正在适配
+  import/prebuilt descriptor 时才使用 `.extend({ api })`。真正面向整个编辑器的能力属于
+  `extension` 贡献。
 </APIItem>
 
 <APIItem name="tx" type="Record<string, Function>">
@@ -33,10 +34,17 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 
 <APIItem name="options" type="Record<string, any>">
 插件拥有的值，用于 schema 工厂、parser、codec 与运行时行为。包作者通过
-`create*Plugin()` 或 `.extend()` 声明默认值；应用用户通过一次最终
+`create*Plugin()` 声明互相独立的默认值；应用用户通过一次最终
 `.configure({ options: { ... } })` 设置描述符值；通过
 `editor.plugin(MyPlugin).getOptions()`、`.setOption()` 或 `.setOptions()`
 读取或更新实时值。更新 options 不会重新编译 schema。
+</APIItem>
+
+<APIItem name="component" type="NodeComponent" optional>
+插件普通节点使用的 React 组件。在 `createPlatePlugin({ component })` 中声明；
+已有 Plate descriptor 使用一次最终 `.configure({ component })` 绑定。静态
+consumer 直接使用 `BasePlugin.configure({ component })` 绑定已有 Base
+descriptor。
 </APIItem>
 
 <APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
@@ -256,7 +264,8 @@ helper。
 <APISubList>
 <APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyKey<C>>>" optional>
 完整输入 HTML 钩子。`query`、`transformData` 和 `transformFragment`
-是扁平的同级字段。节点、mark 和 property 映射使用 `.extendHtmlCodec()`。
+是扁平的同级字段。节点、mark 和 property 映射使用 context-bound
+`defineCodecs` 返回的 schema-aware `'text/html'` map。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -288,18 +297,7 @@ helper。
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
 当插件声明 `schema.mark` 且 `render.isDecoration: false` 时，在 leaf
-节点下方渲染组件。当 `render.isDecoration: true` 时使用 `render.node`。
-</APISubListItem>
-<APISubListItem parent="render" name="node" type="NodeComponent" optional>
-为以下内容渲染组件：
-- 声明 `schema.element` 时渲染 element 节点
-- 声明 `schema.mark` 且 `render.isDecoration: false` 时渲染在文本节点下方
-- 声明 `schema.mark` 且 `render.isDecoration: true` 时渲染在 leaf 下方
-
-如果唯一的变更是绑定组件，优先使用 `.withComponent(Component)`，并在
-`.configure()` 之前调用。可复用行为在 `.extend()` 中设置 `render.node`；
-用户同时拥有其他覆盖时，在最终 `.configure()` 中设置。
-
+节点下方渲染组件。普通节点组件通过 `.configure({ component: Component })` 绑定。
 </APISubListItem>
 <APISubListItem parent="render" name="nodeProps" type="NodeProps" optional>
 在交互和静态渲染中，将模型值显式映射为 element 或 leaf props。只返回当前插件拥有的
@@ -313,7 +311,7 @@ helper。
 </APISubListItem>
 
 <APISubListItem parent="render" name="as" type="keyof HTMLElementTagNameMap" optional>
-指定渲染节点组件时使用的 HTML 标签名。仅在插件没有自定义 `render.node` 时使用。
+没有通过 `.configure({ component })` 绑定组件时，指定渲染节点使用的 HTML 标签名。
 
 - **默认值:** elements 为 `'div'`，leaves 为 `'span'`
 
@@ -412,104 +410,55 @@ H1Plugin.configure({
 </APIItem>
 
 <APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
-创建一个包含包内或可复用行为的新插件实例。所有 `.extend*()` 调用必须在用户
-`.configure()` 之前完成。
+向 import/prebuilt descriptor 添加贡献，使用 constructor 无法访问的 shared
+factory，或使用前一阶段新增类型。
+互相独立的字段直接放进 `createBasePlugin()` 或 `createPlatePlugin()`。所有
+`.extend()` 调用必须在用户 `.configure()` 之前完成。
 
 ```ts
-(
-  extendConfig:
-    | Partial<PlatePlugin>
-    | ((ctx: PlatePluginContext<AnyPluginConfig>) => Partial<PlatePlugin>)
+type PluginContribution = {
+  api?: Record<string, Function>;
+  read?: Record<string, Function>;
+  selectors?: Record<string, Function>;
+  update?: (context: { tx: EditorUpdateTransaction }) => Record<string, Function>;
+  extension?: PlateEditorExtensionInput;
+  codecs?: PluginCodecMapDeclaration;
+};
+
+<TContract extends PluginContribution>(
+  extendConfig: (
+    context: PlatePluginContext<C> & {
+      defineCodecs: DefinePluginCodecs<C>;
+      defineEditorExtension: DefineEditorExtension<C>;
+    }
+  ) => TContract
 ) => PlatePlugin;
 ```
 
-</APIItem>
+贡献字段各自拥有明确职责：
 
-<APIItem name="extendHtmlCodec" type="function">
-声明插件双向的 HTML element、mark 或 property 映射。Self overload 从拥有该
-descriptor 的 schema 声明推断目标。只有 extension 确实拥有另一个插件的 HTML
-映射时，才传入不同的类型化插件 descriptor。
+- `api`：插件作用域内的不可变服务
+- `read`：快照或事务内读取
+- `selectors`：派生 option 值
+- `update`：插件作用域内、绑定事务的变更
+- `extension`：Plite 运行时能力和真正的编辑器级分组；inline object 无需
+  helper 即可获得 contextual typing
+- `codecs`：context-bound `defineCodecs` 返回的 declaration
 
-```ts
-extendHtmlCodec(extension: ExtendHtmlCodec<C>): BasePlugin<C>;
+抽取后可复用的 editor-extension factory 接收 plugin context，并返回
+`context.defineEditorExtension({ ... })`。这个 identity helper 保留无法从
+`extension` return field 反向流入的嵌套 command、input、state、transaction 和
+dependency inference。它不会增加另一个 builder stage。从 `@platejs/plite`
+import 的同名函数用于 standalone Plite extension。
 
-extendHtmlCodec<TTarget extends PluginReference>(
-  target: ForeignHtmlCodecTarget<C, TTarget>,
-  extension: ExtendForeignHtmlCodec<C, InferConfig<TTarget>>
-): BasePlugin<C>;
-```
+Self/product codec 使用 `defineCodecs(map)`；foreign codec 使用
+`defineCodecs(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
+MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule tuple。
+`defineCodecs` 是唯一的 inline inference anchor；不要直接声明 codec map，
+也不要手动添加 `target`。
 
-包作者在最终 `.configure()` 之前调用 `.extendHtmlCodec()`。Element decoder
-只返回自己拥有的属性，不返回 `type`；runtime 使用已安装目标解析后的类型。
-
-</APIItem>
-
-<APIItem name="withComponent" type="function">
-设置或替换与插件关联的组件。当唯一的变更是绑定组件时，这是首选方式，并应在最终
-用户配置之前调用。
-
-```ts
-(component: NodeComponent) => PlatePlugin<C>;
-```
-
-</APIItem>
-
-<APIItem name="extendExtension" type="function">
-安装一个 Plite 编辑器扩展。用于 schema、state、tx、command、correction、query middleware 或运行时服务。
-
-```ts
-(extension: ExtendPlateEditorExtension<C> | PlateEditorExtensionInput) =>
-  PlatePlugin<C>;
-```
-
-</APIItem>
-
-<APIItem name="extendApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-扩展插件的 API。
-
-```ts
-(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendEditorApi" type="(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-使用插件特定方法扩展编辑器的 API。
-
-```ts
-(api: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendTx" type="(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
-扩展插件自己的事务组。该组在 `editor.update` 内通过 `tx[plugin.key]` 使用。
-
-```ts
-(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) =>
-  PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendTxGroup" type="(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
-扩展指定名称的事务组。一个插件需要给另一个插件的 tx 命名空间贡献命令时使用。
-
-```ts
-(
-  key: string,
-  tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>
-) => PlatePlugin;
-```
-
-</APIItem>
-
-<APIItem name="extendSelectors" type="(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin">
-扩展插件的选择器。
-
-```ts
-(options: (ctx: PlatePluginContext) => Record<string, any>) => PlatePlugin;
-```
+`createBasePlugin()` / `createPlatePlugin()` 拥有所有互相独立的 declaration
+字段，包括 `api`、`read`、`selectors`、`update`、`extension` 和 `codecs`。
 
 </APIItem>
 </APIMethods>
@@ -524,6 +473,17 @@ extendHtmlCodec<TTarget extends PluginReference>(
 </APIItem>
 <APIItem name="plugin" type="EditorPlatePlugin<C>">
       当前插件实例。
+</APIItem>
+<APIItem name="defineCodecs" type="DefinePluginCodecs<C>">
+      在 constructor 的 `codecs` callback 中创建 schema-checked codec
+      declaration；只有 codec 需要前一阶段能力时才放进 `.extend()`。
+      Self/product codec 传入一个 MIME-keyed map；foreign contribution 传入
+      target plugin 和 map。
+</APIItem>
+<APIItem name="defineEditorExtension" type="DefineEditorExtension<C>">
+      抽取后可复用 Plate editor-extension factory 的 identity helper。
+      Inline extension object 不需要 helper；从 `@platejs/plite` import 的同名
+      函数用于 standalone Plite extension。
 </APIItem>
 <APIItem name="getOption" type="function">
       获取特定选项值的函数。

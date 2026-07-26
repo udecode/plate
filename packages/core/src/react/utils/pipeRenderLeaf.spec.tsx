@@ -7,6 +7,7 @@ import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';
+import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import { pipeRenderLeaf } from './pipeRenderLeaf';
 import { pipeRenderText } from './pipeRenderText';
 
@@ -605,31 +606,31 @@ it('skips inactive text renderers', () => {
   let activeCalls = 0;
   let inactiveCalls = 0;
 
-  const boldPlugin = createBasePlugin({
+  const boldPlugin = createPlatePlugin({
+    component: ({ children }: ChildrenProps) => {
+      activeCalls += 1;
+
+      return <strong data-testid="active-text">{children}</strong>;
+    },
     key: 'bold',
+    render: {
+      isDecoration: false,
+    },
     type: 'bold',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
+  });
+  const italicPlugin = createPlatePlugin({
+    component: ({ children }: ChildrenProps) => {
+      inactiveCalls += 1;
+
+      return <em data-testid="inactive-text">{children}</em>;
+    },
+    key: 'italic',
     render: {
       isDecoration: false,
-      node: ({ children }: ChildrenProps) => {
-        activeCalls += 1;
-
-        return <strong data-testid="active-text">{children}</strong>;
-      },
     },
-  });
-  const italicPlugin = createBasePlugin({
-    key: 'italic',
     type: 'italic',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
-    render: {
-      isDecoration: false,
-      node: ({ children }: ChildrenProps) => {
-        inactiveCalls += 1;
-
-        return <em data-testid="inactive-text">{children}</em>;
-      },
-    },
   });
 
   const editor = createPlateEditor({
@@ -654,16 +655,16 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
   const errorSpy = spyOn(console, 'error').mockImplementation(() => {});
 
   try {
-    const testPlugin = createBasePlugin({
+    const testPlugin = createPlatePlugin({
+      component: ({ children }: ChildrenProps) => (
+        <span data-testid="complex-text">{children}</span>
+      ),
       key: 'test',
-      type: 'test',
-      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       render: {
         isDecoration: false,
-        node: ({ children }: ChildrenProps) => (
-          <span data-testid="complex-text">{children}</span>
-        ),
       },
+      type: 'test',
+      schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     });
 
     const editor = createPlateEditor({

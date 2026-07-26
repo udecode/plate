@@ -260,7 +260,7 @@ test.describe('comment mode example', () => {
   test('keeps comment sidebar, inline review slices, and widget panel in sync', async ({
     page,
   }) => {
-    await openExample(page, 'plite/comment-mode', {
+    const editor = await openExample(page, 'plite/comment-mode', {
       ready: {
         editor: 'visible',
       },
@@ -278,7 +278,14 @@ test.describe('comment mode example', () => {
       'Comment mode in Plite'
     );
 
-    await selectCommentModeIntroWithPointer(page);
+    await editor.selection.selectDOM({
+      kind: 'text',
+      anchor: { path: [0, 0], offset: 0 },
+      focus: {
+        path: [0, 0],
+        offset: commentModeIntroSelectionText.length,
+      },
+    });
     await expect(
       page.getByRole('button', { name: 'Add comment on selection' })
     ).toBeEnabled();

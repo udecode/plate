@@ -15,6 +15,8 @@ shell components outside a `<Plite>` root.
   the focused snapshot version and selection remain current
 - Keep `NodeSelection` model-only with no native browser range, and expose exact
   node selection through `useElementSelected({ mode: 'node' })`
+- Project custom structural selections through their declared DOM range and
+  restore model-owned projections after document updates
 - Let non-void `keyboardSelectable` owners receive node focus from non-editable
   chrome, enter editable children with ArrowDown, and regain owner focus with
   ArrowUp at the leading boundary

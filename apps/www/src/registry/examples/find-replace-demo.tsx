@@ -44,8 +44,8 @@ export default function FindReplaceDemo() {
       plugins: [
         ...EditorKit,
         FindReplacePlugin.configure({
+          component: SearchHighlightLeaf,
           options: { search: 'text' },
-          render: { node: SearchHighlightLeaf },
         }),
       ],
       initialValue: findReplaceValue,

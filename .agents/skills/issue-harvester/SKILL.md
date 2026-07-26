@@ -1,6 +1,6 @@
 ---
 description: 'Run exhaustive issue coverage harvests for Slate v2 and Plate from Slate, Plate, or external editor repos: auto-create or refresh issue closure ledgers, scan closed-issue PR/test provenance, process only unchecked issues, add fresh local tests, and keep one checkmark per relevant issue without giant prompts.'
-argument-hint: <repo-key|owner/repo|ledger-path> [--state all|open|closed] [--slate-v2-only] [--plate-only] [--continue] [--batch-loop|timed 1h]
+argument-hint: <repo-key|owner/repo|ledger-path> [--state all|open|closed] [--refresh-only] [--slate-v2-only] [--plate-only] [--continue] [--batch-loop|timed 1h]
 disable-model-invocation: true
 name: issue-harvester
 metadata:
@@ -44,6 +44,9 @@ Clusters and matrices route work. They never close an issue row.
 
 - `issue-harvester`: exhaustive issue closure ledger, resume/new-issue refresh,
   PR/test provenance, unchecked-row loop, and final issue handoff.
+- `editor-audit`: source architecture comparison and commit-aware orchestration.
+  Its `sync` mode may invoke this skill with `--refresh-only`; it never owns or
+  advances issue closure rows itself.
 - `editor-test-harvester`: first-pass external repo inventory, license gate,
   issue corpus clustering, portable invariant matrix, and source test inventory.
 - `clawsweeper`: provenance discipline: exact thread, exact behavior, no claim
@@ -183,6 +186,27 @@ gh issue view <issue-number> --repo <owner/repo> --comments --json number,title,
 
 Live GitHub is final truth for current state, comments, linked PRs, and closure
 links when the local archive is stale or incomplete.
+
+### `--refresh-only`
+
+Use `--refresh-only` when another workflow needs current issue inventory without
+starting the unchecked issue loop.
+
+1. Discover or create the canonical ledger.
+2. Refresh all-state issue metadata through the normal provider/fallback.
+3. Preserve checked/manual decisions.
+4. Add new issue numbers as `unchecked`.
+5. Mark materially changed issue metadata for later re-read without erasing the
+   existing decision.
+6. Regenerate compact issue indexes and closure ledgers.
+7. Record refresh time, provider, state coverage, limits, added count, changed
+   count, and remaining unchecked count.
+8. Stop before issue hydration, PR/test provenance, local test creation, or
+   runtime changes.
+
+Raw issue bodies and comments remain under `.tmp`. The refresh is complete only
+when compact docs artifacts are current or the exact provider blocker is
+recorded.
 
 ## Closed-Issue PR/Test Provenance
 

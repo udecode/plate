@@ -477,11 +477,10 @@ function buildFallbackParagraphValue(blocks: number): Value {
   const value = buildMixedBlockValue(blocks).map((node) => {
     const nextNode = structuredClone(node) as Element;
 
-    if (nextNode.type === 'p') {
-      nextNode.type = 'quote';
-    }
-
-    return nextNode as Descendant;
+    return {
+      ...nextNode,
+      ...(nextNode.type === 'p' ? { type: 'quote' } : {}),
+    } as Descendant;
   }) as Value;
 
   fallbackParagraphDocumentCache.set(blocks, value);

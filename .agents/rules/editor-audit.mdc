@@ -1,0 +1,385 @@
+---
+description: Exhaustively compare one or more local editor architectures with live Plite and Plate, track verified source commits, and rank only materially valuable changes with concrete current and proposed shapes.
+argument-hint: '[audit [--target <surface|full>] <repo-path-or-owner/repo>...] | [sync [all|audit-id|artifact-path]...]'
+disable-model-invocation: true
+---
+
+# Editor Audit
+
+Handle $ARGUMENTS.
+
+Own source-level architecture comparison between live Plite/Plate and one or
+more editor repositories. Derive the inventory from source, account for every
+relevant mechanism, and stop after a decision-ready audit. Do not implement
+product code.
+
+```text
+selected local editor source trees
+  -> exhaustive atomic concept map
+  -> material current/proposed change dossiers
+  -> best-api and layer-plan routing
+```
+
+Adjacent owners remain separate:
+
+- `plite-research`: discover repositories, prior art, and research leads.
+- `editor-test-harvester`: inventory changed/new tests and extract behavior
+  invariants.
+- `issue-harvester`: refresh and close issue-by-issue coverage ledgers.
+- `best-api`: decide final public call shapes.
+- `plite-plan`: plan accepted substrate architecture, adoption, and proof.
+- `plate-plan`: plan accepted product/plugin architecture, adoption, and proof.
+- `major-task`, `auto`, `task`, or a package owner: implement accepted work.
+
+## Value Rule
+
+Do not optimize for maximum capability, abstraction, generality, novelty,
+symmetry, or rubric score.
+
+The target is the smallest truthful architecture that produces material present
+value while preserving applicable correctness, typing, performance,
+collaboration, serialization, React, DOM, browser, and ownership laws.
+
+A change has material value only when current evidence shows that it:
+
+- fixes a correctness, ownership, typing, performance, composition, or DX/AX
+  problem;
+- removes meaningful public or internal machinery;
+- unlocks a current declared product or framework requirement; or
+- replaces several current costs with one simpler durable owner.
+
+Reference sophistication, popularity, novelty, and completeness are not value.
+Breaking cost is an adoption cost after a materially better target is found; it
+is neither an automatic veto nor a reason to break by itself.
+
+Do not use aggregate numeric scores. Use evidence-backed classifications,
+priorities, and explicit reasons. Missing evidence is an open gate.
+
+## Modes
+
+Infer `audit` when omitted.
+
+### `audit`
+
+Accept one or many local repository paths. For `owner/repo`, inspect `../repo`
+first and clone there only when missing, following root `AGENTS.md`.
+
+Resolve:
+
+- target: the named surface, or `full` only when explicitly requested;
+- references: every supplied repository and its current local revision;
+- local owners: Plite substrate, Plate product layer, or both;
+- output: a narrow answer or exhaustive planning-only artifact.
+
+For `full`, `all`, `exhaustive`, or multiple repositories, load `autogoal` and
+use one `major-task` goal plan as the durable audit artifact. Add a compact
+coverage manifest under `docs/plans/artifacts/<slug>/` only when it materially
+improves accounting. Do not mirror the same decisions across several ledgers.
+
+Before reading a durable reference audit, require a clean reference checkout
+and capture `git rev-parse HEAD`. Verify the same `HEAD` again before recording
+completion. If it moved, audit the intervening diff before writing the commit
+cursor. A commit hash cannot truthfully describe uncommitted reference source.
+
+For each initial durable audit, run the full `editor-test-harvester` inventory
+and the applicable `issue-harvester --refresh-only` pass, or record that lane as
+`null` and stale with an exact reason. Never initialize an unrun lane as
+current.
+
+For a narrow named mechanism, answer in chat unless the user asks for a durable
+artifact.
+
+### `sync`
+
+`sync` updates an existing audit from its last verified source commits.
+
+- `sync <audit-id|artifact-path>` updates named audits.
+- `sync all`, or bare `sync`, updates every registered audit.
+
+For each reference:
+
+1. Read the registered source, local path, audited commit, audit artifact, test
+   harvest cursor, issue refresh cursor, branch, and upstream.
+2. Refuse to pull over uncommitted reference-repository changes. Do not reset,
+   stash, switch branches, or discard them.
+3. Require the checked-out branch and upstream to match the registry, then fetch
+   and fast-forward with `git pull --ff-only`. Do not switch branches.
+   Detached heads, missing/mismatched upstreams, non-fast-forward histories, or
+   an audited commit that is no longer an ancestor require an explicit full
+   re-audit or user correction.
+4. If `HEAD` equals the audited commit, mark architecture current. Mark tests
+   current only when `testHarvestCommit` also equals `HEAD`; otherwise resume
+   the test lane from its own cursor or run a full harvest when it is `null`.
+   Still refresh issues because `sync` explicitly requests current issue state.
+5. Otherwise inspect
+   `git diff --name-status <audited-commit>..HEAD`, changed declarations,
+   exports, tests, package metadata, and relevant commit messages.
+6. Re-audit every directly changed concept plus its affected dependencies,
+   consumers, public contracts, serialization, proof, and deletion
+   consequences. The git diff selects candidates; it is not permission to
+   ignore unchanged dependents whose meaning changed.
+7. Run `editor-test-harvester <repo> --since <test-harvest-commit>` for added,
+   modified, renamed, and deleted test evidence. If that cursor is `null`, run
+   the full harvester.
+8. For GitHub-backed references, run
+   `issue-harvester <owner/repo> --state all --refresh-only`. This refreshes
+   compact issue state and adds changed/new rows without processing the entire
+   unchecked queue. Record an exact skip reason for sources without a supported
+   issue provider.
+9. Update affected audit rows, rejected decisions, rankings, shapes, routes,
+   coverage counts, and proof.
+10. Advance each cursor only after its owning proof succeeds. A failed or
+    interrupted architecture pass never advances `auditedCommit`; a failed test
+    or issue pass remains visibly stale through its independent cursor.
+
+When several audits share one repository, pull once and compute each audit's
+own `<auditedCommit>..HEAD` range. Never collapse different target audits into
+one cursor. Continue independent audits after one fails and report the failed
+cursor without advancing it.
+
+Finish with a status table:
+
+| Audit | Repository | Audited commit | Current head | Architecture | Tests | Issues | Overall |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+`current` means verified against the fetched local head. Without a successful
+fetch, remote freshness is `unknown`, not current.
+
+## Audit Registry
+
+Create `docs/editor-audits/index.json` on the first durable audit. Do not create
+an empty registry before a real audit exists.
+
+Use schema version `1`:
+
+```json
+{
+  "version": 1,
+  "audits": [
+    {
+      "id": "stable-audit-id",
+      "artifactVersion": 1,
+      "target": "named-surface-or-full",
+      "artifact": "docs/plans/...",
+      "references": [
+        {
+          "repoKey": "host/owner/repo",
+          "source": "https://host/owner/repo.git",
+          "localPath": "../repo",
+          "branch": "main",
+          "upstream": "origin/main",
+          "auditedCommit": "full-commit-sha",
+          "auditedAt": "ISO-8601",
+          "testHarvestCommit": "full-commit-sha or null",
+          "issueHarvestCheckedAt": "ISO-8601 or null",
+          "issueLedger": "docs/editor-issue-harvester/... or null"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Use full immutable commit hashes. A target-specific audit owns its own
+reference cursors even when another audit uses the same repository. Derive
+`repoKey` from the normalized remote URL; for a local-only repository, use a
+stable canonical-path key and record `source` as `null`.
+
+The registry is compact resume state, not the concept ledger. The linked
+artifact owns decisions and evidence. Update registry and artifact together at
+the final successful checkpoint; never write a newer commit merely because a
+pull succeeded.
+
+## Source Authority
+
+Current source is authoritative. Earlier plans, migration claims, comparison
+tables, docs, and completion reports are leads only.
+
+Read:
+
+1. Latest request, active goal, and active plan.
+2. Root `VISION.md`, `docs/vision/common.md`, and relevant Plite/Plate detail.
+3. Every reference repository's source, tests, public types, package/export
+   graph, and relevant docs.
+4. Live Plite and Plate owners, exports, representative callers, tests, docs,
+   integrations, and proof surfaces.
+5. Existing local plans only after the live architecture is independently
+   mapped.
+
+Do not substitute web summaries for local source. Use official docs only when
+the local checkout cannot settle a public contract.
+
+## Atomic Concept Inventory
+
+Derive the inventory from source. Do not begin from a generic editor checklist
+or a favored reference API.
+
+An atomic concept is one independently judgeable:
+
+- invariant or semantic rule;
+- data representation or identity model;
+- public API or extension point;
+- internal algorithm, mapping, fitting, correction, or composition rule;
+- configuration, compilation, precedence, caching, or lifecycle rule;
+- transaction, selection, history, collaboration, codec, DOM, React, rendering,
+  persistence, or failure-isolation responsibility;
+- ownership boundary, performance characteristic, or proof obligation.
+
+One concept may span many files or repositories. One file may contain many
+concepts. Trivial forwarding helpers, barrels, fixtures, and mechanical wrappers
+must appear in the coverage manifest, but they do not earn independent decision
+rows unless they own semantics, lifecycle, performance, or a public contract.
+
+Build a coverage manifest for each repository:
+
+| Source unit | Relevant declarations | Concept IDs | Exclusion |
+| --- | ---: | --- | --- |
+
+Map every relevant package, module, file, public export, top-level declaration,
+and meaningful private mechanism to concept IDs or an exact exclusion. Follow
+the target's complete dependency graph through representation, semantics,
+runtime, consumers, integrations, proof, and deletion consequences.
+
+Exhaustive means zero unexplained relevant units. If the manifest cannot close,
+state the exact gap instead of calling the audit exhaustive.
+
+## Comparison
+
+For every atomic concept, record independent evidence from each supplied
+reference and from current Plite/Plate.
+
+Use one comparison classification per reference:
+
+- `reference stronger`
+- `local stronger`
+- `equivalent`
+- `different tradeoff`
+- `insufficient evidence`
+
+Then give one local verdict:
+
+- `keep`
+- `steal`
+- `rearchitect`
+- `hard-cut`
+- `move`
+- `reject`
+- `defer`
+
+Do not infer superiority from cleaner-looking code with a narrower product
+surface. Test whether the mechanism survives applicable local constraints such
+as JSON-native data, structural typing, multi-root documents, Plate
+extensibility, collaboration, React, DOM/input, browser behavior, persistence,
+and transactional reconfiguration.
+
+For each suspicious local shape, answer:
+
+- Is this the correct owner?
+- Does public API expose an internal detail?
+- Can the owner derive information callers currently provide?
+- Are concepts wrongly split or wrongly unified?
+- Is configuration permissive, implicit, order-dependent, or non-transactional?
+- Does the shape optimize implementation convenience over caller DX/AX?
+- Is missing substrate functionality hidden in Plate glue?
+- Does it remain sound for large documents, collaboration, history,
+  serialization, and reconfiguration?
+- What existing API, helper, loop, bridge, or test disappears under the right
+  owner?
+
+## Material Candidate Gate
+
+Rank every accepted change as `P0`, `P1`, `P2`, or `P3` using `best-api`
+priority meaning. Rows without material present value are `keep`, `reject`, or
+evidence-backed `defer`, not low-scoring work waiting to happen.
+
+Every `P0`-`P3` candidate must include:
+
+1. Exact current and proposed public call shapes when public.
+2. Exact current and proposed internal representation and owner.
+3. Material value and the current job it improves.
+4. What becomes hidden, deleted, merged, or moved.
+5. Plite/Plate adoption impact and dependency ordering.
+6. Required correctness, type, property/fuzz, browser, and benchmark proof.
+7. Primary planning owner: `best-api`, `plite-plan`, or `plate-plan`.
+8. Dependent planning owner when the change crosses layers.
+
+Use realistic TypeScript with public imports. Do not present pseudocode as a
+final public proposal.
+
+Apply `best-api` to every unresolved public shape. Do not reproduce its taste
+rubric here. If architecture evidence changes reusable API doctrine, run
+`best-api repair` before finalizing the candidate.
+
+## Output
+
+Lead with:
+
+1. strongest local mechanisms to keep;
+2. materially valuable changes ranked by priority and architectural value;
+3. rejected reference machinery and why;
+4. unresolved evidence gates.
+
+Use one complete concept ledger:
+
+| ID | Concept | Reference evidence and comparison | Current Plite | Current Plate | Verdict | Priority | Material value | Current shape | Proposed shape | Delete/hide/move | Primary owner | Dependent owner | Proof |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+
+Keep each reference's evidence and classification distinct. Do not average
+conflicting architectures into one score.
+
+Then provide ideal accepted shapes, internal invariants, ownership changes,
+adoption/deletion impact, a dependency-ordered packet list, per-packet skill
+routing, explicit keep/reject/defer decisions, and coverage closure counts.
+
+The packet list is a planning handoff, not an implementation plan. After user
+acceptance, invoke the named layer plan for each packet or coherent packet
+group. Cross-layer work has one primary plan owner and one explicit dependent
+owner; never duplicate the same plan in both.
+
+## Verification
+
+For every reference, record and run the equivalent of:
+
+```bash
+test -z "$(git -C <repo> status --porcelain)"
+git -C <repo> rev-parse HEAD
+git -C <repo> branch --show-current
+git -C <repo> rev-parse --abbrev-ref --symbolic-full-name '@{upstream}'
+git -C <repo> merge-base --is-ancestor <audited-commit> HEAD
+git -C <repo> diff --name-status --find-renames <audited-commit>..HEAD
+```
+
+Validate registry syntax and artifact links:
+
+```bash
+node -e "JSON.parse(require('node:fs').readFileSync('docs/editor-audits/index.json', 'utf8'))"
+test -f <audit-artifact>
+node .agents/skills/autogoal/scripts/check-complete.mjs <audit-artifact>
+```
+
+Also run the focused verification required by every changed audit row and the
+owning test/issue harvester checks. Record exact counts for source units,
+concepts, exclusions, material candidates, and unresolved rows.
+
+## Closure
+
+The audit is complete only when:
+
+- every relevant source unit is mapped or explicitly excluded;
+- every atomic concept has evidence from each applicable reference and current
+  local owners;
+- every concept has a comparison and local verdict;
+- every material candidate has concrete current/proposed public and internal
+  shapes;
+- every material candidate names deletion, adoption, dependencies, proof, and
+  planning owners;
+- repository provenance and full verified commits are recorded;
+- no aggregate score or speculative machinery substitutes for material value;
+- public proposals pass the `best-api` lens;
+- zero concept, candidate, or routing rows remain unresolved except explicit
+  evidence-backed defers;
+- the goal plan records expected/reviewed/excluded counts and
+  `check-complete.mjs` passes.
+
+Stop after the planning-only audit and request acceptance. Do not implement,
+open a PR, or start a layer plan without explicit user direction.

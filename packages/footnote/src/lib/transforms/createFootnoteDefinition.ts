@@ -13,13 +13,13 @@ import { focusFootnoteDefinition } from './focusFootnoteDefinition';
 
 export type CreateFootnoteDefinitionOptions = {
   focus?: boolean;
-  fragment?: Descendant[];
+  fragment?: readonly Descendant[];
   identifier: string;
 };
 
 const getDefinitionChildren = (
   editor: BaseEditor,
-  { fragment }: { fragment?: Descendant[] }
+  { fragment }: { fragment?: readonly Descendant[] }
 ) => {
   const paragraphType = editor.getType(KEYS.p);
   const clonedFragment = fragment ? structuredClone(fragment) : [];

@@ -20,8 +20,8 @@ import { unusedCharGenerator } from '../utils/unused-char-generator';
 
 // Main function to transform an array of text nodes into another array of text nodes
 export function transformDiffTexts(
-  nodes: Descendant[],
-  nextNodes: Descendant[],
+  nodes: readonly Descendant[],
+  nextNodes: readonly Descendant[],
   options: ComputeDiffOptions
 ): Descendant[] {
   // Validate input - both arrays must have at least one node

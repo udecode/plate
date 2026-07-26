@@ -699,6 +699,10 @@ const defaultNodeIdOptions: NodeIdOptions = {
   idCreator: () => nanoid(10),
 };
 
+export type NodeIdPluginUpdate = {
+  normalize: () => void;
+};
+
 export const NodeIdPlugin = createBasePlugin({
   key: 'nodeId',
   options: defaultNodeIdOptions,
@@ -713,8 +717,7 @@ export const NodeIdPlugin = createBasePlugin({
       ),
     ],
   }),
-})
-  .extendTx(({ getOptions }) => (tx) => ({
+  update: ({ getOptions, tx }) => ({
     normalize() {
       const options = getOptions();
       const { idCreator } = options;
@@ -789,171 +792,162 @@ export const NodeIdPlugin = createBasePlugin({
 
       applyUpdates();
     },
-  }))
-  .extendExtension(({ editor, getOptions }) => {
-    let isNormalizingInsertedNodes = false;
+  }),
+  extension: ({ editor, getOptions }) => ({
+    onTransactionChange({ after, before, change, changed, tx }) {
+      if (tx.tags.has('node-id-normalizing') || editor.runtime.isNormalizing) {
+        return;
+      }
 
-    return {
-      onTransactionChange({ after, before, change, changed, tx }) {
-        if (isNormalizingInsertedNodes || editor.runtime.isNormalizing) return;
-
-        const options = getOptions();
-        const { idKey = 'id' } = options;
-        const runtimeOptions = { ...options, idKey };
-        const roots = new Set([
-          ...getInternalDocumentChangeRootKeys(change),
-          ...change.createRoots,
-        ]);
-        const updates: {
-          node: Descendant;
-          path: Path;
-          root: string;
-        }[] = [];
-
-        for (const root of roots) {
-          const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-
-          if (!changed.has('structure', publicRoot)) continue;
-
-          const beforeChildren =
-            root === MAIN_ROOT_KEY
-              ? before.children
-              : (before.roots?.[root] ?? []);
-          const afterChildren =
-            root === MAIN_ROOT_KEY
-              ? after.children
-              : (after.roots?.[root] ?? []);
-          const insertedEntries = collectInsertedNodeEntries(
-            beforeChildren,
-            afterChildren,
-            idKey,
-            changed.topLevelRanges(publicRoot)
-          );
-          const reservedIds = new Set<unknown>();
-
-          for (const entry of insertedEntries) {
-            const splitPath = isSplitNodeEntry(
-              beforeChildren,
-              afterChildren,
-              entry
-            );
-            const normalized = splitPath
-              ? normalizeSplitNodeIds(
-                  { node: entry.node, path: splitPath, root },
-                  runtimeOptions,
-                  before,
-                  reservedIds
-                )
-              : normalizeInsertedNodeIds(
-                  { ...entry, root },
-                  runtimeOptions,
-                  before,
-                  reservedIds,
-                  tx.tags.has('paste') && options.reuseId !== true
-                );
-
-            if (!isEqual(normalized, entry.node)) {
-              updates.push({ node: normalized, path: entry.path, root });
-            }
-          }
-        }
-
-        if (updates.length === 0) return;
-
-        isNormalizingInsertedNodes = true;
-        try {
-          let corrected = after;
-
-          for (const update of updates) {
-            if (update.root === MAIN_ROOT_KEY) {
-              corrected = {
-                ...corrected,
-                children: replaceNodeAt(
-                  corrected.children,
-                  update.path,
-                  update.node
-                ) as Value,
-              };
-            } else {
-              corrected = {
-                ...corrected,
-                roots: {
-                  ...corrected.roots,
-                  [update.root]: replaceNodeAt(
-                    corrected.roots?.[update.root] ?? [],
-                    update.path,
-                    update.node
-                  ) as Value,
-                },
-              };
-            }
-          }
-
-          tx.changes.apply(DocumentChange.between(after, corrected));
-        } finally {
-          isNormalizingInsertedNodes = false;
-        }
-      },
-    };
-  })
-  .extend({
-    transformInitialValue: ({ editor, getOptions, value }) => {
       const options = getOptions();
       const { idKey = 'id' } = options;
       const runtimeOptions = { ...options, idKey };
-      const initialValueIds = resolveInitialValueIds(options);
+      const roots = new Set([
+        ...getInternalDocumentChangeRootKeys(change),
+        ...change.createRoots,
+      ]);
+      const updates: {
+        node: Descendant;
+        path: Path;
+        root: string;
+      }[] = [];
 
-      if (initialValueIds === false) {
+      for (const root of roots) {
+        const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
+
+        if (!changed.has('structure', publicRoot)) continue;
+
+        const beforeChildren =
+          root === MAIN_ROOT_KEY
+            ? before.children
+            : (before.roots?.[root] ?? []);
+        const afterChildren =
+          root === MAIN_ROOT_KEY ? after.children : (after.roots?.[root] ?? []);
+        const insertedEntries = collectInsertedNodeEntries(
+          beforeChildren,
+          afterChildren,
+          idKey,
+          changed.topLevelRanges(publicRoot)
+        );
+        const reservedIds = new Set<unknown>();
+
+        for (const entry of insertedEntries) {
+          const splitPath = isSplitNodeEntry(
+            beforeChildren,
+            afterChildren,
+            entry
+          );
+          const normalized = splitPath
+            ? normalizeSplitNodeIds(
+                { node: entry.node, path: splitPath, root },
+                runtimeOptions,
+                before,
+                reservedIds
+              )
+            : normalizeInsertedNodeIds(
+                { ...entry, root },
+                runtimeOptions,
+                before,
+                reservedIds,
+                tx.tags.has('paste') && options.reuseId !== true
+              );
+
+          if (!isEqual(normalized, entry.node)) {
+            updates.push({ node: normalized, path: entry.path, root });
+          }
+        }
+      }
+
+      if (updates.length === 0) return;
+
+      tx.tags.add('node-id-normalizing');
+      let corrected = after;
+
+      for (const update of updates) {
+        if (update.root === MAIN_ROOT_KEY) {
+          corrected = {
+            ...corrected,
+            children: replaceNodeAt(
+              corrected.children,
+              update.path,
+              update.node
+            ) as Value,
+          };
+        } else {
+          corrected = {
+            ...corrected,
+            roots: {
+              ...corrected.roots,
+              [update.root]: replaceNodeAt(
+                corrected.roots?.[update.root] ?? [],
+                update.path,
+                update.node
+              ) as Value,
+            },
+          };
+        }
+      }
+
+      tx.changes.apply(DocumentChange.between(after, corrected));
+    },
+  }),
+  transformInitialValue: ({ editor, getOptions, value }) => {
+    const options = getOptions();
+    const { idKey = 'id' } = options;
+    const runtimeOptions = { ...options, idKey };
+    const initialValueIds = resolveInitialValueIds(options);
+
+    if (initialValueIds === false) {
+      return value;
+    }
+
+    // Perf: check if normalization is needed by looking at the first node and last node
+    if (initialValueIds === 'if-needed') {
+      const roots = [value.children, ...Object.values(value.roots ?? {})];
+
+      if (
+        roots.every(
+          (children) =>
+            children.length === 0 ||
+            (children[0]?.[idKey] && children.at(-1)?.[idKey])
+        )
+      ) {
         return value;
       }
+    }
 
-      // Perf: check if normalization is needed by looking at the first node and last node
-      if (initialValueIds === 'if-needed') {
-        const roots = [value.children, ...Object.values(value.roots ?? {})];
+    const children = normalizeNodeIdWithEditor(
+      editor,
+      value.children,
+      runtimeOptions
+    );
+    let roots = value.roots;
 
-        if (
-          roots.every(
-            (children) =>
-              children.length === 0 ||
-              (children[0]?.[idKey] && children.at(-1)?.[idKey])
-          )
-        ) {
-          return value;
-        }
-      }
-
-      const children = normalizeNodeIdWithEditor(
-        editor,
-        value.children,
-        runtimeOptions
+    if (roots) {
+      const normalizedRoots = Object.fromEntries(
+        Object.entries(roots).map(([root, rootChildren]) => [
+          root,
+          normalizeNodeIdWithEditor(editor, rootChildren, runtimeOptions),
+        ])
       );
-      let roots = value.roots;
 
-      if (roots) {
-        const normalizedRoots = Object.fromEntries(
-          Object.entries(roots).map(([root, rootChildren]) => [
-            root,
-            normalizeNodeIdWithEditor(editor, rootChildren, runtimeOptions),
-          ])
-        );
-
-        if (
-          Object.entries(normalizedRoots).some(
-            ([root, rootChildren]) => rootChildren !== roots?.[root]
-          )
-        ) {
-          roots = normalizedRoots;
-        }
+      if (
+        Object.entries(normalizedRoots).some(
+          ([root, rootChildren]) => rootChildren !== roots?.[root]
+        )
+      ) {
+        roots = normalizedRoots;
       }
+    }
 
-      if (children === value.children && roots === value.roots) return value;
+    if (children === value.children && roots === value.roots) return value;
 
-      return {
-        ...value,
-        children,
-        ...(roots ? { roots } : {}),
-      };
-    },
-  });
+    return {
+      ...value,
+      children,
+      ...(roots ? { roots } : {}),
+    };
+  },
+});
 
 export type NodeIdConfig = InferConfig<typeof NodeIdPlugin>;

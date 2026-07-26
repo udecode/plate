@@ -22,7 +22,8 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Do not default to extra review panels, browser proof, PR work, or
   compounding.
 - Use external docs only when repo evidence and local clones are not enough or the task explicitly depends on third-party behavior.
-- If the task turns into code-changing execution, prefer the best durable ownership fix over a local patch.
+- If the task turns into code-changing execution, prefer the smallest durable
+  ownership fix with material value over a local patch.
 
 ## Use This For
 
@@ -30,7 +31,8 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
 - Repo-wide architecture cleanup after `architecture-cleanup` ranks
   source-backed cleanup candidates.
 - Breaking changes or major cross-package refactors.
-- Framework comparison, migration, or tradeoff analysis.
+- Framework migration or tradeoff analysis. Use `editor-audit` for exhaustive
+  source-level comparison of editor architectures.
 - Benchmarking, profiling strategy, scalability work, or performance-at-scale decisions.
 - RFC, proposal, or spec work that needs repo research plus external grounding.
 - Explicit review of a serious plan, spec, or proposal.
@@ -87,7 +89,8 @@ Handle $ARGUMENTS. Use this for architectural, comparative, benchmark, migration
    `docs/solutions/**`, `docs/research/**`, `docs/plans/**`, and relevant git
    history before inventing a new pattern. Use `research-wiki` when the answer
    belongs in the compiled research layer.
-10. If the work is editor-framework-facing, start from `@docs/analysis/editor-architecture-candidates.md` as the candidate map instead of widening the field randomly.
+10. If the decision requires source-level comparison of one or more editor
+    architectures, use `editor-audit` first and consume its decision artifact.
 11. For library or framework questions, inspect the local clone in `..` first per AGENTS. If missing, clone it. Only then reach for official docs.
 12. Pick the smallest justified helper stack for the lane.
 13. For any tracker source, restate for yourself:
@@ -153,9 +156,14 @@ Apply this section only when the task source is a tracker item.
   agent-navigable. It ranks delete/merge/inline/simplify/split/keep/defer
   decisions and may apply only safe behavior-neutral cleanup packets;
   `major-task` owns broader accepted decisions, tradeoffs, and rollout plans.
-- `slate-research`
+- `plite-research`
   Use for Slate/editor substrate research, OSS discovery, source-mining, and
   issue-corpus evidence.
+- `editor-audit`
+  Use for exhaustive source-level comparison of selected local editor
+  architectures against live Plite and Plate. It owns concept accounting,
+  verified commit cursors, sync, and current/proposed change dossiers; this
+  skill retains broader migration and proposal execution.
 - `research-wiki`
   Use when prior decisions or reusable research need to be found, maintained,
   or promoted into the compiled research layer.
@@ -223,25 +231,21 @@ Apply this section only when the task source is a tracker item.
    - benchmark plan
    - intuition
 7. If the question is comparative, compare equivalent workloads, not vibes or marketing claims.
-8. For editor-framework performance comparisons:
-   - start from `@docs/analysis/editor-architecture-candidates.md`
-   - prefer `Plate vs Slate` first for direct inheritance pressure
-   - use `ProseMirror` and `Lexical` when questioning deeper runtime or architecture direction
-   - use `Tiptap` more for product-layer or packaging cost than raw engine performance
-   - use `Pretext` or `Premirror` when the question is pagination, composition, or layout-aware editing
-   - use `Portable Text` when the question is schema applicability, behavior
-     law, portability, or behavior-test standards; route public behavior
-     packaging to `best-api`
+8. For source-level editor architecture performance comparisons, use
+   `editor-audit` for mechanism mapping and `performance` for measured workload
+   proof. Do not infer runtime value from architectural elegance.
 9. If no measurement exists yet, say so plainly and provide the smallest honest measurement plan.
 
 ### Framework Comparison Or Migration
 
-1. For editor-framework comparisons, begin with `@docs/analysis/editor-architecture-candidates.md`.
-2. Narrow the candidate set based on the actual decision, not curiosity.
-3. Read local clone/source first, then official docs if the clone does not settle the question.
-4. Read official docs before blogs or random benchmark posts.
-5. Set explicit criteria up front: API ergonomics, extensibility, runtime cost, migration cost, docs quality, maintenance cost, or similar.
-6. End with a recommendation, tradeoffs, and what evidence would change the recommendation.
+1. For editor-framework source comparison, run `editor-audit` first.
+2. Consume its material candidates, rejected machinery, and owner routes.
+3. Use this path for the broader migration decision: rollout, operational cost,
+   ecosystem impact, and proposal execution.
+4. For non-editor frameworks, narrow candidates from the actual decision, read
+   local source first, and use official docs only when source does not settle
+   the contract.
+5. End with a recommendation, tradeoffs, and what evidence would change it.
 
 ### Spec Or Proposal
 
@@ -365,7 +369,8 @@ Apply this section only when the task came from a tracker item and reached a mea
   `--template major-task` before the work sprawled.
 - Touched docs, browser, package/API, or agent-native surfaces added the
   matching pack rows instead of inheriting another primary template.
-- Editor-framework comparison stayed bounded by the analysis doc when relevant.
+- Editor-framework source comparison was routed through `editor-audit` when
+  relevant.
 - Local clones/source were checked before external docs when third-party behavior mattered.
 - Only the necessary helpers were loaded.
 - Document-review personas were conditional, not ceremonial.

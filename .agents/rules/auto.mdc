@@ -329,7 +329,7 @@ Split long work into checkpoints that fit one high-quality prompt:
   missed a recurring expectation.
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
   smells under-researched, the next owner is unclear, or a timed run needs
-  discovery instead of blind local soak, invoke `slate-research` for Slate/editor
+  discovery instead of blind local soak, invoke `plite-research` for Plite/editor
   substrate problems and `research-wiki`, `docs-creator`, or the package owner
   for Plate/framework/package problems. The
   checkpoint is done only after the research artifact records ledgers, dedupe,
@@ -456,7 +456,7 @@ patch the owning rule instead of asking the user to route the next loop.
 
 Use research when automation needs external prior art, better testing strategy,
 OSS/GitHub discovery, scalable repo scans, or a research system before
-patching. Slate/editor substrate research goes through `slate-research`. Plate,
+patching. Plite/editor substrate research goes through `plite-research`. Plate,
 framework, package, docs, and product-DX research goes through `research-wiki`,
 `docs-creator`, direct source/docs audit, or the package owner.
 
@@ -1328,7 +1328,7 @@ The supervisor repairs whatever layer is missing:
   provenance, and unchecked row processing to `issue-harvester`. Do not patch
   Slate from external issue titles alone; require a portable invariant, current
   Slate/Plate coverage mapping, and a local proof target.
-- **Research/discovery gap:** route to `slate-research`, then convert the
+- **Research/discovery gap:** route to `plite-research`, then convert the
   strongest promoted lead into a Slate-native test, benchmark, API plan, docs
   packet, or keep/revert/quarantine packet.
 - **Workflow slowdown:** log slow commands/checkpoints, classify the owner, and

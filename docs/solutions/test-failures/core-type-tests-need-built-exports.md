@@ -34,29 +34,37 @@ pnpm test:types
 ```
 
 In type fixtures, declare the dependency and compose its write through the
-transaction passed to `.extendTx(...)`:
+transaction passed to a repeated `.extend()` update stage:
 
 ```ts
 const DependencyPlugin = createBasePlugin({
   key: 'dependency',
 })
-  .extendEditorApi(() => ({
-    dependencyValue: () => 'dependency' as const,
+  .extend(() => ({
+    extension: {
+      api: () => ({
+        dependencyValue: () => 'dependency' as const,
+      }),
+    },
   }))
-  .extendTx(() => () => ({
-    runDependency: () => undefined,
+  .extend(() => ({
+    update: () => ({
+      runDependency: () => undefined,
+    }),
   }));
 
 const DependentPlugin = createBasePlugin({
   dependencies: [DependencyPlugin],
   key: 'dependent',
-}).extendTx(({ editor }) => (tx) => ({
-  runDependent: () => {
-    const dependencyValue = editor.api.dependencyValue();
+}).extend(({ editor }) => ({
+  update: ({ tx }) => ({
+    runDependent: () => {
+      const dependencyValue = editor.api.dependencyValue();
 
-    tx.dependency.runDependency();
-    void dependencyValue;
-  },
+      tx.dependency.runDependency();
+      void dependencyValue;
+    },
+  }),
 }));
 ```
 
@@ -76,5 +84,5 @@ editor.update((tx) => {
 
 - Do not trust `pnpm test:types` failures on package subpaths until the affected package graph is built.
 - Declare plugin dependencies before reading their APIs through `editor.api`.
-- Define plugin writes with `.extendTx(...)` and compose dependencies through `tx.<pluginKey>.*`.
+- Define plugin writes with `.extend({ update })` and compose dependencies through `tx.<pluginKey>.*`.
 - Use `editor.plugin(Plugin).update.*` for one-shot calls and `editor.update((tx) => ...)` when several writes must share one transaction.

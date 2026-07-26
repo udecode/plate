@@ -549,9 +549,32 @@ Required shape:
    - show the package install command
    - import plugin APIs from the actual `platejs` or `@platejs/*` path
    - add the plugin to `createPlateEditor`
-   - use `.withComponent()` when only assigning a component
-   - use `.configure()` when options, shortcuts, injection, or extra behavior
-     are part of the example
+   - declare an ordinary node `component` in `createPlatePlugin({ component })`
+   - bind or replace an existing Plate descriptor's component with one terminal
+     `.configure({ component })`; convert base descriptors with
+     `toPlatePlugin(BasePlugin).configure({ component })`
+   - never teach `.withComponent()`
+   - never teach `render.node` as a public plugin-authoring surface
+   - teach codecs as
+     `codecs: ({ defineCodecs }) => defineCodecs(map)` in the constructor
+   - use `defineCodecs(map)` for self/product maps and
+     `defineCodecs(TargetPlugin, map)` for foreign maps; the helper injects the
+     target and keeps callback inference local
+   - never teach direct `codecs: { ... }`, manual codec `target` fields, a
+     global codec helper, casts, or callback annotations
+   - document the MIME-keyed map's `'text/html'` value as one rule or a
+     non-empty ordered rule tuple; multiple representations stay in that map
+   - keep inline `extension` objects plain; constructors and `.extend()`
+     contextually type them
+   - when documenting an extracted reusable Plate extension factory, pass the
+     plugin context and return `context.defineEditorExtension({ ... })` to
+     preserve nested command/input/state/transaction inference
+   - distinguish that context helper from `defineEditorExtension` imported
+     from `@platejs/plite`, which is for standalone Plite extensions
+   - put constructor-accessible fields and their context callbacks directly in
+     `createBasePlugin()` / `createPlatePlugin()`; use `.extend()` only for an
+     imported/prebuilt descriptor, a shared factory the constructor cannot
+     access, or a real earlier-stage type dependency
 5. Style plugins without distinct components should document their schema
    placement truth. Cross-cut block styles configure
    `options.targetPluginKeys`; render/parser injection is derived and must not

@@ -158,15 +158,15 @@ const editor = createPlateEditor({
       ],
     }),
     BulletedListPlugin.configure({
-      render: { node: BulletedListElement },
+      component: BulletedListElement,
       shortcuts: { toggle: { keys: 'mod+alt+5' } },
     }),
     NumberedListPlugin.configure({
-      render: { node: NumberedListElement },
+      component: NumberedListElement,
       shortcuts: { toggle: { keys: 'mod+alt+6' } },
     }),
     TaskListPlugin.configure({
-      render: { node: TaskListElement },
+      component: TaskListElement,
       shortcuts: { toggle: { keys: 'mod+alt+7' } },
     }),
   ],
@@ -174,7 +174,7 @@ const editor = createPlateEditor({
 ```
 
 - `inputRules`: Registers the classic markdown entry rules for bulleted, ordered, and task lists.
-- `render.node`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
+- `.configure({ component })`: Assigns [`BulletedListElement`](/docs/components/list-classic-node), [`NumberedListElement`](/docs/components/list-classic-node), and [`TaskListElement`](/docs/components/list-classic-node) to render list elements.
 - `shortcuts.toggle`: Defines keyboard [shortcuts](/docs/plugin-shortcuts) to toggle list types (`mod+alt+5` for bulleted, `mod+alt+6` for numbered, `mod+alt+7` for task lists).
 
 ### Add Toolbar Button

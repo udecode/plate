@@ -30,65 +30,65 @@ import { HrElement } from '@/registry/ui/hr-node';
 import { ParagraphElement } from '@/registry/ui/paragraph-node';
 
 export const BasicBlocksKit = [
-  ParagraphPlugin.withComponent(ParagraphElement),
+  ParagraphPlugin.configure({ component: ParagraphElement }),
   H1Plugin.configure({
+    component: H1Element,
     inputRules: [HeadingRules.markdown()],
-    render: { node: H1Element },
     rules: {
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+1' } },
   }),
   H2Plugin.configure({
+    component: H2Element,
     inputRules: [HeadingRules.markdown()],
-    render: { node: H2Element },
     rules: {
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+2' } },
   }),
   H3Plugin.configure({
+    component: H3Element,
     inputRules: [HeadingRules.markdown()],
-    render: { node: H3Element },
     rules: {
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+3' } },
   }),
   H4Plugin.configure({
+    component: H4Element,
     inputRules: [HeadingRules.markdown()],
-    render: { node: H4Element },
     rules: {
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+4' } },
   }),
   H5Plugin.configure({
+    component: H5Element,
     inputRules: [HeadingRules.markdown()],
-    render: { node: H5Element },
     rules: {
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+5' } },
   }),
   H6Plugin.configure({
+    component: H6Element,
     inputRules: [HeadingRules.markdown()],
-    render: { node: H6Element },
     rules: {
       break: { empty: 'reset' },
     },
     shortcuts: { toggle: { keys: 'mod+alt+6' } },
   }),
   BlockquotePlugin.configure({
+    component: BlockquoteElement,
     inputRules: [BlockquoteRules.markdown()],
-    render: { node: BlockquoteElement },
     shortcuts: { toggle: { keys: 'mod+shift+period' } },
   }),
   HorizontalRulePlugin.configure({
+    component: HrElement,
     inputRules: [
       HorizontalRuleRules.markdown({ variant: '-' }),
       HorizontalRuleRules.markdown({ variant: '_' }),
     ],
-    render: { node: HrElement },
   }),
 ];

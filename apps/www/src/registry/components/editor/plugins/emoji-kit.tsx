@@ -10,5 +10,5 @@ export const EmojiKit = [
   EmojiPlugin.configure({
     options: { data: emojiMartData as unknown as EmojiMartData },
   }),
-  EmojiInputPlugin.withComponent(EmojiInputElement),
+  EmojiInputPlugin.configure({ component: EmojiInputElement }),
 ];

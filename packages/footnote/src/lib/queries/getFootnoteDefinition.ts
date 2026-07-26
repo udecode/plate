@@ -1,5 +1,5 @@
 import type { BaseEditor } from '@platejs/core';
-import { PathApi } from '@platejs/plite';
+import { type Path, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import {
@@ -54,7 +54,7 @@ export const getFootnoteIdentifiers = (editor: BaseEditor) =>
 
 export const isDuplicateFootnoteDefinition = (
   editor: BaseEditor,
-  { path }: { path: number[] }
+  { path }: { path: Path }
 ) => {
   const entry = editor.read.nodes.get<TFootnoteElement>(path);
 

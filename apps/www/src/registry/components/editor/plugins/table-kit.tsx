@@ -15,8 +15,8 @@ import {
 } from '@/registry/ui/table-node';
 
 export const TableKit = [
-  TablePlugin.withComponent(TableElement),
-  TableRowPlugin.withComponent(TableRowElement),
-  TableCellPlugin.withComponent(TableCellElement),
-  TableCellHeaderPlugin.withComponent(TableCellHeaderElement),
+  TablePlugin.configure({ component: TableElement }),
+  TableRowPlugin.configure({ component: TableRowElement }),
+  TableCellPlugin.configure({ component: TableCellElement }),
+  TableCellHeaderPlugin.configure({ component: TableCellHeaderElement }),
 ];

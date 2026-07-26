@@ -1,7 +1,7 @@
 import type { BaseEditor } from '@platejs/core';
 import {
   type Descendant,
-  type ValueOf,
+  type Element,
   ElementApi,
   TextApi,
 } from '@platejs/plite';
@@ -12,8 +12,20 @@ import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 
 export function diffToSuggestions<E extends BaseEditor>(
   editor: E,
-  doc0: Descendant[],
-  doc1: Descendant[],
+  doc0: readonly Element[],
+  doc1: readonly Element[],
+  options?: Partial<ComputeDiffOptions>
+): Element[];
+export function diffToSuggestions<E extends BaseEditor>(
+  editor: E,
+  doc0: readonly Descendant[],
+  doc1: readonly Descendant[],
+  options?: Partial<ComputeDiffOptions>
+): Descendant[];
+export function diffToSuggestions<E extends BaseEditor>(
+  editor: E,
+  doc0: readonly Descendant[],
+  doc1: readonly Descendant[],
   {
     getDeleteProps = (node) =>
       editor.plugin(BaseSuggestionPlugin).api.getProps(node, {
@@ -31,20 +43,19 @@ export function diffToSuggestions<E extends BaseEditor>(
     isInline = editor.read.schema.isInline,
     ...options
   }: Partial<ComputeDiffOptions> = {}
-): ValueOf<E> {
+): Descendant[] {
   const values = computeDiff(doc0, doc1, {
     getDeleteProps,
     getInsertProps,
     getUpdateProps,
     isInline,
     ...options,
-  }) as ValueOf<E>;
+  });
+  const api = editor.plugin(BaseSuggestionPlugin).api;
 
-  // Recursively traverse all nodes to process elements and their children
-  const traverseNodes = (nodes: Descendant[]): Descendant[] => {
-    return nodes.map((node, index) => {
+  const traverseNodes = (nodes: readonly Descendant[]): Descendant[] =>
+    nodes.map((node, index) => {
       if (ElementApi.isElement(node) && 'children' in node) {
-        // If the node is an element with children, recursively process its children
         return {
           ...node,
           children: traverseNodes(node.children),
@@ -52,61 +63,36 @@ export function diffToSuggestions<E extends BaseEditor>(
       }
 
       if (TextApi.isText(node) && node[KEYS.suggestion]) {
-        return unifyAdjacentSuggestionIds(node, index, nodes, editor);
+        const current = api.suggestionData(node);
+        const previous = index > 0 ? nodes[index - 1] : undefined;
+        const previousData =
+          previous && Boolean(previous[KEYS.suggestion])
+            ? api.suggestionData(previous)
+            : undefined;
+
+        if (current?.type === 'insert' && previousData?.type === 'remove') {
+          const updatedNode = {
+            ...node,
+            [api.key(previousData.id)]: {
+              ...current,
+              id: previousData.id,
+              createdAt: previousData.createdAt,
+            },
+          };
+
+          delete updatedNode[api.key(current.id)];
+
+          return updatedNode;
+        }
       }
+
       return node;
     });
-  };
 
-  return traverseNodes(values) as ValueOf<E>;
+  return traverseNodes(values);
 }
 
 const withoutUndefined = (properties: Record<string, unknown>) =>
   Object.fromEntries(
     Object.entries(properties).filter(([, value]) => value !== undefined)
   );
-
-/**
- * Unifies the ID of adjacent insert and remove suggestions. When an insert
- * suggestion follows a remove suggestion, the insert suggestion inherits the ID
- * and creation time from the remove suggestion. This allows the UI to treat
- * them as a single suggestion for display and interaction purposes.
- */
-function unifyAdjacentSuggestionIds<E extends BaseEditor>(
-  node: Descendant,
-  index: number,
-  nodes: Descendant[],
-  editor: E
-): Descendant {
-  const api = editor.plugin(BaseSuggestionPlugin).api;
-  const currentNodeData = api.suggestionData(node as any);
-
-  if (currentNodeData?.type === 'insert') {
-    // Get the previous node if it exists
-    const previousNode = index > 0 ? nodes[index - 1] : null;
-
-    if (previousNode?.[KEYS.suggestion]) {
-      const previousData = api.suggestionData(previousNode as any);
-
-      if (previousData?.type === 'remove') {
-        // Create a new node with the updated suggestion data
-        const updatedNode = {
-          ...node,
-          [api.key(previousData.id)]: {
-            ...currentNodeData,
-            id: previousData.id,
-            createdAt: previousData.createdAt,
-          },
-        };
-
-        // Remove the original insert suggestion key to avoid duplication
-        const key = api.key(currentNodeData.id);
-        delete updatedNode[key];
-
-        return updatedNode;
-      }
-    }
-  }
-
-  return node;
-}

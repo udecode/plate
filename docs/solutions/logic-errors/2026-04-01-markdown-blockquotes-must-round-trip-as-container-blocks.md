@@ -50,7 +50,7 @@ Make blockquote a real container contract across the whole surface:
 - deserialize markdown blockquotes as block children
 - group only legacy inline children into paragraphs for compatibility
 - serialize blockquote children directly instead of forcing a single paragraph wrapper
-- define the blockquote command with `.extendTx(...)` and delegate wrapper semantics to `tx.blocks.toggle(...)`
+- define the blockquote command as an `update` contribution in `.extend()` and delegate wrapper semantics to `tx.blocks.toggle(...)`
 - replace stale text-block break rules with container lift rules
 - update docs and seeded example values to use nested paragraph children
 
@@ -70,7 +70,7 @@ return [
 ];
 ```
 
-The plugin's `.extendTx(...)` command delegates to the active transaction:
+The plugin's `.extend({ update })` command delegates to the active transaction:
 
 ```ts
 toggle: () => {
