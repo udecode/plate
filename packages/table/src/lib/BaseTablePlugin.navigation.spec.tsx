@@ -45,7 +45,7 @@ describe('table navigation', () => {
         const editor = createTableEditor(input);
         const nextCell = editor
           .plugin(BaseTablePlugin)
-          .api.getCellInNextRow([0, 0])!;
+          .read.getCellInNextRow([0, 0])!;
 
         expect(nextCell[1]).toEqual([0, 1, 0]);
         expect(editor.read.text.string(nextCell[1])).toBe('21');
@@ -67,7 +67,7 @@ describe('table navigation', () => {
         const editor = createTableEditor(input);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellInNextRow([0, 0])
+          editor.plugin(BaseTablePlugin).read.getCellInNextRow([0, 0])
         ).toBeUndefined();
       });
     });
@@ -108,7 +108,7 @@ describe('table navigation', () => {
         const editor = createTableEditor(input);
         const previousCell = editor
           .plugin(BaseTablePlugin)
-          .api.getCellInPreviousRow([0, 1])!;
+          .read.getCellInPreviousRow([0, 1])!;
 
         expect(previousCell[1]).toEqual([0, 0, 1]);
         expect(editor.read.text.string(previousCell[1])).toBe('12');
@@ -130,7 +130,7 @@ describe('table navigation', () => {
         const editor = createTableEditor(input);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellInPreviousRow([0, 0])
+          editor.plugin(BaseTablePlugin).read.getCellInPreviousRow([0, 0])
         ).toBeUndefined();
       });
     });
@@ -169,7 +169,7 @@ describe('table navigation', () => {
 
         const nextCell = editor
           .plugin(BaseTablePlugin)
-          .api.getNextCell(currentCell, [0, 0, 0], currentRow)!;
+          .read.getNextCell(currentCell, [0, 0, 0], currentRow)!;
 
         expect(nextCell[1]).toEqual([0, 0, 1]);
         expect(editor.read.text.string(nextCell[1])).toBe('12');
@@ -202,7 +202,7 @@ describe('table navigation', () => {
 
         const nextCell = editor
           .plugin(BaseTablePlugin)
-          .api.getNextCell(currentCell, [0, 0, 1], currentRow)!;
+          .read.getNextCell(currentCell, [0, 0, 1], currentRow)!;
 
         expect(nextCell[1]).toEqual([0, 1, 0]);
         expect(editor.read.text.string(nextCell[1])).toBe('21');
@@ -243,7 +243,7 @@ describe('table navigation', () => {
 
         const previousCell = editor
           .plugin(BaseTablePlugin)
-          .api.getPreviousCell(currentCell, [0, 0, 1], currentRow)!;
+          .read.getPreviousCell(currentCell, [0, 0, 1], currentRow)!;
 
         expect(previousCell[1]).toEqual([0, 0, 0]);
         expect(editor.read.text.string(previousCell[1])).toBe('11');
@@ -276,7 +276,7 @@ describe('table navigation', () => {
 
         const previousCell = editor
           .plugin(BaseTablePlugin)
-          .api.getPreviousCell(currentCell, [0, 1, 0], currentRow)!;
+          .read.getPreviousCell(currentCell, [0, 1, 0], currentRow)!;
 
         expect(previousCell[1]).toEqual([0, 0, 1]);
         expect(editor.read.text.string(previousCell[1])).toBe('12');

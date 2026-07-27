@@ -5,7 +5,7 @@ import { KEYS } from 'platejs';
 
 export const IndentKit = [
   IndentPlugin.configure({
-    options: {
+    initialState: {
       offset: 24,
     },
     targetPluginKeys: [

@@ -8,7 +8,6 @@ export * from './getFragmentProp';
 export * from './getInjectMatch';
 export * from './getPluginNodeProps';
 export * from './hotkeys';
-export * from './htmlPluginContext';
 export * from './isType';
 export * from './mergeDeepToNodes';
 export * from './omitPluginContext';

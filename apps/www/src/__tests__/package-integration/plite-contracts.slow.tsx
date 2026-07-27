@@ -3,7 +3,12 @@
 import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
-import { NodeApi, createBaseEditor, createBasePlugin } from 'platejs';
+import {
+  type BaseEditor,
+  NodeApi,
+  createBaseEditor,
+  createBasePlugin,
+} from 'platejs';
 
 jsxt;
 
@@ -21,20 +26,16 @@ const createVoidElementPlugin = (key: string) =>
     type: key,
   });
 
-const deleteBackwardCharacter = (
-  editor: ReturnType<typeof createBaseEditor>
-) => {
+const deleteBackwardCharacter = (editor: BaseEditor<any, any>) => {
   editor.update.text.deleteBackward({ unit: 'character' });
 };
 
-const deleteForwardCharacter = (
-  editor: ReturnType<typeof createBaseEditor>
-) => {
+const deleteForwardCharacter = (editor: BaseEditor<any, any>) => {
   editor.update.text.deleteForward({ unit: 'character' });
 };
 
 const toggleMark = (
-  editor: ReturnType<typeof createBaseEditor>,
+  editor: BaseEditor<any, any>,
   key: string,
   options: { remove?: string } = {}
 ) => {
@@ -46,7 +47,7 @@ const toggleMark = (
   });
 };
 
-const isTrailingTextEmpty = (editor: ReturnType<typeof createBaseEditor>) =>
+const isTrailingTextEmpty = (editor: BaseEditor<any, any>) =>
   editor.read((state) => {
     const selection = state.selection();
     if (!selection) return true;

@@ -9,8 +9,8 @@ import { stripMarkdown } from '@platejs/markdown';
 import { GhostText } from '@/registry/ui/ghost-text';
 
 export const CopilotKit = [
-  CopilotPlugin.configure(({ api }) => ({
-    options: {
+  CopilotPlugin.configure(({ update }) => ({
+    initialState: {
       completeOptions: {
         api: '/api/ai/copilot',
         body: {
@@ -28,14 +28,14 @@ export const CopilotKit = [
         },
         onError: () => {
           // Mock the API response. Remove it when you implement the route /api/ai/copilot
-          api.setBlockSuggestion({
+          update.setBlockSuggestion({
             text: stripMarkdown(faker.lorem.sentence()),
           });
         },
         onFinish: (_, completion) => {
           if (completion === '0') return;
 
-          api.setBlockSuggestion({
+          update.setBlockSuggestion({
             text: stripMarkdown(completion),
           });
         },
@@ -47,7 +47,7 @@ export const CopilotKit = [
 
         if (!contextEntry) return '';
 
-        const prompt = editor.api.markdown.serialize({
+        const prompt = editor.read.markdown.serialize({
           value: { children: [contextEntry[0] as Element] },
         });
 

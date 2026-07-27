@@ -57,7 +57,7 @@ import type {
   InferApi,
   InferDependencies,
   InferEnabled,
-  InferOptions,
+  InferPluginStoreState,
   InferPluginBehaviorConfig,
   InferPluginApi,
   InferPluginConfigTree,
@@ -77,6 +77,7 @@ import type {
   PluginReference,
   PluginSchema,
   PluginSchemaModel,
+  PluginSelectors,
   WithAnyKey,
 } from './PluginConfig';
 import { pluginCodecMapDeclaration } from './pluginAuthoringContext';
@@ -99,7 +100,6 @@ type ErasedPluginInvariantKey =
   | '__extensions'
   | '__readExtensions'
   | '__resolved'
-  | '__selectorExtensions'
   | '__txExtensions'
   | 'clone'
   | 'configure'
@@ -107,7 +107,7 @@ type ErasedPluginInvariantKey =
   | 'extend'
   | 'handlers'
   | 'inject'
-  | 'options'
+  | 'initialState'
   | 'parsers'
   | 'render'
   | 'rules'
@@ -124,7 +124,6 @@ export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   __extensions: ErasedBasePlugin['__extensions'];
   __readExtensions: ErasedBasePlugin['__readExtensions'];
   __resolved?: boolean;
-  __selectorExtensions: ErasedBasePlugin['__selectorExtensions'];
   __txExtensions: ErasedBasePlugin['__txExtensions'];
   clone: any;
   configure: any;
@@ -132,7 +131,7 @@ export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   extend: any;
   handlers: ErasedPluginHandlers;
   inject: ErasedPluginInject;
-  options: any;
+  initialState: any;
   parsers: any;
   render: any;
   rules: any;
@@ -146,7 +145,7 @@ export type AnyResolvedBasePlugin = Omit<
   decorate?: any;
   handlers: ErasedPluginHandlers;
   inject: ErasedPluginInject;
-  options: any;
+  initialState: any;
   parsers: any;
   render: any;
   rules: any;
@@ -779,9 +778,9 @@ export type DefinePluginCodecs<C extends AnyPluginConfig> = {
 
 export type PartialBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   Partial<ResolvedBasePlugin<C>>,
-  'options' | 'render'
+  'initialState' | 'render'
 > & {
-  options?: Partial<InferOptions<C>>;
+  initialState?: Partial<InferPluginStoreState<C>>;
   render?: Partial<Omit<NonNullable<BasePlugin<C>['render']>, 'node'>>;
 };
 
@@ -799,9 +798,8 @@ type ErasedBasePluginOverride = Partial<{
   handlers: any;
   inject: any;
   inputRules: any;
-  options: any;
+  initialState: any;
   parsers: any;
-  priority: number;
   render: any;
   rules: any;
   selectors: any;
@@ -816,7 +814,7 @@ type ErasedBasePluginOverride = Partial<{
  * Configuration-only patch for an already-installed foreign plugin.
  *
  * The target key cannot provide target-specific inference. Pass the target
- * config type explicitly when exact option checking is required.
+ * config type explicitly when exact initial-state checking is required.
  */
 export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
   PartialBasePlugin<C>,
@@ -829,7 +827,6 @@ export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
   | '__extensions'
   | '__readExtensions'
   | '__pluginReference'
-  | '__selectorExtensions'
   | '__txExtensions'
   | 'clone'
   | 'configure'
@@ -842,10 +839,10 @@ export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
 
 export type RenderStaticNodeWrapper<C extends AnyPluginConfig = any> = (
   props: RenderStaticNodeWrapperProps<C>
-) => RenderStaticNodeWrapperFunction;
+) => RenderStaticNodeWrapperFunction<C>;
 
-export type RenderStaticNodeWrapperFunction =
-  | ((hocProps: PliteRenderElementProps) => React.ReactNode)
+export type RenderStaticNodeWrapperFunction<C extends AnyPluginConfig = any> =
+  | ((hocProps: PliteRenderElementProps<Element, C>) => React.ReactNode)
   | null
   | undefined;
 
@@ -898,8 +895,9 @@ export type PlatePluginApiExtension = Readonly<{
 }>;
 
 export type BasePluginContextEditor<C extends AnyPluginConfig = PluginConfig> =
-  Omit<BaseEditor, 'api' | 'update'> & {
+  Omit<BaseEditor, 'api' | 'read' | 'update'> & {
     readonly api: BaseEditor<Value, InferPluginConfigTree<C>>['api'];
+    read: BaseEditor<Value, InferPluginConfigTree<C>>['read'];
     update: PlatePluginOwnUpdate<C>;
   };
 
@@ -982,7 +980,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
        * NOTE: The function can run React hooks. NOTE: Do not run React hooks
        * in the wrapper function. It is not equivalent to a React component.
        */
-      aboveNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
+      aboveNodes?: RenderStaticNodeWrapper<C>;
       /**
        * When other plugins' `node` components are rendered, this function can
        * return an optional wrapper function that turns a `node`'s props to a
@@ -993,7 +991,7 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
        * NOTE: The function can run React hooks. NOTE: Do not run React hooks
        * in the wrapper function. It is not equivalent to a React component.
        */
-      belowNodes?: RenderStaticNodeWrapper<WithAnyKey<C>>;
+      belowNodes?: RenderStaticNodeWrapper<C>;
       /** Renders a component after the main editor container. */
       afterContainer?: () => React.ReactElement<any> | null;
       /**
@@ -1052,13 +1050,13 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 
 export type BasePluginConfig<
   K extends string = any,
-  O = {},
+  StoreState = {},
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
   State = {},
   D extends readonly PluginReference[] = readonly [],
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   SchemaModel = never,
@@ -1067,18 +1065,34 @@ export type BasePluginConfig<
 > = Partial<
   Omit<
     BasePlugin<
-      PluginConfig<K, O, A, Tx, S, State, D, SchemaModel, PluginApi, Enabled>
+      PluginConfig<
+        K,
+        StoreState,
+        A,
+        Tx,
+        S,
+        State,
+        D,
+        SchemaModel,
+        PluginApi,
+        Enabled
+      >
     >,
-    keyof BasePluginMethods | 'api' | 'options' | 'render' | 'schema' | 'type'
+    | keyof BasePluginMethods
+    | 'api'
+    | 'initialState'
+    | 'render'
+    | 'schema'
+    | 'type'
   > & {
     api: Deep2Partial<A> & EA;
-    options: Partial<O> & EO;
+    initialState: Partial<StoreState> & EStoreState;
     render: Omit<
       NonNullable<
         BasePlugin<
           PluginConfig<
             K,
-            O,
+            StoreState,
             A,
             Tx,
             S,
@@ -1093,7 +1107,18 @@ export type BasePluginConfig<
       'node'
     > | null;
     schema: PluginSchema<
-      PluginConfig<K, O, A, Tx, S, State, D, SchemaModel, PluginApi, Enabled>
+      PluginConfig<
+        K,
+        StoreState,
+        A,
+        Tx,
+        S,
+        State,
+        D,
+        SchemaModel,
+        PluginApi,
+        Enabled
+      >
     > | null;
     selectors: Partial<S> & ES;
     type: string;
@@ -1102,19 +1127,19 @@ export type BasePluginConfig<
 
 type RuntimeBasePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
 > = Omit<
   BasePluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
     InferState<C>,
     InferDependencies<C>,
-    EO,
+    EStoreState,
     EA,
     ES,
     InferPluginSchemaModel<C>,
@@ -1129,7 +1154,7 @@ type RuntimeBasePluginConfig<
 export type BasePluginExtensionContract = {
   api?: object;
   extension?: object | readonly object[];
-  options?: object;
+  initialState?: object;
   read?: object;
   selectors?: object;
   update?: object;
@@ -1147,8 +1172,9 @@ type ExtensionContractField<
 type ExtensionContractApi<TContract extends BasePluginExtensionContract> =
   ExtensionContractField<TContract, 'api'>;
 
-type ExtensionContractOptions<TContract extends BasePluginExtensionContract> =
-  ExtensionContractField<TContract, 'options'>;
+type ExtensionContractInitialState<
+  TContract extends BasePluginExtensionContract,
+> = ExtensionContractField<TContract, 'initialState'>;
 
 type ExtensionContractRead<TContract extends BasePluginExtensionContract> =
   ExtensionContractField<TContract, 'read'>;
@@ -1240,7 +1266,7 @@ type ExtendedPluginState<
 
 export type UnifiedRuntimeBasePluginConfig<
   C extends AnyPluginConfig,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
@@ -1253,12 +1279,14 @@ export type UnifiedRuntimeBasePluginConfig<
   codecs?: PluginCodecMapDeclaration;
   /** Raw Plite editor behavior contributed by this authoring stage. */
   extension?: UnifiedEditorExtensionInput<C, TExtension>;
-  options?: TOptions & Partial<InferOptions<C>>;
+  initialState?: TStoreState & Partial<InferPluginStoreState<C>>;
   /** State-bound reads owned by this plugin. */
   read?: (context: {
     state: PlatePluginReadState<InferPluginConfigTree<C>>;
   }) => TRead & Partial<ExistingPluginState<C>>;
-  selectors?: TSelectors & Partial<InferSelectors<C>>;
+  selectors?: TSelectors &
+    PluginSelectors<InferPluginStoreState<C> & TStoreState> &
+    Partial<InferSelectors<C>>;
   /** Transaction-bound updates owned by this plugin. */
   update?: (context: {
     context: EditorUpdateContext;
@@ -1267,10 +1295,10 @@ export type UnifiedRuntimeBasePluginConfig<
 } & Omit<
   WithValidatedBaseShortcuts<
     C,
-    RuntimeBasePluginConfig<C, TOptions, {}, {}>,
+    RuntimeBasePluginConfig<C, TStoreState, {}, {}>,
     TShortcuts
   >,
-  'api' | 'options' | 'selectors'
+  'api' | 'initialState' | 'selectors'
 >;
 
 type PortableRuntimeBasePluginConfig<
@@ -1280,7 +1308,7 @@ type PortableRuntimeBasePluginConfig<
 > = Omit<
   UnifiedRuntimeBasePluginConfig<
     C,
-    ExtensionContractField<TContract, 'options'>,
+    ExtensionContractField<TContract, 'initialState'>,
     ExtensionContractField<TContract, 'api'>,
     ExtensionContractField<TContract, 'read'>,
     ExtensionContractField<TContract, 'selectors'>,
@@ -1298,14 +1326,14 @@ type PortableRuntimeBasePluginConfig<
 };
 
 type InferredExtensionContract<
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
   TUpdate extends object,
 > = {
   api: TApi;
-  options: TOptions;
+  initialState: TStoreState;
   read: TRead;
   selectors: TSelectors;
   update: TUpdate;
@@ -1313,13 +1341,13 @@ type InferredExtensionContract<
 
 type EffectiveInferredExtensionContract<
   TContract extends BasePluginExtensionContract,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
   TUpdate extends object,
 > = InferredExtensionContract<
-  EffectiveExtensionContractField<TContract, 'options', TOptions>,
+  EffectiveExtensionContractField<TContract, 'initialState', TStoreState>,
   EffectiveExtensionContractField<TContract, 'api', TApi>,
   EffectiveExtensionContractField<TContract, 'read', TRead>,
   EffectiveExtensionContractField<TContract, 'selectors', TSelectors>,
@@ -1328,20 +1356,20 @@ type EffectiveInferredExtensionContract<
 
 type StaticBasePluginConfigBase<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   Enabled extends boolean = InferEnabled<C>,
 > = Omit<
   BasePluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
     InferState<C>,
     InferDependencies<C>,
-    EO,
+    EStoreState,
     EA,
     ES,
     InferPluginSchemaModel<C>,
@@ -1353,11 +1381,14 @@ type StaticBasePluginConfigBase<
 
 type StaticBasePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   Enabled extends boolean = InferEnabled<C>,
-> = Omit<StaticBasePluginConfigBase<C, EO, EA, ES, Enabled>, 'schema'> & {
+> = Omit<
+  StaticBasePluginConfigBase<C, EStoreState, EA, ES, Enabled>,
+  'schema'
+> & {
   schema?: never;
 };
 
@@ -1367,11 +1398,11 @@ type RequireAtLeastOne<T extends object> = {
 
 type TerminalBasePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   Enabled extends boolean = InferEnabled<C>,
-> = Omit<StaticBasePluginConfig<C, EO, EA, ES, Enabled>, 'schema'> & {
+> = Omit<StaticBasePluginConfig<C, EStoreState, EA, ES, Enabled>, 'schema'> & {
   /** Binds this Base descriptor to a renderer component for static consumers. */
   component?: NodeComponent;
   schema?: never;
@@ -1380,7 +1411,7 @@ type TerminalBasePluginConfig<
 type ContextualBasePluginConfig<C extends AnyPluginConfig> = Omit<
   Pick<
     RuntimeBasePluginConfig<C>,
-    'handlers' | 'options' | 'render' | 'shortcuts'
+    'handlers' | 'initialState' | 'render' | 'shortcuts'
   >,
   'render'
 > & {
@@ -1412,7 +1443,7 @@ type PluginConfigurationLayer<C extends AnyPluginConfig> =
       kind: 'object';
       value: BasePluginConfig<
         C['key'],
-        InferOptions<C>,
+        InferPluginStoreState<C>,
         InferApi<C>,
         InferTx<C>,
         InferSelectors<C>,
@@ -1430,14 +1461,14 @@ type PluginConfigurationLayer<C extends AnyPluginConfig> =
 /** Plugin descriptor returned by `extend`, with its inferred additions merged. */
 export type ExtendedBasePlugin<
   C extends AnyPluginConfig,
-  EO,
+  EStoreState,
   EA,
   ES,
   Enabled extends boolean = InferEnabled<C>,
 > = BasePlugin<
   PluginConfig<
     C['key'],
-    EO & InferOptions<C>,
+    EStoreState & InferPluginStoreState<C>,
     EA & InferApi<C>,
     InferTx<C>,
     ES & InferSelectors<C>,
@@ -1454,7 +1485,10 @@ type UnifiedExtendedBasePluginConfig<
   TContract extends BasePluginExtensionContract,
 > = PluginConfig<
   C['key'],
-  AdditiveContract<InferOptions<C>, ExtensionContractOptions<TContract>>,
+  AdditiveContract<
+    InferPluginStoreState<C>,
+    ExtensionContractInitialState<TContract>
+  >,
   InferApi<C>,
   ExtendedPluginTx<C, TContract>,
   AdditiveContract<InferSelectors<C>, ExtensionContractSelectors<TContract>>,
@@ -1474,7 +1508,7 @@ export type ExtendedBasePluginWithExtension<
 > = BasePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C> & TExtensionApi,
     InferTx<C> & TExtensionTx,
     InferSelectors<C>,
@@ -1502,7 +1536,7 @@ export type UnifiedExtendedBasePlugin<
 export type UnifiedStageExtendedBasePlugin<
   C extends AnyPluginConfig,
   TContract extends BasePluginExtensionContract,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
@@ -1512,7 +1546,7 @@ export type UnifiedStageExtendedBasePlugin<
   C,
   EffectiveInferredExtensionContract<
     TContract,
-    TOptions,
+    TStoreState,
     TApi,
     TRead,
     TSelectors,
@@ -1566,13 +1600,13 @@ export type BasePluginAuthoringContext<
 
 type UnifiedStaticExtendedBasePlugin<
   C extends AnyPluginConfig,
-  EO,
+  EStoreState,
   EA,
   ES,
   Enabled extends boolean,
   TExtension extends object | readonly object[],
 > = ExtendedBasePluginWithExtension<
-  InferConfig<ExtendedBasePlugin<C, EO, EA, ES, Enabled>>,
+  InferConfig<ExtendedBasePlugin<C, EStoreState, EA, ES, Enabled>>,
   ExtensionApiContribution<TExtension>,
   ExtensionTxContribution<TExtension>,
   ExtensionStateContribution<TExtension>
@@ -1599,7 +1633,7 @@ type ConfiguredBasePluginType<
 > = ConfiguredBasePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
@@ -1624,7 +1658,7 @@ type ConfiguredBasePluginEnabled<
 > = ConfiguredBasePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
@@ -1661,14 +1695,13 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   ) => PlateEditorExtensionInput | undefined)[];
   __extensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
   __readExtensions: PlatePluginReadExtension[];
-  __selectorExtensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
   __txExtensions: PlatePluginTxExtension[];
   clone(): BasePlugin<C>;
   /**
    * Applies this descriptor's single terminal consumer configuration.
    *
    * Declare reusable behavior with `extend` before this call. Contextual
-   * callbacks can override existing options, handlers, renderers, and
+   * callbacks can override existing initial state, handlers, renderers, and
    * shortcuts without widening the plugin contract. Extensions read the
    * configured values, while this configuration remains the final override.
    */
@@ -1727,7 +1760,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   ): ConfiguredBasePlugin<C>;
   extend<
     const TContract extends BasePluginExtensionContract = {},
-    const TOptions extends object = {},
+    const TStoreState extends object = {},
     const TApi extends object = {},
     const TRead extends object = {},
     const TSelectors extends object = {},
@@ -1739,7 +1772,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ctx: BasePluginContext<C>
     ) => UnifiedRuntimeBasePluginConfig<
       C,
-      EffectiveExtensionContractField<TContract, 'options', TOptions>,
+      EffectiveExtensionContractField<TContract, 'initialState', TStoreState>,
       EffectiveExtensionContractField<TContract, 'api', TApi>,
       EffectiveExtensionContractField<TContract, 'read', TRead>,
       EffectiveExtensionContractField<TContract, 'selectors', TSelectors>,
@@ -1751,7 +1784,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     C,
     EffectiveInferredExtensionContract<
       TContract,
-      TOptions,
+      TStoreState,
       TApi,
       TRead,
       TSelectors,
@@ -1785,7 +1818,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     EffectiveExtensionContract<C, TContract, {}>
   >;
   extend<
-    const TOptions extends object = {},
+    const TStoreState extends object = {},
     const TApi extends object = {},
     const TRead extends object = {},
     const TSelectors extends object = {},
@@ -1795,7 +1828,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     extendConfig: UnifiedRuntimeBasePluginConfig<
       C,
-      TOptions,
+      TStoreState,
       TApi,
       TRead,
       TSelectors,
@@ -1806,7 +1839,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   ): UnifiedStageExtendedBasePlugin<
     C,
     {},
-    TOptions,
+    TStoreState,
     TApi,
     TRead,
     TSelectors,
@@ -1826,7 +1859,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     TExtension
   >;
   extend<
-    EO = {},
+    EStoreState = {},
     EA = {},
     ES = {},
     const TExtension extends object | readonly object[] = {},
@@ -1836,7 +1869,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     extendConfig: WithValidatedBaseShortcuts<
       PluginConfig<
         C['key'],
-        InferOptions<C>,
+        InferPluginStoreState<C>,
         EA & InferApi<C>,
         InferTx<C>,
         InferSelectors<C>,
@@ -1847,13 +1880,20 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         Enabled
       >,
       RequireAtLeastOne<
-        StaticBasePluginConfig<C, EO, EA, ES, Enabled> & {
+        StaticBasePluginConfig<C, EStoreState, EA, ES, Enabled> & {
           extension?: UnifiedEditorExtensionInput<C, TExtension>;
         }
       >,
       TShortcuts
     >
-  ): UnifiedStaticExtendedBasePlugin<C, EO, EA, ES, Enabled, TExtension>;
+  ): UnifiedStaticExtendedBasePlugin<
+    C,
+    EStoreState,
+    EA,
+    ES,
+    Enabled,
+    TExtension
+  >;
   __resolved?: boolean;
 };
 

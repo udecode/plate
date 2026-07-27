@@ -61,28 +61,28 @@ Create your main plugin with trigger metadata:
 
 ```tsx
 import { createBasePlugin } from 'platejs';
-import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
+import type { TriggerComboboxPluginState } from '@platejs/combobox';
 
 export const TagPlugin = createBasePlugin({
   dependencies: [TagInputPlugin],
   key: 'tag',
   schema: { element: { void: 'inline' } },
-  options: {
+  initialState: {
     trigger: '#',
     triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
       type: 'tag_input',
     }),
-  } satisfies TriggerComboboxPluginOptions,
+  } satisfies TriggerComboboxPluginState,
 });
 ```
 
 - `schema.element`: Defines the plugin's element model behavior
 - `schema.element.void: 'inline'`: Makes the tag an inline void and prevents editing inside it
-- `options.trigger`: Character that triggers the combobox (in this case `#`)
-- `options.triggerPreviousCharPattern`: RegExp pattern that must match the character before the trigger. `/^\s?$/` allows the trigger at the start of a line or after whitespace
-- `options.createComboboxInput`: Function that creates the input element node when the trigger is activated
+- `initialState.trigger`: Character that triggers the combobox (in this case `#`)
+- `initialState.triggerPreviousCharPattern`: RegExp pattern that must match the character before the trigger. `/^\s?$/` allows the trigger at the start of a line or after whitespace
+- `initialState.createComboboxInput`: Function that creates the input element node when the trigger is activated
 
 ### Create Component
 
@@ -178,7 +178,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     TagPlugin.configure({
       component: TagElement,
-      options: {
+      initialState: {
         triggerQuery: (editor) => {
           // Disable in code blocks
           return !editor.read.nodes.some({ match: { type: 'code_block' } });
@@ -190,7 +190,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.triggerQuery`: Optional function to conditionally enable/disable the trigger based on editor state
+- `initialState.triggerQuery`: Optional function to conditionally enable/disable the trigger based on editor state
 
 </Steps>
 
@@ -202,11 +202,11 @@ const editor = createPlateEditor({
 
 ## Options
 
-### TriggerComboboxPluginOptions
+### TriggerComboboxPluginState
 
 Configuration options for trigger-based combobox plugins.
 
-<API name="TriggerComboboxPluginOptions">
+<API name="TriggerComboboxPluginState">
 <APIOptions>
   <APIItem name="createComboboxInput" type="(trigger: string) => Element">
     Function to create the input node when trigger is activated.

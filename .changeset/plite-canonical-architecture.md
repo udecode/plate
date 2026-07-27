@@ -4,6 +4,7 @@
 
 - Add immutable `TransactionSpec` and versioned `DocumentChange` APIs for atomic, serializable updates, with explicit primary and named-root changes and no public primary-root sentinel
 - Compile closed schemas from extension `schema` declarations with shared `property.*` laws, structural content fitting, stable identity, and typed element, group, root, and property queries
+- Define literal string domains with `property.enum(...)`
 - Bind structural slice fitting to each compiled schema revision through one private, immutable fitter artifact
 - Publish derived schema identities as `{ kind: 'derived', fingerprint }` and application-named lineage as `{ kind: 'named', id, version, fingerprint }`; fingerprints cover compiled semantics only
 - Report schema failures through `EditorSchemaValidationError` with root, path, node, property, and contributor provenance

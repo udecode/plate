@@ -159,8 +159,11 @@ const createUpdateExtensionPath = <
 
       return result;
     },
-    get(_target, key) {
+    get(target, key, receiver) {
       if (typeof key !== 'string') return;
+      if (key in target) {
+        return Reflect.get(target, key, receiver);
+      }
 
       return createUpdateExtensionPath(runUpdate, groupName, pathCache, [
         ...path,
@@ -189,8 +192,11 @@ export const createEditorReadApi = <
     new Proxy(
       {},
       {
-        get(_target, key) {
+        get(target, key, receiver) {
           if (typeof key !== 'string') return;
+          if (key in target) {
+            return Reflect.get(target, key, receiver);
+          }
 
           return (...args: unknown[]) =>
             read((state) =>
@@ -219,8 +225,11 @@ export const createEditorReadApi = <
           return (group as (...args: unknown[]) => unknown)(...args);
         });
       },
-      get(_target, key) {
+      get(target, key, receiver) {
         if (typeof key !== 'string') return;
+        if (key in target) {
+          return Reflect.get(target, key, receiver);
+        }
 
         return (...args: unknown[]) =>
           read((state) =>
@@ -293,8 +302,11 @@ export const createEditorReadApi = <
             return group(...args);
           });
         },
-        get(_groupTarget, methodName) {
+        get(groupTarget, methodName, receiver) {
           if (typeof methodName !== 'string') return;
+          if (methodName in groupTarget) {
+            return Reflect.get(groupTarget, methodName, receiver);
+          }
 
           return readExtensionProperty(read, groupName, methodName);
         },
@@ -513,8 +525,11 @@ export const createEditorUpdateApi = <
           value = new Proxy(
             {},
             {
-              get(_target, methodName) {
+              get(target, methodName, receiver) {
                 if (typeof methodName !== 'string') return;
+                if (methodName in target) {
+                  return Reflect.get(target, methodName, receiver);
+                }
 
                 return createUpdateExtensionPath(
                   invoke,

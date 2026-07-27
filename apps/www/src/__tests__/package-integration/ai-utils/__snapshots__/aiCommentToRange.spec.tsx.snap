@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`applyAIReview apply the AI review to the editor 1`] = `
+exports[`AIChatPlugin read.commentRange apply the AI review to the editor 1`] = `
 [
   {
     "anchor": {

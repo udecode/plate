@@ -20,7 +20,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
   it('clears the suggested node after accepting the final word', () => {
     const editor = createEditor();
 
-    editor.plugin(CopilotPlugin).setOptions({
+    editor.plugin(CopilotPlugin).store.set({
       suggestionNodeId: 'b1',
       suggestionText: 'word',
     });
@@ -28,9 +28,9 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
     expect(editor.read.text.string([])).toBe('one word');
     expect(
-      editor.plugin(CopilotPlugin).getOption('suggestionNodeId')
+      editor.plugin(CopilotPlugin).store.get('suggestionNodeId')
     ).toBeNull();
-    expect(editor.plugin(CopilotPlugin).getOption('suggestionText')).toBe('');
+    expect(editor.plugin(CopilotPlugin).store.get('suggestionText')).toBe('');
   });
 
   it('works without AI Chat installed', async () => {
@@ -44,7 +44,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
       initialValue: [{ children: [{ text: 'one ' }], id: 'b1', type: 'p' }],
     });
 
-    editor.plugin(CopilotPlugin).setOption('isLoading', true);
+    editor.plugin(CopilotPlugin).store.set({ isLoading: true });
 
     await expect(
       editor.plugin(CopilotPlugin).api.triggerSuggestion()
@@ -53,7 +53,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
   it('returns false while copilot loading is active', async () => {
     const editor = createEditor();
-    editor.plugin(CopilotPlugin).setOption('isLoading', true);
+    editor.plugin(CopilotPlugin).store.set({ isLoading: true });
 
     await expect(
       editor.plugin(CopilotPlugin).api.triggerSuggestion()
@@ -64,8 +64,8 @@ describe('CopilotPlugin triggerSuggestion', () => {
     const editor = createEditor();
     const chat = {
       status: 'streaming',
-    } as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
-    editor.plugin(AIChatPlugin).setOption('chat', chat);
+    } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+    editor.plugin(AIChatPlugin).store.set({ chat });
 
     await expect(
       editor.plugin(CopilotPlugin).api.triggerSuggestion()
@@ -81,7 +81,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
           status: 200,
         })
     ) as unknown as typeof fetch;
-    editor.plugin(CopilotPlugin).setOptions({
+    editor.plugin(CopilotPlugin).store.set({
       completeOptions: { fetch: fetchCompletion },
       getPrompt: () => 'Prompt',
       triggerQuery: () => true,
@@ -89,16 +89,16 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
     await editor.plugin(CopilotPlugin).api.triggerSuggestion();
 
-    expect(editor.plugin(CopilotPlugin).getOption('suggestionNodeId')).toBe(
+    expect(editor.plugin(CopilotPlugin).store.get('suggestionNodeId')).toBe(
       'b1'
     );
-    expect(editor.plugin(CopilotPlugin).getOption('suggestionText')).toBe(
+    expect(editor.plugin(CopilotPlugin).store.get('suggestionText')).toBe(
       'Completed'
     );
-    expect(editor.plugin(CopilotPlugin).getOption('completion')).toBe(
+    expect(editor.plugin(CopilotPlugin).store.get('completion')).toBe(
       'Completed'
     );
-    expect(editor.plugin(CopilotPlugin).getOption('isLoading')).toBe(false);
+    expect(editor.plugin(CopilotPlugin).store.get('isLoading')).toBe(false);
   });
 
   it('materializes frozen header tuples for the completion request', async () => {
@@ -115,7 +115,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
       }
     ) as unknown as typeof fetch;
 
-    editor.plugin(CopilotPlugin).setOptions({
+    editor.plugin(CopilotPlugin).store.set({
       completeOptions: {
         fetch: fetchCompletion,
         headers: [['X-Test', 'value']],
@@ -126,7 +126,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
 
     const publishedHeaders = editor
       .plugin(CopilotPlugin)
-      .getOption('completeOptions')?.headers;
+      .store.get('completeOptions')?.headers;
 
     expect(Object.isFrozen(publishedHeaders)).toBe(true);
 

@@ -58,7 +58,7 @@ Every discovered migration gap updates the durable owner:
 
 ## Do Not Use When
 
-- The user asks one local Slate v2 bug fix: use `slate-patch`.
+- The user asks one local Plite bug fix: use `plite-patch`.
 - The user asks one public API decision before migration: use `best-api`; use
   `plite-plan` when the decision is substrate runtime/adoption.
 - The user asks broad behavior/perf automation unrelated to migration closure:
@@ -97,7 +97,7 @@ Create the plan with the dedicated template:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template slate-migration \
+  --template plite-migration \
   --title "<surface>"
 ```
 
@@ -118,8 +118,8 @@ For every migration run, read the smallest set that owns the current decision:
 
 - latest user request and active goal plan;
 - `vision`;
-- `docs/migration/slate-v2.md`;
-- current Slate public source under `packages/slate*`, `packages/browser`, and
+- `content/docs/plite/migration.mdx`;
+- current Plite public source under `packages/plite*`, `packages/browser`, and
   `packages/yjs`;
 - target Plate package/example/docs owners under `packages/**`, `apps/**`,
   `docs/**`, or the named surface;
@@ -174,7 +174,7 @@ browser-visible or user-facing.
 
 ## Migration Guide Repair
 
-Repair `docs/migration/slate-v2.md` whenever a migration packet
+Repair `content/docs/plite/migration.mdx` whenever a migration packet
 reveals:
 
 - a missing old-to-v2 API map;
@@ -226,7 +226,7 @@ For Plate migration runs:
 If the migration loop misses a recurring expectation, patch the owner:
 
 - missing migration guide checkpoint -> `.agents/rules/slate-migration.mdc` or
-  `docs/plans/templates/slate-migration.md`;
+  `docs/plans/templates/plite-migration.md`;
 - missing changeset audit -> this skill/template plus `changeset` only if the
   changeset rules were actually wrong;
 - wrong source of truth -> this skill;

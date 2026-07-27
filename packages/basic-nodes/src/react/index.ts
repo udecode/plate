@@ -10,7 +10,6 @@ export * from './HighlightPlugin';
 export * from './HorizontalRulePlugin';
 export * from './ItalicPlugin';
 export * from './KbdPlugin';
+export * from './ScriptPlugin';
 export * from './StrikethroughPlugin';
-export * from './SubscriptPlugin';
-export * from './SuperscriptPlugin';
 export * from './UnderlinePlugin';

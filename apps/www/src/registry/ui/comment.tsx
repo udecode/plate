@@ -24,7 +24,7 @@ import {
   type PlateEditor,
   useEditor,
   usePlateEditor,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -94,13 +94,13 @@ export function Comment(props: {
   } = props;
 
   const editor = useEditor();
-  const userInfo = usePluginOption(discussionPlugin, 'user', comment.userId);
-  const currentUserId = usePluginOption(discussionPlugin, 'currentUserId');
+  const userInfo = usePluginStore(discussionPlugin, 'user', comment.userId);
+  const currentUserId = usePluginStore(discussionPlugin, 'currentUserId');
 
   const resolveDiscussion = async (id: string) => {
     const updatedDiscussions = editor
       .plugin(discussionPlugin)
-      .getOption('discussions')
+      .store.get('discussions')
       .map((discussion) => {
         if (discussion.id === id) {
           return { ...discussion, isResolved: true };
@@ -109,17 +109,17 @@ export function Comment(props: {
       });
     editor
       .plugin(discussionPlugin)
-      .setOption('discussions', updatedDiscussions);
+      .store.set({ discussions: updatedDiscussions });
   };
 
   const removeDiscussion = async (id: string) => {
     const updatedDiscussions = editor
       .plugin(discussionPlugin)
-      .getOption('discussions')
+      .store.get('discussions')
       .filter((discussion) => discussion.id !== id);
     editor
       .plugin(discussionPlugin)
-      .setOption('discussions', updatedDiscussions);
+      .store.set({ discussions: updatedDiscussions });
   };
 
   const updateComment = async (input: {
@@ -130,7 +130,7 @@ export function Comment(props: {
   }) => {
     const updatedDiscussions = editor
       .plugin(discussionPlugin)
-      .getOption('discussions')
+      .store.get('discussions')
       .map((discussion) => {
         if (discussion.id === input.discussionId) {
           const updatedComments = discussion.comments.map((comment) => {
@@ -150,7 +150,7 @@ export function Comment(props: {
       });
     editor
       .plugin(discussionPlugin)
-      .setOption('discussions', updatedDiscussions);
+      .store.set({ discussions: updatedDiscussions });
   };
 
   // Replace to your own backend or refer to potion
@@ -338,7 +338,7 @@ function CommentMoreDropdown(props: {
     // Find and update the discussion
     const updatedDiscussions = editor
       .plugin(discussionPlugin)
-      .getOption('discussions')
+      .store.get('discussions')
       .map((discussion) => {
         if (discussion.id !== comment.discussionId) {
           return discussion;
@@ -363,7 +363,7 @@ function CommentMoreDropdown(props: {
     // Save back to session storage
     editor
       .plugin(discussionPlugin)
-      .setOption('discussions', updatedDiscussions);
+      .store.set({ discussions: updatedDiscussions });
     onRemoveComment?.();
   }, [comment.discussionId, comment.id, editor, onRemoveComment]);
 
@@ -440,13 +440,13 @@ export function CommentCreateForm({
   discussionId?: string;
   focusOnMount?: boolean;
 }) {
-  const discussions = usePluginOption(discussionPlugin, 'discussions');
+  const discussions = usePluginStore(discussionPlugin, 'discussions');
 
   const editor = useEditor();
   const commentId = useCommentId();
   const discussionId = discussionIdProp ?? commentId;
 
-  const userInfo = usePluginOption(discussionPlugin, 'currentUser');
+  const userInfo = usePluginStore(discussionPlugin, 'currentUser');
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = React.useMemo(
     () =>
@@ -484,17 +484,17 @@ export function CommentCreateForm({
               isEdited: false,
               userId: editor
                 .plugin(discussionPlugin)
-                .getOption('currentUserId'),
+                .store.get('currentUserId'),
             },
           ],
           createdAt: new Date(),
           isResolved: false,
-          userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
         };
 
         editor
           .plugin(discussionPlugin)
-          .setOption('discussions', [...discussions, newDiscussion]);
+          .store.set({ discussions: [...discussions, newDiscussion] });
         return;
       }
 
@@ -505,7 +505,7 @@ export function CommentCreateForm({
         createdAt: new Date(),
         discussionId,
         isEdited: false,
-        userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+        userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
       };
 
       // Add reply to discussion comments
@@ -521,12 +521,12 @@ export function CommentCreateForm({
 
       editor
         .plugin(discussionPlugin)
-        .setOption('discussions', updatedDiscussions);
+        .store.set({ discussions: updatedDiscussions });
 
       return;
     }
 
-    const commentsNodeEntry = editor.plugin(commentPlugin).api.nodes({
+    const commentsNodeEntry = editor.plugin(commentPlugin).read.nodes({
       at: [],
       isDraft: true,
     });
@@ -548,18 +548,18 @@ export function CommentCreateForm({
           createdAt: new Date(),
           discussionId: _discussionId,
           isEdited: false,
-          userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
         },
       ],
       createdAt: new Date(),
       documentContent,
       isResolved: false,
-      userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+      userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
     };
 
     editor
       .plugin(discussionPlugin)
-      .setOption('discussions', [...discussions, newDiscussion]);
+      .store.set({ discussions: [...discussions, newDiscussion] });
 
     const id = newDiscussion.id;
 

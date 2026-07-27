@@ -27,7 +27,7 @@ import {
   InlineEquationElementDocx,
 } from '@/registry/ui/equation-node-static';
 import { TocElementDocx } from '@/registry/ui/toc-node-static';
-import { DocxExportPlugin } from '@platejs/docx-io';
+import { DocxIOPlugin } from '@platejs/docx-io';
 import { KEYS } from 'platejs';
 
 /**
@@ -44,7 +44,7 @@ import { KEYS } from 'platejs';
  * Tables use base version with juice CSS inlining.
  */
 export const DocxExportKit = [
-  DocxExportPlugin.configure({
+  DocxIOPlugin.configure({
     override: {
       components: {
         [KEYS.codeBlock]: CodeBlockElementDocx,

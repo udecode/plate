@@ -27,17 +27,17 @@ describe('AIChatPlugin', () => {
       initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
-    editor.plugin(AIChatPlugin).setOption('streaming', true);
-    editor.plugin(AIChatPlugin).setOption('_blockChunks', 'abc');
-    editor.plugin(AIChatPlugin).setOption('_blockPath', [0]);
-    editor.plugin(AIChatPlugin).setOption('_mdxName', 'foo');
+    editor.plugin(AIChatPlugin).store.set({ streaming: true });
+    editor.plugin(AIChatPlugin).store.set({ _blockChunks: 'abc' });
+    editor.plugin(AIChatPlugin).store.set({ _blockPath: [0] });
+    editor.plugin(AIChatPlugin).store.set({ _mdxName: 'foo' });
 
     editor.plugin(AIChatPlugin).api.stop();
 
-    expect(editor.plugin(AIChatPlugin).getOption('streaming')).toBe(false);
-    expect(editor.plugin(AIChatPlugin).getOption('_blockChunks')).toBe('');
-    expect(editor.plugin(AIChatPlugin).getOption('_blockPath')).toBeNull();
-    expect(editor.plugin(AIChatPlugin).getOption('_mdxName')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).store.get('streaming')).toBe(false);
+    expect(editor.plugin(AIChatPlugin).store.get('_blockChunks')).toBe('');
+    expect(editor.plugin(AIChatPlugin).store.get('_blockPath')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).store.get('_mdxName')).toBeNull();
   });
 
   it('removes its anchor without adding history', () => {
@@ -50,7 +50,7 @@ describe('AIChatPlugin', () => {
       initialValue,
     });
 
-    editor.plugin(AIChatPlugin).api.removeAnchor();
+    editor.update({ history: 'skip' }).aiChat.removeAnchor();
 
     expect(editor.read.children()).toHaveLength(1);
     expect(editor.read.children()[0]?.type).toBe('p');
@@ -98,7 +98,7 @@ describe('AIChatPlugin', () => {
       });
     });
 
-    expect(editor.plugin(AIChatPlugin).getOption('open')).toBe(true);
+    expect(editor.plugin(AIChatPlugin).store.get('open')).toBe(true);
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'p' },
       { children: [{ text: 'occupied' }], type: 'p' },

@@ -1,0 +1,936 @@
+[
+  {
+    "id": 133,
+    "package": "media",
+    "symbol": "BaseAudioPlugin",
+    "file": "packages/media/src/lib/BaseAudioPlugin.ts",
+    "line": 12,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the pure URL normalization service in api and both document mutations in update.",
+    "evidence": "defineMediaPlugin adds normalizeUrl plus transaction-bound insert and setUrl to the audio descriptor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 134,
+    "package": "media",
+    "symbol": "BaseFilePlugin",
+    "file": "packages/media/src/lib/BaseFilePlugin.ts",
+    "line": 12,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the pure URL normalization service in api and both document mutations in update.",
+    "evidence": "defineMediaPlugin adds normalizeUrl plus transaction-bound insert and setUrl to the file descriptor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 135,
+    "package": "media",
+    "symbol": "BaseVideoPlugin",
+    "file": "packages/media/src/lib/BaseVideoPlugin.ts",
+    "line": 13,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the pure URL normalization service in api and both document mutations in update.",
+    "evidence": "defineMediaPlugin adds normalizeUrl plus transaction-bound insert and setUrl to the video descriptor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 136,
+    "package": "media",
+    "symbol": "BaseImagePlugin",
+    "file": "packages/media/src/lib/image/BaseImagePlugin.ts",
+    "line": 32,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "priority": "keep",
+    "verdict": "Keep URL normalization scoped, media writes transactional, and clipboard interception editor-wide.",
+    "evidence": "The clipboard extension delegates insertion to the earlier tx.img.insert capability supplied by defineMediaPlugin.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 137,
+    "package": "media",
+    "symbol": "BaseMediaEmbedPlugin",
+    "file": "packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    "line": 46,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep normalized embed parsing in api and both element mutations in update.",
+    "evidence": "defineMediaPlugin publishes the parser-backed normalizeUrl service and transaction-bound insert and setUrl methods.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 138,
+    "package": "media",
+    "symbol": "BasePlaceholderPlugin",
+    "file": "packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts",
+    "line": 19,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep placeholder insertion as a flat scoped update.",
+    "evidence": "insert constructs and inserts a placeholder node through the active transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 139,
+    "package": "media",
+    "symbol": "PlaceholderPlugin",
+    "file": "packages/media/src/react/placeholder/PlaceholderPlugin.tsx",
+    "line": 170,
+    "current": {
+      "api": ["addUploadingFile", "getUploadingFile", "removeUploadingFile"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "insertMedia", "replaceMedia"],
+      "extension": []
+    },
+    "final": {
+      "api": ["addUploadingFile", "removeUploadingFile"],
+      "read": [],
+      "selectors": ["uploadingFile"],
+      "update": ["insert", "insertMedia", "replaceMedia"],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Replace the API getter with an uploadingFile selector; keep upload-state controllers in api and node writes in update.",
+    "evidence": "getUploadingFile only reads uploadingFiles, while add and remove update plugin state and all three update methods mutate editor nodes.",
+    "extendJustified": true,
+    "gaps": [
+      "Hard-cut getUploadingFile in favor of the uploadingFile selector because it is exactly the option projection uploadingFiles[id]."
+    ]
+  },
+  {
+    "id": 140,
+    "package": "media",
+    "symbol": "ImagePlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 11,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseImagePlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves BaseImagePlugin normalizeUrl, insert, setUrl, and clipboard insertion behavior without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 141,
+    "package": "media",
+    "symbol": "MediaEmbedPlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 12,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseMediaEmbedPlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base media-embed API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 142,
+    "package": "media",
+    "symbol": "AudioPlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 13,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseAudioPlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base audio API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 143,
+    "package": "media",
+    "symbol": "FilePlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 14,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseFilePlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base file API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 144,
+    "package": "media",
+    "symbol": "VideoPlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 15,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseVideoPlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base video API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 145,
+    "package": "mention",
+    "symbol": "BaseMentionInputPlugin",
+    "file": "packages/mention/src/lib/BaseMentionPlugin.ts",
+    "line": 29,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only input descriptor capability-free.",
+    "evidence": "The mention-input plugin owns only inline schema and type metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 146,
+    "package": "mention",
+    "symbol": "BaseMentionPlugin",
+    "file": "packages/mention/src/lib/BaseMentionPlugin.ts",
+    "line": 45,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "priority": "P1",
+    "verdict": "Keep one insert update, but make it own the complete mention-selection operation; keep trigger interception editor-wide.",
+    "evidence": "The exported getMentionOnSelectItem helper only wraps this plugin's insert with cursor movement and optional end-of-block spacing.",
+    "extendJustified": null,
+    "gaps": [
+      "Absorb getMentionOnSelectItem cursor movement and optional trailing-space behavior into update.insert, then delete the editor-parameter helper."
+    ]
+  },
+  {
+    "id": 147,
+    "package": "mention",
+    "symbol": "MentionInputPlugin",
+    "file": "packages/mention/src/react/MentionPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the schema-only React adapter capability-free.",
+    "evidence": "toPlatePlugin adds no capabilities to BaseMentionInputPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 148,
+    "package": "mention",
+    "symbol": "MentionPlugin",
+    "file": "packages/mention/src/react/MentionPlugin.tsx",
+    "line": 7,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "priority": "P1",
+    "verdict": "Inherit the complete Base mention insert operation and command interception without preserving a parallel editor-parameter helper.",
+    "evidence": "The React adapter owns no additional behavior, so getMentionOnSelectItem must delegate to the Base update rather than remain a second operation owner.",
+    "extendJustified": null,
+    "gaps": [
+      "Adopt the Base update.insert behavior expansion and hard-cut the standalone getMentionOnSelectItem implementation."
+    ]
+  },
+  {
+    "id": 149,
+    "package": "selection",
+    "symbol": "BlockMenuPlugin",
+    "file": "packages/selection/src/react/BlockMenuPlugin.tsx",
+    "line": 35,
+    "current": {
+      "api": ["hide", "show", "showContextMenu"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["hide", "show", "showContextMenu"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep these imperative UI-state services in api rather than opening editor transactions.",
+    "evidence": "All three methods coordinate plugin option state and menu presentation without mutating document or editor selection state.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 150,
+    "package": "selection",
+    "symbol": "BlockSelectionPlugin",
+    "file": "packages/selection/src/react/BlockSelectionPlugin.tsx",
+    "line": 168,
+    "current": {
+      "api": [
+        "add",
+        "addOnContextMenu",
+        "addSelectedRow",
+        "clear",
+        "delete",
+        "deselect",
+        "first",
+        "focus",
+        "getNodes",
+        "has",
+        "isSelectable",
+        "moveSelection",
+        "selectAll",
+        "set",
+        "setSelectedIds",
+        "shiftSelection"
+      ],
+      "read": [],
+      "selectors": ["isSelected", "isSelectingSome"],
+      "update": [
+        "duplicate",
+        "insertBlocksAndSelect",
+        "removeNodes",
+        "select",
+        "setIndent",
+        "setNodes",
+        "setTexts"
+      ],
+      "extension": ["commands", "onCommit"]
+    },
+    "final": {
+      "api": [
+        "add",
+        "addOnContextMenu",
+        "addSelectedRow",
+        "clear",
+        "copy",
+        "delete",
+        "deselect",
+        "focus",
+        "isSelectable",
+        "moveSelection",
+        "selectAll",
+        "selectInserted",
+        "set",
+        "setSelectedIds",
+        "shiftSelection"
+      ],
+      "read": ["first", "getNodes", "isSelecting"],
+      "selectors": ["has", "isSelected", "isSelectingSome"],
+      "update": [
+        "duplicate",
+        "insertBlocksAndSelect",
+        "paste",
+        "removeNodes",
+        "select",
+        "setIndent",
+        "setNodes",
+        "setTexts"
+      ],
+      "extension": ["commands", "onCommit"]
+    },
+    "priority": "P1",
+    "verdict": "Make BlockSelection the sole owner of selected-node reads, clipboard behavior, inserted-node selection, UI controllers, tx mutations, and editor-wide interception.",
+    "evidence": "Standalone isSelecting, copySelectedBlocks, pasteSelectedBlocks, selectInsertedBlocks, and duplicated helper families all operate on this descriptor's state and behavior.",
+    "extendJustified": false,
+    "gaps": [
+      "Move first and getNodes from api to read so they observe the caller's state or transaction snapshot.",
+      "Move standalone isSelecting to read.isSelecting because it combines active selection state with this plugin's selectedIds.",
+      "Move has from api to selectors because it only derives selectedIds.",
+      "Move copySelectedBlocks to api.copy and selectInsertedBlocks to api.selectInserted; both are scoped imperative services, not document transactions.",
+      "Move pasteSelectedBlocks to update.paste with DataTransfer input so the active tx owns insertion and after-commit selection.",
+      "Expand update.removeNodes to own the component's insertText, selectPrevious, focus, and selectedIds cleanup options.",
+      "Delete the duplicate addOnContextMenu implementation and inline the move, selection-state, and transform helper families into their existing scoped members.",
+      "Reuse read.getNodes from active state and tx instead of retaining getBlockSelectionNodes(tx, selectedIds).",
+      "Fold the current capability stage into createPlatePlugin because it has no imported-descriptor or earlier-capability dependency."
+    ]
+  },
+  {
+    "id": 151,
+    "package": "selection",
+    "symbol": "CursorOverlayPlugin",
+    "file": "packages/selection/src/react/CursorOverlayPlugin.tsx",
+    "line": 43,
+    "current": {
+      "api": ["addCursor", "removeCursor"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["onCommit"]
+    },
+    "final": {
+      "api": ["addCursor", "removeCursor"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["onCommit"]
+    },
+    "priority": "keep",
+    "verdict": "Keep cursor option-state controllers in api and commit-driven cursor refresh editor-wide.",
+    "evidence": "addCursor and removeCursor update overlay state only, while onCommit reacts to editor selection commits.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 152,
+    "package": "slash-command",
+    "symbol": "BaseSlashInputPlugin",
+    "file": "packages/slash-command/src/lib/BaseSlashPlugin.ts",
+    "line": 11,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only input descriptor capability-free.",
+    "evidence": "The slash-input plugin owns only inline schema, type, and edit-only metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 153,
+    "package": "slash-command",
+    "symbol": "BaseSlashPlugin",
+    "file": "packages/slash-command/src/lib/BaseSlashPlugin.ts",
+    "line": 36,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "priority": "keep",
+    "verdict": "Keep slash-trigger interception as editor-wide command behavior.",
+    "evidence": "withTriggerCombobox contributes an insertText command handler and no scoped service, read, or mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 154,
+    "package": "slash-command",
+    "symbol": "SlashInputPlugin",
+    "file": "packages/slash-command/src/react/SlashPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the schema-only React adapter capability-free.",
+    "evidence": "toPlatePlugin adds no capabilities to BaseSlashInputPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 155,
+    "package": "slash-command",
+    "symbol": "SlashPlugin",
+    "file": "packages/slash-command/src/react/SlashPlugin.tsx",
+    "line": 7,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited slash command interception unchanged.",
+    "evidence": "toPlatePlugin swaps the React input dependency but preserves BaseSlashPlugin command behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 156,
+    "package": "suggestion",
+    "symbol": "BaseSuggestionPluginDefinition",
+    "file": "packages/suggestion/src/lib/BaseSuggestionPlugin.ts",
+    "line": 213,
+    "current": {
+      "api": [
+        "activeDescriptions",
+        "createFragment",
+        "dataList",
+        "findProps",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "node",
+        "nodeEntries",
+        "nodeId",
+        "nodes",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [
+        "createFragment",
+        "createIdentity",
+        "dataList",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "nodeId",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [
+        "activeDescriptions",
+        "findIdentity",
+        "node",
+        "nodeEntries",
+        "nodes"
+      ],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Split deterministic identity lookup into read, keep fragment construction in api with an explicit identity, and expose clock/random identity creation as an explicit api service.",
+    "evidence": "findProps mixes state lookup with nanoid and Date.now, while createFragment is a pure data transform once its identity is supplied.",
+    "extendJustified": null,
+    "gaps": [
+      "Replace findProps with deterministic read.findIdentity returning an existing identity or undefined.",
+      "Add api.createIdentity for the explicit nanoid and Date.now fallback.",
+      "Keep api.createFragment as a pure transform that accepts an explicit identity and no state argument."
+    ]
+  },
+  {
+    "id": 157,
+    "package": "suggestion",
+    "symbol": "BaseSuggestionPlugin",
+    "file": "packages/suggestion/src/lib/BaseSuggestionPlugin.ts",
+    "line": 669,
+    "current": {
+      "api": [
+        "activeDescriptions",
+        "createFragment",
+        "dataList",
+        "findProps",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "node",
+        "nodeEntries",
+        "nodeId",
+        "nodes",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "final": {
+      "api": [
+        "createFragment",
+        "createIdentity",
+        "dataList",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "nodeId",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [
+        "activeDescriptions",
+        "findIdentity",
+        "node",
+        "nodeEntries",
+        "nodes"
+      ],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "priority": "P1",
+    "verdict": "Use deterministic read lookup plus explicit API identity creation, keep all suggestion document mutations transactional, and leave command interception or correction editor-wide.",
+    "evidence": "The derived descriptor inherits the 21-member API, adds ten tx mutations, and installs editor command middleware plus schema corrections.",
+    "extendJustified": true,
+    "gaps": [
+      "Move activeDescriptions, node, nodeEntries, and nodes to read.",
+      "Replace findProps with deterministic read.findIdentity and resolve fallback through api.createIdentity at the command or update boundary.",
+      "Keep api.createFragment pure by requiring an explicit identity instead of accepting state."
+    ]
+  },
+  {
+    "id": 158,
+    "package": "suggestion",
+    "symbol": "SuggestionPlugin",
+    "file": "packages/suggestion/src/react/SuggestionPlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [
+        "activeDescriptions",
+        "createFragment",
+        "dataList",
+        "findProps",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "node",
+        "nodeEntries",
+        "nodeId",
+        "nodes",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "final": {
+      "api": [
+        "createFragment",
+        "createIdentity",
+        "dataList",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "nodeId",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [
+        "activeDescriptions",
+        "findIdentity",
+        "node",
+        "nodeEntries",
+        "nodes"
+      ],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the Base suggestion split through the React adapter without adding a second capability owner.",
+    "evidence": "toPlatePlugin inherits the complete BaseSuggestionPlugin API, update group, and editor-wide extension unchanged.",
+    "extendJustified": null,
+    "gaps": [
+      "The adapter must inherit Base read.findIdentity, api.createIdentity, and pure api.createFragment without a second implementation."
+    ]
+  }
+]

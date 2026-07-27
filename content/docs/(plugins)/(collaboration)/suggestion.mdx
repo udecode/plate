@@ -73,47 +73,29 @@ Create the suggestion plugin with extended configuration for state management:
 
 ```tsx
 import { isEditor, isElement, isString } from '@platejs/plite-dom';
-import { type ExtendConfig } from 'platejs';
-import {
-  type BaseSuggestionConfig,
-  BaseSuggestionPlugin,
-} from '@platejs/suggestion';
-import { createPlatePlugin, toPlatePlugin } from 'platejs/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BlockSuggestion } from '@/components/ui/block-suggestion';
 import { SuggestionLeaf } from '@/components/ui/suggestion-node';
 
-export type SuggestionConfig = ExtendConfig<
-  BaseSuggestionConfig,
-  {
-    activeId: string | null;
-    hoverId: string | null;
-  }
->;
+export const suggestionPlugin = SuggestionPlugin.configure({
+  component: SuggestionLeaf,
+  initialState: {
+    currentUserId: 'alice', // Set your current user ID
+  },
+  render: {
+    belowRootNodes: ({ api, element }) => {
+      if (!api.isBlockSuggestion(element)) {
+        return null;
+      }
 
-export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
-  BaseSuggestionPlugin,
-  ({ editor }) => ({
-    options: {
-      activeId: null,
-      currentUserId: 'alice', // Set your current user ID
-      hoverId: null,
+      return <BlockSuggestion element={element} />;
     },
-    render: {
-      belowRootNodes: ({ api, element }) => {
-        if (!api.isBlockSuggestion(element)) {
-          return null;
-        }
-
-        return <BlockSuggestion element={element} />;
-      },
-    },
-  })
-).configure({ component: SuggestionLeaf });
+  },
+});
 ```
 
-- `options.activeId`: Currently active suggestion ID for visual highlighting
-- `options.currentUserId`: ID of the current user creating suggestions  
-- `options.hoverId`: Currently hovered suggestion ID for hover effects
+- `SuggestionPlugin` owns the active and hovered suggestion state used by renderers
+- `initialState.currentUserId`: ID of the current user creating suggestions
 - `.configure({ component: SuggestionLeaf })`: Renders suggestion text marks with
   [`SuggestionLeaf`](/docs/components/suggestion-node)
 - `render.belowRootNodes`: Renders [`BlockSuggestion`](/docs/components/block-suggestion) for block-level suggestions
@@ -123,50 +105,49 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
 Add click handling to manage active suggestion state:
 
 ```tsx
-export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
-  BaseSuggestionPlugin,
-  ({ editor }) => ({
-    handlers: {
-      // Unset active suggestion when clicking outside of suggestion
-      onClick: ({ api, event, setOption, type }) => {
-        let leaf = event.target as HTMLElement;
-        let isSet = false;
+export const suggestionPlugin = SuggestionPlugin.configure({
+  handlers: {
+    // Unset active suggestion when clicking outside of suggestion
+    onClick: ({ api, editor, event, store, type }) => {
+      let leaf = event.target as HTMLElement;
+      let isSet = false;
 
-        const unsetActiveSuggestion = () => {
-          setOption('activeId', null);
-          isSet = true;
-        };
+      const unsetActiveSuggestion = () => {
+        store.set({ activeId: null });
+        isSet = true;
+      };
 
-        if (!isString(leaf)) unsetActiveSuggestion();
+      if (!isString(leaf)) unsetActiveSuggestion();
 
-        while (
-          leaf.parentElement &&
-          !isElement(leaf.parentElement) &&
-          !isEditor(leaf.parentElement)
-        ) {
-          if (leaf.classList.contains(`plite-${type}`)) {
-            const suggestionEntry = api.node({ isText: true });
+      while (
+        leaf.parentElement &&
+        !isElement(leaf.parentElement) &&
+        !isEditor(leaf.parentElement)
+      ) {
+        if (leaf.classList.contains(`plite-${type}`)) {
+          const suggestionEntry = editor
+            .plugin(SuggestionPlugin)
+            .read.node({ isText: true });
 
-            if (!suggestionEntry) {
-              unsetActiveSuggestion();
-              break;
-            }
-
-            const id = api.nodeId(suggestionEntry[0]);
-            setOption('activeId', id ?? null);
-            isSet = true;
+          if (!suggestionEntry) {
+            unsetActiveSuggestion();
             break;
           }
 
-          leaf = leaf.parentElement;
+          const id = api.nodeId(suggestionEntry[0]);
+          store.set({ activeId: id ?? null });
+          isSet = true;
+          break;
         }
 
-        if (!isSet) unsetActiveSuggestion();
-      },
+        leaf = leaf.parentElement;
+      }
+
+      if (!isSet) unsetActiveSuggestion();
     },
-    // ... previous options and render
-  })
-);
+  },
+  // ... previous state and render
+});
 ```
 
 The click handler tracks which suggestion is currently active:
@@ -202,14 +183,16 @@ const editor = createPlateEditor({
 Use the plugin's API to control suggestion mode:
 
 ```tsx
-import { useEditor, usePluginOption } from 'platejs/react';
+import { useEditor, usePluginStore } from 'platejs/react';
 
 function SuggestionToolbar() {
   const editor = useEditor();
-  const isSuggesting = usePluginOption(suggestionPlugin, 'isSuggesting');
+  const isSuggesting = usePluginStore(suggestionPlugin, 'isSuggesting');
 
   const toggleSuggesting = () => {
-    editor.plugin(suggestionPlugin).setOption('isSuggesting', !isSuggesting);
+    editor
+      .plugin(suggestionPlugin)
+      .store.set({ isSuggesting: !isSuggesting });
   };
 
   return (
@@ -234,7 +217,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     discussionPlugin,
     suggestionPlugin.configure({
-      options: {
+      initialState: {
         currentUserId: 'alice',
       },
     }),
@@ -277,28 +260,29 @@ Plugin for creating and managing text and block suggestions with state tracking 
 ## Plugin API
 
 Suggestion queries and value helpers live on the installed plugin. This keeps
-the editor type, plugin options, and schema in the inference path.
+the editor type, plugin state, and schema in the inference path.
 
 ```tsx
-const { api } = editor.plugin(BaseSuggestionPlugin);
-const suggestions = api.nodes();
-const descriptions = api.activeDescriptions();
+const { api, read } = editor.plugin(BaseSuggestionPlugin);
+const suggestions = read.nodes();
+const descriptions = read.activeDescriptions();
 ```
 
 | Method | Description |
 | --- | --- |
-| `api.activeDescriptions()` | Returns the active suggestion descriptions. |
-| `api.createFragment(fragment, at, state?)` | Adds insertion suggestion data to a fragment. |
+| `read.activeDescriptions()` | Returns the active suggestion descriptions. |
+| `api.createFragment(fragment, identity)` | Adds explicit insertion suggestion identity to a fragment. |
+| `api.createIdentity(options?)` | Creates a suggestion ID and timestamp. |
 | `api.dataList(node)` | Returns every inline suggestion record on a text node. |
-| `api.findProps(options)` | Reuses or creates the ID and timestamp for an update. |
+| `read.findIdentity(options)` | Finds an existing suggestion identity. |
 | `api.getProps(node, options?)` | Builds suggestion properties for a node. |
 | `api.inlineData(node)` | Returns the active inline suggestion record. |
 | `api.isBlockSuggestion(node)` | Narrows a node to a block suggestion. |
 | `api.isCurrentUser(node)` | Checks suggestion ownership against `currentUserId`. |
 | `api.isTracking(tags)` | Checks whether suggestion middleware tracks an update. |
 | `api.key(id?)` / `api.keyId(node)` / `api.keys(node)` | Reads and builds inline suggestion keys. |
-| `api.node(options?)` / `api.nodes(options?)` | Finds one or all suggestion entries. |
-| `api.nodeEntries(id, options?)` | Finds inline entries for a suggestion ID. |
+| `read.node(options?)` / `read.nodes(options?)` | Finds one or all suggestion entries. |
+| `read.nodeEntries(id, options?)` | Finds inline entries for a suggestion ID. |
 | `api.nodeId(node)` | Returns a node's suggestion ID. |
 | `api.skipDeletes(node)` | Returns text without removed suggestions. |
 | `api.suggestionData(node)` | Returns inline or block suggestion data. |

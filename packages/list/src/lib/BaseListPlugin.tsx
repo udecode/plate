@@ -132,11 +132,11 @@ export type GetSiblingListOptions<N extends Element = Element> = {
   ) => boolean | undefined;
   getNextEntry?: (
     entry: NodeEntry<Element>,
-    state?: Pick<EditorCoreStateView, 'nodes'>
+    state: Pick<EditorCoreStateView, 'nodes'>
   ) => NodeEntry<N> | undefined;
   getPreviousEntry?: (
     entry: NodeEntry<Element>,
-    state?: Pick<EditorCoreStateView, 'nodes'>
+    state: Pick<EditorCoreStateView, 'nodes'>
   ) => NodeEntry<N> | undefined;
   /** Query to break lookup. */
   eqIndent?: boolean;
@@ -168,12 +168,52 @@ const isListItem = (node: Element) => node[KEYS.listType] != null;
  * ignored, although it is not removed and may take effect in the future.
  */
 
-export type BaseListPluginOptions = {
+export type BaseListPluginState = {
   getSiblingListOptions?: GetSiblingListOptions<Element>;
 };
 
 export const BaseListPlugin = createBasePlugin({
   api: ({ editor }) => {
+    const isHeading = (node: Element) =>
+      KEYS.heading.some(
+        (headingKey) => node.type === editor.getType(headingKey)
+      );
+    const isSequenceBoundary = (siblingNode: Element, currentNode: Element) => {
+      const siblingListType = siblingNode[KEYS.listType];
+
+      return (
+        siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
+        siblingListType != null &&
+        siblingListType === currentNode[KEYS.listType] &&
+        isHeading(siblingNode) !== isHeading(currentNode)
+      );
+    };
+    const getSequenceSiblingOptions = (
+      options?: Partial<GetSiblingListOptions<Element>>
+    ): Partial<GetSiblingListOptions<Element>> => {
+      const { breakQuery, query, ...rest } = options ?? {};
+
+      return {
+        ...rest,
+        breakQuery: (siblingNode, currentNode) =>
+          isSequenceBoundary(siblingNode, currentNode) ||
+          !!breakQuery?.(siblingNode, currentNode),
+        query: (siblingNode, currentNode) =>
+          siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
+          isHeading(siblingNode) === isHeading(currentNode) &&
+          (query ? !!query(siblingNode, currentNode) : true),
+      };
+    };
+
+    return {
+      getSequenceSiblingOptions,
+      isSequenceBoundary,
+    };
+  },
+  dependencies: [BaseIndentPlugin],
+  key: KEYS.list,
+  initialState: {} as BaseListPluginState,
+  read: ({ state }) => {
     const getSibling = <N extends Element = Element>(
       [node, path]: NodeEntry<Element>,
       {
@@ -185,11 +225,12 @@ export const BaseListPlugin = createBasePlugin({
         getNextEntry,
         getPreviousEntry,
         query,
-      }: GetSiblingListOptions<N>,
-      state: Pick<EditorCoreStateView, 'nodes'> = editor.read
+      }: GetSiblingListOptions<N>
     ): NodeEntry<N> | undefined => {
-      if (!getPreviousEntry && !getNextEntry) return;
-      const getSiblingEntry = getNextEntry ?? getPreviousEntry!;
+      const getSiblingEntry = getNextEntry ?? getPreviousEntry;
+
+      if (!getSiblingEntry) return;
+
       let nextEntry = getSiblingEntry([node, path], state);
 
       while (nextEntry) {
@@ -224,83 +265,43 @@ export const BaseListPlugin = createBasePlugin({
         nextEntry = getSiblingEntry(nextEntry, state);
       }
     };
-    const isHeading = (node: Element) =>
-      KEYS.heading.some(
-        (headingKey) => node.type === editor.getType(headingKey)
-      );
-    const isSequenceBoundary = (siblingNode: Element, currentNode: Element) => {
-      const siblingListType = siblingNode[KEYS.listType];
-
-      return (
-        siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
-        siblingListType != null &&
-        siblingListType === currentNode[KEYS.listType] &&
-        isHeading(siblingNode) !== isHeading(currentNode)
-      );
-    };
-    const getSequenceSiblingOptions = (
-      options?: Partial<GetSiblingListOptions<Element>>
-    ): Partial<GetSiblingListOptions<Element>> => {
-      const { breakQuery, query, ...rest } = options ?? {};
-
-      return {
-        ...rest,
-        breakQuery: (siblingNode, currentNode) =>
-          isSequenceBoundary(siblingNode, currentNode) ||
-          !!breakQuery?.(siblingNode, currentNode),
-        query: (siblingNode, currentNode) =>
-          siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
-          isHeading(siblingNode) === isHeading(currentNode) &&
-          (query ? !!query(siblingNode, currentNode) : true),
-      };
-    };
 
     return {
       /** Get the next indent-list item. */
       getNext: <N extends Element = Element>(
         entry: NodeEntry<Element>,
-        options?: Partial<GetSiblingListOptions<N>>,
-        state: Pick<EditorCoreStateView, 'nodes'> = editor.read
+        options?: Partial<GetSiblingListOptions<N>>
       ): NodeEntry<N> | undefined =>
-        getSibling(
-          entry,
-          {
-            getNextEntry: ([, currentPath]) => {
-              const nextPath = PathApi.next(currentPath);
-              const nextNode = state.nodes.get<N>(nextPath)?.[0];
+        getSibling(entry, {
+          getNextEntry: ([, currentPath]) => {
+            const nextPath = PathApi.next(currentPath);
+            const nextNode = state.nodes.get<N>(nextPath)?.[0];
 
-              if (!nextNode) return;
+            if (!nextNode) return;
 
-              return [nextNode, nextPath];
-            },
-            ...options,
-            getPreviousEntry: undefined,
+            return [nextNode, nextPath];
           },
-          state
-        ),
+          ...options,
+          getPreviousEntry: undefined,
+        }),
       /** Get the previous indent-list item. */
       getPrevious: <N extends Element = Element>(
         entry: NodeEntry<Element>,
-        options?: Partial<GetSiblingListOptions<N>>,
-        state: Pick<EditorCoreStateView, 'nodes'> = editor.read
+        options?: Partial<GetSiblingListOptions<N>>
       ): NodeEntry<N> | undefined =>
-        getSibling(
-          entry,
-          {
-            getPreviousEntry: ([, currentPath]) => {
-              if (!PathApi.hasPrevious(currentPath)) return;
-              const previousPath = PathApi.previous(currentPath);
-              const previousNode = state.nodes.get<N>(previousPath)?.[0];
+        getSibling(entry, {
+          getPreviousEntry: ([, currentPath]) => {
+            if (!PathApi.hasPrevious(currentPath)) return;
+            const previousPath = PathApi.previous(currentPath);
+            const previousNode = state.nodes.get<N>(previousPath)?.[0];
 
-              if (!previousNode) return;
+            if (!previousNode) return;
 
-              return [previousNode, previousPath];
-            },
-            ...options,
-            getNextEntry: undefined,
+            return [previousNode, previousPath];
           },
-          state
-        ),
+          ...options,
+          getNextEntry: undefined,
+        }),
       expandItemsWithChildren: <N extends Element = Element>(
         entries: readonly NodeEntry<N>[]
       ) => {
@@ -326,7 +327,7 @@ export const BaseListPlugin = createBasePlugin({
 
           while (true) {
             const nextPath = PathApi.next(currentPath);
-            const nextNode = editor.read.nodes.get<N>(nextPath)?.[0];
+            const nextNode = state.nodes.get<N>(nextPath)?.[0];
 
             if (!nextNode) break;
             const nextIndent = nextNode[KEYS.indent];
@@ -351,16 +352,15 @@ export const BaseListPlugin = createBasePlugin({
 
         return expandedEntries;
       },
-      getSequenceSiblingOptions,
       isActive: (
         style: ListStyleType | string | readonly string[]
       ): boolean => {
-        const selection = editor.read.selection();
+        const selection = state.selection();
 
         if (!selection) return false;
         const styles = Array.isArray(style) ? style : [style];
 
-        return editor.read.nodes.some({
+        return state.nodes.some({
           match: (node) => {
             if (!ElementApi.isElement(node)) return false;
             const isTodo = Object.hasOwn(node, KEYS.listChecked);
@@ -372,12 +372,8 @@ export const BaseListPlugin = createBasePlugin({
           },
         });
       },
-      isSequenceBoundary,
     };
   },
-  dependencies: [BaseIndentPlugin],
-  key: KEYS.list,
-  options: {} as BaseListPluginOptions,
   schema: ({ plugins, targetPluginKeys }) => ({
     properties: [
       schema.elementProperty(KEYS.listChecked, property.boolean(), {
@@ -652,20 +648,13 @@ export const BaseListPlugin = createBasePlugin({
     },
   },
   rules: {
-    break: {
-      empty: 'reset',
-      splitReset: false,
-    },
-    delete: {
-      start: 'reset',
-    },
     merge: {
       removeEmpty: false,
     },
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
 })
-  .extend(({ plugin }) => ({
+  .extend(({ api, editor, store, plugin }) => ({
     override: {
       plugins: {
         [KEYS.indent]: {
@@ -673,14 +662,6 @@ export const BaseListPlugin = createBasePlugin({
         },
       },
     },
-  }))
-  .extend<{
-    update: {
-      indent: (options?: IndentListOptions) => void;
-      outdent: (options?: OutdentListOptions) => void;
-      toggle: (options: ToggleListOptions) => void;
-    };
-  }>(({ api, editor, getOptions }) => ({
     update: ({ tx }) => ({
       indent: ({
         listStyleType = ListStyleType.Disc,
@@ -720,15 +701,10 @@ export const BaseListPlugin = createBasePlugin({
         } = options;
         if (!at || (PathApi.isPath(at) && at.length === 0)) return;
         const mergedGetSiblingListOptions = {
-          ...getOptions().getSiblingListOptions,
+          ...store.get().getSiblingListOptions,
           ...options.getSiblingListOptions,
         };
-        const match = getInjectMatch(
-          editor,
-          editor.getPlugin({
-            key: KEYS.list,
-          })
-        );
+        const match = getInjectMatch(editor, plugin);
         const entries = tx.nodes.toArray<Element>({
           at,
           match: (node, path) =>
@@ -799,20 +775,18 @@ export const BaseListPlugin = createBasePlugin({
             const siblings: NodeEntry<Element>[] = [];
             let siblingEntry: NodeEntry<Element> | undefined = entry;
             while (siblingEntry) {
-              siblingEntry = api.getPrevious(
+              siblingEntry = tx.list.getPrevious(
                 siblingEntry,
-                mergedGetSiblingListOptions,
-                tx
+                mergedGetSiblingListOptions
               );
               if (siblingEntry) siblings.push(siblingEntry);
             }
             siblings.push(entry);
             siblingEntry = entry;
             while (siblingEntry) {
-              siblingEntry = api.getNext(
+              siblingEntry = tx.list.getNext(
                 siblingEntry,
-                mergedGetSiblingListOptions,
-                tx
+                mergedGetSiblingListOptions
               );
               if (siblingEntry) siblings.push(siblingEntry);
             }
@@ -939,13 +913,12 @@ export const BaseListPlugin = createBasePlugin({
             },
             targetPath,
           ];
-          const isFirst = !api.getPrevious(
+          const isFirst = !tx.list.getPrevious(
             entry,
             api.getSequenceSiblingOptions({
               breakOnEqIndentNeqListStyleType: false,
               ...mergedGetSiblingListOptions,
-            }),
-            tx
+            })
           );
 
           /**
@@ -970,7 +943,7 @@ export const BaseListPlugin = createBasePlugin({
     }),
   }))
   .extend((context) => {
-    const { editor, getOptions } = context;
+    const { editor, store } = context;
     const changeGuard = new WeakSet<object>();
     const getListExpectedListStart = (
       entry: NodeEntry<Element>,
@@ -1012,10 +985,8 @@ export const BaseListPlugin = createBasePlugin({
       return listStyleType;
     };
     const getListStartUpdate = (
-      state: Pick<EditorCoreStateView, 'nodes'>,
       entry: NodeEntry<Element>,
-      options?: Partial<GetSiblingListOptions<Element>>,
-      previousEntry?: NodeEntry<Element> | null
+      previousEntry: NodeEntry<Element> | undefined
     ) => {
       const [node] = entry;
       const listStyleType = node[KEYS.listType];
@@ -1032,21 +1003,7 @@ export const BaseListPlugin = createBasePlugin({
             } as const)
           : undefined;
       }
-      const resolvedPreviousEntry =
-        previousEntry === undefined
-          ? context.api.getPrevious(
-              entry,
-              context.api.getSequenceSiblingOptions({
-                breakOnEqIndentNeqListStyleType: false,
-                ...options,
-              }),
-              state
-            )
-          : (previousEntry ?? undefined);
-      const expectedListStart = getListExpectedListStart(
-        entry,
-        resolvedPreviousEntry
-      );
+      const expectedListStart = getListExpectedListStart(entry, previousEntry);
       if (isDefined(listStart) && expectedListStart === 1) {
         return {
           type: 'unset',
@@ -1158,12 +1115,11 @@ export const BaseListPlugin = createBasePlugin({
           }),
         ],
         key: 'behavior',
-        priority: 100,
         onTransactionChange({ after, before, change, changed, tx }) {
           if (editor.runtime.isNormalizing || changeGuard.has(tx)) return;
           changeGuard.add(tx);
           try {
-            const { getSiblingListOptions } = getOptions();
+            const { getSiblingListOptions } = store.get();
             const roots = new Set<string | null>([
               ...getInternalDocumentChangeRootKeys(change).map((root) =>
                 root === 'main' ? null : root
@@ -1326,9 +1282,14 @@ export const BaseListPlugin = createBasePlugin({
                     }
                     while (entry && isListItem(entry[0])) {
                       const update = getListStartUpdate(
-                        tx,
                         entry,
-                        getSiblingListOptions
+                        tx.list.getPrevious(
+                          entry,
+                          context.api.getSequenceSiblingOptions({
+                            breakOnEqIndentNeqListStyleType: false,
+                            ...getSiblingListOptions,
+                          })
+                        )
                       );
                       if (update?.type === 'unset') {
                         tx.nodes.unset(KEYS.listStart, {
@@ -1344,16 +1305,12 @@ export const BaseListPlugin = createBasePlugin({
                           }
                         );
                       }
-                      entry = context.api.getNext<Element>(
-                        entry,
-                        {
-                          ...getSiblingListOptions,
-                          breakOnEqIndentNeqListStyleType: false,
-                          breakOnLowerIndent: false,
-                          eqIndent: false,
-                        },
-                        tx
-                      );
+                      entry = tx.list.getNext<Element>(entry, {
+                        ...getSiblingListOptions,
+                        breakOnEqIndentNeqListStyleType: false,
+                        breakOnLowerIndent: false,
+                        eqIndent: false,
+                      });
                     }
                   }
                   return;
@@ -1406,14 +1363,10 @@ export const BaseListPlugin = createBasePlugin({
                   ) {
                     continue;
                   }
-                  const previousEntry = context.api.getPrevious<Element>(
-                    entry,
-                    {
-                      breakOnEqIndentNeqListStyleType: false,
-                      eqIndent: false,
-                    },
-                    tx
-                  );
+                  const previousEntry = tx.list.getPrevious<Element>(entry, {
+                    breakOnEqIndentNeqListStyleType: false,
+                    eqIndent: false,
+                  });
                   const resolvedListStyleType = resolveAmbiguousListStyleType(
                     listStyleType,
                     previousEntry?.[0][KEYS.listType]
@@ -1464,13 +1417,12 @@ export const BaseListPlugin = createBasePlugin({
                     let previousPath = firstEntry[1];
                     let minimumIndent = Number.POSITIVE_INFINITY;
                     const [firstNode] = firstEntry;
-                    let previousStyleEntry = context.api.getPrevious<Element>(
+                    let previousStyleEntry = tx.list.getPrevious<Element>(
                       firstEntry,
                       {
                         breakOnEqIndentNeqListStyleType: false,
                         eqIndent: false,
-                      },
-                      tx
+                      }
                     );
                     while (PathApi.hasPrevious(previousPath)) {
                       previousPath = PathApi.previous(previousPath);
@@ -1629,9 +1581,14 @@ export const BaseListPlugin = createBasePlugin({
                 return;
               }
               const update = getListStartUpdate(
-                tx,
                 [entry[0], entry[1]],
-                getOptions().getSiblingListOptions
+                tx.list.getPrevious(
+                  [entry[0], entry[1]],
+                  context.api.getSequenceSiblingOptions({
+                    breakOnEqIndentNeqListStyleType: false,
+                    ...store.get().getSiblingListOptions,
+                  })
+                )
               );
               if (update?.type === 'unset') {
                 tx.nodes.unset(KEYS.listStart, {
@@ -1662,8 +1619,8 @@ export const BulletedListRules = {
   markdown: createListRule<{}, { variant: '*' | '-' }>({
     type: 'blockStart',
     variant: '-',
-    enabled: ({ editor }) =>
-      !editor.read.nodes.some({
+    enabled: ({ editor, tx }) =>
+      !tx.nodes.some({
         match: { type: [editor.getType(KEYS.codeBlock)] },
       }),
     trigger: ' ',
@@ -1681,8 +1638,8 @@ export const OrderedListRules = {
   markdown: createListRule<{}, { variant: '.' | ')' }, { start: number }>({
     type: 'blockStart',
     variant: '.',
-    enabled: ({ editor }) =>
-      !editor.read.nodes.some({
+    enabled: ({ editor, tx }) =>
+      !tx.nodes.some({
         match: { type: [editor.getType(KEYS.codeBlock)] },
       }),
     trigger: ' ',
@@ -1707,8 +1664,8 @@ export const TaskListRules = {
   markdown: createListRule<{}, { checked: boolean }>({
     type: 'blockStart',
     checked: false,
-    enabled: ({ editor }) =>
-      !editor.read.nodes.some({
+    enabled: ({ editor, tx }) =>
+      !tx.nodes.some({
         match: { type: [editor.getType(KEYS.codeBlock)] },
       }),
     trigger: ' ',

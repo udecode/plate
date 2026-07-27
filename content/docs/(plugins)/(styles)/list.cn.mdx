@@ -101,9 +101,9 @@ const CustomListPlugin = ListPlugin.configure({
 ```ts
 const list = editor.plugin(ListPlugin);
 
-list.api.isActive(ListStyleType.Disc);
-list.api.isActive([ListStyleType.Disc, ListStyleType.Circle]);
-list.api.isActive(KEYS.listTodo);
+list.read.isActive(ListStyleType.Disc);
+list.read.isActive([ListStyleType.Disc, ListStyleType.Circle]);
+list.read.isActive(KEYS.listTodo);
 ```
 
 编辑器没有选择时，`isActive` 返回 `false`。

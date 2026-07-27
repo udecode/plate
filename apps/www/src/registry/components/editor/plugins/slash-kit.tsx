@@ -7,7 +7,7 @@ import { SlashInputElement } from '@/registry/ui/slash-node';
 
 export const SlashKit = [
   SlashPlugin.configure({
-    options: {
+    initialState: {
       triggerQuery: (editor) =>
         !editor.read.nodes.some({
           match: { type: editor.getType(KEYS.codeBlock) },

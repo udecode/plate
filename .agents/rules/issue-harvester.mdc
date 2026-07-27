@@ -49,7 +49,7 @@ Clusters and matrices route work. They never close an issue row.
   without proof, no GitHub mutations unless explicitly asked.
 - `auto`: timeboxed/batch supervisor; delegates `issue-harvester`
   to this skill, then continues safe checkpoints.
-- `slate-patch` or `tdd`: write local Slate v2 or Plate tests/fixes once an
+- `plite-patch` or `tdd`: write local Plite or Plate tests/fixes once an
   issue row names owner, proof kind, and verification command.
 - `best-api`: review broad public API/DX gaps.
 - `plite-plan`: defer broad runtime/adoption gaps that cannot be proved by one
@@ -329,7 +329,7 @@ Prefer focused commands from the owner repo:
 ```bash
 pnpm --filter @platejs/<package> test -- <file-or-pattern>
 bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<test>"
-PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts --grep "<test>"
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/<suite>.test.ts --grep "<test>"
 ```
 
 For Plate-owned rows, use the relevant Plate package/example command. If the

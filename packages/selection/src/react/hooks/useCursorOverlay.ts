@@ -4,7 +4,7 @@ import type { Range } from '@platejs/plite';
 import { useIsomorphicLayoutEffect } from '@udecode/react-utils';
 import type { UnknownObject } from '@udecode/utils';
 
-import { useEditor, usePlateValue, usePluginOption } from '@platejs/core/react';
+import { useEditor, usePlateValue, usePluginStore } from '@platejs/core/react';
 
 import {
   FROZEN_EMPTY_ARRAY,
@@ -45,10 +45,10 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
   const editor = useEditor();
   const containerRef = usePlateValue('containerRef');
 
-  const cursorStates = usePluginOption(
-    CursorOverlayPlugin,
-    'cursors'
-  ) as Record<string, CursorState<TCursorData>>;
+  const cursorStates = usePluginStore(CursorOverlayPlugin, 'cursors') as Record<
+    string,
+    CursorState<TCursorData>
+  >;
 
   const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()

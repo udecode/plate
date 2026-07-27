@@ -17,17 +17,17 @@ type ChildConfig = PluginConfig<
 
 const ChildPlugin = createBasePlugin<ChildConfig>({
   key: 'child',
-  options: {
+  initialState: {
     level: 1,
   },
-}).extend(({ plugin, setOption }) => ({
+}).extend(({ plugin, store }) => ({
   extension: {
     api: {
       plugin: {
-        getLevel: () => plugin.options.level,
+        getLevel: () => plugin.initialState.level,
       },
       setLevel: (level) => {
-        setOption('level', level);
+        store.set({ level });
       },
     },
   },
@@ -38,7 +38,7 @@ const ParentPlugin = createBasePlugin({
   key: 'parent',
 });
 const ConfiguredChildPlugin = ChildPlugin.configure({
-  options: {
+  initialState: {
     level: 2,
   },
 });
@@ -59,13 +59,13 @@ type DisplayConfig = PluginConfig<
 
 const DisplayPlugin = createPlatePlugin<DisplayConfig>({
   key: 'display',
-  options: {
+  initialState: {
     label: 'title',
   },
-}).extend(({ getOptions }) => ({
+}).extend(({ store }) => ({
   extension: {
     api: {
-      getLabel: () => getOptions().label,
+      getLabel: () => store.get().label,
     },
   },
 }));
@@ -79,7 +79,7 @@ const plateEditor = createPlateEditor({
 
 const nestedLevel: 1 | 2 = basePlateEditor
   .plugin(ChildPlugin)
-  .getOptions().level;
+  .store.get().level;
 const nestedApiLevel: 1 | 2 = basePlateEditor.api.plugin.getLevel();
 const plateValue: readonly [{ children: [{ text: string }]; type: 'p' }] =
   plateEditor.read.children();
@@ -94,8 +94,8 @@ void plateLabel;
 void plateValue;
 
 ChildPlugin.configure({
-  options: {
-    // @ts-expect-error invalid configured nested option value
+  initialState: {
+    // @ts-expect-error invalid configured nested state value
     level: 3,
   },
 });
@@ -104,8 +104,8 @@ ChildPlugin.configure({
 basePlateEditor.api.setLevel(3);
 
 DisplayPlugin.configure({
-  options: {
-    // @ts-expect-error invalid plate plugin option value
+  initialState: {
+    // @ts-expect-error invalid Plate plugin state value
     label: 'footer',
   },
 });

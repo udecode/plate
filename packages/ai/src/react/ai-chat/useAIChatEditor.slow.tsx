@@ -27,7 +27,7 @@ describe('useAIChatEditor', () => {
 
     expect(editor.read.children()).toEqual(result.current);
     expect(editor.read.text.string([])).toBe('hi');
-    const registered = primaryEditor.plugin(AIChatPlugin).getOption('aiEditor');
+    const registered = primaryEditor.plugin(AIChatPlugin).store.get('aiEditor');
 
     expect(registered?.id).toBe(editor.id);
     expect(registered?.read.text.string([])).toBe('hi');

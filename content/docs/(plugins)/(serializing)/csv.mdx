@@ -52,7 +52,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     CsvPlugin.configure({
-      options: {
+      initialState: {
         errorTolerance: 0.1,
         parseOptions: {
           header: true,
@@ -105,12 +105,12 @@ const nodes = editor.api.csv.deserialize({
 
 Plugin for CSV deserialization functionality.
 
-### CsvPluginOptions
+### CsvPluginState
 
-Pass CSV parser behavior through `CsvPlugin.configure({ options })`.
+Pass CSV parser behavior through `CsvPlugin.configure({ initialState })`.
 
-<API name="CsvPluginOptions">
-<APIOptions type="CsvPluginOptions">
+<API name="CsvPluginState">
+<APIOptions type="CsvPluginState">
   <APIItem name="errorTolerance" type="number" optional>
     The tolerance for errors in the CSV data, represented as a percentage in decimal form. This value is calculated as the ratio of errors to the total number of rows.
 

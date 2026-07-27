@@ -8,5 +8,5 @@ change: {"type":"source","date":"2026-07-23","commits":[]}
 release: {"status":"unresolved"}
 diagnostics: []
 ---
-<!-- entry: {"id":"2026-07-23-caption-render-rich-media-caption-children-1ee56347","kind":"behavior","migrationNotes":["Remove CaptionPlugin from media kits and render each media element's direct children as its caption; use [{ text: '' }] when the caption is absent."]} -->
+<!-- entry: {"id":"2026-07-23-caption-render-rich-media-caption-children-1ee56347","kind":"behavior","migrationNotes":["Remove CaptionPlugin from media kits and render each media element's direct children as its caption; use [{ text: '' }] when the caption is absent.","For persisted caption properties, add MediaV54MigrationPlugin from @platejs/media/migrations before media plugins until every document is resaved."]} -->
 - **`caption`**, **`media-base-kit`**, **`media-kit`**, **`media-image-node`**, **`media-video-node`**, **`media-audio-node`**, **`media-file-node`**, **`media-embed-node`**, **`media-placeholder-node`**, **`media-toolbar-button`**, **`plate-to-html`**: Render direct media caption children, keep an empty caption hidden until asset focus, and separate asset selection from caption editing.

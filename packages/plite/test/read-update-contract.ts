@@ -87,7 +87,7 @@ describe('read/update contract', () => {
     assert.equal(editor.read.lastCommit()?.changed.has('marks'), true);
   });
 
-  it('toggles marks with mutually exclusive clear options', () => {
+  it('toggles marks with configured clear options', () => {
     const editor = createEditor();
 
     replaceEditorValue(editor, {
@@ -99,17 +99,17 @@ describe('read/update contract', () => {
       },
     });
 
-    editor.update.marks.add('superscript', true);
-    editor.update.marks.toggle('subscript', true, { clear: 'superscript' });
-
-    assert.deepEqual(editor.read.marks(), { subscript: true });
-
     editor.update.marks.add('italic', true);
+    editor.update.marks.toggle('bold', true, { clear: 'italic' });
+
+    assert.deepEqual(editor.read.marks(), { bold: true });
+
+    editor.update.marks.add('code', true);
     editor.update((tx) => {
-      tx.marks.toggle('subscript', true, { clear: ['italic', 'subscript'] });
+      tx.marks.toggle('bold', true, { clear: ['bold', 'code'] });
     });
 
-    assert.deepEqual(editor.read.marks(), { italic: true });
+    assert.deepEqual(editor.read.marks(), { code: true });
   });
 
   it('sets an exact expanded range without retargeting endpoints', () => {

@@ -2,7 +2,8 @@
 "@platejs/tag": major
 ---
 
-Move tag insertion to `editor.update.tag.insert` and run multi-select behavior through Plite transactions
-
-Accept typed Plate editors with custom values and plugin configs in
-`isEqualTags`, and register tag values in compiled schemas.
+Move tag insertion to `editor.update.tag.insert`, read selected items through
+`editor.read.tag.getSelectedItems`, and compare values through
+`editor.read.tag.isEqual`. Run multi-select behavior through Plite
+transactions, register tag values in compiled schemas, and remove standalone
+tag query helpers.

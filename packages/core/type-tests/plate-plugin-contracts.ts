@@ -55,29 +55,29 @@ type ToolbarConfig = PluginConfig<
 
 const ToolbarPlugin = createPlatePlugin<ToolbarConfig>({
   key: 'toolbar',
-  options: {
+  initialState: {
     floating: true,
   },
-}).extend(({ getOptions }) => ({
+}).extend(({ store }) => ({
   extension: {
     api: {
       plugin: {
-        isFloating: () => getOptions().floating,
+        isFloating: () => store.get().floating,
       },
-      toggleFloating: () => getOptions().floating,
+      toggleFloating: () => store.get().floating,
     },
   },
 }));
 
 const MentionPlugin = createPlatePlugin({
   key: 'mention',
-  options: {
+  initialState: {
     trigger: '@' as const,
   },
-}).extend(({ getOptions }) => ({
+}).extend(({ store }) => ({
   extension: {
     api: {
-      getTrigger: () => getOptions().trigger,
+      getTrigger: () => store.get().trigger,
     },
   },
 }));
@@ -100,17 +100,17 @@ type ExplicitPluginConfig = PluginConfig<
 
 const ExplicitPlugin = createPlatePlugin<ExplicitPluginConfig>({
   key: 'explicitPlugin',
-  options: {
+  initialState: {
     enabled: false,
   },
-}).extend<{ api: ExplicitPluginConfig['pluginApi'] }>(({ getOptions }) => ({
+}).extend<{ api: ExplicitPluginConfig['pluginApi'] }>(({ store }) => ({
   api: {
-    isEnabled: () => getOptions().enabled,
+    isEnabled: () => store.get().enabled,
   },
 }));
 
 type DeclaredPlateTx = {
-  run: (value: 'typed', options?: { count?: number }) => number;
+  run: (value: 'typed', initialState?: { count?: number }) => number;
 };
 
 const DeclaredPlateTxPlugin = createPlatePlugin<
@@ -118,9 +118,9 @@ const DeclaredPlateTxPlugin = createPlatePlugin<
 >({
   key: 'declaredPlateTx',
   update: () => ({
-    run: (value, options = {}) => {
+    run: (value, initialState = {}) => {
       const exactValue: 'typed' = value;
-      const exactCount: number | undefined = options.count;
+      const exactCount: number | undefined = initialState.count;
 
       return exactValue.length + (exactCount ?? 0);
     },
@@ -131,7 +131,7 @@ void DeclaredPlateTxPlugin;
 
 const ReactFactoryExtensionPlugin = createPlatePlugin({
   key: 'reactFactoryExtension',
-  options: {
+  initialState: {
     mode: 'inline' as 'inline' | 'block',
   },
 });
@@ -166,6 +166,29 @@ const DependentHooksPlugin = createPlatePlugin({
     void dependencyValue;
   },
 });
+
+const PlateReadContextPlugin = createPlatePlugin({
+  key: 'plateReadContext',
+  read: ({ state }) => ({
+    childCount: () => state.children().length,
+  }),
+})
+  .extend({
+    useHooks: ({ read }) => {
+      const childCount: number = read.childCount();
+
+      void childCount;
+    },
+  })
+  .configure({
+    handlers: {
+      onFocus: ({ read }) => {
+        const childCount: number = read.childCount();
+
+        void childCount;
+      },
+    },
+  });
 
 const plateEditor = createPlateEditor({
   plugins: [ToolbarPlugin, MentionPlugin, ReactFactoryExtensionPlugin],
@@ -205,10 +228,10 @@ const explicitPluginApiKey: Extract<
 > = 'explicitPlugin';
 const toolbarFloating: boolean = createdPlateEditor
   .plugin(ToolbarPlugin)
-  .getOptions().floating;
+  .store.get().floating;
 const createdMentionOption: '@' = createdPlateEditor
   .plugin(MentionPlugin)
-  .getOptions().trigger;
+  .store.get().trigger;
 
 void createdFloating;
 void createdMentionOption;
@@ -221,6 +244,7 @@ void floating;
 void htmlValue;
 void mentionTrigger;
 void nestedFloating;
+void PlateReadContextPlugin;
 void toolbarFloating;
 
 // @ts-expect-error invalid merged editor api
@@ -237,4 +261,4 @@ const explicitPluginPortalApi = createdPlateEditor.plugin(ExplicitPlugin).api;
 explicitPluginPortalApi.explicitPlugin.isEnabled();
 
 // @ts-expect-error literal option type must stay stable
-createdPlateEditor.plugin(MentionPlugin).getOptions().trigger = '#';
+createdPlateEditor.plugin(MentionPlugin).store.get().trigger = '#';

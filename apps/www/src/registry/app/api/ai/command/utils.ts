@@ -1,10 +1,15 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { UIMessage } from 'ai';
 
-import { getMarkdown } from '@platejs/ai';
 import type { MarkdownEditor } from '@platejs/markdown';
 import dedent from 'dedent';
-import { ElementApi, type BaseEditor, KEYS, RangeApi } from 'platejs';
+import {
+  ElementApi,
+  type BaseEditor,
+  type Element,
+  KEYS,
+  RangeApi,
+} from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -244,7 +249,7 @@ const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
 
     if (!node) return newText;
     if (editor.read.schema.isVoid(node[0])) {
-      const voidString = editor.api.markdown.serialize({
+      const voidString = editor.read.markdown.serialize({
         value: { children: [node[0]] },
       });
 
@@ -280,9 +285,27 @@ export const isMultiBlocks = (editor: BaseEditor) =>
     );
   });
 
+export const serializePromptBlocks = (
+  editor: MarkdownEditor,
+  { withBlockId = false }: { withBlockId?: boolean } = {}
+) => {
+  const blocks = editor.read.nodes
+    .toArray<Element>({
+      match: (node) =>
+        ElementApi.isElement(node) && editor.read.schema.isBlock(node),
+      mode: 'lowest',
+    })
+    .map(([node]) => node);
+
+  return editor.read.markdown.serialize({
+    value: { children: blocks },
+    withBlockId,
+  });
+};
+
 /** Get markdown with selection markers */
 export const getMarkdownWithSelection = (editor: MarkdownEditor) =>
-  removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
+  removeEscapeSelection(editor, serializePromptBlocks(editor));
 
 /** Check if the current selection is inside a table cell */
 export const isSelectionInTable = (editor: BaseEditor): boolean => {

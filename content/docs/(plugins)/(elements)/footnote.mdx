@@ -62,12 +62,12 @@ npm install @platejs/footnote @platejs/markdown remark-gfm
 
 ### Add Plugins
 
-Add the inline reference and block definition. `FootnoteReferencePlugin` installs its combobox input as a required dependency; pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
+Add the inline reference and block definition. `FootnotePlugin` installs its combobox input as a required dependency; pair the footnote plugins with `MarkdownPlugin` and `remark-gfm` so `[^1]` round-trips correctly.
 
 ```tsx
 import {
   FootnoteDefinitionPlugin,
-  FootnoteReferencePlugin,
+  FootnotePlugin,
 } from '@platejs/footnote/react';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { createPlateEditor } from 'platejs/react';
@@ -76,10 +76,10 @@ import remarkGfm from 'remark-gfm';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    FootnoteReferencePlugin,
+    FootnotePlugin,
     FootnoteDefinitionPlugin,
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         remarkPlugins: [remarkGfm],
       },
     }),
@@ -87,7 +87,7 @@ const editor = createPlateEditor({
 });
 ```
 
-`FootnoteInputPlugin` is a required dependency of `FootnoteReferencePlugin`. Add a complete input descriptor to the same array only when you need to replace its default component or configuration.
+`FootnoteInputPlugin` is a required dependency of `FootnotePlugin`. Add a complete input descriptor to the same array only when you need to replace its default component or configuration.
 
 ### Insert a Footnote
 
@@ -165,13 +165,13 @@ Swap in your own React components with `component`:
 ```tsx
 import {
   FootnoteDefinitionPlugin,
-  FootnoteReferencePlugin,
+  FootnotePlugin,
 } from '@platejs/footnote/react';
 import { createPlateEditor } from 'platejs/react';
 
 const editor = createPlateEditor({
   plugins: [
-    FootnoteReferencePlugin.configure({ component: MyFootnoteReference }),
+    FootnotePlugin.configure({ component: MyFootnoteReference }),
     FootnoteDefinitionPlugin.configure({ component: MyFootnoteDefinition }),
   ],
 });
@@ -183,11 +183,11 @@ The package owns node semantics, identifier allocation, and navigation helpers. 
 
 ## Plugins
 
-### `FootnoteReferencePlugin`
+### `FootnotePlugin`
 
 Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier registry, navigation transforms, and query API. Requires `FootnoteInputPlugin`.
 
-<API name="FootnoteReferencePlugin">
+<API name="FootnotePlugin">
 <APIOptions>
   <APIItem name="trigger" type="RegExp | string[] | string" optional>
     Character that opens the footnote combobox.
@@ -214,15 +214,16 @@ Block node for footnote definitions. Lives at the bottom of the document and car
 
 ### `FootnoteInputPlugin`
 
-Inline void used as the live combobox input while the reader is typing `[^…`. Installed as a required dependency of `FootnoteReferencePlugin`; add it directly only to replace its default configuration or component.
+Inline void used as the live combobox input while the reader is typing `[^…`. Installed as a required dependency of `FootnotePlugin`; add it directly only to replace its default configuration or component.
 
 <API name="FootnoteInputPlugin" />
 
-## API
+## Reads
 
-All API methods hang off `editor.api.footnote`. Reads go through a lazy per-editor registry that rebuilds only when a footnote operation invalidates it, so hover previews and navigation stay cheap even when a single definition has many references.
+All read methods hang off `editor.read.footnote` and evaluate the active
+snapshot directly.
 
-### `api.footnote.definition`
+### `editor.read.footnote.definition`
 
 Get the canonical (first-in-document-order) definition entry for an identifier.
 
@@ -239,7 +240,7 @@ Get the canonical (first-in-document-order) definition entry for an identifier.
 </APIReturns>
 </API>
 
-### `api.footnote.definitions`
+### `editor.read.footnote.definitions`
 
 Get every definition entry that shares an identifier, in document order. When duplicates exist, the first entry is canonical; later entries are duplicates.
 
@@ -256,7 +257,7 @@ Get every definition entry that shares an identifier, in document order. When du
 </APIReturns>
 </API>
 
-### `api.footnote.definitionText`
+### `editor.read.footnote.definitionText`
 
 Get the plain-text content of the canonical definition. Ideal for hover previews — reads straight from live definition nodes, no copied state.
 
@@ -273,7 +274,7 @@ Get the plain-text content of the canonical definition. Ideal for hover previews
 </APIReturns>
 </API>
 
-### `api.footnote.references`
+### `editor.read.footnote.references`
 
 Get every reference entry that points at an identifier, in document order.
 
@@ -290,7 +291,7 @@ Get every reference entry that points at an identifier, in document order.
 </APIReturns>
 </API>
 
-### `api.footnote.identifiers`
+### `editor.read.footnote.identifiers`
 
 List every identifier that has at least one definition, in document order.
 
@@ -302,7 +303,7 @@ List every identifier that has at least one definition, in document order.
 </APIReturns>
 </API>
 
-### `api.footnote.nextId`
+### `editor.read.footnote.nextId`
 
 Compute the next free numeric identifier. Used by `tx.insert.footnote` when the caller doesn't supply one.
 
@@ -314,7 +315,7 @@ Compute the next free numeric identifier. Used by `tx.insert.footnote` when the 
 </APIReturns>
 </API>
 
-### `api.footnote.isResolved`
+### `editor.read.footnote.isResolved`
 
 Check whether an identifier has at least one definition.
 
@@ -331,7 +332,7 @@ Check whether an identifier has at least one definition.
 </APIReturns>
 </API>
 
-### `api.footnote.duplicateDefinitions`
+### `editor.read.footnote.duplicateDefinitions`
 
 Get every non-canonical definition entry for an identifier — that is, every definition after the first in document order.
 
@@ -348,7 +349,7 @@ Get every non-canonical definition entry for an identifier — that is, every de
 </APIReturns>
 </API>
 
-### `api.footnote.duplicateIdentifiers`
+### `editor.read.footnote.duplicateIdentifiers`
 
 List every identifier that has more than one definition.
 
@@ -360,7 +361,7 @@ List every identifier that has more than one definition.
 </APIReturns>
 </API>
 
-### `api.footnote.hasDuplicateDefinitions`
+### `editor.read.footnote.hasDuplicateDefinitions`
 
 Check whether an identifier has more than one definition.
 
@@ -377,7 +378,7 @@ Check whether an identifier has more than one definition.
 </APIReturns>
 </API>
 
-### `api.footnote.isDuplicateDefinition`
+### `editor.read.footnote.isDuplicateDefinition`
 
 Check whether a given definition path is a later duplicate (not the canonical one).
 
@@ -394,18 +395,18 @@ Check whether a given definition path is a later duplicate (not the canonical on
 </APIReturns>
 </API>
 
-## Transforms
+## Updates
 
-### `tx.insert.footnote`
+### `editor.update.footnote.insert`
 
 Insert a footnote reference at the current selection, create a matching definition if one doesn't already exist, and focus the definition body.
 
 When the selection is expanded, the expanded fragment seeds the new definition body so you can convert selected prose into a footnote in one call.
 
-<API name="insert.footnote">
+<API name="insert">
 <APIParameters>
   <APIItem name="identifier" type="string" optional>
-    Reuse an existing identifier. Defaults to `api.footnote.nextId()`.
+    Reuse an existing identifier. Defaults to `editor.read.footnote.nextId()`.
   </APIItem>
   <APIItem name="focusDefinition" type="boolean" optional>
     Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
@@ -417,11 +418,11 @@ When the selection is expanded, the expanded fragment seeds the new definition b
 </APIParameters>
 </API>
 
-### `tx.footnote.createDefinition`
+### `editor.update.footnote.createDefinition`
 
 Create the missing definition for an existing identifier without inserting another reference. Returns the path of the definition — the newly created one, or the existing one when the identifier already resolves.
 
-<API name="footnote.createDefinition">
+<API name="createDefinition">
 <APIParameters>
   <APIItem name="identifier" type="string">
     Identifier to create a definition for.
@@ -438,11 +439,11 @@ Create the missing definition for an existing identifier without inserting anoth
 </APIReturns>
 </API>
 
-### `tx.footnote.focusDefinition`
+### `editor.update.footnote.focusDefinition`
 
 Jump the selection into the canonical definition body, scroll it into view, and flash it through Navigation Feedback.
 
-<API name="footnote.focusDefinition">
+<API name="focusDefinition">
 <APIParameters>
   <APIItem name="identifier" type="string">
     Footnote identifier.
@@ -455,11 +456,11 @@ Jump the selection into the canonical definition body, scroll it into view, and 
 </APIReturns>
 </API>
 
-### `tx.footnote.focusReference`
+### `editor.update.footnote.focusReference`
 
 Jump the selection to the matching reference, scroll it into view, and flash it through Navigation Feedback.
 
-<API name="footnote.focusReference">
+<API name="focusReference">
 <APIParameters>
   <APIItem name="identifier" type="string">
     Footnote identifier.
@@ -476,17 +477,17 @@ Jump the selection to the matching reference, scroll it into view, and flash it 
 </APIReturns>
 </API>
 
-### `tx.footnote.normalizeDuplicateDefinition`
+### `editor.update.footnote.normalizeDuplicateDefinition`
 
-Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `identifier` to target, otherwise the transform picks `api.footnote.nextId()`.
+Renumber a later duplicate definition so the canonical definition stays intact. Pass the path of the duplicate; optionally pass a specific `identifier` to target, otherwise the transform picks `editor.read.footnote.nextId()`.
 
-<API name="footnote.normalizeDuplicateDefinition">
+<API name="normalizeDuplicateDefinition">
 <APIParameters>
   <APIItem name="path" type="number[]">
     Path of the duplicate definition to renumber.
   </APIItem>
   <APIItem name="identifier" type="string" optional>
-    Target identifier. Must be free. Defaults to `api.footnote.nextId()`.
+    Target identifier. Must be free. Defaults to `editor.read.footnote.nextId()`.
   </APIItem>
 </APIParameters>
 <APIReturns>

@@ -5,16 +5,10 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 import type { TCodeBlockElement } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
 
-const isLangSupportedMock = mock((_lang?: string) => false);
 const useReadOnlyMock = mock(() => true);
 
 let currentElement: TCodeBlockElement;
 const editor = {} as PlateEditor;
-
-mock.module('@platejs/code-block', () => ({
-  formatCodeBlock: mock(),
-  isLangSupported: (lang?: string) => isLangSupportedMock(lang),
-}));
 
 mock.module('platejs', () => ({
   NodeApi: {
@@ -77,7 +71,6 @@ describe('CodeBlockElement', () => {
       lang: 'javascript',
       type: 'code_block',
     };
-    isLangSupportedMock.mockClear();
     useReadOnlyMock.mockClear();
     useReadOnlyMock.mockReturnValue(true);
   });

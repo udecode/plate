@@ -15,9 +15,8 @@ import {
   BaseH6Plugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
 import { cleanDocx } from '@platejs/docx';
@@ -176,8 +175,7 @@ export const testDocxImporter = ({
         BaseCodePlugin,
         BaseItalicPlugin,
         BaseStrikethroughPlugin,
-        BaseSubscriptPlugin,
-        BaseSuperscriptPlugin,
+        BaseScriptPlugin,
         BaseUnderlinePlugin,
         TestLinkPlugin,
         TestTablePlugin,
@@ -193,7 +191,7 @@ export const testDocxImporter = ({
       { styleMap: ['comment-reference => sup'] }
     );
 
-    // Process HTML same as importDocx
+    // Process HTML with the same importer pipeline.
     const { html: preprocessedHtml } = preprocessMammothHtml(
       mammothResult.value
     );

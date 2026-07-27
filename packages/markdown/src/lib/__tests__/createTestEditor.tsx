@@ -110,8 +110,12 @@ const testSchemaPlugins = [
   leaf(KEYS.underline),
   leaf(KEYS.code),
   leaf(KEYS.strikethrough),
-  leaf(KEYS.sub),
-  leaf(KEYS.sup),
+  createBasePlugin({
+    key: KEYS.script,
+    schema: {
+      mark: property.enum(['sub', 'sup']),
+    },
+  }),
   leaf(KEYS.highlight),
   leaf(KEYS.kbd),
   element(KEYS.a, { inline: true }),
@@ -166,7 +170,7 @@ const testSchemaPlugins = [
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({
-  options: {
+  initialState: {
     plainMarks: [KEYS.suggestion, KEYS.comment],
     remarkPlugins: [
       remarkMath,

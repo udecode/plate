@@ -88,7 +88,7 @@ Put this plugin before any other plugins overriding `selectAll` – `Cmd+A` (cod
 
 #### Excluding Blocks from Selection
 
-You can control which blocks are selectable using `options.isSelectable`. This function receives an element and its path, and should return `true` if the block is selectable.
+You can control which blocks are selectable using `initialState.isSelectable`. This function receives an element and its path, and should return `true` if the block is selectable.
 
 For example, to exclude code lines, columns, and table cells:
 
@@ -96,7 +96,7 @@ For example, to exclude code lines, columns, and table cells:
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 BlockSelectionPlugin.configure({
-  options: {
+  initialState: {
     isSelectable: (element, path) => {
       if (['code_line', 'column', 'td'].includes(element.type)) {
         return false;
@@ -123,7 +123,7 @@ If your editor is inside a scrollable container, you may need to configure the s
 const scrollContainer = '.editor-scroll-container';
 
 BlockSelectionPlugin.configure({
-  options: {
+  initialState: {
     areaOptions: {
       boundaries: scrollContainer,
       container: scrollContainer,
@@ -286,11 +286,11 @@ Deselects all blocks and sets the `isSelecting` flag to false.
 
 Focuses the block selection shadow input. This input handles copy, delete, and paste events for selected blocks.
 
-### `editor.api.blockSelection.getNodes(options?)`
+### `editor.read.blockSelection.getNodes(options?)`
 
 Gets the selected blocks in the editor.
 
-<API name="editor.api.blockSelection.getNodes">
+<API name="editor.read.blockSelection.getNodes">
 <APIParameters>
   <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
     Options for getting nodes.
@@ -309,11 +309,11 @@ Gets the selected blocks in the editor.
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.has(id)`
+### `editor.plugin(BlockSelectionPlugin).store.get('has', id)`
 
 Checks if one or more blocks are selected.
 
-<API name="editor.api.blockSelection.has">
+<API name="editor.plugin(BlockSelectionPlugin).store.get">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       The ID(s) of the block(s) to check.
@@ -326,7 +326,8 @@ Checks if one or more blocks are selected.
 
 ### `editor.api.blockSelection.isSelectable(element, path)`
 
-Checks if a block at a given path is selectable based on the `isSelectable` plugin option.
+Checks if a block at a given path is selectable based on the `isSelectable`
+plugin state field.
 
 <API name="editor.api.blockSelection.isSelectable">
   <APIParameters>
@@ -414,7 +415,7 @@ Removes the selected nodes from the editor.
 ### `tx.blockSelection.select`
 
 Selects the nodes returned by
-`editor.api.blockSelection.getNodes()` in the editor and resets
+`editor.read.blockSelection.getNodes()` in the editor and resets
 selected IDs.
 
 ### `tx.blockSelection.setNodes`

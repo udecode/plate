@@ -70,7 +70,7 @@ export const linkAutomdInputRule = {
 The matcher stays link-owned and uses link semantics directly:
 
 ```ts
-const { transformInput } = editor.plugin(BaseLinkPlugin).getOptions();
+const { transformInput } = editor.plugin(BaseLinkPlugin).store.get();
 const url = transformInput ? (transformInput(rawUrl) ?? '') : rawUrl;
 
 if (!url || !validateUrl(editor, url)) return;
@@ -80,7 +80,7 @@ Then the current kits just host it:
 
 ```ts
 AutoformatPlugin.configure({
-  options: {
+  initialState: {
     insertTextRules: [linkAutomdInputRule],
   },
 });

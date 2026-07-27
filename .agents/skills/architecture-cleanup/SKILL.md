@@ -37,7 +37,7 @@ keep.
 
 ## Do Not Use When
 
-- The task is one normal patch: use `task`, `slate-patch`, or the package
+- The task is one normal patch: use `task`, `plite-patch`, or the package
   owner.
 - The task is public call-shape design/review: use `best-api`. For an accepted
   target needing runtime/product adoption, use `major-task`, `plite-plan`, or

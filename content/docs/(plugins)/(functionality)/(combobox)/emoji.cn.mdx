@@ -89,7 +89,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     EmojiPlugin.configure({
-      options: {
+      initialState: {
         data: emojiMartData,
         trigger: ':',
         triggerPreviousCharPattern: /^\s?$/,
@@ -117,7 +117,7 @@ const editor = createPlateEditor({
 
 ### EmojiPlugin
 
-提供表情功能的核心插件。扩展自[TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)，并要求安装 `EmojiInputPlugin`。
+提供表情功能的核心插件。扩展自[TriggerComboboxPluginState](/docs/combobox#triggercomboboxpluginstate)，并要求安装 `EmojiInputPlugin`。
 
 <API name="EmojiPlugin">
 <APIOptions>

@@ -232,9 +232,9 @@ describe('Table plugin', () => {
 });
 ```
 
-## Testing Plugins with Options
+## Testing Plugin State
 
-Test how different plugin options affect behavior:
+Test how different initial state affects behavior:
 
 ```typescript
 describe('when keepSelectedTextOnPaste is disabled', () => {
@@ -261,7 +261,7 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
     const editor = createPlateEditor({
       plugins: [
         LinkPlugin.configure({
-          options: {
+          initialState: {
             keepSelectedTextOnPaste: false,
           },
         }),

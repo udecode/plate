@@ -44,7 +44,6 @@
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/utils": "workspace:^",
-    "@udecode/utils": "workspace:^",
     "papaparse": "^5.5.3"
   },
   "devDependencies": {

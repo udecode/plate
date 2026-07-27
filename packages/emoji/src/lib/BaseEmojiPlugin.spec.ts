@@ -1,6 +1,6 @@
 import type { Emoji } from '@emoji-mart/data';
-import { createBaseEditor } from '@platejs/core';
-import { schema } from '@platejs/plite';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { property, schema } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
@@ -56,22 +56,22 @@ describe('BaseEmojiPlugin', () => {
     });
 
     const plugin = editor.getPlugin(BaseEmojiPlugin);
-    const triggerPreviousCharPattern =
-      plugin.options.triggerPreviousCharPattern;
-    const createComboboxInput = plugin.options.createComboboxInput;
-    const createEmojiNode = plugin.options.createEmojiNode;
+    const state = editor.plugin(BaseEmojiPlugin).store.get();
+    const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
+    const createComboboxInput = state.createComboboxInput;
+    const createEmojiNode = state.createEmojiNode;
 
     if (
       !triggerPreviousCharPattern ||
       !createComboboxInput ||
       !createEmojiNode
     ) {
-      throw new Error('Missing required emoji plugin options');
+      throw new Error('Missing required emoji plugin state');
     }
 
     expect(plugin.editOnly).toBe(true);
-    expect(plugin.options.data).toEqual(DEFAULT_EMOJI_LIBRARY);
-    expect(plugin.options.trigger).toBe(':');
+    expect(state.data).toEqual(DEFAULT_EMOJI_LIBRARY);
+    expect(state.trigger).toBe(':');
     expect(triggerPreviousCharPattern.test('')).toBe(true);
     expect(triggerPreviousCharPattern.test(' ')).toBe(true);
     expect(triggerPreviousCharPattern.test('x')).toBe(false);
@@ -90,5 +90,96 @@ describe('BaseEmojiPlugin', () => {
     });
 
     expect(editor.getPlugin(BaseEmojiInputPlugin).key).toBe(KEYS.emojiInput);
+  });
+
+  it('inserts the first native skin text by default', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseEmojiPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hi ' }], type: 'p' }],
+    });
+
+    editor.plugin(BaseEmojiPlugin).update.insert(fireEmoji);
+
+    expect(editor.read.text.string([0])).toBe('hi 🔥');
+  });
+
+  it('uses the configured createEmojiNode override', () => {
+    const EmojiChipPlugin = createBasePlugin({
+      key: 'emoji-chip',
+      schema: {
+        element: {
+          content: schema.content.text({ default: 'text', min: 1 }),
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [
+        EmojiChipPlugin,
+        BaseEmojiPlugin.configure({
+          initialState: {
+            createEmojiNode: (emoji) => ({
+              children: [{ text: emoji.id }],
+              type: 'emoji-chip',
+            }),
+          },
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+    });
+
+    editor.plugin(BaseEmojiPlugin).update.insert(fireEmoji);
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'x' }], type: 'p' },
+      {
+        children: [{ text: 'fire' }],
+        type: 'emoji-chip',
+      },
+    ]);
+  });
+
+  it('preserves custom properties on text emoji nodes', () => {
+    const EmojiIdPlugin = createBasePlugin({
+      key: 'emojiId',
+      schema: { mark: property.string() },
+    });
+    const editor = createBaseEditor({
+      plugins: [
+        EmojiIdPlugin,
+        BaseEmojiPlugin.configure({
+          initialState: {
+            createEmojiNode: (emoji) => ({
+              emojiId: emoji.id,
+              text: emoji.skins[0].native,
+            }),
+          },
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+    });
+
+    editor.plugin(BaseEmojiPlugin).update.insert(fireEmoji);
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: 'x' }, { emojiId: 'fire', text: '🔥' }],
+        type: 'p',
+      },
+    ]);
   });
 });

@@ -13,11 +13,11 @@ const assertTypedSchemaContributions = () => {
 
   createBasePlugin<SchemaConfig>({
     key: 'validSchema',
-    options: { targetTypes: ['cell', 'header'] },
-    schema: ({ options }) => ({
+    initialState: { targetTypes: ['cell', 'header'] },
+    schema: ({ initialState }) => ({
       properties: [
         schema.elementProperty('status', property.string(), {
-          target: target.types(options.targetTypes),
+          target: target.types(initialState.targetTypes),
         }),
       ],
     }),
@@ -119,23 +119,23 @@ const assertTypedContextualConfiguration = () => {
     PluginConfig<'baseContextual', { enabled: boolean }>
   >({
     key: 'baseContextual',
-    options: { enabled: false },
+    initialState: { enabled: false },
   });
 
   BasePlugin.configure(({ editor, plugin }) => {
     editor.id satisfies string;
     plugin.key satisfies 'baseContextual';
 
-    return { options: { enabled: true } };
+    return { initialState: { enabled: true } };
   });
   const ConfiguredBasePlugin = BasePlugin.configure({
-    options: { enabled: true },
+    initialState: { enabled: true },
   });
 
   // @ts-expect-error configured descriptors accept one consumer configuration
-  ConfiguredBasePlugin.configure({ options: { enabled: false } });
+  ConfiguredBasePlugin.configure({ initialState: { enabled: false } });
   // @ts-expect-error configured descriptors are terminal authoring inputs
-  ConfiguredBasePlugin.extend({ options: { enabled: false } });
+  ConfiguredBasePlugin.extend({ initialState: { enabled: false } });
 
   const WrappedConfiguredBasePlugin = toPlatePlugin(ConfiguredBasePlugin);
 
@@ -144,8 +144,8 @@ const assertTypedContextualConfiguration = () => {
   // @ts-expect-error React extension config must be applied before consumer configure
   toPlatePlugin(ConfiguredBasePlugin, { render: { node: () => null } });
 
-  // @ts-expect-error contextual configure cannot add option fields
-  BasePlugin.configure(() => ({ options: { missing: true } }));
+  // @ts-expect-error contextual configure cannot add state fields
+  BasePlugin.configure(() => ({ initialState: { missing: true } }));
   // @ts-expect-error contextual configure cannot define model fields
   BasePlugin.configure(() => ({ type: 'other' }));
 
@@ -153,26 +153,26 @@ const assertTypedContextualConfiguration = () => {
     PluginConfig<'plateContextual', { enabled: boolean }>
   >({
     key: 'plateContextual',
-    options: { enabled: false },
+    initialState: { enabled: false },
   });
 
   PlatePlugin.configure(({ editor, plugin }) => {
     editor.id satisfies string;
     plugin.key satisfies 'plateContextual';
 
-    return { options: { enabled: true } };
+    return { initialState: { enabled: true } };
   });
   const ConfiguredPlatePlugin = PlatePlugin.configure({
-    options: { enabled: true },
+    initialState: { enabled: true },
   });
 
   // @ts-expect-error configured descriptors accept one consumer configuration
-  ConfiguredPlatePlugin.configure({ options: { enabled: false } });
+  ConfiguredPlatePlugin.configure({ initialState: { enabled: false } });
   // @ts-expect-error configured descriptors are terminal authoring inputs
   ConfiguredPlatePlugin.configure({ component: () => null });
 
-  // @ts-expect-error contextual configure cannot add option fields
-  PlatePlugin.configure(() => ({ options: { missing: true } }));
+  // @ts-expect-error contextual configure cannot add state fields
+  PlatePlugin.configure(() => ({ initialState: { missing: true } }));
   // @ts-expect-error contextual configure cannot define model fields
   PlatePlugin.configure(() => ({ schema: null }));
 };
@@ -182,11 +182,11 @@ void assertTypedContextualConfiguration;
 const assertTypedInitialAuthoringContext = () => {
   const BasePlugin = createBasePlugin({
     key: 'baseInitialContext',
-    options: {
+    initialState: {
       prefix: 'base',
     },
-    api: ({ editor, getOption, plugin, type }) => ({
-      label: () => `${editor.id}:${plugin.key}:${type}:${getOption('prefix')}`,
+    api: ({ editor, store, plugin, type }) => ({
+      label: () => `${editor.id}:${plugin.key}:${type}:${store.get('prefix')}`,
     }),
     extension: ({ defineEditorExtension, plugin }) =>
       defineEditorExtension({
@@ -196,20 +196,20 @@ const assertTypedInitialAuthoringContext = () => {
           },
         },
       }),
-    read: ({ editor, getOptions, state }) => ({
+    read: ({ editor, store, state }) => ({
       readLabel: () => {
         state satisfies object;
 
-        return `${editor.id}:${getOptions().prefix}`;
+        return `${editor.id}:${store.get().prefix}`;
       },
     }),
-    selectors: ({ getOption }) => ({
-      label: () => getOption('prefix').toUpperCase(),
-    }),
-    update: ({ context, getOptions, tx }) => ({
+    selectors: {
+      label: (state) => state.prefix.toUpperCase(),
+    },
+    update: ({ context, store, tx }) => ({
       updateLabel: () => {
         context satisfies object;
-        getOptions().prefix satisfies string;
+        store.get().prefix satisfies string;
         tx satisfies object;
       },
     }),
@@ -220,7 +220,7 @@ const assertTypedInitialAuthoringContext = () => {
   });
 
   baseEditor.plugin(BasePlugin).api.label() satisfies string;
-  baseEditor.plugin(BasePlugin).getOption('label') satisfies string;
+  baseEditor.plugin(BasePlugin).store.get('label') satisfies string;
   baseEditor.read.baseInitialContext.readLabel() satisfies string;
   baseEditor.update.baseInitialContext.updateLabel() satisfies void;
   baseEditor.api.baseInitialExtension.key() satisfies 'baseInitialContext';
@@ -251,15 +251,15 @@ const assertTypedInitialAuthoringContext = () => {
 
   const PlatePlugin = createPlatePlugin({
     key: 'plateInitialContext',
-    options: {
+    initialState: {
       prefix: 'plate',
     },
-    api: ({ editor, getOption }) => ({
-      label: () => `${editor.id}:${getOption('prefix')}`,
+    api: ({ editor, store }) => ({
+      label: () => `${editor.id}:${store.get('prefix')}`,
     }),
-    selectors: ({ getOptions }) => ({
-      label: () => getOptions().prefix.toUpperCase(),
-    }),
+    selectors: {
+      label: (state) => state.prefix.toUpperCase(),
+    },
     update: ({ editor, tx }) => ({
       focus: () => {
         editor.id satisfies string;
@@ -268,7 +268,7 @@ const assertTypedInitialAuthoringContext = () => {
     }),
   });
 
-  PlatePlugin.options.prefix satisfies string;
+  PlatePlugin.initialState.prefix satisfies string;
 };
 
 void assertTypedInitialAuthoringContext;
@@ -279,9 +279,9 @@ const assertTypedWeakPluginOverrides = () => {
     { allowed: boolean; requiredMode: string }
   >;
 
-  // Foreign configuration patches only the options it owns.
+  // Foreign configuration patches only the initialState it owns.
   const exactOverride = {
-    options: { allowed: true },
+    initialState: { allowed: true },
   } satisfies BasePluginOverride<TargetConfig>;
 
   createBasePlugin({
@@ -294,7 +294,7 @@ const assertTypedWeakPluginOverrides = () => {
   });
 
   ({
-    options: {
+    initialState: {
       // @ts-expect-error exact weak override checking requires the target config
       missing: true,
     },
@@ -452,9 +452,9 @@ void assertTypedRenderOwnership;
 
 describe('createBasePlugin', () => {
   it('create a plugin with explicit types and cover various scenarios', () => {
-    type TestOptions = {
-      optionA?: string;
-      optionB?: number;
+    type TestStoreState = {
+      valueA?: string;
+      valueB?: number;
     };
 
     type TestApi = {
@@ -462,13 +462,13 @@ describe('createBasePlugin', () => {
     };
 
     const basePlugin = createPlatePlugin<
-      PluginConfig<'testPlugin', TestOptions, TestApi>
+      PluginConfig<'testPlugin', TestStoreState, TestApi>
     >({
       key: 'testPlugin',
       type: 'test',
-      options: {
-        optionA: 'initial',
-        optionB: 10,
+      initialState: {
+        valueA: 'initial',
+        valueB: 10,
       },
       extension: {
         api: {
@@ -484,35 +484,35 @@ describe('createBasePlugin', () => {
     // Test basic plugin creation
     expect(baseEditor.getPlugin(basePlugin).key).toBe('testPlugin');
     expect(baseEditor.getPlugin(basePlugin).type).toBe('test');
-    expect(baseEditor.getPlugin(basePlugin).options).toEqual({
-      optionA: 'initial',
-      optionB: 10,
+    expect(baseEditor.getPlugin(basePlugin).initialState).toEqual({
+      valueA: 'initial',
+      valueB: 10,
     });
 
     // Test configure method
     const configuredPlugin = basePlugin.configure({
-      options: { optionA: 'modified' },
+      initialState: { valueA: 'modified' },
     });
     const configuredEditor = createBaseEditor({
       plugins: [configuredPlugin],
     });
-    expect(configuredEditor.getPlugin(configuredPlugin).options).toEqual({
-      optionA: 'modified',
-      optionB: 10,
+    expect(configuredEditor.getPlugin(configuredPlugin).initialState).toEqual({
+      valueA: 'modified',
+      valueB: 10,
     });
 
     // Test extend method
     const extendedPlugin = basePlugin.extend({
       type: 'extended',
-      options: { optionB: 20 },
+      initialState: { valueB: 20 },
     });
     const extendedEditor = createBaseEditor({
       plugins: [extendedPlugin],
     });
     expect(extendedEditor.getPlugin(extendedPlugin).type).toBe('extended');
-    expect(extendedEditor.getPlugin(extendedPlugin).options).toEqual({
-      optionA: 'initial',
-      optionB: 20,
+    expect(extendedEditor.getPlugin(extendedPlugin).initialState).toEqual({
+      valueA: 'initial',
+      valueB: 20,
     });
 
     // Test multiple extensions before the one consumer configuration
@@ -520,17 +520,17 @@ describe('createBasePlugin', () => {
       .extend({ type: 'firstExtend' })
       .extend({ type: 'secondExtend' })
       .configure({
-        options: {
-          optionA: 'configured',
-          optionB: 30,
+        initialState: {
+          valueA: 'configured',
+          valueB: 30,
         },
       });
 
     const resolvedMultiExtended = resolvePluginTest(multiExtendedPlugin);
     expect(resolvedMultiExtended.type).toBe('secondExtend');
-    expect(resolvedMultiExtended.options).toEqual({
-      optionA: 'configured',
-      optionB: 30,
+    expect(resolvedMultiExtended.initialState).toEqual({
+      valueA: 'configured',
+      valueB: 30,
     });
   });
 });

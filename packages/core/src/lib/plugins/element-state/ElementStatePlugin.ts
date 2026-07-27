@@ -1,50 +1,27 @@
 import type { Element } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
 
-import type { BaseEditor } from '../../editor';
-import type { PluginConfig } from '../../plugin';
+import { type InferConfig, createBasePlugin } from '../../plugin';
 
-import { createBasePlugin } from '../../plugin';
+export const ElementStatePlugin = createBasePlugin({
+  api: ({ editor }) => ({
+    isEmpty: (element: Element) =>
+      !NodeApi.hasProps(element, {
+        ignore: (key) => {
+          if (key === 'type') return true;
+          if (typeof element.type !== 'string') return false;
 
-const isElementStateIgnoredProp = (
-  editor: BaseEditor,
-  element: Element,
-  key: string
-) => {
-  if (key === 'type') return true;
-
-  if (typeof element.type !== 'string') return false;
-
-  return (
-    editor.read.schema.property({
-      key,
-      placement: 'element',
-      type: element.type,
-    })?.value.significant === false
-  );
-};
-
-export const isElementStateEmpty = (
-  editor: BaseEditor,
-  element: Element
-): boolean =>
-  !NodeApi.hasProps(element, {
-    ignore: (key) => isElementStateIgnoredProp(editor, element, key),
-  });
-
-export type ElementStateConfig = PluginConfig<
-  'elementState',
-  {},
-  {
-    isElementStateEmpty: (element: Element) => boolean;
-  }
->;
-
-export const ElementStatePlugin = createBasePlugin<ElementStateConfig>({
-  extension: ({ editor }) => ({
-    api: {
-      isElementStateEmpty: (element) => isElementStateEmpty(editor, element),
-    },
+          return (
+            editor.read.schema.property({
+              key,
+              placement: 'element',
+              type: element.type,
+            })?.value.significant === false
+          );
+        },
+      }),
   }),
   key: 'elementState',
 });
+
+export type ElementStateConfig = InferConfig<typeof ElementStatePlugin>;

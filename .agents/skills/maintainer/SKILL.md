@@ -107,15 +107,16 @@ Every heartbeat follows Execute-Verify-Report:
 
 Execution owners still do the work:
 
-- `resolve-slate-issue`: one Slate/Slate v2 GitHub issue, verified comment, and
-  optional close.
+- `resolve-slate-issue`: one Slate GitHub issue resolved against Plite in the
+  Plate `next` branch, with a Plate PR for code changes, verified issue comment,
+  and close only after the claimed integration state is true.
 - `clawsweeper`: Slate issue-ledger provenance, duplicate/stale/invalid
   classification, issue harvest discipline, and fork-local issue accounting.
 - `issue-harvester`: exhaustive external issue-by-issue closure ledgers.
 - `autoreview` / `resolve-pr-feedback`: PR review and review-comment closure.
 - `autoclosure`: post-merge/current-tree until-clean closure for already
   applied work.
-- `auto`: internal Plate/Slate quality, behavior, perf, API, proof, and
+- `auto`: internal Plate/Plite quality, behavior, perf, API, proof, and
   workflow self-repair.
 - `best-api`: concrete public call-shape design/review.
 - `plite-plan` / `plate-plan`: architecture, adoption, behavior law, and
@@ -156,7 +157,7 @@ explicitly requested.
 - The task is one known Slate issue and the user wants it fixed/commented now:
   use `resolve-slate-issue` directly.
 - The task is a local code patch with no maintainer queue decision: use `task`,
-  `slate-patch`, `plate-plan`, or the package owner.
+  `plite-patch`, `plate-plan`, or the package owner.
 - The task asks for broad external research, not queue triage: use
   `plite-research`.
 
@@ -244,7 +245,8 @@ Read the exact item first. Then classify route:
 
 | Item | Default owner |
 | --- | --- |
-| Slate substrate bug | `resolve-slate-issue` or `slate-patch` |
+| One public Slate substrate issue | `resolve-slate-issue` |
+| One local Plite regression with no public mutation | `plite-patch` |
 | Plite public call-shape fork | `best-api`, then `plite-plan` if adoption/runtime planning is needed |
 | Already-applied PR/branch/current-tree closure | `autoclosure` |
 | Plate/Slate internal quality/perf/browser gap | `auto` |

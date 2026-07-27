@@ -51,7 +51,7 @@ run_barrelsby() {
 
 common_excludes='.*__tests__.*|(.*(fixture|template|spec|slow|internal).*)|(.*\.d\.ts$)'
 
-src_excludes="$common_excludes|(^.*\/(react|static)\/.*$)"
+src_excludes="$common_excludes|(^.*\/(migrations|react|static)\/.*$)"
 
 # Run barrelsby on the src directory if index.tsx doesn't exist
 run_barrelsby "$INIT_CWD/src" -D -l all -q -e "$src_excludes"
@@ -64,4 +64,9 @@ fi
 # Check if the src/static directory exists and run barrelsby if it does and if index.tsx doesn't exist
 if [ -d "$INIT_CWD/src/static" ]; then
     run_barrelsby "$INIT_CWD/src/static" -D -l all -q -e "$common_excludes"
+fi
+
+# Keep versioned migrations in their opt-in package subpath.
+if [ -d "$INIT_CWD/src/migrations" ]; then
+    run_barrelsby "$INIT_CWD/src/migrations" -D -l all -q -e "$common_excludes"
 fi

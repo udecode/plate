@@ -28,7 +28,7 @@ const createEditor = () =>
     plugins: [
       BaseParagraphPlugin,
       BaseAIPlugin,
-      AIChatPlugin.configure({ options: { open: true } }),
+      AIChatPlugin.configure({ initialState: { open: true } }),
     ],
     selection: {
       kind: 'text',
@@ -52,16 +52,24 @@ const installPreview = (
   editor: ReturnType<typeof createEditor>,
   { selection = editor.read.selection() } = {}
 ) => {
-  editor.update({ history: 'skip' }).value.replace({
-    children: [
-      createParagraph('preview', {
-        element: { [AI_PREVIEW_KEY]: true },
-        text: { ai: true },
-      }),
-      { children: [{ text: '' }], type: 'aiChat' },
-      createParagraph('untouched'),
-    ],
-    selection,
+  editor.update({ history: 'skip' }, (tx) => {
+    tx.nodes.replaceChildren(
+      [
+        createParagraph('preview', {
+          element: { [AI_PREVIEW_KEY]: true },
+          text: { ai: true },
+        }),
+        { children: [{ text: '' }], type: 'aiChat' },
+        createParagraph('untouched'),
+      ],
+      { at: [], count: tx.children().length, index: 0 }
+    );
+
+    if (selection) {
+      tx.selection.set(selection);
+    } else {
+      tx.selection.clear();
+    }
   });
 };
 
@@ -135,7 +143,7 @@ describe('ai preview transforms', () => {
     const initialSelection = structuredClone(editor.read.selection());
 
     expect(
-      editor.plugin(BaseAIPlugin).api.beginPreview({
+      editor.plugin(BaseAIPlugin).update.beginPreview({
         originalBlocks: [structuredClone(initialValue[0]!)],
       })
     ).toBe(true);
@@ -149,9 +157,9 @@ describe('ai preview transforms', () => {
     });
 
     expect(
-      editor.plugin(BaseAIPlugin).api.beginPreview({ originalBlocks: [] })
+      editor.plugin(BaseAIPlugin).update.beginPreview({ originalBlocks: [] })
     ).toBe(false);
-    expect(editor.plugin(BaseAIPlugin).api.cancelPreview()).toBe(true);
+    expect(editor.plugin(BaseAIPlugin).update.cancelPreview()).toBe(true);
     expect(editor.read.children()).toEqual(initialValue);
     expect(editor.read.selection()).toEqual(initialSelection);
   });
@@ -159,20 +167,20 @@ describe('ai preview transforms', () => {
   it('does nothing when no preview exists', () => {
     const editor = createEditor();
 
-    expect(editor.plugin(BaseAIPlugin).api.hasPreview()).toBe(false);
-    expect(editor.plugin(BaseAIPlugin).api.cancelPreview()).toBe(false);
-    expect(editor.plugin(BaseAIPlugin).api.discardPreview()).toBe(false);
-    expect(editor.plugin(BaseAIPlugin).api.acceptPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).update.cancelPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).update.discardPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).update.acceptPreview()).toBe(false);
   });
 
   it('discards bookkeeping without restoring content', () => {
     const editor = createEditor();
 
-    editor.plugin(BaseAIPlugin).api.beginPreview();
+    editor.plugin(BaseAIPlugin).update.beginPreview();
     installPreview(editor, { selection: null });
 
-    expect(editor.plugin(BaseAIPlugin).api.discardPreview()).toBe(true);
-    expect(editor.plugin(BaseAIPlugin).api.hasPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).update.discardPreview()).toBe(true);
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
     expect(editor.read.children()[0]).toEqual(
       createParagraph('preview', {
         element: { [AI_PREVIEW_KEY]: true },
@@ -186,7 +194,7 @@ describe('ai preview transforms', () => {
     const editor = createEditor();
 
     editor.update.selection.clear();
-    editor.plugin(BaseAIPlugin).api.beginPreview({
+    editor.plugin(BaseAIPlugin).update.beginPreview({
       originalBlocks: [structuredClone(editor.read.children()[0]!)],
     });
     installPreview(editor, {
@@ -197,7 +205,7 @@ describe('ai preview transforms', () => {
       },
     });
 
-    expect(editor.plugin(BaseAIPlugin).api.cancelPreview()).toBe(true);
+    expect(editor.plugin(BaseAIPlugin).update.cancelPreview()).toBe(true);
     expect(editor.read.selection()).toBeNull();
   });
 
@@ -206,17 +214,17 @@ describe('ai preview transforms', () => {
     const initialValue = structuredClone(editor.read.children());
     const initialSelection = structuredClone(editor.read.selection());
 
-    editor.plugin(BaseAIPlugin).api.beginPreview({
+    editor.plugin(BaseAIPlugin).update.beginPreview({
       originalBlocks: [structuredClone(initialValue[0]!)],
     });
     installPreview(editor);
 
-    expect(editor.plugin(BaseAIPlugin).api.acceptPreview()).toBe(true);
+    expect(editor.plugin(BaseAIPlugin).update.acceptPreview()).toBe(true);
     expect(editor.read.children()).toEqual([
       createParagraph('preview'),
       createParagraph('untouched'),
     ]);
-    expect(editor.plugin(BaseAIPlugin).api.hasPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
 
     editor.update.history.undo();
 
@@ -226,11 +234,11 @@ describe('ai preview transforms', () => {
 
   it('registers the preview lifecycle on BaseAIPlugin', () => {
     const editor = createEditor();
-    const ai = editor.plugin(BaseAIPlugin).api;
+    const ai = editor.plugin(BaseAIPlugin);
 
-    expect(ai.hasPreview()).toBe(false);
-    expect(ai.beginPreview({ originalBlocks: [] })).toBe(true);
-    expect(ai.discardPreview()).toBe(true);
-    expect(ai.hasPreview()).toBe(false);
+    expect(ai.read.hasPreview()).toBe(false);
+    expect(ai.update.beginPreview({ originalBlocks: [] })).toBe(true);
+    expect(ai.update.discardPreview()).toBe(true);
+    expect(ai.read.hasPreview()).toBe(false);
   });
 });

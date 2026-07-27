@@ -1,4 +1,4 @@
-import { type BaseEditor, HtmlPlugin } from '@platejs/core';
+import { type BaseEditor, DebugPlugin, HtmlPlugin } from '@platejs/core';
 import type { PlateEditor } from '@platejs/core/react';
 import type { Descendant } from '@platejs/plite';
 
@@ -6,8 +6,8 @@ declare const baseEditor: BaseEditor;
 declare const expectDescendants: (value: Descendant[] | null) => void;
 declare const plateEditor: PlateEditor;
 
-baseEditor.api.debug.log('base');
-plateEditor.api.debug.log('plate');
+baseEditor.plugin(DebugPlugin).api.log('base');
+plateEditor.plugin(DebugPlugin).api.log('plate');
 
 expectDescendants(
   baseEditor.plugin(HtmlPlugin).api.deserialize({

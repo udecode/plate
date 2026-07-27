@@ -2,7 +2,7 @@ import type { Anchor, Path, Point, Range } from '@platejs/plite';
 
 import type { PluginConfig } from '../../../lib/plugin';
 
-export const NAVIGATION_FEEDBACK_KEY = 'navigationFeedback';
+export const NAVIGATION_FEEDBACK_KEY = 'navigation';
 
 export type NavigationFeedbackTarget = {
   path: Path;
@@ -21,6 +21,11 @@ export type NavigationFeedbackStoredTarget = Omit<
   'path'
 > & {
   pathAnchor: Anchor<Path>;
+};
+
+type NavigationFeedbackState = {
+  duration: number;
+  storedTarget: NavigationFeedbackStoredTarget | null;
 };
 
 export type NavigationFlashTargetOptions = {
@@ -53,17 +58,13 @@ export type NavigationFeedbackTx = {
 
 export type NavigationFeedbackConfig = PluginConfig<
   typeof NAVIGATION_FEEDBACK_KEY,
-  {
-    activeTarget: NavigationFeedbackStoredTarget | null;
-    duration: number;
-  },
-  {
-    navigation: {
-      activeTarget: () => NavigationFeedbackActiveTarget | null;
-      clear: () => void;
-      isTarget: (path: Path) => boolean;
-    };
-  },
+  NavigationFeedbackState,
+  {},
   NavigationFeedbackTx,
-  {}
+  {
+    activeTarget: (
+      state: Readonly<NavigationFeedbackState>
+    ) => NavigationFeedbackActiveTarget | null;
+    isTarget: (state: Readonly<NavigationFeedbackState>, path: Path) => boolean;
+  }
 >;

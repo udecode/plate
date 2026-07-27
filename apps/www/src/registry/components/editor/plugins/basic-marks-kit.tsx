@@ -6,9 +6,8 @@ import {
   HighlightRules,
   ItalicRules,
   MarkComboRules,
+  ScriptRules,
   StrikethroughRules,
-  SubscriptRules,
-  SuperscriptRules,
   UnderlineRules,
 } from '@platejs/basic-nodes';
 import {
@@ -17,9 +16,8 @@ import {
   HighlightPlugin,
   ItalicPlugin,
   KbdPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 
@@ -56,13 +54,25 @@ export const BasicMarksKit = [
     inputRules: [StrikethroughRules.markdown()],
     shortcuts: { toggle: { keys: 'mod+shift+x' } },
   }),
-  SubscriptPlugin.configure({
-    inputRules: [SubscriptRules.markdown()],
-    shortcuts: { toggle: { keys: 'mod+comma' } },
-  }),
-  SuperscriptPlugin.configure({
-    inputRules: [SuperscriptRules.markdown()],
-    shortcuts: { toggle: { keys: 'mod+period' } },
+  ScriptPlugin.configure({
+    inputRules: [
+      ScriptRules.markdown({ value: 'sub' }),
+      ScriptRules.markdown({ value: 'sup' }),
+    ],
+    shortcuts: {
+      subscript: {
+        keys: 'mod+comma',
+        handler: ({ editor }) => {
+          editor.plugin(ScriptPlugin).update.toggle('sub');
+        },
+      },
+      superscript: {
+        keys: 'mod+period',
+        handler: ({ editor }) => {
+          editor.plugin(ScriptPlugin).update.toggle('sup');
+        },
+      },
+    },
   }),
   HighlightPlugin.configure({
     component: HighlightLeaf,

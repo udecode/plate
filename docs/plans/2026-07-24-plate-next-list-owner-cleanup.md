@@ -192,7 +192,7 @@ Survivor declaration list:
 | `getListSequenceSiblingOptions` | keep private | Two sequence algorithms |
 | `isOrderedList` | public pure owner | Four current app source consumers without an editor |
 | `isListItem` | keep private | Eight behavior consumers |
-| `BaseListPluginOptions` | public owner | Real configurable sibling policy |
+| `BaseListPluginState` | public owner | Real configurable sibling policy |
 | `BaseListPlugin` | public owner | Headless capability descriptor |
 | `BaseListConfig` | public owner | Inferred descriptor contract |
 | `isListInputBlocked` | keep private | Three input-rule families |

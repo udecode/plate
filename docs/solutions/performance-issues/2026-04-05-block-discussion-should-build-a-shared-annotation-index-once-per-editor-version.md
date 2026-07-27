@@ -28,7 +28,7 @@ tags:
 
 The discussion card needed one core answer: which top-level block owns a given comment or suggestion thread. The old implementation answered that indirectly:
 
-- keep a mutable `uniquePathMap` in plugin options
+- keep a mutable `uniquePathMap` in plugin state
 - repair that map during render
 - for suggestions, rescan the full document once per suggestion id
 

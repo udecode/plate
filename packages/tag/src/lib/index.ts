@@ -3,4 +3,3 @@
  */
 
 export * from './BaseTagPlugin';
-export * from './isEqualTags';

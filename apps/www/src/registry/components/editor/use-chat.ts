@@ -6,12 +6,7 @@ import * as React from 'react';
 
 import { type UseChatHelpers, useChat as useBaseChat } from '@ai-sdk/react';
 import { faker } from '@faker-js/faker';
-import {
-  AIChatPlugin,
-  aiCommentToRange,
-  applyTableCellSuggestion,
-  createAIChatAdapter,
-} from '@platejs/ai/react';
+import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
@@ -22,7 +17,7 @@ import { KEYS, nanoid } from 'platejs';
 import {
   type PlateEditor,
   useEditorPlugin,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
@@ -70,7 +65,7 @@ type ChatRequestBody = {
 const getSelectedTableCells = (editor: PlateEditor): unknown[] => {
   const selectedCells: unknown = editor
     .plugin(TablePlugin)
-    .getOption('selectedCells');
+    .read.getSelectedCells();
 
   return Array.isArray(selectedCells) ? selectedCells : [];
 };
@@ -94,7 +89,7 @@ function createChatTransport({
     api,
     // Mock the API response. Remove it when you implement the route /api/ai/command
     fetch: (async (input, init) => {
-      const bodyOptions = editor.plugin(aiChatPlugin).getOptions()
+      const bodyOptions = editor.plugin(aiChatPlugin).store.get()
         .chatOptions?.body;
 
       const initBody = JSON.parse(init?.body as string) as ChatRequestBody;
@@ -196,7 +191,7 @@ function createChatTransport({
 export const useChat = () => {
   const { editor } = useEditorPlugin(MarkdownPlugin);
   const markdownApi = editor.api.markdown;
-  const options = usePluginOption(aiChatPlugin, 'chatOptions');
+  const options = usePluginStore(aiChatPlugin, 'chatOptions');
 
   // remove when you implement the route /api/ai/command
   const abortControllerRef = React.useRef<AbortController | null>(null);
@@ -224,7 +219,7 @@ export const useChat = () => {
       if (data.type === 'data-toolName') {
         editor
           .plugin(AIChatPlugin)
-          .setOption('toolName', data.data as ToolName);
+          .store.set({ toolName: data.data as ToolName });
       }
 
       if (data.type === 'data-table' && data.data) {
@@ -233,7 +228,7 @@ export const useChat = () => {
         if (tableData.status === 'finished') {
           const chatSelection = editor
             .plugin(AIChatPlugin)
-            .getOption('chatSelection');
+            .store.get('chatSelection');
 
           if (!chatSelection) return;
 
@@ -244,7 +239,7 @@ export const useChat = () => {
 
         const cellUpdate = tableData.cellUpdate!;
 
-        applyTableCellSuggestion(editor, cellUpdate);
+        editor.plugin(AIChatPlugin).update.applyTableCellSuggestion(cellUpdate);
       }
 
       if (data.type === 'data-comment' && data.data) {
@@ -257,12 +252,12 @@ export const useChat = () => {
         }
 
         const aiComment = commentData.comment!;
-        const range = aiCommentToRange(editor, aiComment);
+        const range = editor.plugin(AIChatPlugin).read.commentRange(aiComment);
 
         if (!range) return console.warn('No range found for AI comment');
 
         const discussions =
-          editor.plugin(discussionPlugin).getOption('discussions') || [];
+          editor.plugin(discussionPlugin).store.get('discussions') || [];
 
         // Generate a new discussion ID
         const discussionId = nanoid();
@@ -274,7 +269,7 @@ export const useChat = () => {
           createdAt: new Date(),
           discussionId,
           isEdited: false,
-          userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
         };
 
         // Create a new discussion
@@ -287,14 +282,14 @@ export const useChat = () => {
             .children.map((node) => NodeApi.string(node))
             .join('\n'),
           isResolved: false,
-          userId: editor.plugin(discussionPlugin).getOption('currentUserId'),
+          userId: editor.plugin(discussionPlugin).store.get('currentUserId'),
         };
 
         // Update discussions
         const updatedDiscussions = [...discussions, newDiscussion];
         editor
           .plugin(discussionPlugin)
-          .setOption('discussions', updatedDiscussions);
+          .store.set({ discussions: updatedDiscussions });
 
         // Apply comment marks to the editor
         editor.update({ history: 'merge' }).nodes.set(
@@ -324,7 +319,7 @@ export const useChat = () => {
   };
 
   React.useEffect(() => {
-    editor.plugin(AIChatPlugin).setOption('chat', createAIChatAdapter(chat));
+    editor.plugin(AIChatPlugin).store.set({ chat: createAIChatAdapter(chat) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chat.status, chat.messages, chat.error, _abortFakeStream]);
 
@@ -1597,9 +1592,9 @@ const mdxChunks = [
 ];
 
 const createCommentChunks = (editor: PlateEditor) => {
-  const selectedBlocksApi = editor.plugin(BlockSelectionPlugin).api;
+  const selectedBlocksRead = editor.plugin(BlockSelectionPlugin).read;
 
-  const selectedBlocks = selectedBlocksApi
+  const selectedBlocks = selectedBlocksRead
     .getNodes({
       selectionFallback: true,
       sort: true,
@@ -1608,7 +1603,7 @@ const createCommentChunks = (editor: PlateEditor) => {
 
   const isSelectingSome = editor
     .plugin(BlockSelectionPlugin)
-    .getOption('isSelectingSome');
+    .store.get('isSelectingSome');
 
   const blocks =
     selectedBlocks.length > 0 &&

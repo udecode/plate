@@ -1,4 +1,4 @@
-import { useElement, usePluginOptions } from '@platejs/core/react';
+import { useElement, usePluginStore } from '@platejs/core/react';
 
 import type { DropLineDirection } from '../types';
 
@@ -18,7 +18,7 @@ export const useDropLine = ({
   const id = idProp ?? element.id;
 
   const dropLine =
-    usePluginOptions(DndPlugin, ({ dropTarget }) => {
+    usePluginStore(DndPlugin, ({ dropTarget }) => {
       if (!dropTarget) return null;
       if (dropTarget.id !== id) return null;
 

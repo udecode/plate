@@ -14,7 +14,7 @@ export default function TableNoMergeDemo() {
     plugins: [
       ...EditorKit,
       TablePlugin.configure({
-        options: {
+        initialState: {
           disableMerge: true,
         },
       }),

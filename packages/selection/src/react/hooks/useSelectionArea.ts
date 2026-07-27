@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { NormalizePluginOption } from '@platejs/core';
+import type { NormalizePluginState } from '@platejs/core';
 import { type Element, ElementApi } from '@platejs/plite';
 import { useEditorPlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
@@ -19,13 +19,13 @@ const toMutableSelectionTargets = <T extends HTMLElement | string>(
       ? [...value]
       : (value as T);
 
-const toMutableTrigger = (trigger: NormalizePluginOption<Trigger>): Trigger =>
+const toMutableTrigger = (trigger: NormalizePluginState<Trigger>): Trigger =>
   typeof trigger === 'number'
     ? trigger
     : { ...trigger, modifiers: [...trigger.modifiers] };
 
 const toMutableSelectionAreaOptions = (
-  options: NormalizePluginOption<PartialSelectionOptions> | undefined
+  options: NormalizePluginState<PartialSelectionOptions> | undefined
 ): PartialSelectionOptions => ({
   ...options,
   behaviour: options?.behaviour
@@ -41,12 +41,11 @@ const toMutableSelectionAreaOptions = (
 });
 
 export const useSelectionArea = () => {
-  const { api, editor, getOption, getOptions, setOption } =
-    useEditorPlugin<BlockSelectionConfig>({
-      key: KEYS.blockSelection,
-    });
+  const { api, editor, store } = useEditorPlugin<BlockSelectionConfig>({
+    key: KEYS.blockSelection,
+  });
 
-  const { areaOptions } = getOptions();
+  const { areaOptions } = store.get();
 
   const areaRef = React.useRef<{
     ids: Set<string>;
@@ -68,7 +67,7 @@ export const useSelectionArea = () => {
       editor.update.selection.clear();
     }
 
-    setOption('isSelectionAreaVisible', true);
+    store.set({ isSelectionAreaVisible: true });
   };
 
   React.useEffect(() => {
@@ -83,7 +82,7 @@ export const useSelectionArea = () => {
         selectionAreaOptions.selectables ?? `#${editor.id} .plite-selectable`,
     })
       .on('beforestart', () => {
-        setOption('isSelecting', false);
+        store.set({ isSelecting: false });
       })
       .on('start', ({ event }) => {
         onStart();
@@ -94,14 +93,14 @@ export const useSelectionArea = () => {
         }
       })
       .on('move', ({ store: { changed } }) => {
-        if (!getOptions().isSelectionAreaVisible) {
+        if (!store.get().isSelectionAreaVisible) {
           onStart();
         }
         const apply = () => {
           if (changed.added.length === 0 && changed.removed.length === 0)
             return;
 
-          const next = new Set(getOptions().selectedIds);
+          const next = new Set(store.get().selectedIds);
           extractSelectableIds(changed.removed).forEach((id) => {
             next.delete(id);
             areaRef.current.ids.delete(id);
@@ -140,11 +139,11 @@ export const useSelectionArea = () => {
 
           // TODO: support nested blocks
 
-          setOption('selectedIds', next);
+          store.set({ selectedIds: next });
         };
 
         const normalize = () => {
-          const next = new Set(getOption('selectedIds'));
+          const next = new Set(store.get('selectedIds'));
           const ids = Array.from(next);
 
           const isTableElement = (element: Element) =>
@@ -213,7 +212,7 @@ export const useSelectionArea = () => {
             });
           }
 
-          setOption('selectedIds', next);
+          store.set({ selectedIds: next });
         };
 
         apply();
@@ -226,7 +225,7 @@ export const useSelectionArea = () => {
         trsRef.current = {
           ids: new Set(),
         };
-        setOption('isSelectionAreaVisible', false);
+        store.set({ isSelectionAreaVisible: false });
       });
 
     return () => selection.destroy();

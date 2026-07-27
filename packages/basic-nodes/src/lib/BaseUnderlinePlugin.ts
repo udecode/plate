@@ -1,6 +1,19 @@
-import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import {
+  createBasePlugin,
+  createRuleFactory,
+  someHtmlElement,
+} from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+
+export const UnderlineRules = {
+  markdown: createRuleFactory({
+    type: 'mark',
+    end: '_',
+    start: '__',
+    trigger: '_',
+  }),
+};
 
 /** Enables support for underline formatting. */
 export const BaseUnderlinePlugin = createBasePlugin({

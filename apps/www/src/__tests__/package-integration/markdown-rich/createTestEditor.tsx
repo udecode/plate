@@ -4,9 +4,8 @@ import {
   BaseHighlightPlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
 import {
@@ -32,7 +31,7 @@ import {
 } from '@platejs/table';
 import {
   BaseFootnoteDefinitionPlugin,
-  BaseFootnoteReferencePlugin,
+  BaseFootnotePlugin,
 } from '@platejs/footnote';
 import { BaseParagraphPlugin, KEYS, createBaseEditor } from 'platejs';
 import remarkEmoji from 'remark-emoji';
@@ -46,7 +45,7 @@ import {
 } from '../../../../../../packages/markdown/src/lib/plugins';
 
 const markdownPlugin = MarkdownPlugin.configure({
-  options: {
+  initialState: {
     plainMarks: [KEYS.suggestion, KEYS.comment],
     remarkPlugins: [
       remarkMath,
@@ -79,15 +78,14 @@ export const createTestEditor = (plugins: any[] = []) =>
       BaseUnderlinePlugin,
       BaseCodePlugin,
       BaseStrikethroughPlugin,
-      BaseSubscriptPlugin,
-      BaseSuperscriptPlugin,
+      BaseScriptPlugin,
       BaseHighlightPlugin,
       BaseKbdPlugin,
       BaseListPlugin,
       BaseLinkPlugin,
       BaseEquationPlugin,
       BaseInlineEquationPlugin,
-      BaseFootnoteReferencePlugin,
+      BaseFootnotePlugin,
       BaseFootnoteDefinitionPlugin,
       markdownPlugin,
       ...plugins,

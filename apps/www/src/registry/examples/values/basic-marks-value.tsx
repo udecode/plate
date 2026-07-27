@@ -24,8 +24,8 @@ export const basicMarksValue = (
       <htext highlight>highlight</htext> important information.
     </hp>
     <hp>
-      Format mathematical expressions with <htext subscript>subscript</htext>{' '}
-      and <htext superscript>superscript</htext> text.
+      Format mathematical expressions with <htext script="sub">subscript</htext>{' '}
+      and <htext script="sup">superscript</htext> text.
     </hp>
     <hp>
       Show keyboard shortcuts like <htext kbd>⌘ + B</htext> for bold or{' '}

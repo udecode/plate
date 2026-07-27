@@ -3,6 +3,7 @@
 ## Contents
 
 - Builder inference
+- Capability boundaries
 - Owner context
 - Staged capabilities
 - Type-owner repair
@@ -16,9 +17,12 @@ Default to inferred plugin chains:
 
 ```ts
 export const BaseFooPlugin = createBasePlugin({
-  api: ({ editor, getOptions }) => ({
+  api: ({ editor, store }) => ({
     // inferred
   }),
+  initialState: {
+    enabled: true,
+  },
   key: KEYS.foo,
   update: ({ tx }) => ({
     // inferred
@@ -26,8 +30,8 @@ export const BaseFooPlugin = createBasePlugin({
 });
 ```
 
-Pass an explicit config generic only when exported options, API, tx, selectors,
-or state define a real public contract.
+Pass an explicit config generic only when exported initial state, API, read,
+update, selectors, or extension capabilities define a real public contract.
 
 Do not create:
 
@@ -42,6 +46,25 @@ export const BaseFooPlugin: BasePlugin<FooConfig> = createBasePlugin<FooConfig>(
 An empty config alias and an annotated plugin export both hide whether the
 builder inferred correctly.
 
+## Capability Boundaries
+
+Use the canonical protocol from `plate-plugin-creator`:
+
+| Field          | Typed job                                                                    |
+| -------------- | ---------------------------------------------------------------------------- |
+| `initialState` | descriptor defaults for mutable editor-local state                           |
+| `store`        | live state reads, writes, subscriptions, and named selector evaluation       |
+| `selectors`    | pure projections of readonly store state plus domain arguments               |
+| `api`          | stable plugin services not bound to a supplied document snapshot or active tx |
+| `read`         | pure, replayable queries over the supplied document state                    |
+| `update`       | document reads and writes through the active transaction                     |
+| `extension`    | genuine editor-wide Plite substrate                                           |
+| `codecs`       | format declarations                                                           |
+
+The published `api` object is immutable; that does not make every API method
+pure. Document queries still belong in `read`, pure store projections belong in
+`selectors`, and document mutations belong in `update`.
+
 ## Context, Not Ferry Types
 
 Plugin callbacks already expose the typed owner context:
@@ -49,19 +72,47 @@ Plugin callbacks already expose the typed owner context:
 - `editor`
 - `plugin`
 - `type`
+- `installed`
 - `api`
+- `read`
 - `update`
-- `getOptions`
-- `getOption`
-- `setOption`
-- `setOptions`
+- `store`
 - `defineCodecs`
 - `defineEditorExtension`
 - active `tx` where the callback is transaction-backed
 
 Keep one-owner behavior inline and capture those values. Do not move a callback
 into another file by inventing context/config/extension ferry types or threading
-`BaseEditor`, resolved plugin type, options, and `tx` through helper signatures.
+`BaseEditor`, resolved plugin type, store state, and `tx` through helper
+signatures.
+
+Use those current-owner values directly:
+
+```ts
+BaseFooPlugin.extend(({ api, read, store, type, update }) => ({
+  handlers: {
+    onFocus: () => {
+      if (!read.isActive()) return;
+
+      store.set({ focused: true });
+      api.notify(type);
+      update.refresh();
+    },
+  },
+}));
+```
+
+Do not rediscover the current owner through `editor.plugin(...)`, current-key
+root API/read/update groups, `editor.getPlugin(...)`, or
+`editor.getType(...)`. Keep `editor` for editor-wide substrate, another plugin,
+or transaction metadata unavailable on scoped `update`. Inside an active
+transaction, use `tx`.
+
+Apply this only where the callback contract supplies owner context. Shortcut,
+input-rule, state-value, render-prop, and similar specialized callbacks may
+only expose `editor`; an exact typed portal is correct there. Do not split or
+wrap a coherent declaration solely to capture a shortcut, and do not mistake
+an editor-wide extension such as `editor.api.dom` for the plugin-scoped `api`.
 
 `defineCodecs` is the one inline inference anchor for codec maps:
 
@@ -118,19 +169,19 @@ accumulated inferred surface from later stages:
 
 ```ts
 export const BaseFooPlugin = createBasePlugin({
-  api: ({ getOptions }) => ({
-    getLabel: (id: string) =>
-      getOptions().labels.find((label) => label.id === id)?.value,
-  }),
+  initialState: {
+    labels: [{ id: 'alpha', value: 'Alpha' }],
+  },
   key: KEYS.foo,
-  options: {
-    labels: [{ id: "alpha", value: "Alpha" }],
+  selectors: {
+    getLabel: (state, id: string) =>
+      state.labels.find((label) => label.id === id)?.value,
   },
 })
-  .extend(({ api }) => ({
+  .extend(({ store }) => ({
     update: ({ tx }) => ({
       insertFoo: (id: string) => {
-        const label = api.getLabel(id);
+        const label = store.get('getLabel', id);
 
         if (!label) return;
 
@@ -152,9 +203,10 @@ export const BaseFooPlugin = createBasePlugin({
 
 export const FooConsumerPlugin = createBasePlugin({
   api: ({ editor }) => ({
-    hasLabel: (id: string) => editor.api.foo.getLabel(id) !== undefined,
+    hasLabel: (id: string) =>
+      editor.plugin(BaseFooPlugin).store.get('getLabel', id) !== undefined,
   }),
-  key: "fooConsumer",
+  key: 'fooConsumer',
   dependencies: [BaseFooPlugin],
 });
 ```
@@ -164,11 +216,11 @@ Keep independent contributions together in the constructor. Repeated
 dependency. They preserve local inference and make the accumulated capability
 visible to required dependents.
 
-Stage only an honest scoped capability such as the dependent-facing `getLabel`
-query above. Do not publish a private implementation fragment merely to share
-it across builder stages. Keep one-use machinery lexical; keep a shared pure
-domain algorithm private; coalesce stages or name a builder gap when private
-runtime context would otherwise require plumbing.
+The first `.extend()` is justified because its update consumes the selector
+type introduced by the constructor. The second is justified because it reuses
+the first update through the active transaction. Stage only honest capabilities
+that consumers or later stages should discover; do not publish private
+implementation fragments merely to move them between callbacks.
 
 Inside a later tx stage, call an earlier tx method through the active
 `tx[plugin.key]` group. Do not use `editor.plugin(...).update`,
@@ -177,7 +229,7 @@ transaction.
 
 New methods should accept domain inputs such as `value`, `entry`, `at`, or
 operation options. Do not invent function parameters for `editor`, `api`,
-`read`, `tx`, `getOptions`, resolved plugin option values, or resolved type
+`read`, `tx`, `store`, resolved plugin state values, or resolved type
 when the builder context can capture or stage them.
 
 Keep an explicit state/read-view parameter only at an honest composition
@@ -220,18 +272,19 @@ Do not “fix” inference with:
 
 An explicit type is justified for:
 
-- exported options/API/tx/selectors/state that callers consume;
+- exported initial-state/API/read/update/selectors contracts that callers
+  consume;
 - a recursive type;
 - a contract reused by multiple independent owners;
 - a deliberate external boundary or adapter;
 - an otherwise uninferrable local such as an empty array or deliberate
   narrowing/widening.
 
-For a real API or transaction contract, type the builder:
+For a real read or update contract, type the builder:
 
 ```ts
-type FooApi = {
-  getValue: () => string;
+type FooRead = {
+  getChildCount: () => number;
 };
 
 type FooTx = {
@@ -239,8 +292,8 @@ type FooTx = {
 };
 
 export const BaseFooPlugin = createBasePlugin({
-  api: ({ editor }): FooApi => ({
-    getValue: () => editor.read.string(),
+  read: ({ state }): FooRead => ({
+    getChildCount: () => state.children().length,
   }),
   key: KEYS.foo,
   update: ({ tx }): FooTx => ({
@@ -275,21 +328,22 @@ Do not annotate locals whose initializer should infer:
 // Bad
 const entries: NodeEntry<FooElement>[] = editor
   .plugin(FooPlugin)
-  .api.getEntries();
+  .read.getEntries();
 
 // Good
-const entries = editor.plugin(FooPlugin).api.getEntries();
+const entries = editor.plugin(FooPlugin).read.getEntries();
 ```
 
 The same law applies to tests and examples:
 
 - keep inline editor/plugin construction;
-- do not extract `plugins`, `options`, or wrapper factories to placate types;
+- do not extract `plugins`, `initialState`, or wrapper factories to placate
+  types;
 - do not define local `{ children; selection }` fixture aliases;
 - use source-owned test-utils types when an explicit boundary is unavoidable;
 - repair source typing when inline setup fails.
 
-## Keys And Literal Options
+## Keys And Literal State
 
 Use shared `KEYS` for shipped plugins and cross-plugin contracts:
 
@@ -302,10 +356,10 @@ editor.getType(KEYS.codeBlock);
 Raw literals are for genuinely local/internal plugins and deliberate test
 fixtures.
 
-Preserve meaningful literal option types at the option owner:
+Preserve meaningful literal state types at the state owner:
 
 ```ts
-options: {
+initialState: {
   trigger: '@' as const,
 }
 ```

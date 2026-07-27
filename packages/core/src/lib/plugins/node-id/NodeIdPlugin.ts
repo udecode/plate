@@ -24,12 +24,11 @@ import {
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
 
-import type { BaseEditor } from '../../editor/BaseEditor';
 import type { InferConfig } from '../../plugin/BasePlugin';
 
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 
-export type NodeIdOptions = {
+export type NodeIdPluginState = {
   /**
    * By default, inserted nodes reuse their existing id when that id is not
    * already present in the document. Set this option to true to always assign a
@@ -92,7 +91,7 @@ export type NodeIdOptions = {
 };
 
 export type NormalizeNodeIdOptions = Pick<
-  NodeIdOptions,
+  NodeIdPluginState,
   'filterInline' | 'filterText' | 'idCreator' | 'idKey' | 'match'
 >;
 
@@ -144,7 +143,7 @@ const shouldAssignNodeId = (
 };
 
 const resolveInitialValueIds = (
-  options: Pick<NodeIdOptions, 'initialValueIds'>
+  options: Pick<NodeIdPluginState, 'initialValueIds'>
 ): false | 'always' | 'if-needed' => options.initialValueIds ?? 'if-needed';
 
 const visitDocumentNodes = (
@@ -171,7 +170,7 @@ const normalizeInsertedNodeIds = (
     path: Path;
     root: string;
   },
-  options: NodeIdOptions,
+  options: NodeIdPluginState,
   before: EditorDocumentValue,
   reservedIds: Set<unknown>,
   freshIds: boolean
@@ -300,7 +299,7 @@ const normalizeSplitNodeIds = (
     path: Path;
     root: string;
   },
-  options: NodeIdOptions,
+  options: NodeIdPluginState,
   before: EditorDocumentValue,
   reservedIds: Set<unknown>
 ) => {
@@ -681,35 +680,21 @@ export const normalizeNodeId = <V extends Value>(
   options: NormalizeNodeIdOptions = {}
 ): V => normalizeNodeIdRuntime(value, options);
 
-export const normalizeNodeIdWithEditor = <V extends Value>(
-  editor: BaseEditor,
-  value: V,
-  options: NormalizeNodeIdOptions = {}
-): V =>
-  normalizeNodeIdRuntime(value, {
-    ...options,
-    isBlock: (node) =>
-      ElementApi.isElement(node) && editor.read.schema.isBlock(node),
-  });
-
-const defaultNodeIdOptions: NodeIdOptions = {
+// This annotation widens literal defaults to the complete public state.
+const nodeIdInitialState: NodeIdPluginState = {
   filterInline: true,
   filterText: true,
   idKey: 'id',
   idCreator: () => nanoid(10),
 };
 
-export type NodeIdPluginUpdate = {
-  normalize: () => void;
-};
-
 export const NodeIdPlugin = createBasePlugin({
+  initialState: nodeIdInitialState,
   key: 'nodeId',
-  options: defaultNodeIdOptions,
-  schema: ({ options }) => ({
+  schema: ({ initialState }) => ({
     properties: [
       schema.elementProperty(
-        options.idKey ?? 'id',
+        initialState.idKey ?? 'id',
         property.json({ significant: false }),
         {
           target: target.group('element'),
@@ -717,11 +702,11 @@ export const NodeIdPlugin = createBasePlugin({
       ),
     ],
   }),
-  update: ({ getOptions, tx }) => ({
+  update: ({ store, tx }) => ({
     normalize() {
-      const options = getOptions();
-      const { idCreator } = options;
-      const { idKey = 'id' } = options;
+      const state = store.get();
+      const { idCreator } = state;
+      const { idKey = 'id' } = state;
       const updates: { at: Path; props: Record<string, unknown> }[] = [];
       const isBlock = (node: Descendant) =>
         ElementApi.isElement(node) && tx.schema.isBlock(node);
@@ -735,7 +720,7 @@ export const NodeIdPlugin = createBasePlugin({
         }
       };
 
-      if (isDefaultNodeIdFastPath({ ...options, isBlock })) {
+      if (isDefaultNodeIdFastPath({ ...state, isBlock })) {
         const path: number[] = [];
 
         const visitFast = (node: Descendant) => {
@@ -749,7 +734,7 @@ export const NodeIdPlugin = createBasePlugin({
             });
           }
 
-          node.children.forEach((child: Descendant, index: number) => {
+          node.children.forEach((child, index) => {
             path.push(index);
             visitFast(child);
             path.pop();
@@ -770,7 +755,7 @@ export const NodeIdPlugin = createBasePlugin({
       const addNodeId = (entry: readonly [Descendant, Path]) => {
         const [node, path] = entry;
 
-        if (shouldAssignNodeId(entry, { ...options, isBlock })) {
+        if (shouldAssignNodeId(entry, { ...state, isBlock })) {
           updates.push({
             at: path,
             props: { [idKey!]: idCreator!() },
@@ -779,29 +764,29 @@ export const NodeIdPlugin = createBasePlugin({
 
         // Only traverse children if this is an Element node
         if (ElementApi.isElement(node)) {
-          node.children.forEach((child: Descendant, index: number) => {
+          node.children.forEach((child, index) => {
             addNodeId([child, [...path, index]]);
           });
         }
       };
 
       // Start traversal from top-level nodes.
-      tx.nodes.children().forEach((node: Descendant, index: number) => {
+      tx.nodes.children().forEach((node, index) => {
         addNodeId([node, [index]]);
       });
 
       applyUpdates();
     },
   }),
-  extension: ({ editor, getOptions }) => ({
+  extension: ({ editor, store }) => ({
     onTransactionChange({ after, before, change, changed, tx }) {
       if (tx.tags.has('node-id-normalizing') || editor.runtime.isNormalizing) {
         return;
       }
 
-      const options = getOptions();
-      const { idKey = 'id' } = options;
-      const runtimeOptions = { ...options, idKey };
+      const state = store.get();
+      const { idKey = 'id' } = state;
+      const runtimeOptions = { ...state, idKey };
       const roots = new Set([
         ...getInternalDocumentChangeRootKeys(change),
         ...change.createRoots,
@@ -849,7 +834,7 @@ export const NodeIdPlugin = createBasePlugin({
                 runtimeOptions,
                 before,
                 reservedIds,
-                tx.tags.has('paste') && options.reuseId !== true
+                tx.tags.has('paste') && state.reuseId !== true
               );
 
           if (!isEqual(normalized, entry.node)) {
@@ -891,11 +876,17 @@ export const NodeIdPlugin = createBasePlugin({
       tx.changes.apply(DocumentChange.between(after, corrected));
     },
   }),
-  transformInitialValue: ({ editor, getOptions, value }) => {
-    const options = getOptions();
-    const { idKey = 'id' } = options;
-    const runtimeOptions = { ...options, idKey };
-    const initialValueIds = resolveInitialValueIds(options);
+  transformInitialValue: ({ editor, store, value }) => {
+    const state = store.get();
+    const { idKey = 'id' } = state;
+    const runtimeOptions = { ...state, idKey };
+    const initialValueIds = resolveInitialValueIds(state);
+    const normalize = <V extends Value>(children: V): V =>
+      normalizeNodeIdRuntime(children, {
+        ...runtimeOptions,
+        isBlock: (node) =>
+          ElementApi.isElement(node) && editor.read.schema.isBlock(node),
+      });
 
     if (initialValueIds === false) {
       return value;
@@ -916,18 +907,14 @@ export const NodeIdPlugin = createBasePlugin({
       }
     }
 
-    const children = normalizeNodeIdWithEditor(
-      editor,
-      value.children,
-      runtimeOptions
-    );
+    const children = normalize(value.children);
     let roots = value.roots;
 
     if (roots) {
       const normalizedRoots = Object.fromEntries(
         Object.entries(roots).map(([root, rootChildren]) => [
           root,
-          normalizeNodeIdWithEditor(editor, rootChildren, runtimeOptions),
+          normalize(rootChildren),
         ])
       );
 
@@ -951,3 +938,5 @@ export const NodeIdPlugin = createBasePlugin({
 });
 
 export type NodeIdConfig = InferConfig<typeof NodeIdPlugin>;
+
+export type NodeIdPluginUpdate = NodeIdConfig['tx']['nodeId'];

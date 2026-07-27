@@ -24,7 +24,7 @@ Use the focused guide when the issue belongs to one area:
 | --- | --- |
 | Editor creation and options | [Editor](/docs/editor) |
 | Plugin configuration | [Plugin](/docs/plugin) |
-| Plugin option state | [Plugin Context](/docs/plugin-context) |
+| Plugin store state | [Plugin Context](/docs/plugin-context) |
 | Debug logging | [Debugging](/docs/debugging) |
 | Server Components | [RSC](/docs/installation/rsc) |
 | Static rendering | [Static Rendering](/docs/static) |
@@ -109,7 +109,7 @@ shortcuts, and options together.
 
 ## Inspect Plugin Resolution
 
-Enable `DebugPlugin` when plugin options, dependencies, or runtime behavior do
+Enable `DebugPlugin` when plugin state, dependencies, or runtime behavior do
 not match what the editor receives.
 
 ```tsx title="components/editor/plugins.tsx" showLineNumbers
@@ -117,7 +117,7 @@ import { DebugPlugin } from 'platejs';
 
 export const plugins = [
   DebugPlugin.configure({
-    options: {
+    initialState: {
       logLevel: 'warn',
     },
   }),
@@ -128,11 +128,10 @@ Common debug errors:
 
 | Message | Meaning |
 | --- | --- |
-| `OPTION_UNDEFINED` | `editor.getOption`, `editor.setOption`, or plugin context used an option key missing from `plugin.options`. |
 | `PLUGIN_DEPENDENCY_MISSING` | A plugin lists a dependency key that is not registered. |
 
 Use [Plugin](/docs/plugin#advanced-plugin-configuration) to check `dependencies`,
-`priority`, `enabled`, and `override.*` behavior.
+`enabled`, and `override.*` behavior.
 
 ## Reset The Install
 

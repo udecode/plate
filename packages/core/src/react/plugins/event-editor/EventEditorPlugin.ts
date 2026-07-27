@@ -1,6 +1,9 @@
 import { createPlatePlugin } from '../../plugin';
-import { EventEditorStore } from './EventEditorStore';
-import { BLUR_EDITOR_EVENT, FOCUS_EDITOR_EVENT } from './useFocusEditorEvents';
+import {
+  BLUR_EDITOR_EVENT,
+  EventEditorStore,
+  FOCUS_EDITOR_EVENT,
+} from './EventEditorStore';
 
 export const EventEditorPlugin = createPlatePlugin({
   key: 'eventEditor',

@@ -76,7 +76,7 @@ describe('table selection', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([getCell(editor, [0, 1, 1])])
+            .read.getSelectedCellsBoundingBox([getCell(editor, [0, 1, 1])])
         ).toEqual({ maxCol: 1, maxRow: 1, minCol: 1, minRow: 1 });
       });
 
@@ -86,7 +86,7 @@ describe('table selection', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([
+            .read.getSelectedCellsBoundingBox([
               getCell(editor, [0, 1, 0]),
               getCell(editor, [0, 1, 1]),
               getCell(editor, [0, 1, 2]),
@@ -95,7 +95,7 @@ describe('table selection', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([
+            .read.getSelectedCellsBoundingBox([
               getCell(editor, [0, 0, 1]),
               getCell(editor, [0, 1, 1]),
               getCell(editor, [0, 2, 1]),
@@ -104,7 +104,7 @@ describe('table selection', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([
+            .read.getSelectedCellsBoundingBox([
               getCell(editor, [0, 0, 0]),
               getCell(editor, [0, 1, 0]),
               getCell(editor, [0, 1, 1]),
@@ -118,7 +118,7 @@ describe('table selection', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([
+            .read.getSelectedCellsBoundingBox([
               getCell(editor, [0, 0, 0]),
               getCell(editor, [0, 2, 2]),
             ])
@@ -164,7 +164,7 @@ describe('table selection', () => {
         expect(
           spanningEditor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([spanningCell])
+            .read.getSelectedCellsBoundingBox([spanningCell])
         ).toEqual({
           maxCol: 2,
           maxRow: 2,
@@ -216,7 +216,7 @@ describe('table selection', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBoundingBox([getCell(editor, [1, 1, 0])])
+            .read.getSelectedCellsBoundingBox([getCell(editor, [1, 1, 0])])
         ).toEqual({ maxCol: 0, maxRow: 1, minCol: 0, minRow: 1 });
       });
     });
@@ -230,7 +230,7 @@ describe('table selection', () => {
         assert(start);
         assert(end);
 
-        const table = editor.plugin(BaseTablePlugin).api;
+        const table = editor.plugin(BaseTablePlugin).read;
 
         expect(
           table.createCellSelection({ anchor: start, focus: end })
@@ -252,7 +252,7 @@ describe('table selection', () => {
 
         const selection = editor
           .plugin(BaseTablePlugin)
-          .api.createCellSelection({ anchor, focus });
+          .read.createCellSelection({ anchor, focus });
 
         expect(selection).toMatchObject({
           anchor,
@@ -272,7 +272,7 @@ describe('table selection', () => {
 
         const selection = editor
           .plugin(BaseTablePlugin)
-          .api.createCellSelection({ anchor, focus });
+          .read.createCellSelection({ anchor, focus });
 
         assert(selection);
         editor.update.selection.set(selection);
@@ -437,7 +437,7 @@ describe('table selection', () => {
         table.update.moveSelection({ edge: 'left', fromOneCell: true });
         table.update.moveSelection({ edge: 'left' });
 
-        expect(table.api.getSelectedCellIds()).toEqual(['a', 'b', 'c']);
+        expect(table.read.getSelectedCellIds()).toEqual(['a', 'b', 'c']);
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 0, 2, 0, 0] },
           focus: { path: [0, 0, 0, 0, 0] },
@@ -511,7 +511,7 @@ describe('table selection', () => {
         table.update.moveSelection({ edge: 'top', fromOneCell: true });
         table.update.moveSelection({ edge: 'top' });
 
-        expect(table.api.getSelectedCellIds()).toEqual(['a', 'b', 'c']);
+        expect(table.read.getSelectedCellIds()).toEqual(['a', 'b', 'c']);
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 2, 0, 0, 0] },
           focus: { path: [0, 0, 0, 0, 0] },
@@ -752,9 +752,9 @@ describe('table selection', () => {
 
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'left' });
 
-        expect(editor.plugin(BaseTablePlugin).api.getSelectedCellIds()).toEqual(
-          ['a', 'b']
-        );
+        expect(
+          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+        ).toEqual(['a', 'b']);
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 0, 0, 0, 0] },
           focus: { path: [0, 0, 1, 0, 0] },
@@ -788,9 +788,9 @@ describe('table selection', () => {
 
         editor.plugin(BaseTablePlugin).update.moveSelection({ edge: 'right' });
 
-        expect(editor.plugin(BaseTablePlugin).api.getSelectedCellIds()).toEqual(
-          ['b', 'c']
-        );
+        expect(
+          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+        ).toEqual(['b', 'c']);
         expect(editor.read.selection()).toMatchObject({
           anchor: { path: [0, 0, 2, 0, 0] },
           focus: { path: [0, 0, 1, 0, 0] },

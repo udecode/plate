@@ -1,53 +1,40 @@
 import {
-  type BaseEditor,
   BaseParagraphPlugin,
   createBasePlugin,
+  createRuleFactory,
 } from '@platejs/core';
-import { type Element, type Path, ElementApi, PathApi } from '@platejs/plite';
+import { type Element, ElementApi, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-const isLiftableBlockquoteChild = (
-  editor: BaseEditor,
-  node: Element,
-  path: Path,
-  blockquoteType: string
-) => {
-  const paragraphType = editor.getType(KEYS.p);
+export const BlockquoteRules = {
+  markdown: createRuleFactory<{}, { marker: string }>({
+    type: 'blockStart',
+    marker: '>',
+    trigger: ' ',
+    enabled: ({ editor }) =>
+      !editor.read.nodes.some({
+        match: { type: editor.getType(KEYS.codeBlock) },
+      }),
+    match: ({ marker }) => marker,
+    apply: ({ editor, getBlockEntry, tx }, match) => {
+      const blockEntry = getBlockEntry();
 
-  if (node.type !== paragraphType || node[KEYS.listType]) return false;
+      if (!blockEntry) return;
 
-  return !!editor.read.nodes.above({
-    at: path,
-    match: { type: blockquoteType },
-  });
-};
+      tx.text.delete({ at: match.range });
+      tx.nodes.wrap(
+        {
+          children: [],
+          type: editor.getType(KEYS.blockquote),
+        },
+        {
+          at: blockEntry[1],
+        }
+      );
 
-const shouldLiftOnDeleteStart = (
-  editor: BaseEditor,
-  node: Element,
-  path: Path,
-  blockquoteType: string
-) => {
-  if (!isLiftableBlockquoteChild(editor, node, path, blockquoteType)) {
-    return false;
-  }
-
-  const isEmptyBlock =
-    !!editor.read.selection() && editor.read.nodes.isEmpty(node);
-
-  if (!isEmptyBlock) return true;
-
-  const parent = editor.read.nodes.parent(path);
-
-  if (
-    !parent ||
-    !ElementApi.isElement(parent[0]) ||
-    parent[0].type !== blockquoteType
-  ) {
-    return true;
-  }
-
-  return !PathApi.hasPrevious(path);
+      return true;
+    },
+  }),
 };
 
 /** Enables support for block quotes, useful for quotations and passages. */
@@ -78,18 +65,39 @@ export const BaseBlockquotePlugin = createBasePlugin({
     delete: {
       start: 'lift',
     },
-    match: ({ editor, node, path, rule }) => {
+    match: ({ editor, node, path, rule, type }) => {
       if (!['break.empty', 'delete.start'].includes(rule)) return false;
       if (!path) return false;
       if (!ElementApi.isElement(node)) return false;
 
-      const blockquoteType = editor.getType(KEYS.blockquote);
+      const isLiftable =
+        node.type === editor.getType(KEYS.p) &&
+        !node[KEYS.listType] &&
+        !!editor.read.nodes.above({
+          at: path,
+          match: { type },
+        });
 
       if (rule === 'delete.start') {
-        return shouldLiftOnDeleteStart(editor, node, path, blockquoteType);
+        if (!isLiftable) return false;
+        if (!editor.read.selection() || !editor.read.nodes.isEmpty(node)) {
+          return true;
+        }
+
+        const parent = editor.read.nodes.parent(path);
+
+        if (
+          !parent ||
+          !ElementApi.isElement(parent[0]) ||
+          parent[0].type !== type
+        ) {
+          return true;
+        }
+
+        return !PathApi.hasPrevious(path);
       }
 
-      return isLiftableBlockquoteChild(editor, node, path, blockquoteType);
+      return isLiftable;
     },
   },
   update: ({ editor, tx, type }) => ({
@@ -97,13 +105,19 @@ export const BaseBlockquotePlugin = createBasePlugin({
       tx.blocks.toggle(type, { wrap: true });
     },
     untab: () => {
+      const paragraphType = editor.getType(KEYS.p);
       const blocks = [
         ...tx.nodes.toArray<Element>({
           at: tx.selection() ?? undefined,
           match: (node, path) =>
             ElementApi.isElement(node) &&
             !node.indent &&
-            isLiftableBlockquoteChild(editor, node, path, type),
+            node.type === paragraphType &&
+            !node[KEYS.listType] &&
+            !!tx.nodes.above({
+              at: path,
+              match: { type },
+            }),
           mode: 'lowest',
         }),
       ].sort(

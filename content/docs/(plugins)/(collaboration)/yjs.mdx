@@ -62,7 +62,7 @@ const editor = createPlateEditor({
   schema: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
-      options: {
+      initialState: {
         clientId: "local-user",
         doc,
         provider,
@@ -90,7 +90,7 @@ import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";
 import { RemoteCursorOverlay } from "@/components/ui/remote-cursor-overlay";
 
 export const yjsPlugin = YjsPlugin.configure({
-  options: {
+  initialState: {
     clientId: user.id,
     doc,
     provider,

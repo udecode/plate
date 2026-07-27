@@ -1,6 +1,6 @@
 import type { Pluggable, Preset, Settings } from 'unified';
 
-import type { NormalizePluginOption } from '@platejs/core';
+import type { NormalizePluginState } from '@platejs/core';
 
 export const REMARK_MDX_TAG = 'remarkMdx';
 
@@ -16,10 +16,10 @@ export const tagRemarkPlugin = <T extends Callable>(
   return pluginFn;
 };
 
-type ConfiguredPluggable = NormalizePluginOption<Pluggable>;
+type ConfiguredPluggable = NormalizePluginState<Pluggable>;
 type ConfiguredPluginTuple = Extract<ConfiguredPluggable, readonly unknown[]>;
 type PluginTuple = Extract<Pluggable, readonly unknown[]>;
-type MaterializableUnsafe = NormalizePluginOption<
+type MaterializableUnsafe = NormalizePluginState<
   NonNullable<Settings['unsafe']>[number]
 >;
 type MaterializableSettings = Omit<Settings, 'join' | 'unsafe'> &

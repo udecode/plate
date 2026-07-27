@@ -15,9 +15,9 @@ import React from 'react';
 export const useTableElement = () => {
   useClaimEditableDOMCommit();
 
-  const { editor, getOptions } = useEditorPlugin(TablePlugin);
+  const { editor, store } = useEditorPlugin(TablePlugin);
 
-  const { disableMarginLeft } = getOptions();
+  const { disableMarginLeft } = store.get();
 
   const element = useElement<TTableElement>();
   const marginLeftOverride = useTableValue('marginLeftOverride');
@@ -32,7 +32,7 @@ export const useTableElement = () => {
       onMouseDown: () => {
         // Ordinary table presses collapse a multi-cell selection before caret
         // placement. Product drag handles stop this event at the table boundary.
-        if (editor.plugin(TablePlugin).getOption('isSelectingCell')) {
+        if (editor.plugin(TablePlugin).read.isSelectingCell()) {
           editor.update.selection.collapse();
         }
       },

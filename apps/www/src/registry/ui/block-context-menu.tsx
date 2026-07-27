@@ -11,7 +11,7 @@ import { KEYS } from 'platejs';
 import {
   useEditorPlugin,
   useEditorReadOnly,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import {
@@ -34,14 +34,14 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const [value, setValue] = React.useState<Value>(null);
   const isTouch = useIsTouchDevice();
   const readOnly = useEditorReadOnly();
-  const openId = usePluginOption(BlockMenuPlugin, 'openId');
+  const openId = usePluginStore(BlockMenuPlugin, 'openId');
   const isOpen = openId === BLOCK_CONTEXT_MENU_ID;
 
   const handleTurnInto = React.useCallback(
     (type: string) => {
       editor
         .plugin(BlockSelectionPlugin)
-        .api.getNodes()
+        .read.getNodes()
         .forEach(([, path]) => {
           setBlockType(editor, type, { at: path });
         });

@@ -57,7 +57,7 @@ Constraints:
 - A packet that breaks selection, input ordering, IME, copy, paste, undo,
   focus, cursor placement, or follow-up typing is `checks_failed` or `discard`,
   not `keep`.
-- Perf/pagination/virtualization optimization uses `plite-ar` perf mode.
+- Perf/pagination/virtualization optimization uses `slate-ar` perf mode.
 - Broad external discovery routes to `plite-research`.
 - Architecture/API redesign routes to `plite-plan`.
 - Concrete correctness failures or missing oracles route to `plite-patch`.
@@ -96,11 +96,11 @@ Mode matrix:
 | continue / resume | pending | slate-ar | Existing session resumed or stale/missing session routed. |
 | next | pending | slate-ar | Exactly one safe next step chosen and result recorded. |
 | gate | pending | slate-ar | Existing command repeated/logged; repeated valid failure routes to `plite-patch`. |
-| stabilize | pending | slate-ar + slate-patch | Behavior surface narrowed, oracle/gate/fix loop recorded, perf blocked until green. |
+| stabilize | pending | slate-ar + plite-patch | Behavior surface narrowed, oracle/gate/fix loop recorded, perf blocked until green. |
 | quality | pending | slate-ar | Accepted checklist slug executed or broad discovery routed to `plite-research`. |
 | recipe | pending | slate-ar | Read-only recipe/setup-plan result recorded, or packet start explicitly accepted. |
 | perfect | pending | slate-ar | Status, research/gap, behavior, oracle, perf, and final no-regression rows closed. |
-| perf | pending | slate-ar perf | Routed to `plite-ar` perf mode with target/correctness contract. |
+| perf | pending | slate-ar perf | Routed to `slate-ar` perf mode with target/correctness contract. |
 | finalize preview | pending | slate-ar | Preview-only finalization/current-tree readiness recorded; no branches. |
 | ship readiness | pending | slate-ar + autoreview | Review unit, gates, timing rows, autoreview, and approval boundary recorded. |
 
@@ -108,7 +108,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
-| `plite-ar` source rule read | pending | pending |
+| `slate-ar` source rule read | pending | pending |
 | Active goal checked or created | pending | pending |
 | Mode selected and unused mode rows marked N/A | pending | pending |
 | Target cwd and control cwd recorded | pending | pending |
@@ -138,7 +138,7 @@ Work Checklist:
       is routed to `plite-research`.
 - [ ] Recipe mode stays read-only unless packet execution was explicitly
       requested.
-- [ ] Perf work is routed to `plite-ar` perf mode and has correctness proof before a
+- [ ] Perf work is routed to `slate-ar` perf mode and has correctness proof before a
       keep call.
 - [ ] Finalization is preview-only unless review branches are explicitly
       requested in the current turn.
@@ -158,7 +158,7 @@ Completion Gates:
 | Behavior correctness proof | pending | Record native/editor behavior proof or `plite-patch` route | pending |
 | Quality-gap proof | pending | Run quality-gap commands for accepted checklist or N/A | pending |
 | Recipe/setup proof | pending | Record read-only recipe/setup-plan result or N/A | pending |
-| Perf routing proof | pending | Route to `plite-ar` perf mode with target/correctness contract or N/A | pending |
+| Perf routing proof | pending | Route to `slate-ar` perf mode with target/correctness contract or N/A | pending |
 | Finalization/readiness proof | pending | Run preview/readiness/autoreview proof or N/A | pending |
 | Packet decision ledger | pending | Record keep/revert/quarantine/checks-failed rows | pending |
 | Workspace authority proof | pending | Record cwd/tool for each command | pending |

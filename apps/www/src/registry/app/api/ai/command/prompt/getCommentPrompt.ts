@@ -1,13 +1,13 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { MarkdownEditor } from '@platejs/markdown';
 
-import { getMarkdown } from '@platejs/ai';
 import dedent from 'dedent';
 
 import {
   buildStructuredPrompt,
   formatTextFromMessages,
   getLastUserInstruction,
+  serializePromptBlocks,
 } from '../utils';
 
 export function getCommentPrompt(
@@ -18,8 +18,8 @@ export function getCommentPrompt(
     messages: ChatMessage[];
   }
 ) {
-  const selectingMarkdown = getMarkdown(editor, {
-    type: 'blockWithBlockId',
+  const selectingMarkdown = serializePromptBlocks(editor, {
+    withBlockId: true,
   });
 
   return buildStructuredPrompt({

@@ -1,6 +1,6 @@
 import {
   BaseFootnoteDefinitionPlugin,
-  BaseFootnoteReferencePlugin,
+  BaseFootnotePlugin,
 } from '@platejs/footnote';
 
 import {
@@ -9,7 +9,7 @@ import {
 } from '@/registry/ui/footnote-node-static';
 
 export const BaseFootnoteKit = [
-  BaseFootnoteReferencePlugin.configure({
+  BaseFootnotePlugin.configure({
     component: FootnoteReferenceElementStatic,
   }),
   BaseFootnoteDefinitionPlugin.configure({

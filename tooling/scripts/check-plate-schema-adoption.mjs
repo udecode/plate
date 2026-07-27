@@ -21,6 +21,8 @@ const typescriptFilePattern = /\.(?:cts|mts|ts|tsx)$/;
 const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
 const platePluginFactoryNamePattern = /Plugin$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
+const privatePluginBuilderScaffoldNamePattern =
+  /(?:PluginBase|PluginDefinition|PluginDescriptor)$/;
 const pluginConfigurationMethods = new Set([
   'configure',
   'extend',
@@ -47,7 +49,7 @@ const pluginAuthoringMethods = new Set([
 ]);
 const contextualConfigureKeys = new Set([
   'handlers',
-  'options',
+  'initialState',
   'override',
   'render',
   'shortcuts',
@@ -115,10 +117,9 @@ const intentionalRawCodecNegativeMarker =
   '@plate-schema-adoption-negative-codec';
 const intentionalRawCodecNegativeContractCounts = new Map([
   ['packages/core/src/internal/plugin/compilePlateHtmlCodec.spec.ts', 1],
+  ['packages/core/src/lib/plugins/ProductCodecs.spec.ts', 1],
+  ['packages/core/src/lib/plugins/html/HtmlPlugin.codec.spec.ts', 1],
   ['packages/core/type-tests/base-plugin-contracts.ts', 1],
-]);
-const intentionalProductionExtendCodecOwners = new Set([
-  'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
 ]);
 const packageConfigureInstallationOwners = new Set([
   'packages/core/src/lib/plugins/getCorePlugins.ts',
@@ -134,44 +135,62 @@ const reactPluginEntrypointPattern = /^(?:platejs|@platejs\/[^/]+)\/react$/;
 const liveRegistryNodeModulePattern = /^@\/registry\/ui\/.*-node$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
-const intentionalProductionExtendStageFields = new Map([
-  ['packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts', [['shortcuts']]],
-  ['packages/code-block/src/lib/BaseCodeBlockPlugin.ts', [['shortcuts']]],
-  ['packages/comment/src/lib/BaseCommentPlugin.ts', [['update']]],
-  ['packages/indent/src/lib/BaseIndentPlugin.ts', [['shortcuts']]],
-  ['packages/layout/src/lib/BaseColumnPlugin.ts', [['shortcuts']]],
+const intentionalProductionExtendStageChains = new Map([
+  [
+    'packages/core/src/lib/plugins/affinity/AffinityPlugin.ts',
+    [[['extension']]],
+  ],
+  [
+    'packages/core/src/lib/plugins/override/OverridePlugin.ts',
+    [[['extension']]],
+  ],
+  ['packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts', [[['shortcuts']]]],
+  [
+    'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
+    [[['shortcuts']], [['decorate', 'extension']]],
+  ],
+  ['packages/comment/src/lib/BaseCommentPlugin.ts', [[['update']]]],
+  ['packages/indent/src/lib/BaseIndentPlugin.ts', [[['shortcuts']]]],
+  ['packages/layout/src/lib/BaseColumnPlugin.ts', [[['shortcuts']]]],
   [
     'packages/list/src/lib/BaseListPlugin.tsx',
-    [['override'], ['update'], ['extension']],
+    [[['override', 'update'], ['extension']]],
   ],
   [
     'packages/list-classic/src/lib/BaseListPlugin.ts',
-    [['update'], ['extension']],
+    [[['read'], ['update'], ['extension']]],
   ],
+  ['packages/link/src/lib/BaseLinkPlugin.ts', [[['extension', 'update']]]],
   [
     'packages/table/src/lib/BaseTablePlugin.ts',
     [
-      ['api'],
-      ['api'],
-      ['api'],
-      ['api'],
-      ['api', 'selectors', 'update'],
-      ['extension', 'update'],
+      [
+        ['api'],
+        ['api', 'read'],
+        ['read'],
+        ['read'],
+        ['api', 'read'],
+        ['update'],
+        ['extension', 'update'],
+      ],
     ],
   ],
   [
     'packages/ai/src/react/copilot/CopilotPlugin.tsx',
-    [['api'], ['extension', 'handlers', 'render', 'selectors', 'shortcuts']],
+    [[['api'], ['extension', 'handlers', 'render', 'selectors', 'shortcuts']]],
   ],
-  ['packages/ai/src/react/ai-chat/AIChatPlugin.ts', [['extension']]],
   [
-    'packages/selection/src/react/BlockSelectionPlugin.tsx',
-    [['api', 'extension', 'handlers', 'selectors', 'shortcuts', 'update']],
+    'packages/ai/src/react/ai-chat/AIChatPlugin.ts',
+    [[['api', 'read', 'selectors', 'update'], ['extension']]],
+  ],
+  [
+    'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
+    [[['read'], ['update'], ['extension']]],
   ],
 ]);
 const allowedSchemaFactoryBindings = new Set([
+  'initialState',
   'key',
-  'options',
   'own',
   'plugins',
   'targetPluginKeys',
@@ -185,8 +204,8 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/basic-styles/src/lib/BaseTextAlignPlugin.spec.ts', 2],
   ['packages/basic-styles/src/lib/BaseTextIndentPlugin.spec.ts', 2],
   ['packages/comment/src/lib/BaseCommentPlugin.spec.ts', 5],
-  ['packages/core/src/internal/plugin/compilePlateHtmlCodec.ts', 5],
   ['packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
+  ['packages/core/src/lib/plugins/html/HtmlPlugin.ts', 5],
   ['packages/plite/test/editor-foundation-contract.ts', 2],
   ['packages/plite/test/schema-contract.ts', 5],
   ['packages/plite/test/schema-inference-contract.ts', 2],
@@ -509,6 +528,28 @@ const isDirectCreatorExtendChain = (node) => {
   return false;
 };
 
+const isPluginDescriptorBuilderChain = (node) => {
+  let current = unwrapTypedExpression(node);
+
+  while (current?.type === 'CallExpression') {
+    const callee = unwrapTypedExpression(current.callee);
+
+    if (
+      callee?.type === 'Identifier' &&
+      ['createBasePlugin', 'createPlatePlugin', 'toPlatePlugin'].includes(
+        callee.name
+      )
+    ) {
+      return true;
+    }
+    if (callee?.type !== 'MemberExpression') return false;
+
+    current = unwrapTypedExpression(callee.object);
+  }
+
+  return false;
+};
+
 const isDefineCodecsCall = (property) => {
   if (property?.type !== 'ObjectProperty') return false;
 
@@ -569,6 +610,24 @@ const hasExactExtendStageFields = (actual, expected) =>
       fields.length === expected[index].length &&
       fields.every((field, fieldIndex) => field === expected[index][fieldIndex])
   );
+
+const hasExactExtendStageChains = (actual, expected) => {
+  if (actual.length !== expected.length) return false;
+
+  const remaining = [...expected];
+
+  return actual.every((chain) => {
+    const index = remaining.findIndex((candidate) =>
+      hasExactExtendStageFields(chain, candidate)
+    );
+
+    if (index === -1) return false;
+
+    remaining.splice(index, 1);
+
+    return true;
+  });
+};
 
 const isNestedInLaterExtend = (node, ancestors) => {
   const parent = ancestors.at(-1);
@@ -698,16 +757,16 @@ const isInsidePluginFactoryDeclaration = (ancestors) => {
   return false;
 };
 
-const isInsidePluginOptions = (ancestors) => {
-  const optionsIndex = ancestors.findLastIndex(
+const isInsidePluginInitialState = (ancestors) => {
+  const initialStateIndex = ancestors.findLastIndex(
     (ancestor) =>
       ancestor.type === 'ObjectProperty' &&
-      getPropertyName(ancestor.key) === 'options'
+      getPropertyName(ancestor.key) === 'initialState'
   );
 
   return (
-    optionsIndex >= 0 &&
-    isDirectPluginDeclarationObject(ancestors.slice(0, optionsIndex))
+    initialStateIndex >= 0 &&
+    isDirectPluginDeclarationObject(ancestors.slice(0, initialStateIndex))
   );
 };
 
@@ -856,6 +915,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   let explicitSchemaFactoryCount = 0;
   const namedSchemaLineageCounts = new Map();
   let productionExtendChainCount = 0;
+  const productionExtendChains = [];
   let rawCodecNegativeContractCount = 0;
   let rawSchemaQueryCount = 0;
 
@@ -863,6 +923,32 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
   const visit = (node, ancestors = []) => {
     if (!node || typeof node !== 'object') return;
+
+    if (
+      node.type === 'VariableDeclarator' &&
+      node.id?.type === 'Identifier' &&
+      privatePluginBuilderScaffoldNamePattern.test(node.id.name) &&
+      isProductionPluginAuthoringFile(file) &&
+      isPluginDescriptorBuilderChain(node.init) &&
+      !ancestors.some((ancestor) => ancestor.type === 'ExportNamedDeclaration')
+    ) {
+      const escapedName = node.id.name.replaceAll(
+        /[$()*+.?[\\\]^{|}]/g,
+        '\\$&'
+      );
+      const referenceCount =
+        source.match(new RegExp(`\\b${escapedName}\\b`, 'g'))?.length ?? 0;
+      const onlyConsumerContinuesBuilder = new RegExp(
+        `\\b${escapedName}\\s*\\.\\s*(?:configure|extend)\\b`
+      ).test(source);
+
+      if (referenceCount === 2 && onlyConsumerContinuesBuilder) {
+        report(
+          node,
+          'one-use private plugin descriptor scaffolding; export the complete builder chain directly'
+        );
+      }
+    }
 
     if (
       node.type === 'ImportDeclaration' &&
@@ -1013,7 +1099,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         report(node, 'non-void element schema requires explicit content');
       }
 
-      if (key === 'targetPluginKeys' && isInsidePluginOptions(ancestors)) {
+      if (key === 'targetPluginKeys' && isInsidePluginInitialState(ancestors)) {
         report(
           node,
           'schema target descriptors belong in top-level targetPluginKeys'
@@ -1021,7 +1107,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (key === 'config' && isDirectPlatePluginDeclarationObject(ancestors)) {
-        report(node, 'Plate plugin values belong in options');
+        report(node, 'Plate plugin values belong in initialState');
       }
 
       if (
@@ -1111,8 +1197,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
           if (
             packagePluginSourcePattern.test(file) &&
-            isProductionPluginAuthoringFile(file) &&
-            !intentionalProductionExtendCodecOwners.has(file)
+            isProductionPluginAuthoringFile(file)
           ) {
             report(
               property,
@@ -1130,10 +1215,13 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           const stages = getExtendChainStages(node);
 
           productionExtendChainCount++;
+          productionExtendChains.push(stages);
           const expected =
-            intentionalProductionExtendStageFields.get(file) ?? [];
+            intentionalProductionExtendStageChains.get(file) ?? [];
 
-          if (!hasExactExtendStageFields(stages, expected)) {
+          if (
+            !expected.some((chain) => hasExactExtendStageFields(stages, chain))
+          ) {
             report(
               node,
               `direct constructor .extend() chain is not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency; found ${stages
@@ -1303,7 +1391,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           ) {
             report(
               property,
-              'contextual plugin configure only accepts explicit options, handlers, render, and shortcuts overrides'
+              'contextual plugin configure only accepts explicit initialState, handlers, override, render, and shortcuts overrides'
             );
           }
         }
@@ -1364,12 +1452,18 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     );
   }
   if (
-    intentionalProductionExtendStageFields.has(file) &&
-    productionExtendChainCount !== 1
+    intentionalProductionExtendStageChains.has(file) &&
+    !hasExactExtendStageChains(
+      productionExtendChains,
+      intentionalProductionExtendStageChains.get(file)
+    )
   ) {
+    const expectedCount =
+      intentionalProductionExtendStageChains.get(file).length;
+
     report(
       ast,
-      `production extend-stage allowlist expects exactly one audited chain but found ${productionExtendChainCount}`
+      `production extend-stage allowlist expects exact ${expectedCount} audited chain${expectedCount === 1 ? '' : 's'} but found ${productionExtendChainCount}; signatures did not match`
     );
   }
   for (const [signature, count] of intentionalNamedSchemaLineages.get(file) ??

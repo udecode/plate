@@ -1,7 +1,6 @@
 import {
   type BaseEditor,
   type InferConfig,
-  type PlatePluginTxGroup,
   createBasePlugin,
   createRuleFactory,
 } from '@platejs/core';
@@ -23,7 +22,7 @@ import { KEYS } from '@platejs/utils';
 import type { TLinkElement } from '@platejs/utils';
 import { isDefined, isUrl as defaultIsUrl, sanitizeUrl } from '@udecode/utils';
 
-export type BaseLinkOptions = {
+export type BaseLinkPluginState = {
   /** List of allowed URL schemes. */
   allowedSchemes?: readonly string[];
   /** Skips sanitation of links. */
@@ -130,15 +129,16 @@ const validateUrlWithOptions = (
   );
 };
 
-const BaseLinkPluginDefinition = createBasePlugin({
-  api: ({ getOptions }) =>
+/** Enables support for hyperlinks. */
+export const BaseLinkPlugin = createBasePlugin({
+  api: ({ store }) =>
     ({
       getAttributes: (link) => {
         const {
           allowedSchemes,
           dangerouslySkipSanitization,
           defaultLinkAttributes,
-        } = getOptions();
+        } = store.get();
         const url = typeof link.url === 'string' ? link.url : '';
         const href = dangerouslySkipSanitization
           ? url
@@ -150,9 +150,9 @@ const BaseLinkPluginDefinition = createBasePlugin({
           ...(typeof link.target === 'string' ? { target: link.target } : {}),
         };
       },
-      validateUrl: (url) => validateUrlWithOptions(getOptions(), url),
+      validateUrl: (url) => validateUrlWithOptions(store.get(), url),
     }) satisfies BaseLinkApi,
-  options: {
+  initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     defaultLinkAttributes: {},
     dangerouslySkipSanitization: false,
@@ -165,7 +165,7 @@ const BaseLinkPluginDefinition = createBasePlugin({
       skipInvalid: true,
     },
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',
-  } as BaseLinkOptions,
+  } as BaseLinkPluginState,
   key: 'link',
   schema: {
     element: {
@@ -178,13 +178,13 @@ const BaseLinkPluginDefinition = createBasePlugin({
     },
   },
   type: KEYS.link,
-  codecs: ({ defineCodecs, getOptions }) =>
+  codecs: ({ defineCodecs, store }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
           const url = element.getAttribute('href');
 
-          if (!url || !validateUrlWithOptions(getOptions(), url)) return;
+          if (!url || !validateUrlWithOptions(store.get(), url)) return;
 
           return {
             target: element.getAttribute('target') || '_blank',
@@ -192,7 +192,7 @@ const BaseLinkPluginDefinition = createBasePlugin({
           };
         },
         encode: ({ content, node }) => {
-          const { allowedSchemes, dangerouslySkipSanitization } = getOptions();
+          const { allowedSchemes, dangerouslySkipSanitization } = store.get();
           const url = typeof node.url === 'string' ? node.url : '';
           const href = dangerouslySkipSanitization
             ? url
@@ -218,12 +218,12 @@ const BaseLinkPluginDefinition = createBasePlugin({
     selection: { affinity: 'directional' },
   },
   render: {
-    nodeProps: ({ element, getOptions }) => {
+    nodeProps: ({ element, store }) => {
       const {
         allowedSchemes,
         dangerouslySkipSanitization,
         defaultLinkAttributes,
-      } = getOptions();
+      } = store.get();
       const url = typeof element.url === 'string' ? element.url : '';
       const href = dangerouslySkipSanitization
         ? url
@@ -238,274 +238,252 @@ const BaseLinkPluginDefinition = createBasePlugin({
       };
     },
   },
-});
-
-/** Enables support for hyperlinks. */
-export const BaseLinkPlugin = BaseLinkPluginDefinition.extend<{
-  extension: {
-    tx: {
-      link: PlatePluginTxGroup<
-        BaseLinkTx,
-        InferConfig<typeof BaseLinkPluginDefinition>
-      >;
-    };
-  };
+}).extend<{
+  update: BaseLinkTx;
 }>(({ api, type }) => ({
-  extension: {
-    tx: {
-      link: (tx) => ({
-        insert: ({ children, target, text = '', url }, options) => {
-          tx.fragment.replace(
-            [
-              {
-                children: children ?? [{ text }],
-                ...(target === undefined ? {} : { target }),
-                type,
-                url,
-              },
-            ],
-            options
-          );
-        },
-        unwrap: (options) => {
-          const selection = tx.selection();
+  update: ({ tx }) => ({
+    insert: ({ children, target, text = '', url }, options) => {
+      tx.fragment.replace(
+        [
+          {
+            children: children ?? [{ text }],
+            ...(target === undefined ? {} : { target }),
+            type,
+            url,
+          },
+        ],
+        options
+      );
+    },
+    unwrap: (options) => {
+      const selection = tx.selection();
 
-          if (options?.split && selection) {
-            const [start, end] = RangeApi.edges(selection);
-            const linkAboveStart = tx.nodes.above({
-              at: start,
-              match: { type },
-            });
-            const linkAboveEnd = tx.nodes.above({
-              at: end,
-              match: { type },
-            });
+      if (options?.split && selection) {
+        const [start, end] = RangeApi.edges(selection);
+        const linkAboveStart = tx.nodes.above({
+          at: start,
+          match: { type },
+        });
+        const linkAboveEnd = tx.nodes.above({
+          at: end,
+          match: { type },
+        });
 
-            if (
-              linkAboveStart &&
-              linkAboveEnd &&
-              PathApi.equals(linkAboveStart[1], linkAboveEnd[1])
-            ) {
-              const linkPath = linkAboveStart[1];
-              let selectedPath = linkPath;
+        if (
+          linkAboveStart &&
+          linkAboveEnd &&
+          PathApi.equals(linkAboveStart[1], linkAboveEnd[1])
+        ) {
+          const linkPath = linkAboveStart[1];
+          let selectedPath = linkPath;
 
-              if (!tx.points.isEnd(end, linkPath)) {
-                tx.nodes.split({ at: end, match: { type } });
-              }
-              if (!tx.points.isStart(start, linkPath)) {
-                tx.nodes.split({ at: start, match: { type } });
-                selectedPath = PathApi.next(linkPath);
-              }
-
-              tx.nodes.unwrap({ at: selectedPath, match: { type } });
-
-              return true;
-            }
-
-            const point = linkAboveStart
-              ? start
-              : linkAboveEnd
-                ? end
-                : undefined;
-            const link = linkAboveStart ?? linkAboveEnd;
-
-            if (point && link) {
-              tx.nodes.split({ at: point, match: { type } });
-              tx.nodes.unwrap({ at: PathApi.next(link[1]), match: { type } });
-
-              return true;
-            }
+          if (!tx.points.isEnd(end, linkPath)) {
+            tx.nodes.split({ at: end, match: { type } });
+          }
+          if (!tx.points.isStart(start, linkPath)) {
+            tx.nodes.split({ at: start, match: { type } });
+            selectedPath = PathApi.next(linkPath);
           }
 
-          tx.nodes.unwrap({ match: { type }, ...options });
-        },
-        upsert: ({
-          insertNodesOptions,
-          insertTextInLink,
-          skipValidation = false,
-          target,
-          text,
-          unwrapNodesOptions,
-          url,
-          wrapNodesOptions,
-        }) => {
-          const selection = tx.selection();
-
-          if (!selection) return;
-
-          const linkAbove = tx.nodes.above<TLinkElement>({
-            at: selection,
-            match: { type },
-          });
-
-          if (insertTextInLink && linkAbove) {
-            tx.text.insert(url, { at: selection });
-
-            return true;
-          }
-          if (!skipValidation && !api.validateUrl(url)) return;
-
-          const nextText = isDefined(text) && text.length === 0 ? url : text;
-          const updateText = () => {
-            const link = tx.nodes.above<Element>({ match: { type } });
-
-            if (!link) return;
-
-            const [linkNode, linkPath] = link;
-
-            if (!nextText?.length || nextText === tx.text.string(linkPath)) {
-              return;
-            }
-
-            tx.nodes.replaceChildren(
-              [{ ...linkNode.children[0], text: nextText }],
-              {
-                at: linkPath,
-              }
-            );
-
-            const end = tx.points.end(linkPath);
-
-            if (end) tx.selection.set(end);
-          };
-
-          if (linkAbove) {
-            const [link] = linkAbove;
-
-            if (url !== link.url) {
-              tx.nodes.set<TLinkElement>({ url }, { at: link });
-            }
-            if (target !== link.target) {
-              if (target === undefined) {
-                tx.nodes.unset('target', { at: link });
-              } else {
-                tx.nodes.set<TLinkElement>({ target }, { at: link });
-              }
-            }
-
-            updateText();
-
-            return true;
-          }
-
-          const linkEntry = tx.nodes.find<TLinkElement>({
-            at: selection,
-            match: { type },
-          });
-
-          if (RangeApi.isExpanded(selection)) {
-            const unwrapOptions = { split: true, ...unwrapNodesOptions };
-            const [start, end] = RangeApi.edges(selection);
-            const linkAboveStart = tx.nodes.above({
-              at: start,
-              match: { type },
-            });
-            const linkAboveEnd = tx.nodes.above({
-              at: end,
-              match: { type },
-            });
-
-            if (
-              linkAboveStart &&
-              linkAboveEnd &&
-              PathApi.equals(linkAboveStart[1], linkAboveEnd[1])
-            ) {
-              const linkPath = linkAboveStart[1];
-              let selectedPath = linkPath;
-
-              if (!tx.points.isEnd(end, linkPath)) {
-                tx.nodes.split({ at: end, match: { type } });
-              }
-              if (!tx.points.isStart(start, linkPath)) {
-                tx.nodes.split({ at: start, match: { type } });
-                selectedPath = PathApi.next(linkPath);
-              }
-
-              tx.nodes.unwrap({ at: selectedPath, match: { type } });
-            } else {
-              const point = linkAboveStart
-                ? start
-                : linkAboveEnd
-                  ? end
-                  : undefined;
-              const link = linkAboveStart ?? linkAboveEnd;
-
-              if (point && link) {
-                tx.nodes.split({ at: point, match: { type } });
-                tx.nodes.unwrap({
-                  at: PathApi.next(link[1]),
-                  match: { type },
-                });
-              } else {
-                tx.nodes.unwrap({ match: { type }, ...unwrapOptions });
-              }
-            }
-
-            tx.nodes.wrap(
-              {
-                children: [],
-                ...(target === undefined ? {} : { target }),
-                type,
-                url,
-              },
-              { split: true, ...wrapNodesOptions }
-            );
-            updateText();
-
-            return true;
-          }
-
-          const leaf = tx.nodes.leaf(selection.focus.path);
-
-          if (!leaf) return;
-
-          tx.fragment.replace(
-            [
-              {
-                ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
-                children: [
-                  { ...leaf[0], text: nextText?.length ? nextText : url },
-                ],
-                ...(target === undefined ? {} : { target }),
-                type,
-                url,
-              },
-            ],
-            insertNodesOptions
-          );
+          tx.nodes.unwrap({ at: selectedPath, match: { type } });
 
           return true;
-        },
-        upsertText: ({ text }) => {
-          const link = tx.nodes.above<Element>({ match: { type } });
+        }
 
-          if (!link) return;
+        const point = linkAboveStart ? start : linkAboveEnd ? end : undefined;
+        const link = linkAboveStart ?? linkAboveEnd;
 
-          const [linkNode, linkPath] = link;
+        if (point && link) {
+          tx.nodes.split({ at: point, match: { type } });
+          tx.nodes.unwrap({ at: PathApi.next(link[1]), match: { type } });
 
-          if (!text?.length || text === tx.text.string(linkPath)) return;
+          return true;
+        }
+      }
 
-          tx.nodes.replaceChildren([{ ...linkNode.children[0], text }], {
-            at: linkPath,
-          });
-
-          const end = tx.points.end(linkPath);
-
-          if (end) tx.selection.set(end);
-        },
-        wrap: ({ target, url, ...options }) => {
-          tx.nodes.wrap(
-            {
-              children: [],
-              ...(target === undefined ? {} : { target }),
-              type,
-              url,
-            },
-            { split: true, ...options }
-          );
-        },
-      }),
+      tx.nodes.unwrap({ match: { type }, ...options });
     },
+    upsert: ({
+      insertNodesOptions,
+      insertTextInLink,
+      skipValidation = false,
+      target,
+      text,
+      unwrapNodesOptions,
+      url,
+      wrapNodesOptions,
+    }) => {
+      const selection = tx.selection();
+
+      if (!selection) return;
+
+      const linkAbove = tx.nodes.above<TLinkElement>({
+        at: selection,
+        match: { type },
+      });
+
+      if (insertTextInLink && linkAbove) {
+        tx.text.insert(url, { at: selection });
+
+        return true;
+      }
+      if (!skipValidation && !api.validateUrl(url)) return;
+
+      const nextText = isDefined(text) && text.length === 0 ? url : text;
+      const updateText = () => {
+        const link = tx.nodes.above<Element>({ match: { type } });
+
+        if (!link) return;
+
+        const [linkNode, linkPath] = link;
+
+        if (!nextText?.length || nextText === tx.text.string(linkPath)) {
+          return;
+        }
+
+        tx.nodes.replaceChildren(
+          [{ ...linkNode.children[0], text: nextText }],
+          {
+            at: linkPath,
+          }
+        );
+
+        const end = tx.points.end(linkPath);
+
+        if (end) tx.selection.set(end);
+      };
+
+      if (linkAbove) {
+        const [link] = linkAbove;
+
+        if (url !== link.url) {
+          tx.nodes.set<TLinkElement>({ url }, { at: link });
+        }
+        if (target !== link.target) {
+          if (target === undefined) {
+            tx.nodes.unset('target', { at: link });
+          } else {
+            tx.nodes.set<TLinkElement>({ target }, { at: link });
+          }
+        }
+
+        updateText();
+
+        return true;
+      }
+
+      const linkEntry = tx.nodes.find<TLinkElement>({
+        at: selection,
+        match: { type },
+      });
+
+      if (RangeApi.isExpanded(selection)) {
+        const unwrapOptions = { split: true, ...unwrapNodesOptions };
+        const [start, end] = RangeApi.edges(selection);
+        const linkAboveStart = tx.nodes.above({
+          at: start,
+          match: { type },
+        });
+        const linkAboveEnd = tx.nodes.above({
+          at: end,
+          match: { type },
+        });
+
+        if (
+          linkAboveStart &&
+          linkAboveEnd &&
+          PathApi.equals(linkAboveStart[1], linkAboveEnd[1])
+        ) {
+          const linkPath = linkAboveStart[1];
+          let selectedPath = linkPath;
+
+          if (!tx.points.isEnd(end, linkPath)) {
+            tx.nodes.split({ at: end, match: { type } });
+          }
+          if (!tx.points.isStart(start, linkPath)) {
+            tx.nodes.split({ at: start, match: { type } });
+            selectedPath = PathApi.next(linkPath);
+          }
+
+          tx.nodes.unwrap({ at: selectedPath, match: { type } });
+        } else {
+          const point = linkAboveStart ? start : linkAboveEnd ? end : undefined;
+          const link = linkAboveStart ?? linkAboveEnd;
+
+          if (point && link) {
+            tx.nodes.split({ at: point, match: { type } });
+            tx.nodes.unwrap({
+              at: PathApi.next(link[1]),
+              match: { type },
+            });
+          } else {
+            tx.nodes.unwrap({ match: { type }, ...unwrapOptions });
+          }
+        }
+
+        tx.nodes.wrap(
+          {
+            children: [],
+            ...(target === undefined ? {} : { target }),
+            type,
+            url,
+          },
+          { split: true, ...wrapNodesOptions }
+        );
+        updateText();
+
+        return true;
+      }
+
+      const leaf = tx.nodes.leaf(selection.focus.path);
+
+      if (!leaf) return;
+
+      tx.fragment.replace(
+        [
+          {
+            ...(linkEntry ? NodeApi.extractProps(linkEntry[0]) : {}),
+            children: [{ ...leaf[0], text: nextText?.length ? nextText : url }],
+            ...(target === undefined ? {} : { target }),
+            type,
+            url,
+          },
+        ],
+        insertNodesOptions
+      );
+
+      return true;
+    },
+    upsertText: ({ text }) => {
+      const link = tx.nodes.above<Element>({ match: { type } });
+
+      if (!link) return;
+
+      const [linkNode, linkPath] = link;
+
+      if (!text?.length || text === tx.text.string(linkPath)) return;
+
+      tx.nodes.replaceChildren([{ ...linkNode.children[0], text }], {
+        at: linkPath,
+      });
+
+      const end = tx.points.end(linkPath);
+
+      if (end) tx.selection.set(end);
+    },
+    wrap: ({ target, url, ...options }) => {
+      tx.nodes.wrap(
+        {
+          children: [],
+          ...(target === undefined ? {} : { target }),
+          type,
+          url,
+        },
+        { split: true, ...options }
+      );
+    },
+  }),
+  extension: {
     commands: ({ around }) => [
       around(editorCommands.insertText, ({ input, state, next }) => {
         if (input.options?.at) return next();
@@ -566,7 +544,7 @@ const getAutolinkMatch = (
 ): LinkTextAutolinkMatch | undefined => {
   const { getUrlHref, isUrl, rangeBeforeOptions } = editor
     .plugin(BaseLinkPlugin)
-    .getOptions();
+    .store.get();
   const selection = editor.read.selection();
 
   if (!selection || !editor.read.selection.isCollapsed()) return;
@@ -649,7 +627,7 @@ const pasteAutolinkRule = createLinkRule<
   resolve: (context) => {
     if (!context.text) return;
 
-    const { getUrlHref } = context.editor.plugin(BaseLinkPlugin).getOptions();
+    const { getUrlHref } = context.editor.plugin(BaseLinkPlugin).store.get();
     const url = getUrlHref?.(context.text) ?? context.text;
 
     if (!context.editor.plugin(BaseLinkPlugin).api.validateUrl(url)) return;
@@ -677,7 +655,7 @@ const pasteAutolinkRule = createLinkRule<
     if (match.shouldLink) {
       const { keepSelectedTextOnPaste } = context.editor
         .plugin(BaseLinkPlugin)
-        .getOptions();
+        .store.get();
       const inserted = context.tx.link.upsert({
         insertTextInLink: true,
         text: keepSelectedTextOnPaste ? undefined : match.url,
@@ -776,7 +754,7 @@ export const LinkRules = {
         if (!match) return;
 
         const [, linkText, rawUrl] = match;
-        const { transformInput } = editor.plugin(BaseLinkPlugin).getOptions();
+        const { transformInput } = editor.plugin(BaseLinkPlugin).store.get();
         const url = transformInput ? (transformInput(rawUrl) ?? '') : rawUrl;
 
         if (!url || !editor.plugin(BaseLinkPlugin).api.validateUrl(url)) return;

@@ -229,7 +229,7 @@ export default function TablePerfPage() {
       };
       const tableSelection = editor
         .plugin(TablePlugin)
-        .api.createCellSelection(range);
+        .read.createCellSelection(range);
 
       if (!tableSelection) {
         throw new Error('Table performance selection could not be projected');

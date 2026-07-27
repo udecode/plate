@@ -1,15 +1,9 @@
 'use client';
 
-import type {
-  BasePluginOverride,
-  ExtendConfig,
-  TrailingBlockConfig,
-} from 'platejs';
+import type { BasePluginOverride, TrailingBlockConfig } from 'platejs';
 
 import { KEYS, TextApi } from 'platejs';
-import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import type { BaseSuggestionConfig } from '@platejs/suggestion';
-import { toPlatePlugin } from 'platejs/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 import {
   SuggestionLeaf,
@@ -22,14 +16,6 @@ import {
   getDiscussionClickTarget,
 } from './discussion-kit';
 
-export type SuggestionConfig = ExtendConfig<
-  BaseSuggestionConfig,
-  {
-    activeId: string | null;
-    hoverId: string | null;
-  }
->;
-
 const INLINE_SUGGESTION_RENDER_TARGETS = [
   KEYS.date,
   KEYS.inlineEquation,
@@ -37,23 +23,26 @@ const INLINE_SUGGESTION_RENDER_TARGETS = [
   KEYS.mention,
 ];
 
-export const suggestionPlugin = toPlatePlugin<
-  BaseSuggestionConfig,
-  {
-    activeId: string | null;
-    hoverId: string | null;
-  }
->(BaseSuggestionPlugin, ({ editor }) => ({
-  options: {
-    activeId: null,
-    currentUserId: editor.plugin(discussionPlugin).getOption('currentUserId'),
-    hoverId: null,
+export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
+  initialState: {
+    currentUserId: editor.plugin(discussionPlugin).store.get('currentUserId'),
+  },
+  override: {
+    plugins: {
+      [KEYS.trailingBlock]: {
+        initialState: {
+          insert: (insert) => {
+            api.untracked(insert);
+          },
+        },
+      } satisfies BasePluginOverride<TrailingBlockConfig>,
+    },
   },
 })).configure({
   component: SuggestionLeaf,
   handlers: {
     // unset active suggestion when clicking outside of suggestion
-    onClick: ({ api, event, setOption, type }) => {
+    onClick: ({ api, event, read, store, type }) => {
       const markTarget = getDiscussionClickTarget({
         selector: `.plite-${type}`,
         target: event.target,
@@ -65,18 +54,19 @@ export const suggestionPlugin = toPlatePlugin<
           });
 
       if (!markTarget && !blockTarget) {
-        setOption('activeId', null);
+        store.set({ activeId: null });
         return;
       }
 
-      const suggestionEntry = api.node({
+      const suggestionEntry = read.node({
         isText: !blockTarget,
       });
 
-      setOption(
-        'activeId',
-        suggestionEntry ? (api.nodeId(suggestionEntry[0]) ?? null) : null
-      );
+      store.set({
+        activeId: suggestionEntry
+          ? (api.nodeId(suggestionEntry[0]) ?? null)
+          : null,
+      });
     },
   },
   inject: {
@@ -84,17 +74,16 @@ export const suggestionPlugin = toPlatePlugin<
     nodeProps: {
       nodeKey: '',
       styleKey: 'cssText',
-      transformProps: ({ editor, element, props }) => {
+      transformProps: ({ api, element, props }) => {
         if (!element) return props;
 
-        const suggestionApi = editor.plugin(BaseSuggestionPlugin).api;
-        let suggestionData = suggestionApi.suggestionData(element);
+        let suggestionData = api.suggestionData(element);
 
         if (!suggestionData) {
           for (const child of element.children) {
             if (!TextApi.isText(child)) continue;
 
-            suggestionData = suggestionApi.dataList(child).at(-1);
+            suggestionData = api.dataList(child).at(-1);
             if (suggestionData) break;
           }
         }
@@ -107,17 +96,6 @@ export const suggestionPlugin = toPlatePlugin<
         };
       },
       transformStyle: () => ({}) as CSSStyleDeclaration,
-    },
-  },
-  override: {
-    plugins: {
-      [KEYS.trailingBlock]: {
-        options: {
-          insert: (editor, { insert }) => {
-            editor.plugin(BaseSuggestionPlugin).api.untracked(insert);
-          },
-        },
-      } satisfies BasePluginOverride<TrailingBlockConfig>,
     },
   },
   render: {

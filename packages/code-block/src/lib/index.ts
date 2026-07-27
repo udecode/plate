@@ -5,7 +5,3 @@
 export * from './BaseCodeBlockPlugin';
 export * from './CodeBlockRules';
 export * from './ensureStablePythonGrammar';
-export * from './setCodeBlockToDecorations';
-export * from './formatter/index';
-export * from './queries/index';
-export * from './transforms/index';

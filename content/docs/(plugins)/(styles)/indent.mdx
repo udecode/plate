@@ -100,7 +100,7 @@ const editor = createPlateEditor({
           styleKey: "marginLeft",
         },
       },
-      options: {
+      initialState: {
         offset: 24,
         unit: "px",
         indentMax: 10,
@@ -112,9 +112,9 @@ const editor = createPlateEditor({
 
 - `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
 - `targetPluginKeys`: Element plugin keys whose types can store indentation.
-- `options.offset`: Indentation offset in pixels (default: `24`).
-- `options.unit`: Unit for indentation values (default: `'px'`).
-- `options.indentMax`: Maximum number of indentations allowed.
+- `initialState.offset`: Indentation offset in pixels (default: `24`).
+- `initialState.unit`: Unit for indentation values (default: `'px'`).
+- `initialState.indentMax`: Maximum number of indentations allowed.
 
 ### Add Toolbar Button
 
@@ -140,15 +140,15 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
       Element plugin keys targeted for indent storage and injection. -
       **Default:** `[BaseParagraphPlugin.key]`
     </APIItem>
-    <APIItem name="options.offset" type="number" optional>
+    <APIItem name="initialState.offset" type="number" optional>
       Indentation offset used in `(offset * element.indent) + unit`. -
       **Default:** `24`
     </APIItem>
-    <APIItem name="options.unit" type="string" optional>
+    <APIItem name="initialState.unit" type="string" optional>
       Indentation unit used in `(offset * element.indent) + unit`. -
       **Default:** `'px'`
     </APIItem>
-    <APIItem name="options.indentMax" type="number" optional>
+    <APIItem name="initialState.indentMax" type="number" optional>
       Maximum number of indentations allowed.
     </APIItem>
   </APIOptions>

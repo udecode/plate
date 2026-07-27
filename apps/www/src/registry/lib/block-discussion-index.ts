@@ -10,7 +10,7 @@ import { BaseCommentPlugin } from '@platejs/comment';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import {
   type TCommentText,
-  type NormalizePluginOption,
+  type NormalizePluginState,
   ElementApi,
   KEYS,
   NodeApi,
@@ -21,7 +21,7 @@ import {
 import {
   useEditor,
   useEditorRuntimeState,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import {
@@ -37,7 +37,7 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
 type BlockDiscussionEntry = NodeEntry<TCommentText | Element>;
-type DiscussionSnapshot = NormalizePluginOption<TDiscussion>;
+type DiscussionSnapshot = NormalizePluginState<TDiscussion>;
 type SuggestionEntry = NodeEntry<Element | Text>;
 
 type BlockDiscussionIndex = {
@@ -502,7 +502,7 @@ const getDiscussionIndex = (
 
 export const useBlockDiscussionItems = (blockPath: Path) => {
   const editor = useEditor();
-  const discussions = usePluginOption(discussionPlugin, 'discussions');
+  const discussions = usePluginStore(discussionPlugin, 'discussions');
   const version = useEditorRuntimeState(
     editor,
     (state) => state.runtime.snapshot().version

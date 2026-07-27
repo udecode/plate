@@ -404,6 +404,7 @@ export type StructuralPropertyValueDescriptor = Readonly<{
   omitDefault: boolean;
   significant: boolean;
   validationVersion?: number;
+  values?: readonly string[];
 }>;
 
 export type StructuralCompiledSchemaProperty = Omit<
@@ -808,6 +809,7 @@ const collectSchemaKeyDiagnostics = (
         'significant',
         'validate',
         'validationVersion',
+        'values',
       ],
       owner,
       path,
@@ -2187,6 +2189,13 @@ const canonicalizePropertyValue = (
     const validKind =
       descriptor.kind === 'json' ||
       (descriptor.kind === 'boolean' && typeof canonical === 'boolean') ||
+      (descriptor.kind === 'enum' &&
+        typeof canonical === 'string' &&
+        (
+          descriptor as PropertyValueDescriptor & {
+            values: readonly string[];
+          }
+        ).values.includes(canonical)) ||
       (descriptor.kind === 'number' && typeof canonical === 'number') ||
       (descriptor.kind === 'string' && typeof canonical === 'string');
 
@@ -2231,7 +2240,9 @@ const clonePropertyDescriptor = (
   source: Source<unknown>
 ): PropertyValueDescriptor => {
   if (
-    !['boolean', 'json', 'number', 'set', 'string'].includes(descriptor.kind) ||
+    !['boolean', 'enum', 'json', 'number', 'set', 'string'].includes(
+      descriptor.kind
+    ) ||
     typeof descriptor.omitDefault !== 'boolean' ||
     (descriptor.significant !== undefined &&
       typeof descriptor.significant !== 'boolean')
@@ -2279,6 +2290,7 @@ const clonePropertyDescriptor = (
   }
 
   let item: PropertyValueDescriptor | undefined;
+  let values: readonly string[] | undefined;
 
   if (descriptor.kind === 'set') {
     const rawItem = (
@@ -2296,6 +2308,29 @@ const clonePropertyDescriptor = (
       );
     }
     item = clonePropertyDescriptor(rawItem!, source);
+  } else if (descriptor.kind === 'enum') {
+    const rawValues = (
+      descriptor as PropertyValueDescriptor & {
+        values?: readonly string[];
+      }
+    ).values;
+
+    if (
+      !Array.isArray(rawValues) ||
+      rawValues.length === 0 ||
+      rawValues.some(
+        (value) => typeof value !== 'string' || value.length === 0
+      ) ||
+      new Set(rawValues).size !== rawValues.length
+    ) {
+      compileFailure(
+        'invalid-property-descriptor',
+        `Enum property at ${source.path} needs unique non-empty string values.`,
+        [source],
+        source.path
+      );
+    }
+    values = Object.freeze([...rawValues!]);
   }
 
   const hasDefault = Object.hasOwn(descriptor, 'default');
@@ -2306,6 +2341,7 @@ const clonePropertyDescriptor = (
       Object.freeze({
         ...descriptor,
         ...(item ? { item } : {}),
+        ...(values ? { values } : {}),
       }) as PropertyValueDescriptor,
       descriptor.default,
       source
@@ -2329,6 +2365,7 @@ const clonePropertyDescriptor = (
     ...(hasValidationVersion
       ? { validationVersion: descriptor.validationVersion }
       : {}),
+    ...(values ? { values } : {}),
   };
 
   if (descriptor.validate) {
@@ -2430,6 +2467,15 @@ const canonicalDescriptor = (descriptor: PropertyValueDescriptor): unknown => ({
             }
           ).item
         ),
+      }
+    : {}),
+  ...(descriptor.kind === 'enum'
+    ? {
+        values: (
+          descriptor as PropertyValueDescriptor & {
+            values: readonly string[];
+          }
+        ).values,
       }
     : {}),
   kind: descriptor.kind,
@@ -3806,6 +3852,14 @@ const toStructuralPropertyDescriptor = (
           ).item
         )
       : null;
+  const values =
+    descriptor.kind === 'enum'
+      ? (
+          descriptor as PropertyValueDescriptor & {
+            values: readonly string[];
+          }
+        ).values
+      : null;
   return Object.freeze({
     ...(Object.hasOwn(descriptor, 'default')
       ? { default: descriptor.default }
@@ -3817,6 +3871,7 @@ const toStructuralPropertyDescriptor = (
     ...(descriptor.validationVersion
       ? { validationVersion: descriptor.validationVersion }
       : {}),
+    ...(values ? { values } : {}),
   });
 };
 

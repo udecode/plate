@@ -25,7 +25,7 @@ describe('BaseTocPlugin', () => {
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.voidKind).toBe(
       'block'
     );
-    expect(plugin.options).toMatchObject({
+    expect(plugin.initialState).toMatchObject({
       isScroll: true,
       topOffset: 80,
     });

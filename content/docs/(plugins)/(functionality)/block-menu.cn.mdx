@@ -75,7 +75,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     BlockSelectionPlugin.configure({
-      options: {
+      initialState: {
         enableContextMenu: true,
       },
     }),
@@ -97,7 +97,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     BlockSelectionPlugin.configure({
-      options: {
+      initialState: {
         enableContextMenu: true,
       },
     }),
@@ -108,7 +108,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `BlockSelectionPlugin.options.enableContextMenu`: 启用上下文菜单功能
+- `BlockSelectionPlugin.initialState.enableContextMenu`: 启用上下文菜单功能
 - `BlockMenuPlugin.render.aboveEditable`: 指定 [`BlockContextMenu`](/docs/components/block-context-menu) 组件来渲染上下文菜单
 
 #### 控制上下文菜单行为

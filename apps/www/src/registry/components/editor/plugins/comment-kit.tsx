@@ -31,32 +31,31 @@ export const commentPlugin = toPlatePlugin<
   }
 >(BaseCommentPlugin, {
   handlers: {
-    onClick: ({ api, event, setOption, type }) => {
+    onClick: ({ api, event, read, store, type }) => {
       const activeTarget = getDiscussionClickTarget({
         selector: `.plite-${type}`,
         target: event.target,
       });
 
       if (!activeTarget) {
-        setOption('activeId', null);
+        store.set({ activeId: null });
         return;
       }
 
-      const commentEntry = api.node();
+      const commentEntry = read.node();
 
-      setOption(
-        'activeId',
-        commentEntry ? (api.nodeId(commentEntry[0]) ?? null) : null
-      );
+      store.set({
+        activeId: commentEntry ? (api.nodeId(commentEntry[0]) ?? null) : null,
+      });
     },
   },
-  options: {
+  initialState: {
     activeId: null,
     commentingBlock: null,
     hoverId: null,
   },
 })
-  .extend(({ setOption, type }) => ({
+  .extend(({ store, type }) => ({
     update: ({ tx }) => ({
       setDraft: (options = {}) => {
         const commentingBlock = tx.selection()?.focus.path.slice(0, 1) ?? null;
@@ -78,8 +77,8 @@ export const commentPlugin = toPlatePlugin<
         );
 
         tx.selection.collapse();
-        setOption('activeId', getDraftCommentKey());
-        setOption('commentingBlock', commentingBlock);
+        store.set({ activeId: getDraftCommentKey() });
+        store.set({ commentingBlock });
       },
     }),
   }))

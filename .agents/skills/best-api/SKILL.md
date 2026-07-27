@@ -164,7 +164,7 @@ deletion:
 
 1. Read the owning generics' input and return types. For every affected
    dimension, state whether the surviving return type widens that accumulator
-   or merely carries the old type through. Check options, root API, plugin API,
+   or merely carries the old type through. Check initial state, root API, plugin API,
    read/state groups, own and named transaction groups, selectors,
    dependencies, schema, extensions, and codecs when they apply.
 2. Require compile-only parity for callback contextual inference, literals,
@@ -202,7 +202,8 @@ An API is not scalable because it exposes every possible mechanism. It scales
 when future capability can be added without making every caller learn it.
 
 A plugin schema is creation-owned. Declare it in the plugin constructor, using
-the schema factory over typed options when authored variability is intentional;
+the schema factory over typed `initialState` when authored variability is
+intentional;
 neither `.extend()` nor terminal `.configure()` can replace it. TypeScript
 cannot retroactively re-typecheck schema-derived callbacks, including callbacks
 contributed by another plugin against that descriptor. Reject schema
@@ -210,6 +211,41 @@ replacement at the public type and runtime boundary while keeping unrelated
 authoring and terminal configuration available. Runtime-resolved identity such
 as a configured node type may remain configurable only when the author callback
 types it truthfully rather than as the pre-configuration literal.
+
+Plate plugin runtime values have one channel: defaults in `initialState`,
+descriptor overrides through `.configure({ initialState })`, builder access
+through inferred `store`, and consumer access through
+`editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` or
+`useEditorPluginStore`. Do not recreate deleted `options`, `getOption`,
+`getOptions`, `setOption`, `setOptions`, or `usePluginOption` APIs, and do not
+add a parallel immutable `config` channel. Generic operation parameters may
+still be named `options`; this rule owns plugin declaration/runtime state.
+
+### Plugin Capability Boundary
+
+Choose the capability by semantics, not by which callback is easiest to type:
+
+| Field          | Public job                                                                    | Rejection test                                                                  |
+| -------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `initialState` | defaults for mutable editor-local plugin state                                | the value is not state or needs a second configuration channel                  |
+| `store`        | live state reads, writes, subscriptions, and selector evaluation              | the value is document state or a schema rebuild is expected                     |
+| `selectors`    | pure projections of readonly store state plus domain arguments                | it reads the editor/document, mutates, performs I/O, or writes the store         |
+| `api`          | stable plugin services not bound to a supplied document snapshot or active tx | it mutates the document or is really a snapshot query                           |
+| `read`         | pure, replayable queries over supplied document state                         | it mutates, performs I/O, writes plugin state, or depends on ambient live state  |
+| `update`       | document reads and mutations through the active transaction                   | it opens a nested one-shot update or owns unrelated I/O                         |
+| `extension`    | genuine editor-wide Plite substrate                                            | it merely republishes plugin-scoped state, API, reads, or updates at editor root |
+| `codecs`       | format encode/decode declarations                                              | it owns runtime service or mutation behavior                                    |
+
+`api` being immutable describes publication of the method object, not method
+purity. A non-document service may have external or store effects; document
+reads belong in `read`, pure store projections belong in `selectors`, and
+document writes belong in `update`.
+
+Concrete inferred editors project plugin capabilities to
+`editor.api.<pluginKey>`, `editor.read.<pluginKey>`, and
+`editor.update.<pluginKey>`. Generic code or exact ownership uses the same
+capabilities through `editor.plugin(Plugin)`. Selectors remain store-owned and
+are evaluated through the scoped store.
 
 ## Public Complexity Budget
 
@@ -245,7 +281,7 @@ blocks, or files. First classify the behavior:
 | Class                    | Test                                                                     | Default shape                                        |
 | ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
 | invariant                | omission makes the owner invalid, unsafe, or semantically incomplete     | keep inline in the owning plugin or runtime          |
-| parameter                | callers want the same capability with different data or thresholds       | use inferred `options` on that owner                 |
+| parameter                | callers want the same capability with different data or thresholds       | use inferred `initialState` and scoped store on that owner |
 | substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or extension candidate |
 | product policy           | the choice belongs to one app or kit rather than the framework default   | keep it app-owned and inline unless reused           |
 
@@ -277,7 +313,7 @@ from app or registry source, where consumers own the product policy.
 
 Do not split one registry kit into `BaseFooKit` and `FooKit` merely because
 base and live consumers both use it. Share one runtime-neutral policy kit when
-its descriptors, options, and behavior are identical; compose static, React,
+its descriptors, initial state, and behavior are identical; compose static, React,
 native, or other renderer-specific peer kits in the consuming preset. A split
 is honest only when the kit itself owns different platform descriptors,
 renderers, or behavior. If importing an independently optional renderer kit is
@@ -382,7 +418,7 @@ if (feature.installed) {
 
 `installed` is the non-throwing availability check; disabled plugins count as
 absent. Do not infer availability from root `editor.api`, node types, schema
-properties, caches, or caught portal errors. Access plugin-owned API, options,
+properties, caches, or caught portal errors. Access plugin-owned API, store,
 updates, and the installed descriptor only after the check when absence is
 valid.
 
@@ -481,7 +517,7 @@ inputs; coalesce stages or name a builder gap when private runtime context
 cannot be shared without plumbing.
 
 Default new scoped methods and surviving functions to domain inputs only. Do
-not thread `editor`, `api`, `read`, `tx`, `getOptions`, resolved plugin option
+not thread `editor`, `api`, `read`, `tx`, `store`, resolved plugin state
 values, or a resolved plugin type through a helper graph when the plugin builder
 can capture or stage them. Operation options remain valid domain input. Before
 exposing a state/view parameter, try the active tx stage or callback owner. An

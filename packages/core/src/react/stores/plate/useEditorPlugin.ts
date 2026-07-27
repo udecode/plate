@@ -7,23 +7,14 @@ import {
   type PlatePluginContext,
   getEditorPlugin,
 } from '../../plugin';
-import { type PlateStore, useEditor } from './createPlateStore';
+import { useEditor } from './createPlateStore';
 
 /** Get editor and plugin context. */
 export function useEditorPlugin<P extends BasePluginInput>(
   p: WithRequiredKey<P>,
   id?: string
-): PlatePluginContext<InferConfig<P>> & {
-  store: PlateStore;
-} {
+): PlatePluginContext<InferConfig<P>> {
   const editor = useEditor({ id });
 
-  return React.useMemo(
-    () =>
-      ({
-        ...getEditorPlugin(editor, p),
-        store: editor.store,
-      }) as any,
-    [editor, p]
-  );
+  return React.useMemo(() => getEditorPlugin(editor, p), [editor, p]);
 }

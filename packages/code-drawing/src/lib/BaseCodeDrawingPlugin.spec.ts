@@ -43,4 +43,61 @@ describe('BaseCodeDrawingPlugin', () => {
       })
     ).toThrow(/element property "data" fails custom property validation/);
   });
+
+  it('inserts the default code drawing node shape after the current block', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseCodeDrawingPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'before' }], type: 'p' }],
+    });
+
+    editor.update.codeDrawing.insert();
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'before' }], type: 'p' },
+      {
+        children: [{ text: '' }],
+        data: {
+          code: '',
+          drawingMode: 'Both',
+          drawingType: 'Mermaid',
+        },
+        type: NODES.codeDrawing,
+      },
+    ]);
+  });
+
+  it('merges custom data and uses the configured node type', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseCodeDrawingPlugin.configure({
+          type: 'custom-code-drawing',
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
+    });
+
+    editor.update((tx) => {
+      tx.codeDrawing.insert({
+        data: {
+          code: 'graph TD; A-->B',
+          drawingType: 'Graphviz',
+        },
+      });
+    });
+
+    expect(editor.read.children().at(-1)).toMatchObject({
+      children: [{ text: '' }],
+      data: {
+        code: 'graph TD; A-->B',
+        drawingMode: 'Both',
+        drawingType: 'Graphviz',
+      },
+      type: 'custom-code-drawing',
+    });
+  });
 });

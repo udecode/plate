@@ -4,7 +4,7 @@ export {
   mediaElementProperties,
   type MediaInsertInput,
   type MediaPluginConfig,
-  type MediaPluginOptions,
+  type MediaPluginState,
   type MediaPluginReference,
   type ProviderMediaInsertInput,
 } from './MediaPlugin.internal';

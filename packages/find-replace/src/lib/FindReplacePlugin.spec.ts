@@ -30,7 +30,7 @@ const decorate = ({
   });
   const plugin = editor.getPlugin(FindReplacePlugin);
 
-  editor.plugin(FindReplacePlugin).setOption('search', search);
+  editor.plugin(FindReplacePlugin).store.set({ search });
 
   return plugin.decorate?.({
     ...getEditorPlugin(editor, plugin),
@@ -242,7 +242,7 @@ describe('FindReplacePlugin', () => {
     expect(plugin.key).toBe('searchHighlight');
     expect(plugin.type).toBe(NODES.searchHighlight);
 
-    editor.plugin(FindReplacePlugin).setOption('search', 'test');
+    editor.plugin(FindReplacePlugin).store.set({ search: 'test' });
 
     const expected = [
       {

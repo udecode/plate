@@ -96,6 +96,20 @@ foreign targets; a codec map does not earn another file, builder stage, or
 global helper. Keep it in `.extend()` only when it consumes a real capability
 introduced by an earlier stage.
 
+### Capability contribution
+
+Use the canonical boundary from the parent skill before choosing a field:
+`initialState` for defaults, `store` for live editor-local state,
+`selectors` for pure store projections, `api` for non-snapshot plugin services,
+`read` for pure supplied-state document queries, `update` for active-transaction
+document mutation, `extension` for genuine editor-wide Plite substrate, and
+`codecs` for format declarations.
+
+Put every independent contribution in the constructor. Use `.extend()` only
+for imported/prebuilt adaptation, a shared factory unavailable to the
+constructor, or a real earlier-capability type dependency. Keep `.configure()`
+terminal and non-widening.
+
 ## File Owners
 
 ### Plugin owner
@@ -103,8 +117,8 @@ introduced by an earlier stage.
 One plugin file may own:
 
 - plugin declaration and real public contract types;
-- options and schema/parser/codec callbacks;
-- API and tx builders;
+- initial state, selectors, and schema/parser/codec callbacks;
+- API, read, and update builders;
 - commands, corrections, decorators, normalizers, matchers, and handlers;
 - plugin-only constants and implementation helpers.
 
@@ -113,15 +127,15 @@ File length is irrelevant. Extract only when another durable owner exists.
 ### Component family owner
 
 One `<Family>.tsx` may own exported primitives plus family-only subcomponents,
-hooks, state, stores, controllers, variants, constants, and render helpers.
+variants, constants, and render helpers.
 
 A sibling import within the same family is internal composition, not reuse.
 
 ### Hook or state owner
 
-Create `use<Family>.ts`, provider, or store files only when the lifecycle has a
-standalone public job or is independently consumed by multiple durable
-component families.
+When a component family has hooks, keep every related public and private hook
+in one `use<Family>.ts[x]` file, including subcomponent-only hooks. Create a
+provider or store file only when it owns independent state or lifecycle.
 
 ### Test-family owner
 

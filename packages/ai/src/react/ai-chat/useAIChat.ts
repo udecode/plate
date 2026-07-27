@@ -9,7 +9,7 @@ import {
   type PlateEditor,
   useEditorPlugin,
   useEditorRuntimeState,
-  usePluginOption,
+  usePluginStore,
 } from '@platejs/core/react';
 
 import { AIChatPlugin } from './AIChatPlugin';
@@ -18,7 +18,7 @@ export const useAIChatEditor = (
   editor: MarkdownEditor<PlateEditor>,
   content: string
 ) => {
-  const { setOption } = useEditorPlugin(AIChatPlugin);
+  const { store } = useEditorPlugin(AIChatPlugin);
   const document = useMemo(
     () => editor.api.markdown.deserialize(content),
     [content, editor]
@@ -27,15 +27,15 @@ export const useAIChatEditor = (
 
   useEffect(() => {
     editor.update({ history: 'skip' }).value.replace(document);
-    setOption('aiEditor', editor);
-  }, [document, editor, setOption]);
+    store.set({ aiEditor: editor });
+  }, [document, editor, store]);
 
   return value;
 };
 
 export const useLastAssistantMessage = () => {
-  const toolName = usePluginOption(AIChatPlugin, 'toolName');
-  const chat = usePluginOption(AIChatPlugin, 'chat');
+  const toolName = usePluginStore(AIChatPlugin, 'toolName');
+  const chat = usePluginStore(AIChatPlugin, 'chat');
 
   if (toolName === 'comment') return;
 
@@ -54,7 +54,7 @@ export const useChatChunk = ({
   }) => void;
   onFinish?: ({ content }: { content: string }) => void;
 }) => {
-  const status = usePluginOption(AIChatPlugin, 'chat')?.status;
+  const status = usePluginStore(AIChatPlugin, 'chat')?.status;
   const isLoading = status === 'streaming' || status === 'submitted';
   const content = useLastAssistantMessage()?.parts.find(
     (part) => part.type === 'text'
@@ -115,7 +115,7 @@ export const useEditorChat = ({
   onOpenSelection,
 }: UseEditorChatOptions) => {
   const { editor } = useEditorPlugin(AIChatPlugin);
-  const open = usePluginOption(AIChatPlugin, 'open');
+  const open = usePluginStore(AIChatPlugin, 'open');
   const callbacksRef = useRef({
     onOpenBlockSelection,
     onOpenChange,
@@ -141,8 +141,8 @@ export const useEditorChat = ({
     if (callbacks.onOpenBlockSelection) {
       const blockSelection = editor.plugin(BlockSelectionPlugin);
 
-      if (blockSelection.getOption('isSelectingSome')) {
-        callbacks.onOpenBlockSelection([...blockSelection.api.getNodes({})]);
+      if (blockSelection.store.get('isSelectingSome')) {
+        callbacks.onOpenBlockSelection([...blockSelection.read.getNodes({})]);
 
         return;
       }

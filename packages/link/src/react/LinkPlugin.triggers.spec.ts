@@ -17,7 +17,7 @@ describe('floating link triggers', () => {
     expect(editor.plugin(LinkPlugin).api.triggerInsert({ focused: true })).toBe(
       true
     );
-    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
       mode: 'insert',
       openEditorId: editor.id,
       text: 'selected text',
@@ -50,7 +50,7 @@ describe('floating link triggers', () => {
     });
 
     expect(editor.plugin(LinkPlugin).api.triggerEdit()).toBe(true);
-    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
       isEditing: true,
       newTab: true,
       text: '',
@@ -89,7 +89,7 @@ describe('floating link triggers', () => {
     });
 
     expect(editor.plugin(LinkPlugin).api.triggerEdit()).toBe(true);
-    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
       text: 'second',
       url: 'https://second.dev',
     });
@@ -99,7 +99,7 @@ describe('floating link triggers', () => {
     const editor = createPlateEditor({
       plugins: [
         LinkPlugin.configure({
-          options: { mode: 'edit' },
+          initialState: { mode: 'edit' },
         }),
       ],
       selection: {
@@ -125,7 +125,7 @@ describe('floating link triggers', () => {
 
     editor.plugin(LinkPlugin).api.trigger({ focused: true });
 
-    expect(editor.plugin(LinkPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
       isEditing: true,
       text: 'hello',
       url: 'https://x.dev',

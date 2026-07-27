@@ -3,5 +3,4 @@
  */
 
 export * from './HtmlPlugin';
-export * from './constants';
-export * from './utils/index';
+export * from './htmlDom';

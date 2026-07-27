@@ -265,16 +265,14 @@ Combo variants: `'boldItalic' | 'boldUnderline' | 'boldItalicUnderline' | 'itali
 import {
   CodeRules,
   HighlightRules,
+  ScriptRules,
   StrikethroughRules,
-  SubscriptRules,
-  SuperscriptRules,
 } from '@platejs/basic-nodes';
 import {
   CodePlugin,
   HighlightPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
 } from '@platejs/basic-nodes/react';
 
 CodePlugin.configure({
@@ -283,11 +281,11 @@ CodePlugin.configure({
 StrikethroughPlugin.configure({
   inputRules: [StrikethroughRules.markdown()],
 }),
-SubscriptPlugin.configure({
-  inputRules: [SubscriptRules.markdown()],
-}),
-SuperscriptPlugin.configure({
-  inputRules: [SuperscriptRules.markdown()],
+ScriptPlugin.configure({
+  inputRules: [
+    ScriptRules.markdown({ value: 'sub' }),
+    ScriptRules.markdown({ value: 'sup' }),
+  ],
 }),
 HighlightPlugin.configure({
   inputRules: [
@@ -1026,8 +1024,7 @@ Every family below is a single export from its package. Each `.markdown()` (or `
 | `UnderlineRules` | `@platejs/basic-nodes` | `__x__` mark rule |
 | `CodeRules` | `@platejs/basic-nodes` | `` `x` `` inline code mark rule |
 | `StrikethroughRules` | `@platejs/basic-nodes` | `~~x~~` mark rule |
-| `SubscriptRules` | `@platejs/basic-nodes` | `~x~` mark rule |
-| `SuperscriptRules` | `@platejs/basic-nodes` | `^x^` mark rule |
+| `ScriptRules` | `@platejs/basic-nodes` | `~x~` for `'sub'`, `^x^` for `'sup'` |
 | `HighlightRules` | `@platejs/basic-nodes` | `==x==` / `≡x≡` mark rule |
 | `MarkComboRules` | `@platejs/basic-nodes` | Multi-mark combo rules (bold/italic/underline) |
 | `CodeBlockRules` | `@platejs/code-block` | Triple-backtick block fence rule, requires `on` |

@@ -486,7 +486,7 @@ Review matrix:
 | `src/react/ai-chat/useAIChat.ts` and former hook files | 4 | merge-existing-owner | AI Chat hook family | Four related hooks share the same AI Chat context and lifecycle; hook slow tests pass | keep |
 | `src/react/copilot/CopilotPlugin.tsx` and former state/transform/util files | 5 | merge-existing-owner | Copilot | State field, request lifecycle, commands, handlers, rendering, commit behavior, and optional AI Chat coordination are staged only for genuine earlier-capability consumption | closed |
 | `findTextRangeInBlock` | 1 | keep-in-plate | public pure algorithm | Editor-free fuzzy range algorithm has an independent package-root contract and five focused tests | keep standalone |
-| `getNextWord` | 1 | keep-in-plate | public Copilot strategy | Reusable/replaceable strategy exposed through `CopilotOptions.getNextWord`; focused CJK tests pass | keep standalone |
+| `getNextWord` | 1 | keep-in-plate | public Copilot strategy | Reusable/replaceable strategy exposed through `CopilotPluginState.getNextWord`; focused CJK tests pass | keep standalone |
 | `createAIChatAdapter` | 1 | keep-in-plate | external SDK adapter | Reused by app integration and isolates `UseChatHelpers` from the plugin option contract | keep in AI Chat owner |
 
 Best Plate v2 recommendation:

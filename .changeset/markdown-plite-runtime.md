@@ -7,17 +7,20 @@
   same document shape for serialization
 - Preserve Markdown image alt text as the image `alt` property and the visible
   direct caption children; preserve rich MDX media content in those children
-- Configure Markdown conversion and rule behavior through `MarkdownPlugin.options`
+- Seed Markdown conversion and rule behavior through
+  `MarkdownPlugin.initialState`
+- Round-trip `<sub>` and `<sup>` through one `script: 'sub' | 'sup'` text
+  property
 - Remove `MarkdownPlugin.parser`, `DeserializeMdOptions.memoize`, and
   `DeserializeMdOptions.parser`
 
 **Migration:** Install `MarkdownPlugin`, configure Markdown behavior through
-`options`, and use the root Markdown API when reading, replacing, or serializing
-a document:
+`initialState`, and use the root Markdown API when reading, replacing, or
+serializing a document:
 
 ```tsx
 MarkdownPlugin.configure({
-  options: {
+  initialState: {
     remarkPlugins: [remarkGfm],
   },
 });
@@ -25,5 +28,5 @@ MarkdownPlugin.configure({
 const document = editor.api.markdown.deserialize(markdown);
 
 editor.update.value.replace(document);
-editor.api.markdown.serialize({ value: document });
+editor.read.markdown.serialize({ value: document });
 ```

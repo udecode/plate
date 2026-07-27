@@ -1,5 +1,4 @@
 import { ElementApi, type Point } from '@platejs/plite';
-import type { BaseEditor } from '../../editor';
 
 import type {
   BlockFenceInputRuleConfig,
@@ -12,7 +11,6 @@ import type {
   MatchBlockFenceOptions,
   MatchBlockStartOptions,
   MatchDelimitedInlineOptions,
-  InsertTextInputRuleContext,
   SelectionInputRuleContext,
   TextSubstitutionInputRuleConfig,
   TextSubstitutionMatch,
@@ -21,70 +19,7 @@ import type {
 
 import { defineInputRule } from './defineInputRule';
 
-const noWhiteSpaceRegex = /\S+/;
-
-const isPreviousCharacterEmpty = (editor: BaseEditor, at: Point) => {
-  const before = editor.read.points.before(at);
-
-  if (!before) return true;
-
-  const text = editor.read.text.string({ anchor: before, focus: at });
-
-  return text ? !noWhiteSpaceRegex.exec(text) : true;
-};
-
-const getMarkMatch = (
-  editor: BaseEditor,
-  {
-    end = '',
-    start,
-  }: {
-    end?: string;
-    start: string;
-  }
-):
-  | {
-      afterStartMatchPoint: Point;
-      beforeEndMatchPoint: Point;
-      beforeStartMatchPoint: Point;
-    }
-  | undefined => {
-  const selection = editor.read.selection();
-
-  if (!selection) return;
-
-  let beforeEndMatchPoint: Point | undefined = selection.anchor;
-
-  if (end) {
-    beforeEndMatchPoint = editor.read.points.before(selection, {
-      matchString: end,
-    });
-
-    if (!beforeEndMatchPoint) return;
-  }
-
-  const afterStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
-    afterMatch: true,
-    matchString: start,
-    skipInvalid: true,
-  });
-
-  if (!afterStartMatchPoint) return;
-
-  const beforeStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
-    matchString: start,
-    skipInvalid: true,
-  });
-
-  if (!beforeStartMatchPoint) return;
-  if (!isPreviousCharacterEmpty(editor, beforeStartMatchPoint)) return;
-
-  return {
-    afterStartMatchPoint,
-    beforeEndMatchPoint: beforeEndMatchPoint!,
-    beforeStartMatchPoint,
-  };
-};
+const NON_WHITESPACE = /\S+/;
 
 export const createMarkInputRule = (
   config: MarkInputRuleConfig
@@ -95,31 +30,66 @@ export const createMarkInputRule = (
     target: 'insertText',
     trigger: config.trigger,
     resolve: ({ editor, text }) => {
+      const selection = editor.read.selection();
+
       if (
         text !== config.trigger ||
-        !editor.read.selection() ||
+        !selection ||
         !editor.read.selection.isCollapsed()
       ) {
         return;
       }
 
-      const match = getMarkMatch(editor, {
-        end: config.end,
-        start: config.start,
-      });
+      let beforeEndMatchPoint: Point | undefined = selection.anchor;
 
-      if (!match) return;
+      if (config.end) {
+        beforeEndMatchPoint = editor.read.points.before(selection, {
+          matchString: config.end,
+        });
+      }
+
+      if (!beforeEndMatchPoint) return;
+
+      const afterStartMatchPoint = editor.read.points.before(
+        beforeEndMatchPoint,
+        {
+          afterMatch: true,
+          matchString: config.start,
+          skipInvalid: true,
+        }
+      );
+      const beforeStartMatchPoint = editor.read.points.before(
+        beforeEndMatchPoint,
+        {
+          matchString: config.start,
+          skipInvalid: true,
+        }
+      );
+
+      if (!afterStartMatchPoint || !beforeStartMatchPoint) return;
+
+      const pointBeforeStart = editor.read.points.before(beforeStartMatchPoint);
+      const previousText = pointBeforeStart
+        ? editor.read.text.string({
+            anchor: pointBeforeStart,
+            focus: beforeStartMatchPoint,
+          })
+        : '';
+
+      if (previousText && NON_WHITESPACE.test(previousText)) return;
 
       const range = {
-        anchor: match.afterStartMatchPoint,
-        focus: match.beforeEndMatchPoint,
+        anchor: afterStartMatchPoint,
+        focus: beforeEndMatchPoint,
       };
       const matchText = editor.read.text.string(range);
 
       if (config.trim !== 'allow' && matchText.trim() !== matchText) return;
 
       return {
-        ...match,
+        afterStartMatchPoint,
+        beforeEndMatchPoint,
+        beforeStartMatchPoint,
         end: config.end,
       };
     },
@@ -147,7 +117,7 @@ export const createMarkInputRule = (
       marks.forEach((mark) => {
         const key = editor.getType(mark);
 
-        tx.marks.add(key, true);
+        tx.marks.add(key, config.value === undefined ? true : config.value);
       });
 
       tx.selection.collapse({ edge: 'end' });
@@ -280,7 +250,7 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
     },
   });
 
-export const matchBlockFence = <
+const matchBlockFence = <
   TMatch = BlockFenceInputRuleMatch,
   TContext extends SelectionInputRuleContext = SelectionInputRuleContext,
 >(
@@ -434,82 +404,19 @@ export const matchDelimitedInline = (
   };
 };
 
-const getTextSubstitutionMatchRange = ({
-  match,
-  trigger,
-}: {
-  match: string;
-  trigger?: readonly string[] | string;
-}) => {
-  const triggers = trigger
-    ? Array.isArray(trigger)
-      ? [...trigger]
-      : [trigger]
-    : [match.slice(-1)];
-
-  return {
-    end: trigger ? match : match.slice(0, -1),
-    start: match,
-    triggers,
-  };
-};
-
-const getTextSubstitutionMatchPoints = (
-  editor: BaseEditor,
-  { end, start }: { end: string; start: string }
-): TextSubstitutionMatch['points'] | undefined => {
-  const selection = editor.read.selection();
-
-  if (!selection) return;
-
-  let beforeEndMatchPoint: Point | undefined = selection.anchor;
-
-  if (end) {
-    beforeEndMatchPoint = editor.read.points.before(selection, {
-      matchString: end,
-    });
-
-    if (!beforeEndMatchPoint) return;
-  }
-
-  let afterStartMatchPoint: Point | undefined;
-  let beforeStartMatchPoint: Point | undefined;
-
-  if (start) {
-    afterStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
-      afterMatch: true,
-      matchString: start,
-      skipInvalid: true,
-    });
-
-    if (!afterStartMatchPoint) return;
-
-    beforeStartMatchPoint = editor.read.points.before(beforeEndMatchPoint, {
-      matchString: start,
-      skipInvalid: true,
-    });
-
-    if (!beforeStartMatchPoint) return;
-    if (!isPreviousCharacterEmpty(editor, beforeStartMatchPoint)) return;
-  }
-
-  return {
-    afterStartMatchPoint,
-    beforeEndMatchPoint: beforeEndMatchPoint!,
-    beforeStartMatchPoint,
-  };
-};
-
-type CompiledPattern = {
-  end: string;
-  pattern: TextSubstitutionPattern;
-  start: string;
-};
-
-const compilePatternsByTrigger = (
-  patterns: TextSubstitutionPattern[]
-): Map<string, CompiledPattern[]> => {
-  const byTrigger = new Map<string, CompiledPattern[]>();
+export const createTextSubstitutionInputRule = ({
+  enabled,
+  patterns,
+  priority,
+}: TextSubstitutionInputRuleConfig) => {
+  const patternsByTrigger = new Map<
+    string,
+    Array<{
+      end: string;
+      pattern: TextSubstitutionPattern;
+      start: string;
+    }>
+  >();
 
   for (const pattern of patterns) {
     const matches = Array.isArray(pattern.match)
@@ -518,101 +425,29 @@ const compilePatternsByTrigger = (
     const isPaired = Array.isArray(pattern.format);
 
     for (const match of matches) {
-      const { end, start, triggers } = getTextSubstitutionMatchRange({
-        match,
-        trigger: pattern.trigger,
-      });
-
-      const compiled: CompiledPattern = {
-        end: isPaired ? '' : end,
+      const triggers = pattern.trigger
+        ? Array.isArray(pattern.trigger)
+          ? [...pattern.trigger]
+          : [pattern.trigger]
+        : [match.slice(-1)];
+      const compiled = {
+        end: isPaired ? '' : pattern.trigger ? match : match.slice(0, -1),
         pattern,
-        start: isPaired ? start : '',
+        start: isPaired ? match : '',
       };
 
       for (const trigger of triggers) {
-        let list = byTrigger.get(trigger);
+        const list = patternsByTrigger.get(trigger);
 
-        if (!list) {
-          list = [];
-          byTrigger.set(trigger, list);
+        if (list) {
+          list.push(compiled);
+        } else {
+          patternsByTrigger.set(trigger, [compiled]);
         }
-
-        list.push(compiled);
       }
     }
   }
 
-  return byTrigger;
-};
-
-const resolveTextSubstitution = ({
-  candidates,
-  editor,
-}: {
-  candidates: CompiledPattern[];
-  editor: BaseEditor;
-}): TextSubstitutionMatch | undefined => {
-  for (const { end, pattern, start } of candidates) {
-    const points = getTextSubstitutionMatchPoints(editor, { end, start });
-
-    if (!points) continue;
-
-    return {
-      end,
-      pattern,
-      points,
-    };
-  }
-};
-
-const applyTextSubstitution = (
-  tx: InsertTextInputRuleContext['tx'],
-  match: TextSubstitutionMatch | undefined
-) => {
-  const selection = tx.selection();
-
-  if (!selection || !match) return false;
-
-  if (match.end) {
-    tx.text.delete({
-      at: {
-        anchor: match.points.beforeEndMatchPoint,
-        focus: selection.anchor,
-      },
-    });
-  }
-
-  const formatEnd = Array.isArray(match.pattern.format)
-    ? match.pattern.format[1]
-    : match.pattern.format;
-
-  tx.text.insert(formatEnd);
-
-  if (match.points.beforeStartMatchPoint && match.points.afterStartMatchPoint) {
-    const formatStart = Array.isArray(match.pattern.format)
-      ? match.pattern.format[0]
-      : match.pattern.format;
-
-    tx.text.delete({
-      at: {
-        anchor: match.points.beforeStartMatchPoint,
-        focus: match.points.afterStartMatchPoint,
-      },
-    });
-    tx.text.insert(formatStart, {
-      at: match.points.beforeStartMatchPoint,
-    });
-  }
-
-  return true;
-};
-
-export const createTextSubstitutionInputRule = ({
-  enabled,
-  patterns,
-  priority,
-}: TextSubstitutionInputRuleConfig) => {
-  const patternsByTrigger = compilePatternsByTrigger(patterns);
   const triggers = Array.from(patternsByTrigger.keys());
 
   return defineInputRule({
@@ -629,9 +464,107 @@ export const createTextSubstitutionInputRule = ({
 
       if (!candidates) return;
 
-      return resolveTextSubstitution({ candidates, editor });
+      for (const { end, pattern, start } of candidates) {
+        const selection = editor.read.selection();
+
+        if (!selection) return;
+
+        let beforeEndMatchPoint: Point | undefined = selection.anchor;
+
+        if (end) {
+          beforeEndMatchPoint = editor.read.points.before(selection, {
+            matchString: end,
+          });
+
+          if (!beforeEndMatchPoint) continue;
+        }
+
+        let afterStartMatchPoint: Point | undefined;
+        let beforeStartMatchPoint: Point | undefined;
+
+        if (start) {
+          afterStartMatchPoint = editor.read.points.before(
+            beforeEndMatchPoint,
+            {
+              afterMatch: true,
+              matchString: start,
+              skipInvalid: true,
+            }
+          );
+          beforeStartMatchPoint = editor.read.points.before(
+            beforeEndMatchPoint,
+            {
+              matchString: start,
+              skipInvalid: true,
+            }
+          );
+
+          if (!afterStartMatchPoint || !beforeStartMatchPoint) continue;
+
+          const pointBeforeStart = editor.read.points.before(
+            beforeStartMatchPoint
+          );
+          const previousText = pointBeforeStart
+            ? editor.read.text.string({
+                anchor: pointBeforeStart,
+                focus: beforeStartMatchPoint,
+              })
+            : '';
+
+          if (previousText && NON_WHITESPACE.test(previousText)) continue;
+        }
+
+        return {
+          end,
+          pattern,
+          points: {
+            afterStartMatchPoint,
+            beforeEndMatchPoint,
+            beforeStartMatchPoint,
+          },
+        };
+      }
     },
-    apply: ({ tx }, match: TextSubstitutionMatch) =>
-      applyTextSubstitution(tx, match),
+    apply: ({ tx }, match: TextSubstitutionMatch) => {
+      const selection = tx.selection();
+
+      if (!selection) return false;
+
+      if (match.end) {
+        tx.text.delete({
+          at: {
+            anchor: match.points.beforeEndMatchPoint,
+            focus: selection.anchor,
+          },
+        });
+      }
+
+      const formatEnd = Array.isArray(match.pattern.format)
+        ? match.pattern.format[1]
+        : match.pattern.format;
+
+      tx.text.insert(formatEnd);
+
+      if (
+        match.points.beforeStartMatchPoint &&
+        match.points.afterStartMatchPoint
+      ) {
+        const formatStart = Array.isArray(match.pattern.format)
+          ? match.pattern.format[0]
+          : match.pattern.format;
+
+        tx.text.delete({
+          at: {
+            anchor: match.points.beforeStartMatchPoint,
+            focus: match.points.afterStartMatchPoint,
+          },
+        });
+        tx.text.insert(formatStart, {
+          at: match.points.beforeStartMatchPoint,
+        });
+      }
+
+      return true;
+    },
   });
 };

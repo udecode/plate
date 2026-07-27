@@ -2,7 +2,7 @@
 "@platejs/tabbable": major
 ---
 
-Support HTML and SVG tabbables through Plite-native editor navigation APIs.
-
-**Migration:** Pass a v54 Plate editor to `findTabDestination` and accept
-`FocusableElement` in custom `TabbableEntry` values.
+Support HTML and SVG tabbables through the snapshot-aware
+`editor.read.tabbable.findDestination(options)` query. Accept
+`FocusableElement` in custom `TabbableEntry` values and remove the standalone
+`findTabDestination` helper.

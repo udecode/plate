@@ -108,7 +108,7 @@ const editor = createPlateEditor({
     // ...其他插件
     TablePlugin.configure({
       component: TableElement,
-      options: {
+      initialState: {
         initialTableWidth: 600,
         disableMerge: false,
         minColumnWidth: 48,
@@ -123,9 +123,9 @@ const editor = createPlateEditor({
 
 - `.configure({ component })`: 指定 [`TableElement`](/docs/components/table-node) 渲染表格容器
 - `component`: 为表格行、单元格和表头单元格分配组件
-- `options.initialTableWidth`: 设置新建表格的初始宽度
-- `options.disableMerge`: 禁用单元格合并功能
-- `options.minColumnWidth`: 设置表格列的最小宽度
+- `initialState.initialTableWidth`: 设置新建表格的初始宽度
+- `initialState.disableMerge`: 禁用单元格合并功能
+- `initialState.minColumnWidth`: 设置表格列的最小宽度
 
 列宽仅存储在表格的 `colSizes` 中。表格渲染器通过
 `useTableColSizes` 读取该数组；拖动预览使用临时覆盖值，然后通过
@@ -274,7 +274,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getCellBorders
+### editor.read.table.getCellBorders
 
 获取表格单元格的边框样式，处理首行和首列单元格的特殊情况
 
@@ -341,7 +341,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getCellSize
+### editor.read.table.getCellSize
 
 获取表格单元格的宽度和最小高度，考虑列跨度和列宽设置
 
@@ -423,7 +423,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getNextCell
+### editor.read.table.getNextCell
 
 获取表格中的下一个单元格
 <API name="getNextCell">
@@ -446,7 +446,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getPreviousCell
+### editor.read.table.getPreviousCell
 
 获取表格中的上一个单元格
 
@@ -488,7 +488,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getColumnIndex
+### editor.read.table.getColumnIndex
 
 获取单元格在表格中的列索引
 
@@ -506,7 +506,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getEntries
+### editor.read.table.getEntries
 
 根据当前选区或指定位置获取表格、行和单元格的节点 entry
 
@@ -531,7 +531,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getGridAbove
+### editor.read.table.getGridAbove
 
 根据指定格式（表格或单元格）获取锚点和焦点位置上方的子表格
 
@@ -548,7 +548,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getGridByRange
+### editor.read.table.getGridByRange
 
 获取指定范围内两个单元格路径之间的子表格
 
@@ -568,7 +568,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getRowIndex
+### editor.read.table.getRowIndex
 
 获取单元格在表格中的行索引
 
@@ -586,7 +586,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.getTopCell
+### editor.read.table.getTopCell
 
 获取表格中当前单元格上方的单元格
 
@@ -604,7 +604,7 @@ const editor = createPlateEditor({
 </APIReturns>
 </API>
 
-### editor.api.table.isBorderHidden
+### editor.read.table.isBorderHidden
 
 检查表格单元格或表格本身的指定方向边框是否隐藏
 

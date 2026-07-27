@@ -340,7 +340,18 @@ const canonicalizePropertyValue = (
       );
     }
 
-    if (descriptor.kind !== 'json' && typeof canonical !== descriptor.kind) {
+    const validKind =
+      descriptor.kind === 'json' ||
+      (descriptor.kind === 'enum'
+        ? typeof canonical === 'string' &&
+          (
+            descriptor as PropertyValueDescriptor & {
+              values: readonly string[];
+            }
+          ).values.includes(canonical)
+        : typeof canonical === descriptor.kind);
+
+    if (!validKind) {
       throw new EditorSchemaValidationError(
         `${owner} must be ${descriptor.kind}.`
       );

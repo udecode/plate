@@ -15,7 +15,7 @@ import {
   jsxt;
 
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'testId',
     },
   });
@@ -52,7 +52,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.add('bold', true);
 
       const data = editor
@@ -89,7 +89,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.toggle('bold', true);
 
       const node = editor.read.children()[0].children[0] as any;
@@ -129,7 +129,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.add('italic', true);
 
       const dataList = editor
@@ -172,7 +172,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.add('bold', true);
 
       const node = editor.read.children()[0].children[0] as any;
@@ -187,7 +187,7 @@ import {
 
 {
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'alice',
     },
   });
@@ -317,7 +317,7 @@ import {
 
 {
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: { currentUserId: 'user-1' },
+    initialState: { currentUserId: 'user-1' },
   });
 
   describe('editor.update.suggestion.insertFragment', () => {
@@ -344,10 +344,10 @@ import {
         },
       ];
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.suggestion.insertFragment(fragment);
 
-      const suggestionNodes = editor.plugin(BaseSuggestionPlugin).api.nodes();
+      const suggestionNodes = editor.plugin(BaseSuggestionPlugin).read.nodes();
       const inline = suggestionNodes.find(([node]) =>
         TextApi.isText(node)
       )?.[0];
@@ -383,7 +383,7 @@ import {
   jsxt;
 
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'testId',
     },
   });
@@ -422,7 +422,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.remove('bold');
 
       const data = editor
@@ -461,7 +461,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.toggle('bold', true);
 
       const node = editor.read.children()[0].children[0] as any;
@@ -501,7 +501,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.remove('bold');
 
       const dataList = editor
@@ -544,7 +544,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
       editor.update.marks.remove('bold');
 
       const node = editor.read.children()[0].children[0] as any;
@@ -582,7 +582,7 @@ import {
       const editor = createBaseEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
-            options: {
+            initialState: {
               currentUserId: 'user-1',
             },
           }),
@@ -624,7 +624,7 @@ import {
 
 {
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: { currentUserId: 'user-1' },
+    initialState: { currentUserId: 'user-1' },
   });
 
   const MentionPlugin = createBasePlugin({
@@ -743,7 +743,7 @@ import {
   jsxt;
 
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'testId',
     },
   });
@@ -781,7 +781,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
       editor.update.break.insert();
 
@@ -814,7 +814,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
       editor.update.text.insert('1');
 
@@ -858,7 +858,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
       editor.update.text.deleteBackward();
 
@@ -892,7 +892,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
       editor.update.text.deleteBackward();
 
@@ -916,7 +916,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
       editor.update.text.deleteBackward({ unit: 'line' });
       editor.update.text.deleteBackward({ unit: 'character' });
@@ -966,7 +966,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: false });
 
       editor.update.text.deleteBackward();
 
@@ -1000,7 +1000,7 @@ import {
         initialValue: input.children,
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', false);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: false });
 
       editor.update.text.deleteBackward();
 

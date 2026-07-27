@@ -5,9 +5,9 @@ import type { YjsExtensionOptions } from '../core/types';
 
 /** Installs Yjs collaboration in a base Plate editor. */
 export const BaseYjsPlugin = createBasePlugin({
-  extension: ({ getOptions }) => createYjsExtension(getOptions()),
+  extension: ({ store }) => createYjsExtension(store.get()),
   key: 'yjs',
-  options: {} as YjsExtensionOptions,
+  initialState: {} as YjsExtensionOptions,
 });
 
 export type YjsConfig = InferConfig<typeof BaseYjsPlugin>;

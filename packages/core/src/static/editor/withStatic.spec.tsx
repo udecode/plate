@@ -38,7 +38,7 @@ describe('extendStaticEditor', () => {
       expect(domPlugin).toBeDefined();
 
       // The API should be applied through the plugin system.
-      expect(editor.api.getFragment).toBeDefined();
+      expect(editor.api.dom.getSelectedFragment).toBeDefined();
     });
   });
 
@@ -250,11 +250,11 @@ describe('extendStaticEditor', () => {
   });
 
   describe('plugin functionality', () => {
-    it('has getFragment API from ViewPlugin', () => {
+    it('has getSelectedFragment API from ViewPlugin', () => {
       const editor = createStaticEditor();
 
-      expect(editor.api.getFragment).toBeDefined();
-      expect(typeof editor.api.getFragment).toBe('function');
+      expect(editor.api.dom.getSelectedFragment).toBeDefined();
+      expect(typeof editor.api.dom.getSelectedFragment).toBe('function');
     });
 
     it('preserves other extendBaseEditor options', () => {

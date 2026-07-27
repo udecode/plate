@@ -38,7 +38,7 @@ import {
   withCompiledPlatePluginCandidate,
 } from '../../internal/plugin/compilePlateModel';
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
-import { clearPluginOptionsStores } from '../../internal/plugin/pluginOptionsStore';
+import { clearPluginStores } from '../../internal/plugin/pluginStore';
 import { isNominalPluginReference } from '../../internal/utils/mergePlugins';
 import { snapshotApiValue } from '../../internal/utils/snapshotApiValue';
 import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
@@ -55,7 +55,7 @@ import type {
   InferConfig,
   InjectNodeProps,
 } from '../plugin/BasePlugin';
-import type { NodeIdOptions } from '../plugins/node-id/NodeIdPlugin';
+import type { NodeIdPluginState } from '../plugins/node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../plugins/paragraph/BaseParagraphPlugin';
 import type {
   InferPlugins,
@@ -711,7 +711,7 @@ export type BaseExtendBaseEditorOptions<
    *
    * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
-  nodeId?: NodeIdOptions | boolean;
+  nodeId?: NodeIdPluginState | boolean;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -763,7 +763,11 @@ export type ExtendBaseEditorOptions<
   Partial<
     Pick<
       AnyBasePlugin,
-      'decorate' | 'inject' | 'transformInitialValue' | 'options' | 'override'
+      | 'decorate'
+      | 'initialState'
+      | 'inject'
+      | 'override'
+      | 'transformInitialValue'
     >
   > & {
     /** Root editor API declarations for the synthetic root plugin. */
@@ -858,7 +862,6 @@ export const extendBaseEditor = <
   const internalRootDescriptor: AnyBasePlugin = createBasePlugin({
     key: 'root',
     ...pluginConfig,
-    priority: 10_000,
     override: {
       ...pluginConfig.override,
       components: {
@@ -939,7 +942,7 @@ export const extendBaseEditor = <
   } catch (error) {
     restoreSnapshotInputTransform?.();
     if (!publicationBeforeExtension) clearPlateModelPublication(editor);
-    clearPluginOptionsStores(editor);
+    clearPluginStores(editor);
     throw error;
   } finally {
     clearPlateRuntimeCandidate(editor);

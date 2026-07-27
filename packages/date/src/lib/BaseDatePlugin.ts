@@ -1,10 +1,13 @@
 import { createBasePlugin } from '@platejs/core';
+import type { NodeInsertNodesOptions, Text } from '@platejs/plite';
 import { property } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { KEYS, type TDateElement } from '@platejs/utils';
 
-import type { InsertDateOptions } from './transforms';
+import { normalizeDateValue } from './dateValue';
 
-import { insertDate } from './transforms';
+export type InsertDateOptions = NodeInsertNodesOptions<TDateElement | Text> & {
+  date?: string;
+};
 
 export const BaseDatePlugin = createBasePlugin({
   key: KEYS.date,
@@ -18,6 +21,18 @@ export const BaseDatePlugin = createBasePlugin({
     },
   },
   update: ({ tx, type }) => ({
-    insert: (options?: InsertDateOptions) => insertDate(tx, type, options),
+    insert: ({ date, ...options }: InsertDateOptions = {}) => {
+      tx.nodes.insert(
+        [
+          {
+            children: [{ text: '' }],
+            ...normalizeDateValue(date ?? new Date()),
+            type,
+          },
+          { text: ' ' },
+        ],
+        options
+      );
+    },
   }),
 });

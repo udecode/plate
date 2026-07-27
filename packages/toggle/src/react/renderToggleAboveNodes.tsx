@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { RenderNodeWrapperFunction } from '@platejs/core/react';
 
-import { useIsVisible } from './toggleIndexAtom';
+import { useIsVisible } from './useToggle';
 
 export const renderToggleAboveNodes = () => ToggleAboveNodes;
 

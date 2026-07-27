@@ -28,8 +28,8 @@ describe('useEditorChat', () => {
     });
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['b1']));
-    editor.plugin(AIChatPlugin).setOption('open', true);
+      .store.set({ selectedIds: new Set(['b1']) });
+    editor.plugin(AIChatPlugin).store.set({ open: true });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>
     );

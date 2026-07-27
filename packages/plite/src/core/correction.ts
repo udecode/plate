@@ -21,10 +21,13 @@ export const matchesEditorCorrection = (
 };
 
 /** Run one registered semantic correction against one matching node. */
-export const runEditorCorrection = <V extends Value>(
-  editor: Editor<V>,
+export const runEditorCorrection = <
+  V extends Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: Editor<V, TExtensions>,
   entry: NodeEntry,
-  correction: EditorCorrection<Editor<V>>
+  correction: EditorCorrection<Editor<V, TExtensions>>
 ) => {
   const before = getMutationVersion(editor);
 
@@ -32,7 +35,7 @@ export const runEditorCorrection = <V extends Value>(
     editor,
     entry,
     tx: getCorrectionUpdateView(editor),
-  } as EditorCorrectionContext<Editor<V>>);
+  } as EditorCorrectionContext<Editor<V, TExtensions>>);
 
   return getMutationVersion(editor) !== before;
 };

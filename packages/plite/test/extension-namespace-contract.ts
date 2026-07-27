@@ -113,6 +113,13 @@ const assertTypes = (
   void directSelectedPath;
 };
 
+const transpiledTypeof = (value: unknown) =>
+  value &&
+  typeof Symbol !== 'undefined' &&
+  (value as { constructor?: unknown }).constructor === Symbol
+    ? 'symbol'
+    : typeof value;
+
 describe('extension namespace contract', () => {
   it('installs API handles, state reads, and tx writes as one extension namespace', () => {
     const headlessEditor = createEditor<CustomValue>();
@@ -137,6 +144,7 @@ describe('extension namespace contract', () => {
       [1]
     );
     assert.deepEqual(editor.read.blockSelection.selectedPath(), [1]);
+    assert.equal(transpiledTypeof(editor.read.blockSelection), 'function');
 
     editor.update.blockSelection.removeSelected();
 

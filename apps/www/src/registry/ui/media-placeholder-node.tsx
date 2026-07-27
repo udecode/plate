@@ -12,7 +12,13 @@ import {
 } from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { KEYS } from 'platejs';
-import { PlateElement, useEditorPlugin, usePath, withHOC } from 'platejs/react';
+import {
+  PlateElement,
+  useEditorPlugin,
+  usePath,
+  usePluginStore,
+  withHOC,
+} from 'platejs/react';
 import { useFilePicker } from 'use-file-picker';
 
 import { cn } from '@/lib/utils';
@@ -55,6 +61,11 @@ export const PlaceholderElement = withHOC(
     const path = usePath();
 
     const { api } = useEditorPlugin(PlaceholderPlugin);
+    const currentFile = usePluginStore(
+      PlaceholderPlugin,
+      'uploadingFile',
+      element.id as string
+    );
 
     const { isUploading, progress, uploadedFile, uploadFile, uploadingFile } =
       useUploadFile();
@@ -66,21 +77,7 @@ export const PlaceholderElement = withHOC(
     const isImage = element.mediaType === KEYS.img;
 
     const imageRef = React.useRef<HTMLImageElement>(null);
-
-    const { openFilePicker } = useFilePicker({
-      accept: currentContent.accept,
-      multiple: true,
-      onFilesSelected: ({ plainFiles: updatedFiles }) => {
-        const firstFile = updatedFiles[0];
-        const restFiles = updatedFiles.slice(1);
-
-        replaceCurrentPlaceholder(firstFile);
-
-        if (restFiles.length > 0) {
-          editor.plugin(PlaceholderPlugin).update.insertMedia(restFiles);
-        }
-      },
-    });
+    const isReplaced = React.useRef(false);
 
     const replaceCurrentPlaceholder = React.useCallback(
       (file: File) => {
@@ -89,6 +86,22 @@ export const PlaceholderElement = withHOC(
       },
       [api, element.id, uploadFile]
     );
+
+    const { openFilePicker } = useFilePicker({
+      accept: currentContent.accept,
+      multiple: true,
+      onFilesSelected: ({ plainFiles: updatedFiles }) => {
+        const firstFile = updatedFiles[0];
+        const restFiles = updatedFiles.slice(1);
+
+        isReplaced.current = true;
+        replaceCurrentPlaceholder(firstFile);
+
+        if (restFiles.length > 0) {
+          editor.plugin(PlaceholderPlugin).update.insertMedia(restFiles);
+        }
+      },
+    });
 
     React.useEffect(() => {
       if (!uploadedFile) return;
@@ -117,22 +130,13 @@ export const PlaceholderElement = withHOC(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [uploadedFile, element.id, path]);
 
-    // React dev mode will call React.useEffect twice
-    const isReplaced = React.useRef(false);
-
     /** Paste and drop */
     React.useEffect(() => {
-      if (isReplaced.current) return;
+      if (isReplaced.current || !currentFile) return;
 
       isReplaced.current = true;
-      const currentFiles = api.getUploadingFile(element.id as string);
-
-      if (!currentFiles) return;
-
-      replaceCurrentPlaceholder(currentFiles);
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isReplaced]);
+      replaceCurrentPlaceholder(currentFile);
+    }, [currentFile, replaceCurrentPlaceholder]);
 
     return (
       <PlateElement className="my-1" {...props}>

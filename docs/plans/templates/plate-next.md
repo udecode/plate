@@ -236,14 +236,25 @@ Constraints:
   node components; registry Base kits use the owning `*-static` component.
 - Empty config inference law: do not create `type FooConfig =
   PluginConfig<'foo'>` only to call `createBasePlugin<FooConfig>({ key:
-  'foo' })`. Manual plugin config types are only for real options, API, tx,
-  selectors, state, or external public contracts.
-- Plugin editor extension law: plugin-owned editor extension options belong in
-  `.extend({ extension })`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types. The
-  `extension` contribution accepts built extensions and raw options; raw
-  options without `name` default to the owning plugin key. Keep explicit names
-  only for genuinely separate extension identities.
+  'foo' })`. Manual plugin config types are only for real initial state, API,
+  read, update, selectors, dependencies, extension capabilities, or external
+  public contracts.
+- Plugin capability boundary law: classify every contribution against the
+  canonical `plate-plugin-creator` protocol. `initialState` declares defaults;
+  `store` owns live editor-local state; `selectors` are pure store projections;
+  `api` owns non-snapshot plugin services; `read` owns pure supplied-state
+  queries; `update` owns active-transaction document mutation; `extension`
+  owns genuine editor-wide Plite substrate; `codecs` own format declarations.
+  Reject document reads in `api`, document mutations outside `update`, impure
+  selectors/reads, plugin-scoped behavior hidden in `extension`, and
+  unclassifiable contributions.
+- Plugin authoring stage law: keep every independent contribution in
+  `createBasePlugin()` / `createPlatePlugin()`. Keep `.extend()` only for
+  imported/prebuilt adaptation, a shared factory unavailable to the
+  constructor, or a real earlier-capability type dependency. Keep
+  `.configure()` terminal and non-widening. Inline extension options need no
+  wrapper; extracted reusable Plate extension factories use the callback
+  context's `defineEditorExtension`.
 - Inferred local type law: do not annotate local variables whose initializer
   should infer the type. Smells like `const entries: NodeEntry<T>[] =
   editor.read...` or `const value: Value = [...]` hide type regressions at the
@@ -251,19 +262,18 @@ Constraints:
   Keep annotations only for uninferrable locals such as empty arrays,
   deliberate narrowing/widening, exported/public signatures, or external
   boundary callbacks.
-- Plugin option law: root plugin option helpers are forbidden public API. Do
-  not use or re-add `editor.getOption(...)`, `editor.getOptions(...)`,
-  `editor.setOption(...)`, or `editor.setOptions(...)`. Package code should use
-  scoped plugin portals by default (`editor.plugin(FooPlugin).getOption(...)`,
-  `editor.plugin(FooPlugin).getOptions()`,
-  `editor.plugin(FooPlugin).setOption(...)`,
-  `editor.plugin(FooPlugin).setOptions(...)`). `usePluginOption(FooPlugin, ...)`
-  remains the render-subscription path. Key+generic fallbacks need an owner
-  reason: plugin self-definition cycle, React hook/component imported by the
-  plugin itself, non-React layer that must not import a React plugin, or
-  intentionally decoupled cross-package code. Inline single-owner plugin
-  behavior in the builder context. Only a proven shared or independent helper
-  should receive a narrow plugin context or required `tx` parameter.
+- Plugin state law: plugin defaults use `initialState`; descriptor overrides
+  use `.configure({ initialState })`; builder callbacks use inferred `store`;
+  consumers use `editor.plugin(FooPlugin).store.get/set/subscribe`; React
+  subscriptions use `usePluginStore` or `useEditorPluginStore`. Do not use or
+  re-add root or scoped `getOption`, `getOptions`, `setOption`, `setOptions`,
+  `usePluginOption`, or a parallel immutable `config` channel. Key+generic
+  portals need an owner reason: plugin self-definition cycle, React
+  hook/component imported by the plugin itself, non-React layer that must not
+  import a React plugin, or intentionally decoupled cross-package code. Inline
+  single-owner plugin behavior in the builder context. Only a proven shared or
+  independent helper should receive a narrow plugin context or required `tx`
+  parameter.
 
 Boundaries:
 - allowed edit scope: pending
@@ -388,11 +398,16 @@ Work Checklist:
       or each remaining annotation is justified as a real external boundary.
 - [ ] Empty config inference audit closed: `PluginConfig<'key'>` aliases and
       `createBasePlugin<Config>` generics are removed when the config has no
-      typed options, API, tx, selectors, state, or external public contract.
-- [ ] Plugin extension options audit closed: plugin-owned extension options are
-      contributed through `.extend({ extension })`; `defineEditorExtension`
-      remains only for standalone Plite extensions, existing built extensions,
-      or explicit non-plugin extension identities.
+      typed initial state, API, read, update, selectors, dependencies,
+      extension capabilities, or external public contract.
+- [ ] Plugin capability boundary audit closed: every plugin contribution has
+      exactly one canonical `initialState` / `store` / `selectors` / `api` /
+      `read` / `update` / `extension` / `codecs` owner and obeys that owner's
+      purity, snapshot, transaction, and editor-scope boundary.
+- [ ] Plugin authoring stage audit closed: independent contributions are in the
+      constructor; every `.extend()` names an imported/prebuilt adaptation,
+      constructor-inaccessible shared factory, or earlier capability type; no
+      `.configure()` call widens the descriptor.
 - [ ] Bridge scoring law applied: forbidden bridges score `0`, direct bridge
       imports/installers are capped, displaced owner files are capped, and no
       capped file is raised to 100 from green checks alone.

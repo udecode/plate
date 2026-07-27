@@ -1,8 +1,8 @@
+import { type InferConfig, createBasePlugin } from '@platejs/core';
 import {
-  type InferConfig,
-  createBasePlugin,
-  prepareHtmlParserQuery,
-} from '@platejs/core';
+  pipePreparedInsertDataQuery,
+  prepareHtmlRegistry,
+} from '@platejs/core/internal';
 import { PathApi, property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
@@ -11,10 +11,10 @@ import {
   defineMediaPlugin,
   mediaElementContent,
   mediaElementProperties,
-  type MediaPluginOptions,
+  type MediaPluginState,
 } from '../media/MediaPlugin.internal';
 
-export type ImagePluginOptions = {
+export type ImagePluginState = {
   /** Disable url embed on insert data. */
   disableEmbedInsert?: boolean;
   /** Disable file upload on insert data. */
@@ -25,13 +25,13 @@ export type ImagePluginOptions = {
    * URL of the uploaded image.
    */
   uploadImage?: (dataUrl: string) => Promise<string> | string;
-} & MediaPluginOptions;
+} & MediaPluginState;
 
 /** Enables support for images. */
 export const BaseImagePlugin = defineMediaPlugin(
   createBasePlugin({
     key: KEYS.img,
-    options: {} as ImagePluginOptions,
+    initialState: {} as ImagePluginState,
     schema: {
       element: {
         content: mediaElementContent,
@@ -147,8 +147,14 @@ export const BaseImagePlugin = defineMediaPlugin(
   (options, url) => ({
     url: options.transformUrl?.(url) ?? url,
   })
-).extend(({ editor, getOptions, plugin }) => {
-  const queryInsertData = prepareHtmlParserQuery(editor, plugin);
+).extend(({ editor, store, plugin, update }) => {
+  const preparedHtmlPlugin = prepareHtmlRegistry(editor).plugins.find(
+    (candidate) => candidate.key === plugin.key
+  );
+
+  if (!preparedHtmlPlugin) {
+    throw new Error(`Parser plugin "${plugin.key}" is not installed.`);
+  }
 
   return {
     extension: {
@@ -161,7 +167,7 @@ export const BaseImagePlugin = defineMediaPlugin(
             : undefined;
 
           if (
-            !getOptions().disableEmbedInsert &&
+            !store.get().disableEmbedInsert &&
             imageExtension &&
             imageExtensions.has(imageExtension)
           ) {
@@ -170,7 +176,7 @@ export const BaseImagePlugin = defineMediaPlugin(
             return true;
           }
 
-          if (!getOptions().disableUploadInsert && !text) {
+          if (!store.get().disableUploadInsert && !text) {
             const { files } = dataTransfer;
             const imageFiles = Array.from(files).filter((file) =>
               file.type.startsWith('image/')
@@ -179,7 +185,7 @@ export const BaseImagePlugin = defineMediaPlugin(
             if (imageFiles.length === 0) return next(dataTransfer);
             if (
               !editor.read((state) =>
-                queryInsertData(state, {
+                pipePreparedInsertDataQuery(state, [preparedHtmlPlugin], {
                   data: text,
                   format,
                   source: dataTransfer,
@@ -197,7 +203,7 @@ export const BaseImagePlugin = defineMediaPlugin(
               reader.addEventListener('load', async () => {
                 if (typeof reader.result !== 'string') return;
 
-                const uploadImage = getOptions().uploadImage;
+                const uploadImage = store.get().uploadImage;
                 const url = uploadImage
                   ? await uploadImage(reader.result)
                   : reader.result;
@@ -207,7 +213,7 @@ export const BaseImagePlugin = defineMediaPlugin(
 
                 if (block && !blockPath) return;
 
-                editor.plugin(BaseImagePlugin).update.insert(
+                update.insert(
                   { url },
                   {
                     at: blockPath ? PathApi.next(blockPath) : undefined,

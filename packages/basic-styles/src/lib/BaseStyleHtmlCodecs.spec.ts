@@ -12,34 +12,6 @@ import { BaseLineHeightPlugin } from './BaseLineHeightPlugin';
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
 import { BaseTextIndentPlugin } from './BaseTextIndentPlugin';
 
-const serializeHtml = (editor: ReturnType<typeof createBaseEditor>) => {
-  type Registration = {
-    codec: {
-      format: string;
-      serialize?: (context: {
-        format: string;
-        slice: ContentSlice;
-        state: typeof editor.read;
-      }) => null | string;
-    };
-  };
-
-  const registrations = (getExtensionRegistry(editor).capabilities.get(
-    'host.codecs'
-  ) ?? []) as readonly Registration[];
-  const codec = registrations.find(
-    (registration) => registration.codec.format === 'text/html'
-  )?.codec;
-
-  if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
-
-  return codec.serialize({
-    format: 'text/html',
-    slice: ContentSlice.closed(editor.read.children()),
-    state: editor.read,
-  });
-};
-
 describe('basic style HTML codecs', () => {
   it('round-trips mark wrappers and block property patches', () => {
     const editor = createBaseEditor({
@@ -73,7 +45,31 @@ describe('basic style HTML codecs', () => {
         },
       ],
     });
-    const html = serializeHtml(editor);
+    type Registration = {
+      codec: {
+        format: string;
+        serialize?: (context: {
+          format: string;
+          slice: ContentSlice;
+          state: typeof editor.read;
+        }) => null | string;
+      };
+    };
+
+    const registrations = (getExtensionRegistry(editor).capabilities.get(
+      'host.codecs'
+    ) ?? []) as readonly Registration[];
+    const codec = registrations.find(
+      (registration) => registration.codec.format === 'text/html'
+    )?.codec;
+
+    if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
+
+    const html = codec.serialize({
+      format: 'text/html',
+      slice: ContentSlice.closed(editor.read.children()),
+      state: editor.read,
+    });
 
     expect(html).not.toBeNull();
 

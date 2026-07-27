@@ -10,7 +10,7 @@ import {
 export const MentionKit = [
   MentionPlugin.configure({
     component: MentionElement,
-    options: {
+    initialState: {
       triggerPreviousCharPattern: /^$|^[\s"']$/,
     },
   }),

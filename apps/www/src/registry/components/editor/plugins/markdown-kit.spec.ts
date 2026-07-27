@@ -17,11 +17,7 @@ import { BaseFootnoteKit } from './footnote-base-kit';
 import { FootnoteKit } from './footnote-kit';
 import { MarkdownKit } from './markdown-kit';
 
-const footnoteKeys = [
-  KEYS.footnoteDefinition,
-  KEYS.footnoteInput,
-  KEYS.footnoteReference,
-];
+const footnoteKeys = ['footnote', KEYS.footnoteDefinition, KEYS.footnoteInput];
 
 describe('MarkdownKit', () => {
   it('configures both live and base editors', () => {
@@ -31,7 +27,7 @@ describe('MarkdownKit', () => {
     ];
 
     for (const editor of editors) {
-      expect(typeof editor.api.markdown.serialize).toBe('function');
+      expect(typeof editor.read.markdown.serialize).toBe('function');
     }
   });
 
@@ -45,13 +41,13 @@ describe('MarkdownKit', () => {
       expect(keys.filter((pluginKey) => pluginKey === key)).toHaveLength(1);
     }
 
-    expect(getPlateRuntime(editor).components[KEYS.footnoteReference]).toBe(
+    expect(getPlateRuntime(editor).components.footnote).toBe(
       FootnoteReferenceElement
     );
     expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
       FootnoteDefinitionElement
     );
-    expect(typeof editor.api.markdown.serialize).toBe('function');
+    expect(typeof editor.read.markdown.serialize).toBe('function');
   });
 
   it('composes once with static Footnote renderers', () => {
@@ -64,13 +60,13 @@ describe('MarkdownKit', () => {
       expect(keys.filter((pluginKey) => pluginKey === key)).toHaveLength(1);
     }
 
-    expect(getPlateRuntime(editor).components[KEYS.footnoteReference]).toBe(
+    expect(getPlateRuntime(editor).components.footnote).toBe(
       FootnoteReferenceElementStatic
     );
     expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
       FootnoteDefinitionElementStatic
     );
-    expect(typeof editor.api.markdown.serialize).toBe('function');
+    expect(typeof editor.read.markdown.serialize).toBe('function');
   });
 
   it('installs renderer-specific Footnote kits from editor presets', () => {

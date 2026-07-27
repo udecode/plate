@@ -25,6 +25,6 @@ export const CodeBlockKit = [
   CodeLinePlugin.configure({ component: CodeLineElement }),
   CodeHighlightPlugin.configure({
     component: CodeSyntaxLeaf,
-    options: { lowlight },
+    initialState: { lowlight },
   }),
 ];

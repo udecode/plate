@@ -126,7 +126,7 @@ Browser proof:
 
 - Fresh `browser-use` load of `http://localhost:3001/blocks/code-block-demo`
   shows no hydration error and no `[CODE_HIGHLIGHT]` warnings for Python
-- `editor.plugin(BaseCodeBlockPlugin).getOptions().lowlight.highlight('python', ...)`
+- `editor.plugin(BaseCodeBlockPlugin).store.get('lowlight').highlight('python', ...)`
   succeeds in the live page and returns highlighted nodes
 - Typing ```` ``` ```` in a reset paragraph still creates a `code_block` with
   one `code_line` and no leftover backticks

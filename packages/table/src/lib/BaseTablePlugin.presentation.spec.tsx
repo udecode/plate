@@ -44,7 +44,7 @@ describe('table presentation', () => {
         } as TTableCellElement;
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellBorders({
+          editor.plugin(BaseTablePlugin).read.getCellBorders({
             defaultBorder: { color: 'gray', size: 2, style: 'solid' },
             element,
           })
@@ -87,7 +87,7 @@ describe('table presentation', () => {
         const element = getCell(editor, [0, 0, 0]);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellBorders({
+          editor.plugin(BaseTablePlugin).read.getCellBorders({
             defaultBorder: { color: 'gray', size: 1, style: 'solid' },
             element,
           })
@@ -127,7 +127,7 @@ describe('table presentation', () => {
         const element = getCell(editor, [0, 1, 1]);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellBorders({
+          editor.plugin(BaseTablePlugin).read.getCellBorders({
             defaultBorder: { size: 1 },
             element,
           })
@@ -176,7 +176,7 @@ describe('table presentation', () => {
         } as TTableCellElement;
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellSize({ element })
+          editor.plugin(BaseTablePlugin).read.getCellSize({ element })
         ).toEqual({
           minHeight: 0,
           width: 0,
@@ -203,7 +203,7 @@ describe('table presentation', () => {
         const element = getCell(editor, [0, 0, 1]);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellSize({ element })
+          editor.plugin(BaseTablePlugin).read.getCellSize({ element })
         ).toEqual({
           minHeight: 72,
           width: 110,
@@ -230,7 +230,7 @@ describe('table presentation', () => {
         const element = getCell(editor, [0, 0, 1]);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getCellSize({
+          editor.plugin(BaseTablePlugin).read.getCellSize({
             colSizes: [10, 20, 30],
             element,
             rowSize: 99,
@@ -297,13 +297,15 @@ describe('table presentation', () => {
         const editor = createEditorInstance(input);
         const hidden = editor
           .plugin(BaseTablePlugin)
-          .api.isBorderHidden('left');
+          .read.isBorderHidden('left');
         expect(hidden).toBe(false);
       });
 
       it('returns true if top border is hidden', () => {
         const editor = createEditorInstance(input);
-        const hidden = editor.plugin(BaseTablePlugin).api.isBorderHidden('top');
+        const hidden = editor
+          .plugin(BaseTablePlugin)
+          .read.isBorderHidden('top');
         expect(hidden).toBe(true);
       });
 
@@ -316,7 +318,7 @@ describe('table presentation', () => {
         });
         const hidden = editor
           .plugin(BaseTablePlugin)
-          .api.isBorderHidden('left');
+          .read.isBorderHidden('left');
         expect(hidden).toBe(false);
       });
 
@@ -327,7 +329,9 @@ describe('table presentation', () => {
           anchor: { offset: 0, path: [0, 1, 0, 0, 0] },
           focus: { offset: 0, path: [0, 1, 0, 0, 0] },
         });
-        const hidden = editor.plugin(BaseTablePlugin).api.isBorderHidden('top');
+        const hidden = editor
+          .plugin(BaseTablePlugin)
+          .read.isBorderHidden('top');
         expect(hidden).toBe(false);
       });
 
@@ -341,7 +345,7 @@ describe('table presentation', () => {
         );
         const hidden = editor
           .plugin(BaseTablePlugin)
-          .api.isBorderHidden('left');
+          .read.isBorderHidden('left');
         expect(hidden).toBe(false);
       });
     });

@@ -56,11 +56,8 @@ const createTextEditor = (commands?: CommandDeclarations) =>
     commands ? [defineEditorExtension({ commands, name: 'test.commands' })] : []
   );
 
-const commandExtension = (
-  name: string,
-  priority: number,
-  commands: CommandDeclarations
-) => defineEditorExtension({ commands, name, priority });
+const commandExtension = (name: string, commands: CommandDeclarations) =>
+  defineEditorExtension({ commands, name });
 
 const insert = defineCommand<InsertCommand>('test.insert', {
   build: ({ input, state }) =>
@@ -853,7 +850,7 @@ describe('pure command transaction specs', () => {
     ]);
   });
 
-  it('clears exclusive marks and collapses in one semantic command', () => {
+  it('clears configured peer marks and collapses in one semantic command', () => {
     const editor = createEditor({
       initialSelection: SelectionApi.text({
         anchor: { offset: 0, path: [0, 0] },
@@ -862,15 +859,15 @@ describe('pure command transaction specs', () => {
       initialValue: [
         {
           type: 'paragraph',
-          children: [{ subscript: true, text: 'ab' }],
+          children: [{ italic: true, text: 'ab' }],
         },
       ],
     });
 
     dispatchCommand(editor, editorCommands.toggleMark, {
-      key: 'superscript',
+      key: 'bold',
       options: {
-        clear: 'subscript',
+        clear: 'italic',
         collapse: { edge: 'end' },
       },
       value: true,
@@ -879,7 +876,7 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(editor.read.children(), [
       {
         type: 'paragraph',
-        children: [{ superscript: true, text: 'ab' }],
+        children: [{ bold: true, text: 'ab' }],
       },
     ]);
     assert.deepEqual(editor.read.selection(), {
@@ -895,8 +892,8 @@ describe('pure command transaction specs', () => {
       }),
     });
     dispatchCommand(editor, editorCommands.toggleMark, {
-      key: 'superscript',
-      options: { clear: 'subscript' },
+      key: 'bold',
+      options: { clear: 'italic' },
       value: true,
     });
 
@@ -1070,7 +1067,7 @@ describe('pure command transaction specs', () => {
     assert.throws(() => leakedRef?.resolve(), /no longer active/);
   });
 
-  it('preserves priority and next command overrides before dispatch', () => {
+  it('preserves application order and next command overrides before dispatch', () => {
     const seen: string[] = [];
     const editor = createTextEditorWithExtensions([
       defineEditorExtension({
@@ -1081,7 +1078,6 @@ describe('pure command transaction specs', () => {
           }),
         ],
         name: 'low-command-priority',
-        priority: 1,
       }),
       defineEditorExtension({
         commands: ({ around }) => [
@@ -1091,17 +1087,16 @@ describe('pure command transaction specs', () => {
           }),
         ],
         name: 'high-command-priority',
-        priority: 2,
       }),
     ]);
 
     dispatchCommand(editor, insert, { text: 'z' });
 
-    assert.deepEqual(seen, ['high:z', 'low:z!']);
+    assert.deepEqual(seen, ['low:z', 'high:Z']);
     assert.equal(editor.read.text.string([]), 'aZ!b');
   });
 
-  it('keeps dependency-resolved command order ahead of conflicting priority', () => {
+  it('keeps dependency-resolved command order ahead of application order', () => {
     const seen: string[] = [];
     const dependency = defineEditorExtension({
       commands: ({ around }) => [
@@ -1111,7 +1106,6 @@ describe('pure command transaction specs', () => {
         }),
       ],
       name: 'command-order-dependency',
-      priority: 1,
     });
     const dependent = defineEditorExtension({
       commands: ({ around }) => [
@@ -1122,7 +1116,6 @@ describe('pure command transaction specs', () => {
       ],
       dependencies: [dependency.name],
       name: 'command-order-dependent',
-      priority: 100,
     });
     const editor = createTextEditorWithExtensions([dependent, dependency]);
 
@@ -1221,14 +1214,7 @@ describe('pure command transaction specs', () => {
   it('runs downstream handlers against the prefix state', () => {
     const observed: string[] = [];
     const editor = createTextEditorWithExtensions([
-      commandExtension('prefix-observer', 1, ({ handle }) => [
-        handle(insert, ({ state }) => {
-          observed.push(state.text.string([]));
-
-          return false;
-        }),
-      ]),
-      commandExtension('prefix-writer', 2, ({ around }) => [
+      commandExtension('prefix-writer', ({ around }) => [
         around(insert, ({ state, next }) =>
           next.after(
             state.transaction((tx) => {
@@ -1236,6 +1222,13 @@ describe('pure command transaction specs', () => {
             })
           )
         ),
+      ]),
+      commandExtension('prefix-observer', ({ handle }) => [
+        handle(insert, ({ state }) => {
+          observed.push(state.text.string([]));
+
+          return false;
+        }),
       ]),
     ]);
 
@@ -1313,14 +1306,14 @@ describe('pure command transaction specs', () => {
 
   it('composes nested prepared continuations in handler order', () => {
     const editor = createTextEditorWithExtensions([
-      commandExtension('nested-prefix-low', 1, ({ around }) => [
-        around(insert, ({ state, next }) =>
-          next.after(state.transaction((tx) => tx.text.insert('y')))
-        ),
-      ]),
-      commandExtension('nested-prefix-high', 2, ({ around }) => [
+      commandExtension('nested-prefix-high', ({ around }) => [
         around(insert, ({ state, next }) =>
           next.after(state.transaction((tx) => tx.text.insert('x')))
+        ),
+      ]),
+      commandExtension('nested-prefix-low', ({ around }) => [
+        around(insert, ({ state, next }) =>
+          next.after(state.transaction((tx) => tx.text.insert('y')))
         ),
       ]),
     ]);
@@ -1334,19 +1327,19 @@ describe('pure command transaction specs', () => {
   it('discards prepared contexts after a downstream exception', () => {
     let active = true;
     const editor = createTextEditorWithExtensions([
-      commandExtension('throwing-handler', 1, ({ handle }) => [
-        handle(insert, () => {
-          if (active) throw new Error('downstream failed');
-
-          return false;
-        }),
-      ]),
-      commandExtension('throwing-prefix', 2, ({ around }) => [
+      commandExtension('throwing-prefix', ({ around }) => [
         around(insert, ({ state, next }) =>
           active
             ? next.after(state.transaction((tx) => tx.text.insert('x')))
             : next()
         ),
+      ]),
+      commandExtension('throwing-handler', ({ handle }) => [
+        handle(insert, () => {
+          if (active) throw new Error('downstream failed');
+
+          return false;
+        }),
       ]),
     ]);
 

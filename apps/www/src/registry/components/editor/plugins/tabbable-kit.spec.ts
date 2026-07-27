@@ -26,7 +26,7 @@ describe('TabbableKit', () => {
       const editor = createEditor(offset);
 
       expect(
-        editor.plugin(TabbablePlugin).getOption('query')?.(
+        editor.plugin(TabbablePlugin).store.get('query')?.(
           new KeyboardEvent('keydown')
         )
       ).toBe(false);
@@ -39,7 +39,7 @@ describe('TabbableKit', () => {
     expect(editor.read.selection.isAtBlockStart()).toBe(false);
     expect(editor.read.selection.isAtBlockEnd()).toBe(false);
     expect(
-      editor.plugin(TabbablePlugin).getOption('query')?.(
+      editor.plugin(TabbablePlugin).store.get('query')?.(
         new KeyboardEvent('keydown')
       )
     ).toBe(true);

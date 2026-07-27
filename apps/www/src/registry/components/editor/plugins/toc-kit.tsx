@@ -7,7 +7,7 @@ import { TocElement } from '@/registry/ui/toc-node';
 export const TocKit = [
   TocPlugin.configure({
     component: TocElement,
-    options: {
+    initialState: {
       // isScroll: true,
       topOffset: 80,
     },

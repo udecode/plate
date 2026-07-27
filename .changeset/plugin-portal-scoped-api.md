@@ -10,19 +10,25 @@ Expose `editor.plugin(Plugin).installed` for optional package integrations.
 
 Contextually infer callbacks for contract-declared explicit transaction groups
 and plugin extension command transactions.
+Infer callback-created plugin state from its return type without erasing
+constructor `read`, `update`, or other inferred capabilities.
 
 Replace Slate-era Core exports with Plite and Plate-owned names.
 
 Replace `pipeInsertDataQuery` with `prepareHtmlParserQuery`, which compiles one
 resolved plugin query and runs it against an immutable editor state.
 
+Remove exported whitespace character aliases in favor of native character
+literals. Preserve the first matching descendant returned by
+`someHtmlElement`.
+
 Keep element-provider updates local to their own node while descriptor-scoped
 ancestor reads subscribe to the exact owning provider.
 
 Remove `editor.meta.pluginList`, `editor.meta.isFallback`,
 `editor.getOptionsStore`, and public plugin `optionsStore` fields. Read
-installed plugins and live options through `editor.getPlugin(Plugin)` or the
-descriptor-scoped portal.
+installed plugins through `editor.getPlugin(Plugin)` and editor-local state
+through the descriptor-scoped portal's `store`.
 
 Pass each render wrapper its owning plugin portal context and forward Plite DOM
 strategy props through Plate content.
@@ -38,6 +44,9 @@ fitting for complete `editor.update.value.replace(...)` loads.
 
 Install typed plugin-object dependencies recursively with deterministic
 overrides, dependency-first ordering, and graph validation.
+Remove global plugin `priority`. Independent plugins keep application order;
+use `dependencies` for installation requirements and resource-local
+`priority` for competing shortcuts, input rules, or codecs.
 
 Declare document identity with top-level `type`, element behavior through
 `schema.element`, marks through descriptor-backed `schema.mark`, ordinary node
@@ -49,8 +58,9 @@ omits `schema`. Pass `{ id, version }` only for application-named History,
 Yjs, or migration lineage. Editor factories derive identity when called
 without a `schema` option.
 
-Keep plugin-owned values in one `options` bag. Put every independent author
-contribution in `createBasePlugin()` or `createPlatePlugin()`: plugin-owned
+Seed one mutable editor-local plugin store through `initialState`. Put every
+independent author contribution in `createBasePlugin()` or
+`createPlatePlugin()`: plugin-owned
 `api`, `read`, `update`, and `selectors`, editor-wide `extension`, format
 `codecs`, and ordinary static fields. Constructor callbacks receive the typed
 authoring context. Use `.extend()` only for an imported/prebuilt declaration,
@@ -83,11 +93,42 @@ reusable editor-wide factories use the callback context's
 parameters stay inferred.
 Apply at most one terminal consumer `.configure(...)` call per descriptor:
 object configuration can set descriptor fields, while contextual configuration
-can derive options, handlers, foreign-plugin overrides, renderers, and
+can derive initial state, handlers, foreign-plugin overrides, renderers, and
 shortcuts. Contextual extensions read the configured values, and consumer
 configuration remains the final override. Read and update live values through
-the scoped portal's `getOptions`, `setOption`, and `setOptions`; live option
-updates do not rebuild the compiled schema.
+`editor.plugin(Plugin).store.get()` and `.store.set(...)`; subscribe in React
+through `usePluginStore` or its explicit-editor `useEditorPluginStore` variant.
+Pass the real plugin descriptor to store hooks. A key-only object cannot carry
+the state or selector contract and is rejected instead of requiring manual
+generic arguments.
+Named selectors are pure state-first functions. Remove `getOption`,
+`getOptions`, `setOption`, `setOptions`, and the option-named React hooks.
+
+```tsx
+// Before
+const Plugin = createPlatePlugin({
+  key: 'counter',
+  options: { count: 0 },
+  selectors: ({ getOptions }) => ({
+    doubled: () => getOptions().count * 2,
+  }),
+});
+
+editor.plugin(Plugin).setOption('count', 1);
+const count = usePluginOption(Plugin, 'count');
+
+// After
+const Plugin = createPlatePlugin({
+  initialState: { count: 0 },
+  key: 'counter',
+  selectors: {
+    doubled: (state) => state.count * 2,
+  },
+});
+
+editor.plugin(Plugin).store.set({ count: 1 });
+const count = usePluginStore(Plugin, 'count');
+```
 
 Declare cross-plugin schema and render targets with the plugin's top-level
 `targetPluginKeys` field.
@@ -233,7 +274,7 @@ Configure or omit an optional capability through the ordinary plugin array:
 const plugins = [
   CodeBlockPlugin,
   CodeHighlightPlugin.configure({
-    options: { lowlight },
+    initialState: { lowlight },
   }),
 ];
 ```

@@ -99,9 +99,9 @@ Checkpoint supervisor:
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
 | checkpoint-zero | slate-migration | in_progress | P0 | Copy prompt requirements before implementation. | Requirement rows complete. | seed |
 | inventory | slate-migration | pending | P0 | List packages, docs, examples, tests, changesets, and symbols in scope. | Inventory ledger filled. | seed |
-| api-map | plite-migration / plite-plan | pending | P0 | Map old APIs to current Plite public APIs. | API map rows source-backed. | seed |
+| api-map | slate-migration / plite-plan | pending | P0 | Map old APIs to current Plite public APIs. | API map rows source-backed. | seed |
 | stale-symbol-audit | slate-migration | pending | P0 | Find stale Plite/Plate migration symbols. | Audit command and result recorded. | seed |
-| migration-packet | slate-migration / slate-patch | pending | P0 | Migrate one owner or prove already migrated. | Proof command passes or packet quarantined. | seed |
+| migration-packet | slate-migration / plite-patch | pending | P0 | Migrate one owner or prove already migrated. | Proof command passes or packet quarantined. | seed |
 | guide-repair | docs-creator / slate-migration | pending | P1 | Repair migration guide when a user-facing step is missing. | Guide decision recorded. | seed |
 | changeset-repair | changeset / slate-migration | pending | P1 | Repair release-facing migration notes when package users need them. | Changeset decision recorded. | seed |
 | proof | slate-migration | pending | P0 | Run focused type/test/browser/docs proof for the packet. | Command result recorded with cwd. | seed |
@@ -117,7 +117,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | pending | pending |
-| `plite-migration` source rule read | pending | pending |
+| `slate-migration` source rule read | pending | pending |
 | `vision` read | pending | pending |
 | Active goal checked or created | pending | pending |
 | Invocation mode recorded | pending | pending |

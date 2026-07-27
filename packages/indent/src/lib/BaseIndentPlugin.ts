@@ -24,7 +24,7 @@ export type IndentChangeOptions = {
   unsetNodeProps?: string[];
 };
 
-export type IndentPluginOptions = {
+export type IndentPluginState = {
   /** Maximum number of indentation. */
   indentMax?: number;
   /**
@@ -41,7 +41,7 @@ export type IndentPluginOptions = {
   unit?: string;
 };
 
-const defaultOptions: IndentPluginOptions = {
+const initialState: IndentPluginState = {
   offset: 24,
   unit: 'px',
 };
@@ -81,7 +81,7 @@ const parseIndent = (
 
 export const BaseIndentPlugin = createBasePlugin({
   key: KEYS.indent,
-  options: defaultOptions,
+  initialState,
   schema: ({ own, plugins, targetPluginKeys }) => ({
     properties: [
       own.elementProperty(property.number(), {
@@ -91,16 +91,16 @@ export const BaseIndentPlugin = createBasePlugin({
     ],
   }),
   targetPluginKeys: defaultTargetPluginKeys,
-  codecs: ({ defineCodecs, getOptions }) =>
+  codecs: ({ defineCodecs, store }) =>
     defineCodecs({
       'text/html': {
         decode: ({ element }) => {
-          const { offset = 24, unit = 'px' } = getOptions();
+          const { offset = 24, unit = 'px' } = store.get();
 
           return parseIndent(element, offset, unit);
         },
         encode: ({ value }) => {
-          const { offset = 24, unit = 'px' } = getOptions();
+          const { offset = 24, unit = 'px' } = store.get();
 
           return {
             attributes: { 'data-indent': value },
@@ -114,7 +114,7 @@ export const BaseIndentPlugin = createBasePlugin({
         ],
       },
     }),
-  extension: ({ getOptions, type }) => ({
+  extension: ({ store, type }) => ({
     corrections: [
       {
         event: 'properties',
@@ -123,7 +123,7 @@ export const BaseIndentPlugin = createBasePlugin({
 
           if (!ElementApi.isElement(node)) return;
 
-          const { indentMax } = getOptions();
+          const { indentMax } = store.get();
           const indent = node[type];
 
           if (
@@ -141,8 +141,8 @@ export const BaseIndentPlugin = createBasePlugin({
     isBlock: true,
     nodeProps: {
       styleKey: 'marginLeft',
-      transformNodeValue: ({ getOptions, nodeValue }) => {
-        const { offset = 24, unit = 'px' } = getOptions();
+      transformNodeValue: ({ store, nodeValue }) => {
+        const { offset = 24, unit = 'px' } = store.get();
 
         return Number(nodeValue) * offset + unit;
       },

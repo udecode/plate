@@ -18,10 +18,10 @@ describe('ViewPlugin', () => {
       const editor = createStaticEditor();
 
       expect(editor.getPlugin(ViewPlugin)).toBeDefined();
-      expect(editor.api.getFragment).toBeDefined();
+      expect(editor.api.dom.getSelectedFragment).toBeDefined();
     });
 
-    it('proxies getFragment through getSelectedDomFragment', () => {
+    it('proxies getSelectedFragment through getSelectedDomFragment', () => {
       const fragment = [
         { children: [{ text: 'First paragraph' }], type: 'p' },
       ] satisfies Descendant[];
@@ -32,7 +32,7 @@ describe('ViewPlugin', () => {
         'getSelectedDomFragment'
       ).mockReturnValue(fragment);
 
-      expect(editor.api.getFragment()).toEqual(fragment);
+      expect(editor.api.dom.getSelectedFragment()).toEqual(fragment);
     });
   });
 });

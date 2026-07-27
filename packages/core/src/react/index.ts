@@ -19,11 +19,11 @@ export * from './stores/element/usePath';
 export * from './stores/event-editor/useEventPlateId';
 export * from './stores/plate/useEditorPlugin';
 export * from './stores/plate/useEditorSelector';
-export * from './stores/plate/usePluginOption';
+export * from './stores/plate/usePluginStore';
 
 export { EventEditorPlugin } from './plugins/event-editor/EventEditorPlugin';
-export { useFocusedLast } from './plugins/event-editor/useFocusedLast';
 export { useEventEditorValue } from './plugins/event-editor/EventEditorStore';
+export { useFocusedLast } from './plugins/event-editor/useEventEditor';
 export {
   PlateController,
   usePlateControllerExists,

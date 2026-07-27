@@ -147,7 +147,7 @@ editor.update((tx) => {
 
 Pass a plugin descriptor to `editor.plugin(plugin)` to open its typed portal.
 The portal owns that plugin's API, one-shot update commands, type, and live
-options.
+state.
 
 ```ts title="html-methods.ts" showLineNumbers
 import { BoldPlugin } from '@platejs/basic-nodes/react';
@@ -157,55 +157,56 @@ editor.plugin(BoldPlugin).update.toggle();
 
 | Method | Use for |
 | --- | --- |
-| `editor.plugin(plugin)` | Typed access to one plugin's API, updates, type, and options. |
+| `editor.plugin(plugin)` | Typed access to one plugin's API, updates, type, and store. |
 | `editor.getPlugin(plugin)` | The resolved plugin instance for a descriptor. |
 | `editor.getType(pluginKey)` | The node type registered for a plugin key. |
 | `editor.getInjectProps(plugin)` | Resolved injected node props for a plugin. |
 
-## Plugin Options
+## Plugin Store
 
-Use editor option methods when imperative code needs to read or write plugin
-configuration. Use `usePluginOption` or `usePluginOptions` when React UI needs
-to re-render from option state.
+Use the scoped store when imperative code needs to read or write editor-local
+plugin state. Use `usePluginStore` when React UI needs to re-render from that
+state.
 
 ```tsx title="components/find-replace-control.tsx" showLineNumbers
 import { FindReplacePlugin } from '@platejs/find-replace';
-import { useEditor, usePluginOption } from 'platejs/react';
+import { useEditor, usePluginStore } from 'platejs/react';
 
 export function FindReplaceControl() {
   const editor = useEditor();
-  const search = usePluginOption(FindReplacePlugin, 'search');
+  const search = usePluginStore(FindReplacePlugin, 'search');
 
   return (
     <input
       value={search}
       onChange={(event) => {
-        editor.plugin(FindReplacePlugin).setOption('search', event.target.value);
+        editor
+          .plugin(FindReplacePlugin)
+          .store.set({ search: event.target.value });
       }}
     />
   );
 }
 ```
 
-```ts title="plugin-options.ts"
-const options = editor.plugin(FindReplacePlugin).getOptions();
+```ts title="plugin-store.ts"
+const state = editor.plugin(FindReplacePlugin).store.get();
 
-editor.plugin(FindReplacePlugin).setOptions({
+editor.plugin(FindReplacePlugin).store.set({
   search: 'Plate',
 });
 
-editor.plugin(FindReplacePlugin).setOptions((draft) => {
+editor.plugin(FindReplacePlugin).store.set((draft) => {
   draft.search = draft.search.trim();
 });
 ```
 
 | Method | Use for |
 | --- | --- |
-| `editor.plugin(plugin).getOption(key, ...args)` | One option or selector value. |
-| `editor.plugin(plugin).getOptions()` | Current option state for a plugin. |
-| `editor.plugin(plugin).setOption(key, value)` | One option update. |
-| `editor.plugin(plugin).setOptions(partial)` | Merge multiple option fields. |
-| `editor.plugin(plugin).setOptions(updater)` | Mutate option state through a draft updater. |
+| `editor.plugin(plugin).store.get(key, ...args)` | One state field or named selector result. |
+| `editor.plugin(plugin).store.get()` | Complete current plugin state. |
+| `editor.plugin(plugin).store.set(partial)` | Merge state fields. |
+| `editor.plugin(plugin).store.set(updater)` | Mutate state through a draft updater. |
 
 ## Next Steps
 

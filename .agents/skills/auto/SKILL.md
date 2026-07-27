@@ -1,6 +1,6 @@
 ---
-description: Plate/Slate ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, and runs autogoal-backed Plate/Slate quality loops without user micro-routing.
-argument-hint: '[PR|issue|queue|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
+description: Plate/Plite ergonomic automation router and internal supervisor. Routes public GitHub queue prompts to maintainer, post-merge/current-tree closure to autoclosure, narrow local Plite regressions to plite-patch, and runs autogoal-backed Plate/Plite quality loops.
+argument-hint: '[PR|issue|queue|plite|slate|plate|current tree|post-merge|lane/surface/objective] [full-loop | timed 1h|2h|overnight | batch-loop]'
 disable-model-invocation: true
 name: auto
 metadata:
@@ -12,15 +12,17 @@ metadata:
 
 Handle $ARGUMENTS.
 
-Use this as the ergonomic Plate/Slate front door. If the prompt names public
+Use this as the ergonomic Plate/Plite front door. If the prompt names public
 GitHub queue work, route immediately to `maintainer`. If it names already
 applied/current-tree closure, route immediately to `autoclosure`. Otherwise,
-run internal Plate/Slate automation until the surface is actually good:
+if it names one narrow local Plite regression, route immediately to
+`plite-patch`. Otherwise, run internal Plate/Plite automation until the surface
+is actually good:
 correct, fast, visually stable, well-tested, architecturally clean,
 docs-aligned, and ready for review.
 
 This is a router and supervisor skill. It does not replace `maintainer`,
-`autoclosure`, `slate-patch`, `plite-plan`, `plate-plan`, `slate-ar`,
+`autoclosure`, `plite-patch`, `plite-plan`, `plate-plan`, `slate-ar`,
 `slate-migration`, `architecture-cleanup`, or package owners unless evidence
 proves the skill topology itself is wrong. It routes them, repairs missing
 proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
@@ -56,23 +58,24 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 - The user says `auto current tree`, `auto post-merge`, `auto ready to commit`,
   or `auto teammate/external branch`; treat this as a user-friendly
   `autoclosure` invocation.
-- The user asks to run a long autonomous Plate or Slate loop overnight.
+- The user asks to run a long autonomous Plate or Plite loop overnight.
 - The surface mixes bugs, perf, visual shifts, virtualization, editor behavior,
   missing tests, API cleanup, and workflow repair.
 - The user wants "absolute best" implementation quality without picking every
   sub-skill.
-- Repeated manual calls to Slate AR modes or `slate-patch` are producing
+- Repeated manual calls to Plite AR modes or `plite-patch` are producing
   reactive thrash.
 - The user wants external editor issue/test corpora, such as Lexical open and
-  closed issues, mined for Slate v2 robustness gaps without hand-routing every
+  closed issues, mined for Plite robustness gaps without hand-routing every
   cluster.
 - The user invokes `issue-harvester` and expects exhaustive issue-by-issue
   test coverage from Slate, Plate, or external editor issue history.
 
 ## Do Not Use When
 
-- The user asks one narrow Slate bug fix: use `slate-patch`.
-- The user asks one ordinary local patch outside Slate automation: use `task`.
+- The user asks one narrow local Plite bug fix: use `plite-patch`.
+- The user asks one public Slate issue: use `resolve-slate-issue`.
+- The user asks one ordinary local patch outside Plite automation: use `task`.
 - The user asks one architecture/API plan for review: use `plite-plan` or
   `plate-plan` according to lane.
 - The user asks one Slate benchmark target: use `slate-ar perf <target>`.
@@ -97,11 +100,12 @@ Route these immediately:
 | User says | Route | Reason |
 | --- | --- | --- |
 | `auto PR #123`, `auto https://github.com/.../pull/123` | `maintainer <pr>` | public PR queue/control-plane work |
-| `auto issue #123`, `auto https://github.com/.../issues/123` | `maintainer <issue>` | public issue queue/control-plane work |
+| `auto issue #123`, `auto https://github.com/.../issues/123` | `maintainer <issue>` | public issue queue/control-plane work; one Slate issue then routes to `resolve-slate-issue` |
 | `auto all PRs`, `auto all issues`, `auto queue`, `auto repo heartbeat` | `maintainer heartbeat` or the matching maintainer mode | broad public queue work |
 | `auto security`, `auto GHSA...`, `auto CVE...` | `maintainer security` | security authority boundary |
 | `auto current tree`, `auto post-merge`, `auto ready to commit`, `auto teammate branch` | `autoclosure <target>` | already-applied/current-tree closure |
-| `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Slate lane | internal Slate quality loop |
+| `auto plite`, `auto slate`, `auto slate-v2`, `auto huge-document`, `auto editor behavior` | `auto` Plite lane | broad internal Plite quality loop |
+| `auto <one local Plite regression>` | `plite-patch <regression>` | one local reproduce-test-fix-proof pass |
 | `auto plate`, `auto plate packages`, `auto docs`, `auto registry` | `auto` Plate lane | internal Plate quality loop |
 
 When routing away, preserve the user's arguments and newest constraints. Do
@@ -112,18 +116,18 @@ or continue the correct goal/template.
 
 Resolve the lane before checkpoint work:
 
-- **Slate lane:** raw Slate v2 package/runtime/browser/proof work, usually under
-  `packages/slate*`, `packages/browser`, `packages/yjs`, Slate docs/routes,
-  migration, external editor issue/test harvesting, and Slate public API/DX
-  cleanup. All old Slate automation laws in this file still apply here.
+- **Plite lane:** Plite package/runtime/browser/proof work under
+  `packages/plite*`, `packages/browser`, `packages/yjs`, `apps/plite`, and
+  `docs/plite`; migration, external editor issue/test harvesting, and Plite
+  public API/DX cleanup. Upstream Slate remains a behavior and issue oracle.
 - **Plate lane:** Plate packages, plugin/product docs, registry examples,
   package exports, public component/plugin DX, and docs app behavior. Use Plate
   commands, routes, and package owners; do not pretend Slate package proof
   covers Plate product behavior.
 - **Shared editor lane:** editor behavior, selection, paste, history, IME,
   voids, table fragments, docs/API vocabulary, and architecture boundaries that
-  cross Slate substrate and Plate product layers. Name the primary owner before
-  patching and keep the Slate-vs-Plate boundary explicit in the plan.
+  cross Plite substrate and Plate product layers. Name the primary owner before
+  patching and keep the Plite-vs-Plate boundary explicit in the plan.
 
 If the prompt is ambiguous, infer from paths/URLs/packages first. If the lane is
 still ambiguous but safe proof remains, run a no-code status/gap checkpoint and
@@ -328,7 +332,7 @@ Split long work into checkpoints that fit one high-quality prompt:
   copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
   over-splits, or perf work expose broader source-layout friction, invoke
   `architecture-cleanup` before choosing `plite-plan`, `plate-plan`,
-  `slate-patch`, `slate-ar`, or a package owner.
+  `plite-patch`, `slate-ar`, or a package owner.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
@@ -640,48 +644,49 @@ changes in the final handoff.
 In `Plate repo root`, prefer these focused forms:
 
 ```bash
-pnpm check:slate
-pnpm --filter slate test:slate-browser:chromium <file-or--grep>
-pnpm check:slate:browser-matrix
-PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts -g "<pattern>"
+pnpm check:plite:dev
+pnpm --filter plite test:plite-browser:chromium <file-or--grep>
+pnpm check:plite
+pnpm check:plite:browser-matrix
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/<suite>.test.ts -g "<pattern>"
 pnpm --filter @platejs/<package> test -- <file-or-pattern>
 cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pattern>"
 ```
 
 Rules:
 
-- `pnpm check:slate` is the default daily Slate lane: package typecheck/tests,
-  browser package tests, and full Chromium browser proof through `apps/slate`.
-- Transplant parity, docs-v2 audits, benchmark target audits, www typecheck,
-  WebKit, mobile viewport, and the full Playwright app matrix are not part of
-  the daily Slate loop.
-- `pnpm --filter slate test:slate-browser:chromium <file-or--grep>` is
-  the focused changed-row browser lane. `apps/slate` must reuse
-  `apps/www` Slate example modules instead of owning duplicate examples.
+- `pnpm check:plite:dev` is the normal affected development lane.
+- `pnpm check:plite` is the strict handoff lane. Transplant parity, docs
+  audits, benchmark target audits, www typecheck, and the browser matrix are
+  not part of the affected development loop.
+- `pnpm --filter plite test:plite-browser:chromium <file-or--grep>` is
+  the focused changed-row browser lane. `apps/plite` imports its Plite examples
+  from `apps/www`; never maintain a second example source tree.
 - WebKit, mobile viewport, and the full Playwright app matrix are closure
-  gates through `pnpm check:slate:browser-matrix`.
+  gates through `pnpm check:plite:browser-matrix`.
 - run commands from the Plate repo root unless a package-local script requires
   the package cwd;
 - keep docs, skill, runtime, package, benchmark, and Playwright scans rooted in
   the Plate repo. Do not search the donor checkout for current runtime facts;
 - before running a focused test, resolve the actual runnable entrypoint from
   the owning surface, not memory: use targeted searches such as
-  `rg --files packages/<pkg>/test apps/slate/tests tooling benchmarks | rg
+  `rg --files packages/<pkg>/test apps/plite/tests tooling benchmarks | rg
   "<basename>|<suite>"`, or run the same search from the package cwd for
   package-local Vitest. Do this first, not after one failed command. Many owner
   files are imported by a `*.test.*` wrapper, while some root Bun contract files
   intentionally do not use `.test.*`;
-- match the runner to the resolved entrypoint: Slate browser specs under
-  `apps/slate/tests/slate-browser/**` use `pnpm --filter slate test:slate-browser:chromium`; root Bun contracts under
+- match the runner to the resolved entrypoint: Plite browser specs under
+  `apps/plite/tests/plite-browser/**` use `pnpm --filter plite
+  test:plite-browser:chromium`; root Bun contracts under
   `packages/*/test/*.ts` use `bun test ./...`; package-local Vitest wrappers
   use the package cwd and package script;
 - if Bun or Vitest says "No test files found" or "filters did not match", stop
   guessing command variants. Locate the exact file or wrapper with `rg --files`
   / `rg -n`, then rerun once with the correct runner;
 - for Bun workspace package commands, prefer path filters such as
-  `bun --filter ./packages/slate-history typecheck`. Package-name filters can
+  `bun --filter ./packages/plite-history typecheck`. Package-name filters can
   miss in this workspace and waste the loop;
-- use `pnpm --filter slate test:slate-browser:chromium ...` for focused Slate
+- use `pnpm --filter plite test:plite-browser:chromium ...` for focused Plite
   browser specs; do not send Playwright specs through `bun test` or the
   `apps/www` docs app;
 - do not run multiple managed Playwright commands in parallel,
@@ -711,16 +716,16 @@ Rules:
   `pnpm --filter @platejs/browser build` before browser proofs that import the
   package. The specs can otherwise load stale generated package output and fail
   on missing helper methods instead of product behavior;
-- after changing `packages/slate-react/src/**`, `packages/slate-dom/src/**`, or
+- after changing `packages/plite-react/src/**`, `packages/plite-dom/src/**`, or
   any public package runtime consumed by the example app through package
   exports, run the touched package build before managed Playwright proof, for
-  example `pnpm --filter @platejs/slate-react build`. The managed Playwright
+  example `pnpm --filter @platejs/plite-react build`. The managed Playwright
   wrapper builds `@platejs/browser` and the Next site, but stale package `dist`
   can still make the browser prove old runtime behavior;
 - when running packed/external-consumer package smoke, start from the live
   export/type contracts such as
-  `packages/slate/test/public-package-import-smoke.test.ts` and
-  `packages/slate/test/public-package-types-smoke.ts`. Do not invent public
+  `packages/plite/test/public-package-import-smoke.test.ts` and
+  `packages/plite/test/public-package-types-smoke.ts`. Do not invent public
   function call examples from memory. Prefer type-importing exported names and
   doing only tiny value references unless the package docs/source were just
   inspected for that exact signature;
@@ -735,13 +740,13 @@ Rules:
   match and suggests adding more `./` prefixes, do not chase prefixes. Either
   add `--path-ignore-patterns ''` from `Plate repo root` or switch to the owning
   package cwd and run the local wrapper path, for example
-  `cd packages/slate-dom && bun test ./test/bridge.test.ts --test-name-pattern
+  `cd packages/plite-dom && bun test ./test/bridge.test.ts --test-name-pattern
   "<pattern>"`;
 - do not claim a root package test directory proved anything until its output
   reports the expected file and pass counts. The repo `bunfig.toml` ignores
   `*.test.*` by default, so root aggregate package tests must use
   `--path-ignore-patterns ''` when they intentionally cover `.test.*` contracts.
-  Package-local scripts such as `bun --filter slate-browser test:core` are also
+  Package-local scripts such as `pnpm --filter @platejs/browser test:core` are also
   valid because they run under the package owner instead of the root ignore;
 - for package Vitest contracts, target the actual `*.test.*` entrypoint. Some
   contract bodies live in imported siblings such as `surface-contract.tsx`;
@@ -749,10 +754,10 @@ Rules:
   only a command-shape miss. Before running Vitest against any target path that
   does not already match `*.test.*`, locate the wrapper with
   `rg -n "<imported-file-basename>" <package>/test --glob "*.test.*"`;
-- `packages/slate-react` contracts are Vitest-owned. Run them from
-  `packages/slate-react` as
+- `packages/plite-react` contracts are Vitest-owned. Run them from
+  `packages/plite-react` as
   `bun test:vitest test/<file>.test.tsx`; do not run them through root
-  `bun test ./packages/slate-react/...`;
+  `bun test ./packages/plite-react/...`;
 - do not run `generic-*-contract.ts` or other type-contract files with
   top-level compile examples through `bun test`; they may contain deliberate
   runtime-invalid `@ts-expect-error` calls. Use the owning package `typecheck`
@@ -790,7 +795,7 @@ Rules:
   `sed` slices or write the full audit to an artifact. Exclude generated static
   output such as `apps/www/.next/**` unless that artifact is the target;
 - before any `rg -n` over more than one large root such as
-  `docs/slate-v2`, `packages`, `site/examples`, or `playwright/integration`,
+  `docs/plite`, `packages`, `apps/www/src/app/(app)/examples/plite`, or `playwright/integration`,
   run a preflight with `rg -l`, `rg --count-matches`, or `rg --files | rg`.
   If the file list is larger than roughly 20 files or includes generated
   ledgers/benchmarks, narrow the roots or write the full result to `.tmp/**`.
@@ -800,7 +805,7 @@ Rules:
   benchmark script, or package entrypoint, start there. Do not run a broad
   repo/root scan first "just in case"; broaden only after the owner file proves
   the missing symbol or dependency is outside its boundary;
-- when closing a `docs/slate-v2/research/**` lead, read that artifact's
+- when closing a `docs/plite/research/**` lead, read that artifact's
   `lead-ledger.tsv`, `promoted-ledger.tsv`, and `read-log.tsv` first. Use exact
   source refs and owner files from those ledgers before any repo-wide `rg`.
   Broad current-tree or OSS scans are allowed only after the recorded anchors
@@ -858,7 +863,7 @@ Rules:
   stale green or stale red results;
 - for ad hoc route screenshot or DOM-metric proof outside a managed Playwright
   spec, do not run raw `node` and assume it can import `playwright`. Prefer the
-  repo-managed `pnpm --filter slate test:slate-browser:chromium` path for
+  repo-managed `pnpm --filter plite test:plite-browser:chromium` path for
   Slate proof when the proof should be durable;
 - use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
   from the current runtime source. If runtime, example, package export, or
@@ -1024,7 +1029,7 @@ Allowed skill repair:
 4. verify source and generated mirror with `rg`;
 5. record the repair in the goal plan.
 
-Use `slate-patch repair <expectation>` for patch-lane misses.
+Use `plite-patch repair <expectation>` for patch-lane misses.
 Use `autogoal repair <expectation>` for universal goal lifecycle misses.
 Patch `auto` itself when the supervisor cadence, proof, or routing
 missed the expectation.
@@ -1070,8 +1075,8 @@ Every failed attempt is classified before the next checkpoint:
 
 Then repair the owning layer:
 
-- runtime bug -> `slate-patch`;
-- missing oracle -> `slate-patch` or `tdd`;
+- runtime bug -> `plite-patch`;
+- missing oracle -> `plite-patch` or `tdd`;
 - missing/lying metric -> benchmark target/script repair;
 - visual proof gap -> Browser/screenshot/Playwright geometry proof;
 - stale docs -> decision consolidation;
@@ -1099,7 +1104,7 @@ Each loop cycle has one primary owner and one packet-ledger decision.
    route Plate quality gaps to the package/docs/test owner.
 4. **Behavior:** run `slate-ar stabilize` / `slate-ar gate` before Slate perf;
    run focused Plate behavior/browser/docs proof for Plate lanes.
-5. **Oracle repair:** if proof is missing, use `slate-patch`, `tdd`, or the
+5. **Oracle repair:** if proof is missing, use `plite-patch`, `tdd`, or the
    package test owner.
 6. **Vision proof:** use Browser, screenshot, and/or Playwright geometry checks
    for visual/editor parity.
@@ -1298,8 +1303,8 @@ show a missed human journey. Promote repeated rows into reusable Playwright or
 
 The supervisor repairs whatever layer is missing:
 
-- **Bug:** reproduce and fix with `slate-patch`.
-- **Missing oracle:** add Playwright/unit/Browser proof with `slate-patch` or
+- **Bug:** reproduce and fix with `plite-patch`.
+- **Missing oracle:** add Playwright/unit/Browser proof with `plite-patch` or
   `tdd`.
 - **Runtime-boundary oracle gap:** when repeated proof needs a host, browser,
   peer, transport, or editor-service boundary, build the smallest fake runtime
@@ -1350,8 +1355,8 @@ At the start of a long run, ingest decisions before acting:
 
 - read the `vision` skill first;
 - search active/recent goal plans under `docs/plans/**`;
-- search accepted architecture/proof docs under `docs/slate-v2/**`;
-- search compiled evidence under `docs/slate-v2/research/**`;
+- search accepted architecture/proof docs under `docs/plite/**`;
+- search compiled evidence under `docs/plite/research/**`;
 - read benchmark target context from `benchmarks/targets/slate-v2.json`;
 - read source rules for any specialist skill before blaming the specialist.
 
@@ -1364,16 +1369,16 @@ Use the smallest durable target:
 - active goal plan for run-specific findings;
 - `VISION.md` for reusable user taste, correction patterns, and
   supervisor routing decisions;
-- `docs/slate-v2/**` for accepted Slate v2 architecture, proof, issue, and
+- `docs/plite/**` for accepted Slate v2 architecture, proof, issue, and
   reviewer-facing decisions;
-- `docs/slate-v2/research/**` for Slate v2 research/evidence layers;
+- `docs/plite/research/**` for Slate v2 research/evidence layers;
 - `docs/editor-issue-harvester/**` for durable external issue closure ledgers,
   compact matrices, owner decisions, proof commands, and checkmarks;
 - `.tmp/editor-issue-harvester/**/raw/**` for unversioned external issue-corpus
   scratch, especially open/closed GitHub issue bodies and hydrated JSON;
 - `.agents/rules/**` only for reusable agent workflow policy.
 
-When work originates from `docs/slate-v2/research/**`, update that artifact
+When work originates from `docs/plite/research/**`, update that artifact
 before closeout. A research lead is not closed while its durable
 `lead-ledger.tsv` / `promoted-ledger.tsv` still says `queued`, `promote-now`,
 or `TBD` after the packet was kept, reverted, quarantined, or deferred with an
@@ -1424,7 +1429,7 @@ Stop when:
   keep/revert/quarantine decision.
 
 Do not stop just because one benchmark improved or one focused test passed.
-Do not stop just because a behavior lane needs `slate-patch`; switch owner
+Do not stop just because a behavior lane needs `plite-patch`; switch owner
 inside the same automation loop and keep the packet ledger honest.
 Do not stop a timed or batch run before its minimum runtime because no obvious
 owner remains; enter supervision mode and create the next checkpoint.

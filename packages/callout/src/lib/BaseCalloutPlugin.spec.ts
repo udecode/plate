@@ -1,10 +1,14 @@
 import { createBaseEditor } from '@platejs/core';
 import { schema } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 
-import { BaseCalloutPlugin } from './BaseCalloutPlugin';
-import { CALLOUT_STORAGE_KEY } from './transforms/insertCallout';
+import { BaseCalloutPlugin, CALLOUT_STORAGE_KEY } from './BaseCalloutPlugin';
 
 describe('BaseCalloutPlugin', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('exposes callout break/delete rules and inserts bound callout nodes', () => {
     localStorage.setItem(CALLOUT_STORAGE_KEY, '🔥');
 
@@ -38,6 +42,54 @@ describe('BaseCalloutPlugin', () => {
       icon: '🔥',
       type: editor.getType('callout'),
       variant: 'info',
+    });
+  });
+
+  it('uses explicit insert properties and node options', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseCalloutPlugin],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor.update((tx) => {
+      tx.callout.insert({
+        at: [1],
+        icon: '🔥',
+        variant: 'warning',
+      });
+    });
+
+    expect(editor.read.children().at(-1)).toMatchObject({
+      children: [{ text: '' }],
+      icon: '🔥',
+      type: KEYS.callout,
+      variant: 'warning',
+    });
+  });
+
+  it('falls back to local storage and then the default bulb icon', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseCalloutPlugin.configure({
+          type: 'custom-callout',
+        }),
+      ],
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    localStorage.setItem(CALLOUT_STORAGE_KEY, '📌');
+    editor.update.callout.insert();
+    editor.update.callout.insert({ icon: undefined });
+    localStorage.removeItem(CALLOUT_STORAGE_KEY);
+    editor.update.callout.insert();
+
+    expect(editor.read.children().at(1)).toMatchObject({
+      icon: '📌',
+      type: 'custom-callout',
+    });
+    expect(editor.read.children().at(3)).toMatchObject({
+      icon: '💡',
+      type: 'custom-callout',
     });
   });
 });

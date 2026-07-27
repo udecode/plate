@@ -156,11 +156,11 @@ test('requires typed handles for known schema properties', () => {
 test('accepts contextual configure runtime fields and rejects model fields', () => {
   const source = [
     '```ts',
-    'ParagraphPlugin.configure(({ editor }) => ({ options: { editor }, override: { plugins: {} } }));',
+    'ParagraphPlugin.configure(({ editor }) => ({ initialState: { editor }, override: { plugins: {} } }));',
     'ParagraphPlugin.configure(() => ({ schema: { element: {} } }));',
     "ParagraphPlugin.configure(() => { return { type: 'other' }; });",
     'ParagraphPlugin.configure(() => runtimeConfig);',
-    'ParagraphPlugin.extend(({ editor }) => ({ options: { editor } }));',
+    'ParagraphPlugin.extend(({ editor }) => ({ initialState: { editor } }));',
     '```',
   ].join('\n');
   const issues = auditPlateDocCode(source);

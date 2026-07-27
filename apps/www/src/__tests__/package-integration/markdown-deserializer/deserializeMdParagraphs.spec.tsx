@@ -4,9 +4,8 @@ import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
@@ -22,7 +21,7 @@ import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deser
 jsxt;
 
 const markdownPlugin = MarkdownPlugin.configure({
-  options: {
+  initialState: {
     disallowedNodes: [SuggestionPlugin.key],
     remarkPlugins: [remarkMath, remarkGfm],
   },
@@ -37,8 +36,7 @@ const createTestEditor = (plugins: any[] = []) =>
       CodePlugin,
       ItalicPlugin,
       StrikethroughPlugin,
-      SubscriptPlugin,
-      SuperscriptPlugin,
+      ScriptPlugin,
       UnderlinePlugin,
       ...plugins,
     ],

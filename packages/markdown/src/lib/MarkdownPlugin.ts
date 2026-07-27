@@ -4,13 +4,13 @@ import type { Node as UnistNode } from 'unist';
 
 import {
   type BaseEditor,
-  type PluginConfig,
+  type InferConfig,
   createBasePlugin,
 } from '@platejs/core';
-import type { Descendant, EditorCoreStateView } from '@platejs/plite';
+import type { Descendant, EditorCoreStateView, Text } from '@platejs/plite';
 import { ContentSlice } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
-import { bindFirst, isUrl } from '@udecode/utils';
+import { isUrl } from '@udecode/utils';
 
 import type { MdRules, PlateType } from './types';
 import type { DeserializeMdOptions } from './deserializer';
@@ -18,7 +18,10 @@ import type { SerializeMdOptions } from './serializer';
 
 import { deserializeInlineMd } from './deserializer';
 import { deserializeMdWithRuntime } from './internal/markdownDeserializer';
-import { serializeMdWithRuntime } from './internal/markdownSerializer';
+import {
+  serializeInlineMdWithRuntime,
+  serializeMdWithRuntime,
+} from './internal/markdownSerializer';
 import {
   createMarkdownRuntime,
   withMarkdownRuntime,
@@ -31,7 +34,7 @@ export type AllowNodeConfig = {
   serialize?: (node: Descendant) => boolean;
 };
 
-export type MarkdownPluginOptions = {
+export type MarkdownPluginState = {
   /** Allowed node types. Cannot be combined with `disallowedNodes`. */
   allowedNodes?: readonly PlateType[] | null;
   /** Custom node filters for deserialization and serialization. */
@@ -48,26 +51,6 @@ export type MarkdownPluginOptions = {
   rules?: MdRules | null;
 };
 
-type MarkdownApi = {
-  markdown: {
-    deserialize: (
-      data: string,
-      options?: DeserializeMdOptions
-    ) => ReturnType<typeof deserializeMdWithRuntime>;
-    deserializeInline: (
-      text: string,
-      options?: DeserializeMdOptions
-    ) => ReturnType<typeof deserializeInlineMd>;
-    serialize: (options?: SerializeMdOptions) => string;
-  };
-};
-
-export type MarkdownConfig = PluginConfig<
-  'markdown',
-  MarkdownPluginOptions,
-  MarkdownApi
->;
-
 const shouldParseMarkdown = (
   data: string,
   source: { files: { length: number }; getData: (format: string) => string }
@@ -78,7 +61,26 @@ const shouldParseMarkdown = (
   return true;
 };
 
-export const MarkdownPlugin = createBasePlugin<MarkdownConfig>({
+export const MarkdownPlugin = createBasePlugin({
+  api: ({ editor, plugin }) => ({
+    deserialize: (data: string, options?: DeserializeMdOptions) =>
+      withMarkdownRuntime(editor, (runtime) =>
+        deserializeMdWithRuntime(runtime, data, options)
+      ),
+    deserializeInline: (text: string, options?: DeserializeMdOptions) =>
+      deserializeInlineMd(editor, text, options),
+    serializeInline: (
+      options?: Omit<SerializeMdOptions, 'value'> & {
+        value?: readonly Text[];
+      }
+    ) =>
+      editor.read((state) =>
+        serializeInlineMdWithRuntime(
+          createMarkdownRuntime(editor, plugin.key, state),
+          options
+        )
+      ),
+  }),
   codecs: ({ defineCodecs, editor, plugin }) => {
     const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
@@ -112,31 +114,28 @@ export const MarkdownPlugin = createBasePlugin<MarkdownConfig>({
     });
   },
   key: KEYS.markdown,
-  options: {
+  initialState: {
     allowedNodes: null,
     disallowedNodes: null,
     plainMarks: null,
     remarkPlugins: [],
     remarkStringifyOptions: null,
     rules: null,
-  },
-  extension: ({ editor }) => ({
-    api: {
-      markdown: {
-        deserialize: (data: string, options?: DeserializeMdOptions) =>
-          withMarkdownRuntime(editor, (runtime) =>
-            deserializeMdWithRuntime(runtime, data, options)
-          ),
-        deserializeInline: bindFirst(deserializeInlineMd, editor),
-        serialize: (options?: SerializeMdOptions) =>
-          withMarkdownRuntime(editor, (runtime) =>
-            serializeMdWithRuntime(runtime, options)
-          ),
-      },
-    },
+  } as MarkdownPluginState,
+  read: ({ editor, plugin, state }) => ({
+    serialize: (options?: SerializeMdOptions) =>
+      serializeMdWithRuntime(
+        createMarkdownRuntime(editor, plugin.key, state),
+        options
+      ),
   }),
 });
 
+export type MarkdownConfig = InferConfig<typeof MarkdownPlugin>;
+
 export type MarkdownEditor<E extends BaseEditor = BaseEditor> = E & {
-  readonly api: E['api'] & MarkdownConfig['api'];
+  readonly api: E['api'] & {
+    readonly markdown: MarkdownConfig['pluginApi'];
+  };
+  readonly read: E['read'] & NonNullable<MarkdownConfig['state']>;
 };

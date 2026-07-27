@@ -3,8 +3,7 @@ import { Key } from '@udecode/react-hotkeys';
 import { BaseParagraphPlugin } from '../../../lib';
 import { toPlatePlugin } from '../../plugin/toPlatePlugin';
 
-export const ParagraphPlugin = toPlatePlugin(
-  BaseParagraphPlugin,
+export const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin).extend(
   ({ editor, type }) => ({
     shortcuts: {
       toggleParagraph: {

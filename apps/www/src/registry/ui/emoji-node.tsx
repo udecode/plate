@@ -4,9 +4,9 @@ import * as React from 'react';
 
 import type { PlateElementProps } from 'platejs/react';
 
-import { EmojiInlineIndexSearch, insertEmoji } from '@platejs/emoji';
+import { EmojiInlineIndexSearch } from '@platejs/emoji';
 import { EmojiPlugin } from '@platejs/emoji/react';
-import { PlateElement, usePluginOption } from 'platejs/react';
+import { PlateElement, usePluginStore } from 'platejs/react';
 
 import { useDebounce } from '@/registry/hooks/use-debounce';
 
@@ -23,7 +23,7 @@ const TRAILING_COLON_REGEX = /:$/;
 
 export function EmojiInputElement(props: PlateElementProps) {
   const { children, editor, element } = props;
-  const data = usePluginOption(EmojiPlugin, 'data')!;
+  const data = usePluginStore(EmojiPlugin, 'data')!;
   const [value, setValue] = React.useState('');
   const debouncedValue = useDebounce(value, 100);
   const isPending = value !== debouncedValue;
@@ -56,7 +56,7 @@ export function EmojiInputElement(props: PlateElementProps) {
               <InlineComboboxItem
                 key={emoji.id}
                 value={emoji.name}
-                onClick={() => insertEmoji(editor, emoji)}
+                onClick={() => editor.plugin(EmojiPlugin).update.insert(emoji)}
               >
                 {emoji.skins[0].native} {emoji.name}
               </InlineComboboxItem>

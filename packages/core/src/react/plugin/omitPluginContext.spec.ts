@@ -6,12 +6,9 @@ describe('omitPluginContext (plate)', () => {
       api: { remove: true },
       editor: { id: 'editor' },
       extra: 'kept',
-      getOption: () => 'option',
-      getOptions: () => ({ value: 1 }),
       nested: { value: 2 },
       plugin: { key: 'plugin' },
-      setOption: () => {},
-      setOptions: () => {},
+      store: { get: () => ({ value: 1 }) },
       type: 'plugin',
       update: () => {},
     };

@@ -201,7 +201,7 @@ describe('CodeBlockPlugin operations', () => {
         BaseParagraphPlugin,
         CodeBlockPlugin,
         CodeHighlightPlugin.configure({
-          options: { lowlight: createLowlight() },
+          initialState: { lowlight: createLowlight() },
         }),
       ],
       initialValue: input.children,
@@ -228,7 +228,7 @@ describe('CodeBlockPlugin operations', () => {
         BaseParagraphPlugin,
         CodeBlockPlugin,
         CodeHighlightPlugin.configure({
-          options: { lowlight: createLowlight() },
+          initialState: { lowlight: createLowlight() },
         }),
       ],
       initialValue: input.children,
@@ -276,7 +276,7 @@ describe('CodeBlockPlugin operations', () => {
         BaseParagraphPlugin,
         CodeBlockPlugin,
         CodeHighlightPlugin.configure({
-          options: { lowlight: createLowlight() },
+          initialState: { lowlight: createLowlight() },
         }),
         TestCodeBlockPropertyPlugin,
       ],
@@ -314,7 +314,7 @@ describe('CodeBlockPlugin operations', () => {
         BaseParagraphPlugin,
         CodeBlockPlugin,
         CodeHighlightPlugin.configure({
-          options: { lowlight: createLowlight() },
+          initialState: { lowlight: createLowlight() },
         }),
       ],
       initialValue: value,

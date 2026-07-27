@@ -3,4 +3,3 @@
  */
 
 export * from './CsvPlugin';
-export * from './deserializer/index';

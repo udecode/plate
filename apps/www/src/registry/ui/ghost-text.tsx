@@ -3,12 +3,12 @@
 import * as React from 'react';
 
 import { CopilotPlugin } from '@platejs/ai/react';
-import { useElement, usePluginOption } from 'platejs/react';
+import { useElement, usePluginStore } from 'platejs/react';
 
 export function GhostText() {
   const element = useElement();
 
-  const isSuggested = usePluginOption(
+  const isSuggested = usePluginStore(
     CopilotPlugin,
     'isSuggested',
     element.id as string
@@ -20,7 +20,7 @@ export function GhostText() {
 }
 
 function GhostTextContent() {
-  const suggestionText = usePluginOption(CopilotPlugin, 'suggestionText');
+  const suggestionText = usePluginStore(CopilotPlugin, 'suggestionText');
 
   return (
     <span

@@ -19,7 +19,7 @@ const useElementMock = mock();
 const useMountedMock = mock();
 const useEquationElementMock = mock();
 const useEditorPluginMock = mock();
-const usePluginOptionMock = mock();
+const usePluginStoreMock = mock();
 
 Object.assign(globalThis, { React });
 
@@ -64,7 +64,7 @@ mock.module('platejs/react', () => ({
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
   useEditorFocused: useFocusedMock,
-  usePluginOption: usePluginOptionMock,
+  usePluginStore: usePluginStoreMock,
   useEditorReadOnly: useReadOnlyMock,
   useElementSelected: useSelectedMock,
 }));
@@ -90,9 +90,7 @@ mock.module('@platejs/date', () => ({
   parseCanonicalDateValue: () => new Date(2026, 3, 13),
 }));
 
-mock.module('@platejs/mention', () => ({
-  getMentionOnSelectItem: () => () => {},
-}));
+mock.module('@platejs/mention', () => ({}));
 
 mock.module('@platejs/selection/react', () => ({
   BlockSelectionPlugin: { key: 'blockSelection' },
@@ -166,7 +164,7 @@ describe('inline void suggestion styling', () => {
     useEditorPluginMock.mockReset();
     useElementMock.mockReset();
     useMountedMock.mockReset();
-    usePluginOptionMock.mockReset();
+    usePluginStoreMock.mockReset();
     useEquationElementMock.mockReset();
 
     useFocusedMock.mockReturnValue(false);
@@ -181,10 +179,10 @@ describe('inline void suggestion styling', () => {
           nodeId: () => null,
         },
       },
-      setOption: () => {},
+      store: { set: () => {} },
     });
     useMountedMock.mockReturnValue(true);
-    usePluginOptionMock.mockReturnValue(null);
+    usePluginStoreMock.mockReturnValue(null);
     useEquationElementMock.mockReturnValue(undefined);
   });
 

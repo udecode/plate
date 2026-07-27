@@ -1,6 +1,12 @@
-import { type BasePluginConfig, createBasePlugin } from '@platejs/core';
+import {
+  type BasePluginConfig,
+  createBasePlugin,
+  createRuleFactory,
+} from '@platejs/core';
 import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+
+const headingKeyRe = /^h([1-6])$/;
 
 const headingSchema = {
   element: {
@@ -16,6 +22,20 @@ const rules = {
   delete: { start: 'reset' },
   merge: { removeEmpty: true },
 } satisfies NonNullable<BasePluginConfig['rules']>;
+
+export const HeadingRules = {
+  markdown: createRuleFactory({
+    type: 'blockStart',
+    trigger: ' ',
+    match: ({ pluginKey }) => {
+      const match = headingKeyRe.exec(pluginKey);
+
+      if (!match) return;
+
+      return '#'.repeat(Number(match[1]));
+    },
+  }),
+};
 
 export const BaseH1Plugin = createBasePlugin({
   key: KEYS.h1,

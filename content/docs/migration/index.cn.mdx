@@ -160,11 +160,11 @@ title: 主要版本更新
         -   `createNodeHOC`
 
     -   移除了 `usePlaceholderState` 钩子。
-        -   迁移：使用 `BlockPlaceholderPlugin`（通常来自 `platejs`）而非 `withPlaceholders` HOC 和 `usePlaceholderState`。直接在 `BlockPlaceholderPlugin` 选项中配置占位符。
+        -   迁移：使用 `BlockPlaceholderPlugin`（通常来自 `platejs`）而非 `withPlaceholders` HOC 和 `usePlaceholderState`。直接在 `BlockPlaceholderPlugin` 的 `initialState` 中配置占位符。
             ```ts
             // BlockPlaceholderPlugin 配置示例
             BlockPlaceholderPlugin.configure({
-              options: {
+              initialState: {
                 className:
                   'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
                 placeholders: {

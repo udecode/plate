@@ -1830,7 +1830,10 @@ export type EditorCommandDispatch<TEditor = Editor> = <
     : [input: EditorCommandInput<TCommand>]
 ) => boolean;
 
-export type EditorCorrectionTransaction<V extends Value = Value> = Pick<
+export type EditorCorrectionTransaction<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = Pick<
   EditorCoreUpdateTransaction<V>,
   | 'blocks'
   | 'break'
@@ -1841,9 +1844,10 @@ export type EditorCorrectionTransaction<V extends Value = Value> = Pick<
   | 'selection'
   | 'tags'
   | 'text'
-> & {
-  value: EditorStateValueApi<V>;
-};
+> &
+  EditorInstalledTxGroups<V, TExtensions> & {
+    value: EditorStateValueApi<V>;
+  };
 
 export type EditorCorrectionEvent = 'children' | 'content' | 'properties';
 
@@ -1851,14 +1855,13 @@ export type EditorCorrectionQuery<TNode extends Node = Node> =
   | 'root'
   | NodeMatch<TNode>;
 
-export type EditorCorrectionContext<TEditor extends BaseEditor<any> = Editor> =
-  {
-    editor: TEditor;
-    entry: NodeEntry;
-    tx: EditorCorrectionTransaction<
-      TEditor extends BaseEditor<infer V> ? V : Value
-    >;
-  };
+export type EditorCorrectionContext<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = {
+  editor: TEditor;
+  entry: NodeEntry;
+  tx: EditorCorrectionTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+};
 
 export type EditorCorrection<TEditor extends BaseEditor<any> = Editor> = {
   correct: (context: EditorCorrectionContext<TEditor>) => void;
@@ -2022,7 +2025,7 @@ export type EditorTransactionChangeContext<
   selectionAfterRoot: NamedRootKey | undefined;
   selectionBefore: Selection;
   selectionBeforeRoot: NamedRootKey | undefined;
-  tx: EditorUpdateTransaction<ValueOf<TEditor>>;
+  tx: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
 }>;
 
 export type EditorTransactionChangeHandler<
@@ -2127,7 +2130,6 @@ export type EditorExtension<
   onTransactionChange?: EditorTransactionChangeHandler<TEditor>;
   options?: TOptions;
   peerDependencies?: readonly string[];
-  priority?: number;
   queries?: EditorQueryMiddlewareMap<TEditor>;
   /** Immutable partial/complete declaration or pure immutable-config factory. */
   schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory<TConfig>;

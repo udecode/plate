@@ -16,7 +16,7 @@ describe('ExitBreakPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
-    editor.update.exitBreak.insert({});
+    editor.plugin(ExitBreakPlugin).update.insert();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'p' },
@@ -35,7 +35,7 @@ describe('ExitBreakPlugin', () => {
       initialValue: [{ children: [{ text: 'start' }], type: 'p' }],
     });
 
-    editor.update.exitBreak.insertBefore({ match: () => true });
+    editor.plugin(ExitBreakPlugin).update.insertBefore({ match: () => true });
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: 'p' },
@@ -54,7 +54,7 @@ describe('ExitBreakPlugin', () => {
       initialValue: [{ children: [{ text: 'start' }], type: 'p' }],
     });
 
-    editor.update.exitBreak.insert({});
+    editor.plugin(ExitBreakPlugin).update.insert();
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'start' }], type: 'p' },
@@ -103,7 +103,7 @@ describe('ExitBreakPlugin', () => {
       ],
     });
 
-    editor.update.exitBreak.insert({});
+    editor.plugin(ExitBreakPlugin).update.insert();
 
     expect(editor.read.children()).toEqual([
       {
@@ -184,7 +184,7 @@ describe('ExitBreakPlugin', () => {
       ],
     });
 
-    editor.update.exitBreak.insert({});
+    editor.plugin(ExitBreakPlugin).update.insert();
 
     expect(editor.read.children()).toEqual([
       {

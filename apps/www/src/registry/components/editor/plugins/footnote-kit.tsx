@@ -3,7 +3,7 @@
 import {
   FootnoteDefinitionPlugin,
   FootnoteInputPlugin,
-  FootnoteReferencePlugin,
+  FootnotePlugin,
 } from '@platejs/footnote/react';
 
 import {
@@ -14,6 +14,6 @@ import {
 
 export const FootnoteKit = [
   FootnoteInputPlugin.configure({ component: FootnoteInputElement }),
-  FootnoteReferencePlugin.configure({ component: FootnoteReferenceElement }),
+  FootnotePlugin.configure({ component: FootnoteReferenceElement }),
   FootnoteDefinitionPlugin.configure({ component: FootnoteDefinitionElement }),
 ];

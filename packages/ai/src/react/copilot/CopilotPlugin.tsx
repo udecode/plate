@@ -31,7 +31,7 @@ type CallCompletionOptions = {
   onResponse?: (response: Response) => Promise<void> | void;
 };
 
-type CopilotOptions = {
+type CopilotPluginState = {
   abortController?: AbortController | null;
   autoTriggerQuery?: (options: {
     editor: MarkdownEditor<PlateEditor>;
@@ -82,7 +82,7 @@ export const CopilotPlugin = createPlatePlugin({
     name: 'copilot-suggestion',
   },
   key: KEYS.copilot,
-  options: {
+  initialState: {
     abortController: null,
     completeOptions: {},
     completion: '',
@@ -95,7 +95,7 @@ export const CopilotPlugin = createPlatePlugin({
     suggestionNodeId: null,
     suggestionText: null,
     autoTriggerQuery: ({ editor }) => {
-      if (editor.plugin({ key: KEYS.copilot }).getOption('suggestionText')) {
+      if (editor.plugin({ key: KEYS.copilot }).store.get('suggestionText')) {
         return false;
       }
 
@@ -111,7 +111,7 @@ export const CopilotPlugin = createPlatePlugin({
       const block = editor.read.nodes.block({ mode: 'highest' });
 
       return block
-        ? editor.api.markdown.serialize({
+        ? editor.read.markdown.serialize({
             value: { children: [block[0]] },
           })
         : '';
@@ -119,8 +119,8 @@ export const CopilotPlugin = createPlatePlugin({
     triggerQuery: ({ editor }) =>
       editor.read.selection.isCollapsed() &&
       editor.read.selection.isAtBlockEnd(),
-  } as CopilotOptions,
-  update: ({ editor, tx }) => {
+  } as CopilotPluginState,
+  update: ({ context, editor, store, tx }) => {
     const setSuggestion = (next: CopilotSuggestionState) => {
       tx.effects.emit(copilotSuggestionEffect, {
         next,
@@ -130,9 +130,7 @@ export const CopilotPlugin = createPlatePlugin({
 
     return {
       accept: () => {
-        const { suggestionText } = editor
-          .plugin({ key: KEYS.copilot })
-          .getOptions();
+        const { suggestionText } = store.get();
 
         if (!suggestionText?.length) return false;
 
@@ -143,9 +141,7 @@ export const CopilotPlugin = createPlatePlugin({
         );
       },
       acceptNextWord: () => {
-        const { getNextWord, suggestionNodeId, suggestionText } = editor
-          .plugin({ key: KEYS.copilot })
-          .getOptions();
+        const { getNextWord, suggestionNodeId, suggestionText } = store.get();
 
         if (!getNextWord || !suggestionText?.length) return false;
 
@@ -160,6 +156,37 @@ export const CopilotPlugin = createPlatePlugin({
         });
         tx.fragment.replace(editor.api.markdown.deserializeInline(firstWord));
       },
+      reject: () => {
+        const { abortController, suggestionText } = store.get();
+
+        if (!suggestionText?.length) return false;
+
+        tx.tags.add(COPILOT_SKIP_ABORT_TAG);
+        setSuggestion({ id: null, text: null });
+        context.afterCommit(() => {
+          abortController?.abort();
+          store.set({ abortController: null });
+          store.set({ completion: null });
+        });
+      },
+      setBlockSuggestion: ({
+        id = store.get().suggestionNodeId,
+        text,
+      }: {
+        text: string;
+        id?: string | null;
+      }) => {
+        const block = tx.nodes.block();
+        const blockId =
+          id ??
+          (block
+            ? tx.schema.getElementProperty(block[0], NodeIdPlugin.key)
+            : undefined);
+
+        if (typeof blockId !== 'string') return;
+
+        setSuggestion({ id: blockId, text });
+      },
       setSuggestion,
     };
   },
@@ -169,37 +196,14 @@ export const CopilotPlugin = createPlatePlugin({
       typeof debounce<typeof triggerImmediately>
     > | null = null;
     const stop = () => {
-      const { abortController } = context.getOptions();
+      const { abortController } = context.store.get();
 
       debouncedTrigger?.cancel();
 
       if (abortController) {
         abortController.abort();
-        context.setOption('abortController', null);
+        context.store.set({ abortController: null });
       }
-    };
-    const setBlockSuggestion = ({
-      id = context.getOptions().suggestionNodeId,
-      text,
-    }: {
-      text: string;
-      id?: string | null;
-    }) => {
-      const block = context.editor.read.nodes.block();
-      const blockId =
-        id ??
-        (block
-          ? context.editor.read.schema.getElementProperty(
-              block[0],
-              NodeIdPlugin
-            )
-          : undefined);
-
-      if (typeof blockId !== 'string') return;
-
-      context.editor.update({ history: 'skip' }, (tx) => {
-        tx.copilot.setSuggestion({ id: blockId, text });
-      });
     };
     const callCompletion = async ({
       api = '/api/completion',
@@ -213,13 +217,13 @@ export const CopilotPlugin = createPlatePlugin({
       onResponse,
     }: CallCompletionOptions) => {
       try {
-        context.setOption('isLoading', true);
-        context.setOption('error', null);
+        context.store.set({ isLoading: true });
+        context.store.set({ error: null });
 
         const abortController = new AbortController();
 
-        context.setOption('abortController', abortController);
-        context.setOption('completion', '');
+        context.store.set({ abortController });
+        context.store.set({ completion: '' });
 
         const response = await fetcher(api, {
           body: JSON.stringify({ prompt, ...body }),
@@ -256,7 +260,7 @@ export const CopilotPlugin = createPlatePlugin({
             typeof payload.text === 'string'
           ) {
             text = payload.text;
-            context.setOption('completion', text);
+            context.store.set({ completion: text });
           }
         } else {
           const reader = response.body.getReader();
@@ -268,14 +272,14 @@ export const CopilotPlugin = createPlatePlugin({
             if (done) break;
 
             text += decoder.decode(value, { stream: true });
-            context.setOption('completion', text);
+            context.store.set({ completion: text });
           }
 
           const tail = decoder.decode();
 
           if (tail) {
             text += tail;
-            context.setOption('completion', text);
+            context.store.set({ completion: text });
           }
         }
 
@@ -284,31 +288,30 @@ export const CopilotPlugin = createPlatePlugin({
         }
 
         onFinish?.(prompt, text);
-        context.setOption('abortController', null);
+        context.store.set({ abortController: null });
 
         return text;
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          context.setOption('abortController', null);
+          context.store.set({ abortController: null });
 
           return null;
         }
         if (error instanceof Error) onError?.(error);
 
-        context.setOption(
-          'error',
-          error instanceof Error ? error : new Error(String(error))
-        );
+        context.store.set({
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
       } finally {
-        context.setOption('isLoading', false);
+        context.store.set({ isLoading: false });
       }
     };
     async function triggerImmediately() {
       const { completeOptions, getPrompt, isLoading, triggerQuery } =
-        context.getOptions();
+        context.store.get();
       const aiChat = context.editor.plugin(AIChatPlugin);
       const chatStatus = aiChat.installed
-        ? aiChat.getOption('chat')?.status
+        ? aiChat.store.get('chat')?.status
         : undefined;
 
       if (
@@ -344,34 +347,24 @@ export const CopilotPlugin = createPlatePlugin({
                 ? { ...headers }
                 : undefined,
         onError: (error) => {
-          context.setOption('error', error);
+          context.store.set({ error });
           completeOptions?.onError?.(error);
         },
         onFinish: (sourcePrompt, completion) => {
-          setBlockSuggestion({ text: completion });
+          context.editor
+            .update({ history: 'skip' })
+            .copilot.setBlockSuggestion({ text: completion });
           completeOptions?.onFinish?.(sourcePrompt, completion);
         },
       });
     }
 
-    debouncedTrigger = context.getOptions().debounceDelay
-      ? debounce(triggerImmediately, context.getOptions().debounceDelay)
+    debouncedTrigger = context.store.get().debounceDelay
+      ? debounce(triggerImmediately, context.store.get().debounceDelay)
       : null;
-
-    const reject = () => {
-      if (!context.getOptions().suggestionText?.length) return false;
-
-      stop();
-      context.editor.update({ history: 'skip' }, (tx) => {
-        tx.copilot.setSuggestion({ id: null, text: null });
-      });
-      context.setOption('completion', null);
-    };
 
     return {
       api: {
-        reject,
-        setBlockSuggestion,
         stop,
         triggerSuggestion: debouncedTrigger ?? triggerImmediately,
       },
@@ -383,15 +376,15 @@ export const CopilotPlugin = createPlatePlugin({
     return {
       handlers: {
         onBlur: () => {
-          context.api.reject();
+          context.editor.update({ history: 'skip' }).copilot.reject();
         },
         onMouseDown: () => {
-          context.api.reject();
+          context.editor.update({ history: 'skip' }).copilot.reject();
         },
       },
       render: {
         belowNodes: () => {
-          const GhostText = context.getOptions().renderGhostText;
+          const GhostText = context.store.get().renderGhostText;
 
           if (!GhostText) return;
 
@@ -404,8 +397,7 @@ export const CopilotPlugin = createPlatePlugin({
         },
       },
       selectors: {
-        isSuggested: (id: string) =>
-          context.getOptions().suggestionNodeId === id,
+        isSuggested: (state, id: string) => state.suggestionNodeId === id,
       },
       shortcuts: {
         accept: {
@@ -414,18 +406,19 @@ export const CopilotPlugin = createPlatePlugin({
         },
         reject: {
           keys: 'escape',
+          target: 'update',
         },
       },
       extension: {
         onCommit({ commit }) {
           if (
             (!commit.changes.empty || commit.selectionChanged) &&
-            context.getOptions().shouldAbort &&
+            context.store.get().shouldAbort &&
             !commit.tags.includes(COPILOT_SKIP_ABORT_TAG) &&
-            context.getOptions().suggestionText?.length
+            context.store.get().suggestionText?.length
           ) {
-            context.api.reject();
-            context.setOptions({
+            context.editor.update({ history: 'skip' }).copilot.reject();
+            context.store.set({
               completion: null,
               suggestionNodeId: null,
               suggestionText: null,
@@ -437,7 +430,7 @@ export const CopilotPlugin = createPlatePlugin({
           )?.value.next;
 
           if (next) {
-            context.setOptions({
+            context.store.set({
               suggestionNodeId: next.id,
               suggestionText: next.text,
             });
@@ -450,8 +443,8 @@ export const CopilotPlugin = createPlatePlugin({
             selection &&
             (!previousSelection ||
               !RangeApi.equals(previousSelection, selection)) &&
-            context
-              .getOptions()
+            context.store
+              .get()
               .autoTriggerQuery?.({ editor: context.editor }) &&
             context.editor.read.view.isFocused()
           ) {
@@ -462,14 +455,14 @@ export const CopilotPlugin = createPlatePlugin({
         },
         commands: ({ around }) => [
           around(editorCommands.insertText, ({ input, state, next }) => {
-            const suggestionText = context.getOptions().suggestionText;
+            const suggestionText = context.store.get().suggestionText;
 
             if (!suggestionText?.startsWith(input.text)) return next();
 
             const prefix = state.transaction((tx) => {
               tx.tags.add(COPILOT_SKIP_ABORT_TAG);
               tx.copilot.setSuggestion({
-                id: context.getOptions().suggestionNodeId ?? null,
+                id: context.store.get().suggestionNodeId ?? null,
                 text: suggestionText.slice(input.text.length),
               });
             });

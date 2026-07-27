@@ -33,7 +33,7 @@ editor.api.debug.error('This is an error');
 const editor = createPlateEditor({
   plugins: [
     DebugPlugin.configure({
-      options: {
+      initialState: {
         logLevel: 'warn', // 仅显示警告和错误
       },
     }),
@@ -41,9 +41,9 @@ const editor = createPlateEditor({
 });
 ```
 
-### 配置选项
+### 初始 State
 
-`DebugPlugin` 可以使用以下选项进行配置：
+在 `DebugPlugin` store 中设置以下初始字段：
 
 - `isProduction`：设置为 `true` 以在生产环境中禁用日志记录。
 - `logLevel`：设置最小日志级别（`'error'`、`'warn'`、`'info'` 或 `'log'`）。
@@ -56,7 +56,7 @@ const editor = createPlateEditor({
 const editor = createPlateEditor({
   plugins: [
     DebugPlugin.configure({
-      options: {
+      initialState: {
         isProduction: process.env.NODE_ENV === 'production',
         logLevel: 'info',
         logger: {

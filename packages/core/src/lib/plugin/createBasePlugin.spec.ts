@@ -9,12 +9,12 @@ import {
 import { writeHostFragmentData } from '@platejs/plite-dom';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
+import { prepareHtmlPluginContext } from '../plugins/html/HtmlPlugin';
 import {
   type AnyBasePlugin,
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
-  prepareHtmlPluginContext,
 } from '../index';
 import { getEditorPlugin } from './getEditorPlugin';
 
@@ -36,13 +36,12 @@ const resolveEditorExtensions = (plugin: AnyBasePlugin) => {
 
 describe('createBasePlugin', () => {
   it('authors one inferred MIME codec before terminal configuration', () => {
-    const descriptor = createBasePlugin({ key: 'records' });
-
-    expect(typeof descriptor.extend).toBe('function');
-
-    const RecordsPlugin = descriptor.extend(
-      ({ defineCodecs, editor: _editor, plugin }) => ({
-        codecs: defineCodecs({
+    const RecordsPlugin = createBasePlugin({
+      api: {
+        serialize: (count: number) => `records:${count}`,
+      },
+      codecs: ({ api, defineCodecs }) =>
+        defineCodecs({
           'application/x-plate-records': {
             decode: ({ data, source, state }) => {
               data satisfies string;
@@ -60,13 +59,13 @@ describe('createBasePlugin', () => {
               slice.openStart satisfies number;
               state.schema satisfies object;
 
-              return `${plugin.key}:${slice.content.length}`;
+              return api.serialize(slice.content.length);
             },
             scope: 'document',
           },
         }),
-      })
-    );
+      key: 'records',
+    });
     const editor = createBaseEditor({ plugins: [RecordsPlugin] });
     const output: Record<string, string> = {};
 
@@ -240,18 +239,18 @@ describe('createBasePlugin', () => {
     expect(resolved?.validate?.(-1)).toBe(false);
   });
 
-  it('contextually types schema factories over options', () => {
+  it('contextually types schema factories over initialState', () => {
     type Config = PluginConfig<'typed-node-schema', { targetTypes: string[] }>;
 
     const plugin = createBasePlugin<Config>({
       key: 'typed-node-schema',
-      options: { targetTypes: ['p'] },
-      schema: ({ key, options, type }) => ({
+      initialState: { targetTypes: ['p'] },
+      schema: ({ key, initialState, type }) => ({
         properties: [
           schema.elementProperty(
             schema.key.prefix(`${key}:${type}:`),
             property.json(),
-            { target: target.types(options.targetTypes) }
+            { target: target.types(initialState.targetTypes) }
           ),
         ],
       }),
@@ -272,7 +271,7 @@ describe('createBasePlugin', () => {
   });
 
   describe('extend', () => {
-    it('keeps semantic identity while merging runtime options', () => {
+    it('keeps semantic identity while merging runtime initialState', () => {
       const plugin = resolvePluginTest(
         createBasePlugin({
           key: 'a',
@@ -282,7 +281,7 @@ describe('createBasePlugin', () => {
               nodeKey: 'b',
             },
           },
-          options: {
+          initialState: {
             enabled: true,
           },
         })
@@ -308,15 +307,15 @@ describe('createBasePlugin', () => {
         createBasePlugin({
           key: 'a',
           type: 'a',
-          options: { first: true },
+          initialState: { first: true },
         })
           .extend({
             inject: { nodeProps: { nodeKey: 'b' } },
-            options: { second: true },
+            initialState: { second: true },
           })
           .extend({
             inject: { nodeProps: { nodeKey: 'c' } },
-            options: { third: true },
+            initialState: { third: true },
           })
       );
 
@@ -326,7 +325,7 @@ describe('createBasePlugin', () => {
         },
       });
       expect(plugin.type).toBe('a');
-      expect(plugin.options).toEqual({
+      expect(plugin.initialState).toEqual({
         first: true,
         second: true,
         third: true,
@@ -460,10 +459,10 @@ describe('createBasePlugin', () => {
       ]);
     });
 
-    it('adds function-returned editor extension options with plugin-derived names', () => {
+    it('adds function-returned editor extension initialState with plugin-derived names', () => {
       const plugin = createBasePlugin({
-        api: ({ getOption }) => ({
-          label: () => getOption('prefix'),
+        api: ({ store }) => ({
+          label: () => store.get('prefix'),
         }),
         extension: ({ plugin }) => ({
           api: {
@@ -473,20 +472,20 @@ describe('createBasePlugin', () => {
           },
         }),
         key: 'runtime',
-        options: {
+        initialState: {
           prefix: 'base',
         },
-        read: ({ getOptions }) => ({
-          readLabel: () => getOptions().prefix,
+        read: ({ store }) => ({
+          readLabel: () => store.get().prefix,
         }),
-        selectors: ({ getOption }) => ({
-          label: () => getOption('prefix').toUpperCase(),
-        }),
-        update: ({ getOptions }) => ({
-          updateLabel: () => getOptions().prefix,
+        selectors: {
+          label: (state) => state.prefix.toUpperCase(),
+        },
+        update: ({ store }) => ({
+          updateLabel: () => store.get().prefix,
         }),
       }).configure({
-        options: {
+        initialState: {
           prefix: 'consumer',
         },
       });
@@ -503,7 +502,7 @@ describe('createBasePlugin', () => {
 
       expect(editor.api.runtimeExtension.key()).toBe('runtime');
       expect(editor.plugin(plugin).api.label()).toBe('consumer');
-      expect(editor.plugin(plugin).getOption('label')).toBe('CONSUMER');
+      expect(editor.plugin(plugin).store.get('label')).toBe('CONSUMER');
       expect(editor.read.runtime.readLabel()).toBe('consumer');
       expect(editor.update.runtime.updateLabel()).toBe('consumer');
     });
@@ -697,26 +696,26 @@ describe('createBasePlugin', () => {
   describe('configure', () => {
     const basePlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
-        optionA: 'initial',
-        optionB: 10,
+      initialState: {
+        valueA: 'initial',
+        valueB: 10,
       },
     });
 
-    it('overrides options without mutating the original plugin', () => {
+    it('overrides initialState without mutating the original plugin', () => {
       const configured = basePlugin.configure({
-        options: {
-          optionA: 'modified',
+        initialState: {
+          valueA: 'modified',
         },
       });
 
-      expect(resolvePluginTest(configured).options).toEqual({
-        optionA: 'modified',
-        optionB: 10,
+      expect(resolvePluginTest(configured).initialState).toEqual({
+        valueA: 'modified',
+        valueB: 10,
       });
-      expect(basePlugin.options).toEqual({
-        optionA: 'initial',
-        optionB: 10,
+      expect(basePlugin.initialState).toEqual({
+        valueA: 'initial',
+        valueB: 10,
       });
     });
 
@@ -725,7 +724,7 @@ describe('createBasePlugin', () => {
       const BelowRoot = () => null;
       const configured = basePlugin.configure({
         component: Component,
-        options: { optionA: 'configured with component' },
+        initialState: { valueA: 'configured with component' },
         render: { belowRootNodes: BelowRoot },
       });
 
@@ -733,9 +732,9 @@ describe('createBasePlugin', () => {
       expect(resolvePluginTest(configured).render.belowRootNodes).toBe(
         BelowRoot
       );
-      expect(resolvePluginTest(configured).options).toEqual({
-        optionA: 'configured with component',
-        optionB: 10,
+      expect(resolvePluginTest(configured).initialState).toEqual({
+        valueA: 'configured with component',
+        valueB: 10,
       });
       expect(basePlugin.render.node).toBeUndefined();
     });
@@ -743,24 +742,24 @@ describe('createBasePlugin', () => {
     it('keeps consumer configuration final while extensions read it', () => {
       const plugin = createBasePlugin({
         key: 'consumerConfiguration',
-        options: {
+        initialState: {
           derivedFrom: 'base',
           value: 'base',
         },
       })
-        .extend(({ getOptions }) => ({
-          options: {
-            derivedFrom: getOptions().value,
+        .extend(({ store }) => ({
+          initialState: {
+            derivedFrom: store.get().value,
             value: 'package',
           },
         }))
         .configure({
-          options: {
+          initialState: {
             value: 'consumer',
           },
         });
 
-      expect(resolvePluginTest(plugin).options).toEqual({
+      expect(resolvePluginTest(plugin).initialState).toEqual({
         derivedFrom: 'consumer',
         value: 'consumer',
       });
@@ -768,12 +767,12 @@ describe('createBasePlugin', () => {
 
     it('rejects a second consumer configuration', () => {
       const configured = basePlugin.configure({
-        options: { optionA: 'first change' },
+        initialState: { valueA: 'first change' },
       });
 
       expect(() =>
         (configured.configure as any)({
-          options: { optionB: 30 },
+          initialState: { valueB: 30 },
         })
       ).toThrow('already configured');
     });
@@ -784,26 +783,26 @@ describe('createBasePlugin', () => {
         PluginConfig<'contextual', { editorId: string; value: string }>
       >({
         key: 'contextual',
-        options: { editorId: '', value: 'initial' },
+        initialState: { editorId: '', value: 'initial' },
       })
-        .extend(({ getOptions }) => ({
-          options: { value: `${getOptions().value}:extended` },
+        .extend(({ store }) => ({
+          initialState: { value: `${store.get().value}:extended` },
         }))
         .configure(({ editor }) => {
           configuredEditors.push(editor.id);
 
           return {
-            options: { editorId: editor.id, value: 'configured' },
+            initialState: { editorId: editor.id, value: 'configured' },
           };
         });
       const first = createBaseEditor({ id: 'first', plugins: [plugin] });
       const second = createBaseEditor({ id: 'second', plugins: [plugin] });
 
-      expect(first.plugin(plugin).getOptions()).toEqual({
+      expect(first.plugin(plugin).store.get()).toEqual({
         editorId: 'first',
         value: 'configured',
       });
-      expect(second.plugin(plugin).getOptions()).toEqual({
+      expect(second.plugin(plugin).store.get()).toEqual({
         editorId: 'second',
         value: 'configured',
       });
@@ -812,12 +811,12 @@ describe('createBasePlugin', () => {
 
     it('rejects authoring after consumer configuration', () => {
       const configured = basePlugin.configure({
-        options: { optionA: 'configured' },
+        initialState: { valueA: 'configured' },
       });
 
       expect(() =>
         (configured.extend as any)({
-          options: { optionB: 30 },
+          initialState: { valueB: 30 },
         })
       ).toThrow('already configured');
       expect(() => (configured.clone as any)()).toThrow('already configured');
@@ -869,11 +868,11 @@ describe('createBasePlugin', () => {
       expect(context.type).toBe('custom-td');
     });
 
-    it('snapshots current runtime options for each parser invocation', () => {
+    it('snapshots current runtime initialState for each parser invocation', () => {
       const callback = () => 'runtime';
       const HtmlParserOptionsPlugin = createBasePlugin({
         key: 'parserOptions',
-        options: { callback, label: 'one' },
+        initialState: { callback, label: 'one' },
       });
       const editor = createBaseEditor({
         plugins: [HtmlParserOptionsPlugin],
@@ -884,15 +883,15 @@ describe('createBasePlugin', () => {
       );
       const before = editor.read((state) => createContext(state));
 
-      editor.plugin(HtmlParserOptionsPlugin).setOption('label', 'two');
+      editor.plugin(HtmlParserOptionsPlugin).store.set({ label: 'two' });
 
       const after = editor.read((state) => createContext(state));
 
-      expect(before.options).toEqual({ callback, label: 'one' });
-      expect(after.options).toEqual({ callback, label: 'two' });
-      expect(before.options).not.toBe(after.options);
-      expect(Object.isFrozen(before.options)).toBe(true);
-      expect(Object.isFrozen(after.options)).toBe(true);
+      expect(before.pluginState).toEqual({ callback, label: 'one' });
+      expect(after.pluginState).toEqual({ callback, label: 'two' });
+      expect(before.pluginState).not.toBe(after.pluginState);
+      expect(Object.isFrozen(before.pluginState)).toBe(true);
+      expect(Object.isFrozen(after.pluginState)).toBe(true);
     });
 
     it('reads the declared type inside tx extensions', () => {

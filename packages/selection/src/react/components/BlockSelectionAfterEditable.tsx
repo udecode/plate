@@ -2,92 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { isHotkey } from '@platejs/core';
-import { ElementApi, PathApi } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
 import {
   type EditableSiblingComponent,
   useEditorPlugin,
-  usePluginOption,
+  usePluginStore,
 } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { useSelectionArea } from '../hooks';
-import {
-  copySelectedBlocks,
-  pasteSelectedBlocks,
-  selectInsertedBlocks,
-} from '../utils';
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
-  const { api, editor, getOption, getOptions, setOption, update } =
-    useEditorPlugin(BlockSelectionPlugin);
+  const { api, editor, store, update } = useEditorPlugin(BlockSelectionPlugin);
 
-  const isSelectingSome = usePluginOption(
+  const isSelectingSome = usePluginStore(
     BlockSelectionPlugin,
     'isSelectingSome'
-  );
-
-  const removeSelectedBlocks = React.useCallback(
-    (options: { insertText?: string; selectPrevious?: boolean } = {}) => {
-      const selectedIds = getOption('selectedIds');
-
-      editor.update((tx, { afterCommit }) => {
-        const entries = tx.nodes.toArray({
-          at: [],
-          match: (node) =>
-            ElementApi.isElement(node) &&
-            !!node.id &&
-            !!selectedIds?.has(node.id as string),
-        });
-
-        if (entries.length === 0) return;
-
-        const firstPath = entries[0]![1];
-        for (const [, path] of [...entries].reverse()) {
-          tx.nodes.remove({
-            at: path,
-          });
-        }
-
-        if (options.insertText !== undefined) {
-          tx.nodes.insert(
-            {
-              children: [{ text: options.insertText }],
-              type: editor.getType(KEYS.p),
-            },
-            { at: firstPath, select: true }
-          );
-        }
-
-        const shouldFocus = tx.children().length === 0;
-        const deletedIds = entries.map(([node]) => node.id as string);
-        let previousId: string | null = null;
-
-        if (!shouldFocus && options.selectPrevious) {
-          const prevPath = PathApi.previous(firstPath);
-
-          if (prevPath) {
-            const prevEntry = tx.nodes.block({ at: prevPath });
-
-            if (prevEntry) {
-              previousId = prevEntry[0].id as string;
-            }
-          }
-        }
-
-        afterCommit(() => {
-          for (const id of deletedIds) {
-            api.delete(id);
-          }
-
-          if (options.insertText !== undefined || shouldFocus) {
-            editor.api.dom.focus();
-          } else if (previousId) {
-            setOption('selectedIds', new Set([previousId]));
-          }
-        });
-      });
-    },
-    [editor, getOption, api, setOption]
   );
 
   useSelectionArea();
@@ -97,18 +26,18 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
   React.useEffect(() => {
     setIsMounted(true);
-    setOption('shadowInputRef', inputRef);
+    store.set({ shadowInputRef: inputRef });
 
     return () => {
       setIsMounted(false);
     };
-  }, [setOption]);
+  }, [store]);
 
   React.useEffect(() => {
     if (!isSelectingSome) {
-      setOption('anchorId', null);
+      store.set({ anchorId: null });
     }
-  }, [isSelectingSome, setOption]);
+  }, [isSelectingSome, store]);
 
   React.useEffect(() => {
     if (isSelectingSome && inputRef.current) {
@@ -121,9 +50,9 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const handleKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       const isReadonly = editor.read.view.isReadOnly();
-      getOptions().onKeyDownSelecting?.(editor, e.nativeEvent);
+      store.get().onKeyDownSelecting?.(editor, e.nativeEvent);
 
-      if (!getOption('isSelectingSome')) return;
+      if (!store.get('isSelectingSome')) return;
       if (isHotkey('shift+up')(e)) {
         e.preventDefault();
         e.stopPropagation();
@@ -147,7 +76,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Undo/redo
       if (isHotkey('mod+z')(e)) {
         editor.update.history.undo();
-        selectInsertedBlocks(editor);
+        api.selectInserted();
 
         return;
       }
@@ -159,7 +88,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
       if (isHotkey('mod+shift+z')(e)) {
         editor.update.history.redo();
-        selectInsertedBlocks(editor);
+        api.selectInserted();
 
         return;
       }
@@ -170,10 +99,10 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         return;
       }
       // Only continue if we have "some" selection
-      if (!getOption('isSelectingSome')) return;
+      if (!store.get('isSelectingSome')) return;
       // Enter => focus first selected block
       if (isHotkey('enter')(e)) {
-        const selectedIds = getOption('selectedIds');
+        const selectedIds = store.get('selectedIds');
         let handled = false;
 
         editor.update((tx, { afterCommit }) => {
@@ -205,7 +134,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Backspace/Delete => remove selected blocks
       if (isHotkey(['backspace', 'delete'])(e) && !isReadonly) {
         e.preventDefault();
-        removeSelectedBlocks({
+        update.removeNodes({
           selectPrevious: isHotkey('backspace')(e),
         });
         return;
@@ -235,42 +164,42 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         !e.altKey
       ) {
         e.preventDefault();
-        removeSelectedBlocks({ insertText: e.key });
+        update.removeNodes({ insertText: e.key });
         return;
       }
     },
-    [editor, getOption, getOptions, api, removeSelectedBlocks]
+    [api, editor, store, update]
   );
 
   /** Handle copy / cut / paste in block selection */
   const handleCopy = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
-      if (getOption('isSelectingSome')) {
-        const copied = copySelectedBlocks(editor, e.clipboardData);
+      if (store.get('isSelectingSome')) {
+        const copied = api.copy(e.clipboardData);
 
         if (copied) {
           e.preventDefault();
         }
       }
     },
-    [editor, getOption]
+    [api, store]
   );
 
   const handleCut = React.useCallback(
     (e: React.ClipboardEvent<HTMLInputElement>) => {
-      if (getOption('isSelectingSome')) {
-        const copied = copySelectedBlocks(editor, e.clipboardData);
+      if (store.get('isSelectingSome')) {
+        const copied = api.copy(e.clipboardData);
 
         if (copied) {
           e.preventDefault();
         }
 
         if (copied && !editor.read.view.isReadOnly()) {
-          removeSelectedBlocks();
+          update.removeNodes();
         }
       }
     },
-    [editor, getOption, removeSelectedBlocks]
+    [api, editor, store, update]
   );
 
   const handlePaste = React.useCallback(
@@ -278,10 +207,10 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       e.preventDefault();
 
       if (!editor.read.view.isReadOnly()) {
-        pasteSelectedBlocks(editor, e.nativeEvent);
+        update.paste(e.clipboardData);
       }
     },
-    [editor]
+    [editor, update]
   );
 
   if (!isMounted || typeof window === 'undefined') {

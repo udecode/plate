@@ -28,7 +28,7 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
-  options: {
+  initialState: {
     myOption: 'new value',
   },
 });
@@ -208,14 +208,14 @@ const TextAlignPlugin = createPlatePlugin({
 
 ```ts
 const CustomPlugin = createPlatePlugin({
-  api: ({ getOptions }) => ({
-    canDelete: () => getOptions().allowDelete,
+  api: ({ store }) => ({
+    canDelete: () => store.get('allowDelete'),
   }),
+  initialState: { allowDelete: true },
   key: 'custom',
-  options: { allowDelete: true },
-  update: ({ getOptions, tx }) => ({
+  update: ({ store, tx }) => ({
     deleteBackward() {
-      if (!getOptions().allowDelete) return;
+      if (!store.get('allowDelete')) return;
 
       tx.text.delete({ reverse: true, unit: 'character' });
     },
@@ -267,13 +267,13 @@ callback context 中的 `defineEditorExtension`；standalone Plite extension 从
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  options: {
+  initialState: {
     count: 0,
   },
+  key: 'myPlugin',
   handlers: {
-    onClick: ({ setOption }) => {
-      setOption('count', 1);
+    onClick: ({ store }) => {
+      store.set({ count: 1 });
     },
   },
 });
@@ -283,20 +283,22 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 // 获取当前值
-const count = editor.plugin(MyPlugin).getOption('count');
+const count = editor.plugin(MyPlugin).store.get('count');
 
 // 设置新值
-editor.plugin(MyPlugin).setOption('count', 5);
+editor.plugin(MyPlugin).store.set({ count: 5 });
 
 // 基于先前状态更新值
-editor.plugin(MyPlugin).setOption('count', (prev) => prev + 1);
+editor.plugin(MyPlugin).store.set((state) => {
+  state.count += 1;
+});
 ```
 
-在React组件中，可以使用`usePluginOption`或`usePluginOptions`钩子订阅存储变更：
+在 React 组件中使用 `usePluginStore` 订阅存储变更：
 
 ```tsx
 const MyComponent = () => {
-  const count = usePluginOption(MyPlugin, 'count');
+  const count = usePluginStore(MyPlugin, 'count');
   return <div>计数: {count}</div>;
 };
 ```
@@ -341,23 +343,16 @@ const plugins = [CodeBlockPlugin, CodeHighlightPlugin];
 
 需要纯文本代码块时省略 `CodeHighlightPlugin`。宿主不会安装可选增强能力。
 
-### 插件优先级
+### 插件顺序
 
-`priority`属性决定插件注册和执行的顺序。优先级值较高的插件优先处理：
+依赖项会在其使用者之前加载。互不依赖的插件保持应用提供的顺序：
 
 ```ts
-const HighPriorityPlugin = createPlatePlugin({
-  key: 'highPriority',
-  priority: 100,
-});
-
-const LowPriorityPlugin = createPlatePlugin({
-  key: 'lowPriority',
-  priority: 50,
-});
+const plugins = [LinkPlugin, MentionPlugin, CommentPlugin];
 ```
 
-这在需要确保某些插件先于其他插件初始化或运行时特别有用。
+真正的安装要求应使用 `dependencies`。有冲突的快捷键、输入规则和编解码器各自
+使用局部 `priority`；插件注册没有全局优先级。
 
 ### HTML 输入钩子
 
@@ -392,7 +387,7 @@ const HtmlCleanupPlugin = createPlatePlugin({
 `createPlatePlugin`函数允许创建类型化插件：
 
 ```ts
-type CodeBlockOptions = {
+type CodeBlockState = {
   language: string;
   syntax: boolean;
   syntaxPopularFirst: boolean;
@@ -408,22 +403,22 @@ type CodeBlockUpdate = {
 };
 
 const CodeBlockPlugin = createPlatePlugin({
-  api: ({ getOptions }): CodeBlockApi => ({
-    getLanguage: () => getOptions().language,
-    getSyntaxState: () => getOptions().syntax,
+  api: ({ store }): CodeBlockApi => ({
+    getLanguage: () => store.get('language'),
+    getSyntaxState: () => store.get('syntax'),
   }),
-  key: 'codeBlock',
-  type: 'code_block',
-  options: {
+  initialState: {
     language: 'typescript',
     syntax: true,
     syntaxPopularFirst: false,
-  } as CodeBlockOptions,
-  update: ({ getOptions, tx }): CodeBlockUpdate => ({
+  } as CodeBlockState,
+  key: 'codeBlock',
+  type: 'code_block',
+  update: ({ store, tx }): CodeBlockUpdate => ({
     insertCodeBlock: () => {
       tx.nodes.insert({
         type: 'code_block',
-        language: getOptions().language,
+        language: store.get('language'),
         children: [{ text: '' }],
       });
     },
@@ -437,23 +432,21 @@ const CodeBlockPlugin = createPlatePlugin({
 
 ```ts
 const editor = createPlateEditor({
-  plugins: [ExtendedCodeBlockPlugin],
+  plugins: [CodeBlockPlugin],
 });
 
-// 类型安全的选项访问
-const options = editor.plugin(ExtendedCodeBlockPlugin).getOptions();
-options.syntax;
-options.syntaxPopularFirst;
-options.hotkey;
+// 类型安全的 state 访问
+const state = editor.plugin(CodeBlockPlugin).store.get();
+state.language;
+state.syntax;
+state.syntaxPopularFirst;
 
 // 类型安全的API
-editor.api.toggleSyntax();
-editor.api.plugin.getSyntaxState();
-editor.api.plugin2.setLanguage('python');
-editor.api.plugin.getLanguage();
+editor.api.codeBlock.getSyntaxState();
+editor.api.codeBlock.getLanguage();
 
-// 类型安全的事务
-editor.update((tx) => tx.insert.codeBlock());
+// 类型安全的更新
+editor.update.codeBlock.insertCodeBlock();
 ```
 
 ## 另请参阅

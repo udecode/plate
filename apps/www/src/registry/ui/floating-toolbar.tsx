@@ -15,7 +15,7 @@ import { useComposedRef } from '@udecode/cn';
 import {
   useEditorId,
   useEventEditorValue,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
@@ -32,8 +32,8 @@ export function FloatingToolbar({
 }) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue('focus');
-  const isFloatingLinkOpen = !!usePluginOption(LinkPlugin, 'mode');
-  const isAIChatOpen = usePluginOption(AIChatPlugin, 'open');
+  const isFloatingLinkOpen = !!usePluginStore(LinkPlugin, 'mode');
+  const isAIChatOpen = usePluginStore(AIChatPlugin, 'open');
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,

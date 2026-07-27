@@ -1,5 +1,9 @@
 import { createZustandStore } from 'zustand-x';
 
+export const FOCUS_EDITOR_EVENT = 'focus-editor-event';
+
+export const BLUR_EDITOR_EVENT = 'blur-editor-event';
+
 export type EventEditorState = {
   /** Last editor id that has been blurred. */
   blur: string | null;
@@ -23,3 +27,14 @@ export const EventEditorStore = createZustandStore(
 );
 
 export const { useValue: useEventEditorValue } = EventEditorStore;
+
+export const getEventPlateId = (id?: string) => {
+  if (id) return id;
+
+  return (
+    EventEditorStore.get('focus') ??
+    EventEditorStore.get('blur') ??
+    EventEditorStore.get('last') ??
+    'plate'
+  );
+};

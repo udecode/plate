@@ -10,10 +10,9 @@ export type EditorPerfPluginSetId =
   | 'heading-only'
   | 'italic-only'
   | 'kbd-only'
+  | 'script-only'
   | 'underline-only'
   | 'strikethrough-only'
-  | 'subscript-only'
-  | 'superscript-only'
   | 'none';
 
 export type CorePluginCensusEntryId =
@@ -25,9 +24,8 @@ export type CorePluginCensusEntryId =
   | 'horizontal-rule'
   | 'italic'
   | 'kbd'
+  | 'script'
   | 'strikethrough'
-  | 'subscript'
-  | 'superscript'
   | 'underline';
 
 export type CorePluginCensusPerformanceClass =
@@ -136,25 +134,14 @@ export const CORE_PLUGIN_CENSUS_ENTRIES: CorePluginCensusEntry[] = [
     provisionalMountBudgetMs: 8,
   },
   {
-    activatedWorkload: 'huge-subscript',
+    activatedWorkload: 'huge-script',
     description:
-      'Directional mark wrapper. Measures the isolated subscript mark path without superscript sibling fan-out.',
-    id: 'subscript',
+      'Directional enum-valued mark wrapper. Measures the isolated script mark path without the full basic-marks bundle.',
+    id: 'script',
     inactiveWorkload: 'huge-paragraph',
-    label: 'SubscriptPlugin',
+    label: 'ScriptPlugin',
     performanceClass: 'cheap marks/text wrappers',
-    pluginSet: 'subscript-only',
-    provisionalMountBudgetMs: 8,
-  },
-  {
-    activatedWorkload: 'huge-superscript',
-    description:
-      'Directional mark wrapper. Measures the isolated superscript mark path without subscript sibling fan-out.',
-    id: 'superscript',
-    inactiveWorkload: 'huge-paragraph',
-    label: 'SuperscriptPlugin',
-    performanceClass: 'cheap marks/text wrappers',
-    pluginSet: 'superscript-only',
+    pluginSet: 'script-only',
     provisionalMountBudgetMs: 8,
   },
   {

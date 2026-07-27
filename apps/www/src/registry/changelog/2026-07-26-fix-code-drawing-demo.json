@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-26-fix-code-drawing-demo",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-26-fix-code-drawing-demo.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "fix",
+  "summary": "Keep code drawing demo plugin composition unique",
+  "targets": [
+    {
+      "name": "code-drawing-demo",
+      "files": ["apps/www/src/registry/examples/code-drawing-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-26-code-drawing-fix-demo-8ff44b7d",
+      "kind": "fix",
+      "summary": "Render without installing the code drawing plugin twice.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["code-drawing-demo"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-26",
+          "entry": "2026-07-26-fix-code-drawing-demo",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

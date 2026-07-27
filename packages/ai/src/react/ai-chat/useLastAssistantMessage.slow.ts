@@ -23,14 +23,14 @@ const messages = [
 
 const chat = {
   messages,
-} as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
+} as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
 
 const createEditor = () => {
   const editor = createPlateEditor({
     plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
   });
 
-  editor.plugin(AIChatPlugin).setOption('chat', chat);
+  editor.plugin(AIChatPlugin).store.set({ chat });
 
   return editor;
 };
@@ -39,9 +39,9 @@ describe('AI chat assistant message', () => {
   it('returns the last assistant message from editor chat state', () => {
     const editor = createEditor();
 
-    expect(editor.plugin(AIChatPlugin).api.lastAssistantMessage()).toEqual(
-      messages[1]
-    );
+    expect(
+      editor.plugin(AIChatPlugin).store.get('lastAssistantMessage')
+    ).toEqual(messages[1]);
   });
 
   it('hides the hook result for the comment tool', () => {
@@ -53,7 +53,7 @@ describe('AI chat assistant message', () => {
     expect(visible.result.current).toEqual(messages[1]);
 
     act(() => {
-      editor.plugin(AIChatPlugin).setOption('toolName', 'comment');
+      editor.plugin(AIChatPlugin).store.set({ toolName: 'comment' });
     });
 
     expect(visible.result.current).toBeUndefined();

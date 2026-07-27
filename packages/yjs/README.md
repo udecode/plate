@@ -20,7 +20,7 @@ const editor = createPlateEditor({
   schema: { id: 'yjs-example', version: 1 },
   plugins: [
     YjsPlugin.configure({
-      options: {
+      initialState: {
         clientId: "local-user",
         doc,
         provider,

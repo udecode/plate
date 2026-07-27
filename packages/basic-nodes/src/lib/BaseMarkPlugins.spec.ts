@@ -8,9 +8,8 @@ import {
   BaseHighlightPlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from './index';
 
@@ -20,9 +19,8 @@ type MarkPlugin =
   | typeof BaseHighlightPlugin
   | typeof BaseItalicPlugin
   | typeof BaseKbdPlugin
+  | typeof BaseScriptPlugin
   | typeof BaseStrikethroughPlugin
-  | typeof BaseSubscriptPlugin
-  | typeof BaseSuperscriptPlugin
   | typeof BaseUnderlinePlugin;
 
 const getDecodedMarkReader = (plugin: MarkPlugin) => {
@@ -125,14 +123,16 @@ describe('BaseMarkPlugins', () => {
       'bold',
       BaseBoldPlugin,
       KEYS.bold,
+      true,
       '<span style="font-weight: 700">text</span>',
       'strong',
     ],
-    ['code', BaseCodePlugin, KEYS.code, '<code>text</code>', 'code'],
+    ['code', BaseCodePlugin, KEYS.code, true, '<code>text</code>', 'code'],
     [
       'highlight',
       BaseHighlightPlugin,
       KEYS.highlight,
+      true,
       '<mark>text</mark>',
       'mark',
     ],
@@ -140,28 +140,32 @@ describe('BaseMarkPlugins', () => {
       'italic',
       BaseItalicPlugin,
       KEYS.italic,
+      true,
       '<span style="font-style: italic">text</span>',
       'em',
     ],
-    ['keyboard', BaseKbdPlugin, KEYS.kbd, '<kbd>text</kbd>', 'kbd'],
+    ['keyboard', BaseKbdPlugin, KEYS.kbd, true, '<kbd>text</kbd>', 'kbd'],
     [
       'strikethrough',
       BaseStrikethroughPlugin,
       KEYS.strikethrough,
+      true,
       '<del>text</del>',
       's',
     ],
     [
       'subscript',
-      BaseSubscriptPlugin,
-      KEYS.sub,
+      BaseScriptPlugin,
+      KEYS.script,
+      'sub',
       '<span style="vertical-align: sub">text</span>',
       'sub',
     ],
     [
       'superscript',
-      BaseSuperscriptPlugin,
-      KEYS.sup,
+      BaseScriptPlugin,
+      KEYS.script,
+      'sup',
       '<span style="vertical-align: super">text</span>',
       'sup',
     ],
@@ -169,15 +173,16 @@ describe('BaseMarkPlugins', () => {
       'underline',
       BaseUnderlinePlugin,
       KEYS.underline,
+      true,
       '<span style="text-decoration: underline">text</span>',
       'u',
     ],
-  ] as const)('decodes and encodes the %s HTML claim', (_label, plugin, key, input, outputTag) => {
+  ] as const)('decodes and encodes the %s HTML claim', (_label, plugin, key, value, input, outputTag) => {
     const editor = createBaseEditor({
       plugins: [plugin],
       initialValue: [
         {
-          children: [{ [key]: true, text: 'text' }],
+          children: [{ [key]: value, text: 'text' }],
           type: KEYS.p,
         },
       ],
@@ -192,7 +197,7 @@ describe('BaseMarkPlugins', () => {
     const data = new DataTransfer();
 
     expect(decodedText).toMatchObject({
-      [key]: true,
+      [key]: value,
       text: 'text',
     });
 

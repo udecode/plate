@@ -27,7 +27,7 @@ npm install @platejs/footnote @platejs/markdown remark-gfm
 ```tsx
 import {
   FootnoteDefinitionPlugin,
-  FootnoteReferencePlugin,
+  FootnotePlugin,
 } from '@platejs/footnote/react';
 import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
@@ -35,10 +35,10 @@ import remarkGfm from 'remark-gfm';
 
 const editor = createPlateEditor({
   plugins: [
-    FootnoteReferencePlugin,
+    FootnotePlugin,
     FootnoteDefinitionPlugin,
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         remarkPlugins: [remarkGfm],
       },
     }),
@@ -48,22 +48,22 @@ const editor = createPlateEditor({
 
 ## Package Surface
 
-Queries:
+Reads:
 
-- `api.footnote.nextId`
-- `api.footnote.definition`
-- `api.footnote.definitions`
-- `api.footnote.definitionText`
-- `api.footnote.duplicateDefinitions`
-- `api.footnote.duplicateIdentifiers`
-- `api.footnote.hasDuplicateDefinitions`
-- `api.footnote.isDuplicateDefinition`
-- `api.footnote.isResolved`
-- `api.footnote.references`
+- `editor.read.footnote.nextId`
+- `editor.read.footnote.definition`
+- `editor.read.footnote.definitions`
+- `editor.read.footnote.definitionText`
+- `editor.read.footnote.duplicateDefinitions`
+- `editor.read.footnote.duplicateIdentifiers`
+- `editor.read.footnote.hasDuplicateDefinitions`
+- `editor.read.footnote.isDuplicateDefinition`
+- `editor.read.footnote.isResolved`
+- `editor.read.footnote.references`
 
 Commands:
 
-- `editor.update.insert.footnote`
+- `editor.update.footnote.insert`
 - `editor.update.footnote.createDefinition`
 - `editor.update.footnote.focusDefinition`
 - `editor.update.footnote.focusReference`

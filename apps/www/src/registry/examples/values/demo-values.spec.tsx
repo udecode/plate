@@ -32,7 +32,7 @@ describe('createValue', () => {
 
     if (!TextApi.isText(snapshotAHeading)) return;
 
-    snapshotAHeading.text = 'Changed heading';
+    Reflect.set(snapshotAHeading, 'text', 'Changed heading');
 
     expect(sourceHeading).toMatchObject({ bold: true, text: 'Heading' });
     expect(snapshotBHeading).toMatchObject({ bold: true, text: 'Heading' });

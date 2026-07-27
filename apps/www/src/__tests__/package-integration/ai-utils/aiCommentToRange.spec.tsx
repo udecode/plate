@@ -1,15 +1,15 @@
+import { AIChatPlugin } from '@platejs/ai/react';
 import { createBaseEditor, type Range, type Value } from 'platejs';
 
-import { aiCommentToRange } from '../../../../../../packages/ai/src/react/ai/utils/aiCommentToRange';
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 
 const createTestEditor = (value: Value) =>
   createBaseEditor({
-    plugins: BaseEditorKit,
+    plugins: [...BaseEditorKit, AIChatPlugin],
     initialValue: value,
   });
 
-describe('applyAIReview', () => {
+describe('AIChatPlugin read.commentRange', () => {
   it('apply the AI review to the editor', () => {
     const editor = createTestEditor([
       {
@@ -425,7 +425,7 @@ describe('applyAIReview', () => {
 
     const ranges: Range[] = [];
     for (const aiComment of comments) {
-      ranges.push(aiCommentToRange(editor, aiComment)!);
+      ranges.push(editor.plugin(AIChatPlugin).read.commentRange(aiComment)!);
     }
 
     expect(ranges).toMatchSnapshot();

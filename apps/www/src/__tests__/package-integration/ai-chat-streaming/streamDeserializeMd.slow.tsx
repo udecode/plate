@@ -1,19 +1,18 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
+import { AIChatPlugin } from '@platejs/ai/react';
 
 import { createTestEditor } from './__tests__/createTestEditor';
-import { streamDeserializeMd } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamDeserializeMd';
-import { streamSerializeMd } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamSerializeMd';
 const { editor } = createTestEditor() as any;
 
 jsxt;
 
-describe('streamDeserializeMd', () => {
+describe('AIChatPlugin api.deserializeChunk', () => {
   it('round-trips a paragraph chunk with a trailing blank line', async () => {
     const chunk = 'chunk1\n\n';
 
-    const result = streamDeserializeMd(editor, chunk);
+    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
     const output = (
       <fragment>
@@ -27,14 +26,16 @@ describe('streamDeserializeMd', () => {
     expect(result).toEqual(output);
 
     expect(
-      streamSerializeMd(editor, { value: { children: result } }, chunk)
+      editor
+        .plugin(AIChatPlugin)
+        .read.serializeChunk({ value: { children: result } }, chunk)
     ).toEqual(chunk);
   });
 
   it('keeps trailing line breaks inside code blocks', async () => {
     const chunk = '```typescript\nconst a = 1\n\n';
 
-    const result = streamDeserializeMd(editor, chunk);
+    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
     const output = [
       {
@@ -53,13 +54,11 @@ describe('streamDeserializeMd', () => {
   it('round-trips inline math without altering the chunk', async () => {
     const chunk = '$$a^2 ';
 
-    const result = streamDeserializeMd(editor, chunk);
+    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const serialized = streamSerializeMd(
-      editor,
-      { value: { children: result } },
-      chunk
-    );
+    const serialized = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: result } }, chunk);
 
     expect(serialized).toEqual(chunk);
   });
@@ -67,13 +66,11 @@ describe('streamDeserializeMd', () => {
   it('round-trips incomplete html without forcing markdown parsing', async () => {
     const chunk = '<!DOCTYPE ';
 
-    const result = streamDeserializeMd(editor, chunk);
+    const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const serialized = streamSerializeMd(
-      editor,
-      { value: { children: result } },
-      chunk
-    );
+    const serialized = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: result } }, chunk);
 
     expect(serialized).toEqual(chunk);
   });

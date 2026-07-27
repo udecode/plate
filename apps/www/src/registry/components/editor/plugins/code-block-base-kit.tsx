@@ -22,6 +22,6 @@ export const BaseCodeBlockKit = [
   }),
   BaseCodeHighlightPlugin.configure({
     component: CodeSyntaxLeafStatic,
-    options: { lowlight },
+    initialState: { lowlight },
   }),
 ];

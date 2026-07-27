@@ -2,10 +2,11 @@
 "@platejs/table": major
 ---
 
-Consolidate table factories and queries into `editor.api.table`, updates into
-`editor.update.table`, and register validated table structure and properties in
-the compiled schema, including versioned validation for cell attributes,
-borders, and column sizes. Store table-cell spans only in numeric `colSpan` and
+Consolidate pure table factories and schema services into `editor.api.table`,
+snapshot queries into `editor.read.table`, and mutations into
+`editor.update.table`. Register validated table structure and properties in the
+compiled schema, including versioned validation for cell attributes, borders,
+and column sizes. Store table-cell spans only in numeric `colSpan` and
 `rowSpan` fields.
 
 Repair malformed grids and paste rectangular cell fragments across merged-cell
@@ -15,11 +16,12 @@ the intended rows and cells after earlier edits.
 Represent multi-cell pointer drags as structural table selections, preserve
 them when clearing cells, and leave same-cell text drags native.
 
-**Migration:** Replace direct table helper imports and root table APIs with
-`editor.api.table.*`. Run mutations through `editor.update.table`:
+**Migration:** Replace direct table helper imports with the matching scoped
+capability:
 
 ```tsx
 editor.api.table.create({ colCount: 3, rowCount: 2 });
+editor.read.table.getSelectedCells();
 editor.update.table.insert({ colCount: 3, rowCount: 2 });
 editor.update.table.insertColumn();
 editor.update.table.removeRow();

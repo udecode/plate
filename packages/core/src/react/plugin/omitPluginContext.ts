@@ -6,18 +6,7 @@ export const omitPluginContext = <
 >(
   ctx: T
 ) => {
-  const {
-    api,
-    editor,
-    getOption,
-    getOptions,
-    plugin,
-    setOption,
-    setOptions,
-    type,
-    update,
-    ...rest
-  } = ctx;
+  const { api, editor, plugin, store, type, update, ...rest } = ctx;
 
   void update;
 

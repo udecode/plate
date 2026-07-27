@@ -9,9 +9,9 @@ type OnTextChangeContext = Parameters<
   NonNullable<NonNullable<AnyBasePlugin['handlers']>['onTextChange']>
 >[0];
 
-export const pipeOnTextChange = (
-  editor: BaseEditor,
-  change: EditorTextChangeContext<BaseEditor>
+export const pipeOnTextChange = <TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  change: EditorTextChangeContext<TEditor>
 ) => {
   return getPlateRuntime(editor).pluginCache.handlers.onTextChange.some(
     (key) => {

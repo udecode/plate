@@ -849,7 +849,7 @@ describe('table presentation slow contracts', () => {
         });
 
         expect(
-          outside.plugin(BaseTablePlugin).api.getSelectedCellsBorders()
+          outside.plugin(BaseTablePlugin).read.getSelectedCellsBorders()
         ).toEqual({
           bottom: true,
           left: true,
@@ -868,7 +868,7 @@ describe('table presentation slow contracts', () => {
         });
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellsBorders()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders()
         ).toEqual({
           bottom: true,
           left: true,
@@ -890,11 +890,11 @@ describe('table presentation slow contracts', () => {
         const cell = getCell(editor, [0, 0, 0]);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellsBorders([cell])
+          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders([cell])
             .none
         ).toBe(true);
         expect(
-          editor.plugin(BaseTablePlugin).api.isSelectedCellBordersNone([cell])
+          editor.plugin(BaseTablePlugin).read.isSelectedCellBordersNone([cell])
         ).toBe(true);
       });
 
@@ -913,14 +913,14 @@ describe('table presentation slow contracts', () => {
         const cells = [getCell(editor, [0, 0, 0]), getCell(editor, [0, 0, 1])];
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellsBorders(cells)
+          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders(cells)
             .outer
         ).toBe(true);
         expect(
-          editor.plugin(BaseTablePlugin).api.isSelectedCellBordersOuter(cells)
+          editor.plugin(BaseTablePlugin).read.isSelectedCellBordersOuter(cells)
         ).toBe(true);
         expect(
-          editor.plugin(BaseTablePlugin).api.isSelectedCellBorder(cells, 'top')
+          editor.plugin(BaseTablePlugin).read.isSelectedCellBorder(cells, 'top')
         ).toBe(true);
 
         setBorders(editor, [0, 0, 1], {
@@ -932,7 +932,7 @@ describe('table presentation slow contracts', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBorders([
+            .read.getSelectedCellsBorders([
               getCell(editor, [0, 0, 0]),
               getCell(editor, [0, 0, 1]),
             ]).outer
@@ -951,7 +951,7 @@ describe('table presentation slow contracts', () => {
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCellsBorders([getCell(editor, [0, 1, 1])])
+            .read.getSelectedCellsBorders([getCell(editor, [0, 1, 1])])
         ).toEqual({
           bottom: true,
           left: true,
@@ -967,7 +967,7 @@ describe('table presentation slow contracts', () => {
         const cell = getCell(editor, [0, 0, 0]);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellsBorders([cell], {
+          editor.plugin(BaseTablePlugin).read.getSelectedCellsBorders([cell], {
             select: { none: false, outer: false, side: false },
           })
         ).toEqual({

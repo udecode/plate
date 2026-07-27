@@ -1259,9 +1259,7 @@ const getOrderedExtensionRecords = (
   };
 
   for (const record of [...records.values()].sort(
-    (left, right) =>
-      (right.extension.priority ?? 0) - (left.extension.priority ?? 0) ||
-      left.order - right.order
+    (left, right) => left.order - right.order
   )) {
     visit(record);
   }

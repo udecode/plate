@@ -56,9 +56,8 @@ export type ExtendPlateEditorOptions<
       | 'handlers'
       | 'inject'
       | 'transformInitialValue'
-      | 'options'
+      | 'initialState'
       | 'override'
-      | 'priority'
       | 'render'
       | 'shortcuts'
       | 'useHooks'
@@ -74,7 +73,9 @@ export type ExtendPlateEditorOptions<
      *
      * @default { duration: 1600 }
      */
-    navigationFeedback?: Partial<NavigationFeedbackConfig['options']> | boolean;
+    navigationFeedback?:
+      | Partial<NavigationFeedbackConfig['initialState']>
+      | boolean;
     // override?: {
     //   /** Enable or disable plugins */
     //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;

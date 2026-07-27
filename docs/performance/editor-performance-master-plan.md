@@ -70,7 +70,7 @@ wrong layer.
   - direct code plugin leaf lane: `334.55 ms -> 264.41 ms`
   - full code leaf/text pipe: `392.68 ms -> 295.71 ms`
 - remaining newly-benchmarked `basic-nodes` plugins split like this:
-  - green enough: `KbdPlugin`, `SubscriptPlugin`, `SuperscriptPlugin`
+  - green enough: `KbdPlugin`, `ScriptPlugin`
   - still red: `HighlightPlugin`, `StrikethroughPlugin`
 - after release, the next real performance backlog is:
   - `HighlightPlugin`

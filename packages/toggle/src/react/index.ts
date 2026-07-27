@@ -4,8 +4,4 @@
 
 export * from './TogglePlugin';
 export * from './renderToggleAboveNodes';
-export * from './toggleIndexAtom';
-export * from './useHooksToggle';
-export * from './hooks/index';
-export * from './queries/index';
-export * from './transforms/index';
+export * from './useToggle';

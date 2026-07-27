@@ -110,7 +110,7 @@ const editor = createPlateEditor({
     // ...otherPlugins,
     TablePlugin.configure({
       component: TableElement,
-      options: {
+      initialState: {
         initialTableWidth: 600,
         disableMerge: false,
         minColumnWidth: 48,
@@ -125,9 +125,9 @@ const editor = createPlateEditor({
 
 - `.configure({ component })`: Assigns [`TableElement`](/docs/components/table-node) to render table containers.
 - `component`: Assigns components for table rows, cells, and header cells.
-- `options.initialTableWidth`: Sets the initial width for new tables.
-- `options.disableMerge`: Disables cell merging functionality.
-- `options.minColumnWidth`: Sets the minimum width for table columns.
+- `initialState.initialTableWidth`: Sets the initial width for new tables.
+- `initialState.disableMerge`: Disables cell merging functionality.
+- `initialState.minColumnWidth`: Sets the minimum width for table columns.
 
 Column widths are stored once on the table's `colSizes`. Table renderers read
 that vector through `useTableColSizes`; pointer previews use transient
@@ -289,7 +289,7 @@ The row node.
 </APIReturns>
 </API>
 
-### editor.api.table.getCellBorders
+### editor.read.table.getCellBorders
 
 Gets the border styles for a table cell, handling special cases for first row and first column cells.
 
@@ -358,7 +358,7 @@ The children of the table cell.
 </APIReturns>
 </API>
 
-### editor.api.table.getCellSize
+### editor.read.table.getCellSize
 
 Gets the width and minimum height of a table cell, taking into account column spans and column sizes.
 
@@ -440,7 +440,7 @@ Get the plugin cell types.
 </APIReturns>
 </API>
 
-### editor.api.table.getNextCell
+### editor.read.table.getNextCell
 
 Gets the next cell in the table.
 <API name="getNextCell">
@@ -464,7 +464,7 @@ Gets the next cell in the table.
 </APIReturns>
 </API>
 
-### editor.api.table.getPreviousCell
+### editor.read.table.getPreviousCell
 
 Gets the previous cell in the table.
 
@@ -508,7 +508,7 @@ The number of columns in the table.
 </APIItem>
 </APIReturns>
 </API>
-### editor.api.table.getColumnIndex
+### editor.read.table.getColumnIndex
 
 Gets the column index of a cell node within a table.
 
@@ -528,7 +528,7 @@ The column index of the cell node.
 </APIReturns>
 </API>
 
-### editor.api.table.getEntries
+### editor.read.table.getEntries
 
 Gets the table, row, and cell node entries based on the current selection or a specified location.
 
@@ -555,7 +555,7 @@ The location where the table cell is located.
 </API>
 
 
-### editor.api.table.getGridAbove
+### editor.read.table.getGridAbove
 
 Gets the sub table above the anchor and focus positions based on the specified format (tables or cells).
 
@@ -573,7 +573,7 @@ The format of the sub table to retrieve.
   <APIItem type="ElementEntry[]">The sub table entries.</APIItem>
 </APIReturns>
 </API>
-### editor.api.table.getGridByRange
+### editor.read.table.getGridByRange
 
 Gets the sub table between two cell paths within a given range.
 
@@ -595,7 +595,7 @@ The format of the output.
 </APIReturns>
 </API>
 
-### editor.api.table.getRowIndex
+### editor.read.table.getRowIndex
 
 Gets the row index of a cell node within a table.
 
@@ -615,7 +615,7 @@ The row index of the cell node.
 </APIReturns>
 </API>
 
-### editor.api.table.getTopCell
+### editor.read.table.getTopCell
 
 Gets the cell above the current cell in the table.
 
@@ -635,7 +635,7 @@ The cell node entry.
 </APIItem>
 </APIReturns>
 </API>
-### editor.api.table.isBorderHidden
+### editor.read.table.isBorderHidden
 
 Checks if the border of a table cell or the table itself is hidden based on the specified border direction.
 
@@ -1029,7 +1029,7 @@ active cell selection when the table is pressed.
 <API name="useTableElement">
 <APIReturns>
   <APIItem name="marginLeft" type="number">
-    The margin left of the table, considering overrides and plugin options.
+    The margin left of the table, considering overrides and plugin state.
   </APIItem>
   <APIItem name="props" type="object">
     Props for the table element:

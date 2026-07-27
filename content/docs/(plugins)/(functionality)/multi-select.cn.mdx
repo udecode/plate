@@ -146,23 +146,23 @@ export default function MySelectEditor() {
 </APIOptions>
 </API>
 
-### getSelectedItems
+### `editor.read.tag.getSelectedItems()`
 
 获取编辑器中的所有标签项目。
 
-<API name="getSelectedItems">
+<API name="editor.read.tag.getSelectedItems">
 <APIReturns type="TTagProps[]">
   编辑器中的标签项目数组。
 </APIReturns>
 </API>
 
-### isEqualTags
+### `editor.read.tag.isEqual(tags)`
 
 比较两组标签是否相等的工具函数，忽略顺序。
 
-<API name="isEqualTags">
+<API name="editor.read.tag.isEqual">
 <APIParameters>
-  <APIItem name="newTags" type="TTagProps[]" optional>
+  <APIItem name="tags" type="TTagProps[]" optional>
     要与当前编辑器标签比较的新标签。
   </APIItem>
 </APIParameters>

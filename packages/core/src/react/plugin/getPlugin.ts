@@ -10,8 +10,12 @@ export function getPlugin<C extends AnyPluginConfig = PluginConfig>(
   editor: PlateEditor,
   plugin: WithRequiredKey<C>
 ): C extends { clone: any } ? C : PlatePlugin<C> {
+  const createFallback = createPlatePlugin as (config: {
+    key: string;
+  }) => PlatePlugin<AnyPluginConfig>;
+
   return (
     (getCompiledPlatePlugin(editor, plugin.key) as any) ??
-    createPlatePlugin({ key: plugin.key })
+    createFallback({ key: plugin.key })
   );
 }

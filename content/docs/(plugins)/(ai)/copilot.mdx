@@ -117,12 +117,12 @@ import { GhostText } from '@/components/ui/ghost-text';
 const plugins = [
   // ...otherPlugins,
   MarkdownPlugin.configure({
-    options: {
+    initialState: {
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
     },
   }),
   CopilotPlugin.extend(({ api }) => ({
-    options: {
+    initialState: {
       completeOptions: {
         api: '/api/ai/copilot',
         onError: () => {
@@ -222,7 +222,7 @@ The system prompt defines the AI's role and behavior. Modify the `body.system` p
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
@@ -242,7 +242,7 @@ Rules:
       },
       // ... other options
     },
-    // ... other plugin options
+    // ... other plugin state
   },
 })),
 ```
@@ -253,13 +253,13 @@ The user prompt (via `getPrompt`) determines what context is sent to the AI. You
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     getPrompt: ({ editor }) => {
         const contextEntry = editor.api.block({ highest: true });
 
         if (!contextEntry) return '';
 
-        const prompt = editor.api.markdown.serialize({
+        const prompt = editor.read.markdown.serialize({
           value: [contextEntry[0] as Element],
         });
 
@@ -327,7 +327,7 @@ Configure the model in your `CopilotPlugin`:
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
@@ -349,7 +349,7 @@ Control when suggestions are automatically triggered:
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     triggerQuery: ({ editor }) => {
       // Only trigger in paragraph blocks
       const block = editor.api.block();

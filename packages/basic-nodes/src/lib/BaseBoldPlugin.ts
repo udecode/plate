@@ -1,6 +1,20 @@
-import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import {
+  createBasePlugin,
+  createRuleFactory,
+  someHtmlElement,
+} from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+
+export const BoldRules = {
+  markdown: createRuleFactory<{}, { variant: '*' | '_' }>({
+    type: 'mark',
+    variant: '*',
+    end: ({ variant }) => variant,
+    start: ({ variant }) => variant.repeat(2),
+    trigger: ({ variant }) => variant,
+  }),
+};
 
 /** Enables support for bold formatting */
 export const BaseBoldPlugin = createBasePlugin({

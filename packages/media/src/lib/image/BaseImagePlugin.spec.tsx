@@ -70,7 +70,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseImagePlugin.configure({
-          options: {
+          initialState: {
             transformUrl: (url) => `${url}?normalized=image`,
           },
         }),
@@ -111,44 +111,6 @@ describe('BaseImagePlugin clipboard behavior', () => {
     });
     expect(image).not.toHaveProperty('caption');
     expect(editor.read.value()).not.toHaveProperty('roots');
-  });
-
-  it('automatically normalizes legacy persisted captions on load', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseImagePlugin, TestBoldPlugin],
-      initialValue: [
-        {
-          caption: [{ bold: true, text: 'Legacy caption' }],
-          children: [{ text: '' }],
-          type: KEYS.img,
-          url: 'https://platejs.org/legacy.png',
-        },
-      ],
-    });
-
-    expect(editor.read.children()).toEqual([
-      {
-        children: [{ bold: true, text: 'Legacy caption' }],
-        type: KEYS.img,
-        url: 'https://platejs.org/legacy.png',
-      },
-    ]);
-  });
-
-  it('rejects ambiguous mixed legacy and canonical caption content', () => {
-    expect(() =>
-      createBaseEditor({
-        plugins: [BaseImagePlugin],
-        initialValue: [
-          {
-            caption: [{ text: 'Legacy caption' }],
-            children: [{ text: 'Canonical caption' }],
-            type: KEYS.img,
-            url: 'https://platejs.org/conflict.png',
-          },
-        ],
-      })
-    ).toThrow(/multiple non-empty caption sources/);
   });
 
   it('uses one plain empty text child for an empty caption input', () => {
@@ -268,7 +230,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseImagePlugin.configure({
-          options: { uploadImage },
+          initialState: { uploadImage },
         }),
       ],
       selection: {
@@ -312,7 +274,9 @@ describe('BaseImagePlugin clipboard behavior', () => {
   it('respects disabled URL embedding', () => {
     const editor = createBaseEditor({
       plugins: [
-        BaseImagePlugin.configure({ options: { disableEmbedInsert: true } }),
+        BaseImagePlugin.configure({
+          initialState: { disableEmbedInsert: true },
+        }),
       ],
       selection: {
         kind: 'text',

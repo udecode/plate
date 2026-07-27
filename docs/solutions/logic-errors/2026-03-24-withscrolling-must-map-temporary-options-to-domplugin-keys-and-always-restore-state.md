@@ -13,40 +13,40 @@ tags:
   - core
   - dom
   - scrolling
-  - plugin-options
+  - plugin-state
   - testing
   - coverage
 ---
 
-# withScrolling must map temporary options to DOMPlugin keys and always restore state
+# withScrolling must map temporary state to DOMPlugin keys and always restore state
 
 ## Problem
 
 Direct coverage on `withScrolling(...)` exposed two quiet failures in the temporary DOM scrolling helper.
 
-The helper accepted `{ mode, operations, scrollOptions }`, but it spread those fields directly into the DOM plugin option store. The real store keys are `scrollMode`, `scrollOperations`, and `scrollOptions`, so the temporary overrides never actually drove the scrolling logic.
+The helper accepted `{ mode, operations, scrollOptions }`, but it spread those fields directly into the DOM plugin store. The real state keys are `scrollMode`, `scrollOperations`, and `scrollOptions`, so the temporary overrides never actually drove the scrolling logic.
 
-It also reset state only after the callback returned normally. If the callback threw, the editor could keep `AUTO_SCROLL` enabled and retain the temporary DOMPlugin options.
+It also reset state only after the callback returned normally. If the callback threw, the editor could keep `AUTO_SCROLL` enabled and retain the temporary DOMPlugin state.
 
 ## Root cause
 
 The helper treated its input shape like the DOMPlugin store shape.
 
-That assumption was wrong. `mode` and `operations` are convenience names on the helper API, not persisted option keys.
+That assumption was wrong. `mode` and `operations` are convenience names on the helper API, not persisted state keys.
 
 The reset path also relied on straight-line control flow instead of a `try/finally`.
 
 ## Fix
 
-Map the helper options onto the real DOMPlugin keys before writing them:
+Map the helper inputs onto the real DOMPlugin keys before writing them:
 
 - `mode -> scrollMode`
 - `operations -> scrollOperations`
 - `scrollOptions -> scrollOptions`
 
-Then wrap the callback in `try/finally` so both `AUTO_SCROLL` and the previous DOMPlugin options are restored even when the callback throws.
+Then wrap the callback in `try/finally` so both `AUTO_SCROLL` and the previous DOMPlugin state are restored even when the callback throws.
 
-The fix also keeps the nested option objects merged instead of replacing the whole store branch with partial data.
+The fix also keeps nested state objects merged instead of replacing the whole store branch with partial data.
 
 ## Verification
 
@@ -62,7 +62,7 @@ pnpm lint:fix
 
 ## Prevention
 
-For helper APIs that temporarily override plugin options, test both of these explicitly:
+For helper APIs that temporarily override plugin state, test both of these explicitly:
 
 - the temporary values are written under the real store keys
 - the original state comes back after both success and failure paths

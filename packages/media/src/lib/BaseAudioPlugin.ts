@@ -5,13 +5,13 @@ import {
   defineMediaPlugin,
   mediaElementContent,
   mediaElementProperties,
-  type MediaPluginOptions,
+  type MediaPluginState,
 } from './media/MediaPlugin.internal';
 
 export const BaseAudioPlugin = defineMediaPlugin(
   createBasePlugin({
     key: KEYS.audio,
-    options: {} as MediaPluginOptions,
+    initialState: {} as MediaPluginState,
     schema: {
       element: {
         content: mediaElementContent,

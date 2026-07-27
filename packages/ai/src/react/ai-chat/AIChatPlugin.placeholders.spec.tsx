@@ -4,10 +4,11 @@ import { afterAll, describe, expect, it, mock } from 'bun:test';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import {
-  type BaseEditor,
   BaseParagraphPlugin,
   createBasePlugin,
   NodeIdPlugin,
+  type PlatePluginReadState,
+  type PluginConfig,
 } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { type Element, type ElementEntry, schema } from '@platejs/plite';
@@ -16,15 +17,17 @@ import { createPlateEditor } from '@platejs/core/react';
 
 jsxt;
 
-const getTableGridAbove = (editor: BaseEditor): ElementEntry[] => {
-  const selection = editor.read.selection();
+const getTableGridAbove = (
+  state: PlatePluginReadState<PluginConfig>
+): ElementEntry[] => {
+  const selection = state.selection();
   if (!selection) return [];
 
-  const start = editor.read.nodes.above<Element>({
+  const start = state.nodes.above<Element>({
     at: selection.anchor,
     match: { type: [KEYS.td, KEYS.th] },
   });
-  const end = editor.read.nodes.above<Element>({
+  const end = state.nodes.above<Element>({
     at: selection.focus,
     match: { type: [KEYS.td, KEYS.th] },
   });
@@ -39,7 +42,7 @@ const getTableGridAbove = (editor: BaseEditor): ElementEntry[] => {
 
   for (let row = startRow; row <= endRow; row++) {
     for (let column = startColumn; column <= endColumn; column++) {
-      const entry = editor.read.nodes.get<Element>([...tablePath, row, column]);
+      const entry = state.nodes.get<Element>([...tablePath, row, column]);
       if (entry) entries.push(entry);
     }
   }
@@ -52,10 +55,10 @@ afterAll(() => {
 });
 
 const TableFixturePlugin = createBasePlugin({
-  api: ({ editor }) => ({
-    getGridAbove: () => getTableGridAbove(editor),
-  }),
   key: KEYS.table,
+  read: ({ state }) => ({
+    getGridAbove: () => getTableGridAbove(state),
+  }),
   schema: ({ plugins }) => ({
     element: {
       content: schema.content.type(plugins.elementType(TableRowFixturePlugin)),
@@ -119,7 +122,7 @@ const createTestEditor = async (input: TestEditor) => {
   return editor.plugin(AIChatPlugin);
 };
 
-describe('AIChatPlugin replacePlaceholders', () => {
+describe('AIChatPlugin read.resolvePlaceholders', () => {
   it('replaces prompt and markdown placeholders using real editor markdown', async () => {
     const input = (
       <editor>
@@ -132,13 +135,13 @@ describe('AIChatPlugin replacePlaceholders', () => {
       </editor>
     ) as TestEditor;
     const aiChat = await createTestEditor(input);
-    const expectedBlock = aiChat.api.getMarkdown({ type: 'block' });
-    const expectedBlockSelection = aiChat.api.getMarkdown({
+    const expectedBlock = aiChat.read.markdown({ type: 'block' });
+    const expectedBlockSelection = aiChat.read.markdown({
       type: 'blockSelection',
     });
-    const expectedEditor = aiChat.api.getMarkdown({ type: 'editor' });
+    const expectedEditor = aiChat.read.markdown({ type: 'editor' });
 
-    const result = aiChat.api.replacePlaceholders(
+    const result = aiChat.read.resolvePlaceholders(
       [
         'Prompt: {prompt}',
         'Prompt again: {prompt}',
@@ -180,11 +183,11 @@ describe('AIChatPlugin replacePlaceholders', () => {
       </editor>
     ) as TestEditor;
     const aiChat = await createTestEditor(input);
-    const expectedTable = aiChat.api.getMarkdown({
+    const expectedTable = aiChat.read.markdown({
       type: 'tableCellWithId',
     });
 
-    const result = aiChat.api.replacePlaceholders('Table:\n{tableCellWithId}');
+    const result = aiChat.read.resolvePlaceholders('Table:\n{tableCellWithId}');
 
     expect(result).toBe(`Table:\n${expectedTable}`);
     expect(result).toContain('<CellRef id="t1_r1_c1" />');
@@ -200,7 +203,7 @@ describe('AIChatPlugin replacePlaceholders', () => {
       ) as TestEditor
     );
 
-    expect(aiChat.api.replacePlaceholders('Nothing to replace here.')).toBe(
+    expect(aiChat.read.resolvePlaceholders('Nothing to replace here.')).toBe(
       'Nothing to replace here.'
     );
   });

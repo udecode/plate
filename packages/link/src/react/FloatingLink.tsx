@@ -1,15 +1,15 @@
 import React from 'react';
 
-import { useEditorPlugin, usePluginOption } from '@platejs/core/react';
+import { useEditorPlugin, usePluginStore } from '@platejs/core/react';
 import { createPrimitiveComponent } from '@udecode/react-utils';
 
 import { LinkPlugin } from './LinkPlugin';
 
 export const useFloatingLinkNewTabInputState = () => {
-  const { getOptions } = useEditorPlugin(LinkPlugin);
-  const updated = usePluginOption(LinkPlugin, 'updated');
+  const { store } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginStore(LinkPlugin, 'updated');
   const ref = React.useRef<HTMLInputElement>(null);
-  const [checked, setChecked] = React.useState<boolean>(getOptions().newTab);
+  const [checked, setChecked] = React.useState<boolean>(store.get().newTab);
 
   React.useEffect(() => {
     if (ref.current && updated) {
@@ -31,15 +31,15 @@ export const useFloatingLinkNewTabInput = ({
   ref,
   setChecked,
 }: ReturnType<typeof useFloatingLinkNewTabInputState>) => {
-  const { setOption } = useEditorPlugin(LinkPlugin);
+  const { store } = useEditorPlugin(LinkPlugin);
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback(
       (e) => {
         setChecked(e.target.checked);
-        setOption('newTab', e.target.checked);
+        store.set({ newTab: e.target.checked });
       },
-      [setOption, setChecked]
+      [store, setChecked]
     );
 
   return {
@@ -58,8 +58,8 @@ export const FloatingLinkNewTabInput = createPrimitiveComponent('input')({
 });
 
 export const useFloatingLinkUrlInputState = () => {
-  const { editor, getOptions } = useEditorPlugin(LinkPlugin);
-  const updated = usePluginOption(LinkPlugin, 'updated');
+  const { editor, store } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginStore(LinkPlugin, 'updated');
   const ref = React.useRef<HTMLInputElement>(null);
   const focused = React.useRef(false);
 
@@ -73,12 +73,12 @@ export const useFloatingLinkUrlInputState = () => {
 
         focused.current = true;
 
-        const url = getOptions().url;
+        const url = store.get().url;
         input.focus();
         input.value = url ? editor.plugin(LinkPlugin).api.decodeUrl(url) : '';
       }, 0);
     }
-  }, [editor, getOptions, updated]);
+  }, [editor, store, updated]);
 
   return {
     ref,
@@ -88,20 +88,20 @@ export const useFloatingLinkUrlInputState = () => {
 export const useFloatingLinkUrlInput = (
   state: ReturnType<typeof useFloatingLinkUrlInputState>
 ) => {
-  const { editor, getOptions, setOption } = useEditorPlugin(LinkPlugin);
+  const { editor, store } = useEditorPlugin(LinkPlugin);
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback(
       (e) => {
         const url = editor.plugin(LinkPlugin).api.encodeUrl(e.target.value);
-        setOption('url', url);
+        store.set({ url });
       },
-      [editor, setOption]
+      [editor, store]
     );
 
   return {
     props: {
-      defaultValue: getOptions().url,
+      defaultValue: store.get().url,
       onChange,
     },
     ref: state.ref,

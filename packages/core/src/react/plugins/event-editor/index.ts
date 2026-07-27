@@ -4,6 +4,4 @@
 
 export * from './EventEditorPlugin';
 export * from './EventEditorStore';
-export * from './getEventPlateId';
-export * from './useFocusEditorEvents';
-export * from './useFocusedLast';
+export * from './useEventEditor';

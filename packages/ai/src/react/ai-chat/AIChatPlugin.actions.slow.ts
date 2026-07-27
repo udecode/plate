@@ -60,7 +60,7 @@ const createSuggestionEditor = (type: 'insert' | 'remove') => {
   return createPlateEditor({
     plugins: [
       BaseParagraphPlugin,
-      SuggestionPlugin.configure({ options: { currentUserId: 'u1' } }),
+      SuggestionPlugin.configure({ initialState: { currentUserId: 'u1' } }),
       AIChatPlugin,
     ],
     initialValue: [
@@ -91,7 +91,7 @@ describe('ai chat action utils', () => {
         BaseParagraphPlugin,
         BaseAIPlugin,
         MarkdownPlugin,
-        SuggestionPlugin.configure({ options: { currentUserId: 'u1' } }),
+        SuggestionPlugin.configure({ initialState: { currentUserId: 'u1' } }),
         AIChatPlugin,
         TablePlugin,
         TableRowPlugin,
@@ -118,7 +118,7 @@ describe('ai chat action utils', () => {
 
     editor
       .plugin(AIChatPlugin)
-      .api.applyTableCellSuggestion({ content: 'ai', id: 'cell-1' });
+      .update.applyTableCellSuggestion({ content: 'ai', id: 'cell-1' });
 
     expect(
       editor.read.nodes.some({
@@ -133,7 +133,7 @@ describe('ai chat action utils', () => {
   it('accepts transient insert suggestions and clears their metadata', () => {
     const editor = createSuggestionEditor('insert');
 
-    editor.plugin(AIChatPlugin).api.acceptSuggestions();
+    editor.plugin(AIChatPlugin).update.acceptSuggestions();
 
     expect(editor.read.text.string([])).toBe('suggested');
     expect(
@@ -147,7 +147,7 @@ describe('ai chat action utils', () => {
   it('rejects transient insert suggestions and clears their content', () => {
     const editor = createSuggestionEditor('insert');
 
-    editor.plugin(AIChatPlugin).api.rejectSuggestions();
+    editor.plugin(AIChatPlugin).update.rejectSuggestions();
 
     expect(editor.read.text.string([])).toBe('');
   });
@@ -169,8 +169,8 @@ describe('ai chat action utils', () => {
       ],
       clear,
       stop,
-    } as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
-    editor.plugin(AIChatPlugin).setOptions({
+    } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+    editor.plugin(AIChatPlugin).store.set({
       _replaceIds: ['block'],
       chat,
       chatNodes: [{ children: [{ text: '' }], id: 'block', type: 'p' }],
@@ -188,10 +188,10 @@ describe('ai chat action utils', () => {
     expect(stop).toHaveBeenCalled();
     expect(clear).toHaveBeenCalled();
     expect(editor.read.text.string([])).toBe('');
-    expect(editor.plugin(AIChatPlugin).getOption('_replaceIds')).toEqual([]);
-    expect(editor.plugin(AIChatPlugin).getOption('chatNodes')).toEqual([]);
-    expect(editor.plugin(AIChatPlugin).getOption('mode')).toBe('insert');
-    expect(editor.plugin(AIChatPlugin).getOption('toolName')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).store.get('_replaceIds')).toEqual([]);
+    expect(editor.plugin(AIChatPlugin).store.get('chatNodes')).toEqual([]);
+    expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
+    expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBeNull();
   });
 
   it('discards preview bookkeeping when reset skips undo', () => {
@@ -199,9 +199,9 @@ describe('ai chat action utils', () => {
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
     });
 
-    editor.plugin(BaseAIPlugin).api.beginPreview();
+    editor.plugin(BaseAIPlugin).update.beginPreview();
     editor.plugin(AIChatPlugin).api.reset({ undo: false });
 
-    expect(editor.plugin(BaseAIPlugin).api.hasPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
   });
 });

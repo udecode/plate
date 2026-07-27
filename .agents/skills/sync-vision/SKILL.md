@@ -108,7 +108,7 @@ Analyze changed durable inputs, not the whole repo every time:
 - `docs/plans/**`
 - `docs/sync/**` except `docs/sync/vision/runs/**`
 - `docs/research/**`
-- `docs/slate-v2/**`
+- `docs/plite/**`
 - `docs/editor-behavior/**`
 - `docs/solutions/**`
 - `content/docs/**`

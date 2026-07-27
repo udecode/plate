@@ -243,10 +243,10 @@ const Leaf = ({ attributes, children, leaf }: RenderLeafProps<CustomText>) => {
   if (leaf.strikethrough) {
     children = <del>{children}</del>;
   }
-  if (leaf.superscript) {
+  if (leaf.script === 'sup') {
     children = <sup>{children}</sup>;
   }
-  if (leaf.subscript) {
+  if (leaf.script === 'sub') {
     children = <sub>{children}</sub>;
   }
 

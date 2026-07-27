@@ -1198,9 +1198,6 @@ importers:
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
       papaparse:
         specifier: ^5.5.3
         version: 5.5.3
@@ -1613,9 +1610,6 @@ importers:
       '@udecode/utils':
         specifier: workspace:^
         version: link:../udecode/utils
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
       lodash:
         specifier: ^4.17.23
         version: 4.17.23

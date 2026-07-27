@@ -32,7 +32,7 @@ const MyPlugin = createPlatePlugin({
   key: 'myPlugin',
   handlers: {
     onKeyDown: ({ editor }) => {
-      const linkCtx = getBasePlugin(LinkPlugin);
+      const linkCtx = getBasePlugin(editor, LinkPlugin);
     },
   },
 });
@@ -82,69 +82,61 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### `getOption`
+### `store`
 
-获取插件特定选项值的函数：
+`store` 读取、更新和订阅当前插件的 editor-local state：
 
 ```ts
 const MyPlugin = createPlatePlugin({
+  initialState: { myValue: 'default' },
   key: 'myPlugin',
-  options: { myOption: 'default' },
   handlers: {
-    onClick: ({ getOption }) => {
-      const myOption = getOption('myOption');
-      console.info('选项值:', myOption);
+    onClick: ({ store }) => {
+      const myValue = store.get('myValue');
+      console.info('state 值:', myValue);
     },
   },
 });
 ```
 
-### `getOptions`
-
-获取插件所有选项的函数：
+调用 `store.get()` 读取完整 state：
 
 ```ts
 const MyPlugin = createPlatePlugin({
+  initialState: { value1: 'a', value2: 'b' },
   key: 'myPlugin',
-  options: { option1: 'value1', option2: 'value2' },
   handlers: {
-    onClick: ({ getOptions }) => {
-      const options = getOptions();
-      console.info('所有选项:', options);
+    onClick: ({ store }) => {
+      console.info('完整 state:', store.get());
     },
   },
 });
 ```
 
-### `setOption`
-
-设置插件特定选项值的函数：
+调用 `store.set(partial)` 合并字段：
 
 ```ts
 const MyPlugin = createPlatePlugin({
+  initialState: { count: 0 },
   key: 'myPlugin',
-  options: { count: 0 },
   handlers: {
-    onClick: ({ setOption }) => {
-      setOption('count', 1);
+    onClick: ({ store }) => {
+      store.set({ count: 1 });
     },
   },
 });
 ```
 
-### `setOptions`
-
-设置插件多个选项的函数：
+调用 `store.set(recipe)` 通过 draft 更新：
 
 ```ts
 const MyPlugin = createPlatePlugin({
+  initialState: { count: 0 },
   key: 'myPlugin',
-  options: { option1: 'value1', option2: 'value2' },
   handlers: {
-    onClick: ({ setOptions }) => {
-      setOptions({
-        option1: 'newValue1',
-        option2: 'newValue2',
+    onClick: ({ store }) => {
+      store.set((state) => {
+        state.count += 1;
       });
     },
   },

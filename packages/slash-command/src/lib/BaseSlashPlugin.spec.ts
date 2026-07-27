@@ -29,18 +29,18 @@ describe('BaseSlashPlugin', () => {
     });
     const plugin = editor.getPlugin(BaseSlashPlugin);
     const inputPlugin = editor.getPlugin(BaseSlashInputPlugin);
+    const state = editor.plugin(BaseSlashPlugin).store.get();
 
     expect(plugin.key).toBe('slashCommand');
     expect(inputPlugin.key).toBe('slashInput');
     expect(inputPlugin.type).toBe(NODES.slashInput);
     expect(plugin.editOnly).toBe(true);
-    expect(plugin.options.trigger).toBe('/');
-    const triggerPreviousCharPattern =
-      plugin.options.triggerPreviousCharPattern;
-    const createComboboxInput = plugin.options.createComboboxInput;
+    expect(state.trigger).toBe('/');
+    const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
+    const createComboboxInput = state.createComboboxInput;
 
     if (!triggerPreviousCharPattern || !createComboboxInput) {
-      throw new Error('Missing required slash plugin options');
+      throw new Error('Missing required slash plugin state');
     }
 
     expect(triggerPreviousCharPattern.test('')).toBe(true);

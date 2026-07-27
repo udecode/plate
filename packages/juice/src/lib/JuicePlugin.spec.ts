@@ -1,4 +1,5 @@
-import { createBaseEditor, prepareHtmlPluginContext } from '@platejs/core';
+import { createBaseEditor } from '@platejs/core';
+import { prepareHtmlPluginContext } from '@platejs/core/internal';
 
 import { JuicePlugin } from './JuicePlugin';
 

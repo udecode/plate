@@ -18,16 +18,17 @@ description: 编写和配置 Plate 插件。
 
 | 字段 | 所有权 |
 | --- | --- |
+| `initialState` | 此插件 editor-local store 的初始值。 |
 | `api` | 插件作用域内的不可变服务和查询。 |
 | `read` | 快照或事务内的读取。 |
-| `selectors` | 派生 option 值，包括 React 订阅。 |
+| `selectors` | 纯 state-first 派生值，包括 React 订阅。 |
 | `update` | 绑定事务的插件变更。 |
 | `extension` | Plite 运行时能力，包括编辑器级分组。 |
 | `codecs` | 插件拥有的格式解码和编码。 |
 
 回调接收推断后的[插件上下文](/docs/plugin-context)，包括 `editor`、`plugin`、
-`api`、`read`、`defineCodecs`、`defineEditorExtension`、`getOption`、
-`getOptions`，以及 update 贡献中的活动 `tx`。
+`api`、`read`、`defineCodecs`、`defineEditorExtension`、`store`，以及 update
+贡献中的活动 `tx`。
 
 ## 使用 Constructor Context
 
@@ -35,9 +36,9 @@ description: 编写和配置 Plate 插件。
 declaration 或前一阶段新增的类型才使用 `.extend()`。
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
-import { createPlatePlugin, usePluginOption } from 'platejs/react';
+import { createPlatePlugin, usePluginStore } from 'platejs/react';
 
-type CounterOptions = {
+type CounterState = {
   value: number;
 };
 
@@ -49,33 +50,28 @@ type CounterUpdate = {
   insertLabel: () => void;
 };
 
-type CounterSelectors = {
-  doubled: (factor: number) => number;
-  isEven: () => boolean;
-};
-
 export const CounterPlugin = createPlatePlugin({
-  api: ({ getOption }): CounterApi => ({
-    isEmpty: () => getOption('value') === 0,
+  api: ({ store }): CounterApi => ({
+    isEmpty: () => store.get('value') === 0,
   }),
-  key: 'counter',
-  options: {
+  initialState: {
     value: 0,
+  } as CounterState,
+  key: 'counter',
+  selectors: {
+    doubled: (state, factor: number) => state.value * factor,
+    isEven: (state) => state.value % 2 === 0,
   },
-  selectors: ({ getOptions }): CounterSelectors => ({
-    doubled: (factor) => getOptions().value * factor,
-    isEven: () => getOptions().value % 2 === 0,
-  }),
-  update: ({ getOption, tx }): CounterUpdate => ({
+  update: ({ store, tx }): CounterUpdate => ({
     insertLabel: () => {
-      tx.text.insert(`Count: ${getOption('value')}`);
+      tx.text.insert(`Count: ${store.get('value')}`);
     },
   }),
 });
 
 export function CounterValue() {
-  const doubled = usePluginOption(CounterPlugin, 'doubled', 2);
-  const isEven = usePluginOption(CounterPlugin, 'isEven');
+  const doubled = usePluginStore(CounterPlugin, 'doubled', 2);
+  const isEven = usePluginStore(CounterPlugin, 'isEven');
 
   return (
     <span>
@@ -153,7 +149,7 @@ const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
   context.defineEditorExtension({
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) => {
-        if (!context.getOption('enabled')) return false;
+        if (!context.store.get('enabled')) return false;
 
         return state.transaction(() => {});
       }),
@@ -162,8 +158,8 @@ const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
 
 export const TriggerPlugin = createBasePlugin<TriggerConfig>({
   extension: (context) => withTriggerExtension(context),
+  initialState: { enabled: true },
   key: 'trigger',
-  options: { enabled: true },
 });
 ```
 
@@ -231,7 +227,7 @@ export const AppParagraphPlugin = ParagraphPlugin.configure({
 import { H1Plugin } from '@platejs/basic-nodes/react';
 
 export const AppH1Plugin = H1Plugin.configure({
-  options: {
+  initialState: {
     levels: [1, 2],
   },
   shortcuts: {
@@ -240,7 +236,7 @@ export const AppH1Plugin = H1Plugin.configure({
 });
 ```
 
-对象配置遵循 Plate 合并规则：对象深度合并，数组替换，`options` 浅合并。
+对象配置遵循 Plate 合并规则：对象深度合并，数组替换，`initialState` 浅合并。
 `.configure()` 不能发布新能力，并且必须是最后一次调用。
 
 ## 配置关联插件
@@ -249,8 +245,8 @@ export const AppH1Plugin = H1Plugin.configure({
 
 ```ts
 const CellPlugin = createPlatePlugin({
+  initialState: { padding: 12 },
   key: 'cell',
-  options: { padding: 12 },
 });
 
 const GridPlugin = createPlatePlugin({
@@ -260,7 +256,7 @@ const GridPlugin = createPlatePlugin({
 
 export const AppGridPlugins = [
   GridPlugin,
-  CellPlugin.configure({ options: { padding: 8 } }),
+  CellPlugin.configure({ initialState: { padding: 8 } }),
 ];
 ```
 

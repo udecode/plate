@@ -4,10 +4,11 @@ import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { jsxt } from '@platejs/test-utils';
 import { KEYS } from '@platejs/utils';
 
-import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
-import { BlockquoteRules } from './BasicBlockRules';
-import { BaseHorizontalRulePlugin } from './BaseHorizontalRulePlugin';
-import { HorizontalRuleRules } from './BasicBlockRules';
+import { BaseBlockquotePlugin, BlockquoteRules } from './BaseBlockquotePlugin';
+import {
+  BaseHorizontalRulePlugin,
+  HorizontalRuleRules,
+} from './BaseHorizontalRulePlugin';
 
 jsxt;
 

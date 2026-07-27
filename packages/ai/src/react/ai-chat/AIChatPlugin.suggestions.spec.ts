@@ -14,7 +14,7 @@ import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 const SchemaOnlyNodeIdPlugin = NodeIdPlugin.configure({
-  options: {
+  initialState: {
     initialValueIds: false,
     match: () => false,
   },
@@ -34,7 +34,7 @@ const createEditor = (
       SuggestionPlugin,
       BlockSelectionPlugin,
       CursorOverlayPlugin,
-      AIChatPlugin.configure({ options: { chatNodes } }),
+      AIChatPlugin.configure({ initialState: { chatNodes } }),
     ],
     selection,
     initialValue: value,
@@ -48,14 +48,14 @@ describe('AIChatPlugin suggestions', () => {
     ];
     const editor = createEditor(structuredClone(chatNodes), chatNodes);
 
-    editor.plugin(AIChatPlugin).api.applySuggestions('next-a\n\nnext-b');
+    editor.plugin(AIChatPlugin).update.applySuggestions('next-a\n\nnext-b');
 
-    expect(editor.plugin(AIChatPlugin).getOption('_replaceIds')).toEqual([
+    expect(editor.plugin(AIChatPlugin).store.get('_replaceIds')).toEqual([
       'id-1',
       'id-2',
     ]);
     expect(
-      editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+      editor.plugin(BlockSelectionPlugin).store.get('selectedIds')
     ).toEqual(new Set(['id-1', 'id-2']));
     expect(editor.read.text.string([])).toContain('next-a');
     expect(editor.read.text.string([])).toContain('next-b');
@@ -76,10 +76,10 @@ describe('AIChatPlugin suggestions', () => {
 
     editor
       .plugin(AIChatPlugin)
-      .api.applySuggestions('next-a\n\nnext-b\n\nnext-c\n\nnext-d', {
+      .update.applySuggestions('next-a\n\nnext-b\n\nnext-c\n\nnext-d', {
         split: true,
       });
-    editor.plugin(AIChatPlugin).api.insertBelow(editor);
+    editor.plugin(AIChatPlugin).update.insertBelow(editor);
 
     expect(
       editor.read.children().map((_, index) => editor.read.text.string([index]))
@@ -102,7 +102,7 @@ describe('AIChatPlugin suggestions', () => {
       focus: { offset: 3, path: [0, 0] },
     });
 
-    editor.plugin(AIChatPlugin).api.applySuggestions('done');
+    editor.plugin(AIChatPlugin).update.applySuggestions('done');
 
     const transientNodes = editor.read.nodes.toArray({
       at: [],

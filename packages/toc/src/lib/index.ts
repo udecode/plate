@@ -4,5 +4,3 @@
 
 export * from './BaseTocPlugin';
 export * from './types';
-export * from './transforms/index';
-export * from './utils/index';

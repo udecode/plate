@@ -1,17 +1,13 @@
 import type { PluginConfig, WithAnyKey } from '@platejs/core';
-import type { PlatePluginContext } from '@platejs/core/react';
 import {
+  type PlatePluginContext,
   createPlatePlugin,
-  useEditorComposing,
-  useEditorFocused,
-  useEditorReadOnly,
-  useEditorSelector,
-  usePluginOption,
+  usePluginStore,
 } from '@platejs/core/react';
 import { type Element, type Path, PathApi } from '@platejs/plite';
-import React from 'react';
 
 import { KEYS } from '../../lib';
+import { useBlockPlaceholder } from './useBlockPlaceholder.internal';
 
 export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
@@ -29,14 +25,19 @@ export type BlockPlaceholderConfig = PluginConfig<
   {},
   {},
   {
-    placeholder: (path?: Path) => string | undefined;
+    placeholder: (
+      state: Readonly<{
+        _target: { path: Path; placeholder: string } | null;
+      }>,
+      path?: Path
+    ) => string | undefined;
   }
 >;
 
 export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
   {
     key: KEYS.blockPlaceholder,
-    options: {
+    initialState: {
       _target: null,
       className: undefined,
       placeholders: {
@@ -46,81 +47,13 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
     },
 
     editOnly: true,
-    useHooks: (ctx) => {
-      const { editor, getOptions, setOption } = ctx;
-      const focused = useEditorFocused();
-      const readOnly = useEditorReadOnly();
-      const composing = useEditorComposing();
-
-      const entry = useEditorSelector(() => {
-        if (
-          readOnly ||
-          composing ||
-          !focused ||
-          !editor.read.selection() ||
-          editor.read.selection.isExpanded()
-        ) {
-          return null;
-        }
-
-        return editor.read.nodes.block();
-      });
-
-      React.useEffect(() => {
-        if (!entry) {
-          setOption('_target', null);
-          return;
-        }
-
-        const [node, path] = entry;
-        const currentEntry = editor.read.nodes.block();
-
-        if (!currentEntry || !PathApi.equals(path, currentEntry[1])) {
-          setOption('_target', null);
-          return;
-        }
-
-        const { placeholders, query } = getOptions();
-        const children = editor.read.children();
-        const firstNode = children[0];
-
-        if (!firstNode) {
-          setOption('_target', null);
-          return;
-        }
-
-        const isPristineEmptyEditor =
-          children.length === 1 &&
-          editor.read.nodes.isEmpty(firstNode) &&
-          editor.api.isElementStateEmpty(firstNode);
-        const placeholder = Object.keys(placeholders).find(
-          (key) => editor.getType(key) === node.type
-        );
-
-        if (
-          query({ ...ctx, node, path }) &&
-          placeholder &&
-          editor.read.nodes.isEmpty(node) &&
-          !isPristineEmptyEditor
-        ) {
-          setOption('_target', {
-            path,
-            placeholder: placeholders[placeholder],
-          });
-        } else {
-          setOption('_target', null);
-        }
-        // Keep this effect keyed to the editor state snapshot above; `ctx`
-        // carries stable plugin helpers but is not itself a useful dependency.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [editor, entry, setOption]);
-    },
+    useHooks: useBlockPlaceholder,
     inject: {
       isBlock: true,
       nodeProps: {
         transformProps: (props) => {
           // eslint-disable-next-line react-hooks/rules-of-hooks
-          const placeholder = usePluginOption(
+          const placeholder = usePluginStore(
             props.plugin,
             'placeholder',
             props.path
@@ -128,21 +61,21 @@ export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
 
           if (props.element && placeholder) {
             return {
-              className: props.getOptions().className,
+              className: props.store.get().className,
               placeholder,
             };
           }
         },
       },
     },
-    selectors: ({ getOption }) => ({
-      placeholder: (path?: Path) => {
-        const target = getOption('_target');
+    selectors: {
+      placeholder: (state, path?: Path) => {
+        const target = state._target;
 
         if (target && path && PathApi.equals(target.path, path)) {
           return target.placeholder;
         }
       },
-    }),
+    },
   }
 );

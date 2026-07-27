@@ -50,7 +50,7 @@ answers if the search is managed like engineering work.
   Codex Autoresearch. It does not own broad OSS discovery.
 - `slate-ar gate`: repeats existing proof gates once a command/oracle exists.
 - `slate-ar perf`: optimizes benchmark-backed performance targets.
-- `slate-patch`: fixes concrete bugs or missing oracles.
+- `plite-patch`: fixes concrete bugs or missing oracles.
 - `best-api`: decides public call shape from the gathered evidence.
 - `plite-plan`: decides substrate architecture, adoption, and proof.
 - `issue-harvester`: owns exhaustive issue-by-issue external corpus closure.
@@ -64,7 +64,7 @@ auto
       -> slate-ar quality  # execute accepted quality_gap checklist
       -> slate-ar gate     # repeat existing proof
       -> slate-ar perf     # optimize benchmark target
-      -> slate-patch       # bug/oracle fix
+      -> plite-patch       # bug/oracle fix
       -> best-api          # public API decision
       -> plite-plan        # substrate architecture/adoption
       -> issue-harvester   # exhaustive issue closure
@@ -93,7 +93,7 @@ first belongs here; execution after promotion belongs to the target owner.
 - The user named one external issue corpus and wants exhaustive issue-by-issue
   closure. Use `issue-harvester` for ledger detection/resume, latest refresh,
   and unchecked-row processing.
-- The user wants one narrow local bug fix with a live repro. Use `slate-patch`.
+- The user wants one narrow local bug fix with a live repro. Use `plite-patch`.
 - The next safe move is a public API decision. Use `best-api`; use
   `plite-plan` for accepted runtime/adoption planning.
 - The work is a measured packet loop with known target/checklist/command. Use

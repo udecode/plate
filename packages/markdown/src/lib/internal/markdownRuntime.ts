@@ -3,13 +3,13 @@ import { getPluginKey } from '@platejs/core';
 import type { EditorCoreStateView } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { MarkdownPluginOptions } from '../MarkdownPlugin';
+import type { MarkdownPluginState } from '../MarkdownPlugin';
 import type { MdRules, PlateType } from '../types';
 
 import { defaultRules } from '../rules/defaultRules';
 
-type MarkdownRuntimeConfig = PluginConfig<'markdown', MarkdownPluginOptions>;
-type ConfiguredMarkdownPluginOptions = Readonly<MarkdownPluginOptions>;
+type MarkdownRuntimeConfig = PluginConfig<'markdown', MarkdownPluginState>;
+type ConfiguredMarkdownPluginState = Readonly<MarkdownPluginState>;
 
 type MarkdownPluginRegistry = Readonly<{
   getKey: (type: string) => string | undefined;
@@ -19,14 +19,14 @@ type MarkdownPluginRegistry = Readonly<{
 
 type MarkdownRuntimeOptions = Readonly<{
   allowedNodes: readonly PlateType[] | null;
-  allowNode?: ConfiguredMarkdownPluginOptions['allowNode'];
+  allowNode?: ConfiguredMarkdownPluginState['allowNode'];
   disallowedNodes: readonly PlateType[] | null;
   plainMarks: readonly PlateType[] | null;
-  remarkPlugins: NonNullable<ConfiguredMarkdownPluginOptions['remarkPlugins']>;
+  remarkPlugins: NonNullable<ConfiguredMarkdownPluginState['remarkPlugins']>;
   remarkStringifyOptions: NonNullable<
-    ConfiguredMarkdownPluginOptions['remarkStringifyOptions']
+    ConfiguredMarkdownPluginState['remarkStringifyOptions']
   > | null;
-  rules: NonNullable<ConfiguredMarkdownPluginOptions['rules']> | null;
+  rules: NonNullable<ConfiguredMarkdownPluginState['rules']> | null;
 }>;
 
 export type MarkdownRuntime = Readonly<{
@@ -42,7 +42,7 @@ export const createMarkdownRuntime = (
 ): MarkdownRuntime => {
   const options = editor
     .plugin<MarkdownRuntimeConfig>({ key: pluginKey })
-    .getOptions() as MarkdownPluginOptions;
+    .store.get() as MarkdownPluginState;
 
   return Object.freeze({
     options: Object.freeze({
@@ -57,7 +57,13 @@ export const createMarkdownRuntime = (
     registry: Object.freeze({
       getKey: (type: string) => getPluginKey(editor, type),
       getType: (key: string) => editor.getType(key),
-      has: (key: string) => getPluginKey(editor, editor.getType(key)) === key,
+      has: (key: string) => {
+        try {
+          return editor.getPlugin({ key }).key === key;
+        } catch {
+          return false;
+        }
+      },
     }),
     state,
   });

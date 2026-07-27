@@ -1,0 +1,109 @@
+{
+  "ambiguousRows": 0,
+  "astBuilderCalls": 185,
+  "builderImplementationCalls": [
+    {
+      "builder": "createBasePlugin",
+      "file": "packages/core/src/react/plugin/createPlatePlugin.ts",
+      "line": 570
+    },
+    {
+      "builder": "toPlatePlugin",
+      "file": "packages/core/src/react/plugin/createPlatePlugin.ts",
+      "line": 572
+    },
+    {
+      "builder": "toPlatePlugin",
+      "file": "packages/core/src/react/plugin/toPlatePlugin.ts",
+      "line": 412
+    },
+    {
+      "builder": "toPlatePlugin",
+      "file": "packages/core/src/react/plugin/toPlatePlugin.ts",
+      "line": 419
+    },
+    {
+      "builder": "createBasePlugin",
+      "file": "packages/core/src/react/plugin/toPlatePlugin.ts",
+      "line": 467
+    },
+    {
+      "builder": "toPlatePlugin",
+      "file": "packages/core/src/react/plugin/toPlatePlugin.ts",
+      "line": 473
+    }
+  ],
+  "builderCounts": {
+    "createBasePlugin": 94,
+    "createPlatePlugin": 10,
+    "derivedPlugin.extend": 2,
+    "toPlatePlugin": 75
+  },
+  "candidateFiles": 147,
+  "duplicateSourceRows": [],
+  "excluded": {
+    "internalAliases": 0,
+    "nonPluginExtends": 14
+  },
+  "exportedAliases": [],
+  "genericPluginDecorators": [
+    {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["object{normalizeUrl}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert,setUrl}"]
+      },
+      "receiver": "plugin",
+      "receiverType": ": BasePlugin<C>",
+      "file": "packages/media/src/lib/media/MediaPlugin.internal.ts",
+      "line": 267
+    }
+  ],
+  "nestedBuilderCalls": [],
+  "packageCounts": {
+    "ai": 4,
+    "basic-nodes": 32,
+    "basic-styles": 16,
+    "callout": 2,
+    "code-block": 6,
+    "code-drawing": 2,
+    "comment": 2,
+    "core": 18,
+    "csv": 1,
+    "date": 2,
+    "dnd": 1,
+    "docx": 1,
+    "docx-io": 1,
+    "emoji": 4,
+    "excalidraw": 2,
+    "find-replace": 1,
+    "footnote": 6,
+    "indent": 2,
+    "juice": 1,
+    "layout": 4,
+    "link": 2,
+    "list": 2,
+    "list-classic": 14,
+    "markdown": 1,
+    "math": 4,
+    "media": 12,
+    "mention": 4,
+    "selection": 3,
+    "slash-command": 4,
+    "suggestion": 2,
+    "tabbable": 2,
+    "table": 8,
+    "tag": 3,
+    "toc": 2,
+    "toggle": 2,
+    "utils": 6,
+    "yjs": 2
+  },
+  "parseErrors": [],
+  "pluginRows": 181,
+  "sourceFiles": 1241,
+  "sourceSnapshot": "sha256:1c123c68e923a8ba25e34e2e5a559facff2a0abdb50a812349093d87589d19ef"
+}

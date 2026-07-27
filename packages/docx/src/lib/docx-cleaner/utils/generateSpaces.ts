@@ -1,7 +1,3 @@
-import { SPACE, TAB } from '@platejs/core';
+export const generateSpaces = (count: number): string => ' '.repeat(count);
 
-export const generateSpaces = (count: number): string =>
-  Array.from({ length: count }, () => SPACE).join('');
-
-export const generateTabs = (count: number): string =>
-  Array.from({ length: count }, () => TAB).join('');
+export const generateTabs = (count: number): string => '\t'.repeat(count);

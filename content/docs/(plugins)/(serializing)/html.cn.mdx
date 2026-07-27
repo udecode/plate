@@ -217,8 +217,8 @@ Context-bound `defineCodecs` 返回的同一个 `'text/html'` map 同时负责 d
 | `<em>`, `<i>`, `font-style: italic`                      | [`ItalicPlugin`](/docs/italic)          | 转换为`italic: true`标记。                                         |
 | `<u>`, `text-decoration: underline`                       | [`UnderlinePlugin`](/docs/underline)       | 转换为`underline: true`标记。                                      |
 | `<s>`, `<del>`, `<strike>`, `text-decoration: line-through` | [`StrikethroughPlugin`](/docs/strikethrough)   | 转换为`strikethrough: true`标记。                                  |
-| `<sub>`, `vertical-align: sub`                            | [`SubscriptPlugin`](/docs/subscript)       | 转换为`subscript: true`标记。                                      |
-| `<sup>`, `vertical-align: super`                           | [`SuperscriptPlugin`](/docs/superscript)     | 转换为`superscript: true`标记。                                    |
+| `<sub>`, `vertical-align: sub`                            | [`ScriptPlugin`](/docs/subscript)       | 转换为 `script: 'sub'` 标记。                                      |
+| `<sup>`, `vertical-align: super`                           | [`ScriptPlugin`](/docs/superscript)     | 转换为 `script: 'sup'` 标记。                                    |
 | `<code>` (不在`<pre>`中), `font-family: Consolas`         | [`CodePlugin`](/docs/code)            | 转换为`code: true`标记（内联代码）。                             |
 | `<kbd>`                                                    | [`KbdPlugin`](/docs/kbd)             | 转换为`kbd: true`标记。                                            |
 | `<p>`                                                      | [`ParagraphPlugin`](/docs/basic-blocks)       | 转换为段落元素。                                           |

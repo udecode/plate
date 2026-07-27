@@ -35,7 +35,7 @@ type CodeBlockConfig2 = CodeBlockConfig & {
       setLanguage: (lang: string) => void;
     };
   };
-  options: { hotkey: string[] | string };
+  initialState: { hotkey: string[] | string };
 };
 
 describe('toPlatePlugin', () => {
@@ -44,7 +44,7 @@ describe('toPlatePlugin', () => {
     schema: {
       element: { content: schema.content.open({ default: 'text', min: 1 }) },
     },
-    options: { t: 1 },
+    initialState: { t: 1 },
     codecs: ({ defineCodecs }) =>
       defineCodecs({
         'text/html': {
@@ -69,7 +69,7 @@ describe('toPlatePlugin', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       component: MockComponent,
       handlers: { onKeyDown: () => true },
-      options: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
+      initialState: { hotkey: ['mod+opt+0', 'mod+shift+0'] },
       render: { aboveEditable: MockAboveComponent },
     }).extend(() => ({
       extension: {
@@ -87,7 +87,7 @@ describe('toPlatePlugin', () => {
     expect(resolvedPlugin.render.node).toBe(MockComponent);
     expect(resolvedPlugin.render.aboveEditable).toBe(MockAboveComponent);
     expect(resolvedPlugin.handlers).toHaveProperty('onKeyDown');
-    expect(resolvedPlugin.options).toEqual({
+    expect(resolvedPlugin.initialState).toEqual({
       hotkey: ['mod+opt+0', 'mod+shift+0'],
       t: 1,
     });
@@ -99,7 +99,7 @@ describe('toPlatePlugin', () => {
     const ParagraphPlugin = toPlatePlugin(BaseParagraphPlugin, {
       component: MockComponent,
     }).extend(({ editor }) => ({
-      options: { editorId: editor.id },
+      initialState: { editorId: editor.id },
       extension: {
         api: {
           getEditorId: () => editor.id,
@@ -113,8 +113,8 @@ describe('toPlatePlugin', () => {
     const resolvedPlugin = getPlateRuntime(editor).plugins.p as any;
 
     expect(resolvedPlugin.render.node).toBe(MockComponent);
-    expect(resolvedPlugin.options).toHaveProperty('editorId');
-    expect(resolvedPlugin.options.t).toBe(1);
+    expect(resolvedPlugin.initialState).toHaveProperty('editorId');
+    expect(resolvedPlugin.initialState.t).toBe(1);
     expect(editor.api.getEditorId()).toBe(editor.id);
   });
 
@@ -153,7 +153,7 @@ describe('toPlatePlugin', () => {
 
     expect(() => {
       toPlatePlugin(NonExistentPlugin as any, {
-        options: {},
+        initialState: {},
       });
     }).toThrow();
   });
@@ -189,50 +189,50 @@ describe('toPlatePlugin', () => {
 
     const basePlugin: BasePlugin<TestConfig> = createBasePlugin<TestConfig>({
       key: 'test',
-      options: { foo: 'foo' },
+      initialState: { foo: 'foo' },
     });
     const extended: PlatePlugin<ExtendedConfig> = toPlatePlugin(basePlugin, {
-      options: { baz: 123 },
+      initialState: { baz: 123 },
     });
 
     // This line should not have any type errors
-    extended.options.foo;
-    extended.options.baz;
+    extended.initialState.foo;
+    extended.initialState.baz;
   });
 });
 
 describe('toPlatePlugin type tests', () => {
-  it('keeps resolved options required inside configured render callbacks', () => {
+  it('keeps resolved initialState required inside configured render callbacks', () => {
     type RequiredOptionsConfig = PluginConfig<
-      'required-options',
+      'required-initialState',
       { enabled: boolean; label: string }
     >;
 
     const wrapper: RenderNodeWrapper<WithAnyKey<RequiredOptionsConfig>> = ({
-      getOptions,
+      store,
     }) => {
-      const { enabled, label } = getOptions();
+      const { enabled, label } = store.get();
 
       return enabled ? ({ children }) => `${label}:${children}` : undefined;
     };
     const plugin = toPlatePlugin(
       createBasePlugin<RequiredOptionsConfig>({
-        key: 'required-options',
-        options: { enabled: true, label: 'ready' },
+        key: 'required-initialState',
+        initialState: { enabled: true, label: 'ready' },
       })
     ).configure({
-      options: { enabled: false },
+      initialState: { enabled: false },
       render: { belowNodes: wrapper },
     });
 
-    expect(plugin.options.label).toBe('ready');
+    expect(plugin.initialState.label).toBe('ready');
   });
 
   it('work with CodeBlockConfig for toPlatePlugin', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
       type: 'code_block',
-      options: { syntax: true, syntaxPopularFirst: false },
+      initialState: { syntax: true, syntaxPopularFirst: false },
     }).extend<{ extension: { api: CodeBlockConfig['api'] } }>(() => ({
       extension: {
         api: {
@@ -246,7 +246,7 @@ describe('toPlatePlugin type tests', () => {
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
       handlers: {},
-      options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+      initialState: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
     }).extend(() => ({
       extension: {
         api: {
@@ -267,17 +267,17 @@ describe('toPlatePlugin type tests', () => {
     editor.api.plugin.getSyntaxState();
     editor.api.plugin.getLanguage();
 
-    expect(editor.plugin(CodeBlockPlugin).getOptions()).toEqual({
+    expect(editor.plugin(CodeBlockPlugin).store.get()).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
       syntaxPopularFirst: false,
     });
 
     // Type checks
-    const options = CodeBlockPlugin.options;
-    options.syntax;
-    options.syntaxPopularFirst;
-    options.hotkey;
+    const initialState = CodeBlockPlugin.initialState;
+    initialState.syntax;
+    initialState.syntaxPopularFirst;
+    initialState.hotkey;
 
     // API type checks
     editor.api.toggleSyntax();
@@ -293,28 +293,25 @@ describe('toPlatePlugin type tests', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
       type: 'code_block',
-      options: { syntax: true, syntaxPopularFirst: false },
+      initialState: { syntax: true, syntaxPopularFirst: false },
     });
 
-    const CodeBlockPlugin = toPlatePlugin(
-      BaseCodeBlockPlugin,
-      ({ getOptions }) => {
-        // Type check: should have access to base options
-        getOptions().syntax;
-        getOptions().syntaxPopularFirst;
+    const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, ({ store }) => {
+      // Type check: should have access to base initialState
+      store.get().syntax;
+      store.get().syntaxPopularFirst;
 
-        return {
-          options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-        };
-      }
-    );
+      return {
+        initialState: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+      };
+    });
 
     expect(
       createPlateEditor({
         plugins: [CodeBlockPlugin],
       })
         .plugin(CodeBlockPlugin)
-        .getOptions()
+        .store.get()
     ).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
@@ -322,33 +319,33 @@ describe('toPlatePlugin type tests', () => {
     });
 
     // Type checks
-    const extendedOptions = CodeBlockPlugin.options;
+    const extendedOptions = CodeBlockPlugin.initialState;
     extendedOptions.syntax;
     extendedOptions.syntaxPopularFirst;
     extendedOptions.hotkey;
   });
 
-  it('allow partial extension of options', () => {
+  it('allow partial extension of initialState', () => {
     type TestConfig = PluginConfig<'test', { bar: number; foo: string }>;
 
     const PluginBase = createBasePlugin<TestConfig>({
       key: 'test',
-      options: { bar: 0, foo: 'initial' },
+      initialState: { bar: 0, foo: 'initial' },
     });
 
     const ExtendedPlugin = toPlatePlugin(PluginBase, {
-      options: { bar: 42 },
+      initialState: { bar: 42 },
     });
 
-    expect(resolvePluginTest(ExtendedPlugin).options).toEqual({
+    expect(resolvePluginTest(ExtendedPlugin).initialState).toEqual({
       bar: 42,
       foo: 'initial',
     });
 
     // Type checks
-    const options = ExtendedPlugin.options;
-    options.foo;
-    options.bar;
+    const initialState = ExtendedPlugin.initialState;
+    initialState.foo;
+    initialState.bar;
   });
 
   it('allow adding new properties', () => {
@@ -357,37 +354,37 @@ describe('toPlatePlugin type tests', () => {
 
     const PluginBase = createBasePlugin<BaseConfig>({
       key: 'test',
-      options: { foo: 'initial' },
+      initialState: { foo: 'initial' },
     });
 
     const ExtendedPlugin = toPlatePlugin<BaseConfig, { bar: number }>(
       PluginBase,
       {
-        options: { bar: 42 },
+        initialState: { bar: 42 },
       }
     );
 
-    expect(resolvePluginTest(ExtendedPlugin).options).toEqual({
+    expect(resolvePluginTest(ExtendedPlugin).initialState).toEqual({
       bar: 42,
       foo: 'initial',
     });
 
     // Type checks
-    const options = ExtendedPlugin.options;
-    options.foo;
-    options.bar;
+    const initialState = ExtendedPlugin.initialState;
+    initialState.foo;
+    initialState.bar;
 
     const ExtendedTPlugin = toPlatePlugin<ExtendedConfig>(PluginBase, {
-      options: { bar: 42 },
+      initialState: { bar: 42 },
     });
 
-    expect(resolvePluginTest(ExtendedTPlugin).options).toEqual({
+    expect(resolvePluginTest(ExtendedTPlugin).initialState).toEqual({
       bar: 42,
       foo: 'initial',
     });
 
     // Type checks
-    const options2 = ExtendedTPlugin.options;
+    const options2 = ExtendedTPlugin.initialState;
     options2.foo;
     options2.bar;
   });
@@ -399,7 +396,7 @@ describe('toPlatePlugin type tests', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
       type: 'code_block',
-      options: { syntax: true, syntaxPopularFirst: false },
+      initialState: { syntax: true, syntaxPopularFirst: false },
     }).extend<{ extension: { api: CodeBlockConfig['api'] } }>(() => ({
       extension: {
         api: {
@@ -414,7 +411,7 @@ describe('toPlatePlugin type tests', () => {
     const CodeBlockPlugin = toPlatePlugin<CodeBlockConfig2, CodeBlockConfig>(
       BaseCodeBlockPlugin,
       {
-        options: {
+        initialState: {
           hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
       }
@@ -437,17 +434,17 @@ describe('toPlatePlugin type tests', () => {
 
     editor.api.plugin.getLanguage();
 
-    expect(editor.plugin(CodeBlockPlugin).getOptions()).toEqual({
+    expect(editor.plugin(CodeBlockPlugin).store.get()).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
       syntaxPopularFirst: false,
     });
 
     // Type checks
-    const options = CodeBlockPlugin.options;
-    options.syntax;
-    options.syntaxPopularFirst;
-    options.hotkey;
+    const initialState = CodeBlockPlugin.initialState;
+    initialState.syntax;
+    initialState.syntaxPopularFirst;
+    initialState.hotkey;
 
     // API type checks
     editor.api.toggleSyntax();
@@ -469,18 +466,18 @@ describe('toPlatePlugin type tests', () => {
     const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
       key: 'codeBlock',
       type: 'code_block',
-      options: { syntax: true, syntaxPopularFirst: false },
+      initialState: { syntax: true, syntaxPopularFirst: false },
     });
 
     const CodeBlockPlugin2 = toPlatePlugin<CodeBlockConfig2, CodeBlockConfig>(
       BaseCodeBlockPlugin,
-      ({ getOptions }) => {
+      ({ store }) => {
         // @ts-expect-error
-        getOptions().nonExisting;
-        getOptions().syntax;
+        store.get().nonExisting;
+        store.get().syntax;
 
         return {
-          options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
+          initialState: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
         };
       }
     );
@@ -490,7 +487,7 @@ describe('toPlatePlugin type tests', () => {
         plugins: [CodeBlockPlugin2],
       })
         .plugin(CodeBlockPlugin2)
-        .getOptions()
+        .store.get()
     ).toEqual({
       hotkey: ['mod+opt+8', 'mod+shift+8'],
       syntax: true,
@@ -513,28 +510,28 @@ describe('toPlatePlugin with direct merge for object configs', () => {
 
     const BaseLinkPlugin = createBasePlugin<LinkConfig>({
       key: 'link',
-      options: {
+      initialState: {
         allowedSchemes: ['http', 'https'],
         isUrl,
       },
     }).extend(() => ({
-      options: {
+      initialState: {
         allowedSchemes: ['http', 'https', 'mailto', 'tel'],
       },
     }));
 
     const LinkPlugin = toPlatePlugin(BaseLinkPlugin, {
-      options: {
+      initialState: {
         allowedSchemes: ['http', 'https', 'mailto'],
       },
     });
 
-    expect(LinkPlugin.options).toEqual({
+    expect(LinkPlugin.initialState).toEqual({
       allowedSchemes: ['http', 'https', 'mailto'],
       isUrl,
     });
 
-    expect(resolvePluginTest(LinkPlugin).options).toEqual({
+    expect(resolvePluginTest(LinkPlugin).initialState).toEqual({
       allowedSchemes: ['http', 'https', 'mailto', 'tel'],
       isUrl,
     });

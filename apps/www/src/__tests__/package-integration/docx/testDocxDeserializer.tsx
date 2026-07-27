@@ -13,9 +13,8 @@ import {
   H5Plugin,
   H6Plugin,
   ItalicPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
@@ -48,7 +47,10 @@ const targetPluginConfig = {
 
 export const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   ({
-    getData: (format: string) => (format === 'text/html' ? html : rtf),
+    files: [],
+    getData: (format: string) => (format === 'text/html' ? html : rtf) ?? '',
+    items: [],
+    types: rtf ? ['text/html', 'text/rtf'] : ['text/html'],
   }) as any;
 
 export const getDocxTestName = (name: string) => `when pasting docx ${name}`;
@@ -89,8 +91,7 @@ export const testDocxDeserializer = ({
         CodePlugin,
         ItalicPlugin,
         StrikethroughPlugin,
-        SubscriptPlugin,
-        SuperscriptPlugin,
+        ScriptPlugin,
         UnderlinePlugin,
         TablePlugin,
         LineHeightPlugin.configure(targetPluginConfig),

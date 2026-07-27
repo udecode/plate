@@ -183,10 +183,12 @@ export type TBasicMarks = {
   bold?: boolean;
   code?: boolean;
   italic?: boolean;
+  script?: TScriptValue;
   strikethrough?: boolean;
-  subscript?: boolean;
   underline?: boolean;
 };
+
+export type TScriptValue = 'sub' | 'sup';
 
 export type TFontMarks = {
   backgroundColor?: React.CSSProperties['backgroundColor'];
@@ -291,11 +293,10 @@ export type NodeMap = {
   ol: TListElement;
   p: Element;
   search_highlight: Text & { search_highlight: true };
+  script: Text & { script: TScriptValue };
   slash_input: TComboboxInputElement;
   strikethrough: Text & { strikethrough: true };
-  subscript: Text & { subscript: true };
   suggestion: TSuggestionText;
-  superscript: Text & { superscript: true };
   table: TTableElement;
   tag: TTagElement;
   td: TTableCellElement;

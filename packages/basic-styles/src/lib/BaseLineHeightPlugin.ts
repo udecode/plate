@@ -11,14 +11,6 @@ import {
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
-
-const parseLineHeight = (value: string) => {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) ? numberValue : value;
-};
-
 /**
  * Enables configurable line spacing on targeted block elements.
  */
@@ -40,14 +32,17 @@ export const BaseLineHeightPlugin = createBasePlugin({
       ),
     ],
   }),
-  targetPluginKeys: defaultTargetPluginKeys,
+  targetPluginKeys: [KEYS.p],
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
-        decode: ({ element }) =>
-          element.style.lineHeight
-            ? parseLineHeight(element.style.lineHeight)
-            : undefined,
+        decode: ({ element }) => {
+          if (!element.style.lineHeight) return;
+
+          const value = Number(element.style.lineHeight);
+
+          return Number.isFinite(value) ? value : element.style.lineHeight;
+        },
         encode: ({ value }) => ({ style: { lineHeight: value } }),
         match: [{ style: { lineHeight: '*' } }],
       },

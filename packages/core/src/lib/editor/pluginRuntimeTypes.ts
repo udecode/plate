@@ -194,14 +194,22 @@ type OptionalKeysOfUnion<T> = {
 type RequiredKeysOfUnion<T> = Exclude<KeysOfUnion<T>, OptionalKeysOfUnion<T>>;
 
 type MergeApiUnionMember<T, K extends PropertyKey> =
-  IsUnion<PickUnionKey<T, K>> extends true
-    ? WidenDuplicateApiMember<Exclude<ValueOfUnionKey<T, K>, undefined>>
-    : ValueOfUnionKey<T, K>;
+  Exclude<ValueOfUnionKey<T, K>, undefined> extends infer TValue
+    ? [TValue] extends [object]
+      ? [TValue] extends [(...args: any[]) => any]
+        ? IsUnion<PickUnionKey<T, K>> extends true
+          ? WidenDuplicateApiMember<TValue>
+          : ValueOfUnionKey<T, K>
+        : MergeEditorApiUnion<TValue>
+      : IsUnion<PickUnionKey<T, K>> extends true
+        ? WidenDuplicateApiMember<TValue>
+        : ValueOfUnionKey<T, K>
+    : never;
 
 type MergeEditorApiUnion<T> = {
-  [K in RequiredKeysOfUnion<T>]: MergeApiUnionMember<T, K>;
+  readonly [K in RequiredKeysOfUnion<T>]: MergeApiUnionMember<T, K>;
 } & {
-  [K in OptionalKeysOfUnion<T>]?: MergeApiUnionMember<T, K>;
+  readonly [K in OptionalKeysOfUnion<T>]?: MergeApiUnionMember<T, K>;
 };
 
 export type IsBroadPluginConfig<P> =
@@ -601,7 +609,7 @@ export type PlatePluginExtensionEditor<P extends AnyPluginConfig> =
   PliteRuntimeBaseEditor<Value, readonly [PlatePluginTransactionExtension<P>]>;
 
 export type PlatePluginTransaction<P extends AnyPluginConfig> =
-  EditorUpdateTransaction<Value, readonly [PlatePluginTransactionExtension<P>]>;
+  EditorUpdateTransaction<Value, readonly [PlateInstalledExtension<P>]>;
 
 /** Installed state capabilities visible while a plugin constructs a read group. */
 export type PlatePluginReadState<P extends AnyPluginConfig> = EditorStateView<

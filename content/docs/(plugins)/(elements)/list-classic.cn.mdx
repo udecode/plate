@@ -232,7 +232,7 @@ const editor = createPlateEditor({
 
 用于列表项的插件。当其他元素插件可以保留为列表项的直接子节点时，在此处配置 `validLiChildren`：
 
-`ListItemPlugin.configure({ options: { validLiChildren: [ImagePlugin] } })`
+`ListItemPlugin.configure({ initialState: { validLiChildren: [ImagePlugin] } })`
 
 将配置后的 `ListItemPlugin` 与 `ListPlugin` 一起放入编辑器插件数组。这个显式描述符会替换键相同的必需默认描述符。
 

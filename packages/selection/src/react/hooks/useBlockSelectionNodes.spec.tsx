@@ -2,12 +2,12 @@ import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
 
 const useEditorMock = mock();
-const usePluginOptionMock = mock();
+const usePluginStoreMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: useEditorMock,
-  usePluginOption: usePluginOptionMock,
+  usePluginStore: usePluginStoreMock,
 }));
 
 const loadModule = async () =>
@@ -19,7 +19,7 @@ describe('useBlockSelectionNodes', () => {
   afterEach(() => {
     mock.restore();
     useEditorMock.mockReset();
-    usePluginOptionMock.mockReset();
+    usePluginStoreMock.mockReset();
   });
 
   it('returns selected block entries from the editor', async () => {
@@ -35,7 +35,7 @@ describe('useBlockSelectionNodes', () => {
         },
       },
     });
-    usePluginOptionMock.mockReturnValue(new Set(['a', 'b']));
+    usePluginStoreMock.mockReturnValue(new Set(['a', 'b']));
 
     const { useBlockSelectionNodes } = await loadModule();
     const { result } = renderHook(() => useBlockSelectionNodes());
@@ -56,7 +56,7 @@ describe('useBlockSelectionNodes', () => {
         },
       },
     });
-    usePluginOptionMock.mockReturnValue(new Set(['a', 'b']));
+    usePluginStoreMock.mockReturnValue(new Set(['a', 'b']));
 
     const { useBlockSelectionFragment, useBlockSelectionFragmentProp } =
       await loadModule();

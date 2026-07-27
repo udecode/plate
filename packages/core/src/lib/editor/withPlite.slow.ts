@@ -11,7 +11,7 @@ import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
 import { extendPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
-import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlugin';
+import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
 import { getContainerTypes } from '../plugin/getBasePlugin';
 import {
   AffinityPlugin,
@@ -747,16 +747,14 @@ describe('extendPlateEditor', () => {
       expect(h1Plugin.render.node).toBe(customComponent);
     });
 
-    it('respect priority when overriding existing components', () => {
+    it('lets terminal editor component configuration override a plugin component', () => {
       const originalComponent = () => null;
       const overrideComponent = () => null;
       const HeadingPlugin = createPlatePlugin({
         component: originalComponent,
         key: 'h1',
-        priority: 100,
       });
 
-      // Test with low priority override
       let editor = extendPlateEditor(createEditor(), {
         plugins: [HeadingPlugin],
       });
@@ -764,7 +762,6 @@ describe('extendPlateEditor', () => {
       let h1Plugin = editor.getPlugin(HeadingPlugin);
       expect(h1Plugin.render.node).toBe(originalComponent);
 
-      // Test with high priority override
       editor = extendPlateEditor(createEditor(), {
         override: {
           components: {

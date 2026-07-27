@@ -318,8 +318,8 @@ const evaluateDeclaration = <C extends AnyPluginConfig>(
       schema.textProperty(plugin.type, value, options),
   });
   const context: PluginSchemaContext<C> = Object.freeze({
+    initialState: plugin.initialState,
     key: plugin.key,
-    options: plugin.options,
     own,
     plugins,
     targetPluginKeys: targetBinding.keys,

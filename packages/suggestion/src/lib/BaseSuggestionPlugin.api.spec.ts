@@ -15,12 +15,12 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
 
 // biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
 {
-  describe('BaseSuggestionPlugin.api.activeDescriptions', () => {
+  describe('BaseSuggestionPlugin.read.activeDescriptions', () => {
     it('builds replacement and insertion descriptions from real editor data', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
-            options: {
+            initialState: {
               currentUserId: 'user-a',
             },
           }),
@@ -66,7 +66,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.activeDescriptions()
+        editor.plugin(BaseSuggestionPlugin).read.activeDescriptions()
       ).toEqual([
         {
           deletedText: 'old',
@@ -96,7 +96,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.activeDescriptions()
+        editor.plugin(BaseSuggestionPlugin).read.activeDescriptions()
       ).toEqual([]);
     });
 
@@ -128,7 +128,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.activeDescriptions()
+        editor.plugin(BaseSuggestionPlugin).read.activeDescriptions()
       ).toEqual([
         {
           deletedText: 'gone',
@@ -176,7 +176,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       expect(
         editor
           .plugin(BaseSuggestionPlugin)
-          .api.node({ isText: true, at: [] })?.[1]
+          .read.node({ isText: true, at: [] })?.[1]
       ).toEqual([0, 1]);
     });
 
@@ -214,7 +214,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.node({
+        editor.plugin(BaseSuggestionPlugin).read.node({
           isText: true,
           at: [],
           match: (node) => !!(node as any).bold,
@@ -222,7 +222,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       ).toEqual([0, 0]);
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.node({
+        editor.plugin(BaseSuggestionPlugin).read.node({
           isText: true,
           at: [],
           match: (node) => !!(node as any).italic,
@@ -234,7 +234,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
 
 // biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
 {
-  describe('BaseSuggestionPlugin.api.findProps', () => {
+  describe('BaseSuggestionPlugin.read.findIdentity', () => {
     const MentionPlugin = createBasePlugin({
       key: KEYS.mention,
       schema: {
@@ -253,7 +253,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       const editor = createBaseEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
-            options: {
+            initialState: {
               currentUserId: 'user-1',
             },
           }),
@@ -283,7 +283,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.findProps({
+        editor.plugin(BaseSuggestionPlugin).read.findIdentity({
           at: editor.read.selection()!,
           type: 'insert',
         })
@@ -293,7 +293,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.findProps({
+        editor.plugin(BaseSuggestionPlugin).read.findIdentity({
           at: editor.read.selection()!,
           type: 'remove',
         })
@@ -307,7 +307,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       const editor = createBaseEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
-            options: {
+            initialState: {
               currentUserId: 'user-1',
             },
           }),
@@ -334,7 +334,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.findProps({
+        editor.plugin(BaseSuggestionPlugin).read.findIdentity({
           at: editor.read.selection()!,
           type: 'insert',
         })
@@ -348,7 +348,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       const editor = createBaseEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
-            options: {
+            initialState: {
               currentUserId: 'user-1',
             },
           }),
@@ -384,7 +384,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       });
 
       expect(
-        editor.plugin(BaseSuggestionPlugin).api.findProps({
+        editor.plugin(BaseSuggestionPlugin).read.findIdentity({
           at: editor.read.selection()!,
           type: 'remove',
         })
@@ -412,7 +412,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
       createBaseEditor({
         plugins: [
           BaseSuggestionPlugin.configure({
-            options: { currentUserId: 'user-1' },
+            initialState: { currentUserId: 'user-1' },
           }),
           InlineSuggestionTargetPlugin,
         ],
@@ -530,7 +530,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
 
 // biome-ignore lint/complexity/noUselessLoneBlockStatements: keeps each merged test source isolated.
 {
-  describe('BaseSuggestionPlugin.api.nodeEntries', () => {
+  describe('BaseSuggestionPlugin.read.nodeEntries', () => {
     it('finds all text nodes for the given suggestion id and respects extra match filters', () => {
       const editor = createBaseEditor({
         plugins: [BaseSuggestionPlugin],
@@ -580,7 +580,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
 
       expect(
         Array.from(
-          editor.plugin(BaseSuggestionPlugin).api.nodeEntries('1')
+          editor.plugin(BaseSuggestionPlugin).read.nodeEntries('1')
         ).map(([, path]) => path)
       ).toEqual([
         [0, 0],
@@ -589,7 +589,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
 
       expect(
         Array.from(
-          editor.plugin(BaseSuggestionPlugin).api.nodeEntries('1', {
+          editor.plugin(BaseSuggestionPlugin).read.nodeEntries('1', {
             match: (node) => TextApi.isText(node) && node.text === 'new',
           })
         ).map(([, path]) => path)
@@ -602,7 +602,7 @@ import { KEYS, type TSuggestionText } from '@platejs/utils';
   jsxt;
 
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'testId',
     },
   });

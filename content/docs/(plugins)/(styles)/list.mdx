@@ -101,9 +101,9 @@ Read list state from the List plugin portal:
 ```ts
 const list = editor.plugin(ListPlugin);
 
-list.api.isActive(ListStyleType.Disc);
-list.api.isActive([ListStyleType.Disc, ListStyleType.Circle]);
-list.api.isActive(KEYS.listTodo);
+list.read.isActive(ListStyleType.Disc);
+list.read.isActive([ListStyleType.Disc, ListStyleType.Circle]);
+list.read.isActive(KEYS.listTodo);
 ```
 
 `isActive` returns `false` when the editor has no selection.

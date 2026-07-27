@@ -118,7 +118,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       {
         children: [
           { text: 'Some paragraph of text with ' },
-          { subscript: true, text: 'subscripted' },
+          { script: 'sub', text: 'subscripted' },
           { text: ' part.' },
         ],
         type: 'p',
@@ -131,7 +131,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-subscript="true"><sub><span data-plite-string="true">subscripted</span></sub></span>'
+      '<span data-plite-leaf="true"><sub><span data-plite-string="true">subscripted</span></sub></span>'
     );
   });
 
@@ -140,7 +140,7 @@ describe('core static renderStaticHtml mark rendering', () => {
       {
         children: [
           { text: 'Some paragraph of text with ' },
-          { superscript: true, text: 'superscripted' },
+          { script: 'sup', text: 'superscripted' },
           { text: ' part.' },
         ],
         type: 'p',
@@ -153,7 +153,7 @@ describe('core static renderStaticHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-plite-leaf="true" data-plite-superscript="true"><sup><span data-plite-string="true">superscripted</span></sup></span>'
+      '<span data-plite-leaf="true"><sup><span data-plite-string="true">superscripted</span></sup></span>'
     );
   });
 

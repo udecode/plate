@@ -91,7 +91,7 @@ type CommentConfig = ExtendConfig<
 export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
-    options: {
+    initialState: {
       activeId: null,
       commentingBlock: null,
       hoverId: null,
@@ -100,9 +100,9 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
 ).configure({ component: CommentLeaf });
 ```
 
-- `options.activeId`: 当前激活的评论 ID,用于视觉高亮
-- `options.commentingBlock`: 当前正在评论的块的路径
-- `options.hoverId`: 当前悬停的评论 ID,用于悬停效果
+- `initialState.activeId`: 当前激活的评论 ID,用于视觉高亮
+- `initialState.commentingBlock`: 当前正在评论的块的路径
+- `initialState.hoverId`: 当前悬停的评论 ID,用于悬停效果
 - `.configure({ component: CommentLeaf })`：使用
   [`CommentLeaf`](/docs/components/comment-node) 渲染评论文本标记
 
@@ -116,12 +116,12 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
   ({ editor }) => ({
     handlers: {
       // Set active comment when clicking on comment marks
-      onClick: ({ api, event, setOption, type }) => {
+      onClick: ({ api, event, store, type }) => {
         let leaf = event.target as HTMLElement;
         let isSet = false;
 
         const unsetActiveComment = () => {
-          setOption('activeId', null);
+          store.set({ activeId: null });
           isSet = true;
         };
 
@@ -137,7 +137,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
             }
 
             const id = api.nodeId(commentsEntry[0]);
-            setOption('activeId', id ?? null);
+            store.set({ activeId: id ?? null });
             isSet = true;
             break;
           }
@@ -148,7 +148,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
         if (!isSet) unsetActiveComment();
       },
     },
-    // ... previous options and render
+    // ... previous state and render
   })
 );
 ```
@@ -171,7 +171,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extend(({ editor, setOption, type }) => ({
+  .extend(({ editor, store, type }) => ({
     update: ({ tx }) => ({
         setDraft: (options = {}) => {
           const commentingBlock =
@@ -194,8 +194,10 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
           );
 
           tx.selection.collapse();
-          setOption('activeId', getDraftCommentKey());
-          setOption('commentingBlock', commentingBlock);
+          store.set({
+            activeId: getDraftCommentKey(),
+            commentingBlock,
+          });
         },
       }),
   }))
@@ -276,11 +278,11 @@ const editor = createPlateEditor({
 
 ## API
 
-### `editor.api.comment.has`
+### `editor.read.comment.has`
 
 检查编辑器中是否存在指定 ID 的评论。
 
-<API name="editor.api.comment.has">
+<API name="editor.read.comment.has">
   <APIParameters>
     <APIItem name="options" type="{ id: string }">
       包含要检查的评论 ID 的选项。
@@ -289,11 +291,11 @@ const editor = createPlateEditor({
   <APIReturns type="boolean">评论是否存在。</APIReturns>
 </API>
 
-### `editor.api.comment.node`
+### `editor.read.comment.node`
 
 获取评论节点条目。
 
-<API name="editor.api.comment.node">
+<API name="editor.read.comment.node">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional
@@ -318,11 +320,11 @@ const editor = createPlateEditor({
   <APIReturns type="string | undefined">如果找到则返回评论 ID。</APIReturns>
 </API>
 
-### `editor.api.comment.nodes`
+### `editor.read.comment.nodes`
 
 获取匹配选项的所有评论节点条目。
 
-<API name="editor.api.comment.nodes">
+<API name="editor.read.comment.nodes">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional

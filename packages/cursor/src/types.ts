@@ -32,5 +32,3 @@ export type SelectionRect = {
   top: number;
   width: number;
 };
-
-export const FROZEN_EMPTY_ARRAY: readonly SelectionRect[] = Object.freeze([]);

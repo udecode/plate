@@ -120,8 +120,14 @@ export type InsertMediaOptions = Omit<
 
 export type PlaceholderApi = {
   addUploadingFile: (id: string, file: File) => void;
-  getUploadingFile: (id: string) => File | undefined;
   removeUploadingFile: (id: string) => void;
+};
+
+export type PlaceholderSelectors = {
+  uploadingFile: (
+    state: Readonly<{ uploadingFiles: Record<string, File> }>,
+    id: string
+  ) => File | undefined;
 };
 
 export type PlaceholderUpdates = {
@@ -136,7 +142,7 @@ export type PlaceholderUpdates = {
   ) => void;
 };
 
-export type PlaceholderPluginOptions = PlaceholderConfig['options'] & {
+export type PlaceholderPluginState = PlaceholderConfig['initialState'] & {
   disableEmptyPlaceholder: boolean;
   disableFileDrop: boolean;
   uploadConfig: UploadConfig;
@@ -168,7 +174,7 @@ const isUploadError = (error: unknown): error is UploadError =>
   Array.isArray(error.data.files);
 
 export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
-  options: {
+  initialState: {
     disableEmptyPlaceholder: false,
     disableFileDrop: false,
     error: null,
@@ -213,247 +219,261 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
       },
     },
     uploadingFiles: {},
-  } as PlaceholderPluginOptions,
+  } as PlaceholderPluginState,
 })
-  .extend<{ api: PlaceholderApi }>(({ getOption, setOption }) => ({
+  .extend(({ store }) => ({
     api: {
-      addUploadingFile: (id, file) => {
-        setOption('uploadingFiles', {
-          ...getOption('uploadingFiles'),
-          [id]: file,
+      addUploadingFile: (id: string, file: File) => {
+        store.set({
+          uploadingFiles: {
+            ...store.get('uploadingFiles'),
+            [id]: file,
+          },
         });
       },
-      getUploadingFile: (id) => getOption('uploadingFiles')[id],
-      removeUploadingFile: (id) => {
-        const uploadingFiles = { ...getOption('uploadingFiles') };
+      removeUploadingFile: (id: string) => {
+        const uploadingFiles = { ...store.get('uploadingFiles') };
 
         delete uploadingFiles[id];
-        setOption('uploadingFiles', uploadingFiles);
+        store.set({ uploadingFiles });
       },
     },
+    selectors: {
+      uploadingFile: (
+        state: Readonly<{ uploadingFiles: Record<string, File> }>,
+        id: string
+      ): File | undefined => state.uploadingFiles[id],
+    },
   }))
-  .extend<{ update: PlaceholderUpdates }>(
-    ({ api, editor, getOption, setOption, type }) => ({
-      update: ({ context: { afterCommit }, tx }) => ({
-        insertMedia: (files, options) => {
-          const uploadConfig = getOption('uploadConfig');
-          let fileTypes: Map<File, AllowedFileType>;
+  .extend(({ api, editor, store, type }) => ({
+    update: ({ context: { afterCommit }, tx }) => ({
+      insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) => {
+        const uploadConfig = store.get('uploadConfig');
+        let fileTypes: Map<File, AllowedFileType>;
 
-          try {
-            const allowedTypes = Object.keys(uploadConfig) as AllowedFileType[];
-            const filesByType: Record<AllowedFileType, File[]> = {
-              audio: [],
-              blob: [],
-              image: [],
-              pdf: [],
-              text: [],
-              video: [],
-            };
+        try {
+          const allowedTypes = Object.keys(uploadConfig) as AllowedFileType[];
+          const filesByType: Record<AllowedFileType, File[]> = {
+            audio: [],
+            blob: [],
+            image: [],
+            pdf: [],
+            text: [],
+            video: [],
+          };
 
-            fileTypes = new Map();
+          fileTypes = new Map();
 
-            for (const file of files) {
-              const mimeType = file.type || lookup(file.name);
-              let fileType: AllowedFileType;
+          for (const file of files) {
+            const mimeType = file.type || lookup(file.name);
+            let fileType: AllowedFileType;
 
-              if (!mimeType) {
-                if (!allowedTypes.includes('blob')) {
-                  throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
-                    allowedTypes,
-                    files: [file],
-                  });
-                }
+            if (!mimeType) {
+              if (!allowedTypes.includes('blob')) {
+                throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
+                  allowedTypes,
+                  files: [file],
+                });
+              }
 
+              fileType = 'blob';
+            } else {
+              const matchedType = (
+                mimeType.toLowerCase() === 'application/pdf'
+                  ? 'pdf'
+                  : mimeType.split('/')[0]
+              ) as AllowedFileType;
+
+              if (allowedTypes.includes(matchedType)) {
+                fileType = matchedType;
+              } else if (allowedTypes.includes('blob')) {
                 fileType = 'blob';
               } else {
-                const matchedType = (
-                  mimeType.toLowerCase() === 'application/pdf'
-                    ? 'pdf'
-                    : mimeType.split('/')[0]
-                ) as AllowedFileType;
-
-                if (allowedTypes.includes(matchedType)) {
-                  fileType = matchedType;
-                } else if (allowedTypes.includes('blob')) {
-                  fileType = 'blob';
-                } else {
-                  throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
-                    allowedTypes,
-                    files: [file],
-                  });
-                }
+                throw createUploadError(UploadErrorCode.INVALID_FILE_TYPE, {
+                  allowedTypes,
+                  files: [file],
+                });
               }
-
-              filesByType[fileType].push(file);
-              fileTypes.set(file, fileType);
             }
 
-            for (const fileType of ALLOWED_FILE_TYPES) {
-              const typeFiles = filesByType[fileType];
+            filesByType[fileType].push(file);
+            fileTypes.set(file, fileType);
+          }
 
-              if (typeFiles.length === 0) continue;
+          for (const fileType of ALLOWED_FILE_TYPES) {
+            const typeFiles = filesByType[fileType];
 
-              const itemConfig = uploadConfig[fileType];
+            if (typeFiles.length === 0) continue;
 
-              if (!itemConfig) continue;
+            const itemConfig = uploadConfig[fileType];
 
-              const {
-                maxFileCount = Number.POSITIVE_INFINITY,
-                maxFileSize,
-                minFileCount = 1,
-              } = itemConfig;
+            if (!itemConfig) continue;
 
-              if (typeFiles.length < minFileCount) {
-                throw createUploadError(UploadErrorCode.TOO_LESS_FILES, {
-                  fileType,
-                  files: typeFiles,
-                  minFileCount,
-                });
-              }
-              if (typeFiles.length > maxFileCount) {
-                throw createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-                  fileType,
-                  files: typeFiles,
-                  maxFileCount,
-                });
-              }
-              if (!maxFileSize) continue;
+            const {
+              maxFileCount = Number.POSITIVE_INFINITY,
+              maxFileSize,
+              minFileCount = 1,
+            } = itemConfig;
 
-              const match = fileSizePattern.exec(maxFileSize);
-
-              if (!match) {
-                throw createUploadError(UploadErrorCode.INVALID_FILE_SIZE, {
-                  files: typeFiles,
-                });
-              }
-
-              const bytes =
-                Number.parseFloat(match[1]) *
-                1024 ** ['B', 'KB', 'MB', 'GB'].indexOf(match[3].toUpperCase());
-
-              for (const file of typeFiles) {
-                if (file.size > Math.floor(bytes)) {
-                  throw createUploadError(UploadErrorCode.TOO_LARGE, {
-                    fileType,
-                    files: [file],
-                    maxFileSize,
-                  });
-                }
-              }
+            if (typeFiles.length < minFileCount) {
+              throw createUploadError(UploadErrorCode.TOO_LESS_FILES, {
+                fileType,
+                files: typeFiles,
+                minFileCount,
+              });
             }
-          } catch (error) {
-            if (!isUploadError(error)) throw error;
-
-            setOption('error', error);
-
-            return;
-          }
-
-          if (!getOption('multiple') && files.length > 1) {
-            setOption(
-              'error',
-              createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-                fileType: null,
-                files: Array.from(files),
-                maxFileCount: 1,
-              })
-            );
-
-            return;
-          }
-
-          const maxFileCount = getOption('maxFileCount') ?? 3;
-
-          if (files.length > maxFileCount) {
-            setOption(
-              'error',
-              createUploadError(UploadErrorCode.TOO_MANY_FILES, {
-                fileType: null,
-                files: Array.from(files),
+            if (typeFiles.length > maxFileCount) {
+              throw createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+                fileType,
+                files: typeFiles,
                 maxFileCount,
-              })
-            );
+              });
+            }
+            if (!maxFileSize) continue;
 
-            return;
-          }
+            const match = fileSizePattern.exec(maxFileSize);
 
-          let currentAt = options?.at;
-
-          if (currentAt === undefined) {
-            const selection = tx.selection();
-            const block = selection ? tx.nodes.block({ at: selection }) : null;
-
-            if (block) currentAt = PathApi.next(block[1]);
-          }
-
-          const { at: _at, ...restOptions } = options ?? {};
-
-          if (getOption('disableEmptyPlaceholder')) {
-            tx.tags.add('history-push');
-          }
-
-          for (const [index, file] of Array.from(files).entries()) {
-            if (index > 0) {
-              currentAt = currentAt ? PathApi.next(currentAt) : undefined;
+            if (!match) {
+              throw createUploadError(UploadErrorCode.INVALID_FILE_SIZE, {
+                files: typeFiles,
+              });
             }
 
-            const fileType = fileTypes.get(file);
-            const mediaType = fileType
-              ? uploadConfig[fileType]?.mediaType
-              : undefined;
+            const bytes =
+              Number.parseFloat(match[1]) *
+              1024 ** ['B', 'KB', 'MB', 'GB'].indexOf(match[3].toUpperCase());
 
-            if (!mediaType) continue;
-
-            const id = nanoid();
-
-            afterCommit(() => api.addUploadingFile(id, file));
-            tx.nodes.insert<TPlaceholderElement>(
-              {
-                id,
-                children: [{ text: '' }],
-                mediaType,
-                type,
-              },
-              { ...restOptions, at: currentAt }
-            );
+            for (const file of typeFiles) {
+              if (file.size > Math.floor(bytes)) {
+                throw createUploadError(UploadErrorCode.TOO_LARGE, {
+                  fileType,
+                  files: [file],
+                  maxFileSize,
+                });
+              }
+            }
           }
-        },
-        replaceMedia: ({ type: mediaType, ...input }, { at, ...options }) => {
-          const audioType = editor.getType(KEYS.audio);
-          const fileType = editor.getType(KEYS.file);
-          const imageType = editor.getType(KEYS.img);
-          const videoType = editor.getType(KEYS.video);
+        } catch (error) {
+          if (!isUploadError(error)) throw error;
 
-          if (
-            mediaType !== audioType &&
-            mediaType !== fileType &&
-            mediaType !== imageType &&
-            mediaType !== videoType
-          ) {
-            throw new Error(
-              `Unsupported placeholder media type "${mediaType}".`
-            );
+          store.set({ error });
+
+          return;
+        }
+
+        if (!store.get('multiple') && files.length > 1) {
+          store.set({
+            error: createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+              fileType: null,
+              files: Array.from(files),
+              maxFileCount: 1,
+            }),
+          });
+
+          return;
+        }
+
+        const maxFileCount = store.get('maxFileCount') ?? 3;
+
+        if (files.length > maxFileCount) {
+          store.set({
+            error: createUploadError(UploadErrorCode.TOO_MANY_FILES, {
+              fileType: null,
+              files: Array.from(files),
+              maxFileCount,
+            }),
+          });
+
+          return;
+        }
+
+        let currentAt = options?.at;
+
+        if (currentAt === undefined) {
+          const selection = tx.selection();
+          const block = selection ? tx.nodes.block({ at: selection }) : null;
+
+          if (block) currentAt = PathApi.next(block[1]);
+        }
+
+        const { at: _at, ...restOptions } = options ?? {};
+
+        if (store.get('disableEmptyPlaceholder')) {
+          tx.tags.add('history-push');
+        }
+
+        for (const [index, file] of Array.from(files).entries()) {
+          if (index > 0) {
+            currentAt = currentAt ? PathApi.next(currentAt) : undefined;
           }
 
-          tx.nodes.remove({ at });
-          if (mediaType === audioType) {
-            tx.audio.insert(input, { ...options, at });
-          } else if (mediaType === fileType) {
-            tx.file.insert(input, { ...options, at });
-          } else if (mediaType === imageType) {
-            tx.img.insert(input, { ...options, at });
-          } else {
-            tx.video.insert(input, { ...options, at });
-          }
-        },
-      }),
-    })
-  )
-  .extend(({ getOption, update }) => ({
+          const fileType = fileTypes.get(file);
+          const mediaType = fileType
+            ? uploadConfig[fileType]?.mediaType
+            : undefined;
+
+          if (!mediaType) continue;
+
+          const id = nanoid();
+
+          afterCommit(() => api.addUploadingFile(id, file));
+          tx.nodes.insert<TPlaceholderElement>(
+            {
+              id,
+              children: [{ text: '' }],
+              mediaType,
+              type,
+            },
+            { ...restOptions, at: currentAt }
+          );
+        }
+      },
+      replaceMedia: (
+        {
+          type: mediaType,
+          ...input
+        }:
+          | (AlignedMediaInsertInput & { type: string })
+          | (ImageInsertInput & { type: string })
+          | (MediaInsertInput & { type: string })
+          | (ProviderMediaInsertInput & { type: string }),
+        {
+          at,
+          ...options
+        }: Omit<NodeInsertNodesOptions<TMediaElement>, 'at'> & { at: Path }
+      ) => {
+        const audioType = editor.getType(KEYS.audio);
+        const fileType = editor.getType(KEYS.file);
+        const imageType = editor.getType(KEYS.img);
+        const videoType = editor.getType(KEYS.video);
+
+        if (
+          mediaType !== audioType &&
+          mediaType !== fileType &&
+          mediaType !== imageType &&
+          mediaType !== videoType
+        ) {
+          throw new Error(`Unsupported placeholder media type "${mediaType}".`);
+        }
+
+        tx.nodes.remove({ at });
+        if (mediaType === audioType) {
+          tx.audio.insert(input, { ...options, at });
+        } else if (mediaType === fileType) {
+          tx.file.insert(input, { ...options, at });
+        } else if (mediaType === imageType) {
+          tx.img.insert(input, { ...options, at });
+        } else {
+          tx.video.insert(input, { ...options, at });
+        }
+      },
+    }),
+  }))
+  .extend(({ store, update }) => ({
     handlers: {
       onDrop: ({ editor, event }) => {
         // The DnD plugin owns file drops unless explicitly disabled.
-        if (!getOption('disableFileDrop')) return;
+        if (!store.get('disableFileDrop')) return;
 
         const { files } = event.dataTransfer;
 

@@ -76,7 +76,7 @@ import { KEYS } from 'platejs';
 import { BlockPlaceholderPlugin } from 'platejs/react';
 
 BlockPlaceholderPlugin.configure({
-  options: {
+  initialState: {
     placeholders: {
       [KEYS.p]: '输入内容...',
       [KEYS.h1]: '输入标题...',
@@ -96,7 +96,7 @@ import { KEYS } from 'platejs';
 import { BlockPlaceholderPlugin } from 'platejs/react';
 
 BlockPlaceholderPlugin.configure({
-  options: {
+  initialState: {
     className: 'before:absolute before:cursor-text before:opacity-30 before:content-[attr(placeholder)]',
     placeholders: {
       [KEYS.p]: '输入内容...',
@@ -129,7 +129,9 @@ BlockPlaceholderPlugin.configure({
 4. 块符合查询函数条件
 5. 块类型匹配 placeholders 映射中的键
 
-初始空状态检查使用 `editor.api.isElementStateEmpty`，因此只把 `type` 和通过 `significant: false` 声明的已编译元素属性视为空状态元数据。
+初始空状态检查使用
+`editor.plugin(ElementStatePlugin).api.isEmpty`，因此只把 `type`
+和通过 `significant: false` 声明的已编译元素属性视为空状态元数据。
 
 <API name="BlockPlaceholderPlugin">
 <APIOptions>

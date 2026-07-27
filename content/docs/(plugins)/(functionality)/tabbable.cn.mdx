@@ -74,7 +74,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     TabbablePlugin.configure({
-      options: {
+      initialState: {
         query: (event) => {
           // 在列表或代码块中禁用
           const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
@@ -92,9 +92,9 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.query`: 根据编辑器状态动态启用/禁用插件的函数
-- `options.globalEventListener`: 为`true`时，将事件监听器添加到document而非编辑器
-- `options.isTabbable`: 判断哪些元素应包含在标签顺序中的函数
+- `initialState.query`: 根据编辑器状态动态启用/禁用插件的函数
+- `initialState.globalEventListener`: 为`true`时，将事件监听器添加到document而非编辑器
+- `initialState.isTabbable`: 判断哪些元素应包含在标签顺序中的函数
 
 </Steps>
 
@@ -190,10 +190,16 @@ insertTabbableEntries: (event) => {
   </APIItem>
   <APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
     判断元素是否应可聚焦。
-    - **默认值:** `(tabbableEntry) => editor.api.isVoid(tabbableEntry.slateNode)`
+    - **默认值:** `(tabbableEntry) => editor.read.schema.isVoid(tabbableEntry.slateNode)`
   </APIItem>
 </APIOptions>
 </API>
+
+## 读取 API
+
+### `editor.read.tabbable.findDestination(options)`
+
+从当前快照查找下一个 DOM 或文档目标。
 
 ## 类型
 

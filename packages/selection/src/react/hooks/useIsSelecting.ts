@@ -1,17 +1,17 @@
 import {
   type PlateEditor,
   useEditorSelector,
-  usePluginOption,
+  usePluginStore,
 } from '@platejs/core/react';
 
-import { isSelecting } from '../../lib';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export const isSelectingOrFocused = (editor: PlateEditor) =>
-  isSelecting(editor) || editor.read.view.isFocused();
+  editor.plugin(BlockSelectionPlugin).read.isSelecting() ||
+  editor.read.view.isFocused();
 
 export const useIsSelecting = () => {
-  const isSelectingSome = usePluginOption(
+  const isSelectingSome = usePluginStore(
     BlockSelectionPlugin,
     'isSelectingSome'
   );

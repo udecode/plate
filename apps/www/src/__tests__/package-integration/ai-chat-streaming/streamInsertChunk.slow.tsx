@@ -1,10 +1,10 @@
 /** @jsx jsxt */
 
 import { deserializeMd } from '@platejs/markdown';
+import { AIChatPlugin } from '@platejs/ai/react';
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from './__tests__/createTestEditor';
-import { streamInsertChunk } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
 
 jsxt;
 
@@ -12,7 +12,7 @@ const streamChunks = (chunks: string[]) => {
   const { editor } = createTestEditor();
 
   for (const chunk of chunks) {
-    streamInsertChunk(editor, chunk);
+    editor.plugin(AIChatPlugin).update.insertChunk(chunk);
   }
 
   return editor;
@@ -26,7 +26,7 @@ const getStreamedMarkdown = (chunks: string[]) => {
   return { editor, expected: expectedEditor.read.children() };
 };
 
-describe('streamInsertChunk', () => {
+describe('AIChatPlugin update.insertChunk', () => {
   describe('paragraph boundaries', () => {
     it('starts a new paragraph after a trailing blank line', () => {
       const editor = streamChunks(['chunk1\n\n', 'chunk2', 'chunk3']);

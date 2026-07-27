@@ -1,11 +1,6 @@
 import { createRuleFactory } from '@platejs/core';
-import type { BlockFenceInputRuleMatch, BaseEditor } from '@platejs/core';
+import type { BlockFenceInputRuleMatch } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
-
-const isCodeBlockInputBlocked = (editor: BaseEditor) =>
-  editor.read.nodes.some({
-    match: { type: editor.getType(KEYS.codeBlock) },
-  });
 
 export const CodeBlockRules = {
   markdown: createRuleFactory<
@@ -16,7 +11,10 @@ export const CodeBlockRules = {
     type: 'blockFence',
     fence: '```',
     block: KEYS.p,
-    enabled: ({ editor }) => !isCodeBlockInputBlocked(editor),
+    enabled: ({ editor }) =>
+      !editor.read.nodes.some({
+        match: { type: editor.getType(KEYS.codeBlock) },
+      }),
     priority: 100,
     apply: ({ editor, tx }, match) => {
       tx.nodes.replace(

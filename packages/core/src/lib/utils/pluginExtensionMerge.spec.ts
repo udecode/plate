@@ -43,27 +43,29 @@ describe('plugin extension merging', () => {
 
     const customPlugin = createBasePlugin<CustomConfig>({
       key: 'customPlugin',
-      options: {
+      initialState: {
         baseValue: 5,
       },
     });
 
-    const extendedPlugin = customPlugin.extend(({ getOptions }) => ({
+    const extendedPlugin = customPlugin.extend(({ store }) => ({
       extension: {
         api: {
-          multiply: (factor) => getOptions().baseValue * factor,
+          multiply: (factor) => store.get().baseValue * factor,
         },
       },
     }));
 
     const furtherExtendedPlugin = extendedPlugin.extend(
-      ({ editor, getOptions, setOption }) => ({
+      ({ editor, store }) => ({
         extension: {
           api: {
             getTotal: (factor: number) =>
-              editor.api.multiply(factor) + getOptions().baseValue,
+              editor.api.multiply(factor) + store.get().baseValue,
             increment: (amount: number) => {
-              setOption('baseValue', getOptions().baseValue + amount);
+              store.set({
+                baseValue: store.get().baseValue + amount,
+              });
             },
           },
         },
@@ -74,16 +76,16 @@ describe('plugin extension merging', () => {
       plugins: [furtherExtendedPlugin],
     });
 
-    expect(getPlateRuntime(editor).plugins.customPlugin.options.baseValue).toBe(
-      5
-    );
+    expect(
+      getPlateRuntime(editor).plugins.customPlugin.initialState.baseValue
+    ).toBe(5);
     expect(editor.api.multiply(3)).toBe(15);
 
     editor.api.increment(2);
-    expect(editor.plugin(furtherExtendedPlugin).getOption('baseValue')).toBe(7);
-    expect(getPlateRuntime(editor).plugins.customPlugin.options.baseValue).toBe(
-      5
-    );
+    expect(editor.plugin(furtherExtendedPlugin).store.get('baseValue')).toBe(7);
+    expect(
+      getPlateRuntime(editor).plugins.customPlugin.initialState.baseValue
+    ).toBe(5);
 
     expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
@@ -91,33 +93,34 @@ describe('plugin extension merging', () => {
   it('keeps root API extensions coherent across configuration', () => {
     const basePlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
+      initialState: {
         baseValue: 10,
       },
     });
 
     const extendedPlugin = basePlugin
       .extend({
-        options: {
+        initialState: {
           baseValue: 15,
         },
       })
-      .extend(({ getOptions }) => ({
+      .extend(({ store }) => ({
         extension: {
           api: {
-            sampleMethod: (inc: number) => getOptions().baseValue + inc,
+            sampleMethod: (inc: number) => store.get().baseValue + inc,
           },
         },
       }))
       .extend({
-        options: {
+        initialState: {
           baseValue: 20,
         },
       })
-      .extend(({ editor, plugin: { options } }) => ({
+      .extend(({ editor, plugin: { initialState } }) => ({
         extension: {
           api: {
-            anotherMethod: () => editor.api.sampleMethod(1) + options.baseValue,
+            anotherMethod: () =>
+              editor.api.sampleMethod(1) + initialState.baseValue,
           },
         },
       }));
@@ -126,7 +129,7 @@ describe('plugin extension merging', () => {
       plugins: [extendedPlugin],
     });
 
-    expect(editor.plugin(extendedPlugin).getOptions().baseValue).toBe(20);
+    expect(editor.plugin(extendedPlugin).store.get().baseValue).toBe(20);
     expect(editor.api.sampleMethod(1)).toBe(21);
     expect(editor.api.anotherMethod()).toBe(41);
   });
@@ -134,7 +137,7 @@ describe('plugin extension merging', () => {
   it('merges root API across repeated stages', () => {
     const basePlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
+      initialState: {
         baseValue: 10,
       },
     });
@@ -174,7 +177,7 @@ describe('plugin extension merging', () => {
   it('allow plugin api', () => {
     const testPlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
+      initialState: {
         baseValue: 10,
       },
       api: {
@@ -213,7 +216,7 @@ describe('plugin extension merging', () => {
   it('allow stable plugin api', () => {
     const testPlugin = createBasePlugin({
       key: 'testPlugin',
-      options: { baseValue: 10 },
+      initialState: { baseValue: 10 },
       api: { method1: () => 1 },
     })
       .extend(() => ({ api: { method2: () => 2 } }))
@@ -351,16 +354,16 @@ describe('plugin extension merging', () => {
   it('comprehensively handles nested and overridden editor APIs', () => {
     const basePlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
+      initialState: {
         baseValue: 10,
       },
     })
-      .extend(({ getOptions }) => ({
+      .extend(({ store }) => ({
         extension: {
           api: {
             level1: {
-              method1: () => getOptions().baseValue,
-              method2: (factor: number) => getOptions().baseValue * factor,
+              method1: () => store.get().baseValue,
+              method2: (factor: number) => store.get().baseValue * factor,
             },
             standalone: () => 'base',
           },
@@ -377,11 +380,10 @@ describe('plugin extension merging', () => {
           },
         },
       }))
-      .extend(({ editor, getOptions }) => ({
+      .extend(({ editor, store }) => ({
         extension: {
           api: {
-            combined: () =>
-              editor.api.level1.method3() + getOptions().baseValue,
+            combined: () => editor.api.level1.method3() + store.get().baseValue,
           },
         },
       }));
@@ -425,11 +427,11 @@ describe('plugin extension merging', () => {
       editor.api.level1.method1 = () => 100;
     }).toThrow();
 
-    context.setOption('baseValue', 20);
+    context.store.set({ baseValue: 20 });
     expect(editor.api.level1.method1()).toBe(20);
-    expect(getPlateRuntime(editor).plugins.testPlugin.options.baseValue).toBe(
-      10
-    );
+    expect(
+      getPlateRuntime(editor).plugins.testPlugin.initialState.baseValue
+    ).toBe(10);
   });
 });
 
@@ -595,15 +597,15 @@ describe('plugin-scoped API merging', () => {
     expect(editor.api.testPlugin.method3()).toBe(3);
   });
 
-  it('reads plugin options while defining plugin API', () => {
+  it('reads plugin initialState while defining plugin API', () => {
     const testPlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
+      initialState: {
         baseValue: 10,
       },
-    }).extend(({ getOptions }) => ({
+    }).extend(({ store }) => ({
       api: {
-        getValue: () => getOptions().baseValue,
+        getValue: () => store.get().baseValue,
       },
     }));
 
@@ -694,7 +696,7 @@ describe('plugin-scoped API merging', () => {
   it('keeps root and plugin API contributions distinct', () => {
     const testPlugin = createBasePlugin({
       key: 'testPlugin',
-      options: {
+      initialState: {
         baseValue: 5,
       },
       extension: {
@@ -703,9 +705,9 @@ describe('plugin-scoped API merging', () => {
         },
       },
     })
-      .extend(({ getOptions }) => ({
+      .extend(({ store }) => ({
         api: {
-          pluginMethod: () => getOptions().baseValue,
+          pluginMethod: () => store.get().baseValue,
         },
       }))
       .extend(({ api, editor }) => ({

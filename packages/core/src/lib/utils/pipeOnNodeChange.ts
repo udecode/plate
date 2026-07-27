@@ -9,9 +9,9 @@ type OnNodeChangeContext = Parameters<
   NonNullable<NonNullable<AnyBasePlugin['handlers']>['onNodeChange']>
 >[0];
 
-export const pipeOnNodeChange = (
-  editor: BaseEditor,
-  change: EditorNodeChangeContext<BaseEditor>
+export const pipeOnNodeChange = <TEditor extends BaseEditor<any, any>>(
+  editor: TEditor,
+  change: EditorNodeChangeContext<TEditor>
 ) => {
   return getPlateRuntime(editor).pluginCache.handlers.onNodeChange.some(
     (key) => {

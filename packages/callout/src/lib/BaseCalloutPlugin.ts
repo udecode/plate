@@ -1,10 +1,13 @@
 import { createBasePlugin } from '@platejs/core';
-import { property, schema } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
+import { type NodeInsertNodesOptions, property, schema } from '@platejs/plite';
+import { KEYS, type TCalloutElement } from '@platejs/utils';
 
-import type { InsertCalloutOptions } from './transforms';
+export const CALLOUT_STORAGE_KEY = 'plate-storage-callout';
 
-import { insertCallout } from './transforms';
+export type InsertCalloutOptions = NodeInsertNodesOptions<TCalloutElement> & {
+  icon?: string;
+  variant?: TCalloutElement['variant'];
+};
 
 export const BaseCalloutPlugin = createBasePlugin({
   key: KEYS.callout,
@@ -33,7 +36,16 @@ export const BaseCalloutPlugin = createBasePlugin({
     },
   },
   update: ({ tx, type }) => ({
-    insert: (options?: InsertCalloutOptions) =>
-      insertCallout(tx, type, options),
+    insert: ({ icon, variant, ...options }: InsertCalloutOptions = {}) => {
+      tx.nodes.insert<TCalloutElement>(
+        {
+          children: [{ text: '' }],
+          icon: icon ?? localStorage.getItem(CALLOUT_STORAGE_KEY) ?? '💡',
+          type,
+          ...(variant === undefined ? {} : { variant }),
+        },
+        options
+      );
+    },
   }),
 });

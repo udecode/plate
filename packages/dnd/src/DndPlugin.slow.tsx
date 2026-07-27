@@ -31,9 +31,9 @@ describe('DndPlugin', () => {
 
     expect(dataTransfer.effectAllowed).toBe('move');
     expect(dataTransfer.dropEffect).toBe('move');
-    expect(context.getOption('draggingId')).toBe('block-1');
-    expect(context.getOption('isDragging')).toBe(true);
-    expect(context.getOption('_isOver')).toBe(true);
+    expect(context.store.get('draggingId')).toBe('block-1');
+    expect(context.store.get('isDragging')).toBe(true);
+    expect(context.store.get('_isOver')).toBe(true);
     const dropResult: unknown = pipeHandler(editor, {
       handlerKey: 'onDrop',
     })?.(event);
@@ -41,8 +41,8 @@ describe('DndPlugin', () => {
 
     pipeHandler(editor, { handlerKey: 'onDragEnd' })?.(event);
 
-    expect(context.getOption('isDragging')).toBe(false);
-    expect(context.getOption('dropTarget')).toEqual({ id: null, line: '' });
+    expect(context.store.get('isDragging')).toBe(false);
+    expect(context.store.get('dropTarget')).toEqual({ id: null, line: '' });
   });
 
   it('ignores drag starts without a block id and clears preview content on focus', () => {
@@ -50,7 +50,7 @@ describe('DndPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         DndPlugin.configure({
-          options: { multiplePreviewRef: { current: preview } },
+          initialState: { multiplePreviewRef: { current: preview } },
         }),
       ],
     });
@@ -69,10 +69,10 @@ describe('DndPlugin', () => {
     pipeHandler(editor, { handlerKey: 'onDragStart' })?.(dragEvent);
     pipeHandler(editor, { handlerKey: 'onFocus' })?.(focusEvent);
 
-    expect(context.getOption('draggingId')).toBeNull();
-    expect(context.getOption('isDragging')).toBe(false);
-    expect(context.getOption('_isOver')).toBe(false);
-    expect(context.getOption('dropTarget')).toEqual({ id: null, line: '' });
+    expect(context.store.get('draggingId')).toBeNull();
+    expect(context.store.get('isDragging')).toBe(false);
+    expect(context.store.get('_isOver')).toBe(false);
+    expect(context.store.get('dropTarget')).toEqual({ id: null, line: '' });
     expect(preview.childElementCount).toBe(0);
   });
 
@@ -106,16 +106,16 @@ describe('DndPlugin', () => {
     };
 
     act(() => {
-      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
       outside.dispatchEvent(new Event('dragleave', { bubbles: true }));
     });
-    expect(context.getOption('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeUndefined();
 
     act(() => {
-      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
       inside.dispatchEvent(new Event('dragleave', { bubbles: true }));
     });
-    expect(context.getOption('dropTarget')).toEqual({
+    expect(context.store.get('dropTarget')).toEqual({
       id: 'block-1',
       line: 'top',
     });
@@ -123,22 +123,22 @@ describe('DndPlugin', () => {
     act(() => {
       block.dispatchEvent(dragLeaveEvent(editorNode));
     });
-    expect(context.getOption('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeUndefined();
 
     act(() => {
-      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
       blockText.dispatchEvent(dragLeaveEvent(inside));
     });
-    expect(context.getOption('dropTarget')).toBeUndefined();
+    expect(context.store.get('dropTarget')).toBeUndefined();
 
     const nextBlock = document.createElement('div');
     nextBlock.dataset.blockId = 'block-2';
     editorNode.append(nextBlock);
     act(() => {
-      context.setOption('dropTarget', { id: 'block-1', line: 'top' });
+      context.store.set({ dropTarget: { id: 'block-1', line: 'top' } });
       block.dispatchEvent(dragLeaveEvent(nextBlock));
     });
-    expect(context.getOption('dropTarget')).toEqual({
+    expect(context.store.get('dropTarget')).toEqual({
       id: 'block-1',
       line: 'top',
     });
@@ -146,19 +146,19 @@ describe('DndPlugin', () => {
     act(() => {
       document.dispatchEvent(new Event('drop'));
     });
-    expect(context.getOption('_isOver')).toBe(false);
-    expect(context.getOption('dropTarget')).toBeUndefined();
+    expect(context.store.get('_isOver')).toBe(false);
+    expect(context.store.get('dropTarget')).toBeUndefined();
 
     view.unmount();
     editorNode.remove();
     outside.remove();
   });
 
-  it('renders the scroller when enabled and responds to live options', async () => {
+  it('renders the scroller when enabled and responds to live state', async () => {
     const editor = createPlateEditor({
       plugins: [
         DndPlugin.configure({
-          options: {
+          initialState: {
             enableScroller: true,
             scrollerProps: {
               height: 40,
@@ -180,7 +180,7 @@ describe('DndPlugin', () => {
         0
       );
 
-      act(() => context.setOption('isDragging', true));
+      act(() => context.store.set({ isDragging: true }));
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 110));
       });
@@ -192,12 +192,12 @@ describe('DndPlugin', () => {
         Array.from(areas).map((area) => (area as HTMLElement).style.height)
       ).toEqual(['40px', '40px']);
 
-      act(() => context.setOption('enableScroller', false));
+      act(() => context.store.set({ enableScroller: false }));
       expect(view.container.querySelectorAll('.dnd-scroll-area')).toHaveLength(
         0
       );
 
-      act(() => context.setOption('enableScroller', true));
+      act(() => context.store.set({ enableScroller: true }));
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 110));
       });
@@ -206,9 +206,11 @@ describe('DndPlugin', () => {
       );
 
       act(() =>
-        context.setOption('scrollerProps', {
-          height: 60,
-          scrollAreaProps: { className: 'dnd-scroll-area' },
+        context.store.set({
+          scrollerProps: {
+            height: 60,
+            scrollAreaProps: { className: 'dnd-scroll-area' },
+          },
         })
       );
       expect(

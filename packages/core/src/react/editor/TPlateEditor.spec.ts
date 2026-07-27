@@ -3,7 +3,7 @@ import { property, createEditor, type Value } from '@platejs/plite';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
-import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
+import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
 import { createPlateEditor, extendPlateEditor } from './withPlate';
 
 describe('PlateEditor', () => {
@@ -56,14 +56,14 @@ describe('PlateEditor', () => {
     it('exposes DebugPlugin methods on createPlateEditor', () => {
       const editor = createPlateEditor();
 
-      expect(editor.api.debug).toBeDefined();
-      expect(editor.api.debug.log).toBeInstanceOf(Function);
-      expect(editor.api.debug.error).toBeInstanceOf(Function);
-      expect(editor.api.debug.info).toBeInstanceOf(Function);
-      expect(editor.api.debug.warn).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api).toBeDefined();
+      expect(editor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.error).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.info).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.warn).toBeInstanceOf(Function);
 
       // @ts-expect-error
-      editor.api.debug.nonExistentMethod;
+      editor.plugin(DebugPlugin).api.nonExistentMethod;
     });
 
     it('combines core and custom plugin APIs with createPlateEditor', () => {
@@ -71,7 +71,7 @@ describe('PlateEditor', () => {
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin],
       });
 
-      expect(editor.api.debug).toBeDefined();
+      expect(editor.plugin(DebugPlugin).api).toBeDefined();
       expect(editor.api.bold).toBeInstanceOf(Function);
       expect(editor.api.insertImage).toBeInstanceOf(Function);
 

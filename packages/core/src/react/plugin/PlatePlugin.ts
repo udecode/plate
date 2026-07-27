@@ -42,7 +42,7 @@ import type {
   InferApi,
   InferDependencies,
   InferEnabled,
-  InferOptions,
+  InferPluginStoreState,
   InferPluginApi,
   InferPluginConfigTree,
   InferPluginSchemaModel,
@@ -58,6 +58,7 @@ import type {
   PluginReference,
   PluginSchema,
   PluginSchemaModel,
+  PluginSelectors,
   PluginShortcutInput,
   BasePlugin,
   DefineEditorExtension,
@@ -130,7 +131,7 @@ type ContextualPlateEditorExtensionInput<
   | ContextualPlateEditorExtension<C>
   | readonly ContextualPlateEditorExtension<C>[];
 
-type AuthoringPlateEditorExtensionInput<
+export type AuthoringPlateEditorExtensionInput<
   C extends AnyPluginConfig = PluginConfig,
 > = ContextualPlateEditorExtensionInput<C>;
 
@@ -425,12 +426,12 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 
 export type PlatePluginConfig<
   K extends string = any,
-  O = {},
+  StoreState = {},
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
   D extends readonly PluginReference[] = readonly [],
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   SchemaModel = never,
@@ -439,22 +440,55 @@ export type PlatePluginConfig<
 > = Partial<
   Omit<
     PlatePlugin<
-      PluginConfig<K, O, A, Tx, S, {}, D, SchemaModel, PluginApi, Enabled>
+      PluginConfig<
+        K,
+        StoreState,
+        A,
+        Tx,
+        S,
+        {},
+        D,
+        SchemaModel,
+        PluginApi,
+        Enabled
+      >
     >,
-    keyof PlatePluginMethods | 'api' | 'options' | 'render' | 'schema'
+    keyof PlatePluginMethods | 'api' | 'initialState' | 'render' | 'schema'
   > & {
     api: EA;
-    options: Partial<O> & EO;
+    initialState: Partial<StoreState> & EStoreState;
     render: Omit<
       NonNullable<
         PlatePlugin<
-          PluginConfig<K, O, A, Tx, S, {}, D, SchemaModel, PluginApi, Enabled>
+          PluginConfig<
+            K,
+            StoreState,
+            A,
+            Tx,
+            S,
+            {},
+            D,
+            SchemaModel,
+            PluginApi,
+            Enabled
+          >
         >['render']
       >,
       'node'
     > | null;
     schema: PluginSchema<
-      PluginConfig<K, O, A, Tx, S, {}, D, SchemaModel, PluginApi, Enabled>
+      PluginConfig<
+        K,
+        StoreState,
+        A,
+        Tx,
+        S,
+        {},
+        D,
+        SchemaModel,
+        PluginApi,
+        Enabled
+      >
     > | null;
     selectors: ES;
   }
@@ -470,30 +504,47 @@ export type PlatePluginContext<
   plugin: EditorPlatePlugin<C>;
 };
 
+type PlatePluginContextualFields =
+  | 'decorate'
+  | 'handlers'
+  | 'inject'
+  | 'rules'
+  | 'transformInitialValue'
+  | 'useHooks';
+
+type WithPlatePluginContext<C extends AnyPluginConfig, TConfig> = Omit<
+  TConfig,
+  PlatePluginContextualFields
+> &
+  Partial<Pick<PlatePlugin<C>, PlatePluginContextualFields>>;
+
 type RuntimePlatePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
-> = Omit<
-  PlatePluginConfig<
-    C['key'],
-    InferOptions<C>,
-    InferApi<C>,
-    InferTx<C>,
-    InferSelectors<C>,
-    InferDependencies<C>,
-    EO,
-    EA,
-    ES,
-    InferPluginSchemaModel<C>,
-    InferPluginApi<C>,
-    InferEnabled<C>
-  >,
-  'codecs' | 'component' | 'dependencies' | 'render' | 'schema' | 'type'
-> & {
-  render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'node'> | null;
-};
+> = WithPlatePluginContext<
+  C,
+  Omit<
+    PlatePluginConfig<
+      C['key'],
+      InferPluginStoreState<C>,
+      InferApi<C>,
+      InferTx<C>,
+      InferSelectors<C>,
+      InferDependencies<C>,
+      EStoreState,
+      EA,
+      ES,
+      InferPluginSchemaModel<C>,
+      InferPluginApi<C>,
+      InferEnabled<C>
+    >,
+    'codecs' | 'component' | 'dependencies' | 'render' | 'schema' | 'type'
+  > & {
+    render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'node'> | null;
+  }
+>;
 
 type PlateExtensionContractField<
   TContract extends BasePluginExtensionContract,
@@ -581,7 +632,7 @@ type PlateExtendedState<C extends AnyPluginConfig, TRead extends object> = [
 
 export type UnifiedRuntimePlatePluginConfig<
   C extends AnyPluginConfig,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
@@ -592,11 +643,13 @@ export type UnifiedRuntimePlatePluginConfig<
   api?: TApi & Deep2Partial<InferPluginApi<C>>;
   codecs?: PluginCodecMapDeclaration;
   extension?: UnifiedEditorExtensionInput<C, TExtension>;
-  options?: TOptions & Partial<InferOptions<C>>;
+  initialState?: TStoreState & Partial<InferPluginStoreState<C>>;
   read?: (context: {
     state: PlatePluginReadState<InferPluginConfigTree<C>>;
   }) => TRead & Partial<ExistingPlatePluginState<C>>;
-  selectors?: TSelectors & Partial<InferSelectors<C>>;
+  selectors?: TSelectors &
+    PluginSelectors<InferPluginStoreState<C> & TStoreState> &
+    Partial<InferSelectors<C>>;
   update?: (context: {
     context: EditorUpdateContext;
     tx: PlatePluginTransaction<InferPluginConfigTree<C>>;
@@ -604,10 +657,10 @@ export type UnifiedRuntimePlatePluginConfig<
 } & Omit<
   WithValidatedPlateShortcuts<
     C,
-    RuntimePlatePluginConfig<C, TOptions, {}, {}>,
+    RuntimePlatePluginConfig<C, TStoreState, {}, {}>,
     TShortcuts
   >,
-  'api' | 'options' | 'selectors'
+  'api' | 'initialState' | 'selectors'
 >;
 
 type PortableRuntimePlatePluginConfig<
@@ -617,7 +670,7 @@ type PortableRuntimePlatePluginConfig<
 > = Omit<
   UnifiedRuntimePlatePluginConfig<
     C,
-    PlateExtensionContractField<TContract, 'options'>,
+    PlateExtensionContractField<TContract, 'initialState'>,
     PlateExtensionContractField<TContract, 'api'>,
     PlateExtensionContractField<TContract, 'read'>,
     PlateExtensionContractField<TContract, 'selectors'>,
@@ -636,14 +689,14 @@ type PortableRuntimePlatePluginConfig<
 
 type UnifiedExtendedPlatePluginConfig<
   C extends AnyPluginConfig,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
   TUpdate extends object,
 > = PluginConfig<
   C['key'],
-  PlateAdditive<InferOptions<C>, TOptions>,
+  PlateAdditive<InferPluginStoreState<C>, TStoreState>,
   InferApi<C>,
   PlateExtendedTx<C, TRead, TUpdate>,
   PlateAdditive<InferSelectors<C>, TSelectors>,
@@ -663,7 +716,7 @@ export type ExtendedPlatePluginWithExtension<
 > = PlatePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C> & TExtensionApi,
     InferTx<C> & TExtensionTx,
     InferSelectors<C>,
@@ -677,7 +730,7 @@ export type ExtendedPlatePluginWithExtension<
 
 export type UnifiedExtendedPlatePlugin<
   C extends AnyPluginConfig,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
@@ -688,7 +741,7 @@ export type UnifiedExtendedPlatePlugin<
 > = ExtendedPlatePluginWithExtension<
   UnifiedExtendedPlatePluginConfig<
     C,
-    TOptions,
+    TStoreState,
     TApi,
     TRead,
     TSelectors,
@@ -701,7 +754,7 @@ export type UnifiedExtendedPlatePlugin<
 
 export type UnifiedStageExtendedPlatePlugin<
   C extends AnyPluginConfig,
-  TOptions extends object,
+  TStoreState extends object,
   TApi extends object,
   TRead extends object,
   TSelectors extends object,
@@ -709,7 +762,7 @@ export type UnifiedStageExtendedPlatePlugin<
   TExtension extends object | readonly object[],
 > = UnifiedExtendedPlatePlugin<
   C,
-  TOptions,
+  TStoreState,
   TApi,
   TRead,
   TSelectors,
@@ -725,7 +778,7 @@ type AuthoringPlatePluginContextConfig<
 > = InferConfig<
   UnifiedExtendedPlatePlugin<
     C,
-    PlateExtensionContractField<TContract, 'options'>,
+    PlateExtensionContractField<TContract, 'initialState'>,
     PlateExtensionContractField<TContract, 'api'>,
     PlateExtensionContractField<TContract, 'read'>,
     PlateExtensionContractField<TContract, 'selectors'>,
@@ -761,13 +814,13 @@ type AuthoringPlatePluginContext<
 
 type UnifiedStaticExtendedPlatePlugin<
   C extends AnyPluginConfig,
-  EO,
+  EStoreState,
   EA,
   ES,
   Enabled extends boolean,
   TExtension extends object | readonly object[],
 > = ExtendedPlatePluginWithExtension<
-  InferConfig<ExtendedPlatePlugin<C, EO, EA, ES, Enabled>>,
+  InferConfig<ExtendedPlatePlugin<C, EStoreState, EA, ES, Enabled>>,
   ExtensionApiContribution<TExtension>,
   ExtensionTxContribution<TExtension>,
   ExtensionStateContribution<TExtension>
@@ -775,45 +828,51 @@ type UnifiedStaticExtendedPlatePlugin<
 
 type StaticPlatePluginConfigBase<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   Enabled extends boolean = InferEnabled<C>,
-> = Omit<
-  PlatePluginConfig<
-    C['key'],
-    InferOptions<C>,
-    InferApi<C>,
-    InferTx<C>,
-    InferSelectors<C>,
-    InferDependencies<C>,
-    EO,
-    EA,
-    ES,
-    InferPluginSchemaModel<C>,
-    InferPluginApi<C>,
-    Enabled
-  >,
-  'component' | 'dependencies'
+> = WithPlatePluginContext<
+  C,
+  Omit<
+    PlatePluginConfig<
+      C['key'],
+      InferPluginStoreState<C>,
+      InferApi<C>,
+      InferTx<C>,
+      InferSelectors<C>,
+      InferDependencies<C>,
+      EStoreState,
+      EA,
+      ES,
+      InferPluginSchemaModel<C>,
+      InferPluginApi<C>,
+      Enabled
+    >,
+    'component' | 'dependencies'
+  >
 >;
 
 type StaticPlatePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   Enabled extends boolean = InferEnabled<C>,
-> = Omit<StaticPlatePluginConfigBase<C, EO, EA, ES, Enabled>, 'schema'> & {
+> = Omit<
+  StaticPlatePluginConfigBase<C, EStoreState, EA, ES, Enabled>,
+  'schema'
+> & {
   schema?: never;
 };
 
 type TerminalPlatePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   Enabled extends boolean = InferEnabled<C>,
-> = Omit<StaticPlatePluginConfig<C, EO, EA, ES, Enabled>, 'schema'> & {
+> = Omit<StaticPlatePluginConfig<C, EStoreState, EA, ES, Enabled>, 'schema'> & {
   component?: NodeComponent;
   schema?: never;
 };
@@ -821,7 +880,7 @@ type TerminalPlatePluginConfig<
 type ContextualPlatePluginConfig<C extends AnyPluginConfig> = Omit<
   Pick<
     RuntimePlatePluginConfig<C>,
-    'handlers' | 'options' | 'render' | 'shortcuts'
+    'handlers' | 'initialState' | 'render' | 'shortcuts'
   >,
   'render'
 > & {
@@ -844,14 +903,14 @@ type WithValidatedPlateShortcuts<
 /** Plugin descriptor returned by `extend`, with its inferred additions merged. */
 export type ExtendedPlatePlugin<
   C extends AnyPluginConfig,
-  EO,
+  EStoreState,
   EA,
   ES,
   Enabled extends boolean = InferEnabled<C>,
 > = PlatePlugin<
   PluginConfig<
     C['key'],
-    EO & InferOptions<C>,
+    EStoreState & InferPluginStoreState<C>,
     EA & InferApi<C>,
     InferTx<C>,
     ES & InferSelectors<C>,
@@ -884,7 +943,7 @@ type ConfiguredPlatePluginType<
 > = ConfiguredPlatePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
@@ -909,7 +968,7 @@ type ConfiguredPlatePluginEnabled<
 > = ConfiguredPlatePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
@@ -929,14 +988,13 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __editorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __readExtensions: BasePlugin<C>['__readExtensions'];
-  __selectorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __txExtensions: BasePlugin<C>['__txExtensions'];
   clone: () => PlatePlugin<C>;
   /**
    * Applies this descriptor's single terminal consumer configuration.
    *
    * Declare reusable behavior with `extend` before this call. Contextual
-   * callbacks can override existing options, handlers, renderers, and
+   * callbacks can override existing initial state, handlers, renderers, and
    * shortcuts without widening the plugin contract. Extensions read the
    * configured values, while this configuration remains the final override.
    */
@@ -995,7 +1053,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   ): ConfiguredPlatePlugin<C>;
   extend<
     const TContract extends BasePluginExtensionContract = {},
-    const TOptions extends object = {},
+    const TStoreState extends object = {},
     const TApi extends object = {},
     const TRead extends object = {},
     const TSelectors extends object = {},
@@ -1007,7 +1065,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       ctx: AuthoringPlatePluginContext<C, TContract>
     ) => UnifiedRuntimePlatePluginConfig<
       C,
-      EffectivePlateContractField<TContract, 'options', TOptions>,
+      EffectivePlateContractField<TContract, 'initialState', TStoreState>,
       EffectivePlateContractField<TContract, 'api', TApi>,
       EffectivePlateContractField<TContract, 'read', TRead>,
       EffectivePlateContractField<TContract, 'selectors', TSelectors>,
@@ -1017,7 +1075,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   ): UnifiedExtendedPlatePlugin<
     C,
-    EffectivePlateContractField<TContract, 'options', TOptions>,
+    EffectivePlateContractField<TContract, 'initialState', TStoreState>,
     EffectivePlateContractField<TContract, 'api', TApi>,
     EffectivePlateContractField<TContract, 'read', TRead>,
     EffectivePlateContractField<TContract, 'selectors', TSelectors>,
@@ -1037,7 +1095,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     ) => PortableRuntimePlatePluginConfig<C, TContract, TShortcuts>
   ): UnifiedExtendedPlatePlugin<
     C,
-    PlateExtensionContractField<TContract, 'options'>,
+    PlateExtensionContractField<TContract, 'initialState'>,
     PlateExtensionContractField<TContract, 'api'>,
     PlateExtensionContractField<TContract, 'read'>,
     PlateExtensionContractField<TContract, 'selectors'>,
@@ -1059,7 +1117,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     TExtension
   >;
   extend<
-    EO = {},
+    EStoreState = {},
     EA = {},
     ES = {},
     const TShortcuts extends PlateShortcutRecord = {},
@@ -1068,7 +1126,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     extendConfig: WithValidatedPlateShortcuts<
       PluginConfig<
         C['key'],
-        InferOptions<C>,
+        InferPluginStoreState<C>,
         EA & InferApi<C>,
         InferTx<C>,
         InferSelectors<C>,
@@ -1078,10 +1136,10 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
         InferPluginApi<C>,
         Enabled
       >,
-      StaticPlatePluginConfig<C, EO, EA, ES, Enabled>,
+      StaticPlatePluginConfig<C, EStoreState, EA, ES, Enabled>,
       TShortcuts
     >
-  ): ExtendedPlatePlugin<C, EO, EA, ES, Enabled>;
+  ): ExtendedPlatePlugin<C, EStoreState, EA, ES, Enabled>;
   __resolved?: boolean;
 };
 

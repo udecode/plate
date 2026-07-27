@@ -46,7 +46,7 @@ describe('onHoverNode', () => {
       editorId: editor.id,
       element: dragElement,
     };
-    editor.plugin(DndPlugin).setOptions({
+    editor.plugin(DndPlugin).store.set({
       _isOver: true,
       dropTarget: { id: null, line: '' },
     });
@@ -70,7 +70,7 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
+    expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
       id: 'hover',
       line: 'bottom',
     });
@@ -101,9 +101,11 @@ describe('onHoverNode', () => {
 
   it('clears a stale drop target when no move is available', () => {
     spyOn(onDropNodeModule, 'getDropPath').mockReturnValue(undefined);
-    editor.plugin(DndPlugin).setOption('dropTarget', {
-      id: 'hover',
-      line: 'bottom',
+    editor.plugin(DndPlugin).store.set({
+      dropTarget: {
+        id: 'hover',
+        line: 'bottom',
+      },
     });
 
     onHoverNode(editor, {
@@ -113,7 +115,7 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
+    expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
       id: null,
       line: '',
     });
@@ -133,7 +135,7 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
+    expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
       id: 'previous',
       line: 'bottom',
     });
@@ -145,7 +147,7 @@ describe('onHoverNode', () => {
       dragPath: [2],
       to: [2],
     });
-    editor.plugin(DndPlugin).setOption('_isOver', false);
+    editor.plugin(DndPlugin).store.set({ _isOver: false });
 
     onHoverNode(editor, {
       dragItem,
@@ -154,7 +156,7 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.plugin(DndPlugin).getOption('dropTarget')).toEqual({
+    expect(editor.plugin(DndPlugin).store.get('dropTarget')).toEqual({
       id: null,
       line: '',
     });

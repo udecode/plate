@@ -1,0 +1,834 @@
+[
+  {
+    "id": 5,
+    "package": "basic-nodes",
+    "symbol": "BaseBlockquotePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts",
+    "line": 54,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "priority": "P3",
+    "verdict": "Keep both mutations under update and one trailing shortcut stage.",
+    "evidence": "The update factory uses tx.blocks.toggle and tx.blocks.lift. Constructor shortcut placement erases the inferred plugin declaration in the publishable build, so the shortcut stage must consume the completed update contract.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 6,
+    "package": "basic-nodes",
+    "symbol": "BaseBoldPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseBoldPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the bold mark through tx.marks.toggle and has no read-only or editor-wide responsibility.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 7,
+    "package": "basic-nodes",
+    "symbol": "BaseCodePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseCodePlugin.ts",
+    "line": 7,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the code mark through tx.marks.toggle and does not expose a query or service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 8,
+    "package": "basic-nodes",
+    "symbol": "BaseH1Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 20,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H1 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 9,
+    "package": "basic-nodes",
+    "symbol": "BaseH2Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 41,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H2 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 10,
+    "package": "basic-nodes",
+    "symbol": "BaseH3Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 62,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H3 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 11,
+    "package": "basic-nodes",
+    "symbol": "BaseH4Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 83,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H4 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 12,
+    "package": "basic-nodes",
+    "symbol": "BaseH5Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 104,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H5 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 13,
+    "package": "basic-nodes",
+    "symbol": "BaseH6Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 125,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H6 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 14,
+    "package": "basic-nodes",
+    "symbol": "BaseHighlightPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseHighlightPlugin.ts",
+    "line": 9,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the highlight mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 15,
+    "package": "basic-nodes",
+    "symbol": "BaseHorizontalRulePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseHorizontalRulePlugin.ts",
+    "line": 4,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this as a schema, codec, and render-only descriptor.",
+    "evidence": "The plugin declares only the horizontal-rule element schema, HTML codec, and static render tag.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 16,
+    "package": "basic-nodes",
+    "symbol": "BaseItalicPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseItalicPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the italic mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 17,
+    "package": "basic-nodes",
+    "symbol": "BaseKbdPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseKbdPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the keyboard-input mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 18,
+    "package": "basic-nodes",
+    "symbol": "BaseScriptPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseScriptPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle mutates the mutually exclusive subscript or superscript mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 19,
+    "package": "basic-nodes",
+    "symbol": "BaseStrikethroughPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the strikethrough mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 20,
+    "package": "basic-nodes",
+    "symbol": "BaseUnderlinePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseUnderlinePlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the underline mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 21,
+    "package": "basic-nodes",
+    "symbol": "BlockquotePlugin",
+    "file": "packages/basic-nodes/src/react/BlockquotePlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseBlockquotePlugin update surface.",
+    "evidence": "The React descriptor is a direct toPlatePlugin adapter and adds no capability beyond inherited update.toggle and update.untab.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 22,
+    "package": "basic-nodes",
+    "symbol": "BoldPlugin",
+    "file": "packages/basic-nodes/src/react/BoldPlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React-only shortcut.",
+    "evidence": "The adapter adds only the Mod+B shortcut while BaseBoldPlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 23,
+    "package": "basic-nodes",
+    "symbol": "CodePlugin",
+    "file": "packages/basic-nodes/src/react/CodePlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseCodePlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the code-mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 24,
+    "package": "basic-nodes",
+    "symbol": "H1Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 12,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H1 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH1Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 25,
+    "package": "basic-nodes",
+    "symbol": "H2Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 13,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H2 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH2Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 26,
+    "package": "basic-nodes",
+    "symbol": "H3Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 14,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H3 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH3Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 27,
+    "package": "basic-nodes",
+    "symbol": "H4Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 15,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H4 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH4Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 28,
+    "package": "basic-nodes",
+    "symbol": "H5Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 16,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H5 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH5Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 29,
+    "package": "basic-nodes",
+    "symbol": "H6Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 17,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H6 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH6Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 30,
+    "package": "basic-nodes",
+    "symbol": "HighlightPlugin",
+    "file": "packages/basic-nodes/src/react/HighlightPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseHighlightPlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the highlight-mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 31,
+    "package": "basic-nodes",
+    "symbol": "HorizontalRulePlugin",
+    "file": "packages/basic-nodes/src/react/HorizontalRulePlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the adapter capability-free.",
+    "evidence": "The React descriptor directly adapts the schema, codec, and render-only BaseHorizontalRulePlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 32,
+    "package": "basic-nodes",
+    "symbol": "ItalicPlugin",
+    "file": "packages/basic-nodes/src/react/ItalicPlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React-only shortcut.",
+    "evidence": "The adapter adds only the Mod+I shortcut while BaseItalicPlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 33,
+    "package": "basic-nodes",
+    "symbol": "KbdPlugin",
+    "file": "packages/basic-nodes/src/react/KbdPlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseKbdPlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the keyboard-input mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 34,
+    "package": "basic-nodes",
+    "symbol": "ScriptPlugin",
+    "file": "packages/basic-nodes/src/react/ScriptPlugin.tsx",
+    "line": 19,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React leaf component.",
+    "evidence": "The adapter contributes only ScriptLeaf rendering while BaseScriptPlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 35,
+    "package": "basic-nodes",
+    "symbol": "StrikethroughPlugin",
+    "file": "packages/basic-nodes/src/react/StrikethroughPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseStrikethroughPlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the strikethrough-mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 36,
+    "package": "basic-nodes",
+    "symbol": "UnderlinePlugin",
+    "file": "packages/basic-nodes/src/react/UnderlinePlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React-only shortcut.",
+    "evidence": "The adapter adds only the Mod+U shortcut while BaseUnderlinePlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  }
+]

@@ -35,14 +35,14 @@ describe('plugin references', () => {
   it('keeps every public factory and method result nominal', () => {
     const BasePlugin = createBasePlugin({
       key: 'baseReference',
-      options: { nested: { value: 1 } },
+      initialState: { nested: { value: 1 } },
     });
     const baseOutputs: NominalPluginOutput[] = [
       BasePlugin,
       BasePlugin.clone(),
-      BasePlugin.configure({ options: { nested: { value: 2 } } }),
-      BasePlugin.extend({ priority: 101 }),
-      BasePlugin.extend(() => ({ priority: 102 })),
+      BasePlugin.configure({ initialState: { nested: { value: 2 } } }),
+      BasePlugin.extend({ editOnly: true }),
+      BasePlugin.extend(() => ({ enabled: true })),
       BasePlugin.extend(() => ({
         extension: { api: { nominalEditorApi: () => true } },
       })),
@@ -68,15 +68,15 @@ describe('plugin references', () => {
     const plateOutputs: NominalPluginOutput[] = [
       createPlatePlugin({
         key: 'plateReference',
-        options: { nested: { value: 1 } },
+        initialState: { nested: { value: 1 } },
       }),
       PlatePlugin,
-      toPlatePlugin(BasePlugin, { priority: 105 }),
-      toPlatePlugin(BasePlugin, () => ({ priority: 106 })),
+      toPlatePlugin(BasePlugin, { editOnly: true }),
+      toPlatePlugin(BasePlugin, () => ({ enabled: true })),
       PlatePlugin.clone(),
-      PlatePlugin.configure({ options: { nested: { value: 3 } } }),
-      PlatePlugin.extend({ priority: 103 }),
-      PlatePlugin.extend(() => ({ priority: 104 })),
+      PlatePlugin.configure({ initialState: { nested: { value: 3 } } }),
+      PlatePlugin.extend({ editOnly: true }),
+      PlatePlugin.extend(() => ({ enabled: true })),
       PlatePlugin.extend(() => ({
         extension: { api: { nominalEditorApi: () => true } },
       })),
@@ -105,7 +105,7 @@ describe('plugin references', () => {
     [...baseOutputs, ...plateOutputs].forEach(expectReusableReference);
   });
 
-  it('accepts genuine option references and rejects spread-forged identities', () => {
+  it('accepts genuine state references and rejects spread-forged identities', () => {
     const TargetPlugin = createBasePlugin({
       key: 'referenceTarget',
       schema: {
@@ -117,18 +117,18 @@ describe('plugin references', () => {
     });
     const OwnerPlugin = createBasePlugin({
       key: 'referenceOwner',
-      options: { target: TargetPlugin },
-      schema: ({ options, own, plugins }) => ({
+      initialState: { target: TargetPlugin },
+      schema: ({ initialState, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.type(plugins.elementType(options.target)),
+            target: target.type(plugins.elementType(initialState.target)),
           }),
         ],
       }),
       type: 'reference-owner',
     });
 
-    expect(OwnerPlugin.options.target).toBe(TargetPlugin);
+    expect(OwnerPlugin.initialState.target).toBe(TargetPlugin);
     expect(() =>
       createBaseEditor({ plugins: [TargetPlugin, OwnerPlugin] })
     ).not.toThrow();
@@ -136,11 +136,11 @@ describe('plugin references', () => {
     const forgedReference = { ...TargetPlugin };
     const ForgedOwnerPlugin = createBasePlugin({
       key: 'forgedReferenceOwner',
-      options: { target: forgedReference },
-      schema: ({ options, own, plugins }) => ({
+      initialState: { target: forgedReference },
+      schema: ({ initialState, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.type(plugins.elementType(options.target)),
+            target: target.type(plugins.elementType(initialState.target)),
           }),
         ],
       }),

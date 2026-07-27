@@ -14,7 +14,7 @@ import {
   type InferConfig,
   type InferPluginDocumentType,
   NodeIdPlugin,
-  type NormalizePluginOption,
+  type NormalizePluginState,
   type PluginConfig,
   type PluginReference,
 } from '@platejs/core';
@@ -84,9 +84,9 @@ noSchemaEditor.read.schema.createAndFill(NoSchemaPlugin);
 
 const ConfiguredPropertyPlugin = createBasePlugin({
   key: 'configuredProperty',
-  options: { prefix: 'configured' },
-  schema: ({ options, own, plugins, targetPluginKeys, type }) => {
-    const prefix: string = options.prefix;
+  initialState: { prefix: 'configured' },
+  schema: ({ initialState, own, plugins, targetPluginKeys, type }) => {
+    const prefix: string = initialState.prefix;
     const targetPluginKey: string = targetPluginKeys[0];
     const ownedType: string = type;
 
@@ -155,51 +155,51 @@ const UninstalledElementPropertyPlugin = createBasePlugin({
   type: 'uninstalled-schema-element-property',
 });
 
-const configuredPrefix: string = ConfiguredPropertyPlugin.options.prefix;
+const configuredPrefix: string = ConfiguredPropertyPlugin.initialState.prefix;
 const configuredTargetPluginKey: string =
   ConfiguredPropertyPlugin.targetPluginKeys[0];
 
-const PluginReferenceOptions = createBasePlugin({
-  key: 'pluginReferenceOptions',
-  options: {
+const PluginReferenceStatePlugin = createBasePlugin({
+  key: 'pluginReferenceState',
+  initialState: {
     nested: { targets: [TargetPlugin] as const },
     target: TargetPlugin,
   },
 }).configure({
-  options: { target: TargetPlugin },
+  initialState: { target: TargetPlugin },
 });
-const pluginReferenceOptionsEditor = createBaseEditor({
-  plugins: [TargetPlugin, PluginReferenceOptions],
+const pluginReferenceStateEditor = createBaseEditor({
+  plugins: [TargetPlugin, PluginReferenceStatePlugin],
 });
-const targetOption = pluginReferenceOptionsEditor
-  .plugin(PluginReferenceOptions)
-  .getOption('target');
-const nestedTargetOption = pluginReferenceOptionsEditor
-  .plugin(PluginReferenceOptions)
-  .getOption('nested').targets[0];
-const exactTargetOption: PluginReference<'schemaTarget', 'schema-target'> =
-  targetOption;
-const exactNestedTargetOption: PluginReference<
+const targetReference = pluginReferenceStateEditor
+  .plugin(PluginReferenceStatePlugin)
+  .store.get('target');
+const nestedTargetReference = pluginReferenceStateEditor
+  .plugin(PluginReferenceStatePlugin)
+  .store.get('nested').targets[0];
+const exactTargetReference: PluginReference<'schemaTarget', 'schema-target'> =
+  targetReference;
+const exactNestedTargetReference: PluginReference<
   'schemaTarget',
   'schema-target'
-> = nestedTargetOption;
-const readonlyPluginReferenceOptions = pluginReferenceOptionsEditor
-  .plugin(PluginReferenceOptions)
-  .getOptions();
+> = nestedTargetReference;
+const readonlyPluginReferenceState = pluginReferenceStateEditor
+  .plugin(PluginReferenceStatePlugin)
+  .store.get();
 
-// @ts-expect-error Runtime plugin-valued options expose references, not descriptors.
-targetOption.configure({ priority: 101 });
-// @ts-expect-error Nested runtime option references do not expose descriptor methods.
-nestedTargetOption.extend({ priority: 101 });
-// @ts-expect-error Runtime option records are immutable snapshots.
-readonlyPluginReferenceOptions.target = TargetPlugin;
-// @ts-expect-error Nested runtime option arrays are immutable snapshots.
-readonlyPluginReferenceOptions.nested.targets.push(TargetPlugin);
+// @ts-expect-error Runtime plugin-valued initial state exposes references, not descriptors.
+targetReference.configure({ enabled: true });
+// @ts-expect-error Nested runtime state references do not expose descriptor methods.
+nestedTargetReference.extend({ enabled: true });
+// @ts-expect-error Runtime state records are immutable snapshots.
+readonlyPluginReferenceState.target = TargetPlugin;
+// @ts-expect-error Nested runtime state arrays are immutable snapshots.
+readonlyPluginReferenceState.nested.targets.push(TargetPlugin);
 
-void exactTargetOption;
-void exactNestedTargetOption;
+void exactTargetReference;
+void exactNestedTargetReference;
 
-class PluginOptionResource {
+class PluginStateResource {
   readonly #value = 'opaque';
 
   read() {
@@ -207,31 +207,31 @@ class PluginOptionResource {
   }
 }
 
-const pluginOptionResource = new PluginOptionResource();
-const PluginResourceOptions = createBasePlugin({
-  key: 'pluginResourceOptions',
-  options: { resource: pluginOptionResource },
+const pluginStateResource = new PluginStateResource();
+const PluginResourceStatePlugin = createBasePlugin({
+  key: 'pluginResourceState',
+  initialState: { resource: pluginStateResource },
 });
 const pluginResourceEditor = createBaseEditor({
-  plugins: [PluginResourceOptions],
+  plugins: [PluginResourceStatePlugin],
 });
-const exactPluginOptionResource: PluginOptionResource = pluginResourceEditor
-  .plugin(PluginResourceOptions)
-  .getOption('resource');
+const exactPluginStateResource: PluginStateResource = pluginResourceEditor
+  .plugin(PluginResourceStatePlugin)
+  .store.get('resource');
 
-void exactPluginOptionResource;
+void exactPluginStateResource;
 
 type ThirdPartyPreset = {
   plugins: Array<() => void>;
   settings: { joins: string[] };
 };
-declare const configuredThirdPartyPreset: NormalizePluginOption<ThirdPartyPreset>;
+declare const configuredThirdPartyPreset: NormalizePluginState<ThirdPartyPreset>;
 const configuredThirdPartyPlugin: () => void =
   configuredThirdPartyPreset.plugins[0];
 
-// @ts-expect-error Plain third-party option arrays are immutable snapshots.
+// @ts-expect-error Plain third-party state arrays are immutable snapshots.
 configuredThirdPartyPreset.plugins.push(() => {});
-// @ts-expect-error Nested third-party option arrays are immutable snapshots.
+// @ts-expect-error Nested third-party state arrays are immutable snapshots.
 configuredThirdPartyPreset.settings.joins.push('mutable');
 
 void configuredThirdPartyPlugin;
@@ -350,9 +350,9 @@ void broadInferenceTreePlateEditor;
 
 requirePluginReference(TargetPlugin);
 requirePluginReference(TargetPlugin.clone());
-requirePluginReference(TargetPlugin.configure({ priority: 101 }));
-requirePluginReference(TargetPlugin.extend({ priority: 102 }));
-requirePluginReference(TargetPlugin.extend(() => ({ priority: 103 })));
+requirePluginReference(TargetPlugin.configure({ enabled: true }));
+requirePluginReference(TargetPlugin.extend({ editOnly: true }));
+requirePluginReference(TargetPlugin.extend(() => ({ enabled: true })));
 requirePluginReference(
   TargetPlugin.extend(() => ({
     extension: { api: { nominalEditorApi: () => true } },
@@ -411,12 +411,12 @@ const plateExtendedSchemaTargetType: 'schema-target' =
 
 requirePluginReference(createPlatePlugin({ key: 'createdPlateReference' }));
 requirePluginReference(PlateTargetPlugin);
-requirePluginReference(toPlatePlugin(TargetPlugin, { priority: 104 }));
-requirePluginReference(toPlatePlugin(TargetPlugin, () => ({ priority: 105 })));
+requirePluginReference(toPlatePlugin(TargetPlugin, { editOnly: true }));
+requirePluginReference(toPlatePlugin(TargetPlugin, () => ({ enabled: true })));
 requirePluginReference(PlateTargetPlugin.clone());
-requirePluginReference(PlateTargetPlugin.configure({ priority: 106 }));
-requirePluginReference(PlateTargetPlugin.extend({ priority: 107 }));
-requirePluginReference(PlateTargetPlugin.extend(() => ({ priority: 108 })));
+requirePluginReference(PlateTargetPlugin.configure({ enabled: true }));
+requirePluginReference(PlateTargetPlugin.extend({ editOnly: true }));
+requirePluginReference(PlateTargetPlugin.extend(() => ({ enabled: true })));
 requirePluginReference(
   PlateTargetPlugin.extend(() => ({
     extension: { api: { nominalEditorApi: () => true } },
@@ -542,7 +542,7 @@ editor.read.schema.handle<
   typeof UninstalledElementPropertyPlugin
 >(TargetPlugin);
 
-ConfiguredPropertyPlugin.configure({ options: { prefix: 'next' } });
+ConfiguredPropertyPlugin.configure({ initialState: { prefix: 'next' } });
 ConfiguredPropertyPlugin.configure({
   targetPluginKeys: [TargetPlugin.key],
 });
@@ -551,7 +551,7 @@ ConfiguredPropertyPlugin.configure({
   targetPluginKeys: [42],
 });
 ConfiguredPropertyPlugin.configure({
-  options: {
+  initialState: {
     // @ts-expect-error Configuration values retain their plugin-owned types.
     prefix: 42,
   },

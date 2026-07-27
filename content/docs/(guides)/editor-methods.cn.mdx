@@ -151,49 +151,40 @@ const codeBlockPlugin = editor.getPlugin(CodeBlockPlugin);
 const paragraphType = editor.getType(KEYS.p);
 ```
 
-## 选项方法
+## 插件 Store
 
-### getOption
+### `store.get(key, ...args)`
 
-获取插件的特定选项值：
+读取插件的 state 字段或命名 selector：
 
 ```ts
-const search = editor.plugin(FindReplacePlugin).getOption('search');
+const search = editor.plugin(FindReplacePlugin).store.get('search');
 ```
 
-要订阅选项变化，可使用`usePluginOption`或`usePluginOptions`钩子。
+使用 `usePluginStore` 订阅变化。
 
-### getOptions
+### `store.get()`
 
-获取插件的所有选项：
+读取插件的完整 state：
 
 ```ts
-const linkOptions = editor.plugin(LinkPlugin).getOptions();
+const linkState = editor.plugin(LinkPlugin).store.get();
 ```
 
-### setOption
+### `store.set(partial)`
 
-设置插件的特定选项值：
+合并插件 state 字段：
 
 ```ts
-editor.plugin(FindReplacePlugin).setOption('search', 'hello');
+editor.plugin(FindReplacePlugin).store.set({ search: 'hello' });
 ```
 
-### setOptions
+### `store.set(recipe)`
 
-设置插件的多个选项：
-
-```ts
-editor.plugin(FindReplacePlugin).setOptions({
-  search: 'hello',
-  caseSensitive: true,
-});
-```
-
-也可使用Immer函数更新选项：
+通过 draft 更新 state：
 
 ```ts
-editor.plugin(FindReplacePlugin).setOptions((draft) => {
+editor.plugin(FindReplacePlugin).store.set((draft) => {
   draft.search = 'hello';
   draft.caseSensitive = true;
 });

@@ -3,7 +3,7 @@ import { KEYS } from 'platejs';
 
 export const BaseIndentKit = [
   BaseIndentPlugin.configure({
-    options: {
+    initialState: {
       offset: 24,
     },
     targetPluginKeys: [

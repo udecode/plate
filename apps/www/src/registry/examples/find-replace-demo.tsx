@@ -7,7 +7,7 @@ import {
   Plate,
   useEditorPlugin,
   usePlateEditor,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import { Input } from '@/components/ui/input';
@@ -18,8 +18,8 @@ import { FixedToolbar } from '@/registry/ui/fixed-toolbar';
 import { SearchHighlightLeaf } from '@/registry/ui/search-highlight-node';
 
 export function FindToolbar() {
-  const { editor, setOption } = useEditorPlugin(FindReplacePlugin);
-  const search = usePluginOption(FindReplacePlugin, 'search');
+  const { editor, store } = useEditorPlugin(FindReplacePlugin);
+  const search = usePluginStore(FindReplacePlugin, 'search');
 
   return (
     <FixedToolbar className="border-none py-3">
@@ -28,7 +28,7 @@ export function FindToolbar() {
         className="mx-2"
         value={search}
         onChange={(e) => {
-          setOption('search', e.target.value);
+          store.set({ search: e.target.value });
           editor.api.react.refreshDecorations();
         }}
         placeholder="Search the text..."
@@ -45,7 +45,7 @@ export default function FindReplaceDemo() {
         ...EditorKit,
         FindReplacePlugin.configure({
           component: SearchHighlightLeaf,
-          options: { search: 'text' },
+          initialState: { search: 'text' },
         }),
       ],
       initialValue: findReplaceValue,

@@ -50,6 +50,7 @@
     "deps:check": "npx npm-check-updates@latest --configFileName config/ncurc.yml --workspaces --root --mergeConfig",
     "deps:update": "npx npm-check-updates@latest --configFileName config/ncurc.yml -u --workspaces --root --mergeConfig",
     "dev": "turbo --filter=www dev",
+    "dev:plite": "pnpm --filter www dev:plite",
     "dev:webrtc": "PORT=4444 node ./node_modules/y-webrtc/bin/server.js",
     "devt": "pnpm --filter www devt",
     "docs:build": "cd docs && pnpm install && pnpm build",

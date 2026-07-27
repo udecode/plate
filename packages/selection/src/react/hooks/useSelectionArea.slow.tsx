@@ -49,7 +49,7 @@ describe('useSelectionArea', () => {
   it('blurs, deselects, and shows the selection area on start', async () => {
     const blur = mock();
     const clearSelection = mock();
-    const setOption = mock();
+    const set = mock();
     const clear = mock();
 
     useEditorPluginMock.mockReturnValue({
@@ -71,13 +71,14 @@ describe('useSelectionArea', () => {
         },
         update: { selection: { clear: clearSelection } },
       },
-      getOption: mock(() => new Set()),
-      getOptions: mock(() => ({
-        areaOptions: {},
-        isSelectionAreaVisible: false,
-        selectedIds: new Set(),
-      })),
-      setOption,
+      store: {
+        get: mock(() => ({
+          areaOptions: {},
+          isSelectionAreaVisible: false,
+          selectedIds: new Set(),
+        })),
+        set,
+      },
     });
 
     const { useSelectionArea } = await loadModule();
@@ -96,9 +97,9 @@ describe('useSelectionArea', () => {
     expect(blur).toHaveBeenCalled();
     expect(clearSelection).toHaveBeenCalled();
     expect(clear).toHaveBeenCalled();
-    expect(setOption).toHaveBeenCalledWith('isSelecting', false);
-    expect(setOption).toHaveBeenCalledWith('isSelectionAreaVisible', true);
-    expect(setOption).toHaveBeenCalledWith('isSelectionAreaVisible', false);
+    expect(set).toHaveBeenCalledWith({ isSelecting: false });
+    expect(set).toHaveBeenCalledWith({ isSelectionAreaVisible: true });
+    expect(set).toHaveBeenCalledWith({ isSelectionAreaVisible: false });
   });
 
   it('materializes immutable selector arrays at the SelectionArea boundary', async () => {
@@ -119,9 +120,10 @@ describe('useSelectionArea', () => {
     useEditorPluginMock.mockReturnValue({
       api: { clear: mock() },
       editor: { id: 'editor' },
-      getOption: mock(),
-      getOptions: mock(() => ({ areaOptions })),
-      setOption: mock(),
+      store: {
+        get: mock(() => ({ areaOptions })),
+        set: mock(),
+      },
     });
 
     const { useSelectionArea } = await loadModule();

@@ -292,7 +292,7 @@ When your app imports the target, configure that descriptor directly:
 
 ```ts
 const AppLinkPlugin = LinkPlugin.configure({
-  options: {
+  initialState: {
     allowedSchemes: ['http', 'https'],
   },
 });

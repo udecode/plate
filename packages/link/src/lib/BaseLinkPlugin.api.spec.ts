@@ -10,17 +10,17 @@ const baseLink = {
   type: 'a',
 };
 
-const defaultOptions: Partial<LinkConfig['options']> = {
+const defaultOptions: Partial<LinkConfig['initialState']> = {
   defaultLinkAttributes: {
     rel: 'noopener noreferrer',
   },
 };
 
-const createEditor = (options: Partial<LinkConfig['options']> = {}) =>
+const createEditor = (options: Partial<LinkConfig['initialState']> = {}) =>
   createBaseEditor({
     plugins: [
       BaseLinkPlugin.configure({
-        options: {
+        initialState: {
           ...defaultOptions,
           ...options,
         },
@@ -110,11 +110,13 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
 });
 
 describe('BaseLinkPlugin.api.validateUrl', () => {
-  const createTestEditor = (options: Partial<BaseLinkConfig['options']> = {}) =>
+  const createTestEditor = (
+    options: Partial<BaseLinkConfig['initialState']> = {}
+  ) =>
     createBaseEditor({
       plugins: [
         BaseLinkPlugin.configure({
-          options,
+          initialState: options,
         }),
       ],
     });

@@ -42,7 +42,7 @@ Use this as the single Slate v2 wrapper around
 
 ## Do Not Use When
 
-- The bug is a direct correctness failure with no oracle. Use `slate-patch`.
+- The bug is a direct correctness failure with no oracle. Use `plite-patch`.
 - The output is a public call-shape proposal for user review. Use `best-api`;
   use `plite-plan` afterward for substrate runtime/adoption planning.
 - The output is proactive architecture cleanup, deslop, refactor discovery,
@@ -61,12 +61,12 @@ Use this as the single Slate v2 wrapper around
 - `plite-research`: external discovery and source synthesis.
 - `architecture-cleanup`: source-backed architecture/code cleanup before
   measured AR packets.
-- `slate-patch`: concrete bugs, missing oracles, and direct correctness fixes.
+- `plite-patch`: concrete bugs, missing oracles, and direct correctness fixes.
 - `best-api`: public API design/review.
 - `plite-plan`: runtime architecture and adoption after the target is clear.
 
 Do not create more Slate AR shortcut skills. New recurring behavior belongs as
-a mode in this rule or a row in `docs/plans/templates/slate-ar.md`.
+a mode in this rule or a row in `docs/plans/templates/plite-ar.md`.
 
 ## Slate Defaults
 
@@ -95,7 +95,7 @@ Mutating or multi-step modes use `autogoal` with:
 
 ```bash
 node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
-  --template slate-ar \
+  --template plite-ar \
   --title "<short slate ar title>"
 ```
 
@@ -120,7 +120,7 @@ Interpret short user text before picking commands:
 | `continue`, `resume` | resume current session | `slate-ar` |
 | `next`, `do next`, `pick best` | one safe next step | `slate-ar` |
 | `gate`, `proof`, `repeat`, existing command | repeat existing gate | `slate-ar` |
-| `stabilize`, `regressions`, `native behavior` | behavior stabilization | `slate-ar` plus `slate-patch` when needed |
+| `stabilize`, `regressions`, `native behavior` | behavior stabilization | `slate-ar` plus `plite-patch` when needed |
 | `quality gap`, `accepted checklist` | accepted quality-gap execution | `slate-ar` |
 | `recipe`, `recipes`, `what loop`, `setup recipe` | recipe/setup-plan | `slate-ar` |
 | `perfect <surface>`, `absolute best`, mixed API/testing/perf quality | broad surface loop | `slate-ar` |
@@ -208,9 +208,9 @@ Routing:
 
 - safety blocker or finalization friction: report it unless the local safe fix
   is obvious;
-- known correctness failure: `slate-patch`;
+- known correctness failure: `plite-patch`;
 - existing behavior proof needs repeatability: `slate-ar gate`;
-- missing behavior oracle: `slate-patch` or `tdd`;
+- missing behavior oracle: `plite-patch` or `tdd`;
 - clear perf target: `slate-ar perf <target>`;
 - architecture cleanup, deslop, or refactor discovery:
   `architecture-cleanup`;
@@ -236,15 +236,15 @@ Boundary:
 
 - gate mode owns repeated execution, duration metrics, pass/fail logging,
   crashes, flakes, dashboard state, and ASI;
-- `testing`, `tdd`, `editor-test-harvester`, and `slate-patch` own missing
+- `testing`, `tdd`, `editor-test-harvester`, and `plite-patch` own missing
   oracle design;
-- `slate-patch` owns real correctness failures;
+- `plite-patch` owns real correctness failures;
 - `best-api` owns public call-shape redesign; `plite-plan` owns runtime and
   adoption;
 - perf mode owns speed optimization after correctness is stable.
 
 Do not spin a failing gate forever. If a valid gate fails twice with the same
-behavioral signal, route to `slate-patch`.
+behavioral signal, route to `plite-patch`.
 
 For an explicit gate command:
 
@@ -260,9 +260,9 @@ node "$AR_CLI" log --cwd . --from-last --status measure --description "<gate res
 For full editor behavior proof, prefer one focused command first, then broaden:
 
 ```bash
-pnpm slate:test
-pnpm slate:typecheck
-PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts
+pnpm check:plite:dev
+pnpm check:plite
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/<suite>.test.ts
 ```
 
 ## Stabilize Mode
@@ -271,7 +271,7 @@ Use this when the user wants editor behavior regressions gone: selection,
 typing, copy/paste, IME, focus, undo/redo, navigation, browser route behavior,
 or native interaction parity.
 
-For one exact bug, route directly to `slate-patch`.
+For one exact bug, route directly to `plite-patch`.
 
 If no behavior surface is named, infer the riskiest current surface from status,
 recent failing gates, and current changed code. If that cannot be inferred,
@@ -281,8 +281,8 @@ Flow:
 
 1. run status mode;
 2. run the narrowest existing behavior gate through gate mode;
-3. if the same valid gate fails twice, stop gating and fix with `slate-patch`;
-4. if no oracle exists, create it with `slate-patch` or `tdd`;
+3. if the same valid gate fails twice, stop gating and fix with `plite-patch`;
+4. if no oracle exists, create it with `plite-patch` or `tdd`;
 5. rerun the focused gate after each fix;
 6. broaden only after focused proof is green.
 
@@ -317,7 +317,7 @@ node "$AR_CLI" lane-runner --cwd . --lane-id "<lane>" --mode read_only_scout --s
 
 Routing:
 
-- correctness gap with missing oracle: `slate-patch`;
+- correctness gap with missing oracle: `plite-patch`;
 - existing test/behavior suite gap: `slate-ar gate`;
 - performance gap: `slate-ar perf`;
 - architecture/refactor/testability cleanup gap:
@@ -371,7 +371,7 @@ valid perf signal only when the user named it.
 
 Do not run perf mode while correctness is unknown. If selection, input ordering,
 IME, copy, paste, undo, focus, cursor placement, follow-up typing, or browser
-behavior is failing, route to `slate-patch`, `tdd`, or gate mode first.
+behavior is failing, route to `plite-patch`, `tdd`, or gate mode first.
 
 Natural modes:
 
@@ -426,7 +426,7 @@ pagination, virtualization, hidden DOM, model-backed selection, or staged
 render optimization:
 
 - identify the exact correctness oracle or browser proof command;
-- if no oracle exists, add it first with `slate-patch` or `tdd`;
+- if no oracle exists, add it first with `plite-patch` or `tdd`;
 - classify each native behavior as preserved, intentionally degraded, or out
   of scope before using it as a benchmark cohort;
 - keep cold-path estimates as scaffold hints only, not authoritative layout or
@@ -471,7 +471,7 @@ files, dashboard URL when served, and next recommended packet or blocker.
 Use this when the user wants a Slate v2 surface made genuinely good, not one
 isolated packet.
 
-Use `autogoal` with `docs/plans/templates/slate-ar.md`. The goal must name:
+Use `autogoal` with `docs/plans/templates/plite-ar.md`. The goal must name:
 
 - surface;
 - measurable or auditable completion threshold;
@@ -487,7 +487,7 @@ Start with status, then choose owners in this order:
 2. quality mode for accepted quality-gap checklist execution;
 3. `best-api` when the remaining issue needs public API design; `plite-plan`
    when it needs runtime/adoption planning;
-4. `slate-patch` for known bugs or missing behavior oracles;
+4. `plite-patch` for known bugs or missing behavior oracles;
 5. gate mode for existing editor behavior proof;
 6. perf mode for benchmark-backed perf targets;
 7. gate mode again for final broad no-regression proof.

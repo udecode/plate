@@ -1,4 +1,4 @@
-import { Hotkeys } from '@platejs/core';
+import { DebugPlugin, Hotkeys } from '@platejs/core';
 import { type PlateEditor, toPlatePlugin } from '@platejs/core/react';
 import { PathApi } from '@platejs/plite';
 import { getSelection } from '@platejs/plite-dom';
@@ -35,20 +35,16 @@ export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin);
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
   dependencies: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
   handlers: {
-    onCopy: ({ editor, event }) => {
-      if (
-        !editor.plugin(BaseTablePlugin).api.writeSelection(event.clipboardData)
-      ) {
+    onCopy: ({ api, event }) => {
+      if (!api.writeSelection(event.clipboardData)) {
         return;
       }
 
       event.preventDefault();
       return true;
     },
-    onCut: ({ editor, event }) => {
-      if (
-        !editor.plugin(BaseTablePlugin).api.writeSelection(event.clipboardData)
-      ) {
+    onCut: ({ api, editor, event }) => {
+      if (!api.writeSelection(event.clipboardData)) {
         return;
       }
 
@@ -59,7 +55,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
     onDragEnd: ({ editor }) => {
       tableDragCaptures.delete(editor);
     },
-    onDragStart: ({ editor, event }) => {
+    onDragStart: ({ editor, event, read }) => {
       tableDragCaptures.delete(editor);
 
       const dragCellId =
@@ -73,29 +69,32 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       if (!dragCellId) return;
 
-      const table = editor.plugin(BaseTablePlugin);
-      const source = table.api.getSelection();
+      const source = read.getSelection();
 
       if (!source || !source.cellIds.includes(dragCellId)) {
         return;
       }
       if (!source.complete || source.grid.problems.length > 0) {
         consumeTableDragEvent(event);
-        editor.api.debug.warn(
-          'Table drag/drop rejected before mutation.',
-          'TABLE_MUTATION_DIAGNOSTIC',
-          { kind: 'invalid', reason: 'invalid-grid' }
-        );
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            'Table drag/drop rejected before mutation.',
+            'TABLE_MUTATION_DIAGNOSTIC',
+            { kind: 'invalid', reason: 'invalid-grid' }
+          );
 
         return true;
       }
       if (source.cellIds.length !== source.anchors.length) {
         consumeTableDragEvent(event);
-        editor.api.debug.warn(
-          'Table drag/drop rejected before mutation.',
-          'TABLE_MUTATION_DIAGNOSTIC',
-          { kind: 'invalid', reason: 'missing-cell-id' }
-        );
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            'Table drag/drop rejected before mutation.',
+            'TABLE_MUTATION_DIAGNOSTIC',
+            { kind: 'invalid', reason: 'missing-cell-id' }
+          );
 
         return true;
       }
@@ -105,11 +104,13 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       if (!tableId) {
         consumeTableDragEvent(event);
-        editor.api.debug.warn(
-          'Table drag/drop rejected before mutation.',
-          'TABLE_MUTATION_DIAGNOSTIC',
-          { kind: 'invalid', reason: 'missing-table-id' }
-        );
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            'Table drag/drop rejected before mutation.',
+            'TABLE_MUTATION_DIAGNOSTIC',
+            { kind: 'invalid', reason: 'missing-table-id' }
+          );
 
         return true;
       }
@@ -129,7 +130,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         })
       );
     },
-    onDrop: ({ editor, event }) => {
+    onDrop: ({ api, editor, event, read, store }) => {
       const source = tableDragCaptures.get(editor);
 
       if (!source) return;
@@ -144,8 +145,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       }
 
       const at = editor.api.dom.resolveEventRange(event);
-      const table = editor.plugin(BaseTablePlugin);
-      const target = at ? table.api.getSelection(at) : null;
+      const target = at ? read.getSelection(at) : null;
 
       if (!target) return;
 
@@ -158,19 +158,21 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
           event.altKey ||
           event.ctrlKey ||
           event.metaKey,
-        createCell: table.api.createCell,
-        createRow: table.api.createRow,
-        disableExpand: !!table.getOptions().disableExpandOnInsert,
+        createCell: api.createCell,
+        createRow: api.createRow,
+        disableExpand: !!store.get().disableExpandOnInsert,
         source,
         target,
       });
 
       if (result.kind !== 'plan') {
-        editor.api.debug.warn(
-          'Table drag/drop rejected before mutation.',
-          'TABLE_MUTATION_DIAGNOSTIC',
-          result
-        );
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            'Table drag/drop rejected before mutation.',
+            'TABLE_MUTATION_DIAGNOSTIC',
+            result
+          );
 
         return true;
       }
@@ -182,7 +184,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       return true;
     },
-    onMouseUp: ({ editor }) => {
+    onMouseUp: ({ editor, read }) => {
       const domSelection = getSelection(
         editor.api.dom.findDocumentOrShadowRoot()
       );
@@ -192,8 +194,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       const range = editor.api.dom.resolvePliteRange(domSelection, {
         exactMatch: false,
       });
-      const selection =
-        range && editor.plugin(BaseTablePlugin).api.createCellSelection(range);
+      const selection = range && read.createCellSelection(range);
 
       if (!selection) return;
 
@@ -201,11 +202,10 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       return true;
     },
-    onKeyDown: ({ editor, event }) => {
+    onKeyDown: ({ api, editor, event, read, update }) => {
       if (event.defaultPrevented) return;
 
-      const table = editor.plugin(BaseTablePlugin);
-      const cellTypes = table.api.getCellTypes();
+      const cellTypes = api.getCellTypes();
       const getMoveContext = (point = editor.read.selection()?.anchor) => {
         if (
           !point ||
@@ -299,7 +299,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         if (hasAdjacentBlock({ ...context, reverse })) return false;
         if (!shouldMove({ ...context, reverse })) return false;
 
-        return !!table.update.moveSelection({ reverse });
+        return !!update.moveSelection({ reverse });
       };
       const edges = {
         'shift+down': 'bottom',
@@ -334,7 +334,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         event.which === 229 &&
         editor.read.selection() &&
         editor.read.selection.isExpanded() &&
-        table.api.isSelectingCell()
+        read.isSelectingCell()
       ) {
         editor.update.selection.collapse({ edge: 'end' });
 
@@ -353,9 +353,9 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
         const reverse = key === 'shift+up';
         const handled =
-          table.update.moveSelection({ edge: edges[key], reverse }) ||
+          update.moveSelection({ edge: edges[key], reverse }) ||
           (shouldMoveSingleCell(key) &&
-            table.update.moveSelection({
+            update.moveSelection({
               at: editor.read.selection()!,
               edge: edges[key],
               fromOneCell: true,
@@ -375,11 +375,11 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         : Hotkeys.isMoveLineForward(event)
           ? moveLine(false)
           : Hotkeys.isUntab(editor, event)
-            ? table.update.tab({ reverse: true })
+            ? update.tab({ reverse: true })
             : Hotkeys.isTab(editor, event)
-              ? table.update.tab()
+              ? update.tab()
               : Hotkeys.isSelectAll(event)
-                ? table.update.selectAll()
+                ? update.selectAll()
                 : false;
 
       if (handled) {

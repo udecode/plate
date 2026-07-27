@@ -40,8 +40,8 @@ describe(getDocxTestName(name), () => {
           <htext />
         </hp>
         <hp>
-          Above the line is <htext superscript>superscript</htext> and below the
-          line is <htext subscript>subscript</htext>.
+          Above the line is <htext script="sup">superscript</htext> and below
+          the line is <htext script="sub">subscript</htext>.
         </hp>
         <hp>
           <htext />

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-26-unify-script-mark",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-26-unify-script-mark.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "behavior",
+  "summary": "Use one script mark for subscript and superscript",
+  "targets": [
+    {
+      "name": "basic-marks-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-marks-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-marks-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/basic-marks-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mark-toolbar-button",
+      "files": ["apps/www/src/registry/ui/mark-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "more-toolbar-button",
+      "files": ["apps/www/src/registry/ui/more-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "basic-marks-value",
+      "files": [
+        "apps/www/src/registry/examples/values/basic-marks-value.tsx",
+        "apps/www/src/registry/examples/values/cn/basic-marks-value.tsx"
+      ],
+      "definitionFiles": [],
+      "diagnostics": []
+    },
+    {
+      "name": "plugin-rules-value",
+      "files": ["apps/www/src/registry/examples/values/plugin-rules-value.tsx"],
+      "definitionFiles": [],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-26-basic-marks-one-script-mark-subscript-49402ecd",
+      "kind": "behavior",
+      "summary": "Use one script mark for subscript and superscript",
+      "details": [],
+      "migrationNotes": [
+        "For persisted pre-v54 text marks, add ScriptV54MigrationPlugin from @platejs/basic-nodes/migrations before ScriptPlugin until every document is resaved."
+      ],
+      "targets": [
+        "basic-marks-kit",
+        "basic-marks-base-kit",
+        "mark-toolbar-button",
+        "more-toolbar-button",
+        "basic-marks-value",
+        "plugin-rules-value"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-26",
+          "entry": "2026-07-26-unify-script-mark",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

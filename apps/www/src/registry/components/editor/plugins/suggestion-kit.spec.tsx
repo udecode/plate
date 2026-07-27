@@ -3,7 +3,7 @@ import { KEYS, TrailingBlockPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { DiscussionKit } from './discussion-kit';
-import { SuggestionKit } from './suggestion-kit';
+import { suggestionPlugin, SuggestionKit } from './suggestion-kit';
 
 const createSuggestionEditor = (
   plugins: NonNullable<
@@ -23,6 +23,10 @@ describe('SuggestionKit', () => {
 
     expect(pluginKeys(suggestionOnly)).toContain(KEYS.suggestion);
     expect(pluginKeys(suggestionOnly)).not.toContain(KEYS.trailingBlock);
+    expect(suggestionOnly.plugin(suggestionPlugin).store.get()).toMatchObject({
+      activeId: null,
+      hoverId: null,
+    });
 
     const trailingOnly = createPlateEditor({
       plugins: [TrailingBlockPlugin],
@@ -30,9 +34,9 @@ describe('SuggestionKit', () => {
 
     expect(pluginKeys(trailingOnly)).not.toContain(KEYS.suggestion);
     expect(pluginKeys(trailingOnly)).toContain(KEYS.trailingBlock);
-    expect(trailingOnly.getPlugin(TrailingBlockPlugin).options.insert).toBe(
-      undefined
-    );
+    expect(
+      trailingOnly.getPlugin(TrailingBlockPlugin).initialState.insert
+    ).toBe(undefined);
 
     const both = createSuggestionEditor([
       ...SuggestionKit,
@@ -41,7 +45,7 @@ describe('SuggestionKit', () => {
 
     expect(pluginKeys(both)).toContain(KEYS.suggestion);
     expect(pluginKeys(both)).toContain(KEYS.trailingBlock);
-    expect(typeof both.getPlugin(TrailingBlockPlugin).options.insert).toBe(
+    expect(typeof both.getPlugin(TrailingBlockPlugin).initialState.insert).toBe(
       'function'
     );
   });
@@ -51,10 +55,12 @@ describe('SuggestionKit', () => {
     const editor = createSuggestionEditor([
       ...SuggestionKit,
       TrailingBlockPlugin.configure({
-        options: { insert },
+        initialState: { insert },
       }),
     ]);
 
-    expect(editor.getPlugin(TrailingBlockPlugin).options.insert).toBe(insert);
+    expect(editor.getPlugin(TrailingBlockPlugin).initialState.insert).toBe(
+      insert
+    );
   });
 });

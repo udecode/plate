@@ -1,17 +1,12 @@
 'use client';
 
-import type {
-  EditorUpdateTransaction,
-  Element,
-  NodeEntry,
-  Path,
-} from '@platejs/plite';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
-import { insertCallout } from '@platejs/callout';
-import { BaseCodeBlockPlugin, insertCodeBlock } from '@platejs/code-block';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseDatePlugin } from '@platejs/date';
-import { BaseFootnoteReferencePlugin } from '@platejs/footnote';
-import { BaseColumnItemPlugin, insertColumnGroup } from '@platejs/layout';
+import { BaseFootnotePlugin } from '@platejs/footnote';
+import { BaseColumnItemPlugin } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list-classic';
 import { BaseInlineEquationPlugin, insertEquation } from '@platejs/math';
@@ -19,7 +14,7 @@ import { BasePlaceholderPlugin } from '@platejs/media';
 import { insertMediaUrl } from '@platejs/media/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
-import { insertToc } from '@platejs/toc';
+import { BaseTocPlugin } from '@platejs/toc';
 import { ElementApi, KEYS, PathApi } from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
@@ -34,24 +29,7 @@ const createBlock = ({ type }: { type: string }): Element => ({
 });
 
 const runFootnoteAction = (editor: PlateEditor) =>
-  editor
-    .plugin(BaseFootnoteReferencePlugin)
-    .update.insert.footnote({ select: true });
-
-const insertBlockMap: Record<
-  string,
-  (editor: PlateEditor, tx: EditorUpdateTransaction, type: string) => void
-> = {
-  [ACTION_THREE_COLUMNS]: (editor, tx) =>
-    insertColumnGroup(editor, tx, { columns: 3, select: true }),
-  [KEYS.callout]: (editor, tx) =>
-    insertCallout(tx, editor.getType(KEYS.callout), { select: true }),
-  [KEYS.codeBlock]: (editor, tx) =>
-    insertCodeBlock(editor, tx, { select: true }),
-  [KEYS.equation]: (editor, tx) =>
-    insertEquation(tx, editor.getType(KEYS.equation), { select: true }),
-  [KEYS.toc]: (editor, tx) => insertToc(editor, tx, { select: true }),
-};
+  editor.plugin(BaseFootnotePlugin).update.insert({ select: true });
 
 const removeEmptySourceAfterInsert = (
   editor: PlateEditor,
@@ -102,6 +80,19 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
   const currentBlockType = getBlockType(currentNode);
   const nodeType = editor.getType(type);
 
+  if (type === KEYS.codeBlock) {
+    editor.plugin(BaseCodeBlockPlugin).update.insert();
+
+    return;
+  }
+  if (type === KEYS.toc) {
+    editor
+      .plugin(BaseTocPlugin)
+      .update.insert({ at: PathApi.next(path), select: true });
+    removeEmptySourceAfterInsert(editor, type, path, currentBlockType);
+
+    return;
+  }
   if (type === KEYS.img || type === KEYS.mediaEmbed) {
     void insertMediaUrl(editor, {
       at: PathApi.next(path),
@@ -136,10 +127,41 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
 
     return;
   }
+  if (type === ACTION_THREE_COLUMNS) {
+    editor.plugin(BaseColumnItemPlugin).update.insertGroup({
+      at: PathApi.next(path),
+      columns: 3,
+      select: true,
+    });
 
+    if (currentBlockType !== nodeType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
+    return;
+  }
+  if (type === KEYS.callout) {
+    editor.plugin(BaseCalloutPlugin).update.insert({ select: true });
+
+    if (currentBlockType !== nodeType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
+    return;
+  }
   editor.update((tx) => {
-    if (type in insertBlockMap) {
-      insertBlockMap[type](editor, tx, type);
+    const insertByType: Record<string, () => void> = {
+      [KEYS.equation]: () =>
+        insertEquation(tx, editor.getType(KEYS.equation), { select: true }),
+    };
+    const insert = insertByType[type];
+
+    if (insert) {
+      insert();
     } else {
       tx.nodes.insert(createBlock({ type: nodeType }), {
         at: PathApi.next(path),

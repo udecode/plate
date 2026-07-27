@@ -45,8 +45,9 @@ Current priorities:
 
 ## Plugin And Component Doctrine
 
-- Core stays lean. Keep invariants in their owner, parameters in `options`, and
-  product policy app- or kit-owned; proven substitutable capabilities use
+- Core stays lean. Keep invariants in their owner, plugin runtime values in
+  `initialState` and its scoped store, and product policy app- or kit-owned;
+  proven substitutable capabilities use
   ordinary plugins or packages.
 - Plugin authoring keeps one-owner behavior colocated and inferred. Public
   builders, configuration paths, and contribution namespaces each need a
@@ -75,16 +76,30 @@ Current priorities:
   importing the React plugin layer; Base constructors stay renderer-neutral.
   Do not expose `.withComponent()` or the renderer registry shape.
 - Plugin schema is creation-owned. Declare it in the plugin constructor, using
-  a schema factory over typed options for authored variability; neither
+  a schema factory over typed `initialState` for authored variability; neither
   `.extend()` nor terminal `.configure()` replaces it. Schema-derived callbacks
   may belong to that plugin or a foreign contributor, and TypeScript cannot
   retroactively re-typecheck either. Preserve unrelated authoring and
   configuration. Values resolved only after configuration, such as a
   configured node type, stay truthfully broad in the author callback and exact
   at runtime.
+- Plugin state has one public channel: `initialState` declares defaults,
+  `.configure({ initialState })` overrides descriptor defaults, builder
+  callbacks use inferred `store`, and consumers use
+  `editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` or
+  `useEditorPluginStore`. Do not restore deleted option accessors or add a
+  parallel immutable `config` channel.
+- Capability names encode execution boundaries. `selectors` are pure
+  projections of plugin store state; `read` is a pure, replayable query over a
+  supplied document snapshot; `api` is a stable plugin service not bound to a
+  supplied snapshot or transaction; `update` owns document mutation through
+  the active transaction; `extension` is reserved for genuine editor-wide
+  Plite substrate. Immutable API publication does not imply method purity, but
+  document reads and writes still belong in `read` and `update`.
 - Classify behavior before exposing composition: invariants stay in their
-  owner, parameters stay in `options`, substitutable capabilities may become
-  ordinary plugins, and product policy stays app- or kit-owned.
+  owner, runtime parameters stay in `initialState` and the scoped store,
+  substitutable capabilities may become ordinary plugins, and product policy
+  stays app- or kit-owned.
 - A public capability plugin needs a real omission/replacement job or a hard
   ownership boundary, valid fallback semantics, closed dependencies, and
   independent proof. Protocol rows, handlers, and extension blocks do not map
@@ -104,10 +119,10 @@ Current priorities:
   optional-child field or `{ optional: Plugin }` wrapper; omission from the
   consumer array already expresses optionality.
 - Base and live consumers do not automatically justify parallel kits. Share
-  one runtime-neutral app/registry policy kit when its descriptors, options,
-  and behavior are identical; each consuming preset composes its own static,
-  React, native, or other renderer-specific peer kits. Split only the owner
-  whose renderer or platform behavior genuinely differs.
+  one runtime-neutral app/registry policy kit when its descriptors, initial
+  state, and behavior are identical; each consuming preset composes its own
+  static, React, native, or other renderer-specific peer kits. Split only the
+  owner whose renderer or platform behavior genuinely differs.
 - Configure a target descriptor directly only when the caller owns that
   target's membership in the final composition. Import access alone does not
   establish membership ownership. A complete same-key descriptor customizes an
@@ -158,7 +173,7 @@ Current priorities:
   The constructor publishes the smallest honest `api`, `read`, or `update`
   capability whenever possible; later stages and required dependents consume the
   accumulated inferred surface. New scoped methods take domain inputs instead
-  of threading `editor`, `api`, `read`, `tx`, resolved plugin option values, or
+  of threading `editor`, `api`, `read`, `tx`, resolved plugin store values, or
   resolved plugin types through helper signatures; operation options remain
   valid domain input. A later update stage reuses an earlier mutation through
   the active `tx[plugin.key]` group, never a portal one-shot that opens another
@@ -168,14 +183,14 @@ Current priorities:
   transaction semantics require it, and prove that case rather than falling
   back to stale `editor.read`.
 - React files follow durable families rather than individual symbols or
-  implementation kinds. Keep a component family in one `<Family>.tsx` file,
-  including its family-only hooks, store, state, controller, lifecycle,
-  subcomponents, and public primitives. Exporting or documenting those symbols,
-  or importing them from an app wrapper that composes the same family, proves
-  public access rather than independent source ownership. Create a
-  `use<Family>.ts`, provider, or store file only when it has a standalone job
-  meaningful and independently consumed beyond that component family. Sibling
-  composition inside one family is not reuse evidence for more files.
+  implementation kinds. Keep a component family in one `<Family>.tsx` file
+  with its subcomponents, variants, render helpers, and component-local
+  constants. When that family has hooks, keep every related public and private
+  hook in one `use<Family>.ts[x]` hook-family file, including
+  subcomponent-only hooks. Plugin descriptors, component files, stores, and
+  providers never own hook definitions. A provider or store earns another
+  file only for independently owned state or lifecycle. Public access and
+  sibling composition do not justify more files.
 - Keep feature-package React roots flat by default. A nested component/hook
   directory earns its keep only as a real public subsystem with multiple
   cross-family owners, not as taxonomy or a response to file size.

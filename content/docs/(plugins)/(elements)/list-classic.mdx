@@ -235,7 +235,7 @@ Plugin for task lists with checkboxes.
 Plugin for list items. Configure `validLiChildren` here when another element
 plugin may stay as a direct list-item child:
 
-`ListItemPlugin.configure({ options: { validLiChildren: [ImagePlugin] } })`
+`ListItemPlugin.configure({ initialState: { validLiChildren: [ImagePlugin] } })`
 
 Add the configured `ListItemPlugin` beside `ListPlugin` in the editor plugin
 array. The explicit descriptor replaces the required default with the same key.

@@ -1046,12 +1046,12 @@ rg -n "copied from|verbatim|fixture copied|ported from" \
   echo "Review versioned output for unsafe behavior-only wording" || true
 ```
 
-Implementation verification in Slate v2 packages or Plate:
+Implementation verification in Plite packages or Plate:
 
 - Run the focused package or browser test that owns the new proof.
-- Run `pnpm slate:test` before claiming a Slate applied slice is closed.
-- For release-quality Slate browser claims, pair package proof with
-  `pnpm --filter slate test:slate-browser`.
+- Run `pnpm check:plite:dev` before claiming an affected Plite slice is closed.
+- For release-quality Plite browser claims, pair package proof with
+  `pnpm check:plite`.
 - Use raw mobile proof only when real device/Appium artifacts exist; semantic
   mobile handles and Playwright mobile viewports are not raw-device proof.
 - For `behavior-only` sources, verify that versioned local tests use local

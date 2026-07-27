@@ -17,8 +17,8 @@ Trailing Block inserts a required block when the last node at a target level is 
 - Default trailing type from the editor paragraph plugin.
 - Empty-editor protection.
 - Root or nested target level.
-- Optional last-node matching through `options.match`.
-- Custom insertion wrapper through `options.insert`.
+- Optional last-node matching through `initialState.match`.
+- Custom insertion wrapper through `initialState.insert`.
 - Built into `EditorKit`.
 
 </PackageInfo>
@@ -58,7 +58,7 @@ Use `type` when the trailing block should be something other than the default pa
 import { KEYS, TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlockPlugin = TrailingBlockPlugin.configure({
-  options: {
+  initialState: {
     type: KEYS.p,
   },
 });
@@ -74,7 +74,7 @@ Use `match` to limit insertion based on the current last block.
 import { KEYS, TrailingBlockPlugin } from 'platejs';
 
 export const trailingBlockPlugin = TrailingBlockPlugin.configure({
-  options: {
+  initialState: {
     match: { type: KEYS.h1 },
     type: KEYS.p,
   },
@@ -96,7 +96,7 @@ type can trigger insertion.
 
 ```tsx
 TrailingBlockPlugin.configure({
-  options: {
+  initialState: {
     level: 1,
     type: 'p',
   },
@@ -107,7 +107,7 @@ Use nested levels when a constrained container must always end with a text block
 
 ## Custom Insert
 
-`options.insert` lets another plugin wrap the generated insertion. The registry
+`initialState.insert` lets another plugin wrap the generated insertion. The registry
 suggestion kit contributes this option through `override.plugins` only when the
 editor also installs `TrailingBlockPlugin`.
 
@@ -116,7 +116,7 @@ import { SUGGESTION_SKIP_TAG } from '@platejs/suggestion';
 import { TrailingBlockPlugin } from 'platejs';
 
 TrailingBlockPlugin.configure({
-  options: {
+  initialState: {
     insert: (_editor, { insert, tx }) => {
       tx.tags.add(SUGGESTION_SKIP_TAG);
       insert();
@@ -138,8 +138,8 @@ takes precedence over the suggestion kit's weak contribution.
 |------|--------|
 | Empty editor | Inserts a block at `[0]`. |
 | Last node already matches `type` | Falls through to the base `normalizeNode`. |
-| Last node has another type and matches `options.match` | Inserts the trailing block at `PathApi.next(lastChildPath)`. |
-| Last node does not match `options.match` | Does not insert. |
+| Last node has another type and matches `initialState.match` | Inserts the trailing block at `PathApi.next(lastChildPath)`. |
+| Last node does not match `initialState.match` | Does not insert. |
 
 The correction inserts `{ children: [{ text: '' }], type: trailingType }`
 through the active transaction.
@@ -149,7 +149,7 @@ through the active transaction.
 | API | Package | Use |
 |-----|---------|-----|
 | `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Normalizer that ensures a trailing block exists. |
-| `TrailingBlockConfig.options.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
-| `TrailingBlockConfig.options.level` | `@platejs/utils` | Depth used by `tx.nodes.last`. Defaults to `0`. |
-| `TrailingBlockConfig.options.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
-| `TrailingBlockConfig.options.match` | `@platejs/plite` node match | Limits insertion to matching last nodes. |
+| `TrailingBlockConfig.initialState.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
+| `TrailingBlockConfig.initialState.level` | `@platejs/utils` | Depth used by `tx.nodes.last`. Defaults to `0`. |
+| `TrailingBlockConfig.initialState.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
+| `TrailingBlockConfig.initialState.match` | `@platejs/plite` node match | Limits insertion to matching last nodes. |

@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import type { Value } from 'platejs';
+import type { Element } from 'platejs';
 
 import { jsx } from '@platejs/test-utils';
 
@@ -10,7 +10,7 @@ const HEADINGS = 100;
 const PARAGRAPHS = 7;
 
 export const createHugeDocumentValue = () => {
-  const hugeDocument: Value = [];
+  const hugeDocument: Element[] = [];
 
   for (let h = 0; h < HEADINGS; h++) {
     hugeDocument.push(

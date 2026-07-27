@@ -33,7 +33,7 @@ export function BulletedListToolbarButton() {
   const pressed = useEditorSelector((editor) =>
     editor
       .plugin(ListPlugin)
-      .api.isActive([
+      .read.isActive([
         ListStyleType.Disc,
         ListStyleType.Circle,
         ListStyleType.Square,
@@ -113,7 +113,7 @@ export function NumberedListToolbarButton() {
   const pressed = useEditorSelector((editor) =>
     editor
       .plugin(ListPlugin)
-      .api.isActive([
+      .read.isActive([
         ListStyleType.Decimal,
         ListStyleType.LowerAlpha,
         ListStyleType.UpperAlpha,

@@ -21,7 +21,7 @@ describe('DebugPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logger: {
               log: mockLogger as any,
             },
@@ -32,14 +32,14 @@ describe('DebugPlugin', () => {
       ],
     });
 
-    expect(editor.api.debug).toBeDefined();
-    expect(typeof editor.api.debug.log).toBe('function');
-    expect(typeof editor.api.debug.error).toBe('function');
-    expect(typeof editor.api.debug.info).toBe('function');
-    expect(typeof editor.api.debug.warn).toBe('function');
+    expect(editor.plugin(DebugPlugin).api).toBeDefined();
+    expect(typeof editor.plugin(DebugPlugin).api.log).toBe('function');
+    expect(typeof editor.plugin(DebugPlugin).api.error).toBe('function');
+    expect(typeof editor.plugin(DebugPlugin).api.info).toBe('function');
+    expect(typeof editor.plugin(DebugPlugin).api.warn).toBe('function');
     expect(typeof editor.api.sampleMethod).toBe('function');
 
-    editor.api.debug.log('Test message', 'TEST');
+    editor.plugin(DebugPlugin).api.log('Test message', 'TEST');
 
     expect(mockLogger).toHaveBeenCalledWith('Test message', 'TEST', undefined);
   });
@@ -51,7 +51,7 @@ describe('DebugPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logger: {
               info: infoLogger,
               log: logLogger,
@@ -63,9 +63,9 @@ describe('DebugPlugin', () => {
       ],
     });
 
-    editor.api.debug.log('Log message', 'TEST');
-    editor.api.debug.info('Info message', 'TEST');
-    editor.api.debug.warn('Warn message', 'TEST');
+    editor.plugin(DebugPlugin).api.log('Log message', 'TEST');
+    editor.plugin(DebugPlugin).api.info('Info message', 'TEST');
+    editor.plugin(DebugPlugin).api.warn('Warn message', 'TEST');
 
     expect(infoLogger).toHaveBeenCalledTimes(1);
     expect(warnLogger).toHaveBeenCalledTimes(1);
@@ -78,11 +78,13 @@ describe('DebugPlugin', () => {
     });
 
     expect(() => {
-      editor.api.debug.error('Test error', 'TEST_ERROR');
+      editor.plugin(DebugPlugin).api.error('Test error', 'TEST_ERROR');
     }).toThrow(PlateError);
 
     try {
-      editor.api.debug.error('Test error', 'TEST_ERROR', { foo: 'bar' });
+      editor
+        .plugin(DebugPlugin)
+        .api.error('Test error', 'TEST_ERROR', { foo: 'bar' });
     } catch (error) {
       expect(error).toBeInstanceOf(PlateError);
       if (!(error instanceof PlateError)) throw error;
@@ -98,7 +100,7 @@ describe('DebugPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logger: {
               error: errorLogger,
             },
@@ -109,7 +111,7 @@ describe('DebugPlugin', () => {
     });
 
     expect(() => {
-      editor.api.debug.error('Test error', 'TEST_ERROR');
+      editor.plugin(DebugPlugin).api.error('Test error', 'TEST_ERROR');
     }).not.toThrow();
     expect(errorLogger).toHaveBeenCalledWith(
       'Test error',
@@ -123,7 +125,7 @@ describe('DebugPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             isProduction: true,
             logger: {
               log: mockLogger,
@@ -134,7 +136,7 @@ describe('DebugPlugin', () => {
       ],
     });
 
-    editor.api.debug.log('This should not be logged', 'TEST');
+    editor.plugin(DebugPlugin).api.log('This should not be logged', 'TEST');
 
     expect(mockLogger).not.toHaveBeenCalled();
   });
@@ -147,7 +149,7 @@ describe('DebugPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logLevel: 'log',
             throwErrors: false,
           },
@@ -155,10 +157,10 @@ describe('DebugPlugin', () => {
       ],
     });
 
-    editor.api.debug.error('error', 'ERR');
-    editor.api.debug.info('info', 'INFO');
-    editor.api.debug.log('log', 'LOG');
-    editor.api.debug.warn('warn', 'WARN');
+    editor.plugin(DebugPlugin).api.error('error', 'ERR');
+    editor.plugin(DebugPlugin).api.info('info', 'INFO');
+    editor.plugin(DebugPlugin).api.log('log', 'LOG');
+    editor.plugin(DebugPlugin).api.warn('warn', 'WARN');
 
     expect(errorSpy).toHaveBeenCalledWith('[ERR] error', undefined);
     expect(infoSpy).toHaveBeenCalledWith('[INFO] info', undefined);

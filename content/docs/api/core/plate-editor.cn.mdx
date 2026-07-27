@@ -81,13 +81,13 @@ editor.api.table.getColumnCount();
 editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
-```ts title="Plugin option access"
+```ts title="Plugin state access"
 import { FindReplacePlugin } from '@platejs/find-replace';
 
 const findReplace = editor.plugin(FindReplacePlugin);
 
-const search = findReplace.getOption('search');
-findReplace.setOption('search', search.trim());
+const search = findReplace.store.get('search');
+findReplace.store.set({ search: search.trim() });
 ```
 
 | Helper | 类型 | 用途 |
@@ -96,19 +96,21 @@ findReplace.setOption('search', search.trim());
 | `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | 打开一个已安装插件的类型化 portal。 |
 | `plugin(plugin).api` | `InferOwnApi<C>` | 从通用代码或精确描述符调用同一个插件 API。 |
 | `plugin(plugin).update` | `InferOwnTx<C>` | 执行一个插件拥有的 update 命令。 |
-| `plugin(plugin).getOption(key, ...args)` | `(key, ...args) => value` | 读取一个实时 option 或 selector 结果。 |
-| `plugin(plugin).getOptions()` | `() => InferOptions<C>` | 读取全部实时 options。 |
-| `plugin(plugin).setOption(key, value)` | `(key, value) => void` | 更新一个实时 option。 |
-| `plugin(plugin).setOptions(options)` | `(partialOrRecipe) => void` | 合并 option 字段，或通过 draft recipe 更新。 |
+| `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value` | 读取一个 state 字段或命名 selector 结果。 |
+| `plugin(plugin).store.get()` | `() => InferPluginStoreState<C>` | 读取完整的当前插件 state。 |
+| `plugin(plugin).store.set(partial)` | `(partial) => void` | 合并 state 字段。 |
+| `plugin(plugin).store.set(recipe)` | `(draft) => void` | 通过 draft recipe 更新 state。 |
 | `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | 读取 overrides 和配置后的插件实例。 |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | 解析插件 key 对应的节点 type。 |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | 读取 injected node props，并从插件 type 填充默认 `nodeKey` 和 `styleKey`。 |
 
-React 组件使用 `usePluginOption(plugin, key)` 或 `usePluginOptions(plugin)` 订阅变化，不要在 render 中直接读取 portal。
+React 组件使用 `usePluginStore(plugin, key)` 或
+`usePluginStore(plugin, selector)` 订阅变化，不要在 render 中直接读取 portal。
 
 ## 初始化
 
-`withPlate` 用 React 默认配置包装 `withPlite`。它初始化私有的实时 option state，并把 React core plugins 插入到用户插件前面。
+`withPlate` 用 React 默认配置包装 `withPlite`。它从 `initialState` 创建每个插件的
+editor-local store，并把 React core plugins 插入到用户插件前面。
 
 ```tsx title="Create a typed editor"
 import { usePlateEditor } from 'platejs/react';

@@ -33,11 +33,11 @@ Use `code` for inline code and technical terms.
 </Card>
 
 <Card icon="subscript" title="Subscript" href="/docs/subscript">
-Use `sub` for subscript text.
+Use `script: 'sub'` for subscript text.
 </Card>
 
 <Card icon="superscript" title="Superscript" href="/docs/superscript">
-Use `sup` for superscript text.
+Use `script: 'sup'` for superscript text.
 </Card>
 
 <Card icon="kbd" title="Kbd" href="/docs/kbd">
@@ -90,14 +90,14 @@ export const editor = createPlateEditor({
 Use `MarkToolbarButton` for direct mark toggles.
 
 ```tsx
+import { BoldPlugin } from '@platejs/basic-nodes/react';
 import { BoldIcon } from 'lucide-react';
-import { KEYS } from 'platejs';
 
 import { MarkToolbarButton } from '@/components/ui/mark-toolbar-button';
 
 export function BoldToolbarButton() {
   return (
-    <MarkToolbarButton nodeType={KEYS.bold} tooltip="Bold (⌘+B)">
+    <MarkToolbarButton plugin={BoldPlugin} tooltip="Bold (⌘+B)">
       <BoldIcon />
     </MarkToolbarButton>
   );
@@ -127,12 +127,12 @@ editable and static mark presets.
 | Underline | `UnderlinePlugin` | `KEYS.underline` | `u` | Deserializes `u` and underline text decoration. |
 | Strikethrough | `StrikethroughPlugin` | `KEYS.strikethrough` | `s` | Uses directional selection affinity. |
 | Code | `CodePlugin` | `KEYS.code` | `code` | Uses hard selection affinity and skips `pre` HTML parents. |
-| Subscript | `SubscriptPlugin` | `KEYS.sub` | `sub` | Toggle removes superscript. |
-| Superscript | `SuperscriptPlugin` | `KEYS.sup` | `sup` | Toggle removes subscript. |
+| Script | `ScriptPlugin` | `KEYS.script` | `sub` or `sup` | Uses one `'sub' | 'sup'` property for both positions. |
 | Highlight | `HighlightPlugin` | `KEYS.highlight` | `mark` | Uses directional selection affinity. |
 | Kbd | `KbdPlugin` | `KEYS.kbd` | `kbd` | Uses hard selection affinity. |
 
-Each base mark plugin extends `tx.<mark>.toggle()` by calling `tx.marks.toggle(type)`.
+Boolean mark plugins expose `editor.update.<mark>.toggle()`. `ScriptPlugin`
+exposes `editor.update.script.toggle('sub' | 'sup')`.
 
 ## Input Rules
 
@@ -145,8 +145,7 @@ Each base mark plugin extends `tx.<mark>.toggle()` by calling `tx.marks.toggle(t
 | `UnderlineRules.markdown` | Default underline rule |
 | `CodeRules.markdown` | Default inline code rule |
 | `StrikethroughRules.markdown` | Default strikethrough rule |
-| `SubscriptRules.markdown` | Default subscript rule |
-| `SuperscriptRules.markdown` | Default superscript rule |
+| `ScriptRules.markdown` | `value: 'sub'` or `value: 'sup'` |
 | `HighlightRules.markdown` | `variant: '=='` and `variant: '≡'` |
 | `MarkComboRules.markdown` | Bold/italic/underline combinations |
 

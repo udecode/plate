@@ -13,6 +13,7 @@ import type {
 import {
   BaseParagraphPlugin,
   createBasePlugin,
+  DebugPlugin,
   getPluginTypes,
   type InferConfig,
 } from '@platejs/core';
@@ -242,7 +243,7 @@ const getTableAnchorPoint = (
   };
 };
 
-type TablePluginOptions = {
+type TablePluginState = {
   /** Disable expanding the table when inserting cells. */
   disableExpandOnInsert?: boolean;
   /** Disable first column left resizer. */
@@ -557,31 +558,10 @@ export const BaseTablePlugin = createBasePlugin({
       },
     };
   },
-  options: {
+  initialState: {
     disableMerge: false,
     minColumnWidth: 48,
-  } as TablePluginOptions,
-  selectors: ({ editor, type }) => ({
-    cellIndices: (id: string): CellIndices | undefined => {
-      const value = editor.read.value();
-
-      for (const children of [
-        value.children,
-        ...Object.values(value.roots ?? {}),
-      ]) {
-        for (const [node, path] of NodeApi.elements({
-          children,
-          type: '__table_root__',
-        })) {
-          if (path.length === 0 || node.type !== type) continue;
-
-          const anchor = compileTableGrid(node as TTableElement).byId.get(id);
-
-          if (anchor) return { col: anchor.col, row: anchor.row };
-        }
-      }
-    },
-  }),
+  } as TablePluginState,
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -657,7 +637,7 @@ export const BaseTablePlugin = createBasePlugin({
       },
     },
   }))
-  .extend(({ api, editor, getOption, type }) => ({
+  .extend(({ api, type }) => ({
     api: {
       create: ({
         colCount,
@@ -674,191 +654,190 @@ export const BaseTablePlugin = createBasePlugin({
         ),
         type,
       }),
-      getCellIndices: (element: TTableCellElement): CellIndices => {
-        const cellPath = editor.read.nodes.path(element);
-        const context = cellPath
-          ? createTableContext(editor.read, cellPath.slice(0, -2))
-          : null;
-        const anchor =
-          (cellPath ? context?.anchorAtPath(cellPath) : undefined) ??
-          context?.anchorOf(element);
-        const byId = element.id
-          ? getOption('cellIndices', element.id)
-          : undefined;
+    },
+    read: ({ state }) => {
+      const getCellIndicesById = (id: string): CellIndices | undefined => {
+        const value = state.value();
 
-        if (!anchor && !byId) {
-          editor.api.debug.warn(
-            'No table grid entry found for element.',
-            'TABLE_CELL_INDICES'
-          );
+        for (const children of [
+          value.children,
+          ...Object.values(value.roots ?? {}),
+        ]) {
+          for (const [node, path] of NodeApi.elements({
+            children,
+            type: '__table_root__',
+          })) {
+            if (path.length === 0 || node.type !== type) continue;
+
+            const anchor = compileTableGrid(node as TTableElement).byId.get(id);
+
+            if (anchor) return { col: anchor.col, row: anchor.row };
+          }
         }
+      };
 
-        return anchor
-          ? { col: anchor.col, row: anchor.row }
-          : (byId ?? { col: 0, row: 0 });
-      },
-      getColumnIndex: (cellNode: Element) => {
-        const path = editor.read.nodes.path(cellNode);
-        const context = path
-          ? createTableContext(editor.read, path.slice(0, -2))
+      return {
+        getCellIndicesById,
+        getCellIndices: (element: TTableCellElement): CellIndices => {
+          const cellPath = state.nodes.path(element);
+          const context = cellPath
+            ? createTableContext(state, cellPath.slice(0, -2))
+            : null;
+          const anchor =
+            (cellPath ? context?.anchorAtPath(cellPath) : undefined) ??
+            context?.anchorOf(element);
+          const byId = element.id ? getCellIndicesById(element.id) : undefined;
+
+          return anchor
+            ? { col: anchor.col, row: anchor.row }
+            : (byId ?? { col: 0, row: 0 });
+        },
+        getColumnIndex: (cellNode: Element) => {
+          const path = state.nodes.path(cellNode);
+          const context = path
+            ? createTableContext(state, path.slice(0, -2))
+            : null;
+
+          return (
+            context?.anchorAtPath(path!)?.col ??
+            context?.anchorOf(cellNode as TTableCellElement)?.col ??
+            -1
+          );
+        },
+        getRowIndex: (cellNode: Element) => {
+          const path = state.nodes.path(cellNode);
+          const context = path
+            ? createTableContext(state, path.slice(0, -2))
+            : null;
+
+          return (
+            context?.anchorAtPath(path!)?.row ??
+            context?.anchorOf(cellNode as TTableCellElement)?.row ??
+            0
+          );
+        },
+        getSelection: (at?: Location) =>
+          readTableSelection(state, {
+            at,
+            cellTypes: api.getCellTypes(),
+            tableType: type,
+          }),
+      };
+    },
+  }))
+  .extend(({ api, editor, type }) => ({
+    read: ({ state }) => {
+      const getSelectedCellsBoundingBox = (
+        cells: TTableCellElement[]
+      ): { maxCol: number; maxRow: number; minCol: number; minRow: number } => {
+        const currentView = state.table.getSelection();
+        const firstCell = cells[0];
+        const currentContextOwnsFirstCell =
+          currentView &&
+          firstCell &&
+          currentView.context.anchorOf(firstCell)?.cell === firstCell;
+        const findTableContainingCell = (
+          cell: TTableCellElement
+        ): TTableElement | undefined => {
+          const visit = (
+            children: readonly Node[]
+          ): TTableElement | undefined => {
+            for (const node of children) {
+              if (!ElementApi.isElement(node)) continue;
+
+              if (
+                node.type === type &&
+                node.children.some(
+                  (row) =>
+                    ElementApi.isElement(row) &&
+                    row.children.some((rowCell) => rowCell === cell)
+                )
+              ) {
+                return node as TTableElement;
+              }
+
+              const nested = visit(node.children);
+
+              if (nested) return nested;
+            }
+          };
+          const value = state.value();
+
+          return (
+            visit(value.children) ??
+            Object.values(value.roots ?? {}).reduce<TTableElement | undefined>(
+              (table, children) => table ?? visit(children),
+              undefined
+            )
+          );
+        };
+        const owningTable =
+          !currentContextOwnsFirstCell && firstCell
+            ? findTableContainingCell(firstCell)
+            : undefined;
+        const context =
+          (currentContextOwnsFirstCell ? currentView.context : null) ??
+          (owningTable ? createDetachedTableContext(owningTable) : null);
+        const bounds = context
+          ? getTableSelectionBounds(
+              cells.flatMap((cell) => {
+                const anchor = context.anchorOf(cell);
+
+                return anchor ? [anchor] : [];
+              })
+            )
           : null;
 
         return (
-          context?.anchorAtPath(path!)?.col ??
-          context?.anchorOf(cellNode as TTableCellElement)?.col ??
-          -1
+          bounds ?? {
+            maxCol: Number.NEGATIVE_INFINITY,
+            maxRow: Number.NEGATIVE_INFINITY,
+            minCol: Number.POSITIVE_INFINITY,
+            minRow: Number.POSITIVE_INFINITY,
+          }
         );
-      },
-      getRowIndex: (cellNode: Element) => {
-        const path = editor.read.nodes.path(cellNode);
-        const context = path
-          ? createTableContext(editor.read, path.slice(0, -2))
-          : null;
+      };
 
-        return (
-          context?.anchorAtPath(path!)?.row ??
-          context?.anchorOf(cellNode as TTableCellElement)?.row ??
-          0
-        );
-      },
-      getSelection: (
-        at?: Location,
-        state: Pick<
-          EditorStateView,
-          'nodes' | 'ranges' | 'runtime' | 'selection'
-        > = editor.read
-      ) =>
-        readTableSelection(state, {
+      function getGridByRange(
+        options: GetTableRangeOptions<'all'>
+      ): TableRangeEntries;
+      function getGridByRange(
+        options: GetTableRangeOptions<'cell' | 'table'>
+      ): ElementEntry[];
+      function getGridByRange({
+        at,
+        format = 'table',
+      }: GetTableRangeOptions<TableRangeFormat>):
+        | ElementEntry[]
+        | TableRangeEntries {
+        const view = readTableSelection(state, {
           at,
           cellTypes: api.getCellTypes(),
           tableType: type,
-        }),
-    },
-  }))
-  .extend(({ api, editor, type }) => {
-    const getSelectedCellsBoundingBox = (
-      cells: TTableCellElement[]
-    ): { maxCol: number; maxRow: number; minCol: number; minRow: number } => {
-      const currentView = api.getSelection();
-      const firstCell = cells[0];
-      const currentContextOwnsFirstCell =
-        currentView &&
-        firstCell &&
-        currentView.context.anchorOf(firstCell)?.cell === firstCell;
-      const findTableContainingCell = (
-        cell: TTableCellElement
-      ): TTableElement | undefined => {
-        const visit = (
-          children: readonly Node[]
-        ): TTableElement | undefined => {
-          for (const node of children) {
-            if (!ElementApi.isElement(node)) continue;
+        });
+        const empty =
+          format === 'all' ? { cellEntries: [], tableEntries: [] } : [];
 
-            if (
-              node.type === type &&
-              node.children.some(
-                (row) =>
-                  ElementApi.isElement(row) &&
-                  row.children.some((rowCell) => rowCell === cell)
-              )
-            ) {
-              return node as TTableElement;
-            }
+        if (!view) return empty;
 
-            const nested = visit(node.children);
+        const cellEntries = [...view.cellEntries];
 
-            if (nested) return nested;
-          }
-        };
-        const value = editor.read.value();
+        if (format === 'cell') return cellEntries;
 
-        return (
-          visit(value.children) ??
-          Object.values(value.roots ?? {}).reduce<TTableElement | undefined>(
-            (table, children) => table ?? visit(children),
-            undefined
-          )
-        );
-      };
-      const owningTable =
-        !currentContextOwnsFirstCell && firstCell
-          ? findTableContainingCell(firstCell)
-          : undefined;
-      const context =
-        (currentContextOwnsFirstCell ? currentView.context : null) ??
-        (owningTable ? createDetachedTableContext(owningTable) : null);
-      const bounds = context
-        ? getTableSelectionBounds(
-            cells.flatMap((cell) => {
-              const anchor = context.anchorOf(cell);
+        const tableEntries: ElementEntry[] = [
+          [projectTableSelection(view), view.tablePath],
+        ];
 
-              return anchor ? [anchor] : [];
-            })
-          )
-        : null;
+        return format === 'all' ? { cellEntries, tableEntries } : tableEntries;
+      }
 
-      return (
-        bounds ?? {
-          maxCol: Number.NEGATIVE_INFINITY,
-          maxRow: Number.NEGATIVE_INFINITY,
-          minCol: Number.POSITIVE_INFINITY,
-          minRow: Number.POSITIVE_INFINITY,
-        }
-      );
-    };
-
-    function getGridByRange(
-      options: GetTableRangeOptions<'all'>,
-      state?: Pick<
-        EditorStateView,
-        'nodes' | 'ranges' | 'runtime' | 'selection'
-      >
-    ): TableRangeEntries;
-    function getGridByRange(
-      options: GetTableRangeOptions<'cell' | 'table'>,
-      state?: Pick<
-        EditorStateView,
-        'nodes' | 'ranges' | 'runtime' | 'selection'
-      >
-    ): ElementEntry[];
-    function getGridByRange(
-      { at, format = 'table' }: GetTableRangeOptions<TableRangeFormat>,
-      state: Pick<
-        EditorStateView,
-        'nodes' | 'ranges' | 'runtime' | 'selection'
-      > = editor.read
-    ): ElementEntry[] | TableRangeEntries {
-      const view = api.getSelection(at, state);
-      const empty =
-        format === 'all' ? { cellEntries: [], tableEntries: [] } : [];
-
-      if (!view) return empty;
-
-      const cellEntries = [...view.cellEntries];
-
-      if (format === 'cell') return cellEntries;
-
-      const tableEntries: ElementEntry[] = [
-        [projectTableSelection(view), view.tablePath],
-      ];
-
-      return format === 'all' ? { cellEntries, tableEntries } : tableEntries;
-    }
-
-    return {
-      api: {
-        createCellSelection: (
-          at: Location,
-          state: Pick<
-            EditorStateView,
-            'nodes' | 'ranges' | 'runtime' | 'selection'
-          > = editor.read
-        ): TableCellSelection | null => {
+      return {
+        createCellSelection: (at: Location): TableCellSelection | null => {
           const range = RangeApi.isRange(at) ? at : state.ranges.get(at);
 
           if (!range) return null;
 
-          const view = api.getSelection(range, state);
+          const view = state.table.getSelection(range);
 
           if (!view) return null;
 
@@ -884,7 +863,7 @@ export const BaseTablePlugin = createBasePlugin({
           deltaCol?: number;
           deltaRow?: number;
         } = {}) => {
-          const view = api.getSelection(at);
+          const view = state.table.getSelection(at);
 
           if (!view) return;
 
@@ -898,7 +877,7 @@ export const BaseTablePlugin = createBasePlugin({
           return view.context.entryAt(row, col);
         },
         getCellInNextRow: (currentRowAt: Location): NodeEntry | undefined => {
-          const view = api.getSelection(currentRowAt);
+          const view = state.table.getSelection(currentRowAt);
           const anchor = view?.grid.anchorsByRow[view.anchor.row + 1]?.[0];
 
           return anchor && view
@@ -908,7 +887,7 @@ export const BaseTablePlugin = createBasePlugin({
         getCellInPreviousRow: (
           currentRowAt: Location
         ): NodeEntry | undefined => {
-          const view = api.getSelection(currentRowAt);
+          const view = state.table.getSelection(currentRowAt);
           const anchors = view?.grid.anchorsByRow[view.anchor.row - 1];
           const anchor = anchors?.at(-1);
 
@@ -917,27 +896,27 @@ export const BaseTablePlugin = createBasePlugin({
             : undefined;
         },
         getEntries: ({
-          at = editor.read.selection(),
+          at = state.selection(),
         }: {
           at?: Location | null;
         } = {}) => {
           if (!at) return;
 
-          const cellEntry = editor.read.nodes.find<TTableCellElement>({
+          const cellEntry = state.nodes.find<TTableCellElement>({
             at,
             match: { type: api.getCellTypes() },
           });
 
           if (!cellEntry) return;
 
-          const rowEntry = editor.read.nodes.above<TTableRowElement>({
+          const rowEntry = state.nodes.above<TTableRowElement>({
             at: cellEntry[1],
             match: { type: editor.getType(KEYS.tr) },
           });
 
           if (!rowEntry) return;
 
-          const tableEntry = editor.read.nodes.above<TTableElement>({
+          const tableEntry = state.nodes.above<TTableElement>({
             at: rowEntry[1],
             match: { type },
           });
@@ -950,14 +929,15 @@ export const BaseTablePlugin = createBasePlugin({
             table: tableEntry,
           };
         },
-        getGridAbove: (
-          { format = 'table', ...options }: GetTableRangeAboveOptions = {},
-          state: Pick<
-            EditorStateView,
-            'nodes' | 'ranges' | 'runtime' | 'selection'
-          > = editor.read
-        ): ElementEntry[] => {
-          const view = api.getSelection(options.at, state);
+        getGridAbove: ({
+          format = 'table',
+          ...options
+        }: GetTableRangeAboveOptions = {}): ElementEntry[] => {
+          const view = readTableSelection(state, {
+            at: options.at,
+            cellTypes: api.getCellTypes(),
+            tableType: type,
+          });
 
           if (!view) return [];
 
@@ -972,7 +952,7 @@ export const BaseTablePlugin = createBasePlugin({
           currentAt: Location,
           _currentRow: NodeEntry
         ): NodeEntry | undefined => {
-          const view = api.getSelection(currentAt);
+          const view = state.table.getSelection(currentAt);
           const anchor = ElementApi.isElement(currentCell[0])
             ? view?.context.anchorOf(currentCell[0] as TTableCellElement)
             : undefined;
@@ -988,7 +968,7 @@ export const BaseTablePlugin = createBasePlugin({
           currentAt: Location,
           _currentRow: NodeEntry
         ): NodeEntry | undefined => {
-          const view = api.getSelection(currentAt);
+          const view = state.table.getSelection(currentAt);
           const anchor = ElementApi.isElement(currentCell[0])
             ? view?.context.anchorOf(currentCell[0] as TTableCellElement)
             : undefined;
@@ -1004,26 +984,26 @@ export const BaseTablePlugin = createBasePlugin({
         getSelectedCell: (id?: string | null) => {
           if (!id) return null;
 
-          const view = api.getSelection();
+          const view = state.table.getSelection();
 
           return view && view.anchors.length > 1 && view.hasCellId(id)
             ? (view.grid.byId.get(id)?.cell ?? null)
             : null;
         },
         getSelectedCellEntries: (): ElementEntry[] => {
-          const cellEntries = api.getSelection()?.cellEntries ?? [];
+          const cellEntries = state.table.getSelection()?.cellEntries ?? [];
 
           return cellEntries.length > 1 ? [...cellEntries] : [];
         },
         getSelectedCellIds: (): string[] | null => {
-          const view = api.getSelection();
+          const view = state.table.getSelection();
 
           return view && view.anchors.length > 1 && view.cellIds.length > 0
             ? [...view.cellIds]
             : null;
         },
         getSelectedCells: (): Element[] | null => {
-          const view = api.getSelection();
+          const view = state.table.getSelection();
 
           return view && view.anchors.length > 1
             ? view.anchors.map(({ cell }) => cell)
@@ -1031,7 +1011,7 @@ export const BaseTablePlugin = createBasePlugin({
         },
         getSelectedCellsBoundingBox,
         getSelectedTableIds: (): string[] | null => {
-          const view = api.getSelection();
+          const view = state.table.getSelection();
 
           return view &&
             view.anchors.length > 1 &&
@@ -1040,31 +1020,32 @@ export const BaseTablePlugin = createBasePlugin({
             : null;
         },
         getSelectedTables: (): Element[] | null => {
-          const view = api.getSelection();
+          const view = state.table.getSelection();
 
           return view && view.anchors.length > 1 ? [view.table] : null;
         },
         isCellSelected: (id?: string | null) => {
           if (!id) return false;
 
-          const view = api.getSelection();
+          const view = state.table.getSelection();
 
           return !!view && view.anchors.length > 1 && view.hasCellId(id);
         },
-        isSelectingCell: () => (api.getSelection()?.anchors.length ?? 0) > 1,
-      },
-    };
-  })
-  .extend(({ api }) => ({
-    api: {
-      getLeftCell: ({ at }: { at?: Location } = {}) =>
-        api.getAdjacentCell({ at, deltaCol: -1 }),
-      getTopCell: ({ at }: { at?: Location } = {}) =>
-        api.getAdjacentCell({ at, deltaRow: -1 }),
+        isSelectingCell: () =>
+          (state.table.getSelection()?.anchors.length ?? 0) > 1,
+      };
     },
   }))
-  .extend(({ api, editor, getOptions, type }) => ({
-    api: {
+  .extend(() => ({
+    read: ({ state }) => ({
+      getLeftCell: ({ at }: { at?: Location } = {}) =>
+        state.table.getAdjacentCell({ at, deltaCol: -1 }),
+      getTopCell: ({ at }: { at?: Location } = {}) =>
+        state.table.getAdjacentCell({ at, deltaRow: -1 }),
+    }),
+  }))
+  .extend(({ api, editor, read, type }) => ({
+    read: ({ state }) => ({
       getCellBorders: ({
         cellIndices,
         defaultBorder = { size: 1 },
@@ -1074,27 +1055,26 @@ export const BaseTablePlugin = createBasePlugin({
         cellIndices?: CellIndices;
         defaultBorder?: TTableCellBorder;
       }): BorderStylesDefault => {
-        const cellPath = editor.read.nodes.path(element);
+        const cellPath = state.nodes.path(element);
 
         if (!cellPath) {
           return { bottom: defaultBorder, right: defaultBorder };
         }
 
         const [rowNode, rowPath] =
-          editor.read.nodes.parent<TTableRowElement>(cellPath) ?? [];
+          state.nodes.parent<TTableRowElement>(cellPath) ?? [];
 
         if (!rowNode || !rowPath) {
           return { bottom: defaultBorder, right: defaultBorder };
         }
 
-        const [tableNode] =
-          editor.read.nodes.parent<TTableElement>(rowPath) ?? [];
+        const [tableNode] = state.nodes.parent<TTableElement>(rowPath) ?? [];
 
         if (!tableNode || tableNode.type !== type) {
           return { bottom: defaultBorder, right: defaultBorder };
         }
 
-        const { col } = cellIndices ?? api.getCellIndices(element);
+        const { col } = cellIndices ?? state.table.getCellIndices(element);
         const isFirstCell = col === 0;
         const isFirstRow = tableNode.children?.[0] === rowNode;
         const getBorder = (direction: BorderDirection) => {
@@ -1125,13 +1105,12 @@ export const BaseTablePlugin = createBasePlugin({
         colSizes?: number[];
         rowSize?: number;
       }): { minHeight: number; width: number } => {
-        const path = editor.read.nodes.path(element);
+        const path = state.nodes.path(element);
 
         if (!path) return { minHeight: rowSize ?? 0, width: 0 };
 
         if (!rowSize) {
-          const [rowElement] =
-            editor.read.nodes.parent<TTableRowElement>(path) ?? [];
+          const [rowElement] = state.nodes.parent<TTableRowElement>(path) ?? [];
 
           if (!rowElement || rowElement.type !== editor.getType(KEYS.tr)) {
             return { minHeight: 0, width: 0 };
@@ -1140,13 +1119,11 @@ export const BaseTablePlugin = createBasePlugin({
           rowSize = rowElement.size ?? 0;
         }
         if (!colSizes) {
-          const [, rowPath] =
-            editor.read.nodes.parent<TTableRowElement>(path) ?? [];
+          const [, rowPath] = state.nodes.parent<TTableRowElement>(path) ?? [];
 
           if (!rowPath) return { minHeight: rowSize, width: 0 };
 
-          const [tableNode] =
-            editor.read.nodes.parent<TTableElement>(rowPath) ?? [];
+          const [tableNode] = state.nodes.parent<TTableElement>(rowPath) ?? [];
 
           if (!tableNode) return { minHeight: rowSize, width: 0 };
 
@@ -1154,7 +1131,7 @@ export const BaseTablePlugin = createBasePlugin({
         }
 
         const colSpan = getColSpan(element);
-        const { col } = cellIndices ?? api.getCellIndices(element);
+        const { col } = cellIndices ?? state.table.getCellIndices(element);
         const width = (colSizes ?? [])
           .slice(col, col + colSpan)
           .reduce((total, size) => total + (size || 0), 0);
@@ -1169,7 +1146,7 @@ export const BaseTablePlugin = createBasePlugin({
         let cells = selectedCells;
 
         if (!cells || cells.length === 0) {
-          const cell = editor.read.nodes.block({
+          const cell = state.nodes.block({
             match: { type: api.getCellTypes() },
           });
 
@@ -1189,7 +1166,7 @@ export const BaseTablePlugin = createBasePlugin({
 
         const cellElements = cells.map((cell) => cell as TTableCellElement);
         const { maxCol, maxRow, minCol, minRow } =
-          api.getSelectedCellsBoundingBox(cellElements);
+          state.table.getSelectedCellsBoundingBox(cellElements);
         let hasAnyBorder = false;
         let allOuterBordersSet = true;
         const borderStates = {
@@ -1200,8 +1177,8 @@ export const BaseTablePlugin = createBasePlugin({
         };
 
         for (const cell of cellElements) {
-          const { col, row } = api.getCellIndices(cell);
-          const cellPath = editor.read.nodes.path(cell);
+          const { col, row } = state.table.getCellIndices(cell);
+          const cellPath = state.nodes.path(cell);
           const colSpan = getColSpan(cell);
           const rowSpan = getRowSpan(cell);
           const isFirstRow = row === 0;
@@ -1220,7 +1197,7 @@ export const BaseTablePlugin = createBasePlugin({
 
             if (!hasAnyBorder) {
               if (!isFirstRow) {
-                const cellAboveEntry = api.getTopCell({ at: cellPath });
+                const cellAboveEntry = state.table.getTopCell({ at: cellPath });
 
                 if (
                   cellAboveEntry &&
@@ -1230,7 +1207,9 @@ export const BaseTablePlugin = createBasePlugin({
                 }
               }
               if (!isFirstCell) {
-                const previousCellEntry = api.getLeftCell({ at: cellPath });
+                const previousCellEntry = state.table.getLeftCell({
+                  at: cellPath,
+                });
 
                 if (
                   previousCellEntry &&
@@ -1257,7 +1236,9 @@ export const BaseTablePlugin = createBasePlugin({
                       borderStates.top = true;
                     }
                   } else {
-                    const cellAboveEntry = api.getTopCell({ at: cellPath });
+                    const cellAboveEntry = state.table.getTopCell({
+                      at: cellPath,
+                    });
 
                     if (cellAboveEntry) {
                       if ((cellAboveEntry[0].borders?.bottom?.size ?? 1) < 1) {
@@ -1286,7 +1267,9 @@ export const BaseTablePlugin = createBasePlugin({
                       borderStates.left = true;
                     }
                   } else {
-                    const previousCellEntry = api.getLeftCell({ at: cellPath });
+                    const previousCellEntry = state.table.getLeftCell({
+                      at: cellPath,
+                    });
 
                     if (previousCellEntry) {
                       if (
@@ -1323,18 +1306,18 @@ export const BaseTablePlugin = createBasePlugin({
       },
       isBorderHidden: (border: BorderDirection) => {
         if (border === 'left') {
-          const node = api.getLeftCell()?.[0];
+          const node = state.table.getLeftCell()?.[0];
 
           if (node) return node.borders?.right?.size === 0;
         }
         if (border === 'top') {
-          const node = api.getTopCell()?.[0];
+          const node = state.table.getTopCell()?.[0];
 
           if (node) return node.borders?.bottom?.size === 0;
         }
 
         return (
-          editor.read.nodes.find<TTableCellElement>({
+          state.nodes.find<TTableCellElement>({
             match: { type: api.getCellTypes() },
           })?.[0].borders?.[border]?.size === 0
         );
@@ -1344,13 +1327,13 @@ export const BaseTablePlugin = createBasePlugin({
         side: BorderDirection
       ): boolean => {
         const { maxCol, maxRow, minCol, minRow } =
-          api.getSelectedCellsBoundingBox(cells);
+          state.table.getSelectedCellsBoundingBox(cells);
 
         return cells.every((cell) => {
-          const { col, row } = api.getCellIndices(cell);
+          const { col, row } = state.table.getCellIndices(cell);
           const colSpan = getColSpan(cell);
           const rowSpan = getRowSpan(cell);
-          const cellPath = editor.read.nodes.path(cell);
+          const cellPath = state.nodes.path(cell);
 
           if (!cellPath) return true;
 
@@ -1365,7 +1348,7 @@ export const BaseTablePlugin = createBasePlugin({
                   return (cell.borders?.top?.size ?? 1) >= 1;
                 }
 
-                const cellAboveEntry = api.getTopCell({ at: cellPath });
+                const cellAboveEntry = state.table.getTopCell({ at: cellPath });
 
                 return cellAboveEntry
                   ? (cellAboveEntry[0].borders?.bottom?.size ?? 1) >= 1
@@ -1379,7 +1362,9 @@ export const BaseTablePlugin = createBasePlugin({
                   return (cell.borders?.left?.size ?? 1) >= 1;
                 }
 
-                const previousCellEntry = api.getLeftCell({ at: cellPath });
+                const previousCellEntry = state.table.getLeftCell({
+                  at: cellPath,
+                });
 
                 return previousCellEntry
                   ? (previousCellEntry[0].borders?.right?.size ?? 1) >= 1
@@ -1397,8 +1382,8 @@ export const BaseTablePlugin = createBasePlugin({
       isSelectedCellBordersNone: (cells: TTableCellElement[]): boolean =>
         cells.every((cell) => {
           const { borders } = cell;
-          const { col, row } = api.getCellIndices(cell);
-          const cellPath = editor.read.nodes.path(cell);
+          const { col, row } = state.table.getCellIndices(cell);
+          const cellPath = state.nodes.path(cell);
 
           if (!cellPath) return true;
           if (row === 0 && (borders?.top?.size ?? 1) > 0) return false;
@@ -1407,7 +1392,7 @@ export const BaseTablePlugin = createBasePlugin({
           if ((borders?.right?.size ?? 1) > 0) return false;
 
           if (row !== 0) {
-            const cellAboveEntry = api.getTopCell({ at: cellPath });
+            const cellAboveEntry = state.table.getTopCell({ at: cellPath });
 
             if (
               cellAboveEntry &&
@@ -1417,7 +1402,9 @@ export const BaseTablePlugin = createBasePlugin({
             }
           }
           if (col !== 0) {
-            const previousCellEntry = api.getLeftCell({ at: cellPath });
+            const previousCellEntry = state.table.getLeftCell({
+              at: cellPath,
+            });
 
             if (
               previousCellEntry &&
@@ -1431,10 +1418,10 @@ export const BaseTablePlugin = createBasePlugin({
         }),
       isSelectedCellBordersOuter: (cells: TTableCellElement[]): boolean => {
         const { maxCol, maxRow, minCol, minRow } =
-          api.getSelectedCellsBoundingBox(cells);
+          state.table.getSelectedCellsBoundingBox(cells);
 
         for (const cell of cells) {
-          const { col, row } = api.getCellIndices(cell);
+          const { col, row } = state.table.getCellIndices(cell);
           const colSpan = getColSpan(cell);
           const rowSpan = getRowSpan(cell);
 
@@ -1471,14 +1458,18 @@ export const BaseTablePlugin = createBasePlugin({
 
         return true;
       },
+    }),
+    api: {
       writeSelection: (
         data: Pick<DataTransfer, 'getData' | 'setData'>
       ): boolean => {
-        const cells = api.getGridAbove({ format: 'cell' });
+        const cells = read.getGridAbove({ format: 'cell' });
 
         if (cells.length <= 1) return false;
 
-        const [tableEntry] = api.getGridAbove({ format: 'table' });
+        const [tableEntry] = read.getGridAbove({
+          format: 'table',
+        });
 
         if (!tableEntry) return false;
 
@@ -1505,15 +1496,8 @@ export const BaseTablePlugin = createBasePlugin({
         return true;
       },
     },
-    selectors: {
-      isCellSelected: (id?: string | null) => api.isCellSelected(id),
-      isSelectingCell: () => api.isSelectingCell(),
-      selectedCell: (id?: string | null) => api.getSelectedCell(id),
-      selectedCellIds: () => api.getSelectedCellIds(),
-      selectedCells: () => api.getSelectedCells(),
-      selectedTableIds: () => api.getSelectedTableIds(),
-      selectedTables: () => api.getSelectedTables(),
-    },
+  }))
+  .extend(({ api, editor, store, type }) => ({
     update: ({ tx }) => {
       const applyMutation = (
         context: NonNullable<ReturnType<typeof createTableContext>>,
@@ -1522,11 +1506,13 @@ export const BaseTablePlugin = createBasePlugin({
         const result = planTableMutation(context, intent);
 
         if (result.kind !== 'plan') {
-          editor.api.debug.warn(
-            `Table mutation rejected: ${result.kind}.`,
-            'TABLE_MUTATION_DIAGNOSTIC',
-            result
-          );
+          editor
+            .plugin(DebugPlugin)
+            .api.warn(
+              `Table mutation rejected: ${result.kind}.`,
+              'TABLE_MUTATION_DIAGNOSTIC',
+              result
+            );
 
           return false;
         }
@@ -1575,11 +1561,13 @@ export const BaseTablePlugin = createBasePlugin({
           );
 
           if (result.kind !== 'plan') {
-            editor.api.debug.warn(
-              `Table mutation rejected: ${result.kind}.`,
-              'TABLE_MUTATION_DIAGNOSTIC',
-              result
-            );
+            editor
+              .plugin(DebugPlugin)
+              .api.warn(
+                `Table mutation rejected: ${result.kind}.`,
+                'TABLE_MUTATION_DIAGNOSTIC',
+                result
+              );
 
             return;
           }
@@ -1587,7 +1575,7 @@ export const BaseTablePlugin = createBasePlugin({
           applyTableMutationPlan(tx, result);
         },
         insertColumn: (options: InsertTableColumnOptions = {}): void => {
-          const { initialTableWidth, minColumnWidth } = getOptions();
+          const { initialTableWidth, minColumnWidth } = store.get();
           const tableAt = options.at
             ? tx.nodes.get<TTableElement>(options.at)?.[0]
             : undefined;
@@ -1721,7 +1709,7 @@ export const BaseTablePlugin = createBasePlugin({
           if (!tableEntry) return;
 
           const view = tx.selection.isExpanded()
-            ? api.getSelection(undefined, tx)
+            ? tx.table.getSelection()
             : null;
           const context =
             view?.context ?? createTableContext(tx, tableEntry[1]);
@@ -1784,7 +1772,7 @@ export const BaseTablePlugin = createBasePlugin({
           if (!tableEntry) return;
 
           const view = tx.selection.isExpanded()
-            ? api.getSelection(undefined, tx)
+            ? tx.table.getSelection()
             : null;
           const context =
             view?.context ?? createTableContext(tx, tableEntry[1]);
@@ -1872,7 +1860,7 @@ export const BaseTablePlugin = createBasePlugin({
             const [, cellPath] = cellEntry;
             const cellIndex = cellPath.at(-1);
             const rowIndex = cellPath.at(-2);
-            const view = api.getSelection(cellPath, tx);
+            const view = tx.table.getSelection(cellPath);
             const addDirection = (direction: BorderDirection) => {
               if (direction === 'top') {
                 if (rowIndex === 0) return addBorder(cellEntry, 'top', size);
@@ -1935,11 +1923,13 @@ export const BaseTablePlugin = createBasePlugin({
           const result = planTableMutation(context, intent);
 
           if (result.kind !== 'plan') {
-            editor.api.debug.warn(
-              `Table mutation rejected: ${result.kind}.`,
-              'TABLE_MUTATION_DIAGNOSTIC',
-              result
-            );
+            editor
+              .plugin(DebugPlugin)
+              .api.warn(
+                `Table mutation rejected: ${result.kind}.`,
+                'TABLE_MUTATION_DIAGNOSTIC',
+                result
+              );
 
             return false;
           }
@@ -1957,8 +1947,7 @@ export const BaseTablePlugin = createBasePlugin({
             const selectedCells =
               explicitCells ??
               (() => {
-                const selected =
-                  api.getSelection(undefined, tx)?.cellEntries ?? [];
+                const selected = tx.table.getSelection()?.cellEntries ?? [];
 
                 if (selected.length > 1) {
                   return selected.map(([cell]) => cell as TTableCellElement);
@@ -1978,7 +1967,7 @@ export const BaseTablePlugin = createBasePlugin({
 
               if (!path) return [];
 
-              const view = api.getSelection(path, tx);
+              const view = tx.table.getSelection(path);
               const anchor = view?.context.anchorOf(cell);
 
               if (!view || !anchor) return [];
@@ -2032,7 +2021,7 @@ export const BaseTablePlugin = createBasePlugin({
             };
 
             if (border === 'none') {
-              const size = api.getSelectedCellsBorders(selectedCells).none
+              const size = tx.table.getSelectedCellsBorders(selectedCells).none
                 ? 1
                 : 0;
 
@@ -2055,10 +2044,10 @@ export const BaseTablePlugin = createBasePlugin({
             }
 
             const { maxCol, maxRow, minCol, minRow } =
-              api.getSelectedCellsBoundingBox(selectedCells);
+              tx.table.getSelectedCellsBoundingBox(selectedCells);
 
             if (border === 'outer') {
-              const size = api.getSelectedCellsBorders(selectedCells).outer
+              const size = tx.table.getSelectedCellsBorders(selectedCells).outer
                 ? 0
                 : 1;
 
@@ -2088,7 +2077,7 @@ export const BaseTablePlugin = createBasePlugin({
               return;
             }
 
-            const size = api.isSelectedCellBorder(selectedCells, border)
+            const size = tx.table.isSelectedCellBorder(selectedCells, border)
               ? 0
               : 1;
 
@@ -2133,8 +2122,7 @@ export const BaseTablePlugin = createBasePlugin({
             tx[plugin.key].setBorderSizes([{ at, border, size }]);
           },
           merge: (): void => {
-            const cellEntries =
-              api.getSelection(undefined, tx)?.cellEntries ?? [];
+            const cellEntries = tx.table.getSelection()?.cellEntries ?? [];
 
             if (cellEntries.length < 2) return;
 
@@ -2148,11 +2136,13 @@ export const BaseTablePlugin = createBasePlugin({
             );
 
             if (cellIds.length !== cellEntries.length) {
-              editor.api.debug.warn(
-                'Table merge requires stable cell IDs.',
-                'TABLE_MUTATION_DIAGNOSTIC',
-                { kind: 'missing-cell-id' }
-              );
+              editor
+                .plugin(DebugPlugin)
+                .api.warn(
+                  'Table merge requires stable cell IDs.',
+                  'TABLE_MUTATION_DIAGNOSTIC',
+                  { kind: 'missing-cell-id' }
+                );
 
               return;
             }
@@ -2174,7 +2164,7 @@ export const BaseTablePlugin = createBasePlugin({
             fromOneCell,
             reverse,
           }: MoveTableSelectionOptions = {}) => {
-            const view = api.getSelection(at, tx);
+            const view = tx.table.getSelection(at);
 
             if (!view) return;
 
@@ -2192,7 +2182,7 @@ export const BaseTablePlugin = createBasePlugin({
                     const range = { anchor, focus };
 
                     tx.selection.set(
-                      api.createCellSelection(range, tx) ?? range
+                      tx.table.createCellSelection(range) ?? range
                     );
                   }
                 }
@@ -2264,7 +2254,7 @@ export const BaseTablePlugin = createBasePlugin({
 
             if (tableRange) {
               tx.selection.set(
-                api.createCellSelection(tableRange, tx) ?? tableRange
+                tx.table.createCellSelection(tableRange) ?? tableRange
               );
             }
 
@@ -2352,7 +2342,7 @@ export const BaseTablePlugin = createBasePlugin({
             );
           },
           split: (): void => {
-            const firstCell = api.getSelection(undefined, tx)?.cellEntries[0];
+            const firstCell = tx.table.getSelection()?.cellEntries[0];
 
             if (!firstCell) return;
 
@@ -2377,7 +2367,7 @@ export const BaseTablePlugin = createBasePlugin({
           },
           tab: ({ reverse = false }: { reverse?: boolean } = {}) => {
             const selection = tx.selection();
-            const view = selection ? api.getSelection(selection, tx) : null;
+            const view = selection ? tx.table.getSelection(selection) : null;
 
             if (
               selection &&
@@ -2394,7 +2384,7 @@ export const BaseTablePlugin = createBasePlugin({
 
             if (!cellEntry) return false;
 
-            const tableView = api.getSelection(cellEntry[1], tx);
+            const tableView = tx.table.getSelection(cellEntry[1]);
             const anchor = tableView?.context.anchorAtPath(cellEntry[1]);
             const target =
               tableView && anchor
@@ -2502,10 +2492,10 @@ export const BaseTablePlugin = createBasePlugin({
                   match: { type: context.type },
                 })
               ) {
-                const cells = context.api.getGridAbove(
-                  { at: selection, format: 'cell' },
-                  state
-                );
+                const cells = state.table.getGridAbove({
+                  at: selection,
+                  format: 'cell',
+                });
 
                 if (cells.length < 2) return false;
 
@@ -2529,7 +2519,7 @@ export const BaseTablePlugin = createBasePlugin({
                     const range = { anchor, focus };
 
                     tx.selection.set(
-                      context.api.createCellSelection(range, tx) ?? range
+                      tx.table.createCellSelection(range) ?? range
                     );
                   }
                 });
@@ -2569,7 +2559,7 @@ export const BaseTablePlugin = createBasePlugin({
                     return;
                   }
 
-                  const [subTable] = context.api.getGridAbove();
+                  const [subTable] = context.read.getGridAbove();
 
                   if (subTable) nextFragment.push(subTable[0]);
                 });
@@ -2602,7 +2592,7 @@ export const BaseTablePlugin = createBasePlugin({
                 clipboardFormat
               );
               const hasRecognizedExact = hasExactMime || hasEmbeddedExact;
-              const view = context.api.getSelection();
+              const view = context.read.getSelection();
               const hasStructuralTarget =
                 !!view &&
                 (isTableCellSelection(view.selection) ||
@@ -2626,11 +2616,13 @@ export const BaseTablePlugin = createBasePlugin({
                 });
 
               if (hasStructuralTarget && hasRecognizedExact && !exactSlice) {
-                context.editor.api.debug.warn(
-                  'Table paste rejected: invalid-source.',
-                  'TABLE_MUTATION_DIAGNOSTIC',
-                  { kind: 'invalid-source', reason: 'malformed-exact' }
-                );
+                context.editor
+                  .plugin(DebugPlugin)
+                  .api.warn(
+                    'Table paste rejected: invalid-source.',
+                    'TABLE_MUTATION_DIAGNOSTIC',
+                    { kind: 'invalid-source', reason: 'malformed-exact' }
+                  );
 
                 return true;
               }
@@ -2643,11 +2635,13 @@ export const BaseTablePlugin = createBasePlugin({
                   grid.width === 0 ||
                   grid.anchors.length === 0
                 ) {
-                  context.editor.api.debug.warn(
-                    'Table paste rejected: invalid-source.',
-                    'TABLE_MUTATION_DIAGNOSTIC',
-                    { kind: 'invalid-source', reason: 'empty' }
-                  );
+                  context.editor
+                    .plugin(DebugPlugin)
+                    .api.warn(
+                      'Table paste rejected: invalid-source.',
+                      'TABLE_MUTATION_DIAGNOSTIC',
+                      { kind: 'invalid-source', reason: 'empty' }
+                    );
 
                   return true;
                 }
@@ -2669,18 +2663,20 @@ export const BaseTablePlugin = createBasePlugin({
               const { slice } = input;
               const selection = state.selection();
               const rejectTablePaste = (diagnostic: TablePasteDiagnostic) => {
-                context.editor.api.debug.warn(
-                  `Table paste rejected: ${diagnostic.kind}.`,
-                  'TABLE_MUTATION_DIAGNOSTIC',
-                  diagnostic
-                );
+                context.editor
+                  .plugin(DebugPlugin)
+                  .api.warn(
+                    `Table paste rejected: ${diagnostic.kind}.`,
+                    'TABLE_MUTATION_DIAGNOSTIC',
+                    diagnostic
+                  );
 
                 return state.transaction(() => {});
               };
 
               if (!selection) return false;
 
-              const view = context.api.getSelection(selection, state);
+              const view = state.table.getSelection(selection);
 
               if (!view) return false;
 
@@ -2748,7 +2744,7 @@ export const BaseTablePlugin = createBasePlugin({
                     row: sourceRow,
                   }),
                 createRow: () => context.api.createRow({ colCount: 0 }),
-                disableExpand: context.getOptions().disableExpandOnInsert,
+                disableExpand: context.store.get().disableExpandOnInsert,
                 ...(fillBounds ? { fillBounds } : {}),
                 fitChildren: ordinary
                   ? (_cell, children) => children
@@ -2778,10 +2774,10 @@ export const BaseTablePlugin = createBasePlugin({
               const selection = state.selection();
 
               if (!selection || !state.selection.isExpanded()) return next();
-              const cells = context.api.getGridAbove(
-                { at: selection, format: 'cell' },
-                state
-              );
+              const cells = state.table.getGridAbove({
+                at: selection,
+                format: 'cell',
+              });
 
               if (cells.length < 2) return next();
 
@@ -2820,7 +2816,7 @@ export const BaseTablePlugin = createBasePlugin({
                 }
 
                 const { enableUnsetSingleColSize, initialTableWidth } =
-                  context.getOptions();
+                  context.store.get();
 
                 if (node.type === context.type) {
                   const table = node as TTableElement;
@@ -2838,11 +2834,13 @@ export const BaseTablePlugin = createBasePlugin({
                   );
 
                   if (repair.kind !== 'plan') {
-                    context.editor.api.debug.warn(
-                      `Table correction rejected: ${repair.kind}.`,
-                      'TABLE_MUTATION_DIAGNOSTIC',
-                      repair
-                    );
+                    context.editor
+                      .plugin(DebugPlugin)
+                      .api.warn(
+                        `Table correction rejected: ${repair.kind}.`,
+                        'TABLE_MUTATION_DIAGNOSTIC',
+                        repair
+                      );
                     return;
                   }
 
@@ -2948,7 +2946,7 @@ export const BaseTablePlugin = createBasePlugin({
               if (!state.selection() || state.selection.isCollapsed())
                 return false;
 
-              const cells = context.api.getGridAbove({ format: 'cell' }, state);
+              const cells = state.table.getGridAbove({ format: 'cell' });
 
               if (cells.length <= 1) return false;
 
@@ -2965,7 +2963,7 @@ export const BaseTablePlugin = createBasePlugin({
               if (!state.selection() || state.selection.isCollapsed())
                 return false;
 
-              const cells = context.api.getGridAbove({ format: 'cell' }, state);
+              const cells = state.table.getGridAbove({ format: 'cell' });
 
               if (cells.length <= 1) return false;
 
@@ -2983,7 +2981,7 @@ export const BaseTablePlugin = createBasePlugin({
               if (!state.selection() || state.selection.isCollapsed())
                 return next();
 
-              const cells = context.api.getGridAbove({ format: 'cell' }, state);
+              const cells = state.table.getGridAbove({ format: 'cell' });
 
               if (cells.length <= 1) return next();
 
@@ -3052,7 +3050,9 @@ export const BaseTablePlugin = createBasePlugin({
                   return next();
                 }
 
-                const cells = context.api.getGridAbove({ format: 'cell' });
+                const cells = context.read.getGridAbove({
+                  format: 'cell',
+                });
 
                 if (cells.length <= 1) return next();
 

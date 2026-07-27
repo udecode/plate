@@ -1,7 +1,6 @@
 import { createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
-import { duplicateBlockSelectionNodes } from './duplicateBlockSelectionNodes';
 
 describe('duplicateBlockSelectionNodes', () => {
   it('duplicates selected blocks through the editor update transaction', () => {
@@ -23,13 +22,13 @@ describe('duplicateBlockSelectionNodes', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
     const selectedIds = editor
       .plugin(BlockSelectionPlugin)
-      .getOption('selectedIds');
+      .store.get('selectedIds');
 
-    editor.update((tx, context) => {
-      duplicateBlockSelectionNodes(editor, tx, context);
+    editor.update((tx) => {
+      tx.blockSelection.duplicate();
     });
 
     expect(editor.read.children()).toEqual([
@@ -50,7 +49,7 @@ describe('duplicateBlockSelectionNodes', () => {
       },
     ]);
     expect(
-      editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+      editor.plugin(BlockSelectionPlugin).store.get('selectedIds')
     ).not.toBe(selectedIds);
   });
 
@@ -68,21 +67,21 @@ describe('duplicateBlockSelectionNodes', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
     const selectedIds = editor
       .plugin(BlockSelectionPlugin)
-      .getOption('selectedIds');
+      .store.get('selectedIds');
 
     expect(() =>
-      editor.update((tx, context) => {
-        duplicateBlockSelectionNodes(editor, tx, context);
+      editor.update((tx) => {
+        tx.blockSelection.duplicate();
         throw new Error('rollback');
       })
     ).toThrow('rollback');
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(editor.read.children()).toHaveLength(1);
-    expect(editor.plugin(BlockSelectionPlugin).getOption('selectedIds')).toBe(
+    expect(editor.plugin(BlockSelectionPlugin).store.get('selectedIds')).toBe(
       selectedIds
     );
   });

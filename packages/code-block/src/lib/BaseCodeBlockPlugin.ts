@@ -2,85 +2,36 @@ import type { createLowlight } from 'lowlight';
 
 import {
   type BaseEditor,
-  type PluginConfig,
   createBasePlugin,
+  DebugPlugin,
+  type InferConfig,
 } from '@platejs/core';
 import {
   ContentSlice,
+  type DecoratedRange,
   editorCommands,
   type EditorTransactionChangeContext,
   type Element,
   ElementApi,
+  type ElementEntry,
+  type ElementOf,
+  type Location,
   NodeApi,
+  type NodeEntry,
+  type NodeInsertNodesOptions,
   PathApi,
   property,
   RangeApi,
   schema,
 } from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+import { KEYS, NODES, type TCodeBlockElement } from '@platejs/utils';
 
-import { isCodeBlockEmpty } from './queries';
-import {
-  CODE_LINE_TO_DECORATIONS,
-  resetCodeBlockDecorations,
-  setCodeBlockToDecorations,
-} from './setCodeBlockToDecorations';
-import { insertCodeBlock } from './transforms/insertCodeBlock';
-import { toggleCodeBlock } from './transforms/toggleCodeBlock';
-import { indentCodeLine, outdentCodeLine, unwrapCodeBlock } from './transforms';
+import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
 
 const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
 const NON_WHITESPACE_OR_END = /\S|$/;
-
-export const getCodeBlockLanguageChange = (
-  context: Pick<
-    EditorTransactionChangeContext<BaseEditor>,
-    'after' | 'before' | 'change' | 'changed'
-  >,
-  type: string
-) => {
-  const roots = new Set<string | undefined>();
-
-  context.change.iterChangedRanges((root) => roots.add(root ?? undefined));
-
-  for (const root of roots) {
-    if (!context.changed.has('properties', root)) continue;
-
-    const beforeChildren =
-      root === undefined
-        ? context.before.children
-        : (context.before.roots?.[root] ?? []);
-    const afterChildren =
-      root === undefined
-        ? context.after.children
-        : (context.after.roots?.[root] ?? []);
-
-    for (const path of context.changed.paths(root)) {
-      const before = NodeApi.getIf(
-        { children: beforeChildren } as Element,
-        path
-      );
-      const after = NodeApi.getIf({ children: afterChildren } as Element, path);
-
-      const beforeLanguage =
-        ElementApi.isElement(before) && before.type === type
-          ? before.lang
-          : undefined;
-      const afterLanguage =
-        ElementApi.isElement(after) && after.type === type
-          ? after.lang
-          : undefined;
-
-      if (
-        (beforeLanguage !== undefined || afterLanguage !== undefined) &&
-        beforeLanguage !== afterLanguage
-      ) {
-        return { after, before };
-      }
-    }
-  }
-};
+const WHITESPACE = /\s/;
 
 export const BaseCodeLinePlugin = createBasePlugin({
   key: KEYS.codeLine,
@@ -107,19 +58,62 @@ export const BaseCodeLinePlugin = createBasePlugin({
     }),
 });
 
-export type CodeBlockConfig = PluginConfig<
-  'codeBlock',
-  {},
-  {},
-  {},
-  {},
-  {},
-  readonly [typeof BaseCodeLinePlugin]
->;
-
 export const BaseCodeBlockPlugin = createBasePlugin({
   key: KEYS.codeBlock,
   dependencies: [BaseCodeLinePlugin],
+  read: ({ editor, state, type }) => {
+    const entry = <N extends ElementOf<typeof editor> = Element>({
+      at = state.selection(),
+    }: {
+      at?: Location | null;
+    } = {}) => {
+      if (!at) return;
+
+      const codeLine = state.nodes.above<N>({
+        at,
+        match: (node): node is N =>
+          ElementApi.isElement<N>(node) &&
+          node.type === editor.getType(KEYS.codeLine),
+      });
+
+      if (!codeLine) return;
+
+      const codeBlock = state.nodes.parent<N>(codeLine[1]);
+
+      if (
+        !codeBlock ||
+        !ElementApi.isElement(codeBlock[0]) ||
+        codeBlock[0].type !== type
+      ) {
+        return;
+      }
+
+      return { codeBlock, codeLine };
+    };
+
+    return {
+      entry,
+      indentDepth: () => {
+        const codeLine = entry()?.codeLine;
+
+        return codeLine
+          ? state.text.string(codeLine[1]).search(NON_WHITESPACE_OR_END)
+          : 0;
+      },
+      isEmpty: () => {
+        const codeBlock = entry()?.codeBlock[0];
+
+        if (!codeBlock) return false;
+        if (codeBlock.children.length === 0) return true;
+        if (codeBlock.children.length > 1) return false;
+
+        return !NodeApi.string(codeBlock.children[0]);
+      },
+      isAtStart: () =>
+        !state.selection.isExpanded() &&
+        state.selection.isAtBlockStart({ match: { type } }),
+    };
+  },
   schema: ({ plugins }) => {
     const codeLineType = plugins.elementType(BaseCodeLinePlugin);
 
@@ -152,14 +146,6 @@ export const BaseCodeBlockPlugin = createBasePlugin({
     },
   },
   render: { as: 'pre' },
-  rules: {
-    delete: {
-      empty: 'reset',
-    },
-    match: ({ editor, rule }) =>
-      ['break.empty', 'delete.empty'].includes(rule) &&
-      isCodeBlockEmpty(editor),
-  },
   codecs: (context) => {
     const { defineCodecs } = context;
 
@@ -306,18 +292,21 @@ export const BaseCodeBlockPlugin = createBasePlugin({
             if (codeLineText.length > 0) return state.transaction(() => {});
 
             return state.transaction((tx) => {
-              codeBlock[0].children.forEach((child, index) => {
-                if (!ElementApi.isElement(child)) return;
-
-                tx.nodes.set(
-                  { type: context.editor.getType(KEYS.p) },
-                  { at: codeBlock[1].concat(index) }
-                );
-              });
-              tx.nodes.unwrap({
-                at: codeBlock[1],
-                match: { type: context.type },
-              });
+              tx.nodes.replace(
+                codeBlock[0].children.flatMap((child) =>
+                  ElementApi.isElement(child)
+                    ? [
+                        {
+                          ...child,
+                          type: context.editor.getType(KEYS.p),
+                        },
+                      ]
+                    : []
+                ),
+                {
+                  at: codeBlock[1],
+                }
+              );
             });
           }
 
@@ -440,22 +429,131 @@ export const BaseCodeBlockPlugin = createBasePlugin({
           });
         }),
       ],
-      priority: 10,
     };
   },
-  update: (context) => {
-    const { tx } = context;
+  update: ({ editor, tx, type }) => {
+    const unwrap = ({
+      at = tx.selection() ?? undefined,
+    }: {
+      at?: Location;
+    } = {}) => {
+      if (!at) return;
+
+      const codeBlockEntries = Array.from(
+        tx.nodes.entries<Element>({
+          at,
+          match: { type },
+        })
+      ).reverse();
+
+      for (const [codeBlock, codeBlockPath] of codeBlockEntries) {
+        codeBlock.children.forEach((child, index) => {
+          if (!ElementApi.isElement(child)) return;
+
+          tx.nodes.set(
+            { type: editor.getType(KEYS.p) },
+            { at: codeBlockPath.concat(index) }
+          );
+        });
+        tx.nodes.unwrap({
+          at: codeBlockPath,
+          match: { type },
+        });
+      }
+    };
+    const insertBlock = (
+      options: Omit<NodeInsertNodesOptions<Element>, 'match'> = {}
+    ) => {
+      const selection = tx.selection();
+
+      if (!selection || tx.selection.isExpanded()) return;
+
+      const codeLineType = editor.getType(KEYS.codeLine);
+
+      if (tx.nodes.some({ match: { type: [type, codeLineType] } })) return;
+      if (!tx.selection.isAtBlockStart()) tx.break.insert();
+
+      tx.nodes.set(
+        {
+          children: [{ text: '' }],
+          type: codeLineType,
+        },
+        options
+      );
+      tx.nodes.wrap(
+        {
+          children: [],
+          type,
+        },
+        options
+      );
+    };
+    const indent = ({
+      codeLine,
+      indentDepth = 2,
+    }: {
+      codeLine: ElementEntry;
+      indentDepth?: number;
+    }) => {
+      const codeLineStart = tx.points.start(codeLine[0]);
+
+      if (!codeLineStart) return;
+
+      const value = ' '.repeat(indentDepth);
+
+      if (!tx.selection.isExpanded()) {
+        const selection = tx.selection();
+        const cursor = selection?.anchor;
+        const range = cursor && tx.ranges.get(codeLineStart, cursor);
+        const text = range ? tx.text.string(range) : '';
+
+        if (NON_WHITESPACE.test(text)) {
+          if (selection) tx.text.insert(value, { at: selection });
+
+          return;
+        }
+      }
+
+      tx.text.insert(value, { at: codeLineStart });
+    };
+    const deleteStartSpace = (codeLine: ElementEntry) => {
+      const codeLineStart = tx.points.start(codeLine[1]);
+      const codeLineEnd = codeLineStart && tx.points.after(codeLineStart);
+      const spaceRange =
+        codeLineEnd && tx.ranges.get(codeLineStart, codeLineEnd);
+      const spaceText = spaceRange ? tx.text.string(spaceRange) : '';
+
+      if (!WHITESPACE.test(spaceText)) return false;
+
+      tx.text.delete({ at: spaceRange });
+
+      return true;
+    };
+    const outdent = ({ codeLine }: { codeLine: ElementEntry }) => {
+      if (deleteStartSpace(codeLine)) deleteStartSpace(codeLine);
+    };
+    const setContent = ({
+      code,
+      element,
+    }: {
+      code: string;
+      element: TCodeBlockElement;
+    }) => {
+      tx.nodes.replaceChildren(
+        code.split('\n').map((line) => ({
+          children: [{ text: line }],
+          type: editor.getType(KEYS.codeLine),
+        })),
+        { at: element }
+      );
+    };
     const tab = (reverse = false) => {
       const codeLines = tx.nodes.toArray<Element>({
         at: tx.selection() ?? undefined,
-        match: { type: context.editor.getType(KEYS.codeLine) },
+        match: { type: editor.getType(KEYS.codeLine) },
       });
 
       if (codeLines.length === 0) return false;
-
-      const codeBlock = tx.nodes.parent<Element>(codeLines[0][1]);
-
-      if (!codeBlock) return false;
 
       const codeLineAnchors = codeLines.map(([, path]) =>
         tx.anchor(path, {
@@ -467,22 +565,13 @@ export const BaseCodeBlockPlugin = createBasePlugin({
       for (const codeLineAnchor of codeLineAnchors) {
         const path = codeLineAnchor.release();
         const codeLine = path ? tx.nodes.get<Element>(path) : undefined;
-        const currentCodeBlock = codeLine
-          ? tx.nodes.parent<Element>(codeLine[1])
-          : undefined;
 
-        if (!codeLine || !currentCodeBlock) continue;
+        if (!codeLine || !tx.nodes.parent<Element>(codeLine[1])) continue;
 
         if (reverse) {
-          outdentCodeLine(tx, {
-            codeBlock: currentCodeBlock,
-            codeLine,
-          });
+          outdent({ codeLine });
         } else {
-          indentCodeLine(tx, {
-            codeBlock: currentCodeBlock,
-            codeLine,
-          });
+          indent({ codeLine });
         }
       }
 
@@ -490,23 +579,66 @@ export const BaseCodeBlockPlugin = createBasePlugin({
     };
 
     return {
-      insert: insertCodeBlock.bind(null, context.editor, tx),
-      resetBlock: () => {
-        if (
-          !tx.nodes.block({
-            match: { type: context.type },
-          })
-        ) {
-          return false;
+      format: ({ element }: { element: TCodeBlockElement }) => {
+        const { lang } = element;
+        const code = NodeApi.string(element);
+
+        if (lang !== 'json') return;
+
+        try {
+          JSON.parse(code);
+        } catch {
+          return;
         }
 
-        unwrapCodeBlock(context.editor, tx);
+        setContent({
+          code: JSON.stringify(JSON.parse(code), null, 2),
+          element,
+        });
+      },
+      insert: ({
+        defaultType = editor.getType(KEYS.p),
+        insertNodesOptions,
+      }: {
+        defaultType?: string;
+        insertNodesOptions?: Omit<NodeInsertNodesOptions<Element>, 'match'>;
+      } = {}) => {
+        const selection = tx.selection();
+
+        if (!selection) return;
+
+        const block = tx.selection.isCollapsed()
+          ? tx.nodes.block({ at: selection })
+          : undefined;
+        const shouldInsertNextBlock =
+          tx.selection.isExpanded() || !block || !tx.nodes.isEmpty(block[0]);
+        let codeBlockOptions = insertNodesOptions;
+
+        if (shouldInsertNextBlock) {
+          const { at: _at, ...options } = insertNodesOptions ?? {};
+
+          tx.blocks.insertAfter(
+            { children: [{ text: '' }], type: defaultType },
+            {
+              ...insertNodesOptions,
+              select: true,
+            }
+          );
+          codeBlockOptions = options;
+        }
+
+        insertBlock(codeBlockOptions);
+      },
+      resetBlock: () => {
+        if (!tx.nodes.block({ match: { type } })) return false;
+
+        unwrap();
 
         return true;
       },
       selectAll: () => {
         const codeBlock = tx.nodes.above<Element>({
-          match: { type: context.type },
+          match: { type },
         });
 
         if (!codeBlock) return false;
@@ -523,7 +655,26 @@ export const BaseCodeBlockPlugin = createBasePlugin({
         return true;
       },
       tab: ({ reverse = false } = {}) => tab(reverse),
-      toggle: () => toggleCodeBlock(context.editor, tx),
+      toggle: () => {
+        const selection = tx.selection();
+
+        if (!selection) return;
+
+        const isActive = tx.nodes.some({
+          at: selection,
+          match: { type },
+        });
+
+        unwrap();
+
+        if (!isActive) {
+          tx.nodes.set({ type: editor.getType(KEYS.codeLine) });
+          tx.nodes.wrap({
+            children: [],
+            type,
+          });
+        }
+      },
       untab: () => tab(true),
     };
   },
@@ -535,79 +686,12 @@ export const BaseCodeBlockPlugin = createBasePlugin({
   },
 });
 
-export type CodeHighlightConfig = PluginConfig<
-  'codeSyntax',
-  {
-    /**
-     * Default language to use when no language is specified. Set to null to
-     * disable syntax highlighting by default.
-     */
-    defaultLanguage?: string | null;
-    /**
-     * Lowlight instance to use for highlighting. If not provided, syntax
-     * highlighting will be disabled.
-     */
-    lowlight?: ReturnType<typeof createLowlight> | null;
-  },
-  {},
-  {},
-  {},
-  {},
-  readonly [typeof BaseCodeBlockPlugin]
->;
+export type CodeBlockConfig = InferConfig<typeof BaseCodeBlockPlugin>;
 
-/** Adds Lowlight syntax highlighting to code blocks. */
 export const BaseCodeHighlightPlugin = createBasePlugin({
-  decorate: ({ editor, entry: [node, path], getOptions }) => {
-    if (!getOptions().lowlight) return [];
-
-    const codeBlockType = editor.getType(KEYS.codeBlock);
-    const codeLineType = editor.getType(KEYS.codeLine);
-
-    if (
-      ElementApi.isElement(node) &&
-      node.type === codeBlockType &&
-      ElementApi.isElement(node.children[0]) &&
-      !CODE_LINE_TO_DECORATIONS.get(node.children[0])
-    ) {
-      setCodeBlockToDecorations(editor, [node, path]);
-    }
-
-    if (ElementApi.isElement(node) && node.type === codeLineType) {
-      return CODE_LINE_TO_DECORATIONS.get(node) || [];
-    }
-
-    return [];
-  },
-  extension: ({ editor, getOptions }) => ({
-    corrections: [
-      {
-        event: 'content',
-        correct({ entry }) {
-          const [node, path] = entry;
-
-          if (
-            ElementApi.isElement(node) &&
-            node.type === editor.getType(KEYS.codeBlock) &&
-            getOptions().lowlight
-          ) {
-            setCodeBlockToDecorations(editor, [node, path]);
-          }
-        },
-      },
-    ],
-    onTransactionChange(context) {
-      const codeBlock =
-        getOptions().lowlight &&
-        getCodeBlockLanguageChange(context, editor.getType(KEYS.codeBlock))
-          ?.before;
-
-      if (ElementApi.isElement(codeBlock)) resetCodeBlockDecorations(codeBlock);
-    },
-  }),
   key: KEYS.codeSyntax,
   dependencies: [BaseCodeBlockPlugin],
-  options: {
+  initialState: {
     defaultLanguage: null as string | null,
     lowlight: null as ReturnType<typeof createLowlight> | null,
   },
@@ -615,4 +699,252 @@ export const BaseCodeHighlightPlugin = createBasePlugin({
     mark: property.boolean({ default: false, omitDefault: true }),
   },
   type: NODES.codeSyntax,
+}).extend(({ editor, store }) => {
+  type CodeBlockDecoration = DecoratedRange & {
+    className: string;
+    [NODES.codeSyntax]: true;
+  };
+  type HighlightResult = ReturnType<
+    ReturnType<typeof createLowlight>['highlight']
+  >;
+  type HighlightNode = HighlightResult['children'][number];
+
+  const lineDecorations = new WeakMap<Element, DecoratedRange[]>();
+  const parseNodes = (
+    nodes: HighlightNode[],
+    className: string[] = []
+  ): { classes: string[]; text: string }[] =>
+    nodes.flatMap((node) => {
+      if (node.type === 'element') {
+        const nodeClassName = node.properties.className;
+        const classes = [
+          ...className,
+          ...(Array.isArray(nodeClassName)
+            ? nodeClassName.map(String)
+            : typeof nodeClassName === 'string'
+              ? [nodeClassName]
+              : []),
+        ];
+
+        return parseNodes(node.children, classes);
+      }
+
+      return node.type === 'text'
+        ? [{ classes: className, text: node.value }]
+        : [];
+    });
+  const normalizeTokens = (tokens: { classes: string[]; text: string }[]) => {
+    const lines: { classes: string[]; content: string }[][] = [[]];
+    let currentLine = lines[0];
+
+    for (const token of tokens) {
+      const tokenLines = token.text.split('\n');
+
+      tokenLines.forEach((content, index) => {
+        if (content) currentLine.push({ classes: token.classes, content });
+
+        if (index < tokenLines.length - 1) {
+          lines.push([]);
+          currentLine = lines.at(-1)!;
+        }
+      });
+    }
+
+    return lines;
+  };
+  const decorations = ([block, blockPath]: NodeEntry<Element>) => {
+    const { defaultLanguage, lowlight } = store.get();
+    const nodeToDecorations = new Map<Element, DecoratedRange[]>();
+
+    if (!lowlight) return nodeToDecorations;
+
+    const text = block.children.map((line) => NodeApi.string(line)).join('\n');
+    const language = typeof block.lang === 'string' ? block.lang : undefined;
+    const effectiveLanguage = language || defaultLanguage;
+
+    ensureStablePythonGrammar(lowlight, effectiveLanguage);
+
+    let highlighted: HighlightResult;
+
+    try {
+      if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
+        highlighted = { children: [], type: 'root' };
+      } else if (effectiveLanguage === 'auto') {
+        highlighted = lowlight.highlightAuto(text);
+      } else {
+        highlighted = lowlight.highlight(effectiveLanguage, text);
+      }
+    } catch (error) {
+      if (
+        effectiveLanguage &&
+        lowlight.listLanguages().includes(effectiveLanguage)
+      ) {
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            `Could not highlight with Highlight.js for language "${effectiveLanguage}". Falling back to plaintext`,
+            'CODE_HIGHLIGHT',
+            error
+          );
+      } else {
+        editor
+          .plugin(DebugPlugin)
+          .api.warn(
+            `Language "${effectiveLanguage}" is not registered. Falling back to plaintext`
+          );
+      }
+      highlighted = { children: [], type: 'root' };
+    }
+
+    const normalizedTokens = normalizeTokens(parseNodes(highlighted.children));
+    const lineCount = Math.min(normalizedTokens.length, block.children.length);
+
+    for (let index = 0; index < lineCount; index++) {
+      const element = block.children[index];
+
+      if (!ElementApi.isElement(element)) continue;
+
+      const values: DecoratedRange[] = [];
+      let start = 0;
+
+      nodeToDecorations.set(element, values);
+
+      for (const token of normalizedTokens[index]) {
+        const end = start + token.content.length;
+
+        if (end === start) continue;
+
+        const decoration: CodeBlockDecoration = {
+          anchor: {
+            offset: start,
+            path: [...blockPath, index, 0],
+          },
+          className: token.classes.join(' '),
+          focus: {
+            offset: end,
+            path: [...blockPath, index, 0],
+          },
+          [NODES.codeSyntax]: true,
+        };
+
+        values.push(decoration);
+        start = end;
+      }
+    }
+
+    return nodeToDecorations;
+  };
+
+  const languageChange = (
+    context: Pick<
+      EditorTransactionChangeContext<BaseEditor>,
+      'after' | 'before' | 'change' | 'changed'
+    >
+  ) => {
+    const roots = new Set<string | undefined>();
+
+    context.change.iterChangedRanges((root) => roots.add(root ?? undefined));
+
+    for (const root of roots) {
+      if (!context.changed.has('properties', root)) continue;
+
+      const beforeChildren =
+        root === undefined
+          ? context.before.children
+          : (context.before.roots?.[root] ?? []);
+      const afterChildren =
+        root === undefined
+          ? context.after.children
+          : (context.after.roots?.[root] ?? []);
+
+      for (const path of context.changed.paths(root)) {
+        const before = NodeApi.getIf(
+          { children: beforeChildren } as Element,
+          path
+        );
+        const after = NodeApi.getIf(
+          { children: afterChildren } as Element,
+          path
+        );
+        const beforeLanguage =
+          ElementApi.isElement(before) &&
+          before.type === editor.getType(KEYS.codeBlock)
+            ? before.lang
+            : undefined;
+        const afterLanguage =
+          ElementApi.isElement(after) &&
+          after.type === editor.getType(KEYS.codeBlock)
+            ? after.lang
+            : undefined;
+
+        if (
+          (beforeLanguage !== undefined || afterLanguage !== undefined) &&
+          beforeLanguage !== afterLanguage
+        ) {
+          return { after, before };
+        }
+      }
+    }
+  };
+  const getLineDecorations = (line: Element) => lineDecorations.get(line) ?? [];
+  const resetDecorations = (codeBlock: Element) => {
+    codeBlock.children.forEach((line) => {
+      if (ElementApi.isElement(line)) lineDecorations.delete(line);
+    });
+  };
+  const setDecorations = (entry: NodeEntry<Element>) => {
+    for (const [node, values] of decorations(entry)) {
+      lineDecorations.set(node, values);
+    }
+  };
+
+  return {
+    decorate: ({ entry: [node, path] }) => {
+      if (!store.get().lowlight) return [];
+
+      const codeBlockType = editor.getType(KEYS.codeBlock);
+      const codeLineType = editor.getType(KEYS.codeLine);
+
+      if (
+        ElementApi.isElement(node) &&
+        node.type === codeBlockType &&
+        ElementApi.isElement(node.children[0]) &&
+        getLineDecorations(node.children[0]).length === 0
+      ) {
+        setDecorations([node, path]);
+      }
+
+      return ElementApi.isElement(node) && node.type === codeLineType
+        ? getLineDecorations(node)
+        : [];
+    },
+    extension: {
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry }) {
+            const [node] = entry;
+
+            if (
+              ElementApi.isElement(node) &&
+              node.type === editor.getType(KEYS.codeBlock) &&
+              store.get().lowlight
+            ) {
+              setDecorations([node, entry[1]]);
+            }
+          },
+        },
+      ],
+      onTransactionChange(context) {
+        const codeBlock =
+          store.get().lowlight && languageChange(context)?.before;
+
+        if (ElementApi.isElement(codeBlock)) {
+          resetDecorations(codeBlock);
+        }
+      },
+    },
+  };
 });
+
+export type CodeHighlightConfig = InferConfig<typeof BaseCodeHighlightPlugin>;

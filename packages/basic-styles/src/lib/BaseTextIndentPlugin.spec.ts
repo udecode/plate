@@ -25,7 +25,6 @@ describe('BaseTextIndentPlugin', () => {
     expect(
       transformNodeValue({
         ...getEditorPlugin(editor, plugin),
-        getOptions: () => editor.plugin(BaseTextIndentPlugin).getOptions(),
         nodeValue: 2,
       })
     ).toBe('48px');
@@ -65,7 +64,7 @@ describe('BaseTextIndentPlugin', () => {
 
   it('uses configured offset and unit when formatting node values', () => {
     const TextIndentPlugin = BaseTextIndentPlugin.configure({
-      options: {
+      initialState: {
         offset: 10,
         unit: 'em',
       },
@@ -79,7 +78,6 @@ describe('BaseTextIndentPlugin', () => {
     expect(
       nodeProps.transformNodeValue!({
         ...getEditorPlugin(editor, plugin),
-        getOptions: () => editor.plugin(TextIndentPlugin).getOptions(),
         nodeValue: 3,
       })
     ).toBe('30em');
@@ -87,7 +85,7 @@ describe('BaseTextIndentPlugin', () => {
 
   it('decodes CSS text indentation through configured units', () => {
     const TextIndentPlugin = BaseTextIndentPlugin.configure({
-      options: {
+      initialState: {
         offset: 10,
         unit: 'em',
       },

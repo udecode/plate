@@ -18,7 +18,7 @@ import type {
   CompiledPlateModel,
   CompiledPlateModelBinding,
 } from './compilePlateModel';
-import { compilePlateHtmlCodec } from './compilePlateHtmlCodec';
+import { compilePlateHtmlCodec } from '../../lib/plugins/html/HtmlPlugin';
 
 type CodecDeclaration = Readonly<{
   decode?: (context: HostCodecParseContext) => ContentSlice | null;
@@ -35,7 +35,6 @@ type CompiledCodecDeclaration = Readonly<{
   encode?: NonNullable<HostCodec['serialize']>;
   format: string;
   owner: string;
-  pluginPriority: number;
   query?: NonNullable<HostCodec['query']>;
 }>;
 
@@ -136,7 +135,6 @@ const compileDeclaration = (
     ...(declaration.encode ? { encode: declaration.encode } : {}),
     format,
     owner: plugin.key,
-    pluginPriority: plugin.priority,
     ...(declaration.query ? { query: declaration.query } : {}),
   });
 };
@@ -145,7 +143,6 @@ const compareDeclarations = (
   left: CompiledCodecDeclaration,
   right: CompiledCodecDeclaration
 ) =>
-  right.pluginPriority - left.pluginPriority ||
   right.codecPriority - left.codecPriority ||
   left.owner.localeCompare(right.owner);
 
@@ -183,7 +180,6 @@ const assertPriorityClaims = (
 
     for (const right of declarations.slice(index + 1)) {
       if (
-        left.pluginPriority === right.pluginPriority &&
         left.codecPriority === right.codecPriority &&
         claimsOverlap(left.claims, right.claims)
       ) {

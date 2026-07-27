@@ -37,7 +37,7 @@ describe('useTableMergeState', () => {
       nodeId: true,
       plugins: [
         TablePlugin.configure({
-          options: { disableMerge: false },
+          initialState: { disableMerge: false },
         }),
       ],
       selection: input.selection,
@@ -55,12 +55,12 @@ describe('useTableMergeState', () => {
 
     expect(result.current).toEqual({ canMerge: true, canSplit: false });
 
-    editor.plugin(TablePlugin).setOptions({ disableMerge: true });
+    editor.plugin(TablePlugin).store.set({ disableMerge: true });
     rerender();
 
     expect(result.current).toEqual({ canMerge: false, canSplit: false });
 
-    editor.plugin(TablePlugin).setOptions({ disableMerge: false });
+    editor.plugin(TablePlugin).store.set({ disableMerge: false });
     rerender();
 
     expect(result.current).toEqual({ canMerge: true, canSplit: false });

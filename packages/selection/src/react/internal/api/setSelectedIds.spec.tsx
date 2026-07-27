@@ -7,7 +7,6 @@ import {
 } from '../../../__tests__/testPlugins';
 import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
-import { addSelectedRow, setSelectedIds } from './setSelectedIds';
 
 const createTestEditor = () =>
   createBaseEditor({
@@ -69,7 +68,7 @@ const createSelectableElement = (id?: string) =>
 
 const getSelectedIds = (editor: BaseEditor) =>
   Array.from(
-    editor.plugin(BlockSelectionPlugin).getOption('selectedIds') ?? []
+    editor.plugin(BlockSelectionPlugin).store.get('selectedIds') ?? []
   ).sort();
 
 describe('setSelectedIds', () => {
@@ -98,12 +97,14 @@ describe('setSelectedIds', () => {
   it('replaces the selection when explicit ids are provided', () => {
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['existing']));
+      .store.set({ selectedIds: new Set(['existing']) });
 
-    setSelectedIds(editor, { ids: ['row-1', 'row-2'] });
+    editor
+      .plugin(BlockSelectionPlugin)
+      .api.setSelectedIds({ ids: ['row-1', 'row-2'] });
 
     expect(getSelectedIds(editor)).toEqual(['row-1', 'row-2']);
-    expect(editor.plugin(BlockSelectionPlugin).getOption('isSelecting')).toBe(
+    expect(editor.plugin(BlockSelectionPlugin).store.get('isSelecting')).toBe(
       true
     );
   });
@@ -111,15 +112,15 @@ describe('setSelectedIds', () => {
   it('merges added ids and removes removed ids from selectable elements', () => {
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['existing', 'row-2']));
+      .store.set({ selectedIds: new Set(['existing', 'row-2']) });
 
-    setSelectedIds(editor, {
+    editor.plugin(BlockSelectionPlugin).api.setSelectedIds({
       added: [createSelectableElement('row-1'), createSelectableElement()],
       removed: [createSelectableElement('row-2'), createSelectableElement()],
     });
 
     expect(getSelectedIds(editor)).toEqual(['existing', 'row-1']);
-    expect(editor.plugin(BlockSelectionPlugin).getOption('isSelecting')).toBe(
+    expect(editor.plugin(BlockSelectionPlugin).store.get('isSelecting')).toBe(
       true
     );
   });
@@ -127,9 +128,9 @@ describe('setSelectedIds', () => {
   it('adds a selected row and clears the previous selection by default', () => {
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['existing']));
+      .store.set({ selectedIds: new Set(['existing']) });
 
-    addSelectedRow(editor, 'row-1');
+    editor.plugin(BlockSelectionPlugin).api.addSelectedRow('row-1');
 
     expect(getSelectedIds(editor)).toEqual(['row-1']);
   });
@@ -137,15 +138,19 @@ describe('setSelectedIds', () => {
   it('adds a selected row without clearing when requested', () => {
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['existing']));
+      .store.set({ selectedIds: new Set(['existing']) });
 
-    addSelectedRow(editor, 'row-1', { clear: false });
+    editor
+      .plugin(BlockSelectionPlugin)
+      .api.addSelectedRow('row-1', { clear: false });
 
     expect(getSelectedIds(editor)).toEqual(['existing', 'row-1']);
   });
 
   it('removes a selected row after the delay', async () => {
-    addSelectedRow(editor, 'row-1', { delay: 1 });
+    editor
+      .plugin(BlockSelectionPlugin)
+      .api.addSelectedRow('row-1', { delay: 1 });
 
     expect(getSelectedIds(editor)).toEqual(['row-1']);
 

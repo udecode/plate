@@ -1,11 +1,10 @@
-import type { DebugConfig } from '../getCorePlugins';
+import type { PluginConfig } from '../../plugin/PluginConfig';
 
-import { createBasePlugin } from '../../plugin';
+import { createBasePlugin } from '../../plugin/createBasePlugin';
 
 export type DebugErrorType =
   | (string & {})
   | 'DEFAULT'
-  | 'OPTION_UNDEFINED'
   | 'OVERRIDE_MISSING'
   | 'PLUGIN_DEPENDENCY_MISSING'
   | 'PLUGIN_MISSING'
@@ -13,6 +12,38 @@ export type DebugErrorType =
   | 'USE_ELEMENT_CONTEXT';
 
 export type LogLevel = 'error' | 'info' | 'log' | 'warn';
+
+export type DebugConfig = PluginConfig<
+  'debug',
+  {
+    isProduction: boolean;
+    logger: Partial<Record<LogLevel, LogFunction>>;
+    logLevel: LogLevel;
+    throwErrors: boolean;
+  },
+  {},
+  {},
+  {},
+  {},
+  readonly [],
+  never,
+  {
+    error: (
+      message: string | unknown,
+      type?: DebugErrorType,
+      details?: any
+    ) => void;
+    info: (message: string, type?: DebugErrorType, details?: any) => void;
+    log: (message: string, type?: DebugErrorType, details?: any) => void;
+    warn: (message: string, type?: DebugErrorType, details?: any) => void;
+  }
+>;
+
+type LogFunction = (
+  message: string,
+  type?: DebugErrorType,
+  details?: any
+) => void;
 
 export class PlateError extends Error {
   type: DebugErrorType;
@@ -25,7 +56,7 @@ export class PlateError extends Error {
 }
 
 export const DebugPlugin = createBasePlugin<DebugConfig>({
-  extension: ({ getOptions }) => {
+  api: ({ store }) => {
     const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
     const log = (
@@ -36,31 +67,26 @@ export const DebugPlugin = createBasePlugin<DebugConfig>({
     ) => {
       if (process.env.NODE_ENV === 'production') return;
 
-      const options = getOptions();
+      const state = store.get();
 
-      if (options.isProduction && level === 'log') return;
-      if (logLevels.indexOf(level) <= logLevels.indexOf(options.logLevel!)) {
-        if (level === 'error' && options.throwErrors) {
+      if (state.isProduction && level === 'log') return;
+      if (logLevels.indexOf(level) <= logLevels.indexOf(state.logLevel!)) {
+        if (level === 'error' && state.throwErrors) {
           throw new PlateError(message, type);
         }
-        options.logger[level]?.(message, type, details);
+        state.logger[level]?.(message, type, details);
       }
     };
 
     return {
-      api: {
-        debug: {
-          error: (message, type, details) =>
-            log('error', message, type, details),
-          info: (message, type, details) => log('info', message, type, details),
-          log: (message, type, details) => log('log', message, type, details),
-          warn: (message, type, details) => log('warn', message, type, details),
-        },
-      },
+      error: (message, type, details) => log('error', message, type, details),
+      info: (message, type, details) => log('info', message, type, details),
+      log: (message, type, details) => log('log', message, type, details),
+      warn: (message, type, details) => log('warn', message, type, details),
     };
   },
   key: 'debug',
-  options: {
+  initialState: {
     isProduction: process.env.NODE_ENV === 'production',
     logger: {
       error: (message, type, details) =>

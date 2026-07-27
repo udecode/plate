@@ -1,21 +1,21 @@
-import {
-  type BaseEditor,
-  type InferConfig,
-  createBasePlugin,
-} from '@platejs/core';
+import { type InferConfig, createBasePlugin } from '@platejs/core';
+import type {
+  EditorStateView,
+  Element,
+  NodeInsertNodesOptions,
+} from '@platejs/plite';
+import { ElementApi, NodeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { Heading } from './types';
 
-import { insertToc } from './transforms/insertToc';
-
-export type TocPluginOptions = {
+export type TocPluginState = {
   isScroll: boolean;
   topOffset: number;
-  queryHeading?: (editor: BaseEditor) => Heading[];
+  queryHeading?: (state: EditorStateView) => Heading[];
 };
 
-const defaultOptions: TocPluginOptions = {
+const initialState: TocPluginState = {
   isScroll: true,
   topOffset: 80,
 };
@@ -27,10 +27,48 @@ export const BaseTocPlugin = createBasePlugin({
       void: 'block',
     },
   },
-  options: defaultOptions,
-  update: ({ editor, tx }) => ({
-    insert: (options?: Parameters<typeof insertToc>[2]) =>
-      insertToc(editor, tx, options),
+  initialState,
+  read: ({ store, state }) => ({
+    headings: () => {
+      const { queryHeading } = store.get();
+
+      if (queryHeading) return queryHeading(state);
+
+      const headings: Heading[] = [];
+
+      for (const [node, path] of state.nodes.entries<Element>({
+        at: [],
+        match: (node) =>
+          ElementApi.isElement(node) &&
+          typeof node.type === 'string' &&
+          KEYS.heading.some((type) => type === node.type),
+      })) {
+        const title = NodeApi.string(node);
+
+        if (title && typeof node.id === 'string') {
+          headings.push({
+            depth: Number.parseInt(node.type.slice(1), 10),
+            id: node.id,
+            path,
+            title,
+            type: node.type,
+          });
+        }
+      }
+
+      return headings;
+    },
+  }),
+  update: ({ tx, type }) => ({
+    insert: (options?: NodeInsertNodesOptions<Element>) => {
+      tx.nodes.insert(
+        {
+          children: [{ text: '' }],
+          type,
+        },
+        options
+      );
+    },
   }),
 });
 

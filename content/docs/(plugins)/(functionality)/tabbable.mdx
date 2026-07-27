@@ -74,7 +74,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     TabbablePlugin.configure({
-      options: {
+      initialState: {
         query: (event) => {
           // Disable when in lists or code blocks
           const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
@@ -92,9 +92,9 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.query`: Function to dynamically enable/disable the plugin based on editor state.
-- `options.globalEventListener`: When `true`, adds event listener to document instead of editor.
-- `options.isTabbable`: Function to determine which elements should be included in tab order.
+- `initialState.query`: Function to dynamically enable/disable the plugin based on editor state.
+- `initialState.globalEventListener`: When `true`, adds event listener to document instead of editor.
+- `initialState.isTabbable`: Function to determine which elements should be included in tab order.
 
 </Steps>
 
@@ -194,6 +194,12 @@ Plugin for managing tab order between tabbable elements.
   </APIItem>
 </APIOptions>
 </API>
+
+## Read API
+
+### `editor.read.tabbable.findDestination(options)`
+
+Finds the next DOM or document destination from the active snapshot.
 
 ## Types
 

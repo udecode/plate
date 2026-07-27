@@ -3,14 +3,13 @@ import React from 'react';
 import {
   useEditorReadOnly,
   useEditor,
-  usePluginOption,
+  usePluginStore,
 } from '@platejs/core/react';
 import { tabbable } from 'tabbable';
 
 import type { TabbableEntry } from '../lib/types';
 
 import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
-import { findTabDestination } from '../lib/findTabDestination';
 
 const comparePaths = (a: readonly number[], b: readonly number[]) => {
   const minLength = Math.min(a.length, b.length);
@@ -27,16 +26,16 @@ const comparePaths = (a: readonly number[], b: readonly number[]) => {
 export function TabbableEffects() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
-  const globalEventListener = usePluginOption(
+  const globalEventListener = usePluginStore(
     BaseTabbablePlugin,
     'globalEventListener'
   );
-  const insertTabbableEntries = usePluginOption(
+  const insertTabbableEntries = usePluginStore(
     BaseTabbablePlugin,
     'insertTabbableEntries'
   );
-  const isTabbable = usePluginOption(BaseTabbablePlugin, 'isTabbable');
-  const query = usePluginOption(BaseTabbablePlugin, 'query');
+  const isTabbable = usePluginStore(BaseTabbablePlugin, 'isTabbable');
+  const query = usePluginStore(BaseTabbablePlugin, 'query');
 
   React.useEffect(() => {
     if (readOnly) return;
@@ -122,11 +121,13 @@ export function TabbableEffects() {
         null;
 
       // Find the next Slate node or DOM node to focus
-      const tabDestination = findTabDestination(editor, {
-        activeTabbableEntry,
-        direction: event.shiftKey ? 'backward' : 'forward',
-        tabbableEntries,
-      });
+      const tabDestination = editor
+        .plugin(BaseTabbablePlugin)
+        .read.findDestination({
+          activeTabbableEntry,
+          direction: event.shiftKey ? 'backward' : 'forward',
+          tabbableEntries,
+        });
 
       if (tabDestination) {
         event.preventDefault();

@@ -144,6 +144,40 @@ describe('OverridePlugin', () => {
     ]);
   });
 
+  it('leaves document-start deletion inside nested blocks to their owner', () => {
+    const WrapperPlugin = createBasePlugin({
+      key: 'wrapper',
+      schema: {
+        element: {
+          content: schema.content.open({ default: { type: 'p' }, min: 1 }),
+        },
+      },
+    });
+    const editor = createBaseEditor({
+      plugins: [WrapperPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 0] },
+      },
+      initialValue: [
+        {
+          children: [{ children: [{ text: 'nested' }], type: 'p' }],
+          type: 'wrapper',
+        },
+      ],
+    });
+
+    deleteBackward(editor, { unit: 'character' });
+
+    expect(editor.read.children()).toEqual([
+      {
+        children: [{ children: [{ text: 'nested' }], type: 'p' }],
+        type: 'wrapper',
+      },
+    ]);
+  });
+
   it('resets the empty block inserted at the start of a splitReset block', () => {
     const CalloutPlugin = createBasePlugin({
       key: 'callout',

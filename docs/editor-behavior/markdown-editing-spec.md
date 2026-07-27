@@ -1976,8 +1976,9 @@ Ownership:
 
 Plugin surface:
 
-- highlight, subscript, and superscript expose mark toggles
-- subscript and superscript are mutually exclusive by plugin design
+- highlight exposes a boolean mark toggle
+- subscript and superscript use `editor.update.script.toggle('sub' | 'sup')`
+  over one enum-valued mark
 
 - `EDIT-MARK-MDX-001` `locked`
 

@@ -4,7 +4,7 @@ import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import { createBaseEditor } from '../../lib/editor/withPlite';
 import { createBasePlugin } from '../../lib/plugin/createBasePlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
-import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
+import { someHtmlElement } from '../../lib/plugins/html/htmlDom';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import { createPlateEditor, extendPlateEditor } from './withPlate';
 
@@ -79,29 +79,29 @@ describe('PlateEditor core package', () => {
       kind: 'named',
       version: 7,
     });
-    expect(baseEditor.api.debug.log).toBeInstanceOf(Function);
-    expect(editor.api.debug.log).toBeInstanceOf(Function);
+    expect(baseEditor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
+    expect(editor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
   });
 
   describe('Core Plugins', () => {
     it('exposes DebugPlugin methods on createBaseEditor', () => {
       const editor = createBaseEditor();
 
-      expect(editor.api.debug).toBeDefined();
-      expect(editor.api.debug.log).toBeInstanceOf(Function);
-      expect(editor.api.debug.error).toBeInstanceOf(Function);
-      expect(editor.api.debug.info).toBeInstanceOf(Function);
-      expect(editor.api.debug.warn).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api).toBeDefined();
+      expect(editor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.error).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.info).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.warn).toBeInstanceOf(Function);
     });
 
     it('exposes DebugPlugin methods on createPlateEditor', () => {
       const editor = createPlateEditor();
 
-      expect(editor.api.debug).toBeDefined();
-      expect(editor.api.debug.log).toBeInstanceOf(Function);
-      expect(editor.api.debug.error).toBeInstanceOf(Function);
-      expect(editor.api.debug.info).toBeInstanceOf(Function);
-      expect(editor.api.debug.warn).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api).toBeDefined();
+      expect(editor.plugin(DebugPlugin).api.log).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.error).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.info).toBeInstanceOf(Function);
+      expect(editor.plugin(DebugPlugin).api.warn).toBeInstanceOf(Function);
     });
 
     it('combines core and custom plugin APIs on base and Plate editors', () => {
@@ -109,7 +109,7 @@ describe('PlateEditor core package', () => {
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
       });
 
-      expect(baseEditor.api.debug).toBeDefined();
+      expect(baseEditor.plugin(DebugPlugin).api).toBeDefined();
       expect(baseEditor.api.bold).toBeInstanceOf(Function);
       expect(baseEditor.api.insertImage).toBeInstanceOf(Function);
 
@@ -120,7 +120,7 @@ describe('PlateEditor core package', () => {
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin, LinkPlugin],
       });
 
-      expect(editor.api.debug).toBeDefined();
+      expect(editor.plugin(DebugPlugin).api).toBeDefined();
       expect(editor.api.bold).toBeInstanceOf(Function);
       expect(editor.api.insertImage).toBeInstanceOf(Function);
 

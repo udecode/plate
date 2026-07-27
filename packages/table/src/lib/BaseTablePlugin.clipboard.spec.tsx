@@ -55,7 +55,7 @@ describe('table clipboard', () => {
       const fragment = editor.read.fragment();
 
       expect(fragment).toMatchObject([
-        editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0],
+        editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0],
       ]);
     });
   });

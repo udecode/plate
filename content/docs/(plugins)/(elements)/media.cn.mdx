@@ -186,7 +186,7 @@ const editor = createPlateEditor({
     MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
     PlaceholderPlugin.configure({
       component: PlaceholderElement,
-      options: { disableEmptyPlaceholder: true },
+      initialState: { disableEmptyPlaceholder: true },
       render: { afterEditable: MediaUploadToast },
     }),
   ],
@@ -194,7 +194,7 @@ const editor = createPlateEditor({
 ```
 
 - `component`: 为每种媒体类型分配自定义渲染组件
-- `options.disableEmptyPlaceholder`: 无文件上传时禁止显示占位符
+- `initialState.disableEmptyPlaceholder`: 无文件上传时禁止显示占位符
 - `render.afterEditable`: 在编辑器外部渲染上传进度提示
 
 ### 标题
@@ -432,7 +432,7 @@ export function PlaceholderElement({
 用于非 void、隔离且可通过键盘选择的图片元素。其直接行内 children 存储标题。
 
 <API name="ImagePlugin">
-<APIOptions type="ImagePluginOptions">
+<APIOptions type="ImagePluginState">
   <APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
     上传图片到服务器的函数。接收:
     - 来自`FileReader.readAsDataURL`的数据URL(字符串)
@@ -462,22 +462,22 @@ export function PlaceholderElement({
 ### `VideoPlugin`
 
 用于非 void、隔离且可通过键盘选择的视频元素。其直接行内 children 存储标题。
-扩展 `MediaPluginOptions`。
+扩展 `MediaPluginState`。
 
 ### `AudioPlugin`
 
 用于非 void、隔离且可通过键盘选择的音频元素。其直接行内 children 存储标题。
-扩展 `MediaPluginOptions`。
+扩展 `MediaPluginState`。
 
 ### `FilePlugin`
 
 用于非 void、隔离且可通过键盘选择的文件元素。其直接行内 children 存储标题。
-扩展 `MediaPluginOptions`。
+扩展 `MediaPluginState`。
 
 ### `MediaEmbedPlugin`
 
 用于非 void、隔离且可通过键盘选择的媒体嵌入元素。其直接行内 children 存储标题。
-扩展 `MediaPluginOptions`。
+扩展 `MediaPluginState`。
 
 ### `PlaceholderPlugin`
 
@@ -579,11 +579,11 @@ export function PlaceholderElement({
 </APIParameters>
 </API>
 
-### `editor.api.placeholder.getUploadingFile`
+### `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
 
 获取当前正在上传的文件。
 
-<API name="editor.api.placeholder.getUploadingFile">
+<API name="editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)">
 <APIParameters>
   <APIItem name="id" type="string">
     占位符元素的唯一标识符。

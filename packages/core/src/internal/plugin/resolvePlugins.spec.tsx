@@ -9,7 +9,7 @@ import { createPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { getPlateRuntime } from './compilePlateModel';
-import { getPluginOptionsStore } from './pluginOptionsStore';
+import { getPluginStore } from './pluginStore';
 import { resolveAndSortPlugins, resolvePlugins } from './resolvePlugins';
 
 const getSortedKeys = (plugins: readonly AnyBasePlugin[]) => {
@@ -35,23 +35,14 @@ describe('resolvePlugins', () => {
     expect(calls).toBe(1);
   });
 
-  it('initialize plugins with correct order based on priority', () => {
+  it('initializes independent plugins in application order', () => {
     expect(
       getSortedKeys([
-        createBasePlugin({
-          key: 'a',
-          priority: 1,
-        }),
-        createBasePlugin({
-          key: 'b',
-          priority: 3,
-        }),
-        createBasePlugin({
-          key: 'c',
-          priority: 2,
-        }),
+        createBasePlugin({ key: 'a' }),
+        createBasePlugin({ key: 'b' }),
+        createBasePlugin({ key: 'c' }),
       ])
-    ).toEqual(['b', 'c', 'a']);
+    ).toEqual(['a', 'b', 'c']);
   });
 
   it('installs required dependencies', () => {
@@ -103,18 +94,18 @@ describe('resolvePlugins', () => {
     let extensionCalls = 0;
     const Plugin = createBasePlugin({
       key: 'unifiedRuntime',
-      options: { label: 'unified' },
+      initialState: { label: 'unified' },
     })
       .extend<{
         api: { label: () => string };
         read: { hasSelection: () => boolean };
         selectors: { selected: () => boolean };
-      }>(({ getOptions }) => {
+      }>(({ store }) => {
         extensionCalls++;
 
         return {
           api: {
-            label: () => getOptions().label,
+            label: () => store.get().label,
           },
           read: ({ state }) => ({
             hasSelection: () => state.selection() !== null,
@@ -133,7 +124,6 @@ describe('resolvePlugins', () => {
         void hasSelection;
 
         return {
-          extension: { priority: 101 },
           update: ({ tx }) => ({
             apiLabel: () => api.label(),
             selectAndRead: () => {
@@ -151,7 +141,7 @@ describe('resolvePlugins', () => {
 
     expect(extensionCalls).toBe(2);
     expect(editor.plugin(Plugin).api.label()).toBe('unified');
-    expect(editor.plugin(Plugin).getOption('selected')).toBe(false);
+    expect(editor.plugin(Plugin).store.get('selected')).toBe(false);
     expect(editor.read.unifiedRuntime.hasSelection()).toBe(false);
     expect(editor.plugin(Plugin).read.hasSelection()).toBe(false);
     editor.read((state) =>
@@ -202,7 +192,7 @@ describe('resolvePlugins', () => {
     expect(editor.plugin(Plugin).api.label()).toBe('object');
     expect(editor.api.rootObjectUnifiedRuntime.label()).toBe('root');
     expect(editor.read.objectUnifiedRuntime.ready()).toBe(true);
-    expect(editor.plugin(Plugin).getOption('selected')).toBe(true);
+    expect(editor.plugin(Plugin).store.get('selected')).toBe(true);
     expect(editor.update.objectUnifiedRuntime.label()).toBe('update');
   });
 
@@ -570,7 +560,7 @@ describe('resolvePlugins', () => {
     expect(editor.plugin({ key: 'pluginApi' }).api).toBe(editor.api.pluginApi);
 
     expect(() => resolvePlugins(editor, [])).toThrow(
-      'Plate plugins are fixed after model publication. Configure plugin options before creating the editor.'
+      'Plate plugins are fixed after model publication. Configure plugin `initialState` before creating the editor.'
     );
     expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
   });
@@ -593,23 +583,14 @@ describe('resolvePlugins', () => {
 });
 
 describe('resolveAndSortPlugins', () => {
-  it('sorts roots by priority', () => {
+  it('keeps independent roots in application order', () => {
     expect(
       getSortedKeys([
-        createBasePlugin({
-          key: 'a',
-          priority: 1,
-        }),
-        createBasePlugin({
-          key: 'b',
-          priority: 3,
-        }),
-        createBasePlugin({
-          key: 'c',
-          priority: 2,
-        }),
+        createBasePlugin({ key: 'a' }),
+        createBasePlugin({ key: 'b' }),
+        createBasePlugin({ key: 'c' }),
       ])
-    ).toEqual(['b', 'c', 'a']);
+    ).toEqual(['a', 'b', 'c']);
   });
 
   it('installs direct and transitive dependencies once', () => {
@@ -624,11 +605,11 @@ describe('resolveAndSortPlugins', () => {
     let calls = 0;
     const dependency = createBasePlugin({
       key: 'configuredDependency',
-      options: { source: 'base' },
+      initialState: { source: 'base' },
     }).configure(() => {
       calls++;
 
-      return { options: { source: 'configured' } };
+      return { initialState: { source: 'configured' } };
     });
     const dependent = createBasePlugin({
       dependencies: [dependency],
@@ -639,7 +620,8 @@ describe('resolveAndSortPlugins', () => {
 
     expect(calls).toBe(1);
     expect(
-      resolved.find((plugin) => plugin.key === dependency.key)?.options.source
+      resolved.find((plugin) => plugin.key === dependency.key)?.initialState
+        .source
     ).toBe('configured');
   });
 
@@ -676,20 +658,13 @@ describe('resolveAndSortPlugins', () => {
     expect(editor.api.explicitExtension.read()).toBe('explicit');
   });
 
-  it('keeps independent root priority around dependency ordering', () => {
-    const c = createBasePlugin({
-      key: 'c',
-      priority: 1,
-    });
+  it('keeps application order around dependency ordering', () => {
+    const c = createBasePlugin({ key: 'c' });
     const b = createBasePlugin({
       dependencies: [c],
       key: 'b',
-      priority: 2,
     });
-    const a = createBasePlugin({
-      key: 'a',
-      priority: 3,
-    });
+    const a = createBasePlugin({ key: 'a' });
 
     expect(getSortedKeys([a, b])).toEqual(['a', 'c', 'b']);
   });
@@ -697,10 +672,10 @@ describe('resolveAndSortPlugins', () => {
   it('uses explicit root configuration regardless of root position', () => {
     const dependency = createBasePlugin({
       key: 'dependency',
-      options: { source: 'implicit' },
+      initialState: { source: 'implicit' },
     });
     const explicitDependency = dependency.configure({
-      options: { source: 'explicit' },
+      initialState: { source: 'explicit' },
     });
     const dependent = createBasePlugin({
       dependencies: [dependency],
@@ -715,7 +690,8 @@ describe('resolveAndSortPlugins', () => {
       const resolved = resolveAndSortPlugins(editor, roots);
 
       expect(
-        resolved.find((plugin) => plugin.key === 'dependency')?.options.source
+        resolved.find((plugin) => plugin.key === 'dependency')?.initialState
+          .source
       ).toBe('explicit');
     }
   });
@@ -766,7 +742,7 @@ describe('resolveAndSortPlugins', () => {
 });
 
 describe('applyPluginOverrides', () => {
-  it('override components based on priority only if target plugin has a component', () => {
+  it('uses peer components only when the target has no component', () => {
     const OriginalComponent = () => null;
     const OverrideComponent = () => null;
     const HighPriorityComponent = () => null;
@@ -784,21 +760,17 @@ describe('applyPluginOverrides', () => {
               e: OverrideComponent,
             },
           },
-          priority: 2,
         }),
         createPlatePlugin({
           component: OriginalComponent,
           key: 'b',
-          priority: 3,
         }),
         createBasePlugin({
           key: 'c',
-          priority: 1,
         }),
         createPlatePlugin({
           component: OriginalComponent,
           key: 'd',
-          priority: 1,
         }),
         createPlatePlugin({
           key: 'e',
@@ -808,30 +780,21 @@ describe('applyPluginOverrides', () => {
               d: HighPriorityComponent,
             },
           },
-          priority: 4,
         }),
         createPlatePlugin({
           component: PreservedOriginalComponent,
           key: 'f',
-          priority: 5,
         }),
       ],
     });
 
-    // Higher priority override
-    expect(getPlugin(editor, { key: 'b' }).render.node).toBe(
-      HighPriorityComponent
-    );
+    expect(getPlugin(editor, { key: 'b' }).render.node).toBe(OriginalComponent);
 
     // No initial component, so it gets set
     expect(getPlugin(editor, { key: 'c' }).render.node).toBe(OverrideComponent);
 
-    // Lower priority component gets overridden
-    expect(getPlugin(editor, { key: 'd' }).render.node).toBe(
-      HighPriorityComponent
-    );
+    expect(getPlugin(editor, { key: 'd' }).render.node).toBe(OriginalComponent);
 
-    // Highest priority original component is preserved
     expect(getPlugin(editor, { key: 'f' }).render.node).toBe(
       PreservedOriginalComponent
     );
@@ -861,7 +824,7 @@ describe('applyPluginOverrides', () => {
       let calls = 0;
       const Target = createBasePlugin({
         key: 'strongTarget',
-        options: {
+        initialState: {
           peerOnly: 'base',
           source: 'base',
         },
@@ -869,7 +832,7 @@ describe('applyPluginOverrides', () => {
         calls++;
 
         return {
-          options: {
+          initialState: {
             source: 'strong',
           },
         };
@@ -879,7 +842,7 @@ describe('applyPluginOverrides', () => {
         override: {
           plugins: {
             [Target.key]: {
-              options: {
+              initialState: {
                 peerOnly: 'weak',
                 source: 'weak',
               },
@@ -891,68 +854,64 @@ describe('applyPluginOverrides', () => {
         plugins: [Contributor, Target],
       });
 
-      expect(editor.getPlugin(Target).options).toEqual({
+      expect(editor.getPlugin(Target).initialState).toEqual({
         peerOnly: 'weak',
         source: 'strong',
       });
       expect(calls).toBe(1);
     });
 
-    it('uses higher priority, then earlier source order for overlapping fields', () => {
+    it('uses earlier application order for overlapping fields', () => {
       const Target = createBasePlugin({
         key: 'orderedWeakTarget',
-        options: { priorityWinner: 'base', sourceWinner: 'base' },
+        initialState: { priorityWinner: 'base', sourceWinner: 'base' },
       });
       const Low = createBasePlugin({
         key: 'lowWeakContributor',
         override: {
           plugins: {
             [Target.key]: {
-              options: { priorityWinner: 'low' },
+              initialState: { priorityWinner: 'low' },
             },
           },
         },
-        priority: 1,
       });
       const High = createBasePlugin({
         key: 'highWeakContributor',
         override: {
           plugins: {
             [Target.key]: {
-              options: { priorityWinner: 'high' },
+              initialState: { priorityWinner: 'high' },
             },
           },
         },
-        priority: 2,
       });
       const First = createBasePlugin({
         key: 'firstWeakContributor',
         override: {
           plugins: {
             [Target.key]: {
-              options: { sourceWinner: 'first' },
+              initialState: { sourceWinner: 'first' },
             },
           },
         },
-        priority: 3,
       });
       const Second = createBasePlugin({
         key: 'secondWeakContributor',
         override: {
           plugins: {
             [Target.key]: {
-              options: { sourceWinner: 'second' },
+              initialState: { sourceWinner: 'second' },
             },
           },
         },
-        priority: 3,
       });
       const editor = createBaseEditor({
         plugins: [Low, High, First, Second, Target],
       });
 
-      expect(editor.getPlugin(Target).options).toEqual({
-        priorityWinner: 'high',
+      expect(editor.getPlugin(Target).initialState).toEqual({
+        priorityWinner: 'low',
         sourceWinner: 'first',
       });
     });
@@ -960,7 +919,7 @@ describe('applyPluginOverrides', () => {
     it('skips disabled contributors', () => {
       const Target = createBasePlugin({
         key: 'disabledContributorTarget',
-        options: { source: 'target' },
+        initialState: { source: 'target' },
       });
       const Contributor = createBasePlugin({
         enabled: false,
@@ -968,7 +927,7 @@ describe('applyPluginOverrides', () => {
         override: {
           plugins: {
             [Target.key]: {
-              options: { source: 'disabled contributor' },
+              initialState: { source: 'disabled contributor' },
             },
           },
         },
@@ -977,7 +936,7 @@ describe('applyPluginOverrides', () => {
         plugins: [Contributor, Target],
       });
 
-      expect(editor.getPlugin(Target).options.source).toBe('target');
+      expect(editor.getPlugin(Target).initialState.source).toBe('target');
     });
 
     it('rejects topology fields even through erased input', () => {
@@ -1067,14 +1026,14 @@ describe('applyPluginOverrides', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logger: { log: customLogger },
           },
         }),
       ],
     });
 
-    editor.api.debug.log('Test message', 'TEST');
+    editor.plugin(DebugPlugin).api.log('Test message', 'TEST');
 
     expect(customLogger).toHaveBeenCalledWith(
       'Test message',
@@ -1085,16 +1044,16 @@ describe('applyPluginOverrides', () => {
 });
 
 describe('mergePlugins behavior in resolvePlugins', () => {
-  it('preserves configured options when an overlay uses undefined', () => {
+  it('preserves configured initialState when an overlay uses undefined', () => {
     const plugin = createBasePlugin({
       key: 'test',
-      options: {
+      initialState: {
         contextValue: 'kept',
         nullValue: 'kept',
         objectValue: 'kept',
       },
     }).configure(() => ({
-      options: {
+      initialState: {
         contextValue: undefined as unknown as string,
         nullValue: null as unknown as string,
         objectValue: undefined as unknown as string,
@@ -1103,21 +1062,21 @@ describe('mergePlugins behavior in resolvePlugins', () => {
 
     const editor = createBaseEditor({ plugins: [plugin] });
 
-    expect(getPlateRuntime(editor).plugins.test.options).toEqual({
+    expect(getPlateRuntime(editor).plugins.test.initialState).toEqual({
       contextValue: 'kept',
       nullValue: null,
       objectValue: 'kept',
     });
   });
 
-  it('freezes the options record without cloning runtime resources', () => {
+  it('freezes the initialState record without cloning runtime resources', () => {
     class RuntimeResource {
       value = 'original';
     }
     const runtimeResource = new RuntimeResource();
     const plugin = createBasePlugin({
       key: 'test',
-      options: { resource: runtimeResource },
+      initialState: { resource: runtimeResource },
     });
 
     const editor = createBaseEditor({
@@ -1126,72 +1085,73 @@ describe('mergePlugins behavior in resolvePlugins', () => {
 
     const published = getPlateRuntime(editor).plugins.test;
 
-    expect(published.options).not.toBe(plugin.options);
-    expect(Object.isFrozen(published.options)).toBe(true);
-    expect(published.options.resource).toBe(runtimeResource);
-    expect(editor.plugin(plugin).getOption('resource')).toBe(runtimeResource);
-    expect(Object.isFrozen(published.options.resource)).toBe(false);
+    expect(published.initialState).not.toBe(plugin.initialState);
+    expect(Object.isFrozen(published.initialState)).toBe(true);
+    expect(published.initialState.resource).toBe(runtimeResource);
+    expect(editor.plugin(plugin).store.get('resource')).toBe(runtimeResource);
+    expect(Object.isFrozen(published.initialState.resource)).toBe(false);
   });
 
-  it('snapshots nested plain options away from caller-owned mutation', () => {
+  it('snapshots nested plain initialState away from caller-owned mutation', () => {
     const nested = { label: 'one' };
     const entries = [nested];
     const plugin = createBasePlugin({
       key: 'test',
-      options: { entries, nested },
+      initialState: { entries, nested },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
     const published = getPlateRuntime(editor).plugins.test;
     const listener = vi.fn();
-    const unsubscribe = getPluginOptionsStore(
-      editor,
-      plugin.key
-    )!.store.subscribe(listener);
+    const unsubscribe = getPluginStore(editor, plugin.key)!.public.subscribe(
+      listener
+    );
 
     nested.label = 'mutated';
     entries.push({ label: 'two' });
 
-    expect(published.options.nested).toEqual({ label: 'one' });
-    expect(published.options.nested).not.toBe(nested);
-    expect(Object.isFrozen(published.options.nested)).toBe(true);
-    expect(published.options.entries).toEqual([{ label: 'one' }]);
-    expect(published.options.entries).not.toBe(entries);
-    expect(published.options.entries[0]).toBe(published.options.nested);
-    expect(Object.isFrozen(published.options.entries)).toBe(true);
-    expect(editor.plugin(plugin).getOption('nested')).toEqual({ label: 'one' });
+    expect(published.initialState.nested).toEqual({ label: 'one' });
+    expect(published.initialState.nested).not.toBe(nested);
+    expect(Object.isFrozen(published.initialState.nested)).toBe(true);
+    expect(published.initialState.entries).toEqual([{ label: 'one' }]);
+    expect(published.initialState.entries).not.toBe(entries);
+    expect(published.initialState.entries[0]).toBe(
+      published.initialState.nested
+    );
+    expect(Object.isFrozen(published.initialState.entries)).toBe(true);
+    expect(editor.plugin(plugin).store.get('nested')).toEqual({ label: 'one' });
     expect(listener).not.toHaveBeenCalled();
 
-    editor.plugin(plugin).setOption('nested', { label: 'updated' });
+    editor.plugin(plugin).store.set({ nested: { label: 'updated' } });
 
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(editor.plugin(plugin).getOption('nested')).toEqual({
+    expect(editor.plugin(plugin).store.get('nested')).toEqual({
       label: 'updated',
     });
-    expect(published.options.nested).toEqual({ label: 'one' });
+    expect(published.initialState.nested).toEqual({ label: 'one' });
     unsubscribe();
   });
 
-  it('preserves shared and cyclic identity inside snapshotted plain options', () => {
+  it('preserves shared and cyclic identity inside snapshotted plain initialState', () => {
     const shared = { label: 'shared' };
     const cycle: { self?: typeof cycle } = {};
 
     cycle.self = cycle;
     const plugin = createBasePlugin({
       key: 'test',
-      options: { cycle, first: shared, second: shared },
+      initialState: { cycle, first: shared, second: shared },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const options = getPlateRuntime(editor).plugins.test.options;
+    const initialState = getPlateRuntime(editor).plugins.test.initialState;
 
-    expect(options.first).toBe(options.second);
-    expect(options.first).not.toBe(shared);
-    expect(Object.isFrozen(options.first)).toBe(true);
-    expect(options.cycle).not.toBe(cycle);
-    expect(options.cycle.self).toBe(options.cycle);
-    expect(Object.isFrozen(options.cycle)).toBe(true);
+    expect(initialState.first).toBe(initialState.second);
+    expect(initialState.first).not.toBe(shared);
+    expect(Object.isFrozen(initialState.first)).toBe(true);
+    expect(initialState.cycle).not.toBe(cycle);
+    expect(initialState.cycle.self).toBe(initialState.cycle);
+    expect(Object.isFrozen(initialState.cycle)).toBe(true);
   });
 
-  it('rejects accessor properties in plain option graphs', () => {
+  it('rejects accessor properties in plain plugin state graphs', () => {
     const nested = {} as { value: number };
 
     Object.defineProperty(nested, 'value', {
@@ -1200,11 +1160,11 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     });
     const plugin = createBasePlugin({
       key: 'test',
-      options: { nested },
+      initialState: { nested },
     });
 
     expect(() => createBaseEditor({ plugins: [plugin] })).toThrow(
-      'Plate plugin options must be data-only. Accessor properties are not supported; declare computed values in the constructor `selectors` callback.'
+      'Plate plugin `initialState` must be data-only. Accessor properties are not supported; declare computed values as pure plugin selectors.'
     );
   });
 
@@ -1256,45 +1216,46 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     expect(Object.isFrozen(OverrideNode)).toBe(false);
   });
 
-  it('snapshots plugin-valued options as frozen nominal references', () => {
-    const Target = createBasePlugin({ key: 'optionTarget' });
+  it('snapshots plugin-valued initialState as frozen nominal references', () => {
+    const Target = createBasePlugin({ key: 'stateTarget' });
     const cycle: { self?: typeof cycle; target: typeof Target } = {
       target: Target,
     };
 
     cycle.self = cycle;
     const Owner = createBasePlugin({
-      key: 'optionOwner',
-      options: { cycle, first: Target, second: Target },
+      key: 'stateOwner',
+      initialState: { cycle, first: Target, second: Target },
     });
     const editor = createBaseEditor({ plugins: [Target, Owner] });
-    const publishedOptions =
-      getPlateRuntime(editor).plugins.optionOwner.options;
-    const targetReference = publishedOptions.first;
+    const publishedState =
+      getPlateRuntime(editor).plugins.stateOwner.initialState;
+    const targetReference = publishedState.first;
 
     expect(targetReference).toEqual({
-      key: 'optionTarget',
-      type: 'optionTarget',
+      key: 'stateTarget',
+      type: 'stateTarget',
     });
-    expect(targetReference).toBe(publishedOptions.second);
-    expect(targetReference).toBe(publishedOptions.cycle.target);
-    expect(publishedOptions.cycle.self).toBe(publishedOptions.cycle);
+    expect(targetReference).toBe(publishedState.second);
+    expect(targetReference).toBe(publishedState.cycle.target);
+    expect(publishedState.cycle.self).toBe(publishedState.cycle);
     expect(targetReference).not.toBe(Target);
     expect(Object.isFrozen(targetReference)).toBe(true);
-    expect(editor.plugin(Owner).getOption('first')).toBe(targetReference);
+    expect(editor.plugin(Owner).store.get('first')).toBe(targetReference);
 
     const ContextOwner = createBasePlugin({
-      key: 'contextOptionOwner',
-      options: { target: null as unknown as typeof Target },
-    }).extend(() => ({ options: { target: Target } }));
+      key: 'contextStateOwner',
+      initialState: { target: null as unknown as typeof Target },
+    }).extend(() => ({ initialState: { target: Target } }));
     const contextEditor = createBaseEditor({
       plugins: [Target, ContextOwner],
     });
     const contextPublished =
-      getPlateRuntime(contextEditor).plugins.contextOptionOwner.options.target;
+      getPlateRuntime(contextEditor).plugins.contextStateOwner.initialState
+        .target;
 
     expect(contextPublished).toBe(
-      contextEditor.plugin(ContextOwner).getOption('target')
+      contextEditor.plugin(ContextOwner).store.get('target')
     );
     expect(contextPublished).not.toBe(Target);
     expect(contextPublished).not.toBe(targetReference);
@@ -1303,39 +1264,41 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     Object.assign(Target, { key: 'mutatedTarget', type: 'mutatedTarget' });
 
     expect(targetReference).toEqual({
-      key: 'optionTarget',
-      type: 'optionTarget',
+      key: 'stateTarget',
+      type: 'stateTarget',
     });
-    expect(getPlateRuntime(editor).plugins.optionTarget).toMatchObject({
-      key: 'optionTarget',
-      type: 'optionTarget',
+    expect(getPlateRuntime(editor).plugins.stateTarget).toMatchObject({
+      key: 'stateTarget',
+      type: 'stateTarget',
     });
   });
 
-  it('keeps mutable option state outside the published plugin descriptor', () => {
+  it('keeps mutable store state outside the published plugin descriptor', () => {
     const plugin = createBasePlugin({
       key: 'test',
-      options: { value: 'original' },
+      initialState: { value: 'original' },
     });
 
     const editor = createBaseEditor({
       plugins: [plugin],
     });
 
-    editor.plugin(plugin).setOption('value', 'modified');
+    editor.plugin(plugin).store.set({ value: 'modified' });
 
-    expect(editor.plugin(plugin).getOption('value')).toBe('modified');
-    expect(getPlateRuntime(editor).plugins.test.options.value).toBe('original');
-    expect(plugin.options.value).toBe('original');
+    expect(editor.plugin(plugin).store.get('value')).toBe('modified');
+    expect(getPlateRuntime(editor).plugins.test.initialState.value).toBe(
+      'original'
+    );
+    expect(plugin.initialState.value).toBe('original');
   });
 
-  it('keeps extension-derived defaults separate from mutable option state', () => {
+  it('keeps extension-derived defaults separate from mutable store state', () => {
     const plugin = createBasePlugin({
       key: 'test',
-      options: { value: 'original' },
-    }).extend(({ getOptions }) => ({
-      options: {
-        ...getOptions(),
+      initialState: { value: 'original' },
+    }).extend(({ store }) => ({
+      initialState: {
+        ...store.get(),
         value: 'modified',
       },
     }));
@@ -1344,12 +1307,16 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    expect(getPlateRuntime(editor).plugins.test.options.value).toBe('modified');
+    expect(getPlateRuntime(editor).plugins.test.initialState.value).toBe(
+      'modified'
+    );
 
-    editor.plugin(plugin).setOption('value', 'runtime');
+    editor.plugin(plugin).store.set({ value: 'runtime' });
 
-    expect(editor.plugin(plugin).getOption('value')).toBe('runtime');
-    expect(getPlateRuntime(editor).plugins.test.options.value).toBe('modified');
-    expect(plugin.options.value).toBe('original');
+    expect(editor.plugin(plugin).store.get('value')).toBe('runtime');
+    expect(getPlateRuntime(editor).plugins.test.initialState.value).toBe(
+      'modified'
+    );
+    expect(plugin.initialState.value).toBe('original');
   });
 });

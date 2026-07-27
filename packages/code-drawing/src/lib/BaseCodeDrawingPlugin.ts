@@ -7,9 +7,18 @@ import {
 } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-import type { CodeDrawingData } from './types';
-import { CODE_DRAWING_TYPE_ARRAY, VIEW_MODE_ARRAY } from './constants';
-import { insertCodeDrawing } from './transforms';
+import {
+  type CodeDrawingType,
+  CODE_DRAWING_TYPE_ARRAY,
+  type ViewMode,
+  VIEW_MODE_ARRAY,
+} from './constants';
+
+export type CodeDrawingData = {
+  code?: string;
+  drawingMode?: ViewMode;
+  drawingType?: CodeDrawingType;
+};
 
 export interface TCodeDrawingElement extends Element {
   data?: CodeDrawingData;
@@ -52,8 +61,25 @@ export const BaseCodeDrawingPlugin = createBasePlugin({
   type: NODES.codeDrawing,
   update: ({ tx, type }) => ({
     insert: (
-      props?: NodeProps<TCodeDrawingElement>,
-      options?: NodeInsertNodesOptions<TCodeDrawingElement>
-    ) => insertCodeDrawing(tx, type, props, options),
+      props: NodeProps<TCodeDrawingElement> = {},
+      options: NodeInsertNodesOptions<TCodeDrawingElement> = {}
+    ) => {
+      const { data, ...restProps } = props;
+
+      tx.blocks.insertAfter<TCodeDrawingElement>(
+        {
+          children: [{ text: '' }],
+          type,
+          data: {
+            code: '',
+            drawingMode: 'Both',
+            drawingType: 'Mermaid',
+            ...(data ?? {}),
+          },
+          ...restProps,
+        },
+        options
+      );
+    },
   }),
 });

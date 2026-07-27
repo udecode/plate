@@ -66,7 +66,7 @@ export const editor = createPlateEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/mention` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and `getMentionOnSelectItem`. |
+| `@platejs/mention` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and the scoped mention update. |
 | `@platejs/mention/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
 | `@platejs/combobox` | Package | Provides trigger options and combobox input hooks. |
 | `mention-kit` | Registry | Adds mention plugins with editable mention and input components. |
@@ -102,7 +102,7 @@ export const editor = createPlateEditor({
   plugins: [
     MentionPlugin.configure({
       component: MentionElement,
-      options: {
+      initialState: {
         triggerPreviousCharPattern: /^$|^[\s"']$/,
       },
     }),
@@ -113,16 +113,17 @@ export const editor = createPlateEditor({
 
 ### Select An Item
 
-Use `getMentionOnSelectItem` from your combobox item renderer. It inserts the mention, moves the cursor after it, and inserts a trailing space only when `insertSpaceAfterMention` is enabled and the mention lands at the end of the block.
+Call the installed mention update from your combobox item renderer. It inserts the mention, moves the cursor after it, and inserts a trailing space only when `insertSpaceAfterMention` is enabled and the mention lands at the end of the block.
 
 ```tsx
-import { getMentionOnSelectItem } from '@platejs/mention';
-
-const onSelectItem = getMentionOnSelectItem();
-
 <InlineComboboxItem
   value={item.text}
-  onClick={() => onSelectItem(editor, item, search)}
+  onClick={() =>
+    editor.plugin(MentionPlugin).update.insert({
+      search,
+      value: item.text,
+    })
+  }
 >
   {item.text}
 </InlineComboboxItem>;
@@ -208,6 +209,5 @@ Deserialization supports link-style mentions and bare `@alice` text. Normal link
 | `BaseMentionInputPlugin` | `@platejs/mention` | Required inline void input node inserted while the combobox is active. |
 | `MentionPlugin` | `@platejs/mention/react` | React mention plugin with a required `MentionInputPlugin` dependency. |
 | `MentionInputPlugin` | `@platejs/mention/react` | React mention input dependency; add it directly to replace its component or configuration. |
-| `editor.update((tx) => tx.mention.insert({ key, value }))` | `BaseMentionPlugin` transaction | Inserts the mention node at the current selection. |
-| `getMentionOnSelectItem({ key? })` | `@platejs/mention` | Returns an item handler for mention combobox selection. |
+| `editor.plugin(MentionPlugin).update.insert({ key, value })` | `BaseMentionPlugin` update | Inserts the mention node at the current selection. |
 | `useComboboxInput` | `@platejs/combobox/react` | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for custom input UI. |

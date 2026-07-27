@@ -1,0 +1,1196 @@
+[
+  {
+    "id": 1,
+    "package": "ai",
+    "symbol": "BaseAIPlugin",
+    "file": "packages/ai/src/lib/BaseAIPlugin.ts",
+    "line": 43,
+    "current": {
+      "api": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "hasPreview",
+        "undo"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": ["insertNodes", "markBatch", "removeMarks", "removeNodes"],
+      "extension": ["effects.ai.batch", "fields.ai.batch"]
+    },
+    "final": {
+      "api": [],
+      "read": ["hasPreview"],
+      "selectors": [],
+      "update": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "insertNodes",
+        "markBatch",
+        "removeMarks",
+        "removeNodes",
+        "undo"
+      ],
+      "extension": [
+        "effects.ai.batch",
+        "effects.ai.preview",
+        "fields.ai.batch",
+        "fields.ai.preview"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Publish preview state through extension, expose its deterministic query through read, and put every preview or document-state mutation in update.",
+    "evidence": "All six current API methods either inspect or mutate preview, document, selection, or history state in BaseAIPlugin.ts:122-323.",
+    "extendJustified": null,
+    "gaps": [
+      "Preview bookkeeping must move from the WeakMap into the proposed ai.preview effect and field before read.hasPreview is deterministic and replayable.",
+      "acceptPreview and cancelPreview span multiple commits, so migration needs an explicit composite-update contract rather than a namespace-only move."
+    ]
+  },
+  {
+    "id": 2,
+    "package": "ai",
+    "symbol": "AIChatPlugin",
+    "file": "packages/ai/src/react/ai-chat/AIChatPlugin.ts",
+    "line": 149,
+    "current": {
+      "api": [
+        "accept",
+        "acceptSuggestions",
+        "applySuggestions",
+        "applyTableCellSuggestion",
+        "commentToRange",
+        "deserializeChunk",
+        "deserializeInlineChunk",
+        "getInsertStart",
+        "getMarkdown",
+        "getPrompt",
+        "hide",
+        "insertBelow",
+        "insertChunk",
+        "lastAssistantMessage",
+        "node",
+        "rejectSuggestions",
+        "reload",
+        "removeAnchor",
+        "replacePlaceholders",
+        "replaceSelection",
+        "reset",
+        "serializeChunk",
+        "show",
+        "stop",
+        "submit"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "commands.insertText",
+        "corrections.content",
+        "effects.ai.chat.show",
+        "onCommit"
+      ]
+    },
+    "final": {
+      "api": [
+        "deserializeChunk",
+        "deserializeInlineChunk",
+        "hide",
+        "reload",
+        "reset",
+        "show",
+        "stop",
+        "submit"
+      ],
+      "read": [
+        "commentRange",
+        "insertStart",
+        "markdown",
+        "node",
+        "prompt",
+        "resolvePlaceholders",
+        "serializeChunk"
+      ],
+      "selectors": ["lastAssistantMessage"],
+      "update": [
+        "accept",
+        "acceptSuggestions",
+        "applySuggestions",
+        "applyTableCellSuggestion",
+        "insertBelow",
+        "insertChunk",
+        "rejectSuggestions",
+        "removeAnchor",
+        "replaceSelection"
+      ],
+      "extension": [
+        "commands.insertText",
+        "corrections.content",
+        "effects.ai.chat.show",
+        "onCommit"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Split the monolithic surface into controllers and services in api, deterministic snapshot reads, option selectors, and named transaction mutations.",
+    "evidence": "The API factory at AIChatPlugin.ts:150-1495 mixes markdown services, current-state queries, network control, option state, and direct editor mutations.",
+    "extendJustified": true,
+    "gaps": [
+      "hide must delegate anchor removal and preview undo to AIChat.update.removeAnchor and BaseAI.update.undo or discardPreview while retaining UI, focus, and option control in api.",
+      "reset, reload, and submit stay controllers only after their document, selection, and history work delegates to BaseAI.update and Core or feature update methods.",
+      "show stays api, but its call to reset inherits the same controller and transaction split.",
+      "The read namespace makes getInsertStart, getMarkdown, getPrompt, commentToRange, and replacePlaceholders prefixes redundant."
+    ]
+  },
+  {
+    "id": 3,
+    "package": "ai",
+    "symbol": "AIPlugin",
+    "file": "packages/ai/src/react/ai/AIPlugin.ts",
+    "line": 9,
+    "current": {
+      "api": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "hasPreview",
+        "undo"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": ["insertNodes", "markBatch", "removeMarks", "removeNodes"],
+      "extension": ["effects.ai.batch", "fields.ai.batch"]
+    },
+    "final": {
+      "api": [],
+      "read": ["hasPreview"],
+      "selectors": [],
+      "update": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "insertNodes",
+        "markBatch",
+        "removeMarks",
+        "removeNodes",
+        "undo"
+      ],
+      "extension": [
+        "effects.ai.batch",
+        "effects.ai.preview",
+        "fields.ai.batch",
+        "fields.ai.preview"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Mirror the BaseAIPlugin read and update split on the React adapter.",
+    "evidence": "AIPlugin is a direct toPlatePlugin adapter and therefore exposes the complete BaseAIPlugin capability surface.",
+    "extendJustified": null,
+    "gaps": [
+      "The inherited WeakMap preview state must become the proposed ai.preview extension field and the multi-commit update problem must be fixed at BaseAIPlugin."
+    ]
+  },
+  {
+    "id": 4,
+    "package": "ai",
+    "symbol": "CopilotPlugin",
+    "file": "packages/ai/src/react/copilot/CopilotPlugin.tsx",
+    "line": 77,
+    "current": {
+      "api": ["reject", "setBlockSuggestion", "stop", "triggerSuggestion"],
+      "read": [],
+      "selectors": ["isSuggested"],
+      "update": ["accept", "acceptNextWord", "setSuggestion"],
+      "extension": [
+        "commands.insertText",
+        "effects.copilot.suggestion",
+        "fields.copilot.suggestion",
+        "onCommit"
+      ]
+    },
+    "final": {
+      "api": ["stop", "triggerSuggestion"],
+      "read": [],
+      "selectors": ["isSuggested"],
+      "update": [
+        "accept",
+        "acceptNextWord",
+        "reject",
+        "setBlockSuggestion",
+        "setSuggestion"
+      ],
+      "extension": [
+        "commands.insertText",
+        "effects.copilot.suggestion",
+        "fields.copilot.suggestion",
+        "onCommit"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Keep completion control in api and move suggestion-state mutations into update.",
+    "evidence": "reject and setBlockSuggestion both open editor updates while stop and triggerSuggestion own abortable completion control in CopilotPlugin.tsx:167-377.",
+    "extendJustified": true,
+    "gaps": [
+      "The first extend stage can move into the constructor; only the later handlers, selectors, shortcuts, and extension stage genuinely depends on the earlier API and update surface."
+    ]
+  },
+  {
+    "id": 53,
+    "package": "callout",
+    "symbol": "BaseCalloutPlugin",
+    "file": "packages/callout/src/lib/BaseCalloutPlugin.ts",
+    "line": 9,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the single flat plugin update.",
+    "evidence": "insertCallout mutates through the provided transaction and is already exposed as update.insert at BaseCalloutPlugin.ts:35-37.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 54,
+    "package": "callout",
+    "symbol": "CalloutPlugin",
+    "file": "packages/callout/src/react/CalloutPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "CalloutPlugin is a direct React adapter over BaseCalloutPlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 55,
+    "package": "code-block",
+    "symbol": "BaseCodeLinePlugin",
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "line": 85,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the structural code-line descriptor capability-free.",
+    "evidence": "BaseCodeLinePlugin declares only schema, type, and HTML codec behavior at BaseCodeBlockPlugin.ts:85-108.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 56,
+    "package": "code-block",
+    "symbol": "BaseCodeBlockPlugin",
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "line": 120,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "resetBlock", "selectAll", "tab", "toggle", "untab"],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": ["entry", "indentDepth", "isAtStart", "isEmpty"],
+      "selectors": [],
+      "update": [
+        "format",
+        "insert",
+        "resetBlock",
+        "selectAll",
+        "tab",
+        "toggle",
+        "untab"
+      ],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Keep flat transaction updates and editor-wide interception, but absorb the package's public code-block queries and formatter into read and update.",
+    "evidence": "getCodeLineEntry, getIndentDepth, isSelectionAtCodeBlockStart, isCodeBlockEmpty, and formatCodeBlock are exported editor-bound feature helpers outside the descriptor while its existing methods already use update.",
+    "extendJustified": true,
+    "gaps": [
+      "Fold insertEmptyCodeBlock into update.insert semantics instead of publishing a second insertion verb.",
+      "Move formatCodeBlock to update.format and keep setCodeBlockContent, insertCodeLine, indent, outdent, deleteStartSpace, and unwrap mechanics internal.",
+      "rules.match should consume the earlier read.isEmpty contribution from the existing dependency-justified extend stage."
+    ]
+  },
+  {
+    "id": 57,
+    "package": "code-block",
+    "symbol": "BaseCodeHighlightPlugin",
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "line": 559,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.content", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.content", "onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Keep syntax-cache maintenance as editor-wide extension lifecycle behavior.",
+    "evidence": "The content correction and transaction listener refresh WeakMap-backed decorations rather than expose callable plugin capabilities.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 58,
+    "package": "code-block",
+    "symbol": "CodeLinePlugin",
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "line": 10,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited structural descriptor capability-free.",
+    "evidence": "CodeLinePlugin directly adapts BaseCodeLinePlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 59,
+    "package": "code-block",
+    "symbol": "CodeBlockPlugin",
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "line": 13,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "resetBlock", "selectAll", "tab", "toggle", "untab"],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": ["entry", "indentDepth", "isAtStart", "isEmpty"],
+      "selectors": [],
+      "update": [
+        "format",
+        "insert",
+        "resetBlock",
+        "selectAll",
+        "tab",
+        "toggle",
+        "untab"
+      ],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the Base owner's added read queries and update.format surface on the React adapter.",
+    "evidence": "CodeBlockPlugin changes only the React dependency descriptor and inherits the complete Base owner capability surface.",
+    "extendJustified": null,
+    "gaps": [
+      "The standalone query and formatter adoption must be implemented at BaseCodeBlockPlugin."
+    ]
+  },
+  {
+    "id": 60,
+    "package": "code-block",
+    "symbol": "CodeHighlightPlugin",
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "line": 18,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "corrections.content",
+        "onTransactionChange",
+        "react.onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "corrections.content",
+        "onTransactionChange",
+        "react.onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep Base cache maintenance plus the React decoration-refresh listener as extensions.",
+    "evidence": "The adapter inherits BaseCodeHighlightPlugin lifecycle behavior and adds only the keyed React onTransactionChange listener at CodeBlockPlugin.tsx:20-33.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 61,
+    "package": "code-drawing",
+    "symbol": "BaseCodeDrawingPlugin",
+    "file": "packages/code-drawing/src/lib/BaseCodeDrawingPlugin.ts",
+    "line": 19,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the flat code-drawing update.",
+    "evidence": "insert delegates to insertCodeDrawing with the current transaction at BaseCodeDrawingPlugin.ts:53-57.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 62,
+    "package": "code-drawing",
+    "symbol": "CodeDrawingPlugin",
+    "file": "packages/code-drawing/src/react/CodeDrawingPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "CodeDrawingPlugin directly adapts BaseCodeDrawingPlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 63,
+    "package": "comment",
+    "symbol": "BaseCommentPlugin",
+    "file": "packages/comment/src/lib/BaseCommentPlugin.ts",
+    "line": 60,
+    "current": {
+      "api": ["has", "node", "nodeId", "nodes"],
+      "read": [],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": ["nodeId"],
+      "read": ["has", "node", "nodes"],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "P1",
+    "verdict": "Move snapshot-backed comment searches to read and retain only the leaf decoder in api.",
+    "evidence": "has, node, and nodes call editor.read while nodeId derives only from its leaf argument at BaseCommentPlugin.ts:62-111.",
+    "extendJustified": true,
+    "gaps": [
+      "The update stage must depend on the earlier read surface after the move because removeMark and unsetMark consume node and nodes."
+    ]
+  },
+  {
+    "id": 64,
+    "package": "comment",
+    "symbol": "CommentPlugin",
+    "file": "packages/comment/src/react/CommentPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": ["has", "node", "nodeId", "nodes"],
+      "read": [],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": ["nodeId"],
+      "read": ["has", "node", "nodes"],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the BaseCommentPlugin read split on the React adapter.",
+    "evidence": "CommentPlugin is a direct adapter and exposes the complete BaseCommentPlugin capability surface.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 83,
+    "package": "csv",
+    "symbol": "CsvPlugin",
+    "file": "packages/csv/src/lib/CsvPlugin.ts",
+    "line": 30,
+    "current": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep deserialize as a plugin service API.",
+    "evidence": "deserialize converts caller-provided CSV through editor schema and plugin options without reading or mutating the current document at CsvPlugin.ts:54-55.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 84,
+    "package": "date",
+    "symbol": "BaseDatePlugin",
+    "file": "packages/date/src/lib/BaseDatePlugin.ts",
+    "line": 9,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the flat date update.",
+    "evidence": "insertDate receives and mutates the current transaction at BaseDatePlugin.ts:20-21.",
+    "extendJustified": null,
+    "gaps": [
+      "isPointNextToNode is generic over an arbitrary nodeType and should remain outside DatePlugin.read or move to Core."
+    ]
+  },
+  {
+    "id": 85,
+    "package": "date",
+    "symbol": "DatePlugin",
+    "file": "packages/date/src/react/DatePlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "DatePlugin directly adapts BaseDatePlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 86,
+    "package": "dnd",
+    "symbol": "DndPlugin",
+    "file": "packages/dnd/src/DndPlugin.tsx",
+    "line": 54,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep drag state private to options, handlers, and hooks rather than inventing a callable capability surface.",
+    "evidence": "DndPlugin manages ephemeral UI state only through option access in handlers and useHooks at DndPlugin.tsx:54-166.",
+    "extendJustified": null,
+    "gaps": [
+      "getBlocksWithId and block-selection helpers are cross-domain editor utilities, while getDropPath, onHoverNode, and onDropNode are React-DnD boundary helpers, so none belongs on DndPlugin."
+    ]
+  },
+  {
+    "id": 87,
+    "package": "docx",
+    "symbol": "DocxPlugin",
+    "file": "packages/docx/src/lib/DocxPlugin.ts",
+    "line": 55,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep DOCX paste cleanup inside parser behavior with no public capability surface.",
+    "evidence": "DocxPlugin contributes only an HTML transformData parser at DocxPlugin.ts:55-63.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 88,
+    "package": "docx-io",
+    "symbol": "DocxIOPlugin",
+    "file": "packages/docx-io/src/lib/DocxIOPlugin.tsx",
+    "line": 606,
+    "current": {
+      "api": [
+        "docxExport.download",
+        "docxExport.exportAndDownload",
+        "docxExport.exportToBlob"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["import", "toBlob"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Rename the feature owner to DocxIOPlugin, expose explicit-input api.import and api.toBlob services, and use standalone downloadDocx for browser downloading.",
+    "evidence": "Import and export are asynchronous conversion services; toBlob can render components and fetch remote images, so it must accept an explicit value or snapshot rather than pretending to be a replayable read.",
+    "extendJustified": null,
+    "gaps": [
+      "Feature-scoped methods are incorrectly published on root editor.api through extension.",
+      "download duplicates the public standalone downloadDocx helper and exportAndDownload combines a snapshot read with a generic browser side effect.",
+      "The current DocxExportPlugin name and docxExport key are too narrow once the existing importDocx service is colocated as api.import.",
+      "api.toBlob must require an explicit value or snapshot; callers capture current children through Core read before invoking the asynchronous converter."
+    ]
+  },
+  {
+    "id": 89,
+    "package": "emoji",
+    "symbol": "BaseEmojiInputPlugin",
+    "file": "packages/emoji/src/lib/BaseEmojiPlugin.ts",
+    "line": 29,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the transient emoji input descriptor capability-free.",
+    "evidence": "BaseEmojiInputPlugin owns only inline schema and edit-only behavior at BaseEmojiPlugin.ts:29-43.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 90,
+    "package": "emoji",
+    "symbol": "BaseEmojiPlugin",
+    "file": "packages/emoji/src/lib/BaseEmojiPlugin.ts",
+    "line": 56,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Keep trigger interception as extension and absorb standalone insertEmoji as update.insert.",
+    "evidence": "insertEmoji reads BaseEmojiPlugin options and mutates the document through editor.update while withTriggerCombobox remains an editor-wide insertText wrapper.",
+    "extendJustified": null,
+    "gaps": [
+      "Inline insertEmoji into update.insert so callers no longer pass editor to a package-owned transform."
+    ]
+  },
+  {
+    "id": 91,
+    "package": "emoji",
+    "symbol": "EmojiInputPlugin",
+    "file": "packages/emoji/src/react/EmojiPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited emoji-input descriptor capability-free.",
+    "evidence": "EmojiInputPlugin directly adapts BaseEmojiInputPlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 92,
+    "package": "emoji",
+    "symbol": "EmojiPlugin",
+    "file": "packages/emoji/src/react/EmojiPlugin.tsx",
+    "line": 7,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror BaseEmojiPlugin update.insert while retaining the inherited trigger command extension.",
+    "evidence": "EmojiPlugin changes only the React dependency and inherits the complete BaseEmojiPlugin capability surface.",
+    "extendJustified": null,
+    "gaps": [
+      "The standalone insertEmoji adoption must be implemented at BaseEmojiPlugin."
+    ]
+  },
+  {
+    "id": 93,
+    "package": "excalidraw",
+    "symbol": "BaseExcalidrawPlugin",
+    "file": "packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts",
+    "line": 23,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the flat Excalidraw update.",
+    "evidence": "insert delegates to insertExcalidraw with the active transaction at BaseExcalidrawPlugin.ts:46-50.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 94,
+    "package": "excalidraw",
+    "symbol": "ExcalidrawPlugin",
+    "file": "packages/excalidraw/src/react/ExcalidrawPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "ExcalidrawPlugin directly adapts BaseExcalidrawPlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 95,
+    "package": "find-replace",
+    "symbol": "FindReplacePlugin",
+    "file": "packages/find-replace/src/lib/FindReplacePlugin.ts",
+    "line": 18,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep search calculation private to decorate rather than duplicate it as public read API.",
+    "evidence": "FindReplacePlugin computes decoration ranges only for the decorate lifecycle at FindReplacePlugin.ts:25-121.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 96,
+    "package": "footnote",
+    "symbol": "BaseFootnoteDefinitionPlugin",
+    "file": "packages/footnote/src/lib/BaseFootnoteDefinitionPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the definition descriptor structural and capability-free.",
+    "evidence": "BaseFootnoteDefinitionPlugin declares only its block schema at BaseFootnoteDefinitionPlugin.ts:6-16.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 97,
+    "package": "footnote",
+    "symbol": "BaseFootnoteInputPlugin",
+    "file": "packages/footnote/src/lib/BaseFootnoteInputPlugin.ts",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the transient input descriptor capability-free.",
+    "evidence": "BaseFootnoteInputPlugin owns only inline schema and edit-only behavior at BaseFootnoteInputPlugin.ts:6-18.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 98,
+    "package": "footnote",
+    "symbol": "BaseFootnotePlugin",
+    "file": "packages/footnote/src/lib/BaseFootnotePlugin.ts",
+    "line": 106,
+    "current": {
+      "api": [
+        "footnote.definition",
+        "footnote.definitions",
+        "footnote.definitionText",
+        "footnote.duplicateDefinitions",
+        "footnote.duplicateIdentifiers",
+        "footnote.hasDuplicateDefinitions",
+        "footnote.identifiers",
+        "footnote.isDuplicateDefinition",
+        "footnote.isResolved",
+        "footnote.nextId",
+        "footnote.references"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "footnote.createDefinition",
+        "footnote.focusDefinition",
+        "footnote.focusReference",
+        "footnote.normalizeDuplicateDefinition",
+        "insert.footnote"
+      ],
+      "extension": ["commands.insertText", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [
+        "definition",
+        "definitions",
+        "definitionText",
+        "duplicateDefinitions",
+        "duplicateIdentifiers",
+        "hasDuplicateDefinitions",
+        "identifiers",
+        "isDuplicateDefinition",
+        "isResolved",
+        "nextId",
+        "references"
+      ],
+      "selectors": [],
+      "update": [
+        "createDefinition",
+        "focusDefinition",
+        "focusReference",
+        "insert",
+        "normalizeDuplicateDefinition"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Use a footnote feature plugin key with footnoteReference only as its serialized type, compute flat reads directly from the supplied active state, keep mutations in update, and retain only trigger middleware in extension.",
+    "evidence": "The current editor-keyed registry allocates and releases anchors, mutates during queries, and invalidates only after transaction change; it cannot back committed and uncommitted snapshot reads.",
+    "extendJustified": null,
+    "gaps": [
+      "Feature-scoped reads and updates are incorrectly published as root editor groups through extension.",
+      "footnote.* and insert.footnote repeat the owning plugin domain and lengthen every call.",
+      "The owning descriptor should target key footnote and explicit type footnoteReference so feature identity is not coupled to the serialized node type.",
+      "Rename the owner BaseFootnotePlugin and make read.definitions accept an optional identifier so it absorbs both exported definition-list helpers.",
+      "Delete the mutable registry and onTransactionChange invalidation, or replace them with an immutable cache keyed by the supplied state revision; no read may allocate anchors or mutate editor-keyed state."
+    ]
+  },
+  {
+    "id": 99,
+    "package": "footnote",
+    "symbol": "FootnoteDefinitionPlugin",
+    "file": "packages/footnote/src/react/FootnoteDefinitionPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited definition descriptor capability-free.",
+    "evidence": "FootnoteDefinitionPlugin directly adapts BaseFootnoteDefinitionPlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 100,
+    "package": "footnote",
+    "symbol": "FootnoteInputPlugin",
+    "file": "packages/footnote/src/react/FootnoteInputPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited transient-input descriptor capability-free.",
+    "evidence": "FootnoteInputPlugin directly adapts BaseFootnoteInputPlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 101,
+    "package": "footnote",
+    "symbol": "FootnotePlugin",
+    "file": "packages/footnote/src/react/FootnotePlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [
+        "footnote.definition",
+        "footnote.definitions",
+        "footnote.definitionText",
+        "footnote.duplicateDefinitions",
+        "footnote.duplicateIdentifiers",
+        "footnote.hasDuplicateDefinitions",
+        "footnote.identifiers",
+        "footnote.isDuplicateDefinition",
+        "footnote.isResolved",
+        "footnote.nextId",
+        "footnote.references"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "footnote.createDefinition",
+        "footnote.focusDefinition",
+        "footnote.focusReference",
+        "footnote.normalizeDuplicateDefinition",
+        "insert.footnote"
+      ],
+      "extension": ["commands.insertText", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [
+        "definition",
+        "definitions",
+        "definitionText",
+        "duplicateDefinitions",
+        "duplicateIdentifiers",
+        "hasDuplicateDefinitions",
+        "identifiers",
+        "isDuplicateDefinition",
+        "isResolved",
+        "nextId",
+        "references"
+      ],
+      "selectors": [],
+      "update": [
+        "createDefinition",
+        "focusDefinition",
+        "focusReference",
+        "insert",
+        "normalizeDuplicateDefinition"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the footnote feature key with registry-free flat reads and scoped updates while retaining footnoteReference only as the rendered serialized type.",
+    "evidence": "FootnoteReferencePlugin changes only the React input dependency and must inherit the Base owner's state-native read implementation rather than editor-keyed mutable query state.",
+    "extendJustified": null,
+    "gaps": [
+      "Rename the adapter FootnotePlugin; the root publication, feature-key coupling, definitions query consolidation, and registry removal must be repaired at the Base owner."
+    ]
+  }
+]

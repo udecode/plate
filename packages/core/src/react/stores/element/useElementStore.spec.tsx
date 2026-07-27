@@ -23,7 +23,7 @@ describe('ElementProvider', () => {
     const editor = createPlateEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logger: { warn: () => {} } as any,
             throwErrors: false,
           },

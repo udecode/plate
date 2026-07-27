@@ -98,7 +98,7 @@ const editor = createPlateEditor({
     H3Plugin.configure({ component: H3Element }),
     TocPlugin.configure({
       component: TocElement,
-      options: {
+      initialState: {
         topOffset: 80,
         isScroll: true,
       },
@@ -108,8 +108,8 @@ const editor = createPlateEditor({
 ```
 
 - `.configure({ component })`: 指定渲染目录元素的 [`TocElement`](/docs/components/toc-node)
-- `options.topOffset`: 设置滚动至标题时的顶部偏移量
-- `options.isScroll`: 启用滚动至标题的行为
+- `initialState.topOffset`: 设置滚动至标题时的顶部偏移量
+- `initialState.isScroll`: 启用滚动至标题的行为
 
 ### 添加工具栏按钮
 
@@ -167,7 +167,7 @@ function Layout() {
     滚动至标题时的顶部偏移量
     - **默认值:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(editor: BaseEditor) => Heading[]" optional>
+  <APIItem name="queryHeading" type="(state: EditorStateView) => Heading[]" optional>
     自定义标题查询函数
   </APIItem>
 </APIOptions>
@@ -179,7 +179,7 @@ function Layout() {
 
 插入目录元素。
 
-<API name="insertToc">
+<API name="editor.update.toc.insert">
 <APIOptions type="object<BaseEditor>">
     节点插入选项
 </APIOptions>

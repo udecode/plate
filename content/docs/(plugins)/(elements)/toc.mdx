@@ -99,7 +99,7 @@ const editor = createPlateEditor({
     H3Plugin.configure({ component: H3Element }),
     TocPlugin.configure({
       component: TocElement,
-      options: {
+      initialState: {
         topOffset: 80,
         isScroll: true,
       },
@@ -109,8 +109,8 @@ const editor = createPlateEditor({
 ```
 
 - `.configure({ component })`: Assigns [`TocElement`](/docs/components/toc-node) to render table of contents elements.
-- `options.topOffset`: Sets the top offset when scrolling to headings.
-- `options.isScroll`: Enables scrolling behavior to headings.
+- `initialState.topOffset`: Sets the top offset when scrolling to headings.
+- `initialState.isScroll`: Enables scrolling behavior to headings.
 
 ### Insert Toolbar Button
 
@@ -168,7 +168,7 @@ Plugin for generating table of contents.
     Top offset when scrolling to heading.
     - **Default:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(editor: BaseEditor) => Heading[]" optional>
+  <APIItem name="queryHeading" type="(state: EditorStateView) => Heading[]" optional>
     Custom function to query headings.
   </APIItem>
 </APIOptions>
@@ -176,11 +176,11 @@ Plugin for generating table of contents.
 
 ## Transforms
 
-### `tx.insertToc`
+### `editor.update.toc.insert`
 
 Insert table of contents element.
 
-<API name="insertToc">
+<API name="editor.update.toc.insert">
 <APIOptions type="object<BaseEditor>">
     Node insertion options.
 </APIOptions>

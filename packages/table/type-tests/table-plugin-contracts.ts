@@ -31,7 +31,7 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
   type _editorNotAny = AssertFalse<IsAny<typeof ctx.editor>>;
 
   const table = ctx.editor.plugin(TablePlugin);
-  const isSelectingCell = table.api.isSelectingCell();
+  const isSelectingCell = table.read.isSelectingCell();
   const tableNode = table.api.create({ colCount: 2, rowCount: 2 });
 
   void (isSelectingCell satisfies boolean);
@@ -47,7 +47,7 @@ const extendedTablePlugin = TablePlugin.extend((ctx) => {
   ctx.editor.update.table.removeRow();
 
   return {
-    options: {
+    initialState: {
       disableMerge: true,
     },
   };
@@ -61,10 +61,11 @@ const tableDependentPlugin = createBasePlugin({
 }).extend(({ editor }) => ({
   api: {
     createTable: () => {
-      const cell = editor.api.table.createCell({ header: true });
-      const row = editor.api.table.createRow({ colCount: 2, header: true });
-      const selection = editor.api.table.getSelection();
-      const table = editor.api.table.create({ colCount: 2, rowCount: 2 });
+      const api = editor.plugin(BaseTablePlugin).api;
+      const cell = api.createCell({ header: true });
+      const row = api.createRow({ colCount: 2, header: true });
+      const selection = editor.read.table.getSelection();
+      const table = api.create({ colCount: 2, rowCount: 2 });
 
       return { cell, row, selection, table };
     },
@@ -75,17 +76,17 @@ const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
   api: {
     createHeaderRow: () => api.createRow({ colCount: 2, header: true }),
   },
-})).extend(({ api, plugin }) => ({
+})).extend(({ plugin }) => ({
   update: ({ tx }) => ({
     hideLeftBorder: () => {
       tx[plugin.key].setBorderSize(0, { border: 'left' });
 
       const selection = tx.selection();
-      const tableSelection = api.getSelection(undefined, tx);
+      const tableSelection = tx.table.getSelection();
 
       return {
         cellSelection: selection
-          ? api.createCellSelection(selection, tx)
+          ? tx.table.createCellSelection(selection)
           : null,
         tableSelection,
       };

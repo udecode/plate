@@ -4,4 +4,4 @@
 
 export * from './FootnoteDefinitionPlugin';
 export * from './FootnoteInputPlugin';
-export * from './FootnoteReferencePlugin';
+export * from './FootnotePlugin';

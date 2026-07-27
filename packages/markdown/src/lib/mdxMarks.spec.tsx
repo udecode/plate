@@ -30,7 +30,7 @@ describe('mdx mark package surfaces', () => {
         {
           children: [
             { text: 'H' },
-            { subscript: true, text: '2' },
+            { script: 'sub', text: '2' },
             { text: 'O' },
           ],
           type: 'p',
@@ -43,7 +43,7 @@ describe('mdx mark package surfaces', () => {
       input: 'E=mc<sup>2</sup>',
       output: [
         {
-          children: [{ text: 'E=mc' }, { superscript: true, text: '2' }],
+          children: [{ text: 'E=mc' }, { script: 'sup', text: '2' }],
           type: 'p',
         },
       ],

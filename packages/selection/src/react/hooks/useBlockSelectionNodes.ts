@@ -3,13 +3,13 @@ import { useMemo } from 'react';
 import { getFragmentProp, type GetFragmentPropOptions } from '@platejs/core';
 import { type Element, ElementApi } from '@platejs/plite';
 
-import { useEditor, usePluginOption } from '@platejs/core/react';
+import { useEditor, usePluginStore } from '@platejs/core/react';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 export function useBlockSelectionNodes() {
   const editor = useEditor();
-  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
+  const selectedIds = usePluginStore(BlockSelectionPlugin, 'selectedIds');
 
   return useMemo(
     () =>

@@ -2,8 +2,10 @@ import { act, renderHook } from '@testing-library/react';
 
 const useEditorMock = mock();
 const useEmojiPickerStateMock = mock();
+const coreReact = await import('@platejs/core/react');
 
 mock.module('@platejs/core/react', () => ({
+  ...coreReact,
   useEditor: useEditorMock,
 }));
 
@@ -48,9 +50,8 @@ describe('useEmojiPicker', () => {
     const insert = mock();
     const editor = {
       plugin: () => ({
-        getOptions: () => ({ createEmojiNode: (emoji: unknown) => emoji }),
+        update: { insert },
       }),
-      update: { nodes: { insert } },
     };
 
     useEditorMock.mockReturnValue(editor);

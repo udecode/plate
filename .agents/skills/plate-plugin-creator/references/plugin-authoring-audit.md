@@ -9,8 +9,8 @@ type tests, and this skill outrank package precedent.
 - Base-only plugin
 - Direct React plugin
 - Owner-first production colocation
-- React component-family colocation
-- Scoped API and options
+- React family colocation
+- Scoped capabilities and state
 - Rejected precedent
 
 ## Semantic Base And Thin Wrapper
@@ -59,8 +59,8 @@ topology without checking current owner law.
 
 Copy:
 
-- one semantic plugin file owns related queries, transforms, options, APIs,
-  transaction groups, normalizers, and corrections;
+- one semantic plugin file owns related queries, transforms, initial state,
+  selectors, APIs, reads, updates, normalizers, and corrections;
 - file size is not a split signal;
 - callers use scoped plugin APIs/updates instead of parallel helper exports.
 
@@ -68,38 +68,47 @@ These are topology examples, not permission to copy every local declaration.
 Keep new one-use constants, callbacks, and contract fragments inline when
 builder inference can own them.
 
-## React Component-Family Colocation
+## React Family Colocation
 
-- [FloatingMedia.tsx](../../../../packages/media/src/react/media/FloatingMedia.tsx)
+- [FloatingLink.tsx](../../../../packages/link/src/react/FloatingLink.tsx)
+- [useFloatingLink.ts](../../../../packages/link/src/react/useFloatingLink.ts)
 
 Copy:
 
-- store, state hooks, behavior hooks, primitives, and family namespace share
-  one durable component-family file;
-- family-only hooks and state do not earn `hooks/` or store files merely
-  because they are exported;
+- one component-family file owns the main component, subcomponents, variants,
+  render helpers, and component-local constants;
+- one hook-family file owns every related public and private hook, including
+  subcomponent-only hooks;
+- providers and stores remain separate only for independently owned state or
+  lifecycle;
 - app wrappers composing that family do not establish another source owner.
 
 Do not copy an editor-accepting helper signature from a family file when plugin
 builder context or a scoped API can own the behavior.
 
-## Scoped API And Options
+## Scoped Capabilities And State
 
 - [MarkdownPlugin.ts](../../../../packages/markdown/src/lib/MarkdownPlugin.ts)
 - [BaseTablePlugin.ts](../../../../packages/table/src/lib/BaseTablePlugin.ts)
 
 Copy:
 
-- plugin values use `options`;
-- repeated `.extend()` contributions publish one owner implementation through
-  `api`, `read`, `selectors`, `update`, `extension`, or `codecs`;
+- plugin defaults use `initialState`, live values use the scoped `store`, and
+  pure store projections use `selectors`;
+- document queries use pure snapshot-bound `read`, document mutation uses
+  transaction-bound `update`, non-snapshot plugin services use `api`, and only
+  genuine editor-wide Plite substrate uses `extension`;
+- independent contributions stay in the constructor; repeated `.extend()`
+  stages require imported/prebuilt adaptation, a constructor-inaccessible
+  shared factory, or a real earlier-capability type dependency;
 - codec owners destructure `defineCodecs` inline, use
   `defineCodecs(map)` for self/product maps, and use
   `defineCodecs(TargetPlugin, map)` for foreign maps without manual targets;
 - inline extension objects stay plain, while extracted reusable extension
   factories return the callback context's `defineEditorExtension(...)`;
 - concrete editors expose `editor.api.<pluginKey>`;
-- generic package code can use `editor.plugin(Plugin).api` / `.update`;
+- generic package code can use `editor.plugin(Plugin).api`, `.read`, `.update`,
+  and `.store`;
 - optional generic integrations check `.installed` before any other portal
   access;
 - copied registry UI stays generic and never imports a host editor type;
@@ -126,9 +135,9 @@ Reject:
 - empty `PluginConfig` aliases;
 - manual callback/local/test annotations hiding weak inference;
 - editor-locked helpers created only to carry `editor`, resolved `type`,
-  options, or `tx`;
+  `store`, resolved plugin state, or `tx`;
 - top-level Plate plugin `config`;
-- root editor option helpers or arbitrary plugin fields;
+- deleted option accessors or arbitrary plugin fields on the editor root;
 - duplicate plugin API and editor-extension API implementations;
 - redundant portal nesting such as `table.update.insert.table`;
 - direct public `render.node` assignment instead of root `component`;

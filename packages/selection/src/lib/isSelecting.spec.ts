@@ -1,7 +1,6 @@
 import { createBaseEditor } from '@platejs/core';
 
 import { BlockSelectionPlugin } from '../react/BlockSelectionPlugin';
-import { isSelecting } from './isSelecting';
 
 describe('isSelecting', () => {
   it('returns true when the editor selection is expanded', () => {
@@ -15,7 +14,7 @@ describe('isSelecting', () => {
       initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
     });
 
-    expect(isSelecting(editor)).toBe(true);
+    expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(true);
   });
 
   it('returns true when block selection says some blocks are being selected', () => {
@@ -26,9 +25,9 @@ describe('isSelecting', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
 
-    expect(isSelecting(editor)).toBe(true);
+    expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(true);
   });
 
   it('returns false when neither selection state is active', () => {
@@ -37,6 +36,6 @@ describe('isSelecting', () => {
       initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
     });
 
-    expect(isSelecting(editor)).toBe(false);
+    expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(false);
   });
 });

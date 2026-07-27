@@ -56,7 +56,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -120,7 +120,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -182,7 +182,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -249,7 +249,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -319,7 +319,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -389,7 +389,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -459,7 +459,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });
@@ -529,7 +529,7 @@ describe('table grid slow contracts', () => {
           initialValue: input.children,
         });
 
-        const table = editor.plugin(BaseTablePlugin).api.getGridAbove()[0][0];
+        const table = editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0];
 
         expect(getTableShape(table)).toEqual(getTableShape(output));
       });

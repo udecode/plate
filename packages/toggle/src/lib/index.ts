@@ -3,4 +3,3 @@
  */
 
 export * from './BaseTogglePlugin';
-export * from './queries/index';

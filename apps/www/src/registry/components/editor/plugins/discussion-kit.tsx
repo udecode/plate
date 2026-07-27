@@ -166,15 +166,15 @@ const usersData: Record<
 // This plugin is purely UI. It's only used to store the discussions and users data
 export const discussionPlugin = createPlatePlugin({
   key: 'discussion',
-  options: {
+  initialState: {
     currentUserId: 'alice',
     discussions: discussionsData,
     users: usersData,
   },
-  selectors: ({ getOption }) => ({
-    currentUser: () => getOption('users')[getOption('currentUserId')],
-    user: (id: string) => getOption('users')[id],
-  }),
+  selectors: {
+    currentUser: (state) => state.users[state.currentUserId],
+    user: (state, id: string) => state.users[id],
+  },
 }).configure({
   render: { aboveNodes: BlockDiscussion },
 });

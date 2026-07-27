@@ -20,16 +20,17 @@ contribution:
 
 | Field | Owns |
 | --- | --- |
+| `initialState` | The seed for this plugin's editor-local store. |
 | `api` | Immutable plugin-scoped services and queries. |
 | `read` | Snapshot or transaction-local reads. |
-| `selectors` | Derived option values, including React subscriptions. |
+| `selectors` | Pure state-first derivations, including React subscriptions. |
 | `update` | Transaction-bound plugin mutations. |
 | `extension` | Plite runtime capabilities, including editor-wide groups. |
 | `codecs` | Plugin-owned format decoding and encoding. |
 
 Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
 `editor`, `plugin`, `api`, `read`, `defineCodecs`,
-`defineEditorExtension`, `getOption`, `getOptions`, and the active `tx` inside
+`defineEditorExtension`, `store`, and the active `tx` inside
 update contributions.
 
 ## Use Constructor Context
@@ -39,9 +40,9 @@ Put independent fields and their context callbacks in the constructor. Use
 earlier stage.
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
-import { createPlatePlugin, usePluginOption } from 'platejs/react';
+import { createPlatePlugin, usePluginStore } from 'platejs/react';
 
-type CounterOptions = {
+type CounterState = {
   value: number;
 };
 
@@ -53,33 +54,28 @@ type CounterUpdate = {
   insertLabel: () => void;
 };
 
-type CounterSelectors = {
-  doubled: (factor: number) => number;
-  isEven: () => boolean;
-};
-
 export const CounterPlugin = createPlatePlugin({
-  api: ({ getOption }): CounterApi => ({
-    isEmpty: () => getOption('value') === 0,
+  api: ({ store }): CounterApi => ({
+    isEmpty: () => store.get('value') === 0,
   }),
-  key: 'counter',
-  options: {
+  initialState: {
     value: 0,
+  } as CounterState,
+  key: 'counter',
+  selectors: {
+    doubled: (state, factor: number) => state.value * factor,
+    isEven: (state) => state.value % 2 === 0,
   },
-  selectors: ({ getOptions }): CounterSelectors => ({
-    doubled: (factor) => getOptions().value * factor,
-    isEven: () => getOptions().value % 2 === 0,
-  }),
-  update: ({ getOption, tx }): CounterUpdate => ({
+  update: ({ store, tx }): CounterUpdate => ({
     insertLabel: () => {
-      tx.text.insert(`Count: ${getOption('value')}`);
+      tx.text.insert(`Count: ${store.get('value')}`);
     },
   }),
 });
 
 export function CounterValue() {
-  const doubled = usePluginOption(CounterPlugin, 'doubled', 2);
-  const isEven = usePluginOption(CounterPlugin, 'isEven');
+  const doubled = usePluginStore(CounterPlugin, 'doubled', 2);
+  const isEven = usePluginStore(CounterPlugin, 'isEven');
 
   return (
     <span>
@@ -161,7 +157,7 @@ const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
   context.defineEditorExtension({
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) => {
-        if (!context.getOption('enabled')) return false;
+        if (!context.store.get('enabled')) return false;
 
         return state.transaction(() => {});
       }),
@@ -170,8 +166,8 @@ const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
 
 export const TriggerPlugin = createBasePlugin<TriggerConfig>({
   extension: (context) => withTriggerExtension(context),
+  initialState: { enabled: true },
   key: 'trigger',
-  options: { enabled: true },
 });
 ```
 
@@ -244,7 +240,7 @@ fields already declared by the author.
 import { H1Plugin } from '@platejs/basic-nodes/react';
 
 export const AppH1Plugin = H1Plugin.configure({
-  options: {
+  initialState: {
     levels: [1, 2],
   },
   shortcuts: {
@@ -254,7 +250,7 @@ export const AppH1Plugin = H1Plugin.configure({
 ```
 
 Object configs use Plate's merge rules: objects merge deeply, arrays replace,
-and `options` shallow-merge. `.configure()` cannot publish a new capability and
+and `initialState` shallow-merges. `.configure()` cannot publish a new capability and
 must be the final call.
 
 ## Configure Related Plugins
@@ -264,8 +260,8 @@ descriptor beside the owner in the app or registry plugin array.
 
 ```ts
 const CellPlugin = createPlatePlugin({
+  initialState: { padding: 12 },
   key: 'cell',
-  options: { padding: 12 },
 });
 
 const GridPlugin = createPlatePlugin({
@@ -275,7 +271,7 @@ const GridPlugin = createPlatePlugin({
 
 export const AppGridPlugins = [
   GridPlugin,
-  CellPlugin.configure({ options: { padding: 8 } }),
+  CellPlugin.configure({ initialState: { padding: 8 } }),
 ];
 ```
 

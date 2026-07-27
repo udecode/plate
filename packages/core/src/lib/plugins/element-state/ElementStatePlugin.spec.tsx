@@ -17,20 +17,20 @@ describe('ElementStatePlugin', () => {
     });
 
     expect(
-      editor.api.isElementStateEmpty({
+      editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         type: 'p',
       })
     ).toBe(true);
     expect(
-      editor.api.isElementStateEmpty({
+      editor.plugin(ElementStatePlugin).api.isEmpty({
         blockId: 'a',
         children: [{ text: '' }],
         type: 'p',
       })
     ).toBe(true);
     expect(
-      editor.api.isElementStateEmpty({
+      editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         id: 'a',
         type: 'p',
@@ -44,7 +44,7 @@ describe('ElementStatePlugin', () => {
     });
 
     expect(
-      editor.api.isElementStateEmpty({
+      editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         listStyleType: 'disc',
         type: 'p',
@@ -73,14 +73,14 @@ describe('ElementStatePlugin', () => {
     });
 
     expect(
-      editor.api.isElementStateEmpty({
+      editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         ephemeral: 'runtime-only',
         type: 'p',
       })
     ).toBe(true);
     expect(
-      editor.api.isElementStateEmpty({
+      editor.plugin(ElementStatePlugin).api.isEmpty({
         children: [{ text: '' }],
         type: 'p',
         visible: 'document-state',

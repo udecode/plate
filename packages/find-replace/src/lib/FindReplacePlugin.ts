@@ -10,7 +10,7 @@ import {
 } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-export type FindReplacePluginOptions = {
+export type FindReplacePluginState = {
   /** Searching text to highlight */
   search?: string;
 };
@@ -21,9 +21,9 @@ export const FindReplacePlugin = createBasePlugin({
     mark: property.boolean({ default: false, omitDefault: true }),
   },
   type: NODES.searchHighlight,
-  options: { search: '' } satisfies FindReplacePluginOptions,
-  decorate: ({ editor, entry: [node, path], getOptions, type }) => {
-    const { search } = getOptions();
+  initialState: { search: '' } satisfies FindReplacePluginState,
+  decorate: ({ editor, entry: [node, path], store, type }) => {
+    const { search } = store.get();
 
     if (
       !(search && ElementApi.isElement(node) && editor.read.nodes.isBlock(node))

@@ -14,7 +14,7 @@ const createTableEditor = (input: TestEditor) =>
     nodeId: true,
     plugins: [
       TablePlugin.configure({
-        options: { disableMerge: true },
+        initialState: { disableMerge: true },
       }),
     ],
     selection: input.selection,

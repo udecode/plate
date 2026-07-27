@@ -53,7 +53,7 @@ const createEditor = ({
   selection: Selection;
   value: Value;
   inputRules?: ReturnType<typeof createAutolinkRules>;
-  options?: Partial<BaseLinkConfig['options']>;
+  options?: Partial<BaseLinkConfig['initialState']>;
   removeEmpty?: boolean;
 }) =>
   createBaseEditor({
@@ -61,7 +61,7 @@ const createEditor = ({
       BaseCodeBlockPlugin,
       BaseLinkPlugin.configure({
         inputRules: inputRules ?? createAutolinkRules(),
-        options,
+        initialState: options,
         rules:
           removeEmpty === undefined
             ? undefined

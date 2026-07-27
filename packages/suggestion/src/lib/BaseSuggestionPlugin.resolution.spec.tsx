@@ -9,7 +9,7 @@ import { jsxt } from '@platejs/test-utils';
   jsxt;
 
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'testId',
     },
   });
@@ -231,7 +231,7 @@ import { jsxt } from '@platejs/test-utils';
         ],
       });
 
-      editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+      editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
       editor.update.text.deleteBackward({ unit: 'character' });
 
@@ -378,7 +378,7 @@ import { jsxt } from '@platejs/test-utils';
   jsxt;
 
   const suggestionPlugin = BaseSuggestionPlugin.configure({
-    options: {
+    initialState: {
       currentUserId: 'testId',
     },
   });

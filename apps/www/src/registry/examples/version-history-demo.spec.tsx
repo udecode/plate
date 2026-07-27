@@ -24,7 +24,7 @@ describe('createVersionSnapshot', () => {
     expect(snapshotA[0]).not.toBe(value[0]);
     expect(snapshotA[0]).not.toBe(snapshotB[0]);
 
-    snapshotA[0].children[2] = { text: '. Changed once.' };
+    Reflect.set(snapshotA[0].children, 2, { text: '. Changed once.' });
 
     expect(value[0].children[2]).toEqual({ text: '. Try removing it.' });
     expect(snapshotB[0].children[2]).toEqual({ text: '. Try removing it.' });

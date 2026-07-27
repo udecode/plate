@@ -3,6 +3,7 @@
  */
 
 export * from './ExitBreakPlugin';
-export * from './normalize-types/index';
-export * from './single-block/index';
-export * from './trailing-block/index';
+export * from './NormalizeTypesPlugin';
+export * from './SingleBlockPlugin';
+export * from './SingleLinePlugin';
+export * from './TrailingBlockPlugin';

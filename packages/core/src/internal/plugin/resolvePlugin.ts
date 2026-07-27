@@ -20,6 +20,7 @@ import type {
 import { normalizePlateEditorExtensions } from '../../lib/plugin/createBasePlugin';
 import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
 import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
+import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import {
   isNominalPluginDescriptor,
   mergePlugins,
@@ -121,7 +122,10 @@ const applyUnifiedExtension = <P extends AnyBasePlugin>(
     update,
     ...configuration
   } = extension;
-  const extended = mergePlugins(plugin, configuration);
+  const extended = mergePlugins(
+    plugin,
+    selectors === undefined ? configuration : { ...configuration, selectors }
+  );
 
   if (codecs !== undefined) {
     if (!codecs || typeof codecs !== 'object' || Array.isArray(codecs)) {
@@ -198,12 +202,6 @@ const applyUnifiedExtension = <P extends AnyBasePlugin>(
     extended.__apiExtensions = [
       ...extended.__apiExtensions,
       { extension: () => api, isPluginSpecific: true },
-    ];
-  }
-  if (selectors !== undefined) {
-    extended.__selectorExtensions = [
-      ...extended.__selectorExtensions,
-      () => selectors,
     ];
   }
   if (typeof read === 'function') {
@@ -338,16 +336,16 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
 
 export const validatePlugin = <
   K extends string = any,
-  O = {},
+  StoreState = {},
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
 >(
   editor: BaseEditor,
-  plugin: BasePlugin<PluginConfig<K, O, A, Tx, S>>
+  plugin: BasePlugin<PluginConfig<K, StoreState, A, Tx, S>>
 ) => {
   if (!plugin.__extensions) {
-    editor.api.debug.error(
+    getEditorPlugin(editor, DebugPlugin).api.error(
       `Invalid plugin '${plugin.key}', you should use createBasePlugin.`,
       'USE_CREATE_PLUGIN'
     );

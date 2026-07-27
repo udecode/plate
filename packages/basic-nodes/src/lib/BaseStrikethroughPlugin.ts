@@ -1,6 +1,19 @@
-import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import {
+  createBasePlugin,
+  createRuleFactory,
+  someHtmlElement,
+} from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+
+export const StrikethroughRules = {
+  markdown: createRuleFactory({
+    type: 'mark',
+    end: '~',
+    start: '~~',
+    trigger: '~',
+  }),
+};
 
 /** Enables support for strikethrough formatting. */
 export const BaseStrikethroughPlugin = createBasePlugin({

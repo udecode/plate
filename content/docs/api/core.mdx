@@ -304,20 +304,8 @@ Get editor and plugin context.
   <APIItem name="plugin" type="PlatePlugin">
       The plugin instance.
   </APIItem>
-  <APIItem name="getOption" type="function">
-      Function to get a specific option value.
-  </APIItem>
-  <APIItem name="getOptions" type="function">
-      Function to get all options for the plugin.
-  </APIItem>
-  <APIItem name="setOption" type="function">
-      Function to set a specific option value.
-  </APIItem>
-  <APIItem name="setOptions" type="function">
-      Function to set multiple options.
-  </APIItem>
-  <APIItem name="store" type="PlateStore">
-      The Plate store for the editor.
+  <APIItem name="store" type="PluginStore">
+      The current plugin's mutable editor-local store.
   </APIItem>
 </APIReturns>
 </API>
@@ -574,83 +562,75 @@ is absent. Pass a plugin descriptor to select an owning element provider.
 Use `useOptionalPath(Plugin)` when the provider is intentionally optional. It
 returns `null` instead of manufacturing a path for an arbitrary node object.
 
-### `usePluginOption`
+### `usePluginStore`
 
-Hook to access plugin options from the plugin store. For usage inside `<Plate>`.
+Subscribe to a plugin state field, named selector, or selector callback inside
+`<Plate>`.
 
-<API name="usePluginOption">
+Pass the plugin descriptor itself—not a `{ key }` object. The descriptor carries
+the state fields, selector arguments, and return types, so no generic arguments
+are needed.
+
+<API name="usePluginStore">
 <APIParameters>
   <APIItem name="plugin" type="PlatePlugin">
-    The plugin to get options from.
+    The plugin whose editor-local store should be observed.
   </APIItem>
-  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
-    The key of the option or selector to access.
+  <APIItem name="keyOrSelector" type="keyof InferPluginStoreState<C> | keyof InferSelectors<C> | ((state) => T)">
+    A state key, named selector key, or selector callback.
   </APIItem>
   <APIItem name="...args" type="any[]" optional>
-    Additional arguments:
-    - For selectors: The selector parameters
-    - Last argument can be an equality function `(a: T, b: T) => boolean`
+    Arguments for a named selector. Selector callbacks instead accept
+    `{ id?, equalityFn? }` as the final options object.
   </APIItem>
 </APIParameters>
 
 <APIReturns type="T">
-  The value of the option or selector result:
-  - For 'state': Returns the entire state object
-  - For selector keys: Returns the selector's return value
-  - For option keys: Returns the option value
+  The selected field or derived value.
 </APIReturns>
 
 ```tsx
-// Access a simple option
-const value = usePluginOption(plugin, 'value');
-// Access a selector with parameters
-const doubleValue = usePluginOption(plugin, 'doubleValue', 2);
-// Access with equality function
-const value = usePluginOption(plugin, 'value', (a, b) => a === b);
-// Access entire state
-const state = usePluginOption(plugin, 'state');
+const value = usePluginStore(plugin, 'value');
+const doubleValue = usePluginStore(plugin, 'doubleValue', 2);
+const state = usePluginStore(plugin, (state) => state);
+const pair = usePluginStore(
+  plugin,
+  (state) => [state.value, state.label] as const,
+  { equalityFn: shallow }
+);
 ```
 
 </API>
 
-### `useEditorPluginOption`
+### `useEditorPluginStore`
 
-Hook to access plugin options from the plugin store. For usage outside `<Plate>`.
+Explicit-editor variant of `usePluginStore`.
 
-<API name="useEditorPluginOption">
+<API name="useEditorPluginStore">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
     The editor instance.
   </APIItem>
   <APIItem name="plugin" type="PlatePlugin">
-    The plugin to get options from.
+    The plugin whose store should be observed.
   </APIItem>
-  <APIItem name="key" type="keyof (InferOptions<C> | InferSelectors<C>) | 'state'">
-    The key of the option or selector to access.
+  <APIItem name="keyOrSelector" type="keyof InferPluginStoreState<C> | keyof InferSelectors<C> | ((state) => T)">
+    A state key, named selector key, or selector callback.
   </APIItem>
   <APIItem name="...args" type="any[]" optional>
-    Additional arguments:
-    - For selectors: The selector parameters
-    - Last argument can be an equality function `(a: T, b: T) => boolean`
+    Arguments for a named selector. Selector callbacks instead accept
+    `{ equalityFn? }` as the final options object.
   </APIItem>
 </APIParameters>
 
 <APIReturns type="T">
-  The value of the option or selector result:
-  - For 'state': Returns the entire state object
-  - For selector keys: Returns the selector's return value
-  - For option keys: Returns the option value
+  The selected field or derived value.
 </APIReturns>
 
 ```tsx
-// Access a simple option
-const value = useEditorPluginOption(editor, plugin, 'value');
-// Access a selector with parameters
-const doubleValue = useEditorPluginOption(editor, plugin, 'doubleValue', 2);
-// Access with equality function
-const value = useEditorPluginOption(editor, plugin, 'value', (a, b) => a === b);
-// Access entire state
-const state = useEditorPluginOption(editor, plugin, 'state');
+const value = useEditorPluginStore(editor, plugin, 'value');
+const doubleValue = useEditorPluginStore(editor, plugin, 'doubleValue', 2);
+const state = useEditorPluginStore(editor, plugin, (state) => state);
 ```
 </API>
 
@@ -701,19 +681,22 @@ See [Debugging](/docs/debugging) for more details.
 ### `ElementStatePlugin`
 Extend Plate editor behavior on top of Plite.
 
-`ElementStatePlugin` exposes `editor.api.isElementStateEmpty(element)`. It
-checks the element's own props, not its text content. By default, only `type`
-and compiled element properties declared with `significant: false` are ignored;
-any other prop means the element carries state. `NodeIdPlugin` declares its
-configured ID property as non-significant.
+`ElementStatePlugin` exposes
+`editor.plugin(ElementStatePlugin).api.isEmpty(element)`. It checks the
+element's own props, not its text content. By default, only `type` and compiled
+element properties declared with `significant: false` are ignored; any other
+prop means the element carries state. `NodeIdPlugin` declares its configured ID
+property as non-significant.
 
 ```tsx
-editor.api.isElementStateEmpty({
+const elementState = editor.plugin(ElementStatePlugin);
+
+elementState.api.isEmpty({
   children: [{ text: '' }],
   type: 'p',
 }); // true
 
-editor.api.isElementStateEmpty({
+elementState.api.isEmpty({
   children: [{ text: '' }],
   listStyleType: 'disc',
   type: 'p',

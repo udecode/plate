@@ -54,7 +54,8 @@ Primary user-facing entrypoints:
 
 - `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
   prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
-  and internal Plate/Plite quality prompts to `auto`.
+  one local Plite regression to `plite-patch`, and broad/internal Plate/Plite
+  quality prompts to `auto`.
 - `plate-next` for Plate v2 cleanup review: deeply audit migrated Plate files,
   APIs, and packages against the Plite boundary, then cut old Slate/Plate
   compatibility sludge or route the decision to `plate-plan`.
@@ -86,7 +87,11 @@ Default routing:
 - "maintain repo", "repo heartbeat", "queue", or "what should Codex pick
   next?" -> `maintainer heartbeat`.
 - Public GitHub issue, PR, advisory, triage, duplicate, review, or merge
-  question -> `maintainer` unless the user explicitly names a narrower owner.
+  question -> `maintainer`, except one concrete Slate issue routes directly to
+  `resolve-slate-issue`.
+- One public Slate issue to reproduce, fix, ship to Plate `next`, and update ->
+  `resolve-slate-issue`.
+- One local Plite regression with no public mutation -> `plite-patch`.
 - Internal Plate/Plite quality, behavior, perf, browser proof, API cleanup,
   benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
 - "best API", "cleanest API", "best DX/AX", public call-shape design/review,
@@ -144,6 +149,12 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
 - `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It loops like `autoreview` until no accepted actionable findings remain, patching safe issues and rerunning proof/review. It is not the public queue brain and not the broad internal quality supervisor.
 - `maintainer` for the repo-local Plate/Plite public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
+- `resolve-slate-issue` for one public Slate issue: intake/classification,
+  delegation of local repair to `plite-patch`, root check, Plate PR targeting
+  `next`, verified issue update, and integration/release-aware closure
+- `plite-patch` as the sole local Plite regression owner: reproduce, add durable
+  behavior proof, fix the owning package, apply architecture pressure, verify,
+  and autoreview without public GitHub mutation
 - `resolve-pr-feedback` for already-open PR review feedback: fetch unresolved
   threads/comments, use an autogoal feedback ledger, patch valid findings, end
   with `autoreview`, then reply/resolve only with current-checkout authority
@@ -162,8 +173,8 @@ non-matching findings instead of patching around reviewer hallucinations.
   prioritization, and promotion into narrower owners. Selected local editor
   architecture comparisons route to `editor-audit`; it does not run Codex
   Autoresearch packets
-- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `plite-patch`, `plite-plan`, `plate-plan`, `plite-ar`, `plite-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Plite automation
-- `plite-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
+- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `plite-patch`, `plite-plan`, `plate-plan`, `slate-ar`, `plite-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Plite automation
+- `slate-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
 - `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
 - `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony

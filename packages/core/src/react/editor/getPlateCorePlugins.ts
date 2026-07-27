@@ -6,7 +6,12 @@ import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback/types';
 
-const ReactDOMPlugin = toPlatePlugin(DOMPluginBase, { key: 'dom' });
+const ReactDOMPlugin = (
+  toPlatePlugin as unknown as (
+    basePlugin: typeof DOMPluginBase,
+    config: { key: string }
+  ) => PlatePlugin<InferConfig<typeof DOMPluginBase>>
+)(DOMPluginBase, { key: 'dom' });
 
 export type PlateCorePlugins = readonly [
   PlatePlugin<InferConfig<typeof ReactDOMPlugin>>,
@@ -18,13 +23,22 @@ export type PlateCorePlugins = readonly [
 export const getPlateCorePlugins = ({
   navigationFeedback,
 }: {
-  navigationFeedback?: Partial<NavigationFeedbackConfig['options']> | boolean;
+  navigationFeedback?:
+    | Partial<NavigationFeedbackConfig['initialState']>
+    | boolean;
 } = {}): PlateCorePlugins => [
   ReactDOMPlugin,
   EventEditorPlugin,
-  NavigationFeedbackPlugin.configure({
+  (
+    NavigationFeedbackPlugin.configure as (config: {
+      enabled: boolean;
+      initialState:
+        | Partial<NavigationFeedbackConfig['initialState']>
+        | undefined;
+    }) => PlatePlugin<InferConfig<typeof NavigationFeedbackPlugin>>
+  )({
     enabled: navigationFeedback !== false,
-    options:
+    initialState:
       typeof navigationFeedback === 'boolean' ? undefined : navigationFeedback,
   }),
   ParagraphPlugin,

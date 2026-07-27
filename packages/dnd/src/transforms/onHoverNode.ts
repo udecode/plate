@@ -27,7 +27,7 @@ export const onHoverNode = (
     'canDropNode' | 'element' | 'nodeRef' | 'orientation'
   >
 ) => {
-  const { _isOver, dropTarget } = editor.plugin(DndPlugin).getOptions();
+  const { _isOver, dropTarget } = editor.plugin(DndPlugin).store.get();
   const currentId = dropTarget?.id ?? null;
   const currentLine = dropTarget?.line ?? '';
 
@@ -45,7 +45,9 @@ export const onHoverNode = (
   // In that case, don't show a drop target.
   if (!result) {
     if (currentId || currentLine) {
-      editor.plugin(DndPlugin).setOption('dropTarget', { id: null, line: '' });
+      editor
+        .plugin(DndPlugin)
+        .store.set({ dropTarget: { id: null, line: '' } });
     }
 
     return;
@@ -73,24 +75,30 @@ export const onHoverNode = (
       const previousPath = PathApi.previous(elementPath);
 
       if (!previousPath) {
-        return editor.plugin(DndPlugin).setOption('dropTarget', newDropTarget);
+        return editor
+          .plugin(DndPlugin)
+          .store.set({ dropTarget: newDropTarget });
       }
 
       const nextNode = editor.read.nodes.get(previousPath)?.[0];
 
       if (typeof nextNode?.id !== 'string') {
-        return editor.plugin(DndPlugin).setOption('dropTarget', newDropTarget);
+        return editor
+          .plugin(DndPlugin)
+          .store.set({ dropTarget: newDropTarget });
       }
 
-      editor.plugin(DndPlugin).setOption('dropTarget', {
-        id: nextNode.id,
-        line: 'bottom',
+      editor.plugin(DndPlugin).store.set({
+        dropTarget: {
+          id: nextNode.id,
+          line: 'bottom',
+        },
       });
 
       return;
     }
 
-    editor.plugin(DndPlugin).setOption('dropTarget', newDropTarget);
+    editor.plugin(DndPlugin).store.set({ dropTarget: newDropTarget });
   }
   if (direction && editor.read.selection.isExpanded()) {
     editor.api.dom.focus();

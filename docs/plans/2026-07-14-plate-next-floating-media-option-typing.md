@@ -56,7 +56,7 @@ Timed checkpoint:
   named checks pass
 
 Completion threshold:
-- `submitFloatingMedia` obtains `MediaPluginOptions` through a typed plugin
+- `submitFloatingMedia` obtains `MediaPluginState` through a typed plugin
   portal with no `as` cast, `any`, or fake structural editor/plugin type.
 - The package-local `WithRequiredKey` / plugin-option cast class is fully
   audited and every match is repaired or justified.

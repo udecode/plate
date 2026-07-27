@@ -1,7 +1,15 @@
-import { createBasePlugin } from '@platejs/core';
+import { createBasePlugin, createRuleFactory } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { findHtmlParentElement } from '@udecode/utils';
+
+export const CodeRules = {
+  markdown: createRuleFactory({
+    type: 'mark',
+    start: '`',
+    trigger: '`',
+  }),
+};
 
 /** Enables support for code formatting */
 export const BaseCodePlugin = createBasePlugin({

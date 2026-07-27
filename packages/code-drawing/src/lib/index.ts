@@ -4,6 +4,5 @@
 
 export * from './BaseCodeDrawingPlugin';
 export * from './constants';
-export * from './types';
-export * from './transforms/index';
-export * from './utils/index';
+export * from './download';
+export * from './renderers';

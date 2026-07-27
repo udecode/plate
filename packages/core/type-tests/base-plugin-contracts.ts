@@ -2,12 +2,10 @@
 import {
   HistoryPlugin,
   type ExtendConfig,
-  type HtmlParserOptions,
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
   getEditorPlugin,
-  prepareHtmlParserQuery,
 } from '@platejs/core';
 import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
 import {
@@ -31,15 +29,15 @@ const baseFactoryExtension = defineEditorExtension({
 
 const BoldPlugin = createBasePlugin({
   key: 'bold',
-  options: {
+  initialState: {
     enabled: true as const,
     hotkey: 'mod+b',
   },
   extension: baseSingleExtension,
-}).extend(({ getOptions }) => ({
+}).extend(({ store }) => ({
   extension: {
     api: {
-      toggleBold: () => getOptions().hotkey,
+      toggleBold: () => store.get().hotkey,
     },
   },
 }));
@@ -510,43 +508,64 @@ type ExtendedFullConfig = ExtendConfig<
   { extraState: 4 }
 >;
 
-type UnifiedListRead = {
-  getPrevious: (type: 'bulleted' | 'numbered') => string;
-};
-
 type UnifiedListUpdate = {
-  toggle: (options: { type: 'bulleted' | 'numbered' }) => string;
+  toggle: (initialState: { type: 'bulleted' | 'numbered' }) => string;
 };
 
 const UnifiedListPlugin = createBasePlugin({
   key: 'unifiedList',
-  options: {
+  initialState: {
     prefix: 'list' as const,
   },
-})
-  .extend<{ read: UnifiedListRead }>(({ getOptions }) => ({
-    read: ({ state }) => ({
-      getPrevious: (type) =>
-        `${getOptions().prefix}:${state.children().length}:${type}`,
-    }),
-  }))
-  .extend<{ update: UnifiedListUpdate }>(({ read }) => {
-    const readPrevious: string = read.getPrevious('bulleted');
+  read: ({ state }) => ({
+    getPrevious: (type: 'bulleted' | 'numbered') =>
+      `list:${state.children().length}:${type}`,
+  }),
+}).extend<{ update: UnifiedListUpdate }>(({ store, read }) => {
+  const readPrevious: string = read.getPrevious('bulleted');
 
-    void readPrevious;
+  void readPrevious;
 
-    return {
-      extension: {
-        priority: 101,
+  return {
+    extension: {
+      corrections: [
+        {
+          event: 'content',
+          correct({ tx }) {
+            const correctionRead: string =
+              tx.unifiedList.getPrevious('bulleted');
+
+            void correctionRead;
+          },
+        },
+      ],
+      onTransactionChange({ tx }) {
+        const changeRead: string = tx.unifiedList.getPrevious('numbered');
+
+        void changeRead;
       },
-      update: ({ tx }) => ({
-        toggle: (options) => tx.unifiedList.getPrevious(options.type),
-      }),
-    };
-  });
+    },
+    update: ({ tx }) => ({
+      toggle: (initialState) =>
+        `${store.get().prefix}:${tx.unifiedList.getPrevious(initialState.type)}`,
+    }),
+  };
+});
+
+const UnifiedListDependentPlugin = createBasePlugin({
+  dependencies: [UnifiedListPlugin],
+  key: 'unifiedListDependent',
+}).extend(({ editor }) => {
+  const dependencyRead: string =
+    editor.read.unifiedList.getPrevious('bulleted');
+
+  void dependencyRead;
+
+  return {};
+});
 
 const unifiedListEditor = createBaseEditor({
-  plugins: [UnifiedListPlugin],
+  plugins: [UnifiedListDependentPlugin],
 });
 const unifiedListRead: string =
   unifiedListEditor.read.unifiedList.getPrevious('bulleted');
@@ -581,46 +600,47 @@ void unifiedListUpdate;
 
 const CalloutPlugin = createBasePlugin<CalloutConfig>({
   key: 'callout',
-  options: {
+  initialState: {
     dismissible: false,
     variant: 'info',
   },
 })
-  .extend(({ setOption }) => ({
+  .extend(({ store }) => ({
     extension: {
       api: {
         setVariant: (variant) => {
-          setOption('variant', variant);
+          store.set({ variant });
         },
       },
     },
   }))
-  .extend(({ getOptions }) => ({
+  .extend(({ store }) => ({
     api: {
-      getVariant: () => getOptions().variant,
+      getVariant: () => store.get().variant,
     },
   }));
 
 const ConfiguredCalloutPlugin = CalloutPlugin.extend({
-  options: {
+  initialState: {
     dismissible: true,
   },
 })
   .extend({ extension: baseArrayExtension })
   .configure({
-    options: {
+    initialState: {
       variant: 'warning',
     },
   });
 
-CalloutPlugin.configure(({ getOptions, plugin }) => {
-  const configuredVariant: 'info' | 'warning' = getOptions().variant;
-  const configuredDismissible: boolean | undefined = plugin.options.dismissible;
+CalloutPlugin.configure(({ store, plugin }) => {
+  const configuredVariant: 'info' | 'warning' = store.get().variant;
+  const configuredDismissible: boolean | undefined =
+    plugin.initialState.dismissible;
 
   void configuredDismissible;
   void configuredVariant;
 
-  return { options: { variant: 'warning' } };
+  return { initialState: { variant: 'warning' } };
 });
 
 const ShortcutTargetPlugin = createBasePlugin({
@@ -637,7 +657,7 @@ const ShortcutTargetPlugin = createBasePlugin({
 }));
 
 type DeclaredBaseTx = {
-  run: (value: 'typed', options?: { count?: number }) => number;
+  run: (value: 'typed', initialState?: { count?: number }) => number;
 };
 
 const DeclaredBaseTxPlugin = createBasePlugin<
@@ -645,9 +665,9 @@ const DeclaredBaseTxPlugin = createBasePlugin<
 >({
   key: 'declaredBaseTx',
   update: () => ({
-    run: (value, options = {}) => {
+    run: (value, initialState = {}) => {
       const exactValue: 'typed' = value;
-      const exactCount: number | undefined = options.count;
+      const exactCount: number | undefined = initialState.count;
 
       return exactValue.length + (exactCount ?? 0);
     },
@@ -726,25 +746,45 @@ ShortcutTargetPlugin.extend({
 
 const FactoryExtensionPlugin = createBasePlugin({
   key: 'factoryExtension',
-  options: {
+  initialState: {
     enabled: true,
   },
-}).extend(({ getOptions }) => {
-  const enabled: boolean = getOptions().enabled;
+}).extend(({ store }) => {
+  const enabled: boolean = store.get().enabled;
 
   void enabled;
 
   return { extension: [baseFactoryExtension] as const };
 });
 
+const FactoryStatePlugin = createBasePlugin({
+  key: 'factoryState',
+  initialState: ({ editor }) => ({
+    enabled: editor.id.length > 0,
+  }),
+  read: ({ state }) => ({
+    hasContent: () => state.children().length > 0,
+  }),
+});
+const factoryStateEditor = createBaseEditor({
+  plugins: [FactoryStatePlugin],
+});
+const factoryStatePlugin = factoryStateEditor.plugin(FactoryStatePlugin);
+const factoryEnabled: boolean =
+  factoryStateEditor.getPlugin(FactoryStatePlugin).initialState.enabled;
+const factoryHasContent: boolean = factoryStatePlugin.read.hasContent();
+
+void factoryEnabled;
+void factoryHasContent;
+
 createBasePlugin({
   key: 'contextualInput',
-  options: {
+  initialState: {
     tone: 'warm' as const,
   },
   handlers: {
     onTextChange: ({ plugin, text }) => {
-      const exactTone: 'warm' = plugin.options.tone;
+      const exactTone: 'warm' = plugin.initialState.tone;
       const nextText: string = text;
 
       void exactTone;
@@ -754,7 +794,7 @@ createBasePlugin({
   inject: {
     nodeProps: {
       transformProps: ({ plugin, props }) => {
-        const exactTone: 'warm' = plugin.options.tone;
+        const exactTone: 'warm' = plugin.initialState.tone;
 
         void exactTone;
 
@@ -772,10 +812,6 @@ const InlineHistoryPlugin = createBasePlugin({
 const basePlateEditor = createBaseEditor({
   plugins: [BoldPlugin, ConfiguredCalloutPlugin, FactoryExtensionPlugin],
 });
-declare const parserOptions: HtmlParserOptions;
-const queryBoldInsertData = prepareHtmlParserQuery(basePlateEditor, BoldPlugin);
-
-basePlateEditor.read((state) => queryBoldInsertData(state, parserOptions));
 
 const inlineHistoryEditor = createBaseEditor({
   plugins: [InlineHistoryPlugin],
@@ -826,13 +862,13 @@ const overrideEditor = createBaseEditor({
 const boldHotkey: string = basePlateEditor.api.toggleBold();
 const boldEnabled: true = basePlateEditor
   .plugin(BoldPlugin)
-  .getOptions().enabled;
+  .store.get().enabled;
 const calloutVariant: 'info' | 'warning' = basePlateEditor
   .plugin(ConfiguredCalloutPlugin)
-  .getOptions().variant;
+  .store.get().variant;
 const calloutDismissible: boolean | undefined = basePlateEditor
   .plugin(ConfiguredCalloutPlugin)
-  .getOptions().dismissible;
+  .store.get().dismissible;
 const calloutPluginVariant: 'info' | 'warning' =
   basePlateEditor.api.callout.getVariant();
 const overrideLabel: string = overrideEditor.api.overrideLabel();
@@ -854,7 +890,7 @@ OriginalOverridePlugin.api.pluginScopedLabel();
 overrideEditor.api.pluginScopedLabel();
 
 declare const extendedFullConfigApi: ExtendedFullConfig['api'];
-declare const extendedFullConfigOptions: ExtendedFullConfig['options'];
+declare const extendedFullConfigOptions: ExtendedFullConfig['initialState'];
 declare const extendedFullConfigSelectors: ExtendedFullConfig['selectors'];
 declare const extendedFullConfigState: NonNullable<ExtendedFullConfig['state']>;
 declare const extendedFullConfigTx: ExtendedFullConfig['tx'];
@@ -900,7 +936,7 @@ void extendedFullExtraSelector;
 void extendedFullExtraState;
 
 // @ts-expect-error invalid configured option value
-CalloutPlugin.configure({ options: { variant: 'danger' } });
+CalloutPlugin.configure({ initialState: { variant: 'danger' } });
 
 // @ts-expect-error invalid merged editor api
 basePlateEditor.api.notReal();
@@ -909,7 +945,7 @@ basePlateEditor.api.notReal();
 basePlateEditor.api.setVariant('danger');
 
 // @ts-expect-error boolean option must stay boolean
-basePlateEditor.plugin(BoldPlugin).getOptions().enabled = 'yes';
+basePlateEditor.plugin(BoldPlugin).store.get().enabled = 'yes';
 
 // @ts-expect-error editor-level override APIs must not keep stale first-plugin literals
 const staleOverrideLabel: 'original' = overrideEditor.api.overrideLabel();

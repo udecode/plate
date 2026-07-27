@@ -63,7 +63,7 @@ Plugin identities and document types intentionally differ for these built-ins:
 import { KEYS, NODES, TrailingBlockPlugin } from "platejs";
 
 export const trailingBlock = TrailingBlockPlugin.configure({
-  options: {
+  initialState: {
     type: NODES.p,
   },
 });
@@ -148,7 +148,7 @@ import { KEYS } from "platejs";
 import { BlockPlaceholderPlugin } from "platejs/react";
 
 export const blockPlaceholderPlugin = BlockPlaceholderPlugin.configure({
-  options: {
+  initialState: {
     placeholders: {
       [KEYS.p]: "Type something...",
     },

@@ -28,9 +28,9 @@ const createEditor = (sendMessage: ReturnType<typeof mock>) => {
   const chat = {
     messages: [],
     sendMessage,
-  } as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
+  } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
 
-  editor.plugin(AIChatPlugin).setOption('chat', chat);
+  editor.plugin(AIChatPlugin).store.set({ chat });
 
   return editor;
 };
@@ -48,11 +48,11 @@ describe('AIChatPlugin submit', () => {
   it('undoes insert mode, stores selected blocks, and sends their context', () => {
     const sendMessage = mock();
     const editor = createEditor(sendMessage);
-    editor.plugin(AIChatPlugin).setOption('toolName', 'edit');
-    editor.plugin(AIChatPlugin).setOption('open', true);
+    editor.plugin(AIChatPlugin).store.set({ toolName: 'edit' });
+    editor.plugin(AIChatPlugin).store.set({ open: true });
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['b1', 'b2']));
+      .store.set({ selectedIds: new Set(['b1', 'b2']) });
     editor.update({ history: 'merge' }, (tx) => {
       tx.ai.markBatch();
       tx.nodes.insert({ ai: true, text: ' ai' }, { at: [0, 1] });
@@ -61,15 +61,15 @@ describe('AIChatPlugin submit', () => {
     editor.plugin(AIChatPlugin).api.submit('draft', { mode: 'insert' });
 
     expect(editor.read.text.string([])).toBe('onetwo');
-    expect(editor.plugin(AIChatPlugin).getOption('mode')).toBe('insert');
-    expect(editor.plugin(AIChatPlugin).getOption('toolName')).toBe('edit');
+    expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
+    expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBe('edit');
     expect(
       editor
         .plugin(AIChatPlugin)
-        .getOption('chatNodes')
+        .store.get('chatNodes')
         .map((node) => node.id)
     ).toEqual(['b1', 'b2']);
-    expect(editor.plugin(AIChatPlugin).getOption('chatSelection')).toBeNull();
+    expect(editor.plugin(AIChatPlugin).store.get('chatSelection')).toBeNull();
     expect(sendMessage).toHaveBeenCalledWith(
       'draft',
       expect.objectContaining({

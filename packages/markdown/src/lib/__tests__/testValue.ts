@@ -551,14 +551,14 @@ export const testValue = [
       },
       {
         text: '2',
-        superscript: true,
+        script: 'sup',
       },
       {
         text: 'Subscript: x',
       },
       {
         text: '2',
-        subscript: true,
+        script: 'sub',
       },
     ],
   },

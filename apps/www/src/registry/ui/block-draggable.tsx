@@ -18,7 +18,7 @@ import {
   useEditorPlugin,
   useElement,
   usePath,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 import { useElementSelected } from 'platejs/react';
 
@@ -194,7 +194,7 @@ function Gutter({
 }: React.ComponentProps<'div'>) {
   const editor = useEditor();
   const element = useElement();
-  const isSelectionAreaVisible = usePluginOption(
+  const isSelectionAreaVisible = usePluginStore(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
   );
@@ -232,7 +232,7 @@ const DragHandle = React.memo(function DragHandle({
   setPreviewTop: (top: number) => void;
 }) {
   const editor = useEditor();
-  const { api } = useEditorPlugin(BlockSelectionPlugin);
+  const { api, read } = useEditorPlugin(BlockSelectionPlugin);
   const element = useElement();
   const path = usePath();
   const list = editor.plugin(ListPlugin);
@@ -251,7 +251,7 @@ const DragHandle = React.memo(function DragHandle({
 
             if ((e.button !== 0 && e.button !== 2) || e.shiftKey) return;
 
-            const blockSelection = api.getNodes({
+            const blockSelection = read.getNodes({
               sort: true,
             });
 
@@ -279,7 +279,7 @@ const DragHandle = React.memo(function DragHandle({
               selectionNodes.some(
                 ([node]) => typeof node[KEYS.listType] === 'string'
               )
-                ? list.api.expandItemsWithChildren(selectionNodes)
+                ? list.read.expandItemsWithChildren(selectionNodes)
                 : selectionNodes
             ).map(([node]) => node);
 
@@ -294,14 +294,14 @@ const DragHandle = React.memo(function DragHandle({
             previewRef.current?.classList.add('opacity-0');
             editor
               .plugin(DndPlugin)
-              .setOption('multiplePreviewRef', previewRef);
+              .store.set({ multiplePreviewRef: previewRef });
 
             api.set(blocks.map((block) => block.id as string));
           }}
           onMouseEnter={() => {
             if (isDragging) return;
 
-            const blockSelection = api.getNodes({
+            const blockSelection = read.getNodes({
               sort: true,
             });
 
@@ -332,7 +332,7 @@ const DragHandle = React.memo(function DragHandle({
               selectedBlocks.some(
                 ([node]) => typeof node[KEYS.listType] === 'string'
               )
-                ? list.api.expandItemsWithChildren(selectedBlocks)
+                ? list.read.expandItemsWithChildren(selectedBlocks)
                 : selectedBlocks;
 
             const ids = processedBlocks.map((block) => block[0].id as string);
@@ -478,7 +478,7 @@ const createDragPreviewElements = (
     resolveElement(node, index);
   });
 
-  editor.plugin(DndPlugin).setOption('draggingId', ids);
+  editor.plugin(DndPlugin).store.set({ draggingId: ids });
 
   return elements;
 };

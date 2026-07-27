@@ -1,12 +1,4 @@
-import { CARRIAGE_RETURN, LINE_FEED, SPACE } from '@platejs/core';
-
-const END_OF_ID_SEQUENCE_CHARACTERS = [
-  '\\',
-  '{',
-  CARRIAGE_RETURN,
-  LINE_FEED,
-  SPACE,
-];
+const END_OF_ID_SEQUENCE_CHARACTERS = ['\\', '{', '\r', '\n', ' '];
 
 export const getRtfImageSpid = (
   imageData: string,

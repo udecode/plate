@@ -7,9 +7,9 @@ import { readTableSelection } from '../lib/internal/selection';
 import { TablePlugin } from './TablePlugin';
 
 export const useTableMergeState = () => {
-  const { getOptions } = useEditorPlugin(TablePlugin);
+  const { store } = useEditorPlugin(TablePlugin);
 
-  const { disableMerge } = getOptions();
+  const { disableMerge } = store.get();
 
   const readOnly = useEditorReadOnly();
   const someTable = useEditorSelector((editor) =>

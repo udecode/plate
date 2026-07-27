@@ -1,9 +1,16 @@
 import * as copyToClipboardModule from 'copy-to-clipboard';
-import { NodeApi, type NodeEntry } from '@platejs/plite';
+import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
+import {
+  defineEditorExtension,
+  NodeApi,
+  type NodeEntry,
+  schema,
+} from '@platejs/plite';
 import * as PliteDOM from '@platejs/plite-dom';
 import type { TIdElement } from '@platejs/utils';
 
-import { copySelectedBlocks } from './copySelectedBlocks';
+import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 type CopyOptions = {
   onCopy?: (dataTransfer: DataTransfer) => void;
@@ -24,6 +31,37 @@ const createDataTransfer = () => {
   return { data, values };
 };
 
+const CopyTableCellPlugin = createBasePlugin({
+  key: 'td',
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent(),
+      topLevel: false,
+    },
+  }),
+});
+
+const CopyTableRowPlugin = createBasePlugin({
+  dependencies: [CopyTableCellPlugin],
+  key: 'tr',
+  schema: {
+    element: {
+      content: schema.content.type('td', { min: 1 }),
+      topLevel: false,
+    },
+  },
+});
+
+const CopyTablePlugin = createBasePlugin({
+  dependencies: [CopyTableRowPlugin],
+  key: 'table',
+  schema: {
+    element: {
+      content: schema.content.type('tr', { min: 1 }),
+    },
+  },
+});
+
 const createCopyEditor = (
   entries: NodeEntry<TIdElement>[],
   documentEntries = entries
@@ -33,43 +71,43 @@ const createCopyEditor = (
     focus: { offset: 0, path: [0, 0] },
     kind: 'text' as const,
   };
-  const stateView = {
-    nodes: {
-      get: (path: number[]) =>
-        documentEntries.find(
-          ([, entryPath]) => entryPath.join('.') === path.join('.')
-        ),
-      isEmpty: (node: TIdElement) => NodeApi.string(node).length === 0,
-    },
-    points: {
-      end: (path: number[]) => ({
-        offset: NodeApi.string(
-          documentEntries.find(([, p]) => p[0] === path[0])![0]
-        ).length,
-        path: [...path, 0],
-      }),
-      start: (path: number[]) => ({ offset: 0, path: [...path, 0] }),
-    },
-  };
-  const read = Object.assign(
-    (reader: (state: typeof stateView) => unknown) => reader(stateView),
-    { nodes: stateView.nodes, selection: () => selection }
+  const selectedIds = new Set(
+    entries.flatMap(([node]) => (typeof node.id === 'string' ? [node.id] : []))
   );
 
-  return {
-    api: { dom: { getWindow: () => window } },
-    plugin: () => ({
-      api: { getNodes: () => entries },
-    }),
-    read,
-    update: mock(),
-  } as any;
+  const editor = createPlateEditor({
+    plugins: [
+      BaseParagraphPlugin,
+      CopyTablePlugin,
+      BlockSelectionPlugin.configure({
+        initialState: { selectedIds },
+      }),
+    ],
+    selection,
+    initialValue:
+      documentEntries.length > 0
+        ? documentEntries.map(([node]) => node)
+        : [{ children: [{ text: '' }], type: 'p' }],
+  });
+
+  editor.extend(
+    defineEditorExtension({
+      api: {
+        dom: {
+          getWindow: () => window,
+        },
+      },
+      name: 'test:block-selection-copy-window',
+    })
+  );
+
+  return editor;
 };
 
 const decodeSlice = (encoded: string) =>
   JSON.parse(decodeURIComponent(window.atob(encoded))).slice;
 
-describe('copySelectedBlocks', () => {
+describe('api.copy', () => {
   let copyToClipboardSpy: AnyTestMock;
   let copyToClipboardMock: ReturnType<typeof mock>;
   let writeDOMRangeDataSpy: AnyTestMock;
@@ -127,9 +165,8 @@ describe('copySelectedBlocks', () => {
       }
     );
 
-    expect(copySelectedBlocks(editor)).toBe(true);
-    expect(editor.update).not.toHaveBeenCalled();
-    expect(editor.read.selection()).toBe(selection);
+    expect(editor.plugin(BlockSelectionPlugin).api.copy()).toBe(true);
+    expect(editor.read.selection()).toEqual(selection);
     expect(writeDOMRangeDataSpy).toHaveBeenCalledTimes(2);
     expect(values.get('text/plain')).toBe('First block\n\nLast block\n');
     expect(values.get('text/html')).toContain('<p></p>');
@@ -153,9 +190,8 @@ describe('copySelectedBlocks', () => {
     const editor = createCopyEditor(entries);
     const { data, values } = createDataTransfer();
 
-    expect(copySelectedBlocks(editor, data)).toBe(true);
+    expect(editor.plugin(BlockSelectionPlugin).api.copy(data)).toBe(true);
     expect(copyToClipboardMock).not.toHaveBeenCalled();
-    expect(editor.update).not.toHaveBeenCalled();
     expect(values.get('text/plain')).toBe('First block\nSecond block\n');
     expect(values.get('application/x-plite-fragment')).not.toBe('');
   });
@@ -164,7 +200,7 @@ describe('copySelectedBlocks', () => {
     const firstRow = {
       children: [
         {
-          children: [{ text: 'one' }],
+          children: [{ children: [{ text: 'one' }], type: 'p' }],
           id: 'cell1',
           type: 'td',
         },
@@ -175,7 +211,7 @@ describe('copySelectedBlocks', () => {
     const secondRow = {
       children: [
         {
-          children: [{ text: 'two' }],
+          children: [{ children: [{ text: 'two' }], type: 'p' }],
           id: 'cell2',
           type: 'td',
         },
@@ -193,12 +229,12 @@ describe('copySelectedBlocks', () => {
       children: [firstRow, secondRow],
     };
     const editor = createCopyEditor(
-      [[selectedTable, [0]]],
+      [[firstRow, [0, 0]]],
       [[documentTable, [0]]]
     );
     const { data, values } = createDataTransfer();
 
-    expect(copySelectedBlocks(editor, data)).toBe(true);
+    expect(editor.plugin(BlockSelectionPlugin).api.copy(data)).toBe(true);
     expect(decodeSlice(values.get('application/x-plite-fragment')!)).toEqual({
       content: [selectedTable],
       openEnd: 0,
@@ -210,8 +246,7 @@ describe('copySelectedBlocks', () => {
     const editor = createCopyEditor([]);
     const { data, values } = createDataTransfer();
 
-    expect(copySelectedBlocks(editor, data)).toBe(false);
+    expect(editor.plugin(BlockSelectionPlugin).api.copy(data)).toBe(false);
     expect(values.size).toBe(0);
-    expect(editor.update).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,5 @@
 ---
-description: Resolve one Slate or Slate v2 GitHub issue end to end, using task-style issue intake plus Plite Plan proof discipline, then post the verified no-PR issue comment with gh.
+description: Coordinate one public Slate issue through a local Plite repair, Plate PR targeting next, verified issue sync, and honest integration or release state.
 argument-hint: <issue number | issue URL>
 disable-model-invocation: true
 ---
@@ -8,204 +8,194 @@ disable-model-invocation: true
 
 Handle $ARGUMENTS.
 
-Use this for one issue at a time when the goal is to prove, fix or classify the
-issue, then comment directly on the issue. This combines `task` issue-first
-execution with Plite Plan's live-source, issue-ledger, and Slate v2
-verification discipline.
+This is the thin public coordinator for one Slate issue:
+
+```txt
+issue intake/classification -> plite-patch evidence packet
+-> root check -> Plate PR to next -> issue update
+-> close only when the claimed integration state is true
+```
+
+Bare issue numbers target `udecode/slate`; an issue URL keeps its explicit
+repository. Use `maintainer` for queue selection or batches. Use `plite-patch`
+for a local regression with no public mutation.
+
+## Authority
+
+- Issue authority: the repository resolved from the argument; default
+  `udecode/slate`.
+- Implementation authority: `plite-patch` in the current Plate checkout on
+  `next`.
+- Shipping authority: a Plate PR targeting `next`.
+- Release authority: npm/GitHub release readback.
+
+Invocation authorizes the verified PR and issue comment required by this
+workflow. It does not authorize merge, publish, or a premature close.
 
 ## Hard Rules
 
-- Do not open, create, update, or mention a PR.
-- Do not include PR metadata lines in the GitHub issue comment.
-- Do not include a `Fixes ...` issue metadata line in the comment.
-- Do not comment until the outcome is verified or intentionally classified as
-  already fixed/currently accounted.
-- Use `gh issue comment ... --body-file ...` for the final issue comment.
-- If confidence is `95%+` after verification, close the issue after posting the
-  comment.
-- If the required flow cannot be tested honestly, do not close the issue; ask a
-  human to reproduce the exact flow and report back.
-- Start from the issue source, not from old plans or memory.
-- Current `Plate repo root` source wins over issue-time assumptions.
-- An issue may name an origin commit. Treat that commit as the report baseline,
-  not current truth. Later commits may already have fixed it.
-- If current `Plate repo root` is already green for the issue flow, do not patch
-  code just to make a diff. Classify `already-accounted`, record evidence, and
-  comment with current verification.
-- If current `Plate repo root` is red, add the smallest proof row first, fix the
-  real owner, then verify.
-- If an honest fix materially changes reusable public API, stop issue-local
-  design and route the call shape through `best-api` before implementation.
-- Do not claim manual IME/mobile/device closure from synthetic browser rows.
-- `plate-2` commands prove planning/docs state only. Slate behavior proof must
-  run in `Plate repo root`.
+- Start from the live issue and current Plate source.
+- Read `CONTRIBUTING.md`, the relevant issue template,
+  `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before public mutation.
+- Do not duplicate local reproduction, test design, implementation,
+  architecture pressure, focused proof, or autoreview here. Delegate that
+  complete local packet to `plite-patch`.
+- Do not use a sibling Slate checkout as implementation proof.
+- Current-green behavior is `already-accounted` only when Plate `next` contains
+  and proves it, not when it exists only in unmerged local changes.
+- A code-changing fix requires a Plate PR targeting `next` after the root
+  `check` gate passes.
+- Never merge unless the user explicitly asks.
+- A merge to `next` proves beta-branch integration, not stable availability.
+- Use `gh issue comment ... --body-file ...`.
+- Pending PR language is `fix prepared`; leave the issue open.
+- Do not claim raw IME/mobile/device closure from synthetic browser rows.
+- Route security-shaped intake to `maintainer security`.
 
 ## Intake
 
-1. Resolve the issue:
+Resolve and read the full issue:
 
 ```bash
-gh issue view <number-or-url> -R udecode/slate --comments --json number,title,body,comments,labels,state,url
+# Bare number or #number
+issue_ref='<number-or-#number>'
+issue_number="${issue_ref#\#}"
+gh issue view "$issue_number" -R udecode/slate \
+  --comments \
+  --json number,title,body,comments,labels,state,url
+
+# URL or explicit target
+gh issue view <number-or-url> \
+  --comments \
+  --json number,title,body,comments,labels,state,url
 ```
 
-If the repo is not `udecode/slate`, resolve the repo from the URL or current
-`gh` repo, then fetch the same fields.
+Read body, comments, labels, media, and version/browser/device constraints. Use
+`video-transcripts` for attached recordings unless an exact cached transcript
+already exists.
 
-2. Read the issue body, comments, labels, attached images, and attached videos.
-3. If a video or screen recording exists, use `video-transcripts` before
-   implementation unless an existing cached transcript comment fully covers the
-   same normalized media URL.
-4. Extract:
-   - issue number and title
-   - exact user flow
-   - expected behavior
-   - actual behavior
-   - local route or package owner
-   - live reference route when present
-   - origin commit or branch if present
-   - likely owner in `Plate repo root`
-   - browser/device requirement
+Extract:
 
-## Current-State Check
+- repository, issue number, state, and title;
+- exact flow, expected result, and actual result;
+- browser, OS, device, input method, and version;
+- likely Plite or Plate owner and runnable route;
+- whether the claim is substrate, Plate product, docs/support, security, or
+  external ecosystem work;
+- whether closure needs `next` integration or a published release.
 
-Before editing:
+## Classification
 
-1. Inspect current `Plate repo root` source, examples, tests, and routes that own
-   the issue.
-2. If the issue names an origin commit, optionally compare that baseline to
-   current HEAD when it helps explain why the issue is already fixed. Do not
-   check out old commits unless needed for proof.
-3. Reproduce against current `Plate repo root` first.
-4. Classify current state:
+| State | Coordinator action |
+| --- | --- |
+| `red-current` | Delegate the full local repair to `plite-patch`, then ship its evidence-backed diff through a Plate PR. |
+| `local-only-fix` | Treat as `red-current`; unmerged local state is not integrated. |
+| `already-accounted` | Verify exact current `next` behavior, comment with evidence, and close only within the proven claim. |
+| `needs-manual-proof` | Run honest supporting proof, request the exact human flow, comment, and leave open. |
+| `plate-owned` | Route to the Plate owner or `maintainer`; do not force a Plite patch. |
+| `invalid-or-out-of-scope` | Comment only with decisive evidence; close only when ownership and confidence justify it. |
+| `blocked` | Report missing evidence/access/tooling; do not claim fixed or close. |
 
-| State                | Meaning                                                                                     | Action                                                                                                     |
-| -------------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `red-current`        | Current `Plate repo root` still reproduces the issue.                                         | Add proof row, fix, verify, then comment.                                                                  |
-| `already-accounted`  | Current `Plate repo root` passes the issue flow, likely fixed by later commits or prior work. | No code change; verify, comment, close if confidence is `95%+`.                                            |
-| `needs-manual-proof` | Browser/device/IME proof cannot be honestly automated.                                      | Run available supporting proof, ask a human to reproduce the exact flow, leave open, and do not overclaim. |
-| `blocked`            | Required issue evidence, media, or tooling is inaccessible after a real attempt.            | Do not comment as fixed. Report blocker.                                                                   |
+## Delegate Local Repair
 
-## Execution
+For `red-current` or `local-only-fix`, invoke `plite-patch` with the normalized
+behavior report and issue constraints. Require this evidence packet back:
 
-For `red-current`:
+- classification and root cause;
+- durable owner and changed files;
+- red proof and passing focused commands;
+- Browser/device proof or explicit limitation;
+- architecture-pressure verdict;
+- changeset status;
+- autoreview result;
+- unresolved caveat.
 
-1. Add the smallest failing proof:
-   - package test for model/history/clipboard contracts;
-   - Playwright row for browser behavior;
-   - manual/browser note only when automation cannot honestly cover it.
-2. Fix the durable owner in `Plate repo root`.
-3. Avoid example-local patches unless the bug is truly example-local.
-4. Run focused verification from `Plate repo root`.
-5. Run broader Slate v2 gate when the touched surface justifies it.
-6. Update any local plan or fork dossier only when useful for issue accounting.
-7. If verification gives `95%+` confidence, close the issue after posting the
-   comment:
+Reject an incomplete packet. Do not recreate the worker's patch methodology or
+package command matrix in this coordinator.
 
-```bash
-gh issue close <number-or-url> -R udecode/slate
+## Ship And Synchronize
+
+For a code-changing fix:
+
+1. Verify the worker evidence matches the current checkout.
+2. Run the root `check` gate.
+3. Create or update a `udecode/plate` PR targeting `next`, using the repo
+   task-style body and `<owner>/<repo>#<number>`.
+4. Verify the PR body with `gh pr view --json body`.
+5. Comment on the Slate issue with `fix prepared`, the PR URL, exact proof, and
+   the merge/release boundary.
+6. Leave the issue open.
+7. After an explicitly authorized merge, or a later run that finds the PR
+   merged, verify Plate `next` readback.
+8. Close only when the verified claim is true. Say `next` or beta-only when
+   stable publication has not happened.
+
+For `already-accounted`, keep code unchanged, verify the exact flow on current
+Plate `next`, then comment and close only at 95%+ confidence within that scope.
+
+For `needs-manual-proof`, comment with the route, steps, required environment,
+and expected observation; leave open and omit a 95-100% confidence claim.
+
+## Comment Shapes
+
+Pending PR:
+
+```md
+🟡 Fix prepared in <plate-pr-url>
+
+**✅ Outcome**
+
+- The current Plate checkout passes <exact flow>.
+- The issue remains open until the PR is merged into `next`.
+
+**🧪 Verified**
+
+- `<worker proof>`
+- `pnpm check`
+
+**⚠️ Delivery**
+
+- Target: Plate `next`.
+- Stable release: not claimed.
 ```
 
-For `already-accounted`:
-
-1. Keep code unchanged.
-2. Add missing proof only if the issue flow is important and uncovered.
-3. Verify the current behavior with the smallest honest command or browser
-   flow.
-4. Comment as current verified behavior, not as a new fix.
-5. If confidence is `95%+`, close the issue after posting the comment.
-
-For `needs-manual-proof`:
-
-1. Run any supporting automated proof that is honest for the flow.
-2. Comment with the exact human reproduction request.
-3. Leave the issue open.
-4. Do not use the `95-100%` confidence line.
-
-## Verification
-
-Record exact commands with cwd.
-
-Common Slate v2 gates:
-
-```bash
-pnpm slate:test
-pnpm --filter @platejs/slate-react typecheck
-pnpm --filter slate test:slate-browser
-PLAYWRIGHT_BASE_URL=http://localhost:3102 pnpm --filter slate test:slate-browser:chromium <test-file> --grep "<issue row>"
-```
-
-Use only the commands that fit the touched surface. If a broad gate fails for an
-unrelated integration or local-environment reason, isolate the failure and
-record why it does not block the issue comment.
-
-## Comment Body
-
-Write the final comment to a temp file, then post it:
-
-```bash
-gh issue comment <number-or-url> -R udecode/slate --body-file <comment-file>
-```
-
-Use this format. Keep it concise. Omit `**⚠️ Caveat**` when there is no real
-caveat.
+Integrated/current:
 
 ```md
 🟢 95-100% confidence
 
-| Phase      | 🧪 Tests                                  | 🌐 Browser                     |
-| ---------- | ----------------------------------------- | ------------------------------ |
-| Reproduced | 🔴 <failing proof or issue-current repro> | ✅ <browser/local repro>       |
-| Verified   | 🟢 <passing proof>                        | ✅ <browser verified behavior> |
-
-**🌐 Browser Check**
-
-- Open `<exact route>`.
-- Follow `<exact user flow>`.
-- Confirm `<expected fixed/current behavior>`.
+| Phase | 🧪 Tests | 🌐 Browser |
+| --- | --- | --- |
+| Reproduced | <red proof or current-state check> | <browser repro or N/A> |
+| Verified | 🟢 <passing proof> | <verified flow or N/A> |
 
 **✅ Outcome**
 
-- <What now happens for the user.>
-- <What no longer happens.>
-
-**⚠️ Caveat**
-
-- <Only real caveats: manual IME/device gap, already fixed by later commits, or partial browser coverage.>
+- <Exact behavior on Plate `next`.>
 
 **🏗️ Design**
 
-- Chosen owner: <runtime/package/example owner>.
-- Why not quick patch: <why a local workaround was wrong, or `N/A; already fixed in current v2`.>
-- Why not broader change: <why a larger API/runtime change was unnecessary, if applicable.>
+- Owner: <Plite package or Plate owner>.
+- Boundary: <why this owner is correct>.
 
 **🧪 Verified**
 
-- `<command or browser proof>`
-- `<command or browser proof>`
+- `<worker proof>`
+- `<root or release readback>`
 ```
 
-Status words:
-
-- Use `🔴` only when a real failing proof was observed in this run or preserved
-  from the just-executed plan.
-- Use `✅` when evidence exists but the current checkout was already green.
-- For `already-accounted`, say that plainly in `Outcome` or `Caveat`; do not
-  fake red-green.
-- Keep confidence below `95%` if browser/device proof is partial or manual-only.
-- Close the issue only when the confidence line is `🟢 95-100% confidence`.
-- When the required browser/device flow cannot be tested, include a caveat like:
-  `Please reproduce the steps above on <browser/device/input method>; leave this
-open until that confirms the behavior.`
+Use `🔴` only for an observed failing proof. Add a caveat section only when a
+real device, browser, or release limitation remains.
 
 ## Final Handoff
 
-After commenting, answer with:
+Keep it short:
 
-- issue number
-- classification: `red-current -> fixed`, `already-accounted`, or blocker
-- comment posted: URL if `gh` returns one
-- issue closed: yes/no, with reason
-- verification commands
-- any caveat
-
-Keep it short.
+- issue repository and number;
+- classification;
+- worker evidence packet status;
+- Plate PR URL, target, and merge state;
+- issue comment URL;
+- issue closed yes/no and why;
+- exact root/public verification;
+- delivery state and caveat.

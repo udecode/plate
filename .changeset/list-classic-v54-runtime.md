@@ -17,7 +17,7 @@ list.update.outdent();
 ```
 
 Configure additional list-item children through
-`ListItemPlugin.configure({ options: { validLiChildren } })`.
+`ListItemPlugin.configure({ initialState: { validLiChildren } })`.
 
 The classic todo plugin and command identity is `listTodoClassic`; persisted
 elements remain `action_item`.

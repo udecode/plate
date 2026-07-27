@@ -6,16 +6,16 @@ import {
   type PlateTextProps,
   PlateElement,
   PlateText,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
 export function AILeaf(props: PlateTextProps) {
-  const streaming = usePluginOption(AIChatPlugin, 'streaming');
+  const streaming = usePluginStore(AIChatPlugin, 'streaming');
   const streamingLeaf = props.editor
     .plugin(AIChatPlugin)
-    .api.node({ streaming: true });
+    .read.node({ streaming: true });
 
   const isLast = streamingLeaf?.[0] === props.text;
 

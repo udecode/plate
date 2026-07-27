@@ -5,16 +5,21 @@ import {
 } from '@platejs/suggestion';
 
 import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
-import { AIChatPlugin } from '../react/ai-chat/AIChatPlugin';
 
 const createEditor = () =>
   createBaseEditor({
-    plugins: [
-      BaseParagraphPlugin,
-      BaseSuggestionPlugin,
-      BaseAIPlugin,
-      AIChatPlugin.configure({ options: { open: true } }),
-    ],
+    plugins: [BaseParagraphPlugin, BaseAIPlugin],
+    selection: {
+      kind: 'text',
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    },
+    initialValue: [{ children: [{ text: '' }], type: 'p' }],
+  });
+
+const createSuggestionEditor = () =>
+  createBaseEditor({
+    plugins: [BaseParagraphPlugin, BaseSuggestionPlugin, BaseAIPlugin],
     selection: {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
@@ -27,10 +32,11 @@ describe('undoAI', () => {
   it('does not undo untagged AI content', () => {
     const editor = createEditor();
 
-    editor.update((tx) => {
-      tx.nodes.insert({ ai: true, text: 'plain batch' }, { at: [0, 1] });
-    });
-    editor.plugin(BaseAIPlugin).api.undo();
+    editor.update.nodes.insert(
+      { ai: true, text: 'plain batch' },
+      { at: [0, 1] }
+    );
+    editor.plugin(BaseAIPlugin).update.undo();
 
     expect(editor.read.text.string([])).toBe('plain batch');
   });
@@ -42,13 +48,13 @@ describe('undoAI', () => {
       tx.ai.markBatch();
       tx.text.insert('plain');
     });
-    editor.plugin(BaseAIPlugin).api.undo();
+    editor.plugin(BaseAIPlugin).update.undo();
 
     expect(editor.read.text.string([])).toBe('plain');
   });
 
   it('undoes the latest AI batch and permanently discards its redo', () => {
-    const editor = createEditor();
+    const editor = createSuggestionEditor();
 
     editor.update({ history: 'merge' }, (tx) => {
       tx.ai.markBatch();
@@ -57,7 +63,7 @@ describe('undoAI', () => {
         { at: [0, 1] }
       );
     });
-    editor.plugin(BaseAIPlugin).api.undo();
+    editor.plugin(BaseAIPlugin).update.undo();
 
     expect(editor.read.text.string([])).toBe('');
 
@@ -67,7 +73,7 @@ describe('undoAI', () => {
   });
 
   it('undoes every merged chunk in the latest AI response', () => {
-    const editor = createEditor();
+    const editor = createSuggestionEditor();
 
     editor.update({ history: 'new-batch' }, (tx) => {
       tx.ai.markBatch();
@@ -84,7 +90,7 @@ describe('undoAI', () => {
       );
     });
 
-    editor.plugin(BaseAIPlugin).api.undo();
+    editor.plugin(BaseAIPlugin).update.undo();
 
     expect(editor.read.text.string([])).toBe('');
     expect(editor.read.history.redos()).toHaveLength(0);
@@ -96,22 +102,25 @@ describe('undoAI', () => {
 
     editor
       .plugin(BaseAIPlugin)
-      .api.beginPreview({ originalBlocks: [original] });
-    editor.update({ history: 'skip' }).value.replace({
-      children: [
-        {
-          [AI_PREVIEW_KEY]: true,
-          children: [{ ai: true, text: 'preview' }],
-          type: 'p',
-        },
-        { children: [{ text: '' }], type: 'aiChat' },
-      ],
-      selection: null,
+      .update.beginPreview({ originalBlocks: [original] });
+    editor.update({ history: 'skip' }, (tx) => {
+      tx.nodes.replaceChildren(
+        [
+          {
+            [AI_PREVIEW_KEY]: true,
+            children: [{ ai: true, text: 'preview' }],
+            type: 'p',
+          },
+          { children: [{ text: '' }], type: 'aiChat' },
+        ],
+        { at: [], count: tx.children().length, index: 0 }
+      );
+      tx.selection.clear();
     });
 
-    editor.plugin(BaseAIPlugin).api.undo();
+    editor.plugin(BaseAIPlugin).update.undo();
 
     expect(editor.read.children()).toEqual([original]);
-    expect(editor.plugin(BaseAIPlugin).api.hasPreview()).toBe(false);
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
   });
 });

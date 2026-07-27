@@ -5,7 +5,7 @@ import * as React from 'react';
 import type { TComboboxInputElement, TMentionElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import { getMentionOnSelectItem } from '@platejs/mention';
+import { MentionPlugin } from '@platejs/mention/react';
 import { IS_APPLE, KEYS } from 'platejs';
 import {
   PlateElement,
@@ -76,8 +76,6 @@ export function MentionElement(
   );
 }
 
-const onSelectItem = getMentionOnSelectItem();
-
 export function MentionInputElement(
   props: PlateElementProps<TComboboxInputElement>
 ) {
@@ -105,7 +103,11 @@ export function MentionInputElement(
               <InlineComboboxItem
                 key={item.key}
                 value={item.text}
-                onClick={() => onSelectItem(editor, item, search)}
+                onClick={() =>
+                  editor
+                    .plugin(MentionPlugin)
+                    .update.insert({ key: item.key, search, value: item.text })
+                }
               >
                 {item.text}
               </InlineComboboxItem>

@@ -6,7 +6,7 @@ import { getPlateRuntime } from '@platejs/core/internal';
 import {
   type DOMHandler,
   createPlatePlugin,
-  usePluginOption,
+  usePluginStore,
 } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
@@ -41,27 +41,27 @@ const getRemoveCursorHandler =
   };
 
 export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
-  api: ({ editor, plugin }) => ({
+  api: ({ store }) => ({
     addCursor: (id, cursor) => {
-      const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
+      const newCursors = { ...store.get().cursors };
       newCursors[id] = {
         id,
         ...cursor,
       };
-      editor.plugin(plugin).setOption('cursors', newCursors);
+      store.set({ cursors: newCursors });
     },
     removeCursor: (id) => {
-      const newCursors = { ...editor.plugin(plugin).getOptions().cursors };
+      const newCursors = { ...store.get().cursors };
 
       if (!newCursors[id]) return;
 
       delete newCursors[id];
-      editor.plugin(plugin).setOption('cursors', newCursors);
+      store.set({ cursors: newCursors });
     },
   }),
-  extension: ({ api, editor, getOptions }) => {
+  extension: ({ api, editor, store }) => {
     const refreshSelectionCursor = () => {
-      if (!getOptions().cursors?.selection) return;
+      if (!store.get().cursors?.selection) return;
 
       setTimeout(() => {
         api.addCursor('selection', {
@@ -94,7 +94,7 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
     onDragOver: ({ api, editor, event }) => {
       if (
         !getPlateRuntime(editor).plugins.dnd ||
-        editor.plugin({ key: KEYS.dnd }).getOptions().isDragging
+        editor.plugin({ key: KEYS.dnd }).store.get().isDragging
       ) {
         return;
       }
@@ -115,13 +115,13 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
     onFocus: getRemoveCursorHandler('selection') as any,
   },
   key: KEYS.cursorOverlay,
-  options: { cursors: {} },
+  initialState: { cursors: {} },
 
   editOnly: {
     render: false,
   },
-  useHooks: ({ api, setOption }) => {
-    const isSelecting = usePluginOption(BlockSelectionPlugin, 'isSelecting');
+  useHooks: ({ api, store }) => {
+    const isSelecting = usePluginStore(BlockSelectionPlugin, 'isSelecting');
 
     useEffect(() => {
       if (isSelecting) {
@@ -129,6 +129,6 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
           api.removeCursor('selection');
         }, 0);
       }
-    }, [isSelecting, setOption, api]);
+    }, [isSelecting, store, api]);
   },
 });

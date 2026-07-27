@@ -1,0 +1,5895 @@
+[
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["object{effects,fields,name}"],
+      "read": ["factory{hasPreview}"],
+      "selectors": [],
+      "update": [
+        "factory{acceptPreview,beginPreview,cancelPreview,discardPreview,insertNodes,markBatch,removeMarks,removeNodes,undo}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["object{effects,fields,name}"],
+        "read": ["factory{hasPreview}"],
+        "selectors": [],
+        "update": [
+          "factory{acceptPreview,beginPreview,cancelPreview,discardPreview,insertNodes,markBatch,removeMarks,removeNodes,undo}"
+        ]
+      },
+      "fields": [
+        "extension",
+        "key",
+        "read",
+        "render",
+        "rules",
+        "schema",
+        "update"
+      ],
+      "key": "KEYS.ai",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/ai/src/lib/BaseAIPlugin.ts",
+    "id": 1,
+    "key": "KEYS.ai",
+    "kind": "createBasePlugin",
+    "line": 86,
+    "package": "ai",
+    "symbol": "BaseAIPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [
+        "object{deserializeChunk,deserializeInlineChunk,hide,reload,reset,show,stop,submit}"
+      ],
+      "extension": ["object{commands,corrections,effects,onCommit}"],
+      "read": [
+        "factory{commentRange,insertStart,markdown,node,prompt,resolvePlaceholders,serializeChunk}"
+      ],
+      "selectors": ["object{lastAssistantMessage}"],
+      "update": [
+        "factory{accept,acceptSuggestions,applySuggestions,applyTableCellSuggestion,insertBelow,insertChunk,rejectSuggestions,removeAnchor,replaceSelection}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies", "key", "options", "schema"],
+      "key": "KEYS.aiChat",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [
+            "object{deserializeChunk,deserializeInlineChunk,hide,reload,reset,show,stop,submit}"
+          ],
+          "extension": [],
+          "read": [
+            "factory{commentRange,insertStart,markdown,node,prompt,resolvePlaceholders,serializeChunk}"
+          ],
+          "selectors": ["object{lastAssistantMessage}"],
+          "update": [
+            "factory{accept,acceptSuggestions,applySuggestions,applyTableCellSuggestion,insertBelow,insertChunk,rejectSuggestions,removeAnchor,replaceSelection}"
+          ]
+        },
+        "fields": ["api", "read", "selectors", "update"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands,corrections,effects,onCommit}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:2"
+      }
+    ],
+    "file": "packages/ai/src/react/ai-chat/AIChatPlugin.ts",
+    "id": 2,
+    "key": "KEYS.aiChat",
+    "kind": "createPlatePlugin",
+    "line": 164,
+    "package": "ai",
+    "symbol": "AIChatPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseAIPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/ai/src/react/ai/AIPlugin.ts",
+    "id": 3,
+    "kind": "toPlatePlugin",
+    "line": 9,
+    "package": "ai",
+    "symbol": "AIPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["object{stop,triggerSuggestion}"],
+      "extension": ["object{effects,fields,name}", "object{commands,onCommit}"],
+      "read": [],
+      "selectors": ["object{isSuggested}"],
+      "update": [
+        "factory{accept,acceptNextWord,reject,setBlockSuggestion,setSuggestion}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["object{effects,fields,name}"],
+        "read": [],
+        "selectors": [],
+        "update": [
+          "factory{accept,acceptNextWord,reject,setBlockSuggestion,setSuggestion}"
+        ]
+      },
+      "fields": ["dependencies", "extension", "key", "options", "update"],
+      "key": "KEYS.copilot",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": ["object{stop,triggerSuggestion}"],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["api"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands,onCommit}"],
+          "read": [],
+          "selectors": ["object{isSuggested}"],
+          "update": []
+        },
+        "fields": ["extension", "handlers", "render", "selectors", "shortcuts"],
+        "stage": "extend:2"
+      }
+    ],
+    "file": "packages/ai/src/react/copilot/CopilotPlugin.tsx",
+    "id": 4,
+    "key": "KEYS.copilot",
+    "kind": "createPlatePlugin",
+    "line": 77,
+    "package": "ai",
+    "symbol": "CopilotPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle,untab}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle,untab}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.blockquote",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["shortcuts"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts",
+    "id": 5,
+    "key": "KEYS.blockquote",
+    "kind": "createBasePlugin",
+    "line": 41,
+    "package": "basic-nodes",
+    "symbol": "BaseBlockquotePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "schema", "update"],
+      "key": "KEYS.bold",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseBoldPlugin.ts",
+    "id": 6,
+    "key": "KEYS.bold",
+    "kind": "createBasePlugin",
+    "line": 20,
+    "package": "basic-nodes",
+    "symbol": "BaseBoldPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.code",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseCodePlugin.ts",
+    "id": 7,
+    "key": "KEYS.code",
+    "kind": "createBasePlugin",
+    "line": 15,
+    "package": "basic-nodes",
+    "symbol": "BaseCodePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.h1",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "id": 8,
+    "key": "KEYS.h1",
+    "kind": "createBasePlugin",
+    "line": 40,
+    "package": "basic-nodes",
+    "symbol": "BaseH1Plugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.h2",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "id": 9,
+    "key": "KEYS.h2",
+    "kind": "createBasePlugin",
+    "line": 61,
+    "package": "basic-nodes",
+    "symbol": "BaseH2Plugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.h3",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "id": 10,
+    "key": "KEYS.h3",
+    "kind": "createBasePlugin",
+    "line": 82,
+    "package": "basic-nodes",
+    "symbol": "BaseH3Plugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.h4",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "id": 11,
+    "key": "KEYS.h4",
+    "kind": "createBasePlugin",
+    "line": 103,
+    "package": "basic-nodes",
+    "symbol": "BaseH4Plugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.h5",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "id": 12,
+    "key": "KEYS.h5",
+    "kind": "createBasePlugin",
+    "line": 124,
+    "package": "basic-nodes",
+    "symbol": "BaseH5Plugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.h6",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "id": 13,
+    "key": "KEYS.h6",
+    "kind": "createBasePlugin",
+    "line": 145,
+    "package": "basic-nodes",
+    "symbol": "BaseH6Plugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.highlight",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHighlightPlugin.ts",
+    "id": 14,
+    "key": "KEYS.highlight",
+    "kind": "createBasePlugin",
+    "line": 19,
+    "package": "basic-nodes",
+    "symbol": "BaseHighlightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "render", "schema"],
+      "key": "KEYS.hr",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseHorizontalRulePlugin.ts",
+    "id": 15,
+    "key": "KEYS.hr",
+    "kind": "createBasePlugin",
+    "line": 28,
+    "package": "basic-nodes",
+    "symbol": "BaseHorizontalRulePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "schema", "update"],
+      "key": "KEYS.italic",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseItalicPlugin.ts",
+    "id": 16,
+    "key": "KEYS.italic",
+    "kind": "createBasePlugin",
+    "line": 19,
+    "package": "basic-nodes",
+    "symbol": "BaseItalicPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.kbd",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseKbdPlugin.ts",
+    "id": 17,
+    "key": "KEYS.kbd",
+    "kind": "createBasePlugin",
+    "line": 6,
+    "package": "basic-nodes",
+    "symbol": "BaseKbdPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "rules", "schema", "update"],
+      "key": "KEYS.script",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseScriptPlugin.ts",
+    "id": 18,
+    "key": "KEYS.script",
+    "kind": "createBasePlugin",
+    "line": 15,
+    "package": "basic-nodes",
+    "symbol": "BaseScriptPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema", "update"],
+      "key": "KEYS.strikethrough",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts",
+    "id": 19,
+    "key": "KEYS.strikethrough",
+    "kind": "createBasePlugin",
+    "line": 19,
+    "package": "basic-nodes",
+    "symbol": "BaseStrikethroughPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["codecs", "key", "render", "schema", "update"],
+      "key": "KEYS.underline",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/lib/BaseUnderlinePlugin.ts",
+    "id": 20,
+    "key": "KEYS.underline",
+    "kind": "createBasePlugin",
+    "line": 19,
+    "package": "basic-nodes",
+    "symbol": "BaseUnderlinePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseBlockquotePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/BlockquotePlugin.tsx",
+    "id": 21,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-nodes",
+    "symbol": "BlockquotePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseBoldPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["shortcuts"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/BoldPlugin.tsx",
+    "id": 22,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "basic-nodes",
+    "symbol": "BoldPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCodePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/CodePlugin.tsx",
+    "id": 23,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-nodes",
+    "symbol": "CodePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseH1Plugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "id": 24,
+    "kind": "toPlatePlugin",
+    "line": 12,
+    "package": "basic-nodes",
+    "symbol": "H1Plugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseH2Plugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "id": 25,
+    "kind": "toPlatePlugin",
+    "line": 13,
+    "package": "basic-nodes",
+    "symbol": "H2Plugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseH3Plugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "id": 26,
+    "kind": "toPlatePlugin",
+    "line": 14,
+    "package": "basic-nodes",
+    "symbol": "H3Plugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseH4Plugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "id": 27,
+    "kind": "toPlatePlugin",
+    "line": 15,
+    "package": "basic-nodes",
+    "symbol": "H4Plugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseH5Plugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "id": 28,
+    "kind": "toPlatePlugin",
+    "line": 16,
+    "package": "basic-nodes",
+    "symbol": "H5Plugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseH6Plugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "id": 29,
+    "kind": "toPlatePlugin",
+    "line": 17,
+    "package": "basic-nodes",
+    "symbol": "H6Plugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseHighlightPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HighlightPlugin.tsx",
+    "id": 30,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-nodes",
+    "symbol": "HighlightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseHorizontalRulePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/HorizontalRulePlugin.tsx",
+    "id": 31,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-nodes",
+    "symbol": "HorizontalRulePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseItalicPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["shortcuts"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/ItalicPlugin.tsx",
+    "id": 32,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "basic-nodes",
+    "symbol": "ItalicPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseKbdPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/KbdPlugin.tsx",
+    "id": 33,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "basic-nodes",
+    "symbol": "KbdPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseScriptPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["component"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/ScriptPlugin.tsx",
+    "id": 34,
+    "kind": "toPlatePlugin",
+    "line": 18,
+    "package": "basic-nodes",
+    "symbol": "ScriptPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseStrikethroughPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/StrikethroughPlugin.tsx",
+    "id": 35,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-nodes",
+    "symbol": "StrikethroughPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseUnderlinePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["shortcuts"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-nodes/src/react/UnderlinePlugin.tsx",
+    "id": 36,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "basic-nodes",
+    "symbol": "UnderlinePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{clear,set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{clear,set}"]
+      },
+      "fields": ["codecs", "inject", "key", "schema", "update"],
+      "key": "KEYS.backgroundColor",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseFontBackgroundColorPlugin.ts",
+    "id": 37,
+    "key": "KEYS.backgroundColor",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "BaseFontBackgroundColorPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{clear,set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{clear,set}"]
+      },
+      "fields": ["codecs", "inject", "key", "schema", "update"],
+      "key": "KEYS.color",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseFontColorPlugin.ts",
+    "id": 38,
+    "key": "KEYS.color",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "BaseFontColorPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{set}"]
+      },
+      "fields": ["codecs", "inject", "key", "schema", "update"],
+      "key": "KEYS.fontFamily",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseFontFamilyPlugin.ts",
+    "id": 39,
+    "key": "KEYS.fontFamily",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "BaseFontFamilyPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{set}"]
+      },
+      "fields": ["codecs", "inject", "key", "schema", "update"],
+      "key": "KEYS.fontSize",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseFontSizePlugin.ts",
+    "id": 40,
+    "key": "KEYS.fontSize",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "BaseFontSizePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{set}"]
+      },
+      "fields": ["codecs", "inject", "key", "schema", "update"],
+      "key": "KEYS.fontWeight",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseFontWeightPlugin.ts",
+    "id": 41,
+    "key": "KEYS.fontWeight",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "BaseFontWeightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{set}"]
+      },
+      "fields": [
+        "codecs",
+        "inject",
+        "key",
+        "schema",
+        "targetPluginKeys",
+        "update"
+      ],
+      "key": "KEYS.lineHeight",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseLineHeightPlugin.ts",
+    "id": 42,
+    "key": "KEYS.lineHeight",
+    "kind": "createBasePlugin",
+    "line": 17,
+    "package": "basic-styles",
+    "symbol": "BaseLineHeightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{set}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{set}"]
+      },
+      "fields": [
+        "codecs",
+        "inject",
+        "key",
+        "schema",
+        "targetPluginKeys",
+        "type",
+        "update"
+      ],
+      "key": "KEYS.textAlign",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseTextAlignPlugin.ts",
+    "id": 43,
+    "key": "KEYS.textAlign",
+    "kind": "createBasePlugin",
+    "line": 23,
+    "package": "basic-styles",
+    "symbol": "BaseTextAlignPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{set,unset}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{set,unset}"]
+      },
+      "fields": [
+        "codecs",
+        "inject",
+        "key",
+        "options",
+        "schema",
+        "targetPluginKeys",
+        "update"
+      ],
+      "key": "KEYS.textIndent",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/lib/BaseTextIndentPlugin.ts",
+    "id": 44,
+    "key": "KEYS.textIndent",
+    "kind": "createBasePlugin",
+    "line": 11,
+    "package": "basic-styles",
+    "symbol": "BaseTextIndentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFontColorPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "id": 45,
+    "kind": "toPlatePlugin",
+    "line": 11,
+    "package": "basic-styles",
+    "symbol": "FontColorPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFontSizePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "id": 46,
+    "kind": "toPlatePlugin",
+    "line": 13,
+    "package": "basic-styles",
+    "symbol": "FontSizePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFontFamilyPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "id": 47,
+    "kind": "toPlatePlugin",
+    "line": 15,
+    "package": "basic-styles",
+    "symbol": "FontFamilyPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFontBackgroundColorPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "id": 48,
+    "kind": "toPlatePlugin",
+    "line": 17,
+    "package": "basic-styles",
+    "symbol": "FontBackgroundColorPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFontWeightPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "id": 49,
+    "kind": "toPlatePlugin",
+    "line": 21,
+    "package": "basic-styles",
+    "symbol": "FontWeightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseLineHeightPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/LineHeightPlugin.tsx",
+    "id": 50,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "LineHeightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTextAlignPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/TextAlignPlugin.tsx",
+    "id": 51,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "TextAlignPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTextIndentPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/basic-styles/src/react/TextIndentPlugin.tsx",
+    "id": 52,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "basic-styles",
+    "symbol": "TextIndentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "rules", "schema", "update"],
+      "key": "KEYS.callout",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/callout/src/lib/BaseCalloutPlugin.ts",
+    "id": 53,
+    "key": "KEYS.callout",
+    "kind": "createBasePlugin",
+    "line": 12,
+    "package": "callout",
+    "symbol": "BaseCalloutPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCalloutPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/callout/src/react/CalloutPlugin.tsx",
+    "id": 54,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "callout",
+    "symbol": "CalloutPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "schema", "type"],
+      "key": "KEYS.codeLine",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "id": 55,
+    "key": "KEYS.codeLine",
+    "kind": "createBasePlugin",
+    "line": 36,
+    "package": "code-block",
+    "symbol": "BaseCodeLinePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{clipboard,commands}"],
+      "read": ["factory{entry,indentDepth,isAtStart,isEmpty}"],
+      "selectors": [],
+      "update": ["factory{format,insert,resetBlock,selectAll,tab,toggle,untab}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{clipboard,commands}"],
+        "read": ["factory{entry,indentDepth,isAtStart,isEmpty}"],
+        "selectors": [],
+        "update": [
+          "factory{format,insert,resetBlock,selectAll,tab,toggle,untab}"
+        ]
+      },
+      "fields": [
+        "codecs",
+        "dependencies",
+        "extension",
+        "key",
+        "parsers",
+        "read",
+        "render",
+        "schema",
+        "type",
+        "update"
+      ],
+      "key": "KEYS.codeBlock",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["shortcuts"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "id": 56,
+    "key": "KEYS.codeBlock",
+    "kind": "createBasePlugin",
+    "line": 61,
+    "package": "code-block",
+    "symbol": "BaseCodeBlockPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["object{corrections,onTransactionChange}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies", "key", "options", "schema", "type"],
+      "key": "KEYS.codeSyntax",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{corrections,onTransactionChange}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["decorate", "extension"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "id": 57,
+    "key": "KEYS.codeSyntax",
+    "kind": "createBasePlugin",
+    "line": 691,
+    "package": "code-block",
+    "symbol": "BaseCodeHighlightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCodeLinePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "id": 58,
+    "kind": "toPlatePlugin",
+    "line": 11,
+    "package": "code-block",
+    "symbol": "CodeLinePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCodeBlockPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "id": 59,
+    "kind": "toPlatePlugin",
+    "line": 14,
+    "package": "code-block",
+    "symbol": "CodeBlockPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCodeHighlightPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": ["object{key,onTransactionChange}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{key,onTransactionChange}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "id": 60,
+    "kind": "toPlatePlugin",
+    "line": 19,
+    "package": "code-block",
+    "symbol": "CodeHighlightPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "schema", "type", "update"],
+      "key": "KEYS.codeDrawing",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/code-drawing/src/lib/BaseCodeDrawingPlugin.ts",
+    "id": 61,
+    "key": "KEYS.codeDrawing",
+    "kind": "createBasePlugin",
+    "line": 19,
+    "package": "code-drawing",
+    "symbol": "BaseCodeDrawingPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCodeDrawingPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/code-drawing/src/react/CodeDrawingPlugin.tsx",
+    "id": 62,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "code-drawing",
+    "symbol": "CodeDrawingPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["object{nodeId}"],
+      "extension": ["object{corrections}"],
+      "read": ["factory{has,node,nodes}"],
+      "selectors": [],
+      "update": ["factory{removeMark,setDraft,unsetMark}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["object{nodeId}"],
+        "extension": ["object{corrections}"],
+        "read": ["factory{has,node,nodes}"],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "extension", "key", "read", "rules", "schema"],
+      "key": "KEYS.comment",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": ["factory{removeMark,setDraft,unsetMark}"]
+        },
+        "fields": ["update"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/comment/src/lib/BaseCommentPlugin.ts",
+    "id": 63,
+    "key": "KEYS.comment",
+    "kind": "createBasePlugin",
+    "line": 18,
+    "package": "comment",
+    "symbol": "BaseCommentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseCommentPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/comment/src/react/CommentPlugin.tsx",
+    "id": 64,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "comment",
+    "symbol": "CommentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "override"],
+      "key": "'root'",
+      "stage": "constructor"
+    },
+    "exported": false,
+    "extendStages": [],
+    "file": "packages/core/src/lib/editor/withPlite.ts",
+    "id": 65,
+    "key": "'root'",
+    "kind": "createBasePlugin",
+    "line": 858,
+    "package": "core",
+    "symbol": "internalRootDescriptor"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["object{commands}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{setSelection}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{setSelection}"]
+      },
+      "fields": ["key", "update"],
+      "key": "'affinity'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/core/src/lib/plugins/affinity/AffinityPlugin.ts",
+    "id": 66,
+    "key": "'affinity'",
+    "kind": "createBasePlugin",
+    "line": 29,
+    "package": "core",
+    "symbol": "AffinityPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{error,info,log,warn}"],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{error,info,log,warn}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "key", "options"],
+      "key": "'debug'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/debug/DebugPlugin.ts",
+    "id": 67,
+    "key": "'debug'",
+    "kind": "createBasePlugin",
+    "line": 59,
+    "package": "core",
+    "symbol": "DebugPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{api,key,onTransactionChange}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{autoScroll}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{api,key,onTransactionChange}"],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{autoScroll}"]
+      },
+      "fields": ["extension", "key", "options", "update"],
+      "key": "'dom'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+    "id": 68,
+    "key": "'dom'",
+    "kind": "createBasePlugin",
+    "line": 70,
+    "package": "core",
+    "symbol": "DOMPluginBase"
+  },
+  {
+    "ambiguities": [],
+    "base": "DOMPluginBase",
+    "capabilities": {
+      "api": [],
+      "extension": ["call:pliteDom"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["call:pliteDom"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+    "id": 69,
+    "kind": "derivedPlugin.extend",
+    "line": 217,
+    "package": "core",
+    "symbol": "DOMPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{isEmpty}"],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{isEmpty}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "key"],
+      "key": "'elementState'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts",
+    "id": 70,
+    "key": "'elementState'",
+    "kind": "createBasePlugin",
+    "line": 6,
+    "package": "core",
+    "symbol": "ElementStatePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["call:history"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["call:history"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension", "key"],
+      "key": "'history'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/HistoryPlugin.ts",
+    "id": 71,
+    "key": "'history'",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "core",
+    "symbol": "HistoryPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{deserialize}"],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{deserialize}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "key"],
+      "key": "HTML_PLUGIN_KEY",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/html/HtmlPlugin.ts",
+    "id": 72,
+    "key": "HTML_PLUGIN_KEY",
+    "kind": "createBasePlugin",
+    "line": 2810,
+    "package": "core",
+    "symbol": "HtmlPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{clipboard,commands}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{clipboard,commands}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["editOnly", "extension", "key"],
+      "key": "'inputRules'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "id": 73,
+    "key": "'inputRules'",
+    "kind": "createBasePlugin",
+    "line": 20,
+    "package": "core",
+    "symbol": "InputRulesPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{onTransactionChange}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{normalize}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{onTransactionChange}"],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{normalize}"]
+      },
+      "fields": [
+        "extension",
+        "key",
+        "options",
+        "schema",
+        "transformInitialValue",
+        "update"
+      ],
+      "key": "'nodeId'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts",
+    "id": 74,
+    "key": "'nodeId'",
+    "kind": "createBasePlugin",
+    "line": 691,
+    "package": "core",
+    "symbol": "NodeIdPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["object{commands,corrections,queries}"],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "factory{executeBreakRuleAction,executeDeleteRuleAction,resetBlock,selectAdjacentBlockVoid}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": [
+          "factory{executeBreakRuleAction,executeDeleteRuleAction,resetBlock,selectAdjacentBlockVoid}"
+        ]
+      },
+      "fields": ["key", "update"],
+      "key": "'override'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands,corrections,queries}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/core/src/lib/plugins/override/OverridePlugin.ts",
+    "id": 75,
+    "key": "'override'",
+    "kind": "createBasePlugin",
+    "line": 42,
+    "package": "core",
+    "symbol": "OverridePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "rules", "schema"],
+      "key": "'p'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/lib/plugins/paragraph/BaseParagraphPlugin.ts",
+    "id": 76,
+    "key": "'p'",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "core",
+    "symbol": "BaseParagraphPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "DOMPluginBase",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key"],
+      "key": "'dom'",
+      "stage": "adapter"
+    },
+    "exported": false,
+    "extendStages": [],
+    "file": "packages/core/src/react/editor/getPlateCorePlugins.ts",
+    "id": 77,
+    "kind": "toPlatePlugin",
+    "line": 9,
+    "package": "core",
+    "symbol": "ReactDOMPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key"],
+      "key": "plugin.key",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/react/plugin/getPlugin.ts",
+    "id": 78,
+    "key": "plugin.key",
+    "kind": "createPlatePlugin",
+    "line": 15,
+    "package": "core",
+    "symbol": "getPlugin()"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["handlers", "key"],
+      "key": "'eventEditor'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts",
+    "id": 79,
+    "key": "'eventEditor'",
+    "kind": "createPlatePlugin",
+    "line": 8,
+    "package": "core",
+    "symbol": "EventEditorPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{effects,onCommit}"],
+      "read": [],
+      "selectors": ["factory{activeTarget,isTarget}"],
+      "update": ["factory{clear,flashTarget,navigate}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{effects,onCommit}"],
+        "read": [],
+        "selectors": ["factory{activeTarget,isTarget}"],
+        "update": ["factory{clear,flashTarget,navigate}"]
+      },
+      "fields": [
+        "extension",
+        "inject",
+        "key",
+        "options",
+        "selectors",
+        "update"
+      ],
+      "key": "NAVIGATION_FEEDBACK_KEY",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts",
+    "id": 80,
+    "key": "NAVIGATION_FEEDBACK_KEY",
+    "kind": "createPlatePlugin",
+    "line": 48,
+    "package": "core",
+    "symbol": "NavigationFeedbackPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseParagraphPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["shortcuts"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx",
+    "id": 81,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "core",
+    "symbol": "ParagraphPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "DOMPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": ["object{api}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{api}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/core/src/static/plugins/ViewPlugin.ts",
+    "id": 82,
+    "kind": "derivedPlugin.extend",
+    "line": 4,
+    "package": "core",
+    "symbol": "ViewPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{deserialize}"],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{deserialize}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "codecs", "key", "options"],
+      "key": "KEYS.csv",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/csv/src/lib/CsvPlugin.ts",
+    "id": 83,
+    "key": "KEYS.csv",
+    "kind": "createBasePlugin",
+    "line": 30,
+    "package": "csv",
+    "symbol": "CsvPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "schema", "update"],
+      "key": "KEYS.date",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/date/src/lib/BaseDatePlugin.ts",
+    "id": 84,
+    "key": "KEYS.date",
+    "kind": "createBasePlugin",
+    "line": 9,
+    "package": "date",
+    "symbol": "BaseDatePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseDatePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/date/src/react/DatePlugin.tsx",
+    "id": 85,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "date",
+    "symbol": "DatePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": [
+        "editOnly",
+        "handlers",
+        "key",
+        "options",
+        "render",
+        "useHooks"
+      ],
+      "key": "KEYS.dnd",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/dnd/src/DndPlugin.tsx",
+    "id": 86,
+    "key": "KEYS.dnd",
+    "kind": "createPlatePlugin",
+    "line": 54,
+    "package": "dnd",
+    "symbol": "DndPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["editOnly", "key", "parsers"],
+      "key": "KEYS.docx",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/docx/src/lib/DocxPlugin.ts",
+    "id": 87,
+    "key": "KEYS.docx",
+    "kind": "createBasePlugin",
+    "line": 55,
+    "package": "docx",
+    "symbol": "DocxPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{import,toBlob}"],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{import,toBlob}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "key", "options"],
+      "key": "'docxIO'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/docx-io/src/lib/DocxIOPlugin.tsx",
+    "id": 88,
+    "key": "'docxIO'",
+    "kind": "createBasePlugin",
+    "line": 502,
+    "package": "docx-io",
+    "symbol": "DocxIOPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["editOnly", "key", "schema", "type"],
+      "key": "KEYS.emojiInput",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/emoji/src/lib/BaseEmojiPlugin.ts",
+    "id": 89,
+    "key": "KEYS.emojiInput",
+    "kind": "createBasePlugin",
+    "line": 29,
+    "package": "emoji",
+    "symbol": "BaseEmojiInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{dynamic}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{dynamic}"],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": [
+        "dependencies",
+        "editOnly",
+        "extension",
+        "key",
+        "options",
+        "update"
+      ],
+      "key": "KEYS.emoji",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/emoji/src/lib/BaseEmojiPlugin.ts",
+    "id": 90,
+    "key": "KEYS.emoji",
+    "kind": "createBasePlugin",
+    "line": 56,
+    "package": "emoji",
+    "symbol": "BaseEmojiPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseEmojiInputPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/emoji/src/react/EmojiPlugin.tsx",
+    "id": 91,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "emoji",
+    "symbol": "EmojiInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseEmojiPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/emoji/src/react/EmojiPlugin.tsx",
+    "id": 92,
+    "kind": "toPlatePlugin",
+    "line": 7,
+    "package": "emoji",
+    "symbol": "EmojiPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "schema", "update"],
+      "key": "KEYS.excalidraw",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts",
+    "id": 93,
+    "key": "KEYS.excalidraw",
+    "kind": "createBasePlugin",
+    "line": 23,
+    "package": "excalidraw",
+    "symbol": "BaseExcalidrawPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseExcalidrawPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/excalidraw/src/react/ExcalidrawPlugin.tsx",
+    "id": 94,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "excalidraw",
+    "symbol": "ExcalidrawPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["decorate", "key", "options", "schema", "type"],
+      "key": "KEYS.searchHighlight",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/find-replace/src/lib/FindReplacePlugin.ts",
+    "id": 95,
+    "key": "KEYS.searchHighlight",
+    "kind": "createBasePlugin",
+    "line": 18,
+    "package": "find-replace",
+    "symbol": "FindReplacePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "schema"],
+      "key": "KEYS.footnoteDefinition",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/footnote/src/lib/BaseFootnoteDefinitionPlugin.ts",
+    "id": 96,
+    "key": "KEYS.footnoteDefinition",
+    "kind": "createBasePlugin",
+    "line": 6,
+    "package": "footnote",
+    "symbol": "BaseFootnoteDefinitionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["editOnly", "key", "schema"],
+      "key": "KEYS.footnoteInput",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/footnote/src/lib/BaseFootnoteInputPlugin.ts",
+    "id": 97,
+    "key": "KEYS.footnoteInput",
+    "kind": "createBasePlugin",
+    "line": 6,
+    "package": "footnote",
+    "symbol": "BaseFootnoteInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{dynamic}"],
+      "read": [
+        "factory{definition,definitionText,definitions,duplicateDefinitions,duplicateIdentifiers,hasDuplicateDefinitions,identifiers,isDuplicateDefinition,isResolved,nextId,references}"
+      ],
+      "selectors": [],
+      "update": [
+        "factory{createDefinition,focusDefinition,focusReference,insert,normalizeDuplicateDefinition}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{dynamic}"],
+        "read": [
+          "factory{definition,definitionText,definitions,duplicateDefinitions,duplicateIdentifiers,hasDuplicateDefinitions,identifiers,isDuplicateDefinition,isResolved,nextId,references}"
+        ],
+        "selectors": [],
+        "update": [
+          "factory{createDefinition,focusDefinition,focusReference,insert,normalizeDuplicateDefinition}"
+        ]
+      },
+      "fields": [
+        "dependencies",
+        "extension",
+        "key",
+        "options",
+        "read",
+        "render",
+        "schema",
+        "type",
+        "update"
+      ],
+      "key": "'footnote'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/footnote/src/lib/BaseFootnotePlugin.ts",
+    "id": 98,
+    "key": "'footnote'",
+    "kind": "createBasePlugin",
+    "line": 46,
+    "package": "footnote",
+    "symbol": "BaseFootnotePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFootnoteDefinitionPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/footnote/src/react/FootnoteDefinitionPlugin.tsx",
+    "id": 99,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "footnote",
+    "symbol": "FootnoteDefinitionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFootnoteInputPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/footnote/src/react/FootnoteInputPlugin.tsx",
+    "id": 100,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "footnote",
+    "symbol": "FootnoteInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFootnotePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/footnote/src/react/FootnotePlugin.tsx",
+    "id": 101,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "footnote",
+    "symbol": "FootnotePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{corrections}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{decrease,increase,set,tab,untab}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{corrections}"],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{decrease,increase,set,tab,untab}"]
+      },
+      "fields": [
+        "codecs",
+        "extension",
+        "inject",
+        "key",
+        "options",
+        "schema",
+        "targetPluginKeys",
+        "update"
+      ],
+      "key": "KEYS.indent",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["shortcuts"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/indent/src/lib/BaseIndentPlugin.ts",
+    "id": 102,
+    "key": "KEYS.indent",
+    "kind": "createBasePlugin",
+    "line": 82,
+    "package": "indent",
+    "symbol": "BaseIndentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseIndentPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/indent/src/react/IndentPlugin.tsx",
+    "id": 103,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "indent",
+    "symbol": "IndentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["editOnly", "key", "parsers"],
+      "key": "KEYS.juice",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/juice/src/lib/JuicePlugin.ts",
+    "id": 104,
+    "key": "KEYS.juice",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "juice",
+    "symbol": "JuicePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{corrections}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert,insertGroup,moveMiddle,selectAll,set,toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{corrections}"],
+        "read": [],
+        "selectors": [],
+        "update": [
+          "factory{insert,insertGroup,moveMiddle,selectAll,set,toggle}"
+        ]
+      },
+      "fields": ["extension", "key", "schema", "update"],
+      "key": "KEYS.column",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["shortcuts"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/layout/src/lib/BaseColumnPlugin.ts",
+    "id": 105,
+    "key": "KEYS.column",
+    "kind": "createBasePlugin",
+    "line": 47,
+    "package": "layout",
+    "symbol": "BaseColumnItemPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies", "key", "schema", "type"],
+      "key": "KEYS.columnGroup",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/layout/src/lib/BaseColumnPlugin.ts",
+    "id": 106,
+    "key": "KEYS.columnGroup",
+    "kind": "createBasePlugin",
+    "line": 329,
+    "package": "layout",
+    "symbol": "BaseColumnPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseColumnItemPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/layout/src/react/ColumnPlugin.tsx",
+    "id": 107,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "layout",
+    "symbol": "ColumnItemPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseColumnPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/layout/src/react/ColumnPlugin.tsx",
+    "id": 108,
+    "kind": "toPlatePlugin",
+    "line": 8,
+    "package": "layout",
+    "symbol": "ColumnPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{getAttributes,validateUrl}"],
+      "extension": ["object{commands}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert,unwrap,upsert,upsertText,wrap}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{getAttributes,validateUrl}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": [
+        "api",
+        "codecs",
+        "key",
+        "options",
+        "render",
+        "rules",
+        "schema",
+        "type"
+      ],
+      "key": "'link'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands}"],
+          "read": [],
+          "selectors": [],
+          "update": ["factory{insert,unwrap,upsert,upsertText,wrap}"]
+        },
+        "fields": ["extension", "update"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/link/src/lib/BaseLinkPlugin.ts",
+    "id": 109,
+    "key": "'link'",
+    "kind": "createBasePlugin",
+    "line": 133,
+    "package": "link",
+    "symbol": "BaseLinkPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseLinkPlugin",
+    "capabilities": {
+      "api": [
+        "object{decodeUrl,encodeUrl,hide,reset,show,submit,trigger,triggerEdit,triggerInsert}"
+      ],
+      "extension": [],
+      "read": [],
+      "selectors": ["object{isOpen}"],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["options"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [
+            "object{decodeUrl,encodeUrl,hide,reset,show,submit,trigger,triggerEdit,triggerInsert}"
+          ],
+          "extension": [],
+          "read": [],
+          "selectors": ["object{isOpen}"],
+          "update": []
+        },
+        "fields": ["api", "selectors"],
+        "stage": "extend:1"
+      }
+    ],
+    "file": "packages/link/src/react/LinkPlugin.tsx",
+    "id": 110,
+    "kind": "toPlatePlugin",
+    "line": 47,
+    "package": "link",
+    "symbol": "LinkPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{getSequenceSiblingOptions,isSequenceBoundary}"],
+      "extension": ["object{commands,corrections,key,onTransactionChange}"],
+      "read": ["factory{expandItemsWithChildren,getNext,getPrevious,isActive}"],
+      "selectors": [],
+      "update": ["factory{indent,outdent,toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{getSequenceSiblingOptions,isSequenceBoundary}"],
+        "extension": [],
+        "read": [
+          "factory{expandItemsWithChildren,getNext,getPrevious,isActive}"
+        ],
+        "selectors": [],
+        "update": []
+      },
+      "fields": [
+        "api",
+        "codecs",
+        "dependencies",
+        "key",
+        "options",
+        "parsers",
+        "read",
+        "render",
+        "rules",
+        "schema",
+        "targetPluginKeys"
+      ],
+      "key": "KEYS.list",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": ["factory{indent,outdent,toggle}"]
+        },
+        "fields": ["override", "update"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands,corrections,key,onTransactionChange}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:2"
+      }
+    ],
+    "file": "packages/list/src/lib/BaseListPlugin.tsx",
+    "id": 111,
+    "key": "KEYS.list",
+    "kind": "createBasePlugin",
+    "line": 175,
+    "package": "list",
+    "symbol": "BaseListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseListPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list/src/react/ListPlugin.tsx",
+    "id": 112,
+    "kind": "toPlatePlugin",
+    "line": 8,
+    "package": "list",
+    "symbol": "ListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "schema"],
+      "key": "KEYS.lic",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 113,
+    "key": "KEYS.lic",
+    "kind": "createBasePlugin",
+    "line": 55,
+    "package": "list-classic",
+    "symbol": "BaseListItemContentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "options", "render", "schema"],
+      "key": "KEYS.li",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 114,
+    "key": "KEYS.li",
+    "kind": "createBasePlugin",
+    "line": 66,
+    "package": "list-classic",
+    "symbol": "BaseListItemPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "render", "schema"],
+      "key": "KEYS.ulClassic",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 115,
+    "key": "KEYS.ulClassic",
+    "kind": "createBasePlugin",
+    "line": 121,
+    "package": "list-classic",
+    "symbol": "BaseBulletedListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "render", "schema"],
+      "key": "KEYS.olClassic",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 116,
+    "key": "KEYS.olClassic",
+    "kind": "createBasePlugin",
+    "line": 148,
+    "package": "list-classic",
+    "symbol": "BaseNumberedListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "options", "render", "schema"],
+      "key": "KEYS.taskList",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 117,
+    "key": "KEYS.taskList",
+    "kind": "createBasePlugin",
+    "line": 175,
+    "package": "list-classic",
+    "symbol": "BaseTaskListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{commands}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{toggle}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{commands}"],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{toggle}"]
+      },
+      "fields": ["extension", "key", "options", "schema", "type", "update"],
+      "key": "KEYS.listTodoClassic",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 118,
+    "key": "KEYS.listTodoClassic",
+    "kind": "createBasePlugin",
+    "line": 203,
+    "package": "list-classic",
+    "symbol": "BaseTodoListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [
+        "factory{getListTypes,getPropsIfTaskListLiNode,hasListChild,isListRoot}"
+      ],
+      "extension": ["array[6]"],
+      "read": ["factory{getListItemEntry,getListRoot,isListNested}"],
+      "selectors": [],
+      "update": [
+        "factory{indent,moveListItemUp,moveListItemsToList,outdent,removeFirstListItem,removeListItem,toggle,unwrapList}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [
+          "factory{getListTypes,getPropsIfTaskListLiNode,hasListChild,isListRoot}"
+        ],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "dependencies", "key", "options", "schema"],
+      "key": "KEYS.listClassic",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": ["factory{getListItemEntry,getListRoot,isListNested}"],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["read"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": [
+            "factory{indent,moveListItemUp,moveListItemsToList,outdent,removeFirstListItem,removeListItem,toggle,unwrapList}"
+          ]
+        },
+        "fields": ["update"],
+        "stage": "extend:2"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["array[6]"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:3"
+      }
+    ],
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "id": 119,
+    "key": "KEYS.listClassic",
+    "kind": "createBasePlugin",
+    "line": 284,
+    "package": "list-classic",
+    "symbol": "BaseListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseBulletedListPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 120,
+    "kind": "toPlatePlugin",
+    "line": 13,
+    "package": "list-classic",
+    "symbol": "BulletedListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTaskListPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 121,
+    "kind": "toPlatePlugin",
+    "line": 15,
+    "package": "list-classic",
+    "symbol": "TaskListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseNumberedListPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 122,
+    "kind": "toPlatePlugin",
+    "line": 17,
+    "package": "list-classic",
+    "symbol": "NumberedListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseListItemContentPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 123,
+    "kind": "toPlatePlugin",
+    "line": 19,
+    "package": "list-classic",
+    "symbol": "ListItemContentPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseListItemPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 124,
+    "kind": "toPlatePlugin",
+    "line": 21,
+    "package": "list-classic",
+    "symbol": "ListItemPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseListPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 125,
+    "kind": "toPlatePlugin",
+    "line": 27,
+    "package": "list-classic",
+    "symbol": "ListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTodoListPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "id": 126,
+    "kind": "toPlatePlugin",
+    "line": 37,
+    "package": "list-classic",
+    "symbol": "TodoListPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{deserialize,deserializeInline,serializeInline}"],
+      "extension": [],
+      "read": ["factory{serialize}"],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{deserialize,deserializeInline,serializeInline}"],
+        "extension": [],
+        "read": ["factory{serialize}"],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "codecs", "key", "options", "read"],
+      "key": "KEYS.markdown",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/markdown/src/lib/MarkdownPlugin.ts",
+    "id": 127,
+    "key": "KEYS.markdown",
+    "kind": "createBasePlugin",
+    "line": 64,
+    "package": "markdown",
+    "symbol": "MarkdownPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "schema", "update"],
+      "key": "KEYS.equation",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/math/src/lib/BaseEquationPlugin.ts",
+    "id": 128,
+    "key": "KEYS.equation",
+    "kind": "createBasePlugin",
+    "line": 11,
+    "package": "math",
+    "symbol": "BaseEquationPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "schema", "type", "update"],
+      "key": "KEYS.inlineEquation",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/math/src/lib/BaseInlineEquationPlugin.ts",
+    "id": 129,
+    "key": "KEYS.inlineEquation",
+    "kind": "createBasePlugin",
+    "line": 9,
+    "package": "math",
+    "symbol": "BaseInlineEquationPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseEquationPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/math/src/react/EquationPlugin.tsx",
+    "id": 130,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "math",
+    "symbol": "EquationPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseInlineEquationPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/math/src/react/InlineEquationPlugin.tsx",
+    "id": 131,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "math",
+    "symbol": "InlineEquationPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "options", "schema"],
+      "key": "KEYS.audio",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/lib/BaseAudioPlugin.ts",
+    "id": 132,
+    "key": "KEYS.audio",
+    "kind": "createBasePlugin",
+    "line": 12,
+    "package": "media",
+    "symbol": "BaseAudioPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "options", "schema"],
+      "key": "KEYS.file",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/lib/BaseFilePlugin.ts",
+    "id": 133,
+    "key": "KEYS.file",
+    "kind": "createBasePlugin",
+    "line": 12,
+    "package": "media",
+    "symbol": "BaseFilePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "options", "schema"],
+      "key": "KEYS.video",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/lib/BaseVideoPlugin.ts",
+    "id": 134,
+    "key": "KEYS.video",
+    "kind": "createBasePlugin",
+    "line": 13,
+    "package": "media",
+    "symbol": "BaseVideoPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "options", "schema"],
+      "key": "KEYS.img",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/lib/image/BaseImagePlugin.ts",
+    "id": 135,
+    "key": "KEYS.img",
+    "kind": "createBasePlugin",
+    "line": 32,
+    "package": "media",
+    "symbol": "BaseImagePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "options", "schema", "type"],
+      "key": "KEYS.mediaEmbed",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    "id": 136,
+    "key": "KEYS.mediaEmbed",
+    "kind": "createBasePlugin",
+    "line": 46,
+    "package": "media",
+    "symbol": "BaseMediaEmbedPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["dependencies", "key", "options", "schema", "update"],
+      "key": "KEYS.placeholder",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts",
+    "id": 137,
+    "key": "KEYS.placeholder",
+    "kind": "createBasePlugin",
+    "line": 19,
+    "package": "media",
+    "symbol": "BasePlaceholderPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BasePlaceholderPlugin",
+    "capabilities": {
+      "api": ["object{addUploadingFile,removeUploadingFile}"],
+      "extension": [],
+      "read": [],
+      "selectors": ["object{uploadingFile}"],
+      "update": ["factory{insertMedia,replaceMedia}"]
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["options"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": ["object{addUploadingFile,removeUploadingFile}"],
+          "extension": [],
+          "read": [],
+          "selectors": ["object{uploadingFile}"],
+          "update": []
+        },
+        "fields": ["api", "selectors"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": ["factory{insertMedia,replaceMedia}"]
+        },
+        "fields": ["update"],
+        "stage": "extend:2"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["handlers"],
+        "stage": "extend:3"
+      }
+    ],
+    "file": "packages/media/src/react/placeholder/PlaceholderPlugin.tsx",
+    "id": 138,
+    "kind": "toPlatePlugin",
+    "line": 173,
+    "package": "media",
+    "symbol": "PlaceholderPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseImagePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/react/plugins.ts",
+    "id": 139,
+    "kind": "toPlatePlugin",
+    "line": 11,
+    "package": "media",
+    "symbol": "ImagePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseMediaEmbedPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/react/plugins.ts",
+    "id": 140,
+    "kind": "toPlatePlugin",
+    "line": 12,
+    "package": "media",
+    "symbol": "MediaEmbedPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseAudioPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/react/plugins.ts",
+    "id": 141,
+    "kind": "toPlatePlugin",
+    "line": 13,
+    "package": "media",
+    "symbol": "AudioPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseFilePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/react/plugins.ts",
+    "id": 142,
+    "kind": "toPlatePlugin",
+    "line": 14,
+    "package": "media",
+    "symbol": "FilePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseVideoPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/media/src/react/plugins.ts",
+    "id": 143,
+    "kind": "toPlatePlugin",
+    "line": 15,
+    "package": "media",
+    "symbol": "VideoPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "schema", "type"],
+      "key": "KEYS.mentionInput",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/mention/src/lib/BaseMentionPlugin.ts",
+    "id": 144,
+    "key": "KEYS.mentionInput",
+    "kind": "createBasePlugin",
+    "line": 29,
+    "package": "mention",
+    "symbol": "BaseMentionInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{dynamic}"],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{dynamic}"],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": [
+        "dependencies",
+        "extension",
+        "key",
+        "options",
+        "schema",
+        "update"
+      ],
+      "key": "KEYS.mention",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/mention/src/lib/BaseMentionPlugin.ts",
+    "id": 145,
+    "key": "KEYS.mention",
+    "kind": "createBasePlugin",
+    "line": 45,
+    "package": "mention",
+    "symbol": "BaseMentionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseMentionInputPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/mention/src/react/MentionPlugin.tsx",
+    "id": 146,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "mention",
+    "symbol": "MentionInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseMentionPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/mention/src/react/MentionPlugin.tsx",
+    "id": 147,
+    "kind": "toPlatePlugin",
+    "line": 7,
+    "package": "mention",
+    "symbol": "MentionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{hide,show,showContextMenu}"],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{hide,show,showContextMenu}"],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "editOnly", "handlers", "key", "options"],
+      "key": "KEYS.blockMenu",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/selection/src/react/BlockMenuPlugin.tsx",
+    "id": 148,
+    "key": "KEYS.blockMenu",
+    "kind": "createPlatePlugin",
+    "line": 35,
+    "package": "selection",
+    "symbol": "BlockMenuPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [
+        "factory{add,addOnContextMenu,addSelectedRow,clear,copy,delete,deselect,focus,isSelectable,moveSelection,selectAll,selectInserted,set,setSelectedIds,shiftSelection}"
+      ],
+      "extension": ["factory{commands,onCommit}"],
+      "read": ["factory{first,getNodes,isSelecting}"],
+      "selectors": ["factory{has,isSelected,isSelectingSome}"],
+      "update": [
+        "factory{duplicate,insertBlocksAndSelect,paste,removeNodes,select,setIndent,setNodes,setTexts}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [
+          "factory{add,addOnContextMenu,addSelectedRow,clear,copy,delete,deselect,focus,isSelectable,moveSelection,selectAll,selectInserted,set,setSelectedIds,shiftSelection}"
+        ],
+        "extension": ["factory{commands,onCommit}"],
+        "read": ["factory{first,getNodes,isSelecting}"],
+        "selectors": ["factory{has,isSelected,isSelectingSome}"],
+        "update": [
+          "factory{duplicate,insertBlocksAndSelect,paste,removeNodes,select,setIndent,setNodes,setTexts}"
+        ]
+      },
+      "fields": [
+        "api",
+        "editOnly",
+        "extension",
+        "handlers",
+        "inject",
+        "key",
+        "options",
+        "read",
+        "render",
+        "selectors",
+        "shortcuts",
+        "update"
+      ],
+      "key": "KEYS.blockSelection",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/selection/src/react/BlockSelectionPlugin.tsx",
+    "id": 149,
+    "key": "KEYS.blockSelection",
+    "kind": "createPlatePlugin",
+    "line": 251,
+    "package": "selection",
+    "symbol": "BlockSelectionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{addCursor,removeCursor}"],
+      "extension": ["factory{onCommit}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{addCursor,removeCursor}"],
+        "extension": ["factory{onCommit}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": [
+        "api",
+        "editOnly",
+        "extension",
+        "handlers",
+        "key",
+        "options",
+        "useHooks"
+      ],
+      "key": "KEYS.cursorOverlay",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/selection/src/react/CursorOverlayPlugin.tsx",
+    "id": 150,
+    "key": "KEYS.cursorOverlay",
+    "kind": "createPlatePlugin",
+    "line": 43,
+    "package": "selection",
+    "symbol": "CursorOverlayPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["editOnly", "key", "schema", "type"],
+      "key": "KEYS.slashInput",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/slash-command/src/lib/BaseSlashPlugin.ts",
+    "id": 151,
+    "key": "KEYS.slashInput",
+    "kind": "createBasePlugin",
+    "line": 11,
+    "package": "slash-command",
+    "symbol": "BaseSlashInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{dynamic}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{dynamic}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies", "editOnly", "extension", "key", "options"],
+      "key": "KEYS.slashCommand",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/slash-command/src/lib/BaseSlashPlugin.ts",
+    "id": 152,
+    "key": "KEYS.slashCommand",
+    "kind": "createBasePlugin",
+    "line": 36,
+    "package": "slash-command",
+    "symbol": "BaseSlashPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseSlashInputPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/slash-command/src/react/SlashPlugin.tsx",
+    "id": 153,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "slash-command",
+    "symbol": "SlashInputPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseSlashPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/slash-command/src/react/SlashPlugin.tsx",
+    "id": 154,
+    "kind": "toPlatePlugin",
+    "line": 7,
+    "package": "slash-command",
+    "symbol": "SlashPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [
+        "factory{createFragment,createIdentity,dataList,getProps,inlineData,isBlockSuggestion,isCurrentUser,isTracking,key,keyId,keys,nodeId,skipDeletes,suggestionData,untracked,userId,userIds}"
+      ],
+      "extension": ["object{commands,corrections}"],
+      "read": [
+        "factory{activeDescriptions,findIdentity,node,nodeEntries,nodes}"
+      ],
+      "selectors": [],
+      "update": [
+        "factory{accept,addMark,delete,deleteFragment,insertFragment,insertText,reject,removeMark,removeNodes,setNodes}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [
+          "factory{createFragment,createIdentity,dataList,getProps,inlineData,isBlockSuggestion,isCurrentUser,isTracking,key,keyId,keys,nodeId,skipDeletes,suggestionData,untracked,userId,userIds}"
+        ],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "key", "options", "rules", "schema"],
+      "key": "KEYS.suggestion",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [
+            "factory{activeDescriptions,findIdentity,node,nodeEntries,nodes}"
+          ],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["read"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": [
+            "factory{accept,addMark,delete,deleteFragment,insertFragment,insertText,reject,removeMark,removeNodes,setNodes}"
+          ]
+        },
+        "fields": ["update"],
+        "stage": "extend:2"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["object{commands,corrections}"],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["extension"],
+        "stage": "extend:3"
+      }
+    ],
+    "file": "packages/suggestion/src/lib/BaseSuggestionPlugin.ts",
+    "id": 155,
+    "key": "KEYS.suggestion",
+    "kind": "createBasePlugin",
+    "line": 196,
+    "package": "suggestion",
+    "symbol": "BaseSuggestionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseSuggestionPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/suggestion/src/react/SuggestionPlugin.tsx",
+    "id": 156,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "suggestion",
+    "symbol": "SuggestionPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": ["factory{findDestination}"],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": ["factory{findDestination}"],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["key", "options", "read"],
+      "key": "KEYS.tabbable",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/tabbable/src/lib/BaseTabbablePlugin.ts",
+    "id": 157,
+    "key": "KEYS.tabbable",
+    "kind": "createBasePlugin",
+    "line": 41,
+    "package": "tabbable",
+    "symbol": "BaseTabbablePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTabbablePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["render"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/tabbable/src/react/TabbablePlugin.tsx",
+    "id": 158,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "tabbable",
+    "symbol": "TabbablePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "schema"],
+      "key": "KEYS.tr",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "id": 159,
+    "key": "KEYS.tr",
+    "kind": "createBasePlugin",
+    "line": 330,
+    "package": "table",
+    "symbol": "BaseTableRowPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema"],
+      "key": "KEYS.td",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "id": 160,
+    "key": "KEYS.td",
+    "kind": "createBasePlugin",
+    "line": 372,
+    "package": "table",
+    "symbol": "BaseTableCellPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["codecs", "key", "render", "rules", "schema"],
+      "key": "KEYS.th",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "id": 161,
+    "key": "KEYS.th",
+    "kind": "createBasePlugin",
+    "line": 409,
+    "package": "table",
+    "symbol": "BaseTableCellHeaderPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [
+        "factory{createCell,getCellChildren,getCellTypes,getColSpan,getColumnCount,getRowSpan,isRectangular}",
+        "object{createRow,getOverriddenColumnSizes}",
+        "object{create}",
+        "object{writeSelection}"
+      ],
+      "extension": ["array[8]"],
+      "read": [
+        "factory{getCellIndices,getCellIndicesById,getColumnIndex,getRowIndex,getSelection}",
+        "factory{createCellSelection,getAdjacentCell,getCellInNextRow,getCellInPreviousRow,getEntries,getGridAbove,getGridByRange,getMergeGridByRange,getNextCell,getPreviousCell,getSelectedCell,getSelectedCellEntries,getSelectedCellIds,getSelectedCells,getSelectedCellsBoundingBox,getSelectedTableIds,getSelectedTables,isCellSelected,isSelectingCell}",
+        "factory{getLeftCell,getTopCell}",
+        "factory{getCellBorders,getCellSize,getSelectedCellsBorders,isBorderHidden,isSelectedCellBorder,isSelectedCellBordersNone,isSelectedCellBordersOuter}"
+      ],
+      "selectors": [],
+      "update": [
+        "factory{insert,insertColumn,insertRow,remove,removeColumn,removeRow,setBorderSizes}",
+        "factory{merge,moveSelection,selectAll,setBorderSize,setCellBackground,setColumnSize,setMarginLeft,setRowSize,split,tab,toggleBorders}"
+      ]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [
+          "factory{createCell,getCellChildren,getCellTypes,getColSpan,getColumnCount,getRowSpan,isRectangular}"
+        ],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["api", "codecs", "dependencies", "key", "options", "schema"],
+      "key": "KEYS.table",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": ["object{createRow,getOverriddenColumnSizes}"],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["api"],
+        "stage": "extend:1"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": ["object{create}"],
+          "extension": [],
+          "read": [
+            "factory{getCellIndices,getCellIndicesById,getColumnIndex,getRowIndex,getSelection}"
+          ],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["api", "read"],
+        "stage": "extend:2"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [
+            "factory{createCellSelection,getAdjacentCell,getCellInNextRow,getCellInPreviousRow,getEntries,getGridAbove,getGridByRange,getMergeGridByRange,getNextCell,getPreviousCell,getSelectedCell,getSelectedCellEntries,getSelectedCellIds,getSelectedCells,getSelectedCellsBoundingBox,getSelectedTableIds,getSelectedTables,isCellSelected,isSelectingCell}"
+          ],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["read"],
+        "stage": "extend:3"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": ["factory{getLeftCell,getTopCell}"],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["read"],
+        "stage": "extend:4"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": ["object{writeSelection}"],
+          "extension": [],
+          "read": [
+            "factory{getCellBorders,getCellSize,getSelectedCellsBorders,isBorderHidden,isSelectedCellBorder,isSelectedCellBordersNone,isSelectedCellBordersOuter}"
+          ],
+          "selectors": [],
+          "update": []
+        },
+        "fields": ["api", "read"],
+        "stage": "extend:5"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": [],
+          "read": [],
+          "selectors": [],
+          "update": [
+            "factory{insert,insertColumn,insertRow,remove,removeColumn,removeRow,setBorderSizes}"
+          ]
+        },
+        "fields": ["update"],
+        "stage": "extend:6"
+      },
+      {
+        "ambiguities": [],
+        "capabilities": {
+          "api": [],
+          "extension": ["array[8]"],
+          "read": [],
+          "selectors": [],
+          "update": [
+            "factory{merge,moveSelection,selectAll,setBorderSize,setCellBackground,setColumnSize,setMarginLeft,setRowSize,split,tab,toggleBorders}"
+          ]
+        },
+        "fields": ["extension", "update"],
+        "stage": "extend:7"
+      }
+    ],
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "id": 162,
+    "key": "KEYS.table",
+    "kind": "createBasePlugin",
+    "line": 490,
+    "package": "table",
+    "symbol": "BaseTablePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTableRowPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "id": 163,
+    "kind": "toPlatePlugin",
+    "line": 28,
+    "package": "table",
+    "symbol": "TableRowPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTableCellPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "id": 164,
+    "kind": "toPlatePlugin",
+    "line": 30,
+    "package": "table",
+    "symbol": "TableCellPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTableCellHeaderPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "id": 165,
+    "kind": "toPlatePlugin",
+    "line": 32,
+    "package": "table",
+    "symbol": "TableCellHeaderPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTablePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["dependencies", "handlers"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "id": 166,
+    "kind": "toPlatePlugin",
+    "line": 35,
+    "package": "table",
+    "symbol": "TablePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": ["factory{getSelectedItems,isEqual}"],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": ["factory{getSelectedItems,isEqual}"],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "read", "schema", "update"],
+      "key": "KEYS.tag",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/tag/src/lib/BaseTagPlugin.ts",
+    "id": 167,
+    "key": "KEYS.tag",
+    "kind": "createBasePlugin",
+    "line": 10,
+    "package": "tag",
+    "symbol": "BaseTagPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTagPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/tag/src/react/TagPlugin.tsx",
+    "id": 168,
+    "kind": "toPlatePlugin",
+    "line": 13,
+    "package": "tag",
+    "symbol": "TagPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTagPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": ["object{commands,corrections,onCommit}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["object{commands,corrections,onCommit}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/tag/src/react/TagPlugin.tsx",
+    "id": 169,
+    "kind": "toPlatePlugin",
+    "line": 15,
+    "package": "tag",
+    "symbol": "MultiSelectPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": ["factory{headings}"],
+      "selectors": [],
+      "update": ["factory{insert}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": ["factory{headings}"],
+        "selectors": [],
+        "update": ["factory{insert}"]
+      },
+      "fields": ["key", "options", "read", "schema", "update"],
+      "key": "KEYS.toc",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/toc/src/lib/BaseTocPlugin.ts",
+    "id": 170,
+    "key": "KEYS.toc",
+    "kind": "createBasePlugin",
+    "line": 23,
+    "package": "toc",
+    "symbol": "BaseTocPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTocPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/toc/src/react/TocPlugin.tsx",
+    "id": 171,
+    "kind": "toPlatePlugin",
+    "line": 5,
+    "package": "toc",
+    "symbol": "TocPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": ["factory{toggleIds}"],
+      "extension": [],
+      "read": ["factory{isActive,lastEnclosedEntry}"],
+      "selectors": ["factory{isOpen,someClosed}"],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": ["factory{toggleIds}"],
+        "extension": [],
+        "read": ["factory{isActive,lastEnclosedEntry}"],
+        "selectors": ["factory{isOpen,someClosed}"],
+        "update": []
+      },
+      "fields": ["api", "key", "options", "read", "schema", "selectors"],
+      "key": "KEYS.toggle",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/toggle/src/lib/BaseTogglePlugin.ts",
+    "id": 172,
+    "key": "KEYS.toggle",
+    "kind": "createBasePlugin",
+    "line": 5,
+    "package": "toggle",
+    "symbol": "BaseTogglePlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseTogglePlugin",
+    "capabilities": {
+      "api": [],
+      "extension": ["object{commands,queries}"],
+      "read": [],
+      "selectors": ["object{enclosingIds,isClosed}"],
+      "update": []
+    },
+    "configuration": [],
+    "adapter": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["object{commands,queries}"],
+        "read": [],
+        "selectors": ["object{enclosingIds,isClosed}"],
+        "update": []
+      },
+      "fields": ["extension", "options", "render", "selectors", "useHooks"],
+      "stage": "adapter"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/toggle/src/react/TogglePlugin.tsx",
+    "id": 173,
+    "kind": "toPlatePlugin",
+    "line": 27,
+    "package": "toggle",
+    "symbol": "TogglePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": ["factory{insert,insertBefore}"]
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": [],
+        "update": ["factory{insert,insertBefore}"]
+      },
+      "fields": ["editOnly", "key", "update"],
+      "key": "KEYS.exitBreak",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/utils/src/lib/plugins/ExitBreakPlugin.ts",
+    "id": 174,
+    "key": "KEYS.exitBreak",
+    "kind": "createBasePlugin",
+    "line": 16,
+    "package": "utils",
+    "symbol": "ExitBreakPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{corrections}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{corrections}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension", "key", "options"],
+      "key": "KEYS.normalizeTypes",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/utils/src/lib/plugins/NormalizeTypesPlugin.ts",
+    "id": 175,
+    "key": "KEYS.normalizeTypes",
+    "kind": "createBasePlugin",
+    "line": 30,
+    "package": "utils",
+    "symbol": "NormalizeTypesPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["object{commands,corrections}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["object{commands,corrections}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension", "key", "override"],
+      "key": "KEYS.singleBlock",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/utils/src/lib/plugins/SingleBlockPlugin.ts",
+    "id": 176,
+    "key": "KEYS.singleBlock",
+    "kind": "createBasePlugin",
+    "line": 7,
+    "package": "utils",
+    "symbol": "SingleBlockPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["object{commands,corrections}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["object{commands,corrections}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension", "key", "override"],
+      "key": "KEYS.singleLine",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/utils/src/lib/plugins/SingleLinePlugin.ts",
+    "id": 177,
+    "key": "KEYS.singleLine",
+    "kind": "createBasePlugin",
+    "line": 9,
+    "package": "utils",
+    "symbol": "SingleLinePlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{corrections}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{corrections}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension", "key", "options"],
+      "key": "KEYS.trailingBlock",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/utils/src/lib/plugins/TrailingBlockPlugin.ts",
+    "id": 178,
+    "key": "KEYS.trailingBlock",
+    "kind": "createBasePlugin",
+    "line": 29,
+    "package": "utils",
+    "symbol": "TrailingBlockPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": ["factory{placeholder}"],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": [],
+        "read": [],
+        "selectors": ["factory{placeholder}"],
+        "update": []
+      },
+      "fields": [
+        "editOnly",
+        "inject",
+        "key",
+        "options",
+        "selectors",
+        "useHooks"
+      ],
+      "key": "KEYS.blockPlaceholder",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx",
+    "id": 179,
+    "key": "KEYS.blockPlaceholder",
+    "kind": "createPlatePlugin",
+    "line": 32,
+    "package": "utils",
+    "symbol": "BlockPlaceholderPlugin"
+  },
+  {
+    "ambiguities": [],
+    "capabilities": {
+      "api": [],
+      "extension": ["factory{dynamic}"],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "constructor": {
+      "ambiguities": [],
+      "capabilities": {
+        "api": [],
+        "extension": ["factory{dynamic}"],
+        "read": [],
+        "selectors": [],
+        "update": []
+      },
+      "fields": ["extension", "key", "options"],
+      "key": "'yjs'",
+      "stage": "constructor"
+    },
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/yjs/src/lib/BaseYjsPlugin.ts",
+    "id": 180,
+    "key": "'yjs'",
+    "kind": "createBasePlugin",
+    "line": 7,
+    "package": "yjs",
+    "symbol": "BaseYjsPlugin"
+  },
+  {
+    "ambiguities": [],
+    "base": "BaseYjsPlugin",
+    "capabilities": {
+      "api": [],
+      "extension": [],
+      "read": [],
+      "selectors": [],
+      "update": []
+    },
+    "configuration": [],
+    "exported": true,
+    "extendStages": [],
+    "file": "packages/yjs/src/react/YjsPlugin.tsx",
+    "id": 181,
+    "kind": "toPlatePlugin",
+    "line": 6,
+    "package": "yjs",
+    "symbol": "YjsPlugin"
+  }
+]

@@ -33,7 +33,7 @@ You can set the minimum log level to control which messages are displayed:
 const editor = createPlateEditor({
   plugins: [
     DebugPlugin.configure({
-      options: {
+      initialState: {
         logLevel: 'warn', // Only show warnings and errors
       },
     }),
@@ -41,9 +41,9 @@ const editor = createPlateEditor({
 });
 ```
 
-### Configuration Options
+### Initial State
 
-The `DebugPlugin` can be configured with the following options:
+Seed the `DebugPlugin` store with these fields:
 
 - `isProduction`: Set to `true` to disable logging in production environments.
 - `logLevel`: Set the minimum log level (`'error'`, `'warn'`, `'info'`, or `'log'`).
@@ -56,7 +56,7 @@ Example configuration:
 const editor = createPlateEditor({
   plugins: [
     DebugPlugin.configure({
-      options: {
+      initialState: {
         isProduction: process.env.NODE_ENV === 'production',
         logLevel: 'info',
         logger: {
@@ -187,10 +187,6 @@ Plate uses several predefined error types to help identify specific issues durin
 ### DEFAULT
 
 A general error that doesn't fit into other specific categories. Used when no other error type is applicable to the situation.
-
-### OPTION_UNDEFINED
-
-Thrown when an attempt is made to access an undefined plugin option. This occurs when trying to use a plugin option that hasn't been set or is undefined.
 
 ### OVERRIDE_MISSING
 

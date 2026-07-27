@@ -2,10 +2,7 @@
 
 import * as React from 'react';
 
-import {
-  BaseFootnoteReferencePlugin,
-  type TFootnoteElement,
-} from '@platejs/footnote';
+import { BaseFootnotePlugin, type TFootnoteElement } from '@platejs/footnote';
 import { PathApi, type Path } from 'platejs';
 import type { PlateEditor, PlateElementProps } from 'platejs/react';
 
@@ -102,8 +99,8 @@ export function FootnoteReferenceElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
   const { element, path } = props;
-  const { editor } = useEditorPlugin(BaseFootnoteReferencePlugin);
-  const footnoteApi = editor.api.footnote;
+  const { editor } = useEditorPlugin(BaseFootnotePlugin);
+  const footnoteApi = editor.read.footnote;
   const identifier = element.identifier ?? '';
   const [hoverOpen, setHoverOpen] = React.useState(false);
   const focused = useEditorFocused();
@@ -223,8 +220,8 @@ export function FootnoteDefinitionElement(
   props: PlateElementProps<TFootnoteElement>
 ) {
   const { element, path } = props;
-  const { editor } = useEditorPlugin(BaseFootnoteReferencePlugin);
-  const footnoteApi = editor.api.footnote;
+  const { editor } = useEditorPlugin(BaseFootnotePlugin);
+  const footnoteApi = editor.read.footnote;
   const identifier = element.identifier ?? '';
   const definitionState = useEditorSelector(() => {
     const isDuplicateDefinition =
@@ -385,8 +382,8 @@ export function FootnoteDefinitionElement(
 
 export function FootnoteInputElement(props: PlateElementProps) {
   const { element } = props;
-  const { editor } = useEditorPlugin(BaseFootnoteReferencePlugin);
-  const footnoteApi = editor.api.footnote;
+  const { editor } = useEditorPlugin(BaseFootnotePlugin);
+  const footnoteApi = editor.read.footnote;
   const [search, setSearch] = React.useState('');
 
   const identifiers = footnoteApi.identifiers?.() ?? [];
@@ -425,7 +422,7 @@ export function FootnoteInputElement(props: PlateElementProps) {
           tx.text.deleteBackward({ unit: 'character' });
         }
 
-        tx.insert.footnote({
+        tx.footnote.insert({
           focusDefinition: false,
           identifier,
         });

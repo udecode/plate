@@ -11,7 +11,8 @@
 - Publish Plate schema installation and an empty primary-root default as one atomic extension migration
 - Author MIME-keyed product codecs through context-bound
   constructor `codecs: ({ defineCodecs }) => defineCodecs(...)`
-  declarations; compile them to schema-bound exact-slice Plite DOM codecs
+  declarations; infer same-plugin APIs in that callback and compile them to
+  schema-bound exact-slice Plite DOM codecs
 - Author schema-inferred bidirectional HTML codecs through
   `codecs: ({ defineCodecs }) =>
   defineCodecs({ 'text/html': ... })` for elements, marks, and targeted

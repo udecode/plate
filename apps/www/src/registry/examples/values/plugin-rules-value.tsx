@@ -68,7 +68,7 @@ export const pluginRulesValue = (
 
     <hp>
       <htext bold>Directional affinity:</htext> Use arrow keys around{' '}
-      <htext superscript>superscript</htext> text - cursor affinity depends on
+      <htext script="sup">superscript</htext> text - cursor affinity depends on
       movement direction.
     </hp>
 

@@ -103,9 +103,9 @@ Read these first, in order:
 2. `docs/slate-issues/gitcrawl-v2-sync-ledger.md` when it exists
 3. `docs/slate-issues/open-issues-ledger.md`
 4. `docs/slate-issues/gitcrawl-clusters.md`
-5. `docs/slate-v2/ledgers/fork-issue-dossier.md`
-6. `docs/slate-v2/ledgers/issue-coverage-matrix.md`
-7. `docs/slate-v2/references/pr-description.md`
+5. `docs/plite/ledgers/fork-issue-dossier.md`
+6. `docs/plite/ledgers/issue-coverage-matrix.md`
+7. `docs/plite/references/pr-description.md`
 8. Current implementation proof in `Plate repo root` when a claim depends on code.
 
 The live gitcrawl ledger is generated live input only. The v2 sync ledger owns
@@ -531,7 +531,7 @@ noise, ecosystem work, already-covered duplicates, or anything paired with an
 open fix PR.
 
 For automatic-looking bug fixes, hand off to `resolve-slate-issue`,
-`slate-patch`, `auto`, or `maintainer` instead of patching from
+`plite-patch`, `auto`, or `maintainer` instead of patching from
 ClawSweeper. Keep the bar stricter: exact current repro, high confidence, no new
 feature/config option, no product decision, narrow code owner, and focused
 regression proof.
@@ -607,7 +607,7 @@ Slate v2 fork. Do not comment on upstream GitHub issues in this mode.
 OpenClaw writes curation state and lets GitHub comments derive from that state.
 For Slate v2, the derived projection is one committed markdown dossier:
 
-`docs/slate-v2/ledgers/fork-issue-dossier.md`
+`docs/plite/ledgers/fork-issue-dossier.md`
 
 That file is the public-facing accounting layer for the fork. Every issue
 section must be self-contained enough that a maintainer can audit the claim
@@ -615,10 +615,10 @@ without opening five side files.
 
 Default compiled output targets:
 
-- Full corpus: `docs/slate-v2/references/pr-description.md` gets summarized
+- Full corpus: `docs/plite/references/pr-description.md` gets summarized
   counts and exact claim text only.
 - Detailed corpus: append one section per issue to
-  `docs/slate-v2/ledgers/fork-issue-dossier.md`.
+  `docs/plite/ledgers/fork-issue-dossier.md`.
 - Batch scratch files are allowed only as temporary working notes. The durable
   issue-by-issue output belongs in the fork issue dossier.
 - Generated live issue rows stay in `docs/slate-issues/gitcrawl-live-open-ledger.md`.

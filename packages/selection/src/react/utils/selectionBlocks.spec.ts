@@ -2,8 +2,6 @@ import { createBaseEditor, createBasePlugin } from '@platejs/core';
 
 import { TestElementPropertiesPlugin } from '../../__tests__/testPlugins';
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
-import { pasteSelectedBlocks } from './pasteSelectedBlocks';
-import { selectInsertedBlocks } from './selectInsertedBlocks';
 
 const createDataTransfer = () =>
   ({
@@ -16,7 +14,7 @@ describe('selection block utils', () => {
     mock.restore();
   });
 
-  describe('selectInsertedBlocks', () => {
+  describe('update.selectInserted', () => {
     it('selects blocks introduced by the last canonical change', () => {
       const editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
@@ -31,10 +29,10 @@ describe('selection block utils', () => {
         { at: [1] }
       );
 
-      selectInsertedBlocks(editor);
+      editor.plugin(BlockSelectionPlugin).api.selectInserted();
 
       expect(
-        editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+        editor.plugin(BlockSelectionPlugin).store.get('selectedIds')
       ).toEqual(new Set(['a', 'b']));
     });
 
@@ -46,15 +44,15 @@ describe('selection block utils', () => {
 
       editor.update.nodes.set({ variant: 'lead' }, { at: [0] });
 
-      selectInsertedBlocks(editor);
+      editor.plugin(BlockSelectionPlugin).api.selectInserted();
 
       expect(
-        editor.plugin(BlockSelectionPlugin).getOption('selectedIds')
+        editor.plugin(BlockSelectionPlugin).store.get('selectedIds')
       ).toEqual(new Set());
     });
   });
 
-  describe('pasteSelectedBlocks', () => {
+  describe('update.paste', () => {
     it('inserts a spacer block after the last non-empty selected block and pastes clipboard data', () => {
       const editor = createBaseEditor({
         plugins: [BlockSelectionPlugin],
@@ -66,12 +64,12 @@ describe('selection block utils', () => {
 
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['p1']));
+        .store.set({ selectedIds: new Set(['p1']) });
       const event = {
         clipboardData: createDataTransfer(),
       } as ClipboardEvent;
 
-      pasteSelectedBlocks(editor, event);
+      editor.plugin(BlockSelectionPlugin).update.paste(event.clipboardData!);
 
       unsubscribe();
 
@@ -108,21 +106,21 @@ describe('selection block utils', () => {
       let commits = 0;
       const unsubscribe = editor.subscribeCommit(() => commits++);
 
-      editor.plugin(BlockSelectionPlugin).setOption('selectedIds', selectedIds);
+      editor.plugin(BlockSelectionPlugin).store.set({ selectedIds });
       const event = {
         clipboardData: createDataTransfer(),
       } as ClipboardEvent;
 
-      expect(() => pasteSelectedBlocks(editor, event)).toThrow(
-        'clipboard failed'
-      );
+      expect(() =>
+        editor.plugin(BlockSelectionPlugin).update.paste(event.clipboardData!)
+      ).toThrow('clipboard failed');
 
       unsubscribe();
 
       expect(editor.read.children()).toEqual(initialValue);
       expect(commits).toBe(0);
       expect(editor.read.history.undos()).toHaveLength(0);
-      expect(editor.plugin(BlockSelectionPlugin).getOption('selectedIds')).toBe(
+      expect(editor.plugin(BlockSelectionPlugin).store.get('selectedIds')).toBe(
         selectedIds
       );
     });

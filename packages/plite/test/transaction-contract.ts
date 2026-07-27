@@ -59,14 +59,12 @@ let commandExtensionOrder = 0;
 const installCommandExtension = <Input>(
   editor: Editor,
   command: EditorCommand<Input>,
-  handler: EditorCommandAroundHandler<Input>,
-  options?: { priority?: number }
+  handler: EditorCommandAroundHandler<Input>
 ) =>
   editor.extend(
     defineEditorExtension({
       commands: ({ around }) => [around(command, handler)],
       name: `test-command-${commandExtensionOrder++}`,
-      priority: options?.priority,
     })
   );
 
@@ -1355,7 +1353,7 @@ describe('plite transaction contract', () => {
     );
   });
 
-  it('registers typed internal command definitions with deterministic priority order', () => {
+  it('registers typed internal command definitions in deterministic install order', () => {
     const editor = createEditor();
     const insertTextCommand = editorCommands.insertText;
     const seenCommands: string[] = [];
@@ -1374,8 +1372,7 @@ describe('plite transaction contract', () => {
 
         seenCommands.push(`early:${text}`);
         return next();
-      },
-      { priority: 1 }
+      }
     );
     const unsubscribeLate = installCommandExtension(
       editor,
@@ -1383,8 +1380,7 @@ describe('plite transaction contract', () => {
       ({ next, ...context }) => {
         seenCommands.push(`late:${context.input.text}`);
         return next();
-      },
-      { priority: 1 }
+      }
     );
     const unsubscribeHigh = installCommandExtension(
       editor,
@@ -1392,8 +1388,7 @@ describe('plite transaction contract', () => {
       ({ next, ...context }) => {
         seenCommands.push(`high:${context.input.text}`);
         return next();
-      },
-      { priority: 2 }
+      }
     );
 
     editor.update(() => {
@@ -1404,7 +1399,7 @@ describe('plite transaction contract', () => {
     unsubscribeLate();
     unsubscribeHigh();
 
-    assert.deepEqual(seenCommands, ['high:!', 'early:!', 'late:!']);
+    assert.deepEqual(seenCommands, ['early:!', 'late:!', 'high:!']);
     assert.equal(
       editorGetExtensionRegistry(editor).commands.byDescriptor.has(
         insertTextCommand
@@ -1429,8 +1424,7 @@ describe('plite transaction contract', () => {
       (context) => {
         seenCommands.push(`decline:${context.input.text}`);
         return false;
-      },
-      { priority: 2 }
+      }
     );
     const unsubscribeOverride = installCommandExtension(
       editor,
@@ -1441,8 +1435,7 @@ describe('plite transaction contract', () => {
           ...context.input,
           text: '?',
         });
-      },
-      { priority: 1 }
+      }
     );
 
     editor.update(() => {

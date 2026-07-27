@@ -186,7 +186,7 @@ const editor = createPlateEditor({
     MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
     PlaceholderPlugin.configure({
       component: PlaceholderElement,
-      options: { disableEmptyPlaceholder: true },
+      initialState: { disableEmptyPlaceholder: true },
       render: { afterEditable: MediaUploadToast },
     }),
   ],
@@ -194,7 +194,7 @@ const editor = createPlateEditor({
 ```
 
 - `component`: Assigns custom components to render each media type.
-- `options.disableEmptyPlaceholder`: Prevents showing placeholder when no file is uploading.
+- `initialState.disableEmptyPlaceholder`: Prevents showing placeholder when no file is uploading.
 - `render.afterEditable`: Renders upload progress toast outside the editor.
 
 <Callout type="info">
@@ -440,7 +440,7 @@ Plugin for non-void, isolating, keyboard-selectable image elements whose direct
 inline children store captions.
 
 <API name="ImagePlugin">
-<APIOptions type="ImagePluginOptions">
+<APIOptions type="ImagePluginState">
   <APIItem name="uploadImage" type="(dataUrl: string | ArrayBuffer) => Promise<string | ArrayBuffer> | string | ArrayBuffer" optional>
     Function to upload image to a server. Receives:
     - Data URL (string) from `FileReader.readAsDataURL`
@@ -470,22 +470,22 @@ inline children store captions.
 ### `VideoPlugin`
 
 Plugin for non-void, isolating, keyboard-selectable video elements whose direct
-inline children store captions. Extends `MediaPluginOptions`.
+inline children store captions. Extends `MediaPluginState`.
 
 ### `AudioPlugin`
 
 Plugin for non-void, isolating, keyboard-selectable audio elements whose direct
-inline children store captions. Extends `MediaPluginOptions`.
+inline children store captions. Extends `MediaPluginState`.
 
 ### `FilePlugin`
 
 Plugin for non-void, isolating, keyboard-selectable file elements whose direct
-inline children store captions. Extends `MediaPluginOptions`.
+inline children store captions. Extends `MediaPluginState`.
 
 ### `MediaEmbedPlugin`
 
 Plugin for non-void, isolating, keyboard-selectable media embed elements whose
-direct inline children store captions. Extends `MediaPluginOptions`.
+direct inline children store captions. Extends `MediaPluginState`.
 
 ### `PlaceholderPlugin`
 
@@ -587,11 +587,11 @@ Tracks a file that is currently being uploaded.
 </APIParameters>
 </API>
 
-### `editor.api.placeholder.getUploadingFile`
+### `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
 
 Gets a file that is currently being uploaded.
 
-<API name="editor.api.placeholder.getUploadingFile">
+<API name="editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the placeholder element.

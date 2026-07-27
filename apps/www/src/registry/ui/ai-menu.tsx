@@ -46,7 +46,7 @@ import {
   useEditorPlugin,
   useFocusedLast,
   useHotkeys,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 import { type PlateEditor, useEditor } from 'platejs/react';
 
@@ -93,19 +93,19 @@ const isElementEmpty = (editor: BaseEditor, element: Node) =>
   ElementApi.isElement(element) && editor.read.nodes.isEmpty(element);
 
 export function AIMenu() {
-  const { api, editor } = useEditorPlugin(AIChatPlugin);
-  const mode = usePluginOption(AIChatPlugin, 'mode');
-  const toolName = usePluginOption(AIChatPlugin, 'toolName');
+  const { api, editor, read } = useEditorPlugin(AIChatPlugin);
+  const mode = usePluginStore(AIChatPlugin, 'mode');
+  const toolName = usePluginStore(AIChatPlugin, 'toolName');
 
-  const streaming = usePluginOption(AIChatPlugin, 'streaming');
+  const streaming = usePluginStore(AIChatPlugin, 'streaming');
   const isSelecting = useIsSelecting();
   const isFocusedLast = useFocusedLast();
-  const open = usePluginOption(AIChatPlugin, 'open') && isFocusedLast;
+  const open = usePluginStore(AIChatPlugin, 'open') && isFocusedLast;
   const [value, setValue] = React.useState('');
 
   const [input, setInput] = React.useState('');
 
-  const chat = usePluginOption(AIChatPlugin, 'chat');
+  const chat = usePluginStore(AIChatPlugin, 'chat');
 
   const messages = chat?.messages;
   const status = chat?.status ?? 'ready';
@@ -120,7 +120,7 @@ export function AIMenu() {
   React.useEffect(() => {
     if (!streaming) return;
 
-    const anchorEntry = api.node({ anchor: true });
+    const anchorEntry = read.node({ anchor: true });
     if (!anchorEntry) return;
 
     const anchorDom = getDomNode(editor, anchorEntry[0]);
@@ -132,7 +132,7 @@ export function AIMenu() {
     return () => {
       window.cancelAnimationFrame(animationFrame);
     };
-  }, [api, editor, streaming]);
+  }, [editor, read, streaming]);
 
   const setOpen = (open: boolean) => {
     if (open) {
@@ -211,7 +211,7 @@ export function AIMenu() {
     if (!anchorNode) {
       anchorNode = editor
         .plugin(BlockSelectionPlugin)
-        .api.getNodes({ selectionFallback: true, sort: true })
+        .read.getNodes({ selectionFallback: true, sort: true })
         .at(-1);
     }
 
@@ -342,13 +342,13 @@ const aiChatItems = {
     label: 'Accept',
     value: 'accept',
     onSelect: ({ aiEditor, editor }) => {
-      const { mode, toolName } = editor.plugin(AIChatPlugin).getOptions();
+      const { mode, toolName } = editor.plugin(AIChatPlugin).store.get();
 
       if (mode === 'chat' && toolName === 'generate') {
-        return editor.plugin(AIChatPlugin).api.replaceSelection(aiEditor);
+        return editor.plugin(AIChatPlugin).update.replaceSelection(aiEditor);
       }
 
-      editor.plugin(AIChatPlugin).api.accept();
+      editor.plugin(AIChatPlugin).update.accept();
       editor.update((tx) => {
         const end = tx.points.end([]);
 
@@ -401,7 +401,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     shortcut: 'Escape',
     value: 'discard',
     onSelect: ({ editor }) => {
-      editor.plugin(AIPlugin).api.undo();
+      editor.plugin(AIPlugin).update.undo();
       editor.plugin(AIChatPlugin).api.hide();
     },
   },
@@ -483,7 +483,9 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     value: 'insertBelow',
     onSelect: ({ aiEditor, editor }) => {
       /** Format: 'none' Fix insert table */
-      editor.plugin(AIChatPlugin).api.insertBelow(aiEditor, { format: 'none' });
+      editor
+        .plugin(AIChatPlugin)
+        .update.insertBelow(aiEditor, { format: 'none' });
     },
   },
   makeLonger: {
@@ -515,7 +517,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     label: 'Replace selection',
     value: 'replace',
     onSelect: ({ aiEditor, editor }) => {
-      editor.plugin(AIChatPlugin).api.replaceSelection(aiEditor);
+      editor.plugin(AIChatPlugin).update.replaceSelection(aiEditor);
     },
   },
   simplifyLanguage: {
@@ -634,8 +636,8 @@ export const AIMenuItems = ({
   setValue: (value: string) => void;
 }) => {
   const editor = useEditor();
-  const messages = usePluginOption(AIChatPlugin, 'chat')?.messages;
-  const aiEditor = usePluginOption(AIChatPlugin, 'aiEditor')!;
+  const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
+  const aiEditor = usePluginStore(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
 
   const menuState: EditorChatState =
@@ -687,9 +689,9 @@ export const AIMenuItems = ({
 export function AILoadingBar() {
   const editor = useEditor();
 
-  const toolName = usePluginOption(AIChatPlugin, 'toolName');
-  const chat = usePluginOption(AIChatPlugin, 'chat');
-  const mode = usePluginOption(AIChatPlugin, 'mode');
+  const toolName = usePluginStore(AIChatPlugin, 'toolName');
+  const chat = usePluginStore(AIChatPlugin, 'chat');
+  const mode = usePluginStore(AIChatPlugin, 'mode');
 
   const status = chat?.status ?? 'ready';
 

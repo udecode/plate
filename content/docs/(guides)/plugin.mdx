@@ -28,7 +28,7 @@ The `.configure` method allows you to configure an existing plugin:
 
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
-  options: {
+  initialState: {
     myOption: "new value",
   },
 });
@@ -104,7 +104,8 @@ const BoldPlugin = createPlatePlugin({
 
 ## Behavioral Plugins
 
-Rather than declare an element or text property, you may want to customize the behavior of your editor. Various plugin options are available to modify the behavior of Plate.
+Rather than declare an element or text property, you may want to customize the
+behavior of your editor. Plugin fields describe that behavior.
 
 ### Plugin Rules
 
@@ -126,7 +127,9 @@ See the [Plugin Rules guide](/docs/plugin-rules) for a complete list of availabl
 
 ### Event Handlers
 
-The recommended way to respond to user-generated events from inside a plugin is with the `handlers` plugin option. A handler should be a function that takes a `PlatePluginContext & { event }` object.
+The recommended way to respond to user-generated events from inside a plugin is
+the `handlers` field. A handler receives a
+`PlatePluginContext & { event }` object.
 
 The `onChange` handler, which is called when the editor value changes, is an exception to this rule; the context object includes the changed `value` instead of `event`.
 
@@ -210,14 +213,14 @@ Put plugin reads and services under `api`, and document mutations under
 
 ```ts
 const CustomPlugin = createPlatePlugin({
-  api: ({ getOptions }) => ({
-    getPrefix: () => getOptions().prefix,
+  api: ({ store }) => ({
+    getPrefix: () => store.get('prefix'),
   }),
+  initialState: { prefix: "Note: " },
   key: "custom",
-  options: { prefix: "Note: " },
-  update: ({ getOptions, tx }) => ({
+  update: ({ store, tx }) => ({
     insertPrefix: () => {
-      tx.text.insert(getOptions().prefix);
+      tx.text.insert(store.get('prefix'));
     },
   }),
 });
@@ -275,13 +278,13 @@ Each plugin has its own store, which can be used to manage plugin-specific state
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: "myPlugin",
-  options: {
+  initialState: {
     count: 0,
   },
+  key: "myPlugin",
   handlers: {
-    onClick: ({ setOption }) => {
-      setOption("count", 1);
+    onClick: ({ store }) => {
+      store.set({ count: 1 });
     },
   },
 });
@@ -291,20 +294,22 @@ You can access and update the store using the following methods:
 
 ```ts
 // Get the current value
-const count = editor.plugin(MyPlugin).getOption("count");
+const count = editor.plugin(MyPlugin).store.get("count");
 
 // Set a new value
-editor.plugin(MyPlugin).setOption("count", 5);
+editor.plugin(MyPlugin).store.set({ count: 5 });
 
 // Update the value based on the previous state
-editor.plugin(MyPlugin).setOption("count", (prev) => prev + 1);
+editor.plugin(MyPlugin).store.set((state) => {
+  state.count += 1;
+});
 ```
 
-In React components, you can use the `usePluginOption` or `usePluginOptions` hook to subscribe to store changes:
+In React components, use `usePluginStore` to subscribe to store changes:
 
 ```tsx
 const MyComponent = () => {
-  const count = usePluginOption(MyPlugin, "count");
+  const count = usePluginStore(MyPlugin, "count");
   return <div>Count: {count}</div>;
 };
 ```
@@ -350,23 +355,18 @@ const plugins = [CodeBlockPlugin, CodeHighlightPlugin];
 Omit `CodeHighlightPlugin` for plain code blocks. The host does not install
 optional enhancements.
 
-### Plugin Priority
+### Plugin Order
 
-The `priority` property determines the order in which plugins are registered and executed. Plugins with higher priority values are processed first:
+Dependencies load before their dependents. Independent plugins keep the order
+provided by the application:
 
 ```ts
-const HighPriorityPlugin = createPlatePlugin({
-  key: "highPriority",
-  priority: 100,
-});
-
-const LowPriorityPlugin = createPlatePlugin({
-  key: "lowPriority",
-  priority: 50,
-});
+const plugins = [LinkPlugin, MentionPlugin, CommentPlugin];
 ```
 
-This is particularly useful when you need to ensure certain plugins are initialized or run before others.
+Use `dependencies` for a real installation requirement. Competing shortcuts,
+input rules, and codecs own their local `priority`; plugin registration has no
+global priority.
 
 ### HTML Input Hooks
 
@@ -403,7 +403,7 @@ If you need to pass an explicit type as generic, you can use `createPlatePlugin`
 The `createPlatePlugin` function allows you to create a typed plugin:
 
 ```ts
-type CodeBlockOptions = {
+type CodeBlockState = {
   language: string;
   syntax: boolean;
   syntaxPopularFirst: boolean;
@@ -419,22 +419,22 @@ type CodeBlockUpdate = {
 };
 
 const CodeBlockPlugin = createPlatePlugin({
-  api: ({ getOptions }): CodeBlockApi => ({
-    getLanguage: () => getOptions().language,
-    getSyntaxState: () => getOptions().syntax,
+  api: ({ store }): CodeBlockApi => ({
+    getLanguage: () => store.get('language'),
+    getSyntaxState: () => store.get('syntax'),
   }),
-  key: 'codeBlock',
-  type: 'code_block',
-  options: {
+  initialState: {
     language: 'typescript',
     syntax: true,
     syntaxPopularFirst: false,
-  } as CodeBlockOptions,
-  update: ({ getOptions, tx }): CodeBlockUpdate => ({
+  } as CodeBlockState,
+  key: 'codeBlock',
+  type: 'code_block',
+  update: ({ store, tx }): CodeBlockUpdate => ({
     insertCodeBlock: () => {
       tx.nodes.insert({
         type: 'code_block',
-        language: getOptions().language,
+        language: store.get('language'),
         children: [{ text: '' }],
       });
     },
@@ -451,20 +451,20 @@ const editor = createPlateEditor({
   plugins: [CodeBlockPlugin],
 });
 
-// Type-safe access to options
-const options = editor.plugin(CodeBlockPlugin).getOptions();
-options.language;
-options.syntax;
-options.syntaxPopularFirst;
+// Type-safe access to state
+const state = editor.plugin(CodeBlockPlugin).store.get();
+state.language;
+state.syntax;
+state.syntaxPopularFirst;
 
 // Type-safe API
 editor.api.codeBlock.getSyntaxState();
 editor.api.codeBlock.getLanguage();
 
-// Type-safe transactions
-editor.update((tx) => tx.insert.codeBlock());
+// Type-safe updates
+editor.update.codeBlock.insertCodeBlock();
 ```
 
 ## See also
 
-See the [PlatePlugin API](/docs/api/core/plate-plugin) for more plugin options.
+See the [PlatePlugin API](/docs/api/core/plate-plugin) for every plugin field.

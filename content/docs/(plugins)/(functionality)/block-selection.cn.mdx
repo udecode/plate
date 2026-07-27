@@ -83,7 +83,7 @@ const editor = createPlateEditor({
 
 #### 从选择中排除块
 
-您可以使用 `options.isSelectable` 控制哪些块可被选择。此函数接收元素及其路径，如果块可选择则返回 `true`。
+您可以使用 `initialState.isSelectable` 控制哪些块可被选择。此函数接收元素及其路径，如果块可选择则返回 `true`。
 
 例如，排除代码行、列和表格单元格：
 
@@ -91,7 +91,7 @@ const editor = createPlateEditor({
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 BlockSelectionPlugin.configure({
-  options: {
+  initialState: {
     isSelectable: (element, path) => {
       if (['code_line', 'column', 'td'].includes(element.type)) {
         return false;
@@ -118,7 +118,7 @@ BlockSelectionPlugin.configure({
 const scrollContainer = '.editor-scroll-container';
 
 BlockSelectionPlugin.configure({
-  options: {
+  initialState: {
     areaOptions: {
       boundaries: scrollContainer,
       container: scrollContainer,
@@ -282,11 +282,11 @@ render: {
 
 聚焦块选择的影子输入框。此输入框处理选中块的复制、删除和粘贴事件。
 
-### `editor.api.blockSelection.getNodes(options?)`
+### `editor.read.blockSelection.getNodes(options?)`
 
 获取编辑器中选中的块。
 
-<API name="editor.api.blockSelection.getNodes">
+<API name="editor.read.blockSelection.getNodes">
 <APIParameters>
   <APIItem name="options" type="{ selectionFallback?: boolean }" optional>
     获取节点的选项。
@@ -304,11 +304,11 @@ render: {
 </APIReturns>
 </API>
 
-### `editor.api.blockSelection.has(id)`
+### `editor.plugin(BlockSelectionPlugin).store.get('has', id)`
 
 检查一个或多个块是否被选中。
 
-<API name="editor.api.blockSelection.has">
+<API name="editor.plugin(BlockSelectionPlugin).store.get">
   <APIParameters>
     <APIItem name="id" type="string | string[]">
       要检查的块的 ID。
@@ -408,7 +408,7 @@ render: {
 
 ### `editor.update.blockSelection.select`
 
-在编辑器中选择由 `editor.api.blockSelection.getNodes()` 返回的节点并重置选中的 ID。
+在编辑器中选择由 `editor.read.blockSelection.getNodes()` 返回的节点并重置选中的 ID。
 
 ### `editor.update.blockSelection.setNodes`
 

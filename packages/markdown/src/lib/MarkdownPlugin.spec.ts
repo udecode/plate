@@ -41,7 +41,7 @@ describe('MarkdownPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         MarkdownPlugin.configure({
-          options: {
+          initialState: {
             remarkPlugins: [remarkPlugin],
             remarkStringifyOptions: { bullet: '+' },
           },
@@ -65,19 +65,19 @@ describe('MarkdownPlugin', () => {
       return data.getData('text/markdown');
     };
 
-    expect(editor.plugin(MarkdownPlugin).getOptions().remarkPlugins?.[0]).toBe(
+    expect(editor.plugin(MarkdownPlugin).store.get().remarkPlugins?.[0]).toBe(
       remarkPlugin
     );
-    expect(editor.api.markdown.serialize({ value: { children: value } })).toBe(
+    expect(editor.read.markdown.serialize({ value: { children: value } })).toBe(
       '+ Item\n'
     );
     expect(serializeHost()).toBe('+ Item\n');
 
-    editor.plugin(MarkdownPlugin).setOptions({
+    editor.plugin(MarkdownPlugin).store.set({
       remarkStringifyOptions: { bullet: '*' },
     });
 
-    expect(editor.api.markdown.serialize({ value: { children: value } })).toBe(
+    expect(editor.read.markdown.serialize({ value: { children: value } })).toBe(
       '* Item\n'
     );
     expect(serializeHost()).toBe('* Item\n');
@@ -96,11 +96,11 @@ describe('MarkdownPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         MarkdownPlugin.configure({
-          options: { remarkPlugins: configuredPlugins },
+          initialState: { remarkPlugins: configuredPlugins },
         }),
       ],
     });
-    const snapshot = editor.plugin(MarkdownPlugin).getOptions().remarkPlugins!;
+    const snapshot = editor.plugin(MarkdownPlugin).store.get().remarkPlugins!;
     const snapshotPreset = snapshot[0] as {
       readonly plugins: readonly Pluggable[];
       readonly settings: {
@@ -137,7 +137,7 @@ describe('MarkdownPlugin', () => {
     expect(Object.isFrozen(materializedPreset.settings?.join)).toBe(false);
     materializedPreset.plugins!.push(() => undefined);
     expect(snapshotPreset.plugins).toHaveLength(1);
-    expect(typeof editor.api.markdown.serialize()).toBe('string');
+    expect(typeof editor.read.markdown.serialize()).toBe('string');
   });
 
   it('exposes default options, root markdown api, and codec deserialization', () => {
@@ -146,7 +146,7 @@ describe('MarkdownPlugin', () => {
     });
     const plugin = editor.getPlugin(MarkdownPlugin);
 
-    expect(editor.plugin(MarkdownPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(MarkdownPlugin).store.get()).toMatchObject({
       allowedNodes: null,
       disallowedNodes: null,
       plainMarks: null,
@@ -156,7 +156,8 @@ describe('MarkdownPlugin', () => {
     });
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
-    expect(typeof editor.api.markdown.serialize).toBe('function');
+    expect(typeof editor.api.markdown.serializeInline).toBe('function');
+    expect(typeof editor.read.markdown.serialize).toBe('function');
     expect('parser' in plugin).toBe(false);
     expect(editor.api.markdown.deserialize('**bold**')).toEqual({
       children: [

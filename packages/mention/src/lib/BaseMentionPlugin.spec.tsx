@@ -35,8 +35,8 @@ describe('BaseMentionPlugin', () => {
       },
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
-    const plugin = editor.getPlugin(BaseMentionPlugin);
     const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
+    const state = editor.plugin(BaseMentionPlugin).store.get();
 
     expect(inputPlugin.key).toBe('mentionInput');
     expect(inputPlugin.type).toBe(NODES.mentionInput);
@@ -48,8 +48,8 @@ describe('BaseMentionPlugin', () => {
       void: true,
       voidKind: 'markable-inline',
     });
-    expect(plugin.options.trigger).toBe('@');
-    expect(plugin.options.createComboboxInput?.('@')).toEqual({
+    expect(state.trigger).toBe('@');
+    expect(state.createComboboxInput?.('@')).toEqual({
       children: [{ text: '' }],
       trigger: '@',
       type: NODES.mentionInput,
@@ -76,6 +76,75 @@ describe('BaseMentionPlugin', () => {
       value: 'Ada',
     });
     expect(children[2]).toEqual({ text: 'llo' });
+  });
+
+  it('inserts a trailing space when the mention lands at block end', () => {
+    const MentionPlugin = BaseMentionPlugin.configure({
+      initialState: { insertSpaceAfterMention: true },
+    });
+    const editor = createBaseEditor({
+      plugins: [MentionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hi' }], type: 'p' }],
+    });
+
+    editor
+      .plugin(MentionPlugin)
+      .update.insert({ key: 'u1', search: 'ad', value: 'Ada' });
+
+    const entry = editor.read.nodes.get<Element>([0]);
+    assert(entry);
+    const children = entry[0].children;
+
+    expect(children[1]).toMatchObject({
+      children: [{ text: '' }],
+      key: 'u1',
+      type: KEYS.mention,
+      value: 'Ada',
+    });
+    expect(children[2]).toEqual({ text: ' ' });
+    expect(editor.read.selection()).toEqual({
+      kind: 'text',
+      anchor: { offset: 1, path: [0, 2] },
+      focus: { offset: 1, path: [0, 2] },
+    });
+  });
+
+  it('skips the trailing space when the mention is inserted mid-block', () => {
+    const MentionPlugin = BaseMentionPlugin.configure({
+      initialState: { insertSpaceAfterMention: true },
+    });
+    const editor = createBaseEditor({
+      plugins: [MentionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    editor
+      .plugin(MentionPlugin)
+      .update.insert({ key: 'u1', search: 'ad', value: 'Ada' });
+
+    const entry = editor.read.nodes.get<Element>([0]);
+    assert(entry);
+
+    expect(entry[0].children).toMatchObject([
+      { text: 'he' },
+      {
+        children: [{ text: '' }],
+        key: 'u1',
+        type: KEYS.mention,
+        value: 'Ada',
+      },
+      { text: 'llo' },
+    ]);
   });
 
   it('deleteBackward removes the adjacent mention atom', () => {

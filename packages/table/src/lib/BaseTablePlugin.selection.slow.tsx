@@ -27,7 +27,9 @@ describe('table selection slow contracts', () => {
   {
     jsxt;
 
-    const getTestTablePlugins = (options?: Partial<TableConfig['options']>) => [
+    const getTestTablePlugins = (
+      options?: Partial<TableConfig['initialState']>
+    ) => [
       createBasePlugin({
         key: 'tableSelectionTestSchema',
         schema: {
@@ -44,7 +46,7 @@ describe('table selection slow contracts', () => {
         },
       }),
       BaseTablePlugin.configure({
-        options: {
+        initialState: {
           disableMerge: true,
           ...options,
         },
@@ -53,7 +55,7 @@ describe('table selection slow contracts', () => {
 
     const createTableEditor = (
       input: TestEditor,
-      options?: Partial<TableConfig['options']>
+      options?: Partial<TableConfig['initialState']>
     ) =>
       createPlateEditor({
         plugins: getTestTablePlugins(options),
@@ -513,28 +515,28 @@ describe('table selection slow contracts', () => {
           const editor = createTableEditor(input);
 
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
           ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .getOption('selectedCells')
+              .read.getSelectedCells()
               ?.map((cell: Element) => cell.id)
           ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .getOption('selectedTables')
+              .read.getSelectedTables()
               ?.map((table: Element) => table.type)
           ).toStrictEqual(['table']);
+          expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
+            true
+          );
           expect(
-            editor.plugin(BaseTablePlugin).getOption('isSelectingCell')
+            editor.plugin(BaseTablePlugin).read.isCellSelected('c12')
           ).toBe(true);
           expect(
-            editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c12')
-          ).toBe(true);
-          expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c21')?.id
+            editor.plugin(BaseTablePlugin).read.getSelectedCell('c21')?.id
           ).toBe('c21');
         });
 
@@ -567,22 +569,22 @@ describe('table selection slow contracts', () => {
           const editor = createTableEditor(input);
 
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
           ).toBeNull();
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCells')
+            editor.plugin(BaseTablePlugin).read.getSelectedCells()
           ).toBeNull();
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedTables')
+            editor.plugin(BaseTablePlugin).read.getSelectedTables()
           ).toBeNull();
+          expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
+            false
+          );
           expect(
-            editor.plugin(BaseTablePlugin).getOption('isSelectingCell')
+            editor.plugin(BaseTablePlugin).read.isCellSelected('c11')
           ).toBe(false);
           expect(
-            editor.plugin(BaseTablePlugin).getOption('isCellSelected', 'c11')
-          ).toBe(false);
-          expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c11')
+            editor.plugin(BaseTablePlugin).read.getSelectedCell('c11')
           ).toBeNull();
         });
 
@@ -613,7 +615,7 @@ describe('table selection slow contracts', () => {
           editor.update.nodes.set({ background: 'red' }, { at: [0, 0, 0] });
 
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCell', 'c11')
+            editor.plugin(BaseTablePlugin).read.getSelectedCell('c11')
           ).toMatchObject({
             background: 'red',
             id: 'c11',
@@ -621,7 +623,7 @@ describe('table selection slow contracts', () => {
           expect(
             editor
               .plugin(BaseTablePlugin)
-              .getOption('selectedCells')
+              .read.getSelectedCells()
               ?.map((cell: Element) => cell.id)
           ).toStrictEqual(['c11', 'c12']);
         });
@@ -654,13 +656,13 @@ describe('table selection slow contracts', () => {
           });
 
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
           ).toStrictEqual(['c11', 'c12']);
 
           editor.update.selection.set(editor.read.points.start([0, 0, 0])!);
 
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
           ).toBeNull();
         });
 
@@ -700,7 +702,7 @@ describe('table selection slow contracts', () => {
           });
 
           expect(
-            editor.plugin(BaseTablePlugin).getOption('selectedCellIds')
+            editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
           ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
         });
       });
@@ -715,7 +717,7 @@ describe('table selection slow contracts', () => {
         nodeId: true,
         plugins: [
           BaseTablePlugin.configure({
-            options: { disableMerge: true },
+            initialState: { disableMerge: true },
           }),
         ],
         selection: input.selection,
@@ -756,30 +758,32 @@ describe('table selection slow contracts', () => {
         const editor = createTableEditor(input);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellEntries()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellEntries()
         ).toHaveLength(2);
         expect(
           editor
             .plugin(BaseTablePlugin)
-            .api.getSelectedCells()
+            .read.getSelectedCells()
             ?.map((cell) => cell.id)
         ).toEqual(['c11', 'c21']);
-        expect(editor.plugin(BaseTablePlugin).api.getSelectedCellIds()).toEqual(
-          ['c11', 'c21']
-        );
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedTableIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+        ).toEqual(['c11', 'c21']);
+        expect(
+          editor.plugin(BaseTablePlugin).read.getSelectedTableIds()
         ).toEqual(['table-1']);
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedTables()
+          editor.plugin(BaseTablePlugin).read.getSelectedTables()
         ).toHaveLength(1);
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCell('c21')?.id
+          editor.plugin(BaseTablePlugin).read.getSelectedCell('c21')?.id
         ).toBe('c21');
-        expect(editor.plugin(BaseTablePlugin).api.isCellSelected('c11')).toBe(
+        expect(editor.plugin(BaseTablePlugin).read.isCellSelected('c11')).toBe(
           true
         );
-        expect(editor.plugin(BaseTablePlugin).api.isSelectingCell()).toBe(true);
+        expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
+          true
+        );
       });
 
       it('returns nullish values when only one cell is active and updates after selection changes', () => {
@@ -804,15 +808,15 @@ describe('table selection slow contracts', () => {
         const editor = createTableEditor(input);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCells()
+          editor.plugin(BaseTablePlugin).read.getSelectedCells()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedTables()
+          editor.plugin(BaseTablePlugin).read.getSelectedTables()
         ).toBeNull();
-        expect(editor.plugin(BaseTablePlugin).api.isSelectingCell()).toBe(
+        expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
           false
         );
 
@@ -823,9 +827,11 @@ describe('table selection slow contracts', () => {
         });
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCells()
+          editor.plugin(BaseTablePlugin).read.getSelectedCells()
         ).toHaveLength(2);
-        expect(editor.plugin(BaseTablePlugin).api.isSelectingCell()).toBe(true);
+        expect(editor.plugin(BaseTablePlugin).read.isSelectingCell()).toBe(
+          true
+        );
       });
 
       it('returns null values for a single-cell selection', () => {
@@ -847,13 +853,13 @@ describe('table selection slow contracts', () => {
         const editor = createTableEditor(input);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCells()
+          editor.plugin(BaseTablePlugin).read.getSelectedCells()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedCellIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
         ).toBeNull();
         expect(
-          editor.plugin(BaseTablePlugin).api.getSelectedTableIds()
+          editor.plugin(BaseTablePlugin).read.getSelectedTableIds()
         ).toBeNull();
       });
     });
@@ -970,7 +976,7 @@ describe('table selection slow contracts', () => {
       expect(
         editor
           .plugin(BaseTablePlugin)
-          .api.getSelectedCellsBoundingBox([target[0]])
+          .read.getSelectedCellsBoundingBox([target[0]])
       ).toEqual({ maxCol: 1, maxRow: 1, minCol: 1, minRow: 1 });
     });
 
@@ -1005,7 +1011,7 @@ describe('table selection slow contracts', () => {
 
         const tableSelection = editor
           .plugin(BaseTablePlugin)
-          .api.createCellSelection({ anchor, focus });
+          .read.createCellSelection({ anchor, focus });
 
         assert(tableSelection);
         editor.update.selection.set(tableSelection);
@@ -1025,9 +1031,9 @@ describe('table selection slow contracts', () => {
             )
           ).size
         ).toBe(expectedIds.length);
-        expect(editor.plugin(BaseTablePlugin).api.getSelectedCellIds()).toEqual(
-          expectedIds
-        );
+        expect(
+          editor.plugin(BaseTablePlugin).read.getSelectedCellIds()
+        ).toEqual(expectedIds);
         expect(selection.cells).toEqual(
           expectedIds.map((_, index) => {
             const range = editor.read.ranges.get([0, 0, index]);
@@ -1054,7 +1060,7 @@ describe('table selection slow contracts', () => {
 
       const selection = editor
         .plugin(BaseTablePlugin)
-        .api.createCellSelection({ anchor, focus });
+        .read.createCellSelection({ anchor, focus });
 
       assert(selection);
       editor.update.selection.set(selection);
@@ -1159,31 +1165,33 @@ describe('table selection slow contracts', () => {
       assert(upperRightPoint);
       assert(lowerRightPoint);
       expect(
-        editor.plugin(BaseTablePlugin).api.getLeftCell({ at: lowerRightPoint })
+        editor.plugin(BaseTablePlugin).read.getLeftCell({ at: lowerRightPoint })
       ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
       expect(
-        editor.plugin(BaseTablePlugin).api.getTopCell({ at: lowerRightPoint })
+        editor.plugin(BaseTablePlugin).read.getTopCell({ at: lowerRightPoint })
       ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
       expect(
-        editor.plugin(BaseTablePlugin).api.getCellInNextRow(upperLeftPoint)
+        editor.plugin(BaseTablePlugin).read.getCellInNextRow(upperLeftPoint)
       ).toEqual([expect.objectContaining({ id: 'root-10' }), [0, 1, 0]]);
       expect(
-        editor.plugin(BaseTablePlugin).api.getCellInPreviousRow(lowerRightPoint)
+        editor
+          .plugin(BaseTablePlugin)
+          .read.getCellInPreviousRow(lowerRightPoint)
       ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
       expect(
         editor
           .plugin(BaseTablePlugin)
-          .api.getNextCell(upperLeft, upperLeftPoint, upperRow)
+          .read.getNextCell(upperLeft, upperLeftPoint, upperRow)
       ).toEqual([expect.objectContaining({ id: 'root-01' }), [0, 0, 1]]);
       expect(
         editor
           .plugin(BaseTablePlugin)
-          .api.getPreviousCell(upperRight, upperRightPoint, upperRow)
+          .read.getPreviousCell(upperRight, upperRightPoint, upperRow)
       ).toEqual([expect.objectContaining({ id: 'root-00' }), [0, 0, 0]]);
 
       const tableSelection = editor
         .plugin(BaseTablePlugin)
-        .api.createCellSelection(rootRange);
+        .read.createCellSelection(rootRange);
 
       assert(tableSelection);
       rootEditor.update.selection.set(tableSelection);

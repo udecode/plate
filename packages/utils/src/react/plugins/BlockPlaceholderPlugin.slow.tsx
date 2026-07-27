@@ -62,7 +62,7 @@ const createEditor = (options?: {
   className?: string;
   nodeId?: boolean;
   placeholders?: Record<string, string>;
-  query?: BlockPlaceholderConfig['options']['query'];
+  query?: BlockPlaceholderConfig['initialState']['query'];
   readOnly?: boolean;
   selection?: TextSelection;
   value?: Value;
@@ -72,7 +72,7 @@ const createEditor = (options?: {
       BlockPlaceholderFixtureSchemaPlugin,
       ParagraphWithComponentPlugin,
       BlockPlaceholderPlugin.configure({
-        options: {
+        initialState: {
           ...(options?.className !== undefined
             ? { className: options.className }
             : {}),
@@ -101,7 +101,7 @@ const getPlaceholder = <TEditor extends PlateEditor>(
 ) =>
   editor
     .plugin(BlockPlaceholderPlugin)
-    .getOption('placeholder', editor.read.nodes.path(node));
+    .store.get('placeholder', editor.read.nodes.path(node));
 
 const getEditorElement = <TEditor extends PlateEditor>(
   editor: TEditor,

@@ -16,7 +16,7 @@ import {
   useEditorPlugin,
   useEditor,
   usePath,
-  usePluginOption,
+  usePluginStore,
 } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -40,18 +40,20 @@ export const BlockDiscussion: RenderNodeWrapper = (_props) => (props) => (
 
 const BlockCommentContent = ({ children }: PlateElementProps) => {
   const editor = useEditor();
-  const { api: commentsApi } = useEditorPlugin(commentPlugin);
-  const { api: suggestionApi } = useEditorPlugin(suggestionPlugin);
+  const { api: commentsApi, read: commentsRead } =
+    useEditorPlugin(commentPlugin);
+  const { api: suggestionApi, read: suggestionRead } =
+    useEditorPlugin(suggestionPlugin);
   const blockPath = usePath();
   const isTopLevelBlock = blockPath.length === 1;
   const draftCommentNode = isTopLevelBlock
-    ? commentsApi.node({ at: blockPath, isDraft: true })
+    ? commentsRead.node({ at: blockPath, isDraft: true })
     : undefined;
   const commentNodes = isTopLevelBlock
-    ? [...commentsApi.nodes({ at: blockPath })]
+    ? [...commentsRead.nodes({ at: blockPath })]
     : [];
   const suggestionNodes = isTopLevelBlock
-    ? [...suggestionApi.nodes({ at: blockPath })].filter(
+    ? [...suggestionRead.nodes({ at: blockPath })].filter(
         ([node]) => !node[SUGGESTION_TRANSIENT_KEY]
       )
     : [];
@@ -62,13 +64,13 @@ const BlockCommentContent = ({ children }: PlateElementProps) => {
   const discussionsCount = resolvedDiscussions.length;
   const totalCount = suggestionsCount + discussionsCount;
 
-  const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
+  const activeSuggestionId = usePluginStore(suggestionPlugin, 'activeId');
   const activeSuggestion =
     activeSuggestionId &&
     resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
 
-  const commentingBlock = usePluginOption(commentPlugin, 'commentingBlock');
-  const activeCommentId = usePluginOption(commentPlugin, 'activeId');
+  const commentingBlock = usePluginStore(commentPlugin, 'commentingBlock');
+  const activeCommentId = usePluginStore(commentPlugin, 'activeId');
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&

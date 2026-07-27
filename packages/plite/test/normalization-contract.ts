@@ -9,11 +9,13 @@ import {
 } from '@platejs/plite/internal';
 import {
   createEditor,
+  defineEditorExtension,
   type Descendant,
   type Editor,
   ElementApi,
   type Element,
   type EditorExtension,
+  type EditorExtensionTypeProvider,
   PathApi,
   schema,
   SelectionApi,
@@ -693,6 +695,68 @@ describe('plite normalization contract', () => {
       },
     ]);
     assert.equal(rootCalls >= 2, true);
+  });
+
+  it('preserves installed transaction groups in correction tx', () => {
+    type ListTx = {
+      list: {
+        hasInvalid: () => boolean;
+        repair: () => void;
+      };
+    };
+    type ListTxProvider = EditorExtensionTypeProvider<() => { tx: ListTx }> & {
+      name: 'list-correction-tx';
+    };
+    type ListCorrectionEditor = Editor<Value, readonly [ListTxProvider]>;
+
+    let correctionCalls = 0;
+    const extension = defineEditorExtension<ListCorrectionEditor>()({
+      corrections: [
+        {
+          event: 'properties',
+          correct({ entry, tx }) {
+            const [node, path] = entry;
+
+            if (
+              path.length === 1 &&
+              'invalid' in node &&
+              node.invalid === true
+            ) {
+              correctionCalls += 1;
+              assert.equal(tx.list.hasInvalid(), true);
+              tx.list.repair();
+            }
+          },
+        },
+      ],
+      name: 'list-correction-tx',
+      tx: {
+        list(tx) {
+          return {
+            hasInvalid: () =>
+              tx.nodes
+                .children()
+                .some((node) => 'invalid' in node && node.invalid === true),
+            repair: () => tx.nodes.set({ invalid: false }, { at: [0] }),
+          };
+        },
+      },
+    });
+    const editor = createEditor({
+      extensions: [extension] as const,
+      initialValue: [
+        {
+          type: 'paragraph',
+          invalid: false,
+          children: [{ text: 'alpha' }],
+        },
+      ],
+    });
+
+    editor.update.nodes.set({ invalid: true }, { at: [0] });
+
+    assert.equal(editor.read.children()[0]?.invalid, false);
+    assert.equal(correctionCalls, 1);
   });
 
   it('cleans up extension corrections', () => {

@@ -4,50 +4,48 @@ import { KEYS } from '@platejs/utils';
 import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteInputPlugin,
-  BaseFootnoteReferencePlugin,
+  BaseFootnotePlugin,
 } from './index';
-import { FootnoteInputPlugin, FootnoteReferencePlugin } from '../react';
+import { FootnoteInputPlugin, FootnotePlugin } from '../react';
 
 describe('BaseFootnotePlugins', () => {
   it('declares the input as an exact required Base and React dependency', () => {
-    expect(BaseFootnoteReferencePlugin.dependencies).toEqual([
-      BaseFootnoteInputPlugin,
-    ]);
-    expect(FootnoteReferencePlugin.dependencies).toEqual([FootnoteInputPlugin]);
+    expect(BaseFootnotePlugin.dependencies).toEqual([BaseFootnoteInputPlugin]);
+    expect(FootnotePlugin.dependencies).toEqual([FootnoteInputPlugin]);
   });
 
   it('rejects a disabled required footnote-input dependency', () => {
     expect(() =>
       createBaseEditor({
         plugins: [
-          BaseFootnoteReferencePlugin,
+          BaseFootnotePlugin,
           BaseFootnoteInputPlugin.configure({ enabled: false }),
         ],
       })
     ).toThrow(
-      /footnoteReference.*disabled.*footnoteInput|footnoteInput.*disabled.*footnoteReference/i
+      /footnote.*disabled.*footnoteInput|footnoteInput.*disabled.*footnote/i
     );
   });
 
   it('configures footnote reference as an inline void element', () => {
     const editor = createBaseEditor({
-      plugins: [BaseFootnoteReferencePlugin],
+      plugins: [BaseFootnotePlugin],
     });
-    const options = editor.plugin(BaseFootnoteReferencePlugin).getOptions();
+    const state = editor.plugin(BaseFootnotePlugin).store.get();
 
     expect(
-      editor.read.schema.element(BaseFootnoteReferencePlugin)?.behavior.inline
+      editor.read.schema.element(BaseFootnotePlugin)?.behavior.inline
     ).toBe(true);
+    expect(editor.read.schema.element(BaseFootnotePlugin)?.behavior.void).toBe(
+      true
+    );
     expect(
-      editor.read.schema.element(BaseFootnoteReferencePlugin)?.behavior.void
-    ).toBe(true);
-    expect(
-      editor.read.schema.element(BaseFootnoteReferencePlugin)?.behavior.voidKind
+      editor.read.schema.element(BaseFootnotePlugin)?.behavior.voidKind
     ).toBe('inline');
-    expect(options.trigger).toBe('^');
-    expect(options.triggerPreviousCharPattern?.test('[')).toBe(true);
-    expect(options.triggerPreviousCharPattern?.test('x')).toBe(false);
-    expect(options.createComboboxInput?.('^')).toEqual({
+    expect(state.trigger).toBe('^');
+    expect(state.triggerPreviousCharPattern?.test('[')).toBe(true);
+    expect(state.triggerPreviousCharPattern?.test('x')).toBe(false);
+    expect(state.createComboboxInput?.('^')).toEqual({
       children: [{ text: '' }],
       type: 'footnoteInput',
     });
@@ -113,12 +111,9 @@ describe('BaseFootnotePlugins', () => {
 
   it('provides footnote api and insert / navigation transforms on the editor', () => {
     const editor = createBaseEditor({
-      plugins: [
-        BaseFootnoteReferencePlugin,
-        BaseFootnoteDefinitionPlugin,
-      ] as const,
+      plugins: [BaseFootnotePlugin, BaseFootnoteDefinitionPlugin] as const,
     });
-    const api = editor.api.footnote;
+    const api = editor.read.footnote;
     const footnote = editor.update.footnote;
 
     expect(api).toBeDefined();
@@ -133,8 +128,7 @@ describe('BaseFootnotePlugins', () => {
     expect(typeof api.hasDuplicateDefinitions).toBe('function');
     expect(typeof api.duplicateIdentifiers).toBe('function');
 
-    expect(editor.update.insert).toBeDefined();
-    expect(typeof editor.update.insert.footnote).toBe('function');
+    expect(typeof editor.update.footnote.insert).toBe('function');
     expect(typeof footnote.createDefinition).toBe('function');
     expect(typeof footnote.focusDefinition).toBe('function');
     expect(typeof footnote.focusReference).toBe('function');
@@ -143,7 +137,7 @@ describe('BaseFootnotePlugins', () => {
 
   it('deleteBackward removes the adjacent footnote atom', () => {
     const editor = createBaseEditor({
-      plugins: [BaseFootnoteReferencePlugin],
+      plugins: [BaseFootnotePlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 2] },
@@ -182,7 +176,7 @@ describe('BaseFootnotePlugins', () => {
 
   it('deleteForward removes the next footnote atom', () => {
     const editor = createBaseEditor({
-      plugins: [BaseFootnoteReferencePlugin],
+      plugins: [BaseFootnotePlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 3, path: [0, 0] },
@@ -221,7 +215,7 @@ describe('BaseFootnotePlugins', () => {
 
   it('typing "^" after "[" inserts a footnote combobox input', () => {
     const editor = createBaseEditor({
-      plugins: [BaseFootnoteReferencePlugin],
+      plugins: [BaseFootnotePlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 1, path: [0, 0] },

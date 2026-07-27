@@ -3,7 +3,43 @@ title: Plate 插件
 description: Plate 插件的 API 参考文档。
 ---
 
-Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 key 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、类型或实时 options 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginOption` 或 `usePluginOptions` 订阅变化。
+Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 key 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、类型或 editor-local state 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginStore` 订阅变化。
+
+## Authoring Context
+
+插件 constructor、extension、configuration、handler、codec 和 injection
+callback 在其契约支持时会接收当前插件的 context：
+
+```ts
+const UploadPlugin = createPlatePlugin({
+  key: 'upload',
+  initialState: { active: false },
+  api: ({ store }) => ({
+    start: () => store.set({ active: true }),
+  }),
+  read: ({ state }) => ({
+    isReady: () => !!state.selection(),
+  }),
+  update: ({ tx, type }) => ({
+    insert: () => tx.nodes.insert({ children: [{ text: '' }], type }),
+  }),
+}).extend(({ api, read, store, update }) => ({
+  handlers: {
+    onFocus: () => {
+      if (!read.isReady()) return;
+
+      store.set({ active: true });
+      api.start();
+      update.insert();
+    },
+  },
+}));
+```
+
+当前插件直接使用 `store`、`api`、`read`、`update`、`type`、`plugin` 和
+`installed`。编辑器级操作、其他插件，或 scoped `update` 无法表达的事务
+metadata 才使用 `editor`。shortcut handler 和 input rule 等特殊 callback
+可能只接收 `editor`；这种情况使用精确的 typed plugin portal。
 
 ## 插件属性
 
@@ -32,12 +68,10 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
   执行单个命令， 或在 `editor.update((tx) => tx[key].method())` 中组合命令。
 </APIItem>
 
-<APIItem name="options" type="Record<string, any>">
-插件拥有的值，用于 schema 工厂、parser、codec 与运行时行为。包作者通过
-`create*Plugin()` 声明互相独立的默认值；应用用户通过一次最终
-`.configure({ options: { ... } })` 设置描述符值；通过
-`editor.plugin(MyPlugin).getOptions()`、`.setOption()` 或 `.setOptions()`
-读取或更新实时值。更新 options 不会重新编译 schema。
+<APIItem name="initialState" type="Record<string, any>">
+当前插件可变 editor-local store 的初始值。包作者通过 `create*Plugin()` 声明默认值；
+应用用户通过一次最终 `.configure({ initialState: { ... } })` 覆盖初始值。
+运行时代码通过 `editor.plugin(MyPlugin).store` 读取和更新已安装的 store。
 </APIItem>
 
 <APIItem name="component" type="NodeComponent" optional>
@@ -148,8 +182,8 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APIItem name="schema" type="PluginSchema<C> | null">
 通过 `element`、`mark`、`properties` 和 `contentRoots` 字段声明插件的 Plite
 模型。工厂通过 `contentRoots: [own.contentRoot(...)]` 声明元素拥有的根。
-Schema 工厂接收已解析的插件 `type`、`options` 快照和已安装插件类型的类型化
-helper。
+Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快照和已安装插件
+类型的类型化 helper。
 布尔文本属性使用 `property.boolean({ default: false, omitDefault: true })`。
 </APIItem>
 
@@ -396,9 +430,9 @@ editOnly: {
 
 <API name="Methods">
 <APIMethods>
-<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => Partial<Pick<PlatePluginConfig, 'options' | 'handlers' | 'render' | 'shortcuts'>>)) => ConfiguredPlatePlugin">
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => Partial<Pick<PlatePluginConfig, 'initialState' | 'handlers' | 'render' | 'shortcuts'>>)) => ConfiguredPlatePlugin">
 应用一次最终用户配置，并返回不能再次配置或扩展的描述符。对象形式用于定义字段；
-回调形式可根据已解析编辑器上下文生成已有的 `options`、`handlers`、`render` 或
+回调形式可根据已解析编辑器上下文生成已有的 `initialState`、`handlers`、`render` 或
 `shortcuts`。此前声明的运行时扩展可以读取配置值，重叠字段最终仍以用户配置为准。
 
 ```ts
@@ -485,17 +519,9 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
       Inline extension object 不需要 helper；从 `@platejs/plite` import 的同名
       函数用于 standalone Plite extension。
 </APIItem>
-<APIItem name="getOption" type="function">
-      获取特定选项值的函数。
-</APIItem>
-<APIItem name="getOptions" type="function">
-      获取插件所有选项的函数。
-</APIItem>
-<APIItem name="setOption" type="function">
-      设置特定选项值的函数。
-</APIItem>
-<APIItem name="setOptions" type="function">
-      设置多个选项的函数。
+<APIItem name="store" type="PluginStore<C>">
+      读取、更新和订阅当前插件的 editor-local state。命名 selector 是该 state
+      的纯函数。
 </APIItem>
 </APIAttributes>
 </API>
@@ -508,7 +534,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 <APIAttributes>
 <APIItem name="C" type="AnyPluginConfig = PluginConfig">
       表示插件契约，包括
-      `key`、`options`、`api`、`tx`、selectors、dependencies 和 schema 推断。
+      `key`、`initialState`、`api`、`read`、`update`、selectors、dependencies 和 schema 推断。
 </APIItem>
 </APIAttributes>
 </API>

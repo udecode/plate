@@ -1,11 +1,9 @@
 import * as React from 'react';
 
 import type { PliteElementProps } from 'platejs/static';
-import type { Element } from '@platejs/plite';
-
-import { type Heading, BaseTocPlugin, isHeading } from '@platejs/toc';
+import { type Heading, BaseTocPlugin } from '@platejs/toc';
 import { cva } from 'class-variance-authority';
-import { NodeApi, type BaseEditor } from 'platejs';
+import type { BaseEditor } from 'platejs';
 import { PliteElement } from 'platejs/static';
 
 import { Button } from '@/components/ui/button';
@@ -53,45 +51,10 @@ export function TocElementStatic(props: PliteElementProps) {
   );
 }
 
-const headingDepth: Record<string, number> = {
-  h1: 1,
-  h2: 2,
-  h3: 3,
-  h4: 4,
-  h5: 5,
-  h6: 6,
-};
-
 const getHeadingList = (editor?: BaseEditor) => {
   if (!editor) return [];
 
-  const options = editor.plugin(BaseTocPlugin).getOptions();
-
-  if (options.queryHeading) {
-    return options.queryHeading(editor);
-  }
-
-  const headingList: Heading[] = [];
-
-  const values = editor.read.nodes.toArray<Element>({
-    at: [],
-    match: (n) => isHeading(n),
-  });
-
-  if (!values) return [];
-
-  values.forEach(([node, path]) => {
-    const { type } = node;
-    const title = NodeApi.string(node);
-    const depth = headingDepth[type];
-    const id = node.id as string;
-
-    if (title) {
-      headingList.push({ id, depth, path, title, type });
-    }
-  });
-
-  return headingList;
+  return editor.plugin(BaseTocPlugin).read.headings();
 };
 
 /**

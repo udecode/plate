@@ -8,7 +8,7 @@ import { BaseFilePlugin } from '../BaseFilePlugin';
 import { BaseVideoPlugin } from '../BaseVideoPlugin';
 import { BaseImagePlugin } from '../image/BaseImagePlugin';
 
-export type MediaPlaceholderOptions = {
+export type MediaPlaceholderState = {
   rules?: PlaceholderRule[];
 };
 
@@ -24,7 +24,7 @@ export const BasePlaceholderPlugin = createBasePlugin({
     BaseVideoPlugin,
   ],
   key: KEYS.placeholder,
-  options: {} as MediaPlaceholderOptions,
+  initialState: {} as MediaPlaceholderState,
   schema: {
     element: {
       properties: {

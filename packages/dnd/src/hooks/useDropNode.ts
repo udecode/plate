@@ -107,7 +107,7 @@ const useDomDropNode = (
           orientation,
         });
 
-        const onDropFiles = editor.plugin(DndPlugin).getOptions().onDropFiles;
+        const onDropFiles = editor.plugin(DndPlugin).store.get().onDropFiles;
 
         if (!result || !onDropFiles) return;
 

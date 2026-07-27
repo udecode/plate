@@ -1,12 +1,7 @@
 import { ElementApi, KEYS, PathApi, getPluginType } from 'platejs';
 import { BaseAIPlugin } from '@platejs/ai';
+import { AIChatPlugin } from '@platejs/ai/react';
 
-import { AIChatPlugin } from '../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';
-import {
-  getInsertPreviewStart,
-  streamInsertChunk,
-} from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamInsertChunk';
-import { acceptAIChat } from '../../../../../../packages/ai/src/react/ai-chat/transforms/acceptAIChat';
 import { createTestEditor } from './__tests__/createTestEditor';
 
 const streamPreview = (chunks: string[]) => {
@@ -14,12 +9,12 @@ const streamPreview = (chunks: string[]) => {
   const initialSelection = JSON.parse(JSON.stringify(editor.read.selection()));
   const initialValue = JSON.parse(JSON.stringify(editor.read.children()));
 
-  editor.plugin(AIChatPlugin).setOption('mode', 'insert');
-  editor.plugin(AIChatPlugin).setOption('open', true);
+  editor.plugin(AIChatPlugin).store.set({ mode: 'insert', open: true });
 
-  const { startBlock, startInEmptyParagraph } = getInsertPreviewStart(editor);
+  const aiChat = editor.plugin(AIChatPlugin);
+  const { startBlock, startInEmptyParagraph } = aiChat.read.insertStart();
 
-  editor.plugin(BaseAIPlugin).api.beginPreview({
+  editor.plugin(BaseAIPlugin).update.beginPreview({
     originalBlocks:
       startInEmptyParagraph && startBlock && ElementApi.isElement(startBlock)
         ? [structuredClone(startBlock)]
@@ -38,20 +33,22 @@ const streamPreview = (chunks: string[]) => {
     );
   });
 
-  editor.plugin(AIChatPlugin).setOption('streaming', true);
+  editor.plugin(AIChatPlugin).store.set({ streaming: true });
 
   for (const chunk of chunks) {
-    streamInsertChunk(editor, chunk, {
+    aiChat.update.insertChunk(chunk, {
       textProps: {
         [getPluginType(editor, KEYS.ai)]: true,
       },
     });
   }
 
-  editor.plugin(AIChatPlugin).setOption('streaming', false);
-  editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
-  editor.plugin(AIChatPlugin).setOption('_blockPath', null);
-  editor.plugin(AIChatPlugin).setOption('_mdxName', null);
+  editor.plugin(AIChatPlugin).store.set({
+    _blockChunks: '',
+    _blockPath: null,
+    _mdxName: null,
+    streaming: false,
+  });
 
   return { editor, initialSelection, initialValue };
 };
@@ -62,7 +59,7 @@ describe('ai chat streaming history', () => {
 
     expect(editor.read.history.undos()).toHaveLength(0);
 
-    editor.plugin(BaseAIPlugin).api.undo();
+    editor.plugin(BaseAIPlugin).update.undo();
 
     expect(editor.read.children()).toEqual(initialValue);
     expect(editor.read.history.undos()).toHaveLength(0);
@@ -72,7 +69,7 @@ describe('ai chat streaming history', () => {
     const chunks = Array.from({ length: 40 }, () => 'chunk ');
     const { editor, initialSelection, initialValue } = streamPreview(chunks);
 
-    acceptAIChat(editor);
+    editor.plugin(AIChatPlugin).update.accept();
 
     expect(editor.read.history.undos()).toHaveLength(1);
     const [batch] = editor.read.history.undos();
@@ -110,7 +107,7 @@ describe('ai chat streaming history', () => {
   it('places the cursor at the end of the accepted preview', () => {
     const { editor } = streamPreview(['hello', ' world']);
 
-    acceptAIChat(editor);
+    editor.plugin(AIChatPlugin).update.accept();
 
     expect(editor.read.selection()).toEqual({
       kind: 'text',
@@ -122,7 +119,7 @@ describe('ai chat streaming history', () => {
   it('restores the accepted cursor on redo after undo', () => {
     const { editor } = streamPreview(['hello', ' world']);
 
-    acceptAIChat(editor);
+    editor.plugin(AIChatPlugin).update.accept();
     editor.update.history.undo();
     editor.update.history.redo();
 

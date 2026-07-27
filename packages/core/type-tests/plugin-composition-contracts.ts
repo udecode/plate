@@ -3,7 +3,7 @@ import type {
   BasePlugin,
   DefineEditorExtension,
   InferDependencies,
-  InferOptions,
+  InferPluginStoreState,
   PluginConfig,
   PluginReference,
 } from '@platejs/core';
@@ -23,33 +23,33 @@ type PluginConfigOf<P> = P extends {
 
 export const DeclarationSafeBaseExtensionPlugin = createBasePlugin({
   key: 'declarationSafeBaseExtension',
-  options: { enabled: true },
+  initialState: { enabled: true },
 })
-  .extend(({ getOptions }) => ({
+  .extend(({ store }) => ({
     extension: {
       corrections: [
         {
           correct() {
-            void getOptions().enabled;
+            void store.get().enabled;
           },
           event: 'content',
         },
       ],
     },
   }))
-  .configure(({ getOptions }) => ({
-    options: { enabled: getOptions().enabled },
+  .configure(({ store }) => ({
+    initialState: { enabled: store.get().enabled },
   }));
 
 export const DeclarationSafeReactExtensionPlugin = createPlatePlugin({
   key: 'declarationSafeReactExtension',
-  options: { enabled: true },
-}).extend(({ getOptions }) => ({
+  initialState: { enabled: true },
+}).extend(({ store }) => ({
   extension: {
     corrections: [
       {
         correct() {
-          void getOptions().enabled;
+          void store.get().enabled;
         },
         event: 'content',
       },
@@ -246,7 +246,7 @@ const exactParentDependencies: readonly [typeof RequiredBranchPlugin] =
   ParentPlugin.dependencies;
 const parentDependenciesRoundTrip: InferDependencies<ParentConfig> =
   exactParentDependencies;
-const dependencyOptionsStayOnDescriptor: keyof InferOptions<ParentDependencyConfig> extends never
+const dependencyOptionsStayOnDescriptor: keyof InferPluginStoreState<ParentDependencyConfig> extends never
   ? true
   : false = true;
 
@@ -412,6 +412,42 @@ toPlatePlugin(
   // @ts-expect-error Runtime conversion callbacks cannot change topology.
   () => ({ dependencies: [StaticDependencyPlugin] })
 );
+
+const ConvertedExtensionInferencePlugin = toPlatePlugin(
+  ParentPlugin,
+  ({ editor }) => ({
+    extension: {
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, next, state }) => {
+          const exactText: string = input.text;
+
+          void exactText;
+          void state.selection();
+
+          return next();
+        }),
+      ],
+      corrections: [
+        {
+          correct({ entry, tx }) {
+            void entry[0];
+            void tx.nodes.some();
+          },
+          event: 'content',
+        },
+      ],
+      onCommit({ commit }) {
+        void commit.tags;
+        editor.api.requiredBranch.read();
+      },
+    },
+  })
+);
+const convertedExtensionInferenceEditor = createPlateEditor({
+  plugins: [ConvertedExtensionInferencePlugin],
+});
+
+convertedExtensionInferenceEditor.api.requiredBranch.read();
 
 const ConvertedDisabledPlugin = toPlatePlugin(DisabledAtCreationPlugin);
 const convertedDisabledEditor = createPlateEditor({

@@ -90,7 +90,7 @@ const editor = createPlateEditor({
 ### 配置插件
 
 Markdown 语法、过滤策略或转换规则与默认值不同时，配置
-`MarkdownPlugin.options`。Markdown API 以及插件的 `text/markdown` 和
+`MarkdownPlugin.initialState`。Markdown API 以及插件的 `text/markdown` 和
 `text/plain` codec 声明共享这组 options。
 
 ```tsx title="lib/plate-editor.ts"
@@ -107,7 +107,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其它 Plate 插件
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         // 通过 remarkPlugins 添加语法扩展（如 GFM、数学、MDX）
         remarkPlugins: [remarkMath, remarkGfm, remarkMdx, remarkMention],
         // 如需自定义转换规则可配置 rules
@@ -121,8 +121,8 @@ const editor = createPlateEditor({
 ```
 
 <Callout type="info">
-  `MarkdownPlugin` 通过 `editor.api.markdown` 提供转换 API，并声明
-  `text/markdown` 和 `text/plain` codec。插件 options 仍通过
+  `MarkdownPlugin` 通过 `editor.api.markdown` 提供显式输入转换，通过
+  `editor.read.markdown` 提供快照序列化。插件 options 仍通过
   `editor.plugin(MarkdownPlugin)` 访问。
 </Callout>
 
@@ -165,7 +165,7 @@ const editor = createPlateEditor({
 
 ### Plate 转 Markdown（序列化）
 
-使用 `editor.api.markdown.serialize` 将当前编辑器文档或指定的 `EditorDocumentValue` 转回 Markdown 字符串。
+使用 `editor.read.markdown.serialize` 将当前编辑器文档或指定的 `EditorDocumentValue` 转回 Markdown 字符串。
 
 序列化只读取文档的主 `children`。命名 roots 不属于 Markdown 表示。
 
@@ -173,7 +173,7 @@ const editor = createPlateEditor({
 
 ```tsx
 // 假设 editor 已有内容
-const markdownOutput = editor.api.markdown.serialize();
+const markdownOutput = editor.read.markdown.serialize();
 console.info(markdownOutput);
 ```
 
@@ -186,7 +186,7 @@ const specificNodes = [
 ];
 
 // 假设 editor 是你的 Plate 实例
-const partialMarkdownOutput = editor.api.markdown.serialize({
+const partialMarkdownOutput = editor.read.markdown.serialize({
   value: { children: specificNodes },
 });
 console.info(partialMarkdownOutput);
@@ -224,7 +224,7 @@ import {
 // ... 其它导入
 
 MarkdownPlugin.configure({
-  options: {
+  initialState: {
     rules: {
       // 键名匹配规则：
       // 1. Plate 插件的 key 或 type
@@ -266,12 +266,12 @@ MarkdownPlugin.configure({
 
 ## API 参考
 
-### `MarkdownPluginOptions`
+### `MarkdownPluginState`
 
-通过 `MarkdownPlugin.configure({ options })` 传入 Markdown 转换行为。
+通过 `MarkdownPlugin.configure({ initialState })` 传入 Markdown 转换行为。
 
-<API name="MarkdownPluginOptions">
-  <APIOptions type="MarkdownPluginOptions">
+<API name="MarkdownPluginState">
+  <APIOptions type="MarkdownPluginState">
     <APIItem name="allowedNodes" type="PlateType[] | null">
       白名单方式，指定允许哪些节点类型（包括 Plate 元素类型及 Markdown AST 类型，如 `strong`）。不能与 `disallowedNodes` 一起使用。如果设置，仅处理列表内的类型。默认值：`null`（全部允许）。
     </APIItem>
@@ -299,7 +299,8 @@ MarkdownPlugin.configure({
 
 ### `MarkdownPlugin`
 
-`MarkdownPlugin` 提供 `editor.api.markdown`，并声明以下 product codecs：
+`MarkdownPlugin` 通过 `editor.api.markdown` 提供显式输入方法，通过
+`editor.read.markdown` 提供快照序列化，并声明以下 product codecs：
 
 | 格式 | 解码 | 编码 | 表示 |
 | --- | --- | --- | --- |
@@ -378,7 +379,7 @@ slice，并在需要时回退到这些外部格式。
 
 ---
 
-### `editor.api.markdown.serialize`
+### `editor.read.markdown.serialize`
 
 将 `EditorDocumentValue` 序列化为 Markdown 字符串。
 
@@ -483,7 +484,7 @@ const editor = createPlateEditor({
     StrikethroughPlugin,
     LinkPlugin,
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         remarkPlugins: [remarkGfm],
       },
     }),
@@ -513,7 +514,7 @@ editor.update((tx) => {
   tx.value.replace(document);
 });
 
-const markdownOutput = editor.api.markdown.serialize();
+const markdownOutput = editor.read.markdown.serialize();
 // markdownOutput 将包含 GFM 语法
 ```
 
@@ -566,7 +567,7 @@ import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { NODES } from 'platejs';
 
 MarkdownPlugin.configure({
-  options: {
+  initialState: {
     rules: {
       // 自定义 mdast 的 'code' 类型反序列化方式
       code: {
@@ -618,7 +619,7 @@ const editor = createPlateEditor({
     // ...其他插件
     MathPlugin, // 渲染块级与行内公式
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         remarkPlugins: [remarkMath],
         // 内置规则已支持 remark-math 产生的 'math' / 'inlineMath' mdast 节点到 Plate 的 'equation' 和 'inline_equation'
       },
@@ -643,7 +644,7 @@ $$
 const document = editor.api.markdown.deserialize(markdown);
 // document.children 包含 'inline_equation' 及 'equation' 节点
 
-const markdownOutput = editor.api.markdown.serialize({ value: document });
+const markdownOutput = editor.read.markdown.serialize({ value: document });
 // 输出 Markdown 字符串包含 $...$ 和 $$...$$ 语法
 ```
 
@@ -663,7 +664,7 @@ const editor = createPlateEditor({
     // ...其他插件
     MentionPlugin,
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         remarkPlugins: [remarkMention],
       },
     }),
@@ -684,7 +685,7 @@ Full name with ID: [Jane Smith](mention:user_123)
 const slateValue = editor.api.markdown.deserialize(markdown);
 // 自动生成合适值与显示文本的 mention 节点
 
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.read.markdown.serialize({ value: slateValue });
 // mention 序列化后始终用链接格式: [Alice](mention:alice), [John Doe](mention:john_doe) 等
 ```
 
@@ -709,7 +710,7 @@ const editor = createPlateEditor({
     ColumnPlugin,
     ColumnItemPlugin,
     MarkdownPlugin.configure({
-      options: {
+      initialState: {
         remarkPlugins: [remarkMdx], // 多列 MDX 语法需要
       },
     }),
@@ -741,7 +742,7 @@ const markdown = `
 const slateValue = editor.api.markdown.deserialize(markdown);
 // 生成包含嵌套 column 元素的 column_group 节点
 
-const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.read.markdown.serialize({ value: slateValue });
 // 输出的 Markdown 保持列结构和宽度属性
 ```
 
@@ -836,7 +837,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 2.  **组件定制方式：**
     - `react-markdown`：`components` 属性替换 HTML 节点渲染
     - Plate：
-      - `MarkdownPlugin.options.rules` 定制 mdast↔Plate JSON 互转
+      - `MarkdownPlugin.initialState.rules` 定制 mdast↔Plate JSON 互转
       - `createPlateEditor` 的 `components` 配置 Plate 节点的渲染组件（详见[附录C](#appendix-c-components)）
 3.  **插件生态系统：** `@platejs/markdown` 使用 `remarkPlugins`；`rehypePlugins` 不属于其转换管线
 
@@ -847,16 +848,16 @@ Options 示例使用 `import { MarkdownPlugin } from '@platejs/markdown'`。
 | `react-markdown` 属性           | `@platejs/markdown` 等价项/概念                                                                       | 备注                                                                |
 | :------------------------------ | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------- |
 | `children` (字符串)             | 传递给 `editor.api.markdown.deserialize(string)`                                                      | 通常在 `createPlateEditor` 的 `initialValue` 配置                   |
-| `remarkPlugins`                 | `MarkdownPlugin.configure({ options: { remarkPlugins: [...] } })`                                                | 在 mdast 层操作                                                      |
+| `remarkPlugins`                 | `MarkdownPlugin.configure({ initialState: { remarkPlugins: [...] } })`                                                | 在 mdast 层操作                                                      |
 | `rehypePlugins`                 | 不属于 `MarkdownPlugin` 转换管线                                                                     | 将 Markdown 或 Plate 节点交给 Plate 前，单独运行 HTML 管线            |
 | `components={{ h1: MyH1 }}`     | `createPlateEditor({ components: { h1: MyH1 } })`                                                    | 设置已安装 `H1Plugin` 键对应的渲染组件                               |
 | `components={{ code: MyCode }}` | ① 转换规则：`MarkdownPlugin > rules > code` ② 渲染：`components: { [KEYS.codeBlock]: MyCode }`       | `rules` 处理 mdast（`code`）到 Plate（`code_block`）；自定义渲染组件 |
-| `allowedElements`               | `MarkdownPlugin.configure({ options: { allowedNodes: [...] } })`                                                 | 转换时过滤 mdast/Plate 节点                                          |
-| `disallowedElements`            | `MarkdownPlugin.configure({ options: { disallowedNodes: [...] } })`                                              | 转换时过滤不支持节点                                                 |
+| `allowedElements`               | `MarkdownPlugin.configure({ initialState: { allowedNodes: [...] } })`                                                 | 转换时过滤 mdast/Plate 节点                                          |
+| `disallowedElements`            | `MarkdownPlugin.configure({ initialState: { disallowedNodes: [...] } })`                                              | 转换时过滤不支持节点                                                 |
 | `unwrapDisallowed`              | 无直接等价项，默认过滤节点                                      | 可通过自定义 `rules` 实现展开逻辑                                   |
 | `skipHtml`                      | 默认会移除大部分 HTML                                                                   | 调用 `editor.api.markdown.deserialize` 前清理或转换原始 HTML          |
 | `urlTransform`                  | 在 `rules` 对 `link` 处理，或按插件类型序列化处理                | 在转换规则中自定义实现                                               |
-| `allowElement`                  | `MarkdownPlugin.configure({ options: { allowNode: { ... } } })`                                                  | 转换时用函数过滤节点                                                 |
+| `allowElement`                  | `MarkdownPlugin.configure({ initialState: { allowNode: { ... } } })`                                                  | 转换时用函数过滤节点                                                 |
 
 ## 附录A：Markdown中的HTML
 
@@ -880,7 +881,7 @@ const value = editor.api.markdown.deserialize(safeMarkdown);
 
 ## 附录B：自定义转换规则（`rules`）
 
-`MarkdownPlugin.options.rules` 控制 mdast ↔ Plate JSON 转换。`rules` 对象中的字段需与各节点类型对应。
+`MarkdownPlugin.initialState.rules` 控制 mdast ↔ Plate JSON 转换。`rules` 对象中的字段需与各节点类型对应。
 
 - **反序列化（Markdown → Plate）：** 键为 `mdast` 节点类型（如 `paragraph`、`heading`、`strong`、`link`，以及 MDX 节点如 `mdxJsxTextElement`）。`deserialize` 函数接收 `(mdastNode, deco, options)`，返回 Plate 的 `Descendant` 或 `Descendant[]`。
 - **序列化（Plate → Markdown）：** 键为 Plate 的元素/文本类型（如 `p`、`h1`、`a`、`code_block`、`bold`）。`serialize` 函数接收 `(slateNode, options)`，返回 `mdast` 节点。
@@ -891,7 +892,7 @@ const value = editor.api.markdown.deserialize(safeMarkdown);
 import { MarkdownPlugin } from '@platejs/markdown';
 
 MarkdownPlugin.configure({
-  options: {
+  initialState: {
     rules: {
       // 针对 mdast 的 'link' 类型的规则
       link: {

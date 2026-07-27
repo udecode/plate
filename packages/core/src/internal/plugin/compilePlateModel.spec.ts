@@ -122,11 +122,11 @@ describe('compilePlateModel', () => {
     });
     const PropertyPlugin = createBasePlugin({
       key: 'modelProperty',
-      options: { targets: [BlockPlugin] as const },
-      schema: ({ options, own, plugins }) => ({
+      initialState: { targets: [BlockPlugin] as const },
+      schema: ({ initialState, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.types(plugins.elementTypes(options.targets)),
+            target: target.types(plugins.elementTypes(initialState.targets)),
             typeChange: 'preserve-if-allowed',
           }),
         ],
@@ -472,7 +472,7 @@ describe('compilePlateModel', () => {
     ]);
   });
 
-  it('configures schema inputs through plugin options', () => {
+  it('configures schema inputs through plugin initialState', () => {
     type Config = PluginConfig<
       'configuredModel',
       {
@@ -485,25 +485,25 @@ describe('compilePlateModel', () => {
     const TargetPlugin = createElementPlugin('configuredTarget');
     const plugin = createBasePlugin<Config>({
       key: 'configuredModel',
-      options: {
+      initialState: {
         label: 'initial',
         nested: { value: 1 },
         targets: [TargetPlugin],
       },
-      schema: ({ options, own, plugins }) => ({
+      schema: ({ initialState, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.types(plugins.elementTypes(options.targets)),
+            target: target.types(plugins.elementTypes(initialState.targets)),
           }),
         ],
       }),
-    }).configure({ options: { label: 'configured' } });
+    }).configure({ initialState: { label: 'configured' } });
     const editor = createBaseEditor({
       plugins: [TargetPlugin, plugin],
     });
     const resolved = editor.getPlugin(plugin);
 
-    expect(resolved.options).toEqual({
+    expect(resolved.initialState).toEqual({
       label: 'configured',
       nested: { value: 1 },
       targets: [{ key: 'configuredTarget', type: 'configuredTarget' }],
@@ -619,12 +619,12 @@ describe('compilePlateModel', () => {
     ) =>
       createBasePlugin({
         key,
-        options: { referencedPlugin },
-        schema: ({ options, own, plugins }) => ({
+        initialState: { referencedPlugin },
+        schema: ({ initialState, own, plugins }) => ({
           properties: [
             own.elementProperty(property.string(), {
               target: target.type(
-                plugins.elementType(options.referencedPlugin)
+                plugins.elementType(initialState.referencedPlugin)
               ),
             }),
           ],

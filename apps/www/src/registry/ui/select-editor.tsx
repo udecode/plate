@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 
-import { isEqualTags } from '@platejs/tag';
 import {
   MultiSelectPlugin,
   useSelectableItems,
@@ -106,7 +105,7 @@ export function SelectEditorContent({
   );
 
   React.useEffect(() => {
-    if (!isEqualTags(editor, value)) {
+    if (!editor.plugin(MultiSelectPlugin).read.isEqual(value)) {
       editor.update.value.replace({ children: createEditorValue(value) });
     }
   }, [editor, value]);

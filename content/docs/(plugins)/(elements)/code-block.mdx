@@ -106,7 +106,7 @@ const editor = createPlateEditor({
     CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
       component: CodeSyntaxLeaf,
-      options: { lowlight },
+      initialState: { lowlight },
     }),
   ],
 });
@@ -143,7 +143,7 @@ const editor = createPlateEditor({
     CodeLinePlugin.configure({ component: CodeLineElement }),
     CodeHighlightPlugin.configure({
       component: CodeSyntaxLeaf,
-      options: {
+      initialState: {
         lowlight,
         defaultLanguage: 'js', // Set default language (optional)
       },
@@ -156,8 +156,8 @@ const editor = createPlateEditor({
   [`CodeBlockElement`](/docs/components/code-block-node) to render code block
   containers.
 - `inputRules`: Registers the triple-backtick fence rule. Use `on: 'match'` to commit when the fence becomes complete or `on: 'break'` to commit on `Enter`.
-- `CodeHighlightPlugin.options.lowlight`: Lowlight instance for syntax highlighting.
-- `CodeHighlightPlugin.options.defaultLanguage`: Default language when no language is specified.
+- `CodeHighlightPlugin.initialState.lowlight`: Lowlight instance for syntax highlighting.
+- `CodeHighlightPlugin.initialState.defaultLanguage`: Default language when no language is specified.
 - `shortcuts.toggle`: Defines a keyboard [shortcut](/docs/plugin-shortcuts) to toggle code blocks.
 - `component`: Assigns components for code lines and syntax highlighting.
 

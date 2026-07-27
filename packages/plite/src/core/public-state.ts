@@ -4711,12 +4711,23 @@ export const applyTransactionSpec = <V extends Value>(
   applyTransactionSpecContents(editor, spec);
 };
 
-export const getCorrectionUpdateView = <V extends Value>(
-  editor: Editor<V>
-): EditorCorrectionTransaction<V> => {
+export const getCorrectionUpdateView = <
+  V extends Value,
+  TExtensions extends readonly unknown[] = readonly [],
+>(
+  editor: Editor<V, TExtensions>
+): EditorCorrectionTransaction<V, TExtensions> => {
   const tx = getUpdateView(editor);
+  const txRecord = tx as unknown as Record<string, unknown>;
+  const installedGroups = Object.fromEntries(
+    Array.from(
+      getExtensionRegistry(editor).txGroups.keys(),
+      (groupName) => [groupName, txRecord[groupName]] as const
+    )
+  );
 
   return Object.freeze({
+    ...installedGroups,
     blocks: tx.blocks,
     break: tx.break,
     fragment: tx.fragment,
@@ -4727,7 +4738,7 @@ export const getCorrectionUpdateView = <V extends Value>(
     tags: tx.tags,
     text: tx.text,
     value: tx.value,
-  } satisfies EditorCorrectionTransaction<V>);
+  }) as EditorCorrectionTransaction<V, TExtensions>;
 };
 
 export const readEditor = <

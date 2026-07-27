@@ -1,11 +1,11 @@
 ---
 title: Plugin Context
-description: Use editor, plugin, option, API, and transaction context inside Plate plugins.
+description: Use editor, plugin, store, API, and transaction context inside Plate plugins.
 ---
 
 Plugin context is the object Plate passes to plugin configuration callbacks,
 handlers, extensions, transaction commands, and render components. It gives you
-the resolved editor, current plugin, node type, `api`, and option helpers
+the resolved editor, current plugin, node type, `api`, and plugin store
 without reaching through global state. Use it inside plugin-owned code; use
 editor methods or React hooks when code runs outside a plugin callback.
 
@@ -20,14 +20,13 @@ but the editor type is `BaseEditor`.
 | `editor` | The resolved editor instance. |
 | `plugin` | The resolved plugin configuration for the current plugin. |
 | `type` | The plugin document type, available as `plugin.type`. |
-| `api` | Editor API plus plugin-specific API methods. |
+| `api` | API owned by the current plugin. |
+| `read` | State-bound reads owned by the current plugin. |
+| `update` | One-shot updates owned by the current plugin. |
+| `store` | Read, update, or subscribe to the current plugin's editor-local state. |
 | `defineCodecs(map)` | Bind a self/product codec map to this plugin's inferred schema. |
 | `defineCodecs(TargetPlugin, map)` | Bind a foreign codec map to an exact descriptor and inject its target. |
 | `defineEditorExtension(extension)` | Preserve this plugin's nested inference for an extracted reusable extension factory. |
-| `getOption(key, ...args)` | Read an option, selector, or `'state'` from the current plugin. |
-| `getOptions()` | Read the full option state for the current plugin. |
-| `setOption(key, value)` | Update one option in the current plugin store. |
-| `setOptions(optionsOrDraft)` | Update multiple options or mutate a draft. |
 
 ## Plugin Methods
 
@@ -38,17 +37,19 @@ context helpers instead of closing over editor state.
 import { createPlatePlugin } from 'platejs/react';
 
 export const CounterPlugin = createPlatePlugin({
-  key: 'counter',
-  options: {
+  initialState: {
     count: 0,
     enabled: true,
   },
+  key: 'counter',
   handlers: {
-    onKeyDown: ({ event, getOption, setOption, type }) => {
-      if (!getOption('enabled')) return;
+    onKeyDown: ({ event, store, type }) => {
+      if (!store.get('enabled')) return;
 
       if (event.key === '+') {
-        setOption('count', getOption('count') + 1);
+        store.set((state) => {
+          state.count += 1;
+        });
         console.info(`${type} count incremented`);
       }
     },
@@ -56,7 +57,7 @@ export const CounterPlugin = createPlatePlugin({
 });
 ```
 
-`getOption` and `setOption` are scoped to `CounterPlugin` in this example.
+`store` is scoped to `CounterPlugin` in this example.
 
 ## Extension Callbacks
 
@@ -67,21 +68,22 @@ callbacks also receive plugin context.
 import { createPlatePlugin } from 'platejs/react';
 
 export const CounterPlugin = createPlatePlugin({
-  key: 'counter',
-  options: {
+  initialState: {
     count: 0,
   },
-  api: ({ getOption }) => ({
-    isEmpty: () => getOption('count') === 0,
+  key: 'counter',
+  api: ({ store }) => ({
+    isEmpty: () => store.get('count') === 0,
   }),
-  selectors: ({ getOptions }) => ({
-    label: () => `Count: ${getOptions().count}`,
-  }),
+  selectors: {
+    label: (state) => `Count: ${state.count}`,
+  },
 });
 ```
 
-Selectors are readable through `getOption` and subscribable through
-`usePluginOption`.
+Selectors are readable through `store.get` and subscribable through
+`usePluginStore`. They are pure state-first functions and cannot read the
+editor or another plugin.
 
 ## Extension Factory Inference
 
@@ -153,17 +155,17 @@ plugins tightly.
 ## React Components
 
 Use `useEditorPlugin` inside a component rendered under `<Plate>`. It returns
-the same context plus the editor store.
+the same plugin context.
 
 ```tsx title="counter-badge.tsx" showLineNumbers
-import { useEditorPlugin, usePluginOption } from 'platejs/react';
+import { useEditorPlugin, usePluginStore } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
 export function CounterBadge() {
   const { type } = useEditorPlugin(CounterPlugin);
-  const count = usePluginOption(CounterPlugin, 'count');
-  const label = usePluginOption(CounterPlugin, 'label');
+  const count = usePluginStore(CounterPlugin, 'count');
+  const label = usePluginStore(CounterPlugin, 'label');
 
   return (
     <span data-plugin-type={type}>
@@ -173,16 +175,16 @@ export function CounterBadge() {
 }
 ```
 
-Use `usePluginOptions` when a component needs a derived value from several
-options.
+Use a selector callback when a component needs a derived value from several
+state fields.
 
 ```tsx title="counter-badge.tsx" showLineNumbers
-import { usePluginOptions } from 'platejs/react';
+import { usePluginStore } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
 export function CounterStatus() {
-  const status = usePluginOptions(CounterPlugin, (state) =>
+  const status = usePluginStore(CounterPlugin, (state) =>
     state.count === 0 ? 'empty' : 'active'
   );
 
@@ -191,24 +193,24 @@ export function CounterStatus() {
 ```
 
 For code outside the nearest `<Plate>` provider, pass an editor explicitly with
-`useEditorPluginOption` or `useEditorPluginOptions`.
+`useEditorPluginStore`.
 
-## Option State
+## Store State
 
-Plugin options are stored per editor. Updating one editor's plugin options does
-not update another editor.
+Plugin state is stored per editor. Updating one editor's plugin store does not
+update another editor.
 
 ```ts title="counter-plugin.ts" showLineNumbers
 export const CounterPluginWithInitialCount = CounterPlugin.extend(
-  ({ getOptions }) => ({
-    options: {
-      count: getOptions().count + 1,
+  ({ store }) => ({
+    initialState: {
+      count: store.get().count + 1,
     },
   })
 );
 ```
 
-`setOptions` accepts either a partial object or a draft callback.
+`store.set` accepts either a partial object or a draft callback.
 
 ```ts title="counter-actions.ts" showLineNumbers
 import { getBasePlugin, type PlateEditor } from 'platejs/react';
@@ -216,20 +218,24 @@ import { getBasePlugin, type PlateEditor } from 'platejs/react';
 import { CounterPlugin } from './counter-plugin';
 
 export function resetCounter(editor: PlateEditor) {
-  const { setOptions } = getBasePlugin(editor, CounterPlugin);
+  const { store } = getBasePlugin(editor, CounterPlugin);
 
-  setOptions({
+  store.set({
     count: 1,
   });
 
-  setOptions((draft) => {
+  store.set((draft) => {
     draft.count += 1;
   });
 }
 ```
 
-Plate reports `OPTION_UNDEFINED` through the debug API when `getOption`,
-`setOption`, or `usePluginOption` targets a missing option or selector.
+Plate throws when `store.get` or `usePluginStore` targets a missing state field
+or selector.
+
+Always pass the plugin descriptor to `usePluginStore` and
+`useEditorPluginStore`. A key-only object has no state contract for TypeScript
+to infer.
 
 ## API Reference
 
@@ -237,10 +243,10 @@ Plate reports `OPTION_UNDEFINED` through the debug API when `getOption`,
 | --- | --- | --- |
 | `getBasePlugin(editor, plugin)` | Any editor code. | Returns plugin context for the given editor and plugin. |
 | `useEditorPlugin(plugin, id?)` | React under `<Plate>`. | Returns plugin context plus `store`. |
-| `usePluginOption(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one option, selector, or `'state'`. |
-| `usePluginOptions(plugin, selector, options?)` | React under `<Plate>`. | Subscribes to a selected value from the option state. |
-| `useEditorPluginOption(editor, plugin, key, ...args)` | React with explicit editor. | Use outside the closest editor provider. |
-| `useEditorPluginOptions(editor, plugin, selector, options?)` | React with explicit editor. | Explicit-editor variant of `usePluginOptions`. |
+| `usePluginStore(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one state field or named selector. |
+| `usePluginStore(plugin, selector, options?)` | React under `<Plate>`. | Subscribes to a value derived from plugin state. |
+| `useEditorPluginStore(editor, plugin, key, ...args)` | React with explicit editor. | Use outside the closest editor provider. |
+| `useEditorPluginStore(editor, plugin, selector, options?)` | React with explicit editor. | Explicit-editor variant of `usePluginStore`. |
 
 For plugin extension methods, see [Plugin Methods](/docs/plugin-methods). For
 plugin configuration, see [Plugin](/docs/plugin).

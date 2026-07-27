@@ -30,7 +30,7 @@ describe('useEditorPlugin', () => {
   it('returns the editor plugin context with a stable store-backed reference', () => {
     const CounterPlugin = createPlatePlugin({
       key: 'counter',
-      options: {
+      initialState: {
         value: 1,
       },
     });
@@ -52,16 +52,16 @@ describe('useEditorPlugin', () => {
 
     expect(firstContext.editor).toBe(editor);
     expect(firstContext.plugin.key).toBe('counter');
-    expect(firstContext.getOptions()).toEqual({ value: 1 });
+    expect(firstContext.store.get()).toEqual({ value: 1 });
     expect(firstContext.store).toBeDefined();
 
     rerender();
     expect(result.current).toBe(firstContext);
 
     act(() => {
-      editor.plugin(CounterPlugin).setOption('value', 2);
+      editor.plugin(CounterPlugin).store.set({ value: 2 });
     });
 
-    expect(result.current.getOptions()).toEqual({ value: 2 });
+    expect(result.current.store.get()).toEqual({ value: 2 });
   });
 });

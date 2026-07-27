@@ -237,12 +237,12 @@ describe('BaseSuggestionPlugin', () => {
 
   it('finds inline and block suggestion nodes by id', () => {
     const editor = createEditor();
-    const api = editor.plugin(BaseSuggestionPlugin).api;
+    const { read } = editor.plugin(BaseSuggestionPlugin);
 
-    expect(api.node({ at: [], id: 'inline', isText: true })?.[1]).toEqual([
+    expect(read.node({ at: [], id: 'inline', isText: true })?.[1]).toEqual([
       0, 0,
     ]);
-    expect(api.node({ at: [], id: 'block' })?.[1]).toEqual([1]);
+    expect(read.node({ at: [], id: 'block' })?.[1]).toEqual([1]);
   });
 
   it('returns suggestion ids for inline and block nodes', () => {
@@ -257,9 +257,9 @@ describe('BaseSuggestionPlugin', () => {
 
   it('filters transient suggestion nodes when requested', () => {
     const editor = createEditor();
-    const api = editor.plugin(BaseSuggestionPlugin).api;
+    const { read } = editor.plugin(BaseSuggestionPlugin);
 
-    expect(api.nodes({ transient: true }).map(([, path]) => path)).toEqual([
+    expect(read.nodes({ transient: true }).map(([, path]) => path)).toEqual([
       [2, 0],
     ]);
   });
@@ -282,7 +282,7 @@ describe('BaseSuggestionPlugin', () => {
       initialValue: [{ children: [{ text: 'plain' }], type: 'p' }],
     } as any);
 
-    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
     editor.update.selection.set({ offset: 5, path: [0, 0] });
     editor.update(SuggestionUpdatePolicy.skip).text.insert('!');
 

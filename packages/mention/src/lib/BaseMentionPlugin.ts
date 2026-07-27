@@ -1,6 +1,6 @@
 import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
+  createTriggerComboboxExtension,
+  type TriggerComboboxPluginState,
 } from '@platejs/combobox';
 import { type InferConfig, createBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
@@ -12,11 +12,11 @@ export type InsertMentionOptions = {
   search?: string;
 };
 
-type MentionPluginOptions = {
+type MentionPluginState = {
   insertSpaceAfterMention?: boolean;
-} & TriggerComboboxPluginOptions;
+} & TriggerComboboxPluginState;
 
-const defaultOptions: MentionPluginOptions = {
+const initialState: MentionPluginState = {
   trigger: '@',
   triggerPreviousCharPattern: /^\s?$/,
   createComboboxInput: (trigger) => ({
@@ -54,16 +54,33 @@ export const BaseMentionPlugin = createBasePlugin({
       void: 'markable-inline',
     },
   },
-  options: defaultOptions,
-  extension: (context) => withTriggerCombobox(context),
-  update: ({ tx, type }) => ({
+  initialState,
+  extension: (context) => createTriggerComboboxExtension(context),
+  update: ({ store, tx, type }) => ({
     insert: ({ key, value }: InsertMentionOptions) => {
-      tx.nodes.insert({
+      const blockPath = tx.nodes.block()?.[1];
+      const selection = tx.selection();
+      const insertSpaceAfter =
+        store.get().insertSpaceAfterMention &&
+        blockPath &&
+        selection &&
+        tx.points.isEnd(selection.anchor, blockPath);
+      const mention = {
         key,
         children: [{ text: '' }],
         type,
         value,
-      });
+      };
+
+      tx.nodes.insert(insertSpaceAfter ? [mention, { text: ' ' }] : mention);
+
+      if (insertSpaceAfter && blockPath) {
+        const at = tx.points.end(blockPath);
+
+        if (at) tx.selection.set(at);
+      } else {
+        tx.selection.move({ unit: 'offset' });
+      }
     },
   }),
 });

@@ -188,8 +188,13 @@ on top of Slate-first primitives.
   public builder or configuration method must represent a distinct user job;
   current assembly machinery is never doctrine.
 - Classify behavior before packaging it: invariants stay with their owner,
-  parameters stay in `options`, proven substitutable capabilities may become
-  plugins, and product policy stays app- or kit-owned.
+  runtime parameters stay in `initialState` and the scoped store, proven
+  substitutable capabilities may become plugins, and product policy stays
+  app- or kit-owned.
+- Plugin capability names encode execution boundaries: `selectors` are pure
+  store projections, `read` is a pure supplied-state document query, `api` is a
+  non-snapshot plugin service, `update` owns active-transaction document
+  mutation, and `extension` is genuine editor-wide substrate.
 - Plate can re-export Slate surface where it improves DX, but bugs that
   reproduce in plain Slate belong to Slate.
 - If a Plate public API collides with Slate v2 runtime names such as `api`,

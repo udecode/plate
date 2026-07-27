@@ -16,7 +16,7 @@ import { KEYS } from '@platejs/utils';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
-const serializeHtml = (editor: ReturnType<typeof createBaseEditor>) => {
+const serializeHtml = (editor: Parameters<typeof getExtensionRegistry>[0]) => {
   type Registration = {
     codec: {
       format: string;
@@ -56,14 +56,14 @@ const TestIndentPropsPlugin = createBasePlugin({
 });
 
 describe('BaseIndentPlugin', () => {
-  it('exposes the default options and injected node-prop contract', () => {
+  it('exposes the default state and injected node-prop contract', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
     });
     const plugin = editor.getPlugin(BaseIndentPlugin);
     const nodeProps = editor.getInjectProps(BaseIndentPlugin);
 
-    expect(editor.plugin(BaseIndentPlugin).getOptions()).toEqual({
+    expect(editor.plugin(BaseIndentPlugin).store.get()).toEqual({
       offset: 24,
       unit: 'px',
     });
@@ -73,7 +73,6 @@ describe('BaseIndentPlugin', () => {
     expect(
       nodeProps.transformNodeValue!({
         ...getEditorPlugin(editor, plugin),
-        getOptions: () => editor.plugin(BaseIndentPlugin).getOptions(),
         nodeValue: 2,
       })
     ).toBe('48px');
@@ -203,7 +202,7 @@ describe('BaseIndentPlugin', () => {
 
   it('decodes CSS indentation through configured units', () => {
     const IndentPlugin = BaseIndentPlugin.configure({
-      options: {
+      initialState: {
         offset: 10,
         unit: 'em',
       },
@@ -262,7 +261,7 @@ describe('BaseIndentPlugin', () => {
 
   it('round-trips configured indent values through HTML', () => {
     const IndentPlugin = BaseIndentPlugin.configure({
-      options: {
+      initialState: {
         offset: 10,
         unit: 'em',
       },

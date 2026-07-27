@@ -17,7 +17,7 @@ import {
 const MarksPlugin = createBasePlugin({
   key: 'testMarks',
   schema: {
-    properties: ['bold', 'italic', 'subscript', 'superscript'].map((key) =>
+    properties: ['bold', 'code', 'highlight', 'italic'].map((key) =>
       schema.textProperty(key, property.boolean())
     ),
   },
@@ -143,7 +143,7 @@ describe('useMarkToolbarButton', () => {
     expect(marks?.italic).toBe(true);
   });
 
-  it('replaces mutually exclusive marks when enabling a mark', () => {
+  it('clears a configured peer mark when enabling a mark', () => {
     const editor = createPlateEditor({
       plugins: [MarksPlugin],
       selection: {
@@ -154,13 +154,13 @@ describe('useMarkToolbarButton', () => {
       initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
-    editor.update.marks.add('superscript', true);
+    editor.update.marks.add('highlight', true);
 
     const { result } = renderHook(
       () =>
         useMarkToolbarButton({
-          clear: 'superscript',
-          nodeType: 'subscript',
+          clear: 'highlight',
+          nodeType: 'code',
           pressed: false,
         }),
       {
@@ -171,11 +171,11 @@ describe('useMarkToolbarButton', () => {
     result.current.props.onClick();
 
     const marks = editor.read.marks() as
-      | { subscript?: boolean; superscript?: boolean }
+      | { code?: boolean; highlight?: boolean }
       | undefined;
 
-    expect(marks?.subscript).toBe(true);
-    expect(marks?.superscript).toBeUndefined();
+    expect(marks?.code).toBe(true);
+    expect(marks?.highlight).toBeUndefined();
   });
 
   it('prevents the default mouse down behavior', () => {

@@ -34,7 +34,7 @@ const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
 const contextualConfigureKeys = new Set([
   'handlers',
-  'options',
+  'initialState',
   'override',
   'render',
   'shortcuts',
@@ -622,7 +622,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                 file,
                 fence,
                 property,
-                'contextual plugin configure only accepts explicit options, handlers, render, and shortcuts overrides'
+                'contextual plugin configure only accepts explicit initialState, handlers, override, render, and shortcuts overrides'
               )
             );
           }

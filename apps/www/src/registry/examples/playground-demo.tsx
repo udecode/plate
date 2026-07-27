@@ -46,7 +46,7 @@ export default function PlaygroundDemo({
 
         NormalizeTypesPlugin.configure({
           enabled: id === 'forced-layout',
-          options: {
+          initialState: {
             rules: [{ path: [0], strictType: 'h1' }],
           },
         }),

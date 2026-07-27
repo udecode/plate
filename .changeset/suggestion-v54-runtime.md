@@ -6,11 +6,15 @@ Move suggestion queries and mutations to `BaseSuggestionPlugin` and the
 installed editor API, and register suggestion marks and metadata in compiled
 schemas with versioned inline validation.
 
-**Migration:** Read suggestion data and helpers from
-`editor.api.suggestion`. Replace standalone suggestion
-transforms with `editor.update.suggestion`:
+**Migration:** Read pure value helpers from `editor.api.suggestion`, snapshot
+queries from `editor.read.suggestion`, and mutations from
+`editor.update.suggestion`:
 
 ```tsx
+const identity = editor.api.suggestion.createIdentity();
+const fragment = editor.api.suggestion.createFragment(input, identity);
+const entries = editor.read.suggestion.nodes();
+
 editor.update.suggestion.accept(description);
 editor.update.suggestion.reject(description);
 editor.update.suggestion.setNodes(options);

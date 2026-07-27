@@ -1,8 +1,4 @@
-import type {
-  EditorExtension,
-  EditorStateSchemaApi,
-  EditorUpdateTransaction,
-} from '@platejs/plite';
+import type { EditorExtension, EditorStateSchemaApi } from '@platejs/plite';
 import { defineEditorExtension } from '@platejs/plite';
 import { getCompiledEditorSchemaFromApi } from '@platejs/plite/internal';
 import { txRead } from '@platejs/plite/internal';
@@ -40,12 +36,12 @@ import {
   withCompiledPlatePluginCandidate,
 } from './compilePlateModel';
 import {
-  clearPluginOptionsStores,
-  createPluginOptionsSnapshot,
-  snapshotPluginOptions,
-  type PluginOptionsStore,
-  setPluginOptionsStore,
-} from './pluginOptionsStore';
+  clearPluginStores,
+  createPluginStore,
+  createPluginStateSnapshot,
+  snapshotPluginState,
+  setPluginStore,
+} from './pluginStore';
 import { compilePlateShortcuts } from './compilePlateShortcuts';
 import {
   setPlateRuntimeCandidate,
@@ -58,9 +54,15 @@ import {
 } from './resolvePlugin';
 import type {
   AnyInputRule,
+  InputRuleBuilder,
   ResolvedInputRule,
 } from '../../lib/plugins/input-rules/types';
-import { createInputRuleBuilder } from '../../lib/plugins/input-rules/internal/createInputRuleBuilder';
+import {
+  createBlockFenceInputRule,
+  createBlockStartInputRule,
+  createMarkInputRule,
+} from '../../lib/plugins/input-rules/createInputRules';
+import { defineInputRule } from '../../lib/plugins/input-rules/defineInputRule';
 
 const sourcePluginDerivedKeys = new Set<PropertyKey>(['__resolved']);
 type PluginDescriptorSnapshotContext = Readonly<{
@@ -173,8 +175,7 @@ const snapshotPluginDescriptorValue = (
   value: unknown,
   snapshots: WeakMap<object, unknown>,
   context: PluginDescriptorSnapshotContext,
-  publishedPlugins?: ReadonlyMap<string, AnyBasePlugin>,
-  optionReferences = new WeakMap<object, unknown>()
+  publishedPlugins?: ReadonlyMap<string, AnyBasePlugin>
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
   if (isOpaquePluginHostResource(context)) return value;
@@ -197,8 +198,7 @@ const snapshotPluginDescriptorValue = (
           item,
           snapshots,
           appendPluginDescriptorPath(context, index),
-          publishedPlugins,
-          optionReferences
+          publishedPlugins
         )
       )
     );
@@ -232,14 +232,13 @@ const snapshotPluginDescriptorValue = (
     Object.defineProperty(snapshot, key, {
       enumerable: descriptor.enumerable,
       value:
-        isPluginDescriptor && key === 'options'
-          ? snapshotPluginOptions(descriptor.value)
+        isPluginDescriptor && key === 'initialState'
+          ? snapshotPluginState(descriptor.value)
           : snapshotPluginDescriptorValue(
               descriptor.value,
               snapshots,
               appendPluginDescriptorPath(ownerContext, key),
-              publishedPlugins,
-              optionReferences
+              publishedPlugins
             ),
     });
   }
@@ -296,14 +295,12 @@ export const snapshotPlatePluginSources = (
 ): NormalizedPlatePluginSourceGroups => {
   const normalized = normalizePlatePluginSources(sources);
   const snapshots = new WeakMap<object, unknown>();
-  const optionReferences = new WeakMap<object, unknown>();
   const snapshot = (plugin: AnyBasePlugin) =>
     snapshotPluginDescriptorValue(
       plugin,
       snapshots,
       { path: [], pluginKey: plugin.key },
-      undefined,
-      optionReferences
+      undefined
     ) as AnyBasePlugin;
 
   return Object.freeze({
@@ -329,7 +326,6 @@ const publishPlatePluginDescriptors = (
   });
 
   const snapshots = new WeakMap<object, unknown>();
-  const optionReferences = new WeakMap<object, unknown>();
 
   pluginList.forEach((plugin) => {
     const published = publishedByKey.get(plugin.key)!;
@@ -364,15 +360,14 @@ const publishPlatePluginDescriptors = (
             );
           })
         );
-      } else if (key === 'options') {
-        value = snapshotPluginOptions(descriptor.value);
+      } else if (key === 'initialState') {
+        value = snapshotPluginState(descriptor.value);
       } else {
         value = snapshotPluginDescriptorValue(
           descriptor.value,
           snapshots,
           { path: [key], pluginKey: plugin.key },
-          publishedByKey,
-          optionReferences
+          publishedByKey
         );
       }
 
@@ -408,11 +403,11 @@ export const resolvePlugins = (
 ) => {
   if (getPlateModelPublication(editor)) {
     throw new Error(
-      'Plate plugins are fixed after model publication. Configure plugin options before creating the editor.'
+      'Plate plugins are fixed after model publication. Configure plugin `initialState` before creating the editor.'
     );
   }
 
-  clearPluginOptionsStores(editor);
+  clearPluginStores(editor);
   const pluginCache = createMutablePlatePluginCache();
 
   setPlateRuntimeCandidate(editor, {
@@ -425,10 +420,10 @@ export const resolvePlugins = (
     shortcuts: Object.create(null),
   });
   const resolvedPlugins = resolveAndSortPlugins(editor, sources);
-  const snapshotOptions = createPluginOptionsSnapshot();
+  const snapshotState = createPluginStateSnapshot();
 
   resolvedPlugins.forEach((plugin) => {
-    plugin.options = snapshotOptions(plugin.options);
+    plugin.initialState = snapshotState(plugin.initialState);
   });
 
   applyPluginsToEditor(editor, resolvedPlugins);
@@ -620,35 +615,18 @@ export const createPlateModelPublication = (
 
 const resolvePluginStores = (editor: BaseEditor) => {
   getPlateRuntime(editor).pluginList.forEach((plugin) => {
-    const base = createVanillaStore(snapshotPluginOptions(plugin.options), {
+    const base = createVanillaStore(snapshotPluginState(plugin.initialState), {
       mutative: true,
       name: plugin.key,
-    }) as PluginOptionsStore;
-
-    setPluginOptionsStore(
-      editor,
+    });
+    const store = createPluginStore(
       plugin.key,
-      projectPluginSelectors(editor, plugin, base)
+      base as never,
+      plugin.selectors
     );
+
+    setPluginStore(editor, plugin.key, store);
   });
-};
-
-const projectPluginSelectors = (
-  editor: BaseEditor,
-  plugin: AnyBasePlugin,
-  base: PluginOptionsStore
-) => {
-  let store = base;
-
-  if (plugin.__selectorExtensions.length === 0) return store;
-
-  plugin.__selectorExtensions.forEach((extension) => {
-    const extendedOptions = extension(getEditorPlugin(editor, plugin));
-
-    store = store.extendSelectors(() => extendedOptions) as PluginOptionsStore;
-  });
-
-  return store;
 };
 
 const resolvePluginApi = (
@@ -721,11 +699,10 @@ const inspectUpdateMethods = (
       let group: Record<string, unknown>;
 
       try {
-        group = groupFactory(
-          probe as unknown as EditorUpdateTransaction,
-          editor,
-          probe as never
-        ) as Record<string, unknown>;
+        group = groupFactory(probe as never, editor, probe as never) as Record<
+          string,
+          unknown
+        >;
       } catch (cause) {
         throw new Error(
           `Plate update namespace "${groupKey}" could not be inspected. Transaction group factories must construct commands without executing document work.`,
@@ -813,6 +790,7 @@ export const createPlateRuntimeExtension = (
   withCompiledPlatePluginApiCandidate(editor, apiByPlugin, () => {
     pluginList.forEach((plugin) => {
       const pluginApi: Record<string, unknown> = {};
+      const isRoot = plugin.key === 'root';
 
       apiByPlugin[plugin.key] = pluginApi;
       resolvePluginApi(editor, plugin, pluginApi);
@@ -841,12 +819,21 @@ export const createPlateRuntimeExtension = (
 
       apiByPlugin[plugin.key] = frozenPluginApi;
       shortcutApiByPlugin[plugin.key] = Object.freeze({
-        editor: snapshotApiValue(editorApi),
-        plugin: frozenPluginApi,
+        editor: snapshotApiValue(
+          isRoot ? { ...editorApi, ...frozenPluginApi } : editorApi
+        ),
+        plugin: isRoot ? Object.freeze({}) : frozenPluginApi,
       });
       if (hasPluginApi) {
-        api[plugin.key] = pluginApi;
-        pluginApiNamespaces.add(plugin.key);
+        if (isRoot) {
+          Object.assign(api, pluginApi);
+          Object.keys(pluginApi).forEach((key) => {
+            editorApiNamespaces.add(key);
+          });
+        } else {
+          api[plugin.key] = pluginApi;
+          pluginApiNamespaces.add(plugin.key);
+        }
       }
     });
   });
@@ -919,7 +906,7 @@ export const createPlateRuntimeExtension = (
           Object.assign(
             group,
             groupFactory(
-              transaction,
+              transaction as never,
               runtimeEditor as BaseEditor,
               context as any
             )
@@ -1080,8 +1067,7 @@ const createPluginShortcuts = (
             }
           }
 
-          // Set shortcut priority, falling back to plugin priority
-          resolvedHotkey.priority = resolvedHotkey.priority ?? plugin.priority;
+          resolvedHotkey.priority ??= 0;
 
           (shortcuts as Record<string, BasePlugin['shortcuts'][string]>)[
             namespacedKey
@@ -1114,7 +1100,14 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
     const definitionRules =
       typeof inputRulesDefinition === 'function'
         ? inputRulesDefinition({
-            rule: createInputRuleBuilder(),
+            rule: {
+              blockFence: (config) => createBlockFenceInputRule(config),
+              blockStart: (config) => createBlockStartInputRule(config),
+              insertBreak: (rule) => defineInputRule(rule),
+              insertData: (rule) => defineInputRule(rule),
+              insertText: (rule) => defineInputRule(rule),
+              mark: (config) => createMarkInputRule(config),
+            } satisfies InputRuleBuilder,
           })
         : (inputRulesDefinition ?? []);
     const ruleDefinitions = definitionRules as AnyInputRule[];
@@ -1135,7 +1128,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
         id: `${pluginKey}.${ruleIndex}`,
         pluginIndex,
         pluginKey,
-        priority: mergedRule.priority ?? plugin.priority,
+        priority: mergedRule.priority ?? 0,
         ruleIndex,
       } as ResolvedInputRule;
 
@@ -1298,7 +1291,7 @@ const applyComponentOverrides = (
 ): BasePlugins => {
   const componentOverrides: Record<
     string,
-    { component: unknown; priority: number }
+    { component: unknown; terminal: boolean }
   > = Object.create(null);
 
   for (const plugin of plugins) {
@@ -1307,13 +1300,10 @@ const applyComponentOverrides = (
 
     if (!components) continue;
     Object.entries(components).forEach(([key, component]) => {
-      if (
-        !componentOverrides[key] ||
-        plugin.priority > componentOverrides[key].priority
-      ) {
+      if (plugin.key === 'root' || !componentOverrides[key]) {
         componentOverrides[key] = {
           component,
-          priority: plugin.priority,
+          terminal: plugin.key === 'root',
         };
       }
     });
@@ -1322,10 +1312,7 @@ const applyComponentOverrides = (
   return plugins.map((plugin) => {
     const override = componentOverrides[plugin.key];
 
-    if (
-      !override ||
-      (plugin.render.node && override.priority <= plugin.priority)
-    ) {
+    if (!override || (plugin.render.node && !override.terminal)) {
       return plugin;
     }
 
@@ -1375,7 +1362,6 @@ const weakPluginOverrideForbiddenKeys = new Set<PropertyKey>([
   '__extensions',
   '__pluginReference',
   '__readExtensions',
-  '__selectorExtensions',
   '__txExtensions',
   'clone',
   'configure',
@@ -1425,7 +1411,7 @@ const getWeakOverrideGraphSignature = (
     .map(([key, node]) => {
       const plugin = node.resolved;
 
-      return `${key}:${present.has(key) ? 1 : 0}:${plugin?.enabled === false ? 0 : 1}:${plugin?.priority ?? ''}`;
+      return `${key}:${present.has(key) ? 1 : 0}:${plugin?.enabled === false ? 0 : 1}`;
     })
     .join('|');
 
@@ -1452,13 +1438,9 @@ const applyWeakPluginOverrides = (
           present.has(node.resolved.key) &&
           node.resolved.enabled !== false
       )
-      // Merge weakest first so higher priority and then earlier source order
-      // remain authoritative for overlapping fields.
-      .sort(
-        (a, b) =>
-          a.resolved.priority - b.resolved.priority ||
-          b.origin.sourceIndex - a.origin.sourceIndex
-      );
+      // Merge later sources first so earlier application order remains
+      // authoritative for overlapping weak fields.
+      .sort((a, b) => b.origin.sourceIndex - a.origin.sourceIndex);
 
     for (const contributor of contributors) {
       const overrides = contributor.resolved.override?.plugins;
@@ -1810,9 +1792,7 @@ const resolveAndSortPluginsCandidate = (
   const compareReady = (
     a: PluginGraphNode & { resolved: AnyBasePlugin },
     b: PluginGraphNode & { resolved: AnyBasePlugin }
-  ) =>
-    b.resolved.priority - a.resolved.priority ||
-    a.origin.sourceIndex - b.origin.sourceIndex;
+  ) => a.origin.sourceIndex - b.origin.sourceIndex;
   const ready = enabledNodes
     .filter((node) => indegree.get(node.resolved.key) === 0)
     .sort(compareReady);

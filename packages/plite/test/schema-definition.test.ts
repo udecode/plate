@@ -84,6 +84,37 @@ describe('schema declaration builders', () => {
     );
   });
 
+  it('defines literal enum laws with runtime membership validation', () => {
+    const Script = property.enum(['sub', 'sup']);
+
+    assert.deepEqual(Script, {
+      kind: 'enum',
+      omitDefault: false,
+      values: ['sub', 'sup'],
+    });
+    assert.equal(Object.isFrozen(Script), true);
+    assert.equal(Object.isFrozen(Script.values), true);
+    assert.throws(
+      () => property.enum(['sub', 'sub'] as never),
+      /values must be unique/
+    );
+    assert.throws(
+      () => property.enum(['sub', 'sup'], { default: 'other' as never }),
+      /declared enum value/
+    );
+
+    typeOnly(() => {
+      const sub: PropertyValueOf<typeof Script> = 'sub';
+      const sup: PropertyValueOf<typeof Script> = 'sup';
+      // @ts-expect-error enum values stay literal
+      const other: PropertyValueOf<typeof Script> = 'other';
+
+      void other;
+      void sub;
+      void sup;
+    });
+  });
+
   it('requires a positive validation version with every inline validator', () => {
     assert.throws(
       () =>

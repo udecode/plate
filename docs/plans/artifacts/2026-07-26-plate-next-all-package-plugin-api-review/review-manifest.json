@@ -1,0 +1,399 @@
+{
+  "sourceSnapshot": "sha256:1c123c68e923a8ba25e34e2e5a559facff2a0abdb50a812349093d87589d19ef",
+  "sourceFiles": 1241,
+  "candidateFiles": 147,
+  "astBuilderCalls": 185,
+  "builderImplementationCalls": 6,
+  "builderRootRows": 179,
+  "derivedPluginRows": 2,
+  "genericPluginDecorators": 1,
+  "pluginRows": 181,
+  "reviewedRows": 181,
+  "absorbedReviewRows": 2,
+  "packages": 37,
+  "missingRows": 0,
+  "extraRows": 0,
+  "duplicateRows": 0,
+  "ambiguousRows": 0,
+  "parseErrors": 0,
+  "priorityCounts": {
+    "keep": 139,
+    "P0": 6,
+    "P1": 33,
+    "P2": 2,
+    "P3": 1
+  },
+  "decisionNoteRows": 42,
+  "packageSummary": [
+    {
+      "package": "ai",
+      "rows": 4,
+      "keep": 0,
+      "P0": 3,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0,
+      "changed": 4
+    },
+    {
+      "package": "basic-nodes",
+      "rows": 32,
+      "keep": 31,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 1,
+      "changed": 1
+    },
+    {
+      "package": "basic-styles",
+      "rows": 16,
+      "keep": 16,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "callout",
+      "rows": 2,
+      "keep": 2,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "code-block",
+      "rows": 6,
+      "keep": 4,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "code-drawing",
+      "rows": 2,
+      "keep": 2,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "comment",
+      "rows": 2,
+      "keep": 0,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "core",
+      "rows": 18,
+      "keep": 14,
+      "P0": 1,
+      "P1": 3,
+      "P2": 0,
+      "P3": 0,
+      "changed": 4
+    },
+    {
+      "package": "csv",
+      "rows": 1,
+      "keep": 1,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "date",
+      "rows": 2,
+      "keep": 2,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "dnd",
+      "rows": 1,
+      "keep": 1,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "docx",
+      "rows": 1,
+      "keep": 1,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "docx-io",
+      "rows": 1,
+      "keep": 0,
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0,
+      "changed": 1
+    },
+    {
+      "package": "emoji",
+      "rows": 4,
+      "keep": 2,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "excalidraw",
+      "rows": 2,
+      "keep": 2,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "find-replace",
+      "rows": 1,
+      "keep": 1,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "footnote",
+      "rows": 6,
+      "keep": 4,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "indent",
+      "rows": 2,
+      "keep": 1,
+      "P0": 0,
+      "P1": 0,
+      "P2": 1,
+      "P3": 0,
+      "changed": 1
+    },
+    {
+      "package": "juice",
+      "rows": 1,
+      "keep": 1,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "layout",
+      "rows": 4,
+      "keep": 3,
+      "P0": 0,
+      "P1": 0,
+      "P2": 1,
+      "P3": 0,
+      "changed": 1
+    },
+    {
+      "package": "link",
+      "rows": 2,
+      "keep": 0,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "list",
+      "rows": 2,
+      "keep": 2,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "list-classic",
+      "rows": 14,
+      "keep": 12,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "markdown",
+      "rows": 1,
+      "keep": 0,
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0,
+      "changed": 1
+    },
+    {
+      "package": "math",
+      "rows": 4,
+      "keep": 4,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "media",
+      "rows": 12,
+      "keep": 11,
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0,
+      "changed": 1
+    },
+    {
+      "package": "mention",
+      "rows": 4,
+      "keep": 2,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "selection",
+      "rows": 3,
+      "keep": 2,
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0,
+      "changed": 1
+    },
+    {
+      "package": "slash-command",
+      "rows": 4,
+      "keep": 4,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "suggestion",
+      "rows": 2,
+      "keep": 0,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "tabbable",
+      "rows": 2,
+      "keep": 0,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "table",
+      "rows": 8,
+      "keep": 6,
+      "P0": 2,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "tag",
+      "rows": 3,
+      "keep": 0,
+      "P0": 0,
+      "P1": 3,
+      "P2": 0,
+      "P3": 0,
+      "changed": 3
+    },
+    {
+      "package": "toc",
+      "rows": 2,
+      "keep": 0,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "toggle",
+      "rows": 2,
+      "keep": 0,
+      "P0": 0,
+      "P1": 2,
+      "P2": 0,
+      "P3": 0,
+      "changed": 2
+    },
+    {
+      "package": "utils",
+      "rows": 6,
+      "keep": 6,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    },
+    {
+      "package": "yjs",
+      "rows": 2,
+      "keep": 2,
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0,
+      "changed": 0
+    }
+  ]
+}

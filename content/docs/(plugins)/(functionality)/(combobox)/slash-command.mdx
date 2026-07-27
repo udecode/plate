@@ -90,7 +90,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     SlashPlugin.configure({
-      options: {
+      initialState: {
         trigger: '/',
         triggerPreviousCharPattern: /^\s?$/,
         triggerQuery: (editor) =>
@@ -104,9 +104,9 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.trigger`: Character that triggers the slash command combobox (default: `/`)
-- `options.triggerPreviousCharPattern`: RegExp pattern for character before trigger
-- `options.triggerQuery`: Function to determine when slash commands should be enabled
+- `initialState.trigger`: Character that triggers the slash command combobox (default: `/`)
+- `initialState.triggerPreviousCharPattern`: RegExp pattern for character before trigger
+- `initialState.triggerQuery`: Function to determine when slash commands should be enabled
 - `component`: Assigns the UI component for the slash command interface
 
 </Steps>
@@ -138,7 +138,7 @@ Available options include:
 
 ### SlashPlugin
 
-Plugin for slash command functionality. Extends [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions) and requires `SlashInputPlugin`.
+Plugin for slash command functionality. Extends [TriggerComboboxPluginState](/docs/combobox#triggercomboboxpluginstate) and requires `SlashInputPlugin`.
 
 <API name="SlashPlugin">
 <APIOptions>

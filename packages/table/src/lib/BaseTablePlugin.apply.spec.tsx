@@ -240,23 +240,23 @@ describe('BaseTablePlugin apply', () => {
     const editor = createTableEditor(input);
 
     expect(
-      editor.plugin(BaseTablePlugin).getOption('cellIndices', 'keep')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
     ).toEqual({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).getOption('cellIndices', 'remove')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
     ).toEqual({ col: 1, row: 0 });
     editor.update.table.removeColumn();
 
     const nextKeep = editor.read.nodes.get<TTableCellElement>([0, 0, 0]);
     assert(nextKeep);
     expect(
-      editor.plugin(BaseTablePlugin).api.getCellIndices(nextKeep[0])
+      editor.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
     ).toEqual({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).getOption('cellIndices', 'keep')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
     ).toEqual({ col: 0, row: 0 });
     expect(
-      editor.plugin(BaseTablePlugin).getOption('cellIndices', 'remove')
+      editor.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
     ).toBeUndefined();
   });
 
@@ -288,10 +288,10 @@ describe('BaseTablePlugin apply', () => {
     const replay = createTableEditor(input);
 
     expect(
-      replay.plugin(BaseTablePlugin).getOption('cellIndices', 'keep')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
     ).toEqual({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).getOption('cellIndices', 'remove')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
     ).toEqual({ col: 1, row: 0 });
     expect(change.primaryClassification).toBeNull();
     replay.update((tx) => tx.changes.apply(change));
@@ -299,13 +299,13 @@ describe('BaseTablePlugin apply', () => {
     const nextKeep = replay.read.nodes.get<TTableCellElement>([0, 0, 0]);
     assert(nextKeep);
     expect(
-      replay.plugin(BaseTablePlugin).api.getCellIndices(nextKeep[0])
+      replay.plugin(BaseTablePlugin).read.getCellIndices(nextKeep[0])
     ).toEqual({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).getOption('cellIndices', 'keep')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesById('keep')
     ).toEqual({ col: 0, row: 0 });
     expect(
-      replay.plugin(BaseTablePlugin).getOption('cellIndices', 'remove')
+      replay.plugin(BaseTablePlugin).read.getCellIndicesById('remove')
     ).toBeUndefined();
   });
 
@@ -448,7 +448,7 @@ describe('BaseTablePlugin apply', () => {
       nodeId: true,
       plugins: [
         BaseTablePlugin,
-        BaseYjsPlugin.configure({ options: { clientId: 'source' } }),
+        BaseYjsPlugin.configure({ initialState: { clientId: 'source' } }),
       ],
       selection,
       initialValue,
@@ -459,7 +459,7 @@ describe('BaseTablePlugin apply', () => {
       plugins: [
         BaseTablePlugin,
         BaseYjsPlugin.configure({
-          options: { clientId: 'replay', doc },
+          initialState: { clientId: 'replay', doc },
         }),
       ],
       initialValue: [{ children: [{ text: 'local' }], type: 'p' }],

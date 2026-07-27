@@ -10,7 +10,7 @@ import { BlockDraggable } from '@/registry/ui/block-draggable';
 
 export const DndKit = [
   DndPlugin.configure({
-    options: {
+    initialState: {
       enableScroller: true,
       onDropFiles: ({ dragItem, editor, target }) => {
         editor

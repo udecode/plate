@@ -1,16 +1,16 @@
-import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const artifactDir = dirname(fileURLToPath(import.meta.url));
-const root = resolve(artifactDir, "../../../..");
+const root = resolve(artifactDir, '../../../..');
 const planPath = resolve(
   root,
   process.argv[2] ??
-    "docs/plans/2026-07-25-multi-editor-full-architecture-audit.md"
+    'docs/plans/2026-07-25-multi-editor-full-architecture-audit.md'
 );
-const registryPath = resolve(root, "docs/editor-audits/index.json");
+const registryPath = resolve(root, 'docs/editor-audits/index.json');
 
 let checkCount = 0;
 const failures = [];
@@ -19,7 +19,7 @@ const warnings = [];
 const relative = (path) =>
   path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path;
 
-const check = (condition, label, detail = "") => {
+const check = (condition, label, detail = '') => {
   checkCount++;
 
   if (!condition) {
@@ -27,7 +27,7 @@ const check = (condition, label, detail = "") => {
   }
 };
 
-const warn = (condition, label, detail = "") => {
+const warn = (condition, label, detail = '') => {
   if (!condition) {
     warnings.push(detail ? `${label}: ${detail}` : label);
   }
@@ -39,7 +39,7 @@ const requireFile = (path, label = relative(path)) => {
     `required artifact ${label}`
   );
 
-  return existsSync(path) ? readFileSync(path, "utf8") : "";
+  return existsSync(path) ? readFileSync(path, 'utf8') : '';
 };
 
 const loadJson = (path, label = relative(path)) => {
@@ -61,18 +61,18 @@ const sha256Cursor = /^sha256:[0-9a-f]{64}$/;
 
 const git = (cwd, args) => {
   try {
-    return execFileSync("git", ["-C", cwd, ...args], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
+    return execFileSync('git', ['-C', cwd, ...args], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
     }).trim();
   } catch (error) {
     check(
       false,
-      `git ${args.join(" ")} in ${cwd}`,
+      `git ${args.join(' ')} in ${cwd}`,
       error.stderr?.toString().trim() || error.message
     );
 
-    return "";
+    return '';
   }
 };
 
@@ -82,12 +82,12 @@ const validateReference = ({ branch, commit, label, path, upstream }) => {
 
   if (!existsSync(path)) return;
 
-  check(git(path, ["rev-parse", "HEAD"]) === commit, `${label} exact HEAD`);
-  check(git(path, ["status", "--porcelain"]) === "", `${label} clean checkout`);
+  check(git(path, ['rev-parse', 'HEAD']) === commit, `${label} exact HEAD`);
+  check(git(path, ['status', '--porcelain']) === '', `${label} clean checkout`);
 
   if (branch) {
     check(
-      git(path, ["branch", "--show-current"]) === branch,
+      git(path, ['branch', '--show-current']) === branch,
       `${label} branch`,
       branch
     );
@@ -95,10 +95,10 @@ const validateReference = ({ branch, commit, label, path, upstream }) => {
   if (upstream) {
     check(
       git(path, [
-        "rev-parse",
-        "--abbrev-ref",
-        "--symbolic-full-name",
-        "@{upstream}",
+        'rev-parse',
+        '--abbrev-ref',
+        '--symbolic-full-name',
+        '@{upstream}',
       ]) === upstream,
       `${label} upstream`,
       upstream
@@ -122,14 +122,14 @@ const reportHasConcept = (reportText, id) => {
   const groupedPattern = new RegExp(
     `${prefix.replace(
       /[.*+?^${}()|[\\]\\\\]/g,
-      "\\\\$&"
+      '\\\\$&'
     )}(\\d+(?:(?:\\.\\.|,)\\d+)*)`,
-    "g"
+    'g'
   );
 
   return [...reportText.matchAll(groupedPattern)].some((group) =>
-    group[1].split(",").some((part) => {
-      const [start, end = start] = part.split("..");
+    group[1].split(',').some((part) => {
+      const [start, end = start] = part.split('..');
 
       return number >= Number(start) && number <= Number(end);
     })
@@ -145,42 +145,42 @@ const validateConceptReport = (manifest, reportText, label) => {
   check(
     missing.length === 0,
     `${label} ledger accounts for every concept`,
-    missing.slice(0, 8).join(", ")
+    missing.slice(0, 8).join(', ')
   );
 };
 
 const requiredArtifacts = [
-  "wordgard-architecture-report.md",
-  "wordgard-source-manifest.json",
-  "lexical-architecture-ledger.md",
-  "lexical-source-manifest.json",
-  "prosemirror-concept-ledger.md",
-  "prosemirror-provenance.md",
-  "prosemirror-source-manifest.json",
-  "plite-concepts.md",
-  "plite-pressure-audit.md",
-  "plite-source-manifest.json",
-  "plate-concept-inventory.md",
-  "plate-coverage-manifest.json",
+  'wordgard-architecture-report.md',
+  'wordgard-source-manifest.json',
+  'lexical-architecture-ledger.md',
+  'lexical-source-manifest.json',
+  'prosemirror-concept-ledger.md',
+  'prosemirror-provenance.md',
+  'prosemirror-source-manifest.json',
+  'plite-concepts.md',
+  'plite-pressure-audit.md',
+  'plite-source-manifest.json',
+  'plate-concept-inventory.md',
+  'plate-coverage-manifest.json',
 ];
 
 for (const artifact of requiredArtifacts) {
   requireFile(resolve(artifactDir, artifact));
 }
 
-for (const editor of ["wordgard", "lexical", "prosemirror"]) {
-  for (const artifact of ["inventory.md", "report.md", "test-index.md"]) {
+for (const editor of ['wordgard', 'lexical', 'prosemirror']) {
+  for (const artifact of ['inventory.md', 'report.md', 'test-index.md']) {
     requireFile(
       resolve(root, `docs/editor-test-harvester/${editor}/${artifact}`)
     );
   }
   for (const artifact of [
-    "classified-issues.json",
-    "classified-issues.tsv",
-    "issue-closure-ledger.md",
-    "issue-closure-ledger.tsv",
-    "issue-refresh.json",
-    "issue-refresh.md",
+    'classified-issues.json',
+    'classified-issues.tsv',
+    'issue-closure-ledger.md',
+    'issue-closure-ledger.tsv',
+    'issue-refresh.json',
+    'issue-refresh.md',
   ]) {
     requireFile(
       resolve(root, `docs/editor-issue-harvester/${editor}/full/${artifact}`)
@@ -190,60 +190,60 @@ for (const editor of ["wordgard", "lexical", "prosemirror"]) {
 
 const plan = requireFile(planPath, relative(planPath));
 const wordgard = loadJson(
-  resolve(artifactDir, "wordgard-source-manifest.json")
+  resolve(artifactDir, 'wordgard-source-manifest.json')
 );
-const lexical = loadJson(resolve(artifactDir, "lexical-source-manifest.json"));
+const lexical = loadJson(resolve(artifactDir, 'lexical-source-manifest.json'));
 const prosemirror = loadJson(
-  resolve(artifactDir, "prosemirror-source-manifest.json")
+  resolve(artifactDir, 'prosemirror-source-manifest.json')
 );
-const plite = loadJson(resolve(artifactDir, "plite-source-manifest.json"));
-const plate = loadJson(resolve(artifactDir, "plate-coverage-manifest.json"));
+const plite = loadJson(resolve(artifactDir, 'plite-source-manifest.json'));
+const plate = loadJson(resolve(artifactDir, 'plate-coverage-manifest.json'));
 
 if (wordgard) {
   const summary = wordgard.summary;
 
-  check(summary.unmappedFiles === 0, "Wordgard zero unmapped files");
+  check(summary.unmappedFiles === 0, 'Wordgard zero unmapped files');
   check(
     summary.unmappedDeclarationItems === 0,
-    "Wordgard zero unmapped declarations"
+    'Wordgard zero unmapped declarations'
   );
   check(
     summary.trackedFiles ===
       summary.mappedFiles + summary.excludedFiles + summary.unmappedFiles,
-    "Wordgard file accounting closes"
+    'Wordgard file accounting closes'
   );
   check(
     summary.declarationItems ===
       summary.mappedDeclarationItems +
         summary.excludedDeclarationItems +
         summary.unmappedDeclarationItems,
-    "Wordgard declaration accounting closes"
+    'Wordgard declaration accounting closes'
   );
   check(
     conceptIds(wordgard.concepts).length === summary.semanticConcepts,
-    "Wordgard concept count closes"
+    'Wordgard concept count closes'
   );
 
   const invalidRows = wordgard.files.filter(
     (row) =>
       !(
-        (row.status === "mapped" && row.conceptIds?.length > 0) ||
-        (row.status === "excluded" && row.exclusionReason)
+        (row.status === 'mapped' && row.conceptIds?.length > 0) ||
+        (row.status === 'excluded' && row.exclusionReason)
       )
   );
   check(
     invalidRows.length === 0,
-    "Wordgard file rows mapped or exactly excluded",
+    'Wordgard file rows mapped or exactly excluded',
     invalidRows
       .slice(0, 5)
       .map((row) => row.path)
-      .join(", ")
+      .join(', ')
   );
 
   validateReference({
     branch: wordgard.authority.branch,
     commit: wordgard.authority.commit,
-    label: "Wordgard",
+    label: 'Wordgard',
     path: wordgard.authority.repository,
     upstream: wordgard.authority.upstream,
   });
@@ -252,40 +252,40 @@ if (wordgard) {
 if (lexical) {
   const summary = lexical.summary;
 
-  check(summary.unexplainedUnits === 0, "Lexical zero unexplained units");
+  check(summary.unexplainedUnits === 0, 'Lexical zero unexplained units');
   check(
     summary.unexplainedDeclarations === 0,
-    "Lexical zero unexplained declarations"
+    'Lexical zero unexplained declarations'
   );
   check(
     summary.trackedUnits === summary.relevantUnits + summary.excludedUnits,
-    "Lexical unit accounting closes"
+    'Lexical unit accounting closes'
   );
   check(
     summary.declarations ===
       summary.mappedDeclarations + summary.excludedDeclarations,
-    "Lexical declaration accounting closes"
+    'Lexical declaration accounting closes'
   );
 
   const invalidRows = lexical.units.filter(
     (row) =>
       !(
-        (row.kind !== "excluded" && row.concepts?.length > 0) ||
+        (row.kind !== 'excluded' && row.concepts?.length > 0) ||
         (row.exclusion && row.concepts?.length === 0)
       )
   );
   check(
     invalidRows.length === 0,
-    "Lexical unit rows mapped or exactly excluded",
+    'Lexical unit rows mapped or exactly excluded',
     invalidRows
       .slice(0, 5)
       .map((row) => row.path)
-      .join(", ")
+      .join(', ')
   );
 
   validateReference({
     commit: lexical.repository.commit,
-    label: "Lexical",
+    label: 'Lexical',
     path: resolve(root, lexical.repository.path),
   });
 }
@@ -293,22 +293,22 @@ if (lexical) {
 if (prosemirror) {
   const totals = prosemirror.totals;
 
-  check(totals.unexplainedFiles === 0, "ProseMirror zero unexplained files");
+  check(totals.unexplainedFiles === 0, 'ProseMirror zero unexplained files');
   check(
     totals.trackedFiles === totals.mappedFiles + totals.excludedFiles,
-    "ProseMirror file accounting closes"
+    'ProseMirror file accounting closes'
   );
   check(
     prosemirror.repositories.length === totals.repositories,
-    "ProseMirror module accounting closes"
+    'ProseMirror module accounting closes'
   );
   check(
     sha256Cursor.test(prosemirror.moduleSetCursor),
-    "ProseMirror composite module cursor"
+    'ProseMirror composite module cursor'
   );
 
   const repositoryRows = [
-    { label: "ProseMirror meta", ...prosemirror.meta },
+    { label: 'ProseMirror meta', ...prosemirror.meta },
     ...prosemirror.repositories.map((repository) => ({
       label: `ProseMirror ${repository.module}`,
       ...repository,
@@ -319,16 +319,16 @@ if (prosemirror) {
       .filter(
         (row) =>
           !(
-            (row.disposition === "mapped" && row.conceptIds?.length > 0) ||
-            (row.disposition === "excluded" && row.explanation)
+            (row.disposition === 'mapped' && row.conceptIds?.length > 0) ||
+            (row.disposition === 'excluded' && row.explanation)
           )
       )
       .map((row) => `${repository.label}:${row.path}`)
   );
   check(
     invalidRows.length === 0,
-    "ProseMirror file rows mapped or exactly excluded",
-    invalidRows.slice(0, 5).join(", ")
+    'ProseMirror file rows mapped or exactly excluded',
+    invalidRows.slice(0, 5).join(', ')
   );
 
   for (const repository of repositoryRows) {
@@ -343,29 +343,29 @@ if (prosemirror) {
 }
 
 if (plite) {
-  check(plite.coverage.unmappedFiles.length === 0, "Plite zero unmapped files");
+  check(plite.coverage.unmappedFiles.length === 0, 'Plite zero unmapped files');
   check(
     plite.coverage.unmappedDeclarations.length === 0,
-    "Plite zero unmapped declarations"
+    'Plite zero unmapped declarations'
   );
   check(
     plite.summary.files === plite.entries.length &&
       plite.coverage.mappedFiles === plite.entries.length,
-    "Plite file accounting closes"
+    'Plite file accounting closes'
   );
   check(
     plite.summary.declarations === plite.coverage.mappedDeclarations,
-    "Plite declaration accounting closes"
+    'Plite declaration accounting closes'
   );
 
   const invalidRows = plite.entries.filter((row) => !row.conceptIds?.length);
   check(
     invalidRows.length === 0,
-    "Plite rows carry concept ownership",
+    'Plite rows carry concept ownership',
     invalidRows
       .slice(0, 5)
       .map((row) => row.path)
-      .join(", ")
+      .join(', ')
   );
 }
 
@@ -373,15 +373,15 @@ if (plate) {
   check(
     plate.summary.files ===
       plate.summary.includedFiles + plate.summary.excludedFiles,
-    "Plate file accounting closes"
+    'Plate file accounting closes'
   );
   check(
     plate.files.length === plate.summary.files,
-    "Plate manifest row count closes"
+    'Plate manifest row count closes'
   );
   check(
     plate.conceptIds.length === 45,
-    "Plate concept count closes",
+    'Plate concept count closes',
     `${plate.conceptIds.length}/45`
   );
 
@@ -390,46 +390,46 @@ if (plate) {
   );
   check(
     invalidRows.length === 0,
-    "Plate rows mapped or exactly excluded",
+    'Plate rows mapped or exactly excluded',
     invalidRows
       .slice(0, 5)
       .map((row) => row.path)
-      .join(", ")
+      .join(', ')
   );
 }
 
 if (wordgard && lexical && prosemirror && plite && plate) {
   validateConceptReport(
     wordgard,
-    requireFile(resolve(artifactDir, "wordgard-architecture-report.md")),
-    "Wordgard"
+    requireFile(resolve(artifactDir, 'wordgard-architecture-report.md')),
+    'Wordgard'
   );
   validateConceptReport(
     lexical,
-    requireFile(resolve(artifactDir, "lexical-architecture-ledger.md")),
-    "Lexical"
+    requireFile(resolve(artifactDir, 'lexical-architecture-ledger.md')),
+    'Lexical'
   );
   validateConceptReport(
     prosemirror,
-    requireFile(resolve(artifactDir, "prosemirror-concept-ledger.md")),
-    "ProseMirror"
+    requireFile(resolve(artifactDir, 'prosemirror-concept-ledger.md')),
+    'ProseMirror'
   );
   validateConceptReport(
     plite,
-    requireFile(resolve(artifactDir, "plite-concepts.md")),
-    "Plite"
+    requireFile(resolve(artifactDir, 'plite-concepts.md')),
+    'Plite'
   );
 
   const plateReport = requireFile(
-    resolve(artifactDir, "plate-concept-inventory.md")
+    resolve(artifactDir, 'plate-concept-inventory.md')
   );
   const missingPlateConcepts = plate.conceptIds.filter(
     (id) => !plateReport.includes(id)
   );
   check(
     missingPlateConcepts.length === 0,
-    "Plate ledger accounts for every concept",
-    missingPlateConcepts.slice(0, 8).join(", ")
+    'Plate ledger accounts for every concept',
+    missingPlateConcepts.slice(0, 8).join(', ')
   );
 }
 
@@ -440,17 +440,17 @@ const architectureCursors = {
 };
 const testCursorEvidence = {
   lexical: requireFile(
-    resolve(root, "docs/editor-test-harvester/lexical/report.md")
+    resolve(root, 'docs/editor-test-harvester/lexical/report.md')
   ),
   prosemirror: requireFile(
-    resolve(root, "docs/editor-test-harvester/prosemirror/report.md")
+    resolve(root, 'docs/editor-test-harvester/prosemirror/report.md')
   ),
   wordgard: requireFile(
-    resolve(root, "docs/editor-test-harvester/wordgard/inventory.md")
+    resolve(root, 'docs/editor-test-harvester/wordgard/inventory.md')
   ),
 };
 
-for (const editor of ["wordgard", "lexical", "prosemirror"]) {
+for (const editor of ['wordgard', 'lexical', 'prosemirror']) {
   check(
     testCursorEvidence[editor].includes(architectureCursors[editor]),
     `${editor} test harvest matches architecture cursor`
@@ -459,16 +459,16 @@ for (const editor of ["wordgard", "lexical", "prosemirror"]) {
 if (prosemirror) {
   check(
     testCursorEvidence.prosemirror.includes(prosemirror.moduleSetCursor),
-    "ProseMirror test harvest matches composite module cursor"
+    'ProseMirror test harvest matches composite module cursor'
   );
 }
 
 const issueRefreshes = {};
 
-for (const editor of ["wordgard", "lexical", "prosemirror"]) {
+for (const editor of ['wordgard', 'lexical', 'prosemirror']) {
   const base = resolve(root, `docs/editor-issue-harvester/${editor}/full`);
-  const refresh = loadJson(resolve(base, "issue-refresh.json"));
-  const classified = loadJson(resolve(base, "classified-issues.json"));
+  const refresh = loadJson(resolve(base, 'issue-refresh.json'));
+  const classified = loadJson(resolve(base, 'classified-issues.json'));
 
   issueRefreshes[editor] = refresh;
   if (!refresh || !classified) continue;
@@ -526,7 +526,7 @@ if (plan) {
     .filter((link) => !/^(?:https?:|#)/.test(link));
 
   for (const link of markdownLinks) {
-    const withoutAnchor = link.split("#")[0];
+    const withoutAnchor = link.split('#')[0];
     const target = resolve(dirname(planPath), withoutAnchor);
 
     check(existsSync(target), `plan artifact link ${link}`);
@@ -548,19 +548,19 @@ if (plan) {
     ])
   );
   const requiredPacketTerms = {
-    A1: ["config", "session"],
-    A2: ["priority", "order"],
-    A3: ["exclusive", "propert"],
-    A4: ["query middleware", "primaryRange"],
-    A5: ["clipboard", "plite-dom"],
-    A6: ["descriptor", "dependenc", "conflict"],
+    A1: ['config', 'session'],
+    A2: ['priority', 'order'],
+    A3: ['exclusive', 'propert'],
+    A4: ['query middleware', 'primaryRange'],
+    A5: ['clipboard', 'plite-dom'],
+    A6: ['descriptor', 'dependenc', 'conflict'],
   };
 
-  check(rankedById.size === 6, "ranked material set is exactly A1-A6");
+  check(rankedById.size === 6, 'ranked material set is exactly A1-A6');
 
   for (let index = 1; index <= 6; index++) {
     const id = `A${index}`;
-    const startMatch = new RegExp(`^## ${id} \\u2014 .*?$`, "m").exec(plan);
+    const startMatch = new RegExp(`^## ${id} \\u2014 .*?$`, 'm').exec(plan);
     const ranking = rankedById.get(id);
 
     check(Boolean(startMatch), `${id} dossier exists`);
@@ -643,7 +643,7 @@ if (plan) {
     );
 
     check(
-      dossier.includes("@platejs/"),
+      dossier.includes('@platejs/'),
       `${id} public example uses a real package-qualified import or type`
     );
   }
@@ -666,17 +666,17 @@ if (plan) {
     check(plan.includes(row), `plan closure count ${row}`);
   }
   check(
-    plan.includes("Unmapped source units/declarations: 0."),
-    "plan records zero unmapped"
+    plan.includes('Unmapped source units/declarations: 0.'),
+    'plan records zero unmapped'
   );
-  check(plan.includes("Material proposals: 6;"), "plan records 6 proposals");
+  check(plan.includes('Material proposals: 6;'), 'plan records 6 proposals');
   check(
-    plan.includes("Unresolved material candidates: 0"),
-    "plan records zero unresolved candidates"
+    plan.includes('Unresolved material candidates: 0'),
+    'plan records zero unresolved candidates'
   );
   check(
-    plan.includes("Product implementation performed: none."),
-    "plan preserves planning-only boundary"
+    plan.includes('Product implementation performed: none.'),
+    'plan preserves planning-only boundary'
   );
 
   for (const [editor, refresh] of Object.entries(issueRefreshes)) {
@@ -684,7 +684,7 @@ if (plan) {
 
     check(
       plan.includes(
-        refresh.hostVerification.issueCount.toLocaleString("en-US")
+        refresh.hostVerification.issueCount.toLocaleString('en-US')
       ),
       `plan records ${editor} issue total`
     );
@@ -698,52 +698,52 @@ if (plan) {
 const registry = loadJson(registryPath, relative(registryPath));
 
 if (registry) {
-  check(registry.version === 1, "audit registry schema version 1");
-  check(Array.isArray(registry.audits), "audit registry audits array");
+  check(registry.version === 1, 'audit registry schema version 1');
+  check(Array.isArray(registry.audits), 'audit registry audits array');
 
   const planRelative = relative(planPath);
   const audit = registry.audits?.find(
     (entry) =>
       entry.artifact === planRelative ||
-      resolve(root, entry.artifact ?? "") === planPath
+      resolve(root, entry.artifact ?? '') === planPath
   );
 
-  check(Boolean(audit), "registry links this audit artifact", planRelative);
+  check(Boolean(audit), 'registry links this audit artifact', planRelative);
 
   if (audit) {
     check(
-      typeof audit.id === "string" && audit.id.length > 0,
-      "registry stable audit id"
+      typeof audit.id === 'string' && audit.id.length > 0,
+      'registry stable audit id'
     );
-    check(audit.target === "full", "registry target is full");
+    check(audit.target === 'full', 'registry target is full');
     check(
       Number.isInteger(audit.artifactVersion) && audit.artifactVersion > 0,
-      "registry artifact version"
+      'registry artifact version'
     );
-    check(Array.isArray(audit.references), "registry reference cursor array");
+    check(Array.isArray(audit.references), 'registry reference cursor array');
 
     const expectedReferences = [
       {
         branch: wordgard?.authority.branch,
         commit: wordgard?.authority.commit,
-        issue: "wordgard",
-        localPath: "../wordgard",
+        issue: 'wordgard',
+        localPath: '../wordgard',
         source: wordgard?.authority.origin,
         upstream: wordgard?.authority.upstream,
       },
       {
-        branch: "main",
+        branch: 'main',
         commit: lexical?.repository.commit,
-        issue: "lexical",
-        localPath: "../lexical",
-        source: "https://github.com/facebook/lexical.git",
-        upstream: "origin/main",
+        issue: 'lexical',
+        localPath: '../lexical',
+        source: 'https://github.com/facebook/lexical.git',
+        upstream: 'origin/main',
       },
       {
         branch: prosemirror?.meta.branch,
         commit: prosemirror?.meta.head,
-        issue: "prosemirror",
-        localPath: "../prosemirror",
+        issue: 'prosemirror',
+        localPath: '../prosemirror',
         source: prosemirror?.meta.remote,
         upstream: prosemirror?.meta.upstream,
       },
@@ -752,7 +752,7 @@ if (registry) {
     for (const expected of expectedReferences) {
       const reference = audit.references?.find(
         (entry) =>
-          resolve(root, entry.localPath ?? "") ===
+          resolve(root, entry.localPath ?? '') ===
           resolve(root, expected.localPath)
       );
 
@@ -788,7 +788,7 @@ if (registry) {
         `${expected.issue} registry issue timestamp`
       );
       check(
-        typeof reference.repoKey === "string" && reference.repoKey.length > 0,
+        typeof reference.repoKey === 'string' && reference.repoKey.length > 0,
         `${expected.issue} registry repo key`
       );
       check(
@@ -800,7 +800,7 @@ if (registry) {
 
     const pmReference = audit.references?.find(
       (entry) =>
-        resolve(root, entry.localPath ?? "") === resolve(root, "../prosemirror")
+        resolve(root, entry.localPath ?? '') === resolve(root, '../prosemirror')
     );
 
     if (pmReference && prosemirror) {
@@ -810,12 +810,12 @@ if (registry) {
       if (nestedModules.length > 0) {
         check(
           pmReference.moduleSetCursor === prosemirror.moduleSetCursor,
-          "ProseMirror registry composite architecture cursor"
+          'ProseMirror registry composite architecture cursor'
         );
       } else {
         warn(
           pmReference.moduleSetCursor === prosemirror.moduleSetCursor,
-          "ProseMirror registry omits the optional composite cursor; per-module cursors remain authoritative"
+          'ProseMirror registry omits the optional composite cursor; per-module cursors remain authoritative'
         );
       }
       const registeredModules =
@@ -825,13 +825,13 @@ if (registry) {
               prosemirror.repositories.some(
                 (repository) =>
                   entry.source === repository.remote ||
-                  resolve(root, entry.localPath ?? "") === repository.root
+                  resolve(root, entry.localPath ?? '') === repository.root
               )
             );
 
       check(
         registeredModules.length === prosemirror.repositories.length,
-        "ProseMirror registry records every module cursor",
+        'ProseMirror registry records every module cursor',
         `${registeredModules.length}/${prosemirror.repositories.length}`
       );
 
@@ -840,7 +840,7 @@ if (registry) {
           (entry) =>
             entry.module === repository.module ||
             entry.source === repository.remote ||
-            resolve(root, entry.localPath ?? "") === repository.root
+            resolve(root, entry.localPath ?? '') === repository.root
         );
 
         check(
@@ -850,7 +850,7 @@ if (registry) {
         if (!registered) continue;
 
         check(
-          resolve(root, registered.localPath ?? "") === repository.root,
+          resolve(root, registered.localPath ?? '') === repository.root,
           `ProseMirror ${repository.module} registry local path`,
           `${registered.localPath} != ${repository.root}`
         );
@@ -884,7 +884,7 @@ if (registry) {
     const repoKeys = audit.references.map((reference) => reference.repoKey);
     check(
       new Set(repoKeys).size === repoKeys.length,
-      "registry repo keys are unique"
+      'registry repo keys are unique'
     );
   }
 }

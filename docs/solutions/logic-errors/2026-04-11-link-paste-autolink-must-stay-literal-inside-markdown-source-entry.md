@@ -75,7 +75,7 @@ apply: (context, match) => {
   if (match.shouldLink) {
     const { keepSelectedTextOnPaste } = context.editor
       .plugin(BaseLinkPlugin)
-      .getOptions();
+      .store.get();
     const inserted = upsertLink(context.editor, context.tx, {
       insertTextInLink: true,
       text: keepSelectedTextOnPaste ? undefined : match.url,

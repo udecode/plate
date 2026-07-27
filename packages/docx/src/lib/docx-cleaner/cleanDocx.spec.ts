@@ -27,4 +27,61 @@ describe('cleanDocx', () => {
     expect(result).not.toContain('[if !supportLineBreakNewLine]');
     expect(result).toContain('mso-list:Ignore');
   });
+
+  it('owns font and link cleanup', () => {
+    const result = cleanDocx(
+      [
+        '<font color="red">Hello</font><font></font>',
+        '<a href="#footnote"><span>Jump</span></a>',
+        '<a href="https://platejs.org"><span></span><img src="/x.png" /><span>caption</span></a>',
+      ].join(''),
+      '{\\rtf1}'
+    );
+    const document = new DOMParser().parseFromString(result, 'text/html');
+
+    expect(document.querySelector('font')).toBeNull();
+    expect(document.querySelector('span')?.textContent).toBe('Hello');
+    expect(document.querySelector('a[href="#footnote"]')).toBeNull();
+    expect(document.body.textContent).toContain('Jump');
+    expect(
+      document.querySelectorAll('a[href="https://platejs.org"] span')
+    ).toHaveLength(1);
+  });
+
+  it('owns text-node and break cleanup', () => {
+    const result = cleanDocx(
+      '<p>A</p>\n   <p>B</p><p>\u00A0</p><p><br />\nhello\rworld</p>',
+      '{\\rtf1}'
+    );
+    const document = new DOMParser().parseFromString(result, 'text/html');
+
+    expect(document.body.textContent).toContain('AB');
+    expect(document.body.textContent).toContain('\nhello world');
+    expect(document.querySelector('br')).toBeNull();
+  });
+
+  it('copies block mark styles to a span child', () => {
+    const result = cleanDocx(
+      '<p style="font-style: italic; font-weight: 700; text-decoration: underline;">Hello</p>',
+      '{\\rtf1}'
+    );
+    const document = new DOMParser().parseFromString(result, 'text/html');
+    const span = document.querySelector('p > span') as HTMLSpanElement | null;
+
+    expect(span?.textContent).toBe('Hello');
+    expect(span?.style.fontStyle).toBe('italic');
+    expect(span?.style.fontWeight).toBe('700');
+    expect(span?.style.textDecoration).toContain('underline');
+  });
+
+  it('normalizes line endings and ignores content outside the outer html element', () => {
+    const result = cleanDocx(
+      'discard\r\n<html><body><p>a\r\nb\rc</p></body></html>discard',
+      '{\\rtf1}'
+    );
+
+    expect(result).not.toContain('discard');
+    expect(result).not.toContain('\r');
+    expect(result).toContain('a b c');
+  });
 });

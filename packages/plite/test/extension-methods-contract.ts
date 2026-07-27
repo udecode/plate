@@ -439,7 +439,7 @@ describe('extension method hard cut', () => {
     assert.equal(editorString(editor, [0]), 'one');
   });
 
-  it('command priority beats install order', () => {
+  it('command handlers follow install order', () => {
     const editor = createEditor();
     const calls: string[] = [];
 
@@ -455,7 +455,6 @@ describe('extension method hard cut', () => {
       }),
       defineEditorExtension({
         name: 'high-delete-backward-command',
-        priority: 10,
         commands: ({ handle }) => [
           handle(editorCommands.delete, ({ state }) => {
             calls.push('high');
@@ -467,7 +466,7 @@ describe('extension method hard cut', () => {
 
     editorDeleteBackward(editor);
 
-    assert.deepEqual(calls, ['high']);
+    assert.deepEqual(calls, ['low', 'high']);
   });
 
   it('validates peer dependencies and conflicts before mutating the editor', () => {

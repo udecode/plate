@@ -33,7 +33,7 @@ uses a later stage. Custom handlers do not need a linked method.
 | `keys` | Key combination compiled by Plate's realm-aware matcher. Use a string like `'mod+b'` or arrays like `[[Key.Mod, 'b']]`. |
 | `handler` | Explicit callback receiving `{ editor, event, eventDetails }`. |
 | `target` | Optional `'update' | 'api'` disambiguation when both same-named routes exist. |
-| `priority` | Shortcut priority. Defaults to the parent plugin priority. |
+| `priority` | Shortcut-local priority. Defaults to `0`. |
 | `preventDefault` | Browser-default policy for a handled shortcut. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()`. |
 | `null` | Removes that named shortcut from the plugin. |
 
@@ -200,14 +200,14 @@ This creates the compiled shortcut IDs `review.accept` and `review.reject`.
 
 ## Priority
 
-Shortcut priority defaults to the parent plugin priority. Set `priority` on a shortcut when two handlers use the same key combination and one should win.
+Shortcut priority defaults to `0`. Set it on a shortcut when two handlers use
+the same key combination and one should win.
 
 ```tsx title="plugins/priority-plugin.tsx" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
 export const PriorityPlugin = createPlatePlugin({
-  key: 'priority',
-  priority: 20,
+  key: 'commandMenu',
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',
@@ -222,7 +222,7 @@ export const PriorityPlugin = createPlatePlugin({
 });
 ```
 
-Plate orders the compiled table by shortcut priority, plugin order, then
+Plate orders the compiled table by shortcut priority, plugin application order, then
 declaration order. The first handled route wins.
 
 ## Editor-Level Shortcuts

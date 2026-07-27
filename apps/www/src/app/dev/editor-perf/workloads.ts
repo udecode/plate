@@ -14,9 +14,8 @@ export type EditorPerfWorkloadId =
   | 'huge-hr'
   | 'huge-italic'
   | 'huge-kbd'
+  | 'huge-script'
   | 'huge-strikethrough'
-  | 'huge-subscript'
-  | 'huge-superscript'
   | 'huge-underline'
   | 'huge-dense-text'
   | 'huge-dense-inline-props'
@@ -50,10 +49,8 @@ const KBD_TEXT =
   'Kbd benchmark copy. This forces hard-affinity render.as-only mark plugins without changing the element path.';
 const STRIKETHROUGH_TEXT =
   'Strikethrough benchmark copy. This forces render.as-only mark plugins without changing the element path.';
-const SUBSCRIPT_TEXT =
-  'Subscript benchmark copy. This forces render.as-only mark plugins without changing the element path.';
-const SUPERSCRIPT_TEXT =
-  'Superscript benchmark copy. This forces render.as-only mark plugins without changing the element path.';
+const SCRIPT_TEXT =
+  'Script benchmark copy. This forces an enum-valued mark renderer without changing the element path.';
 const UNDERLINE_TEXT =
   'Underline benchmark copy. This forces render.as-only mark plugins without changing the element path.';
 const DENSE_TEXT_SEGMENTS = [
@@ -162,16 +159,9 @@ export const EDITOR_PERF_WORKLOADS: WorkloadDefinition[] = [
   },
   {
     description:
-      'Huge subscript-only document for mark-side lanes with SubscriptPlugin.',
-    id: 'huge-subscript',
-    label: 'Huge subscript',
-    scenarioSelectable: false,
-  },
-  {
-    description:
-      'Huge superscript-only document for mark-side lanes with SuperscriptPlugin.',
-    id: 'huge-superscript',
-    label: 'Huge superscript',
+      'Huge script-mark document for mark-side lanes with ScriptPlugin.',
+    id: 'huge-script',
+    label: 'Huge script',
     scenarioSelectable: false,
   },
   {
@@ -294,6 +284,7 @@ function buildMarkedValue({
   blocks,
   cacheKey,
   markKey,
+  markValue,
   text,
 }: {
   blocks: number;
@@ -304,10 +295,10 @@ function buildMarkedValue({
     | 'highlight'
     | 'italic'
     | 'kbd'
+    | 'script'
     | 'strikethrough'
-    | 'sub'
-    | 'sup'
     | 'underline';
+  markValue?: 'sub' | 'sup' | true;
   text: string;
 }): Value {
   const resolvedCacheKey = `${cacheKey}:${blocks}`;
@@ -318,7 +309,7 @@ function buildMarkedValue({
   }
 
   const value = Array.from({ length: blocks }, () => ({
-    children: [{ [markKey]: true, text }],
+    children: [{ [markKey]: markValue ?? true, text }],
     type: 'p',
   })) as Value;
 
@@ -399,21 +390,13 @@ function buildStrikethroughValue(blocks: number): Value {
   });
 }
 
-function buildSubscriptValue(blocks: number): Value {
+function buildScriptValue(blocks: number): Value {
   return buildMarkedValue({
     blocks,
-    cacheKey: 'subscript',
-    markKey: 'sub',
-    text: SUBSCRIPT_TEXT,
-  });
-}
-
-function buildSuperscriptValue(blocks: number): Value {
-  return buildMarkedValue({
-    blocks,
-    cacheKey: 'superscript',
-    markKey: 'sup',
-    text: SUPERSCRIPT_TEXT,
+    cacheKey: 'script',
+    markKey: 'script',
+    markValue: 'sub',
+    text: SCRIPT_TEXT,
   });
 }
 
@@ -516,10 +499,8 @@ export function getEditorPerfWorkloadValue({
       return buildKbdValue(blocks);
     case 'huge-strikethrough':
       return buildStrikethroughValue(blocks);
-    case 'huge-subscript':
-      return buildSubscriptValue(blocks);
-    case 'huge-superscript':
-      return buildSuperscriptValue(blocks);
+    case 'huge-script':
+      return buildScriptValue(blocks);
     case 'huge-underline':
       return buildUnderlineValue(blocks);
     case 'huge-dense-text':

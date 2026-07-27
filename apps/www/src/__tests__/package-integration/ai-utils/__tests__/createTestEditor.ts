@@ -12,9 +12,8 @@ import {
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
   BaseKbdPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
 import { BaseMentionPlugin } from '@platejs/mention';
@@ -53,8 +52,7 @@ const BasePlugins = [
   BaseUnderlinePlugin,
   BaseCodePlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
+  BaseScriptPlugin,
   BaseMentionPlugin,
   BaseHighlightPlugin,
   BaseKbdPlugin,

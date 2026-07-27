@@ -1,0 +1,408 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-26-plugin-store-state",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-26-plugin-store-state.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-26",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Use plugin stores for editor-local state",
+  "targets": [
+    {
+      "name": "ai-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/ai-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-placeholder-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/block-placeholder-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-selection-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/block-selection-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-block-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "code-block-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/code-block-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/comment-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "copilot-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/copilot-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "discussion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/discussion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "dnd-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/dnd-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/emoji-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-base-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/indent-base-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "indent-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/indent-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/markdown-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/media-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mention-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/mention-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "slash-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/slash-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/suggestion-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "tabbable-kit",
+      "files": [
+        "apps/www/src/registry/components/editor/plugins/tabbable-kit.tsx"
+      ],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "toc-kit",
+      "files": ["apps/www/src/registry/components/editor/plugins/toc-kit.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-kits.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ai-node",
+      "files": ["apps/www/src/registry/ui/ai-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-context-menu",
+      "files": ["apps/www/src/registry/ui/block-context-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-discussion",
+      "files": ["apps/www/src/registry/ui/block-discussion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-draggable",
+      "files": ["apps/www/src/registry/ui/block-draggable.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-selection",
+      "files": ["apps/www/src/registry/ui/block-selection.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "block-suggestion",
+      "files": ["apps/www/src/registry/ui/block-suggestion.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "column-node",
+      "files": ["apps/www/src/registry/ui/column-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "comment-node",
+      "files": ["apps/www/src/registry/ui/comment-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "cursor-overlay",
+      "files": ["apps/www/src/registry/ui/cursor-overlay.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "emoji-node",
+      "files": ["apps/www/src/registry/ui/emoji-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "floating-toolbar",
+      "files": ["apps/www/src/registry/ui/floating-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "ghost-text",
+      "files": ["apps/www/src/registry/ui/ghost-text.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "link-toolbar",
+      "files": ["apps/www/src/registry/ui/link-toolbar.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-placeholder-node",
+      "files": ["apps/www/src/registry/ui/media-placeholder-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "media-upload-toast",
+      "files": ["apps/www/src/registry/ui/media-upload-toast.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "mode-toolbar-button",
+      "files": ["apps/www/src/registry/ui/mode-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "settings-dialog",
+      "files": ["apps/www/src/registry/components/editor/settings-dialog.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-node",
+      "files": ["apps/www/src/registry/ui/suggestion-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "suggestion-toolbar-button",
+      "files": ["apps/www/src/registry/ui/suggestion-toolbar-button.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "table-node",
+      "files": ["apps/www/src/registry/ui/table-node.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "use-chat",
+      "files": ["apps/www/src/registry/components/editor/use-chat.ts"],
+      "definitionFiles": ["apps/www/src/registry/registry-components.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "collaboration-demo",
+      "files": ["apps/www/src/registry/examples/collaboration-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    },
+    {
+      "name": "markdown-streaming-demo",
+      "files": ["apps/www/src/registry/examples/markdown-streaming-demo.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-examples.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-26-ai-plugin-stores-editor-local-e7558eb2",
+      "kind": "wiring",
+      "summary": "Seed editor-local plugin stores with `initialState`.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-kit",
+        "block-placeholder-kit",
+        "block-selection-kit",
+        "code-block-base-kit",
+        "code-block-kit",
+        "comment-kit",
+        "copilot-kit",
+        "discussion-kit",
+        "dnd-kit",
+        "emoji-kit",
+        "indent-base-kit",
+        "indent-kit",
+        "markdown-kit",
+        "media-kit",
+        "mention-kit",
+        "slash-kit",
+        "suggestion-kit",
+        "tabbable-kit",
+        "toc-kit"
+      ],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-26",
+          "entry": "2026-07-26-plugin-store-state",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-26-plugin-store-state-2",
+      "kind": "behavior",
+      "summary": "Read, update, and subscribe to plugin state through the typed store API.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": [
+        "ai-menu",
+        "ai-node",
+        "block-context-menu",
+        "block-discussion",
+        "block-draggable",
+        "block-selection",
+        "block-suggestion",
+        "column-node",
+        "comment-node",
+        "cursor-overlay",
+        "emoji-node",
+        "floating-toolbar",
+        "ghost-text",
+        "link-toolbar",
+        "media-placeholder-node",
+        "media-upload-toast",
+        "mode-toolbar-button",
+        "settings-dialog",
+        "suggestion-node",
+        "suggestion-toolbar-button",
+        "table-node",
+        "use-chat"
+      ],
+      "source": {
+        "line": 13,
+        "row": 2,
+        "legacyRelease": {
+          "date": "2026-07-26",
+          "entry": "2026-07-26-plugin-store-state",
+          "section": null
+        }
+      }
+    },
+    {
+      "id": "2026-07-26-plugin-store-state-3",
+      "kind": "behavior",
+      "summary": "Configure and update plugin store state through the same API used by copied registry code.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["collaboration-demo", "markdown-streaming-demo"],
+      "source": {
+        "line": 14,
+        "row": 3,
+        "legacyRelease": {
+          "date": "2026-07-26",
+          "entry": "2026-07-26-plugin-store-state",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

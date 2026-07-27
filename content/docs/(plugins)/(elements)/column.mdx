@@ -136,107 +136,29 @@ Extends `Element`.
 </APIAttributes>
 </API>
 
-## Transforms
+## Capabilities
 
-### `insertColumnGroup`
+`ColumnItemPlugin` owns every column mutation. Use its scoped update surface:
 
-Insert a columnGroup with two empty columns.
+```tsx
+const column = editor.plugin(ColumnItemPlugin);
 
-<API name="insertColumnGroup">
-<APIOptions type="object & { columns?: number[] | number }">
-    - `columns`: Array of column widths or number of equal-width columns (default: 2)
-    - Other options to control insertion behavior
-  <APIItem name="columns" type="number[] | number" optional>
-    Array of column widths or number of equal-width columns (default: 2)
-  </APIItem>
-  <APIItem name="...options" type="object">
-    Other options to control insert behavior
-  </APIItem>
-</APIOptions>
-</API>
+column.update.insert({ width: '33%' });
+column.update.insertGroup({ columns: 3, select: true });
+column.update.moveMiddle(columnGroupEntry, { direction: 'left' });
+column.update.selectAll();
+column.update.set({ at: columnGroupPath, widths: ['33%', '67%'] });
+column.update.toggle({ columns: 2 });
+```
 
-### `insertColumn`
+The same commands are available through `editor.update.column`.
 
-Insert an empty column.
-
-<API name="insertColumn">
-<APIOptions type="object & { width?: string }">
-  <APIItem name="width" type="string" optional>
-    Column width (default: "33%")
-  </APIItem>
-  <APIItem name="...options" type="object">
-    Other options to control insert behavior
-  </APIItem>
-</APIOptions>
-</API>
-
-### `moveMiddleColumn`
-
-Move the middle column to the left or right.
-
-<API name="moveMiddleColumn">
-<APIParameters>
-  <APIItem name="nodeEntry" type="NodeEntry">
-    The node entry of `column` element
-  </APIItem>
-  <APIItem name="options" type="{ direction: 'left' | 'right' }">
-    Control the direction the middle column moves to
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="boolean">
-  Returns `false` if the middle node is empty (and removes it), `true` otherwise.
-</APIReturns>
-</API>
-
-### `toggleColumnGroup`
-
-Convert a block into a column group layout or update an existing column group's layout.
-
-<API name="toggleColumnGroup">
-- If the target block is not a column group, wraps it in a new column group with the specified number of columns
-- If the target block is already a column group, updates its column layout using `setColumns`
-- The original content becomes the content of the first column
-- Additional columns are created with empty paragraphs
-<APIOptions type="object">
-  <APIItem name="at" type="Location" optional>
-    The location to toggle the column group at.
-  </APIItem>
-  <APIItem name="columns" type="number" optional>
-    Number of equal-width columns to create (default: 2)
-  </APIItem>
-  <APIItem name="widths" type="string[]" optional>
-    Array of column widths (e.g., ['50%', '50%']). Takes precedence over `columns`.
-  </APIItem>
-</APIOptions>
-</API>
-
-### `setColumns`
-
-Update the column layout of an existing column group.
-
-<API name="setColumns">
-- When increasing columns:
-  - Keeps existing column content
-  - Adds new empty columns with specified widths
-- When decreasing columns:
-  - Merges content from removed columns into the last remaining column
-  - Updates widths of remaining columns
-- When keeping same number of columns:
-  - Only updates column widths
-<APIOptions type="object">
-  <APIItem name="at" type="Path">
-    The path to the column group element.
-  </APIItem>
-  <APIItem name="columns" type="number" optional>
-    Number of equal-width columns to create.
-  </APIItem>
-  <APIItem name="widths" type="string[]" optional>
-    Array of column widths (e.g., ['33%', '67%']). Takes precedence over `columns`.
-  </APIItem>
-</APIOptions>
-</API>
-
+- `insert` inserts one column item.
+- `insertGroup` inserts a group of equal-width column items.
+- `moveMiddle` moves the middle column's content into the first column.
+- `selectAll` expands a selection inside a column to the column group.
+- `set` changes the count and widths of an existing group.
+- `toggle` converts the active block to a column group or updates its layout.
 
 ## Hooks
 

@@ -3,6 +3,7 @@ import type {
   EditorSchemaDefinition,
   EditorSchemaExtension,
   EditorSchemaSource,
+  PropertyEnumDescriptor,
   PropertyJsonDescriptor,
   PropertyJsonOptions,
   PropertyJsonValue,
@@ -250,6 +251,15 @@ const cloneDescriptorValue = (
         throw new Error(`${owner} must be boolean.`);
       break;
     }
+    case 'enum': {
+      if (
+        typeof value !== 'string' ||
+        !(descriptor as PropertyEnumDescriptor).values.includes(value)
+      ) {
+        throw new Error(`${owner} must be a declared enum value.`);
+      }
+      break;
+    }
     case 'number': {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
         throw new Error(`${owner} must be a finite number.`);
@@ -437,6 +447,67 @@ const defineSet = <TItemDescriptor extends PropertyValueDescriptor>(
   ) as PropertySetDescriptor<TItemDescriptor>;
 };
 
+const defineEnum = <const TValues extends readonly [string, ...string[]]>(
+  values: TValues,
+  options: PropertyValueOptions<TValues[number]> = {}
+): PropertyEnumDescriptor<TValues> => {
+  assertOnlyKeys(
+    options as Readonly<Record<string, unknown>>,
+    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
+    'property.enum'
+  );
+  assertPropertyValidation(options, 'property.enum');
+
+  if (!Array.isArray(values) || values.length === 0) {
+    throw new Error('property.enum values cannot be empty.');
+  }
+  values.forEach((value) => assertNonEmpty(value, 'property.enum value'));
+  if (new Set(values).size !== values.length) {
+    throw new Error('property.enum values must be unique.');
+  }
+
+  const clonedValues = Object.freeze([...values]) as unknown as TValues;
+  const hasDefault = Object.hasOwn(options, 'default');
+
+  if (options.omitDefault === true && !hasDefault) {
+    throw new Error('property.enum omitDefault requires a default.');
+  }
+
+  const descriptor = {
+    kind: 'enum' as const,
+    omitDefault: false,
+    values: clonedValues,
+    ...(options.validate
+      ? {
+          validate: options.validate,
+          validationVersion: options.validationVersion,
+        }
+      : {}),
+  };
+  const defaultValue = hasDefault
+    ? (cloneDescriptorValue(
+        descriptor,
+        options.default,
+        'property.enum default'
+      ) as TValues[number])
+    : undefined;
+
+  return clonePropertyDescriptor(
+    {
+      ...(hasDefault ? { default: defaultValue } : {}),
+      kind: 'enum' as const,
+      omitDefault: options.omitDefault ?? false,
+      ...(options.significant === false ? { significant: false } : {}),
+      ...(options.validate
+        ? { validationVersion: options.validationVersion }
+        : {}),
+      values: clonedValues,
+    },
+    options.validate,
+    'property.enum'
+  );
+};
+
 type PropertyJsonOptionsWithoutValidation<TValue extends PropertyJsonValue> =
   Readonly<{
     default?: TValue;
@@ -477,6 +548,7 @@ type PropertyBuilderApi = Readonly<{
   boolean: (
     options?: PropertyValueOptions<boolean>
   ) => PropertyBooleanDescriptor;
+  enum: typeof defineEnum;
   json: typeof defineJson;
   number: (options?: PropertyValueOptions<number>) => PropertyNumberDescriptor;
   set: <TItemDescriptor extends PropertyValueDescriptor>(
@@ -489,6 +561,7 @@ type PropertyBuilderApi = Readonly<{
 export const property: PropertyBuilderApi = Object.freeze({
   boolean: (options: PropertyValueOptions<boolean> = {}) =>
     defineValue('boolean', options),
+  enum: defineEnum,
   json: defineJson,
   number: (options: PropertyValueOptions<number> = {}) =>
     defineValue('number', options) as PropertyNumberDescriptor,

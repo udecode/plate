@@ -26,7 +26,7 @@ describe('AIChatPlugin getPrompt', () => {
     const editor = createEditor();
 
     expect(
-      editor.plugin(AIChatPlugin).api.getPrompt({ prompt: 'Refine this block' })
+      editor.plugin(AIChatPlugin).read.prompt({ prompt: 'Refine this block' })
     ).toBe('Refine this block');
   });
 
@@ -34,7 +34,7 @@ describe('AIChatPlugin getPrompt', () => {
     const editor = createEditor();
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block']));
+      .store.set({ selectedIds: new Set(['block']) });
     let received: unknown;
     const prompt = ({
       isBlockSelecting,
@@ -48,7 +48,7 @@ describe('AIChatPlugin getPrompt', () => {
       return `block:${isBlockSelecting};selection:${isSelecting}`;
     };
 
-    expect(editor.plugin(AIChatPlugin).api.getPrompt({ prompt })).toBe(
+    expect(editor.plugin(AIChatPlugin).read.prompt({ prompt })).toBe(
       'block:true;selection:true'
     );
     expect(received).toEqual({
@@ -62,10 +62,10 @@ describe('AIChatPlugin getPrompt', () => {
     const editor = createEditor();
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block']));
+      .store.set({ selectedIds: new Set(['block']) });
 
     expect(
-      editor.plugin(AIChatPlugin).api.getPrompt({
+      editor.plugin(AIChatPlugin).read.prompt({
         prompt: {
           blockSelecting: 'block prompt',
           default: 'default prompt',
@@ -79,7 +79,7 @@ describe('AIChatPlugin getPrompt', () => {
     const editor = createEditor();
 
     expect(
-      editor.plugin(AIChatPlugin).api.getPrompt({
+      editor.plugin(AIChatPlugin).read.prompt({
         prompt: {
           default: 'default prompt',
         },

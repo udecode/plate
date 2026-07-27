@@ -127,7 +127,7 @@ describe('customMdxDeserialize', () => {
     ]);
   });
 
-  it('preserves block mdx attributes and nested unknown tags as source text', () => {
+  it('uses the figure rule fallback for an unsupported figure shape', () => {
     const editor = createTestEditor();
 
     const result = customMdxDeserialize(
@@ -152,15 +152,13 @@ describe('customMdxDeserialize', () => {
       getTestDeserializeOptions(editor)
     );
 
-    expect(result).toEqual([
-      {
-        children: [
-          {
-            text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
-          },
-        ],
-        type: 'p',
-      },
-    ]);
+    expect(result).toEqual({
+      children: [
+        {
+          text: '<figure class="hero">\n<img src="/image.png" />\n</figure>',
+        },
+      ],
+      type: 'p',
+    });
   });
 });

@@ -22,9 +22,8 @@ interface TextAttributes {
   code?: boolean;
   color?: string;
   fontSize?: string;
+  script?: 'sub' | 'sup';
   strikethrough?: boolean;
-  subscript?: boolean;
-  superscript?: boolean;
   italic?: boolean;
   bold?: boolean;
   underline?: boolean;
@@ -61,8 +60,8 @@ const TEXT_TAGS: Record<string, () => TextAttributes> = {
   I: () => ({ italic: true }),
   S: () => ({ strikethrough: true }),
   STRONG: () => ({ bold: true }),
-  SUB: () => ({ subscript: true }),
-  SUP: () => ({ superscript: true }),
+  SUB: () => ({ script: 'sub' }),
+  SUP: () => ({ script: 'sup' }),
   U: () => ({ underline: true }),
 };
 
@@ -187,9 +186,9 @@ const getStyledTextAttributes = (el: HTMLElement): TextAttributes => {
   }
 
   if (verticalAlign === 'super') {
-    attrs.superscript = true;
+    attrs.script = 'sup';
   } else if (verticalAlign === 'sub') {
-    attrs.subscript = true;
+    attrs.script = 'sub';
   }
 
   if (normalizedBackgroundColor) {

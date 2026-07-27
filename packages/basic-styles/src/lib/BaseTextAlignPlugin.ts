@@ -19,8 +19,6 @@ export type Alignment =
   | 'right'
   | 'start';
 
-const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
-
 /** Creates a plugin that adds alignment functionality to the editor. */
 export const BaseTextAlignPlugin = createBasePlugin({
   key: KEYS.textAlign,
@@ -32,7 +30,7 @@ export const BaseTextAlignPlugin = createBasePlugin({
       }),
     ],
   }),
-  targetPluginKeys: defaultTargetPluginKeys,
+  targetPluginKeys: [KEYS.p],
   type: 'align',
   codecs: ({ defineCodecs }) =>
     defineCodecs({

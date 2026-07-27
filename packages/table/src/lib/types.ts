@@ -11,6 +11,22 @@ import type {
   TTableRowElement,
 } from '@platejs/utils';
 
+export type { TableContext } from './internal/context';
+export type {
+  TableGrid,
+  TableGridAnchor,
+  TableGridCompilerMetrics,
+  TableGridProblem,
+} from './internal/grid';
+export type {
+  TableSelectionBounds,
+  TableSelectionEdge,
+  TableSelectionExpansion,
+  TableSelectionNeighborDirection,
+  TableSelectionView,
+  TableSelectionViewMetrics,
+} from './internal/selection';
+
 export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';
 
 export type CreateCellOptions = {

@@ -4,7 +4,8 @@
 
 - Expose the Plite-backed Plate editor and plugin model, including
   `editor.read`, `editor.update`, top-level plugin `type`, compiled
-  `schema.element` and `schema.mark`, plugin `options`, and
+  `schema.element` and `schema.mark`, plugin `initialState`, an editor-local
+  plugin `store`, and
   inferred plugin-owned `editor.api[pluginKey]` and `editor.update` groups;
   exact generic code can use `editor.plugin(Plugin)`
 - Export pure schema and plugin builders from `platejs`, React components and

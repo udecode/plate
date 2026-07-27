@@ -1,0 +1,174 @@
+import { act, renderHook } from '@testing-library/react';
+import { createBaseEditor } from '@platejs/core';
+import type { Range } from '@platejs/plite';
+
+const useEditorMock = mock();
+const useIsomorphicLayoutEffectMock = mock((effect: () => void) => effect());
+const getCursorOverlayStateMock = mock();
+const getSelectionRectsMock = mock();
+
+mock.module('@platejs/core/react', () => ({
+  useEditor: useEditorMock,
+}));
+
+mock.module('@udecode/react-utils', () => ({
+  useIsomorphicLayoutEffect: useIsomorphicLayoutEffectMock,
+}));
+
+mock.module('./cursorGeometry', () => ({
+  FROZEN_EMPTY_ARRAY: Object.freeze([]),
+  getCursorOverlayState: getCursorOverlayStateMock,
+  getSelectionRects: getSelectionRectsMock,
+}));
+
+const importHooks = () =>
+  import(`./useCursorOverlay?test=${Math.random().toString(36).slice(2)}`);
+
+describe('cursor overlay hooks', () => {
+  beforeEach(() => {
+    useEditorMock.mockReset();
+    getCursorOverlayStateMock.mockReset();
+    getSelectionRectsMock.mockReset();
+  });
+
+  afterAll(() => {
+    mock.restore();
+  });
+
+  it('computes cached selection rects and exposes refresh controls', async () => {
+    const { useCursorOverlayPositions } = await importHooks();
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    } satisfies Range;
+    const editor = createBaseEditor();
+
+    useEditorMock.mockReturnValue(editor);
+    getSelectionRectsMock.mockReturnValue([
+      { height: 10, left: 1, top: 2, width: 10 },
+    ]);
+    getCursorOverlayStateMock.mockReturnValue([
+      {
+        caretPosition: { height: 10, left: 1, top: 2 },
+        id: 'a',
+        selection: range,
+        selectionRects: [],
+      },
+    ]);
+
+    const container = document.createElement('div');
+    Object.defineProperty(container, 'scrollTop', { value: 5 });
+    container.getBoundingClientRect = () => new DOMRect(10, 20);
+
+    const { result } = renderHook(() =>
+      useCursorOverlayPositions({
+        containerRef: { current: container },
+        cursors: {
+          a: { selection: range },
+        },
+        refreshOnResize: false,
+      })
+    );
+
+    expect(getSelectionRectsMock).toHaveBeenCalledWith(editor, {
+      range,
+      xOffset: 10,
+      yOffset: 15,
+    });
+    expect(result.current.cursors).toEqual([
+      {
+        caretPosition: { height: 10, left: 1, top: 2 },
+        id: 'a',
+        selection: range,
+        selectionRects: [],
+      },
+    ]);
+    expect(typeof result.current.refresh).toBe('function');
+  });
+
+  it('uses viewport coordinates without a relative container', async () => {
+    const { useCursorOverlayPositions } = await importHooks();
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    } satisfies Range;
+    const editor = createBaseEditor();
+
+    useEditorMock.mockReturnValue(editor);
+    getSelectionRectsMock.mockReturnValue([]);
+    getCursorOverlayStateMock.mockReturnValue([]);
+
+    renderHook(() =>
+      useCursorOverlayPositions({
+        cursors: { a: { selection: range } },
+        refreshOnResize: false,
+      })
+    );
+
+    expect(getSelectionRectsMock).toHaveBeenCalledWith(editor, {
+      range,
+      xOffset: 0,
+      yOffset: 0,
+    });
+  });
+
+  it('coalesces scheduled renders even when the frame id is zero', async () => {
+    const { useRequestReRender } = await importHooks();
+    const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+    let frameCallback: FrameRequestCallback | undefined;
+    let renderCount = 0;
+
+    globalThis.requestAnimationFrame = (callback) => {
+      frameCallback = callback;
+
+      return 0;
+    };
+
+    const { result } = renderHook(() => {
+      renderCount++;
+
+      return useRequestReRender();
+    });
+
+    act(() => {
+      result.current();
+      result.current();
+    });
+
+    expect(renderCount).toBe(1);
+
+    act(() => {
+      frameCallback?.(0);
+    });
+
+    expect(renderCount).toBe(2);
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+  });
+
+  it('cancels a pending frame before an immediate render', async () => {
+    const { useRequestReRender } = await importHooks();
+    const originalCancelAnimationFrame = globalThis.cancelAnimationFrame;
+    const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+    const cancelAnimationFrame = mock();
+    let renderCount = 0;
+
+    globalThis.cancelAnimationFrame = cancelAnimationFrame;
+    globalThis.requestAnimationFrame = () => 7;
+
+    const { result } = renderHook(() => {
+      renderCount++;
+
+      return useRequestReRender();
+    });
+
+    act(() => {
+      result.current();
+      result.current(true);
+    });
+
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(7);
+    expect(renderCount).toBe(2);
+    globalThis.cancelAnimationFrame = originalCancelAnimationFrame;
+    globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+  });
+});

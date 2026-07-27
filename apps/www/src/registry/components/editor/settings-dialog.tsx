@@ -232,14 +232,16 @@ export function SettingsDialog() {
 
     // Update AI chat options
     const chatOptions =
-      editor.plugin(aiChatPlugin).getOptions().chatOptions ?? {};
+      editor.plugin(aiChatPlugin).store.get().chatOptions ?? {};
 
-    editor.plugin(aiChatPlugin).setOption('chatOptions', {
-      ...chatOptions,
-      body: {
-        ...chatOptions.body,
-        apiKey: tempKeys.aiGatewayApiKey,
-        model: tempModel.value,
+    editor.plugin(aiChatPlugin).store.set({
+      chatOptions: {
+        ...chatOptions,
+        body: {
+          ...chatOptions.body,
+          apiKey: tempKeys.aiGatewayApiKey,
+          model: tempModel.value,
+        },
       },
     });
 
@@ -247,13 +249,15 @@ export function SettingsDialog() {
 
     // Update AI complete options
     const completeOptions =
-      editor.plugin(CopilotPlugin).getOptions().completeOptions ?? {};
-    editor.plugin(CopilotPlugin).setOption('completeOptions', {
-      ...completeOptions,
-      body: {
-        ...completeOptions.body,
-        apiKey: tempKeys.aiGatewayApiKey,
-        model: tempModel.value,
+      editor.plugin(CopilotPlugin).store.get().completeOptions ?? {};
+    editor.plugin(CopilotPlugin).store.set({
+      completeOptions: {
+        ...completeOptions,
+        body: {
+          ...completeOptions.body,
+          apiKey: tempKeys.aiGatewayApiKey,
+          model: tempModel.value,
+        },
       },
     });
   };

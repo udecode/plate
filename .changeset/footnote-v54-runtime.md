@@ -2,11 +2,11 @@
 "@platejs/footnote": major
 ---
 
-Move footnote commands to `editor.update.footnote` and
-`editor.update.insert.footnote`, and register footnote element properties in
-compiled schemas. Duplicate-definition normalization reads earlier writes from
-the active transaction.
+Use `BaseFootnotePlugin` / `FootnotePlugin` for footnote references and
+document-level footnote behavior. Read footnotes through `editor.read.footnote`
+and mutate them through `editor.update.footnote`, including
+`editor.update.footnote.insert()`.
 
-Install the footnote input descriptor as a required plugin dependency.
-
-**Migration:** Pass the active transaction to exported footnote transform helpers.
+The plugin requires the matching footnote-input descriptor. Footnote queries,
+navigation, insertion, definition creation, and duplicate normalization are
+owned by the plugin instead of exported editor/transaction helper functions.

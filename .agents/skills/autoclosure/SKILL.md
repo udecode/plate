@@ -57,7 +57,7 @@ target -> requirements -> changed-surface map -> coherence audit
 - The user asks for architecture cleanup as the primary goal: use
   `architecture-cleanup`.
 - The user asks for one ordinary patch with no existing diff/branch/merge
-  context: use `task`, `slate-patch`, or the package owner.
+  context: use `task`, `plite-patch`, or the package owner.
 - The next move is a public call-shape fork: route to `best-api`; route
   runtime/product adoption afterward to `plite-plan`, `plate-plan`, or
   `major-task`.
@@ -234,7 +234,7 @@ the answer gates the next safe closure move.
   mutations.
 - `best-api`: public call-shape forks and changed-public-API closure review.
 - `plite-plan` / `plate-plan`: runtime/product architecture and adoption.
-- `task`, `slate-patch`, package owners: narrow implementation fixes found by
+- `task`, `plite-patch`, package owners: narrow implementation fixes found by
   closure.
 - `sync-vision`: reusable taste discovered during closure.
 

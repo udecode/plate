@@ -7,7 +7,7 @@ import { BLOCK_CONTEXT_MENU_ID, BlockMenuPlugin } from './BlockMenuPlugin';
 
 const BlockSelectionApiFixture = createPlatePlugin<BlockSelectionConfig>({
   key: KEYS.blockSelection,
-  options: {
+  initialState: {
     selectedIds: new Set<string>(),
   },
 });
@@ -21,27 +21,27 @@ describe('BlockMenuPlugin', () => {
 
     api.show('block-a', { x: 12, y: 34 });
 
-    expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(BlockMenuPlugin).store.get()).toMatchObject({
       openId: 'block-a',
       position: { x: 12, y: 34 },
     });
 
     api.hide();
 
-    expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(BlockMenuPlugin).store.get()).toMatchObject({
       openId: null,
       position: { x: -10_000, y: -10_000 },
     });
 
     api.showContextMenu('block-b', { x: 56, y: 78 });
 
-    expect(editor.plugin(BlockMenuPlugin).getOptions()).toMatchObject({
+    expect(editor.plugin(BlockMenuPlugin).store.get()).toMatchObject({
       openId: BLOCK_CONTEXT_MENU_ID,
       position: { x: 56, y: 78 },
     });
     expect(
       [
-        ...(editor.plugin(BlockSelectionApiFixture).getOptions().selectedIds ??
+        ...(editor.plugin(BlockSelectionApiFixture).store.get().selectedIds ??
           new Set<string>()),
       ].sort()
     ).toEqual(['block-b']);

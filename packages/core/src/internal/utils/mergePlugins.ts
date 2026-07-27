@@ -286,8 +286,8 @@ export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
       // combine incompatible element/mark declarations across revisions.
       if (key === 'schema') return srcValue;
 
-      // Shallow merge options
-      if (key === 'options') {
+      // Shallow merge plugin initial state.
+      if (key === 'initialState') {
         return mergeDefinedProperties(objValue, srcValue);
       }
     }

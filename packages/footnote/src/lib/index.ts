@@ -4,8 +4,5 @@
 
 export * from './BaseFootnoteDefinitionPlugin';
 export * from './BaseFootnoteInputPlugin';
-export * from './BaseFootnoteReferencePlugin';
-export * from './registry';
+export * from './BaseFootnotePlugin';
 export * from './types';
-export * from './queries/index';
-export * from './transforms/index';

@@ -24,7 +24,9 @@ const createDropEvent = () => {
 
 const runOnDrop = (disableFileDrop: boolean) => {
   const editor = createPlateEditor({
-    plugins: [PlaceholderPlugin.configure({ options: { disableFileDrop } })],
+    plugins: [
+      PlaceholderPlugin.configure({ initialState: { disableFileDrop } }),
+    ],
   });
   const { event, preventDefault, stopPropagation } = createDropEvent();
 
@@ -161,15 +163,15 @@ describe('PlaceholderPlugin', () => {
     const placeholder = editor.plugin(PlaceholderPlugin);
 
     placeholder.api.addUploadingFile('image', file);
-    const publishedFiles = placeholder.getOption('uploadingFiles');
+    const publishedFiles = placeholder.store.get('uploadingFiles');
 
     expect(Object.isFrozen(publishedFiles)).toBe(true);
 
     placeholder.api.removeUploadingFile('image');
 
     expect(publishedFiles).toEqual({ image: file });
-    expect(placeholder.getOption('uploadingFiles')).toEqual({});
-    expect(placeholder.getOption('uploadingFiles')).not.toBe(publishedFiles);
+    expect(placeholder.store.get('uploadingFiles')).toEqual({});
+    expect(placeholder.store.get('uploadingFiles')).not.toBe(publishedFiles);
   });
 
   it('does not publish uploading files when the document update aborts', () => {
@@ -191,7 +193,7 @@ describe('PlaceholderPlugin', () => {
       })
     ).toThrow('abort');
     expect(
-      editor.plugin(PlaceholderPlugin).getOption('uploadingFiles')
+      editor.plugin(PlaceholderPlugin).store.get('uploadingFiles')
     ).toEqual({});
     expect(editor.read.children()).toEqual([
       { children: [{ text: '' }], type: KEYS.p },
@@ -202,7 +204,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         PlaceholderPlugin.configure({
-          options: {
+          initialState: {
             uploadConfig: {
               image: { mediaType: KEYS.img },
             },
@@ -218,7 +220,7 @@ describe('PlaceholderPlugin', () => {
         new File(['text'], 'notes.txt', { type: 'text/plain' }),
       ]);
 
-    expect(editor.plugin(PlaceholderPlugin).getOption('error')?.code).toBe(
+    expect(editor.plugin(PlaceholderPlugin).store.get('error')?.code).toBe(
       UploadErrorCode.INVALID_FILE_TYPE
     );
     expect(editor.read.children()).toHaveLength(1);
@@ -228,7 +230,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         PlaceholderPlugin.configure({
-          options: {
+          initialState: {
             uploadConfig: {
               blob: { mediaType: KEYS.file },
             },
@@ -271,7 +273,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         PlaceholderPlugin.configure({
-          options: {
+          initialState: {
             uploadConfig: {
               image: {
                 maxFileCount: 1,
@@ -291,7 +293,7 @@ describe('PlaceholderPlugin', () => {
         new File(['two'], 'two.png', { type: 'image/png' }),
       ]);
 
-    expect(editor.plugin(PlaceholderPlugin).getOption('error')?.code).toBe(
+    expect(editor.plugin(PlaceholderPlugin).store.get('error')?.code).toBe(
       UploadErrorCode.TOO_MANY_FILES
     );
     expect(editor.read.children()).toHaveLength(1);
@@ -301,7 +303,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         PlaceholderPlugin.configure({
-          options: {
+          initialState: {
             uploadConfig: {
               image: {
                 maxFileSize: '1KB',
@@ -320,7 +322,7 @@ describe('PlaceholderPlugin', () => {
         new File([new Uint8Array(1025)], 'large.png', { type: 'image/png' }),
       ]);
 
-    expect(editor.plugin(PlaceholderPlugin).getOption('error')?.code).toBe(
+    expect(editor.plugin(PlaceholderPlugin).store.get('error')?.code).toBe(
       UploadErrorCode.TOO_LARGE
     );
     expect(editor.read.children()).toHaveLength(1);
@@ -330,7 +332,7 @@ describe('PlaceholderPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         PlaceholderPlugin.configure({
-          options: { multiple: false },
+          initialState: { multiple: false },
         }),
       ],
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
@@ -343,7 +345,7 @@ describe('PlaceholderPlugin', () => {
         new File(['two'], 'two.png', { type: 'image/png' }),
       ]);
 
-    expect(editor.plugin(PlaceholderPlugin).getOption('error')).toMatchObject({
+    expect(editor.plugin(PlaceholderPlugin).store.get('error')).toMatchObject({
       code: UploadErrorCode.TOO_MANY_FILES,
       data: { fileType: null, maxFileCount: 1 },
     });

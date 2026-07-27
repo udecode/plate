@@ -87,24 +87,24 @@ const usersData = {
 
 export const discussionPlugin = createPlatePlugin({
   key: 'discussion',
-  options: {
+  initialState: {
     currentUserId: 'alice',
     discussions: [],
     users: usersData,
   },
-  selectors: ({ getOption }) => ({
-    currentUser: () => getOption('users')[getOption('currentUserId')],
-    user: (id: string) => getOption('users')[id],
-  }),
+  selectors: {
+    currentUser: (state) => state.users[state.currentUserId],
+    user: (state, id: string) => state.users[id],
+  },
 })
   .configure({
     render: { aboveNodes: BlockDiscussion },
   });
 ```
 
-- `options.currentUserId`: 当前活跃用户的 ID
-- `options.discussions`: 讨论数据结构数组
-- `options.users`: 将用户 ID 映射到用户数据的对象
+- `initialState.currentUserId`: 当前活跃用户的 ID
+- `initialState.discussions`: 讨论数据结构数组
+- `initialState.users`: 将用户 ID 映射到用户数据的对象
 - `render.aboveNodes`: 在节点上方渲染 [`BlockDiscussion`](/docs/components/block-discussion) 用于讨论 UI
 - `selectors.currentUser`: 获取当前用户数据
 - `selectors.user`: 通过 ID 获取用户数据

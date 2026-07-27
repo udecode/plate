@@ -47,7 +47,7 @@ As of `2026-04-03`:
 - code-affinity redesign landed and materially improved the worst core-plugin
   lane
 - newly benchmarked remaining `basic-nodes` plugins split cleanly:
-  - green enough: `KbdPlugin`, `SubscriptPlugin`, `SuperscriptPlugin`
+  - green enough: `KbdPlugin`, `ScriptPlugin`
   - still red: `HighlightPlugin`, `StrikethroughPlugin`
 
 ## What Is Left After Release

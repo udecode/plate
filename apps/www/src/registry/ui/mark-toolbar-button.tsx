@@ -8,11 +8,11 @@ import {
   HighlightPlugin,
   ItalicPlugin,
   KbdPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
+import type { TScriptValue } from '@platejs/utils';
 
 import { type PlateEditor, useEditor, useEditorSelector } from 'platejs/react';
 
@@ -20,22 +20,32 @@ import { ToolbarButton } from './toolbar';
 
 type ToolbarButtonProps = React.ComponentProps<typeof ToolbarButton>;
 
-type MarkPlugin =
+type BooleanMarkPlugin =
   | typeof BoldPlugin
   | typeof CodePlugin
   | typeof HighlightPlugin
   | typeof ItalicPlugin
   | typeof KbdPlugin
   | typeof StrikethroughPlugin
-  | typeof SubscriptPlugin
-  | typeof SuperscriptPlugin
   | typeof UnderlinePlugin;
 
-type MarkToolbarButtonProps = ToolbarButtonProps & {
-  plugin: MarkPlugin;
-};
+type MarkToolbarButtonProps = ToolbarButtonProps &
+  (
+    | {
+        plugin: BooleanMarkPlugin;
+        value?: never;
+      }
+    | {
+        plugin: typeof ScriptPlugin;
+        value: TScriptValue;
+      }
+  );
 
-function toggleMark(editor: PlateEditor, plugin: MarkPlugin) {
+function toggleMark(
+  editor: PlateEditor,
+  plugin: BooleanMarkPlugin | typeof ScriptPlugin,
+  value?: TScriptValue
+) {
   switch (plugin.key) {
     case BoldPlugin.key:
       return editor.plugin(plugin).update.toggle();
@@ -49,10 +59,11 @@ function toggleMark(editor: PlateEditor, plugin: MarkPlugin) {
       return editor.plugin(plugin).update.toggle();
     case StrikethroughPlugin.key:
       return editor.plugin(plugin).update.toggle();
-    case SubscriptPlugin.key:
-      return editor.plugin(plugin).update.toggle();
-    case SuperscriptPlugin.key:
-      return editor.plugin(plugin).update.toggle();
+    case ScriptPlugin.key: {
+      if (value === undefined) return;
+
+      return editor.plugin(ScriptPlugin).update.toggle(value);
+    }
     case UnderlinePlugin.key:
       return editor.plugin(plugin).update.toggle();
   }
@@ -60,18 +71,23 @@ function toggleMark(editor: PlateEditor, plugin: MarkPlugin) {
 
 export function MarkToolbarButton({
   plugin,
+  value,
   ...props
 }: MarkToolbarButtonProps) {
   const editor = useEditor();
   const { type } = editor.plugin(plugin);
-  const pressed = useEditorSelector((editor) => !!editor.read.marks()?.[type]);
+  const pressed = useEditorSelector((editor) => {
+    const mark = editor.read.marks()?.[type];
+
+    return value === undefined ? !!mark : mark === value;
+  });
 
   return (
     <ToolbarButton
       {...props}
       pressed={pressed}
       onClick={() => {
-        toggleMark(editor, plugin);
+        toggleMark(editor, plugin, value);
         editor.api.dom.focus();
       }}
       onMouseDown={(event) => {

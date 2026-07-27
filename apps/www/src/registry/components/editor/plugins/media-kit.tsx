@@ -20,7 +20,7 @@ import { VideoElement } from '@/registry/ui/media-video-node';
 export const MediaKit = [
   ImagePlugin.configure({
     component: ImageElement,
-    options: { disableUploadInsert: true },
+    initialState: { disableUploadInsert: true },
     render: { afterEditable: MediaPreviewDialog },
   }),
   MediaEmbedPlugin.configure({ component: MediaEmbedElement }),
@@ -29,7 +29,7 @@ export const MediaKit = [
   FilePlugin.configure({ component: FileElement }),
   PlaceholderPlugin.configure({
     component: PlaceholderElement,
-    options: { disableEmptyPlaceholder: true },
+    initialState: { disableEmptyPlaceholder: true },
     render: { afterEditable: MediaUploadToast },
   }),
 ];

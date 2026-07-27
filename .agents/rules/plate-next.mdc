@@ -10,7 +10,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `11`.
+Current doctrine version: `16`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -179,7 +179,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
     `editor.plugin(FooPlugin).api`;
   - mutations/commands on `editor.update.<owner>` or scoped plugin tx groups;
   - persistent editor state in Plite state fields or typed extension `state`;
-  - product/plugin options in scoped plugin options/state;
+  - product/plugin runtime values in `initialState` and the scoped store;
   - React/UI render state in the owning store/hook/provider;
   - internal operation/session state in a returned session/controller object
     when the lifecycle is local to one algorithm;
@@ -232,43 +232,56 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   `...) as BasePlugin<FooConfig>` are type regressions unless the annotation is
   a true external boundary. If inference fails, fix the builder/generic owner
   instead of typing the result.
+- Do not route one exported plugin builder chain through a private one-use
+  descriptor such as `FooPluginDefinition`, `FooPluginBase`, or
+  `FooPluginDescriptor`. Export the complete
+  `createBasePlugin(...)` / `createPlatePlugin(...)` / `toPlatePlugin(...)`
+  chain directly, preserving every capability stage that has a real typed
+  dependency. Type references and chain staging do not justify another
+  constant. Keep a private descriptor only when it is itself installed or
+  returned as a durable runtime identity, reused by multiple production
+  owners, or required at a real external boundary.
 - Do not create empty plugin config aliases like
   `type FooConfig = PluginConfig<'foo'>` just to pass
   `createBasePlugin<FooConfig>({ key: 'foo' })`. If a plugin has no typed
-  options, API, tx, selectors, or state, let `createBasePlugin` infer from the
-  config object. Manual config types are for real public plugin contracts, not
-  decoration.
-- Plate plugins have one value bag: `options`. Never add a second top-level
-  `config` channel for values described as immutable, compile-time, parser,
-  codec, schema, or host policy. Put plugin defaults in `options`, override
-  descriptor values with `.configure({ options })`, read live values through
-  the scoped plugin portal or builder `getOptions`, and update them through
-  scoped `setOption` / `setOptions` when runtime mutation is valid.
-- Schema factories destructure `options`; parser contexts receive `options`;
-  plugin API, tx, and extension callbacks use inferred `getOptions`. Updating
-  live options does not rebuild the compiled schema. When a schema-affecting
-  value must differ, configure the plugin descriptor before constructing the
-  editor. Do not recreate `editor.configure`, immutable option tokens,
-  versioned `define*Config` wrappers, plugin-host-policy resources, or a frozen
-  config snapshot to work around that lifecycle.
-- The options-only rule owns Plate plugin descriptors. A Plite editor extension
-  may keep its own `config` contract; do not mechanically rename unrelated
-  framework, parser-library, provider, build, or test-fixture config objects.
-- Inline constructor and justified `.extend()` `extension` options are already
-  contextually typed and need no helper. Contextual typing does not flow
-  backward into an extracted reusable editor-extension factory. Such a factory
-  receives the plugin context (or its `defineEditorExtension` member) and
-  returns `context.defineEditorExtension({ ... })`, preserving nested command,
-  input, state, transaction, and dependency inference. Put the contribution in
-  the constructor when the factory is accessible there; use one `.extend()`
-  stage only when the factory needs the whole accumulated plugin context,
-  adapts an imported or prebuilt descriptor, or consumes an earlier capability.
-- Distinguish the callback's context-bound `defineEditorExtension` from the
-  function imported from `@platejs/plite`. The imported helper authors
-  standalone Plite extensions; it is not the inference owner for an extracted
-  Plate plugin factory. Raw options without `name` default to the owning plugin
-  key. Use an explicit `name` only for a genuinely separate extension identity,
-  keyed secondary extension, or standalone Plite extension.
+  initial state, API, read, update, selectors, dependencies, or extension
+  contract, let `createBasePlugin` infer from the declaration. Manual config
+  types are for real public contracts, not decoration.
+- Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
+  plugin-authoring owner. Plate Next audits each contribution into exactly one
+  row:
+  - `initialState`: descriptor defaults for mutable editor-local state;
+  - `store`: live editor-local state access and subscriptions;
+  - `selectors`: pure store-state projections;
+  - `api`: plugin services not bound to a supplied document snapshot or active
+    transaction;
+  - `read`: pure, replayable queries over supplied document state;
+  - `update`: document mutation through the active transaction;
+  - `extension`: genuine editor-wide Plite substrate;
+  - `codecs`: format declarations.
+  Reject document reads hidden in `api`, document mutations outside `update`,
+  impure selectors/reads, plugin-scoped behavior smuggled into `extension`, and
+  any contribution with no honest row.
+- Enforce the creator's state mechanics without restating another model:
+  defaults use `initialState`, descriptor overrides use
+  `.configure({ initialState })`, callbacks use inferred `store`, consumers use
+  `editor.plugin(Plugin).store`, and React uses `usePluginStore` or
+  `useEditorPluginStore`. Reject deleted option accessors and parallel
+  top-level `options` / immutable `config` channels. Plite extensions may keep
+  their unrelated `config` contract; operation parameters may still be named
+  `options`.
+- Audit current-owner context access before accepting plugin code. In any
+  callback whose supplied context includes them, use `store`, `api`, `read`,
+  `update`, `type`, `plugin`, and `installed` directly. Reject
+  `editor.plugin(currentPlugin).*`, current-key root API/read/update calls,
+  `editor.getPlugin(currentKey)`, and `editor.getType(currentKey)` in that
+  callback. Keep `editor` for editor-wide substrate, cross-plugin access, or
+  one-shot transaction metadata unavailable on scoped `update`; active
+  transactions use `tx`. Specialized shortcut, input-rule, state-value, and
+  render-prop callbacks may expose only `editor`, so keep an exact typed portal
+  rather than moving or wrapping a coherent declaration just to capture a
+  shortcut. Never confuse an editor-wide extension such as `editor.api.dom`
+  with the current plugin's `api`.
 - Colocation is the default. Plugin behavior with exactly one production owner
   belongs inline in that plugin's `create*Plugin` / `.extend()` chain. This
   includes one-use `with*`, `decorate*`, normalize, parser, command,
@@ -292,28 +305,29 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   files. Extract only for multiple production consumers that cannot reuse the
   owning public API, a real cross-layer or standalone public owner, a durable
   React family boundary with an independent job, or dedicated proof tooling.
-- React colocation uses the durable component family as the default file owner,
-  not each exported symbol or implementation kind. A component family belongs
-  in one `<Family>.tsx` file and may export its composable primitives while
-  keeping family-only subcomponents, hooks, state, stores, controllers,
-  lifecycle behavior, variants, constants, and render helpers inline. Sibling
-  use inside the same family is internal composition, not multiple production
-  consumers and not evidence for another file.
-- A hook family earns one `use<Family>.ts` file only when it has a standalone
-  job beyond one component family, such as use by multiple durable component
-  families or a public lifecycle/controller API meaningful without the
-  component family. A provider or store earns another file only when it owns
-  state or lifecycle independently of that component family. Exporting a hook
-  or store, documenting it, or importing it from an app/registry wrapper that
-  composes the same component family proves public access, not independent
-  source ownership.
-- Do not create a named one-use subcomponent or hook file merely to shorten its
-  family owner. Inline the body or keep the private symbol in the family file.
-  A separate React file needs reuse across durable families, a genuinely
-  standalone public owner, or provider/store/lifecycle state that remains
-  meaningful and independently consumed without the component family. A public
-  export, direct external import, API-doc entry, or distinct implementation
-  kind alone does not require its own file.
+- React colocation has two durable owners: one `<Family>.tsx` component-family
+  file and one `use<Family>.ts[x]` hook-family file when the family has hooks.
+  The component file owns the main component, family-only subcomponents,
+  variants, render helpers, and component-local constants. The hook file owns
+  every related public or private hook, including hooks used only by a
+  subcomponent. Multiple related hooks are one family, not one file per hook.
+- Plugin descriptor files never own React hook definitions. Do not move a hook
+  into `<PluginName>.ts[x]` merely because the plugin, its render component, or
+  one plugin family is its only consumer. Plugin descriptors own plugin
+  authoring and non-hook private implementation. Hook definitions remain in
+  `use<Family>.ts[x]` so descriptor ownership, React lifecycle ownership, and
+  import direction stay obvious.
+- Do not bury hook definitions in component files, stores, providers, plugin
+  descriptors, or generic utility files. A provider or store earns its own file
+  only when it owns independent context, state, or lifecycle; its consuming
+  hooks still live in the hook-family file. Shared event names or state
+  primitives may live in that independent owner when doing so prevents a
+  plugin-to-hook import cycle.
+- Do not create one file per subcomponent or per hook merely to shorten a family
+  owner. Merge subcomponents into `<Family>.tsx` and hooks into
+  `use<Family>.ts[x]`. A separate component family, hook family, provider, or
+  store needs a genuinely distinct durable owner, not a public export, direct
+  external import, API-doc entry, or implementation-kind difference.
 - Keep feature-package React roots flat by default: plugin files, component
   family files, hook family files, and one public root barrel. `components/`,
   `hooks/`, `utils/`, nested family folders, and nested barrels are taxonomy,
@@ -324,56 +338,21 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   inferred callback into another file. Keep explicit types when they are a real
   exported contract, recursive shape, external boundary, or reused API/tx
   contract.
-- Let plugin builders own contextual typing. Constructors own the initial
-  widening contribution. `.extend()` is the only continuation verb after
-  construction. A contribution may contain plugin-scoped `api`, `read`,
-  `selectors`, or `update`, editor-wide `extension`, and format `codecs`. When
-  a real capability contract already exists for a justified later stage, pass
-  the contribution shape to the builder generic, for example
-  `.extend<{ api: ApiContract }>(...)` or
-  `.extend<{ update: UpdateContract }>(...)`. The explicit `update` contract is
-  the command object returned by `update({ tx })`, not the factory function.
-  Do not append `satisfies`, cast the callback, or annotate each method
-  parameter. Omit the generic when the complete contract can be inferred. If a
-  builder generic cannot contextually type the inline callback in this shape,
-  repair the Core builder signature instead of adding a call-site workaround.
-- Put every independent author contribution directly in
-  `createBasePlugin()` / `createPlatePlugin()`: `api`, `read`, `selectors`,
-  `update`, `extension`, `codecs`, and ordinary static fields. Use `.extend()`
-  only for an imported/prebuilt descriptor or extension, a shared factory the
-  constructor cannot access, or a real earlier-stage type dependency.
-  Constructor callbacks already receive typed authoring context; context
-  access alone never justifies `.extend()`.
-- Treat an exceptional plugin chain as a typed capability dependency graph. When a later
-  API, read, update, extension, handler, or required dependent needs an earlier
-  capability, publish it in the constructor when possible; otherwise add the
-  smallest earlier `.extend()` stage and consume its accumulated inferred
-  surface. Multiple stages require a real type dependency.
-- Author codec declarations as
-  `codecs: ({ defineCodecs }) => defineCodecs(map)` in the constructor.
-  `defineCodecs(map)` handles self and product maps;
-  `defineCodecs(TargetPlugin, map)` handles a foreign map and injects the
-  target. The map stays MIME-keyed. Its `'text/html'` value accepts one
-  schema-aware rule or a non-empty ordered rule tuple. Multiple HTML
-  representations owned by one plugin stay in that single map. Move the codec
-  callback to `.extend()` only when it needs an earlier-stage capability. This
-  context-bound helper is the sole
-  inline codec inference anchor. Reject direct `codecs: { ... }`, manual
-  `target` fields, global helpers, casts, and callback annotations.
-- Stage only an honest scoped capability that consumers, required dependents,
-  or durable plugin operations should discover. Do not publish a private
-  implementation fragment merely to share it between stages. Keep it lexical,
-  keep a shared pure domain algorithm private, coalesce stages, or record the
-  missing builder capability.
-- Later `.extend()` factories may destructure accumulated capabilities. An
-  `extension` contribution is assembled before API publication, so extension
-  runtime callbacks must retain the typed context and read `context.api` lazily.
-  Eagerly destructuring `api` in that factory can capture the pre-publication
-  empty value.
-- Inside a later tx method, call an earlier staged mutation through the same
-  active transaction: `tx[plugin.key].method(...)`. A portal one-shot,
-  `context.update`, or `editor.update.*` would reopen/nest the transaction and
-  is not capability composition.
+- Audit authoring stages against `plate-plugin-creator` instead of maintaining
+  a second builder model. The constructor owns every independent contribution;
+  `.extend()` survives only for imported/prebuilt adaptation, a shared factory
+  unavailable to the constructor, or a real earlier-capability type
+  dependency; `.configure()` is terminal and never widens. Context access alone
+  is not an `.extend()` reason.
+- Every surviving `.extend()` must name the earlier type it consumes or the
+  external declaration it adapts. Keep the contribution inferred; when a real
+  public contract needs an explicit generic, type the contribution object, not
+  callback parameters or the plugin export. If that loses inference, fix Core.
+- Apply the creator's codec, extension-factory, and active-transaction laws
+  directly. In particular, keep independent codecs/extensions in the
+  constructor, keep private implementation fragments lexical, read staged API
+  lazily from extension runtime context, and reuse earlier mutations through
+  the active `tx[plugin.key]` group.
 - `createBasePlugin()` owns runtime-neutral declarations.
   `createPlatePlugin()` accepts root-level `component`.
   Existing Plate descriptors bind or replace it through one terminal
@@ -506,14 +485,14 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   `tx`. A new `foo(editor, tx, ...)`, `fooWithTx(...)`, or paired one-shot/tx
   wrapper is a failed owner split when one plugin owns the behavior. Put the
   body inside the owning plugin tx group, command, correction, or middleware
-  callback and capture `tx`, `api`, options, editor, and type from that builder
-  context.
+  callback and capture `tx`, `api`, `store`, resolved state, editor, and type
+  from that builder context.
 - New scoped methods and surviving functions take domain inputs by default.
-  Do not thread `editor`, `api`, `read`, `tx`, `getOptions`, resolved plugin
-  option values, or resolved plugin type through a helper graph. Operation
-  options remain valid domain input. Keep one-use machinery lexical; if later
-  plugin stages or dependents need an honest capability, publish it in an
-  earlier builder stage.
+  Do not thread `editor`, `api`, `read`, `tx`, `store`, resolved plugin state
+  values, or resolved plugin type through a helper graph. Operation options
+  remain valid domain input. Keep one-use machinery lexical; if later plugin
+  stages or dependents need an honest capability, publish it in an earlier
+  builder stage.
 - Before keeping a state/read-view parameter, try the active tx stage or
   callback owner. An explicit active-state boundary survives only when the same
   public query must observe an uncommitted transaction snapshot. Require
@@ -553,28 +532,26 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   export the test-utils owner type and let call sites use that source-owned
   fixture type without local casts.
 - Preserve main-style inline test setup. Do not extract `const plugins`,
-  `const options`, helper variables, or wrapper factories from a test just to
-  placate migrated types when `origin/main` kept the setup inline. Inline
+  `const initialState`, helper variables, or wrapper factories from a test just
+  to placate migrated types when `origin/main` kept the setup inline. Inline
   editor/plugin construction is part of the reviewed API shape; if inline
-  inference fails, fix the source typing or explicitly classify a
-  Plite/Plate gap instead of reshaping the test.
-- Root plugin option helpers are forbidden public API. Do not use or re-add
-  `editor.getOption(...)`, `editor.getOptions(...)`, `editor.setOption(...)`,
-  or `editor.setOptions(...)`. Package code should use the scoped plugin portal:
-  `editor.plugin(FooPlugin).getOption(...)`,
-  `editor.plugin(FooPlugin).getOptions()`,
-  `editor.plugin(FooPlugin).setOption(...)`, and
-  `editor.plugin(FooPlugin).setOptions(...)` when importing the plugin object is
-  cycle-safe. `usePluginOption(FooPlugin, ...)` remains the render-subscription
-  path. A fallback like `editor.plugin<FooConfig>(KEYS.foo)` or
+  inference fails, fix the source typing or explicitly classify a Plite/Plate
+  gap instead of reshaping the test.
+- Deleted plugin option helpers are forbidden public API. Do not use or re-add
+  root or scoped `getOption`, `getOptions`, `setOption`, or `setOptions`.
+  Package code should use
+  `editor.plugin(FooPlugin).store.get/set/subscribe`; React code uses
+  `usePluginStore(FooPlugin, selector)` or
+  `useEditorPluginStore(FooPlugin, selector)`. A fallback like
+  `editor.plugin<FooConfig>(KEYS.foo)` or
   `{ key: KEYS.foo }` needs a concrete owner reason: plugin self-definition
   cycle, React hook/component imported by the plugin itself, non-React layer
   that must not import a React plugin, or intentionally decoupled cross-package
-  code. For plugin-owned behavior, do not look the plugin up by key and do not
-  pass `api`, option accessors, or `tx` into another helper merely to preserve
-  an extraction. Inline one-use machinery or stage the reusable capability in
-  the owning plugin chain. Only a proven cross-owner algorithm keeps explicit
-  plumbing.
+  code. For plugin-owned behavior whose callback supplies owner context, do not
+  look the plugin up by key. Do not pass `api`, `store`, resolved state, or `tx`
+  into another helper merely to preserve an extraction. Inline one-use
+  machinery or stage the reusable capability in the owning plugin chain. Only
+  a proven cross-owner algorithm keeps explicit plumbing.
 - If the correct answer needs missing substrate, stop and name the exact
   `Plite gap` or `Plate gap` instead of inventing a local workaround.
 - Implementation topology is not frozen in review mode. Rename, move, merge,
@@ -804,7 +781,7 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   proven shared or independent owner survives. Do not scatter local
   `editor.update` calls inside the callback.
 - plugin-owned functions whose signatures carry `editor`, `api`, `read`, `tx`,
-  option accessors/resolved plugin option values, or resolved plugin type
+  `store`, resolved plugin state values, or resolved plugin type
   instead of domain inputs. Operation options are not plumbing. Review the full
   owner chain for an earlier honest staged API/tx capability before accepting
   the helper.
@@ -931,8 +908,8 @@ Rules:
   checkbox per reviewed file in the autogoal plan.
 - Treat every production file under `transforms/`, `queries/`, `utils/`,
   `helpers/`, and similar helper folders, plus every standalone production
-  function that accepts `editor`, `api`, `read`, `tx`, option accessors/resolved
-  plugin option values, or resolved plugin type, as a mandatory owner-topology
+  function that accepts `editor`, `api`, `read`, `tx`, `store`, resolved plugin
+  state values, or resolved plugin type, as a mandatory owner-topology
   row. Operation options are domain inputs and do not trigger this row. Package
   review cannot close from a few representative helpers. Inline/delete each
   single-owner row, replace plugin-owned plumbing with an earlier honest staged
@@ -951,11 +928,11 @@ Rules:
   plugin behavior is colocated in the plugin owner and repeated callers use its
   scoped API; a separate helper needs a real non-plugin, cross-plugin,
   cross-layer, transaction-composition, standalone public, or proof-tooling
-  owner. React rows default to the component family owner: sibling exports,
-  family-only hooks/stores, or app-wrapper consumers composing that family do
-  not justify separate files. A separate hook/provider/store row needs a
-  standalone job independently consumed beyond the component family. Line count
-  and readability thresholds never justify extraction.
+  owner. React rows use one component-family owner plus one hook-family owner
+  whenever hooks exist. Sibling exports, subcomponent-only hooks, or app-wrapper
+  consumers do not justify one file per symbol. A separate provider/store row
+  needs independently owned state or lifecycle. Line count and readability
+  thresholds never justify extraction.
 - Score `100` means all of these are true:
   - no behavior regression versus `origin/main`;
   - no type regression;

@@ -3,13 +3,19 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, Element } from '@platejs/plite';
+import {
+  type Descendant,
+  type Element,
+  ElementApi,
+  NodeApi,
+  type Text,
+  TextApi,
+} from '@platejs/plite';
+import { DiffMatchPatch } from 'diff-match-patch-ts';
+import baseIsEqual from 'lodash/isEqual.js';
+import isPlainObject from 'lodash/isPlainObject.js';
 
 import type { DiffProps } from './types';
-
-import { transformDiffDescendants } from '../internal/transforms/transformDiffDescendants';
-import { dmp } from '../internal/utils/dmp';
-import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
 export type DiffProperties = Record<string, unknown>;
 
@@ -102,3 +108,697 @@ export const defaultGetUpdateProps = (
     type: 'update',
   },
 });
+
+const dmp = new DiffMatchPatch();
+
+dmp.Diff_Timeout = 0.2;
+
+function* unusedCharGenerator({
+  skipChars = '',
+}: {
+  skipChars?: string;
+} = {}): Generator<string> {
+  const skipSet = new Set(skipChars);
+
+  for (let code = 'A'.codePointAt(0)!; ; code++) {
+    const char = String.fromCodePoint(code);
+
+    if (skipSet.has(char)) continue;
+
+    yield char;
+  }
+}
+
+class StringCharMapping {
+  private readonly charGenerator = unusedCharGenerator();
+  private readonly mappedNodes: [Descendant, string][] = [];
+
+  nodesToString(nodes: readonly Descendant[]): string {
+    return nodes.map((node) => this.nodeToChar(node)).join('');
+  }
+
+  stringToNodes(value: string): Descendant[] {
+    return value.split('').map((char) => {
+      const entry = this.mappedNodes.find(
+        ([_node, mappedChar]) => mappedChar === char
+      );
+
+      if (!entry) throw new Error(`No node found for char ${char}`);
+
+      return entry[0];
+    });
+  }
+
+  private nodeToChar(node: Descendant): string {
+    const entry = this.mappedNodes.find(([mappedNode]) =>
+      baseIsEqual(mappedNode, node)
+    );
+
+    if (entry) return entry[1];
+
+    const char = this.charGenerator.next().value;
+    this.mappedNodes.push([node, char]);
+
+    return char;
+  }
+}
+
+type IsEqualOptions = {
+  ignoreDeep?: string[];
+  ignoreShallow?: string[];
+};
+
+const withoutIgnoredProperties = (
+  value: unknown,
+  { ignoreDeep = [], ignoreShallow = [] }: IsEqualOptions = {}
+): unknown => {
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      withoutIgnoredProperties(item, { ignoreDeep, ignoreShallow })
+    );
+  }
+  if (!isPlainObject(value)) return value;
+
+  const result: Record<string, unknown> = {};
+
+  for (const [key, propertyValue] of Object.entries(
+    value as Record<string, unknown>
+  )) {
+    if (ignoreShallow.includes(key) || ignoreDeep.includes(key)) continue;
+
+    result[key] = withoutIgnoredProperties(propertyValue, { ignoreDeep });
+  }
+
+  return result;
+};
+
+const isEqual = (value: unknown, other: unknown, options?: IsEqualOptions) =>
+  baseIsEqual(
+    withoutIgnoredProperties(value, options),
+    withoutIgnoredProperties(other, options)
+  );
+
+class InlineNodeCharMap {
+  private readonly charGenerator: Generator<string>;
+  private readonly charToNode = new Map<string, Descendant>();
+
+  constructor(charGenerator: Generator<string>) {
+    this.charGenerator = charGenerator;
+  }
+
+  nodeToText(node: Descendant): Text {
+    if (TextApi.isText(node)) return node;
+
+    const char = this.charGenerator.next().value;
+    this.charToNode.set(char, node);
+
+    return { text: char };
+  }
+
+  textToNodes(initialTextNode: Text): Descendant[] {
+    let outputNodes: Descendant[] = [initialTextNode];
+
+    for (const [char, originalNode] of this.charToNode) {
+      outputNodes = outputNodes.flatMap((node) => {
+        if (!TextApi.isText(node)) return [node];
+
+        const splitText = node.text.split(char);
+
+        if (splitText.length === 1) return [node];
+
+        const replacementNode = {
+          ...originalNode,
+          ...NodeApi.extractProps(node),
+        };
+
+        return splitText
+          .flatMap((text, index) =>
+            index === splitText.length - 1
+              ? [{ ...node, text }]
+              : [{ ...node, text }, replacementNode]
+          )
+          .filter(
+            (splitNode) =>
+              !TextApi.isText(splitNode) || splitNode.text.length > 0
+          );
+      });
+    }
+
+    return outputNodes;
+  }
+}
+
+const isEqualNode = (
+  value: Descendant,
+  other: Descendant,
+  ignoreProps?: string[]
+) =>
+  ElementApi.isElement(value) &&
+  ElementApi.isElement(other) &&
+  value.children !== null &&
+  other.children !== null &&
+  isEqual(value, other, {
+    ignoreDeep: ignoreProps,
+    ignoreShallow: ['children'],
+  });
+
+const isEqualNodeChildren = (value: Descendant, other: Descendant) => {
+  if (
+    ElementApi.isElement(value) &&
+    ElementApi.isElement(other) &&
+    isEqual(value.children, other.children)
+  ) {
+    return true;
+  }
+
+  return (
+    TextApi.isText(value) &&
+    TextApi.isText(other) &&
+    isEqual(value.text, other.text)
+  );
+};
+
+type NodeRelatedItem = {
+  originNode: Descendant;
+  childrenUpdated?: boolean;
+  delete?: boolean;
+  insert?: boolean;
+  nodeUpdated?: boolean;
+  relatedNode?: Descendant;
+};
+
+const diffNodes = (
+  originNodes: readonly Descendant[],
+  targetNodes: readonly Descendant[],
+  { elementsAreRelated, ignoreProps }: ComputeDiffOptions
+) => {
+  const result: NodeRelatedItem[] = [];
+  const remainingTargetNodes = [...targetNodes];
+
+  for (const originNode of originNodes) {
+    let childrenUpdated = false;
+    let nodeUpdated = false;
+    const relatedNode = remainingTargetNodes.find((targetNode) => {
+      if (
+        ElementApi.isElement(originNode) &&
+        ElementApi.isElement(targetNode)
+      ) {
+        const relatedResult =
+          elementsAreRelated?.(originNode, targetNode) ?? null;
+
+        if (relatedResult !== null) return relatedResult;
+      }
+
+      childrenUpdated = isEqualNode(originNode, targetNode, ignoreProps);
+      nodeUpdated = isEqualNodeChildren(originNode, targetNode);
+
+      return nodeUpdated || childrenUpdated;
+    });
+
+    if (relatedNode) {
+      const insertNodes = remainingTargetNodes.splice(
+        0,
+        remainingTargetNodes.indexOf(relatedNode)
+      );
+
+      insertNodes.forEach((insertNode) => {
+        result.push({ insert: true, originNode: insertNode });
+      });
+      remainingTargetNodes.splice(0, 1);
+    }
+
+    result.push({
+      childrenUpdated,
+      delete: !relatedNode,
+      nodeUpdated,
+      originNode,
+      relatedNode,
+    });
+  }
+
+  remainingTargetNodes.forEach((insertNode) => {
+    result.push({ insert: true, originNode: insertNode });
+  });
+
+  return result;
+};
+
+type DiffNodeHandler = (
+  node: Descendant,
+  nextNode: Descendant,
+  options: ComputeDiffOptions
+) => Descendant[] | false;
+
+const childrenOnlyStrategy: DiffNodeHandler = (node, nextNode, options) => {
+  if (
+    ElementApi.isElement(node) &&
+    ElementApi.isElement(nextNode) &&
+    isEqual(node, nextNode, {
+      ignoreDeep: options.ignoreProps,
+      ignoreShallow: ['children'],
+    })
+  ) {
+    return [
+      {
+        ...nextNode,
+        children: computeDiff(node.children, nextNode.children, options),
+      },
+    ];
+  }
+
+  return false;
+};
+
+const propsOnlyStrategy: DiffNodeHandler = (
+  node,
+  nextNode,
+  { getUpdateProps }
+) => {
+  const properties: Record<string, unknown> = {};
+  const newProperties: Record<string, unknown> = {};
+
+  for (const key in node) {
+    if (isEqual(node[key], nextNode[key])) continue;
+    if (key === 'children' || key === 'text') return false;
+
+    if (node[key] !== undefined) properties[key] = node[key];
+    if (Object.hasOwn(nextNode, key) && nextNode[key] !== undefined) {
+      newProperties[key] = nextNode[key];
+    }
+  }
+
+  for (const key in nextNode) {
+    if (Object.hasOwn(node, key)) continue;
+    if (key === 'children' || key === 'text') return false;
+    if (nextNode[key] !== undefined) newProperties[key] = nextNode[key];
+  }
+
+  return [
+    {
+      ...nextNode,
+      ...getUpdateProps(node, properties, newProperties),
+    },
+  ];
+};
+
+const transformDiffNodes = (
+  node: Descendant,
+  nextNode: Descendant,
+  options: ComputeDiffOptions
+): Descendant[] | false => {
+  for (const strategy of [childrenOnlyStrategy, propsOnlyStrategy]) {
+    const operations = strategy(node, nextNode, options);
+
+    if (operations) return operations;
+  }
+
+  return false;
+};
+
+const encodeLineBreaks = (text: Text, lineBreakChar?: string): Text =>
+  lineBreakChar === undefined
+    ? text
+    : {
+        ...text,
+        text: text.text.replaceAll('\n', lineBreakChar),
+      };
+
+type TextSpan = {
+  end: number;
+  node: Text;
+};
+
+const getSpans = (texts: Text[]): TextSpan[] => {
+  let offset = 0;
+
+  return texts.map((node) => {
+    offset += node.text.length;
+
+    return { end: offset, node };
+  });
+};
+
+const getNodeProperties = (node: Text): Record<string, unknown> =>
+  Object.fromEntries(
+    Object.entries(node).filter(
+      ([key, value]) => key !== 'text' && value !== undefined
+    )
+  );
+
+const getPropertyChanges = (
+  source: Text,
+  target: Text
+): {
+  newProperties: Record<string, unknown>;
+  properties: Record<string, unknown>;
+} | null => {
+  const sourceProperties = getNodeProperties(source);
+  const targetProperties = getNodeProperties(target);
+  const keys = new Set([
+    ...Object.keys(sourceProperties),
+    ...Object.keys(targetProperties),
+  ]);
+  const properties: Record<string, unknown> = {};
+  const newProperties: Record<string, unknown> = {};
+
+  for (const key of keys) {
+    if (isEqual(sourceProperties[key], targetProperties[key])) continue;
+
+    if (Object.hasOwn(sourceProperties, key)) {
+      properties[key] = sourceProperties[key];
+    }
+    if (Object.hasOwn(targetProperties, key)) {
+      newProperties[key] = targetProperties[key];
+    }
+  }
+
+  return Object.keys(properties).length > 0 ||
+    Object.keys(newProperties).length > 0
+    ? { newProperties, properties }
+    : null;
+};
+
+const appendText = (output: Text[], node: Text) => {
+  if (node.text.length === 0) return;
+
+  const previous = output.at(-1);
+
+  if (
+    previous &&
+    isEqual(getNodeProperties(previous), getNodeProperties(node))
+  ) {
+    output[output.length - 1] = {
+      ...previous,
+      text: previous.text + node.text,
+    };
+  } else {
+    output.push(node);
+  }
+};
+
+const diffTextSpans = (
+  source: Text[],
+  target: Text[],
+  options: ComputeDiffOptions
+): Text[] => {
+  const sourceSpans = getSpans(source);
+  const targetSpans = getSpans(target);
+  const sourceText = source.map((node) => node.text).join('');
+  const targetText = target.map((node) => node.text).join('');
+  const diff = dmp.diff_main(sourceText, targetText);
+
+  dmp.diff_cleanupSemantic(diff);
+
+  const output: Text[] = [];
+  let sourceOffset = 0;
+  let targetOffset = 0;
+  let sourceIndex = 0;
+  let targetIndex = 0;
+
+  const advanceSource = () => {
+    while (
+      sourceIndex < sourceSpans.length &&
+      sourceOffset >= sourceSpans[sourceIndex].end
+    ) {
+      sourceIndex++;
+    }
+  };
+  const advanceTarget = () => {
+    while (
+      targetIndex < targetSpans.length &&
+      targetOffset >= targetSpans[targetIndex].end
+    ) {
+      targetIndex++;
+    }
+  };
+
+  for (const [operation, text] of diff) {
+    let remaining = text.length;
+
+    while (remaining > 0) {
+      advanceSource();
+      advanceTarget();
+
+      if (operation === -1) {
+        const span = sourceSpans[sourceIndex];
+        const length = Math.min(remaining, span.end - sourceOffset);
+
+        appendText(output, {
+          ...span.node,
+          ...options.getDeleteProps(span.node),
+          text: sourceText.slice(sourceOffset, sourceOffset + length),
+        });
+        sourceOffset += length;
+        remaining -= length;
+        continue;
+      }
+
+      if (operation === 1) {
+        const span = targetSpans[targetIndex];
+        const length = Math.min(remaining, span.end - targetOffset);
+
+        appendText(output, {
+          ...span.node,
+          ...options.getInsertProps(span.node),
+          text: targetText.slice(targetOffset, targetOffset + length),
+        });
+        targetOffset += length;
+        remaining -= length;
+        continue;
+      }
+
+      const sourceSpan = sourceSpans[sourceIndex];
+      const targetSpan = targetSpans[targetIndex];
+      const length = Math.min(
+        remaining,
+        sourceSpan.end - sourceOffset,
+        targetSpan.end - targetOffset
+      );
+      const propertyChanges = getPropertyChanges(
+        sourceSpan.node,
+        targetSpan.node
+      );
+      const targetSlice = {
+        ...targetSpan.node,
+        text: targetText.slice(targetOffset, targetOffset + length),
+      };
+
+      appendText(
+        output,
+        propertyChanges
+          ? {
+              ...targetSlice,
+              ...options.getUpdateProps(
+                targetSlice,
+                propertyChanges.properties,
+                propertyChanges.newProperties
+              ),
+            }
+          : targetSlice
+      );
+      sourceOffset += length;
+      targetOffset += length;
+      remaining -= length;
+    }
+  }
+
+  if (output.length > 0) return output;
+
+  const targetNode = target[0];
+  const sourceNode = source[0];
+  const propertyChanges = getPropertyChanges(sourceNode, targetNode);
+
+  return [
+    propertyChanges
+      ? {
+          ...targetNode,
+          ...options.getUpdateProps(
+            targetNode,
+            propertyChanges.properties,
+            propertyChanges.newProperties
+          ),
+        }
+      : targetNode,
+  ];
+};
+
+const transformDiffTexts = (
+  nodes: readonly Descendant[],
+  nextNodes: readonly Descendant[],
+  options: ComputeDiffOptions
+): Descendant[] => {
+  if (nodes.length === 0) throw new Error('must have at least one nodes');
+  if (nextNodes.length === 0) {
+    throw new Error('must have at least one nextNodes');
+  }
+
+  if (
+    nodes.length === 1 &&
+    nextNodes.length === 1 &&
+    ElementApi.isElement(nodes[0]) &&
+    ElementApi.isElement(nextNodes[0]) &&
+    options.isInline(nodes[0]) &&
+    options.isInline(nextNodes[0])
+  ) {
+    const element = nodes[0];
+    const nextElement = nextNodes[0];
+
+    if (
+      element.type === nextElement.type &&
+      element.children &&
+      nextElement.children
+    ) {
+      const { children: _children, ...elementProps } = element;
+      const { children: _nextChildren, ...nextElementProps } = nextElement;
+
+      if (
+        isEqual(elementProps, nextElementProps, {
+          ignoreDeep: options.ignoreProps,
+        })
+      ) {
+        return [
+          {
+            ...nextElement,
+            children: computeDiff(
+              element.children,
+              nextElement.children,
+              options
+            ),
+          },
+        ];
+      }
+    }
+  }
+
+  const { lineBreakChar } = options;
+  const hasLineBreakChar = lineBreakChar !== undefined;
+  const charGenerator = unusedCharGenerator({
+    skipChars: nodes
+      .concat(nextNodes)
+      .filter(TextApi.isText)
+      .map((node) => node.text)
+      .join(''),
+  });
+  const insertedLineBreakProxyChar = hasLineBreakChar
+    ? charGenerator.next().value
+    : undefined;
+  const deletedLineBreakProxyChar = hasLineBreakChar
+    ? charGenerator.next().value
+    : undefined;
+  const inlineNodeCharMap = new InlineNodeCharMap(charGenerator);
+  const texts = nodes
+    .map((node) => inlineNodeCharMap.nodeToText(node))
+    .map((text) => encodeLineBreaks(text, deletedLineBreakProxyChar));
+  const nextTexts = nextNodes
+    .map((node) => inlineNodeCharMap.nodeToText(node))
+    .map((text) => encodeLineBreaks(text, insertedLineBreakProxyChar));
+
+  let diffTexts = diffTextSpans(texts, nextTexts, options);
+
+  if (hasLineBreakChar) {
+    diffTexts = diffTexts.map((node) => ({
+      ...node,
+      text: node.text
+        .replaceAll(insertedLineBreakProxyChar, `${lineBreakChar}\n`)
+        .replaceAll(deletedLineBreakProxyChar, lineBreakChar),
+    }));
+  }
+
+  return diffTexts.flatMap((text) => inlineNodeCharMap.textToNodes(text));
+};
+
+type DiffOperation = -1 | 0 | 1;
+
+const transformDiffDescendants = (
+  diff: readonly [DiffOperation, string][],
+  {
+    stringCharMapping,
+    ...options
+  }: ComputeDiffOptions & {
+    stringCharMapping: StringCharMapping;
+  }
+): Descendant[] => {
+  const { getDeleteProps, getInsertProps, ignoreProps, isInline } = options;
+  const children: Descendant[] = [];
+  let index = 0;
+  let insertBuffer: Descendant[] = [];
+  let deleteBuffer: Descendant[] = [];
+
+  const flushBuffers = () => {
+    children.push(...deleteBuffer, ...insertBuffer);
+    insertBuffer = [];
+    deleteBuffer = [];
+  };
+  const insertNode = (node: Descendant) =>
+    insertBuffer.push({ ...node, ...getInsertProps(node) });
+  const deleteNode = (node: Descendant) =>
+    deleteBuffer.push({ ...node, ...getDeleteProps(node) });
+  const passThroughNodes = (...nodes: Descendant[]) => {
+    flushBuffers();
+    children.push(...nodes);
+  };
+  const isInlineList = (nodes: Descendant[]) =>
+    nodes.every((node) => TextApi.isText(node) || isInline(node));
+
+  while (index < diff.length) {
+    const [operation, value] = diff[index];
+    const nodes = stringCharMapping.stringToNodes(value);
+
+    if (operation === 0) {
+      passThroughNodes(...nodes);
+      index += 1;
+      continue;
+    }
+
+    if (operation === -1) {
+      if (index < diff.length - 1 && diff[index + 1][0] === 1) {
+        const nextNodes = stringCharMapping.stringToNodes(diff[index + 1][1]);
+
+        if (isEqual(nodes, nextNodes, { ignoreDeep: ignoreProps })) {
+          passThroughNodes(...nextNodes);
+          index += 2;
+          continue;
+        }
+
+        if (isInlineList(nodes) && isInlineList(nextNodes)) {
+          passThroughNodes(...transformDiffTexts(nodes, nextNodes, options));
+          index += 2;
+          continue;
+        }
+
+        diffNodes(nodes, nextNodes, options).forEach((item) => {
+          if (item.delete) deleteNode(item.originNode);
+          if (item.insert) insertNode(item.originNode);
+
+          if (item.relatedNode) {
+            const diffNodesResult = transformDiffNodes(
+              item.originNode,
+              item.relatedNode,
+              options
+            );
+
+            if (diffNodesResult) {
+              passThroughNodes(...diffNodesResult);
+            } else {
+              deleteNode(item.originNode);
+              insertNode(item.relatedNode);
+            }
+          }
+        });
+        index += 2;
+        continue;
+      }
+
+      nodes.forEach(deleteNode);
+      index += 1;
+      continue;
+    }
+
+    nodes.forEach(insertNode);
+    index += 1;
+  }
+
+  flushBuffers();
+
+  return children;
+};

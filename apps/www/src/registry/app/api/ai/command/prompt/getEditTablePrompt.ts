@@ -1,7 +1,13 @@
 import type { ChatMessage } from '@/registry/components/editor/use-chat';
 import type { MarkdownEditor } from '@platejs/markdown';
 
-import { getMarkdown } from '@platejs/ai';
+import { BaseTablePlugin } from '@platejs/table';
+import {
+  type TTableCellElement,
+  type TTableElement,
+  ElementApi,
+  KEYS,
+} from 'platejs';
 import dedent from 'dedent';
 
 import {
@@ -14,9 +20,57 @@ export function buildEditTableMultiCellPrompt(
   editor: MarkdownEditor,
   messages: ChatMessage[]
 ): string {
-  const tableCellMarkdown = getMarkdown(editor, {
-    type: 'tableCellWithId',
-  });
+  const cells = editor
+    .plugin(BaseTablePlugin)
+    .read.getGridAbove({ format: 'cell' });
+  const selectedIds = new Set(
+    cells.flatMap(([cell]) => (typeof cell.id === 'string' ? [cell.id] : []))
+  );
+  const table = editor.read.nodes.block<TTableElement>({
+    match: { type: editor.getType(KEYS.table) },
+  })?.[0];
+  const selectedCells: Array<{ cell: TTableCellElement; id: string }> = [];
+  const rows =
+    table?.children.map((row, rowIndex) => {
+      const values = (row.children as TTableCellElement[]).map((cell) => {
+        if (typeof cell.id === 'string' && selectedIds.has(cell.id)) {
+          selectedCells.push({ cell, id: cell.id });
+
+          return `<CellRef id="${cell.id}" />`;
+        }
+
+        return cell.children
+          .map((child) => {
+            if (!ElementApi.isElement(child)) {
+              throw new Error('Table cells must contain block elements.');
+            }
+
+            return editor.read.markdown
+              .serialize({ value: { children: [child] } })
+              .trim();
+          })
+          .filter(Boolean)
+          .join('<br/>');
+      });
+      const markdown = `| ${values.join(' | ')} |`;
+
+      return rowIndex === 0
+        ? `${markdown}\n| ${values.map(() => '---').join(' | ')} |`
+        : markdown;
+    }) ?? [];
+  const cellBlocks = selectedCells
+    .map(({ cell, id }) => {
+      if (!cell.children.every((node) => ElementApi.isElement(node))) {
+        throw new Error('Table cells must contain block elements.');
+      }
+
+      return `<Cell id="${id}">\n${editor.read.markdown
+        .serialize({ value: { children: cell.children } })
+        .trim()}\n</Cell>`;
+    })
+    .join('\n\n');
+  const tableCellMarkdown =
+    rows.length === 0 ? '' : `${rows.join('\n')}\n\n${cellBlocks}`;
 
   return buildStructuredPrompt({
     context: tableCellMarkdown,

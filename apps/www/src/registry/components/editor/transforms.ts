@@ -1,26 +1,21 @@
 'use client';
 
 import type { PlateEditor } from 'platejs/react';
-import type {
-  EditorUpdateTransaction,
-  Element,
-  NodeEntry,
-  Path,
-} from '@platejs/plite';
-import { insertCallout } from '@platejs/callout';
-import { BaseCodeBlockPlugin, insertCodeBlock } from '@platejs/code-block';
-import { insertCodeDrawing } from '@platejs/code-drawing';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { BaseCodeDrawingPlugin } from '@platejs/code-drawing';
 import { BaseDatePlugin } from '@platejs/date';
 import { insertExcalidraw } from '@platejs/excalidraw';
-import { BaseFootnoteReferencePlugin } from '@platejs/footnote';
-import { BaseColumnItemPlugin, insertColumnGroup } from '@platejs/layout';
+import { BaseFootnotePlugin } from '@platejs/footnote';
+import { BaseColumnItemPlugin } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseInlineEquationPlugin, insertEquation } from '@platejs/math';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { insertMediaUrl } from '@platejs/media/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { BaseTablePlugin } from '@platejs/table';
-import { insertToc } from '@platejs/toc';
+import { BaseTocPlugin } from '@platejs/toc';
 import { ElementApi, KEYS, PathApi } from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
@@ -30,9 +25,7 @@ const toggleCodeBlock = (editor: PlateEditor) =>
   editor.plugin(BaseCodeBlockPlugin).update.toggle();
 
 const runFootnoteAction = (editor: PlateEditor) =>
-  editor
-    .plugin(BaseFootnoteReferencePlugin)
-    .update.insert.footnote({ select: true });
+  editor.plugin(BaseFootnotePlugin).update.insert({ select: true });
 
 const createBlock = ({
   type,
@@ -48,45 +41,6 @@ const createBlockquote = (): Element => ({
   children: [createBlock({ type: KEYS.p })],
   type: KEYS.blockquote,
 });
-
-const insertBlockMap: Record<
-  string,
-  (editor: PlateEditor, tx: EditorUpdateTransaction, type: string) => void
-> = {
-  [KEYS.listTodo]: (_editor, tx, type) =>
-    tx.nodes.insert(
-      createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
-      { select: true }
-    ),
-  [KEYS.ol]: (_editor, tx, type) =>
-    tx.nodes.insert(
-      createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
-      { select: true }
-    ),
-  [KEYS.ul]: (_editor, tx, type) =>
-    tx.nodes.insert(
-      createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
-      { select: true }
-    ),
-  [ACTION_THREE_COLUMNS]: (editor, tx) =>
-    insertColumnGroup(editor, tx, { columns: 3, select: true }),
-  [KEYS.callout]: (editor, tx) =>
-    insertCallout(tx, editor.getType(KEYS.callout), { select: true }),
-  [KEYS.codeBlock]: (editor, tx) =>
-    insertCodeBlock(editor, tx, { select: true }),
-  [KEYS.codeDrawing]: (editor, tx) =>
-    insertCodeDrawing(
-      tx,
-      editor.getType(KEYS.codeDrawing),
-      {},
-      { select: true }
-    ),
-  [KEYS.equation]: (editor, tx) =>
-    insertEquation(tx, editor.getType(KEYS.equation), { select: true }),
-  [KEYS.excalidraw]: (editor, tx) =>
-    insertExcalidraw(tx, editor.getType(KEYS.excalidraw), {}, { select: true }),
-  [KEYS.toc]: (editor, tx) => insertToc(editor, tx, { select: true }),
-};
 
 const removeEmptySourceAfterInsert = (
   editor: PlateEditor,
@@ -176,6 +130,19 @@ export const insertBlock = (
 
     return;
   }
+  if (type === KEYS.codeBlock) {
+    editor.plugin(BaseCodeBlockPlugin).update.insert();
+
+    return;
+  }
+  if (type === KEYS.toc) {
+    editor
+      .plugin(BaseTocPlugin)
+      .update.insert({ at: PathApi.next(path), select: true });
+    removeEmptySourceAfterInsert(editor, type, path, currentBlockType);
+
+    return;
+  }
   if (type === KEYS.img || type === KEYS.mediaEmbed) {
     void insertMediaUrl(editor, {
       at: PathApi.next(path),
@@ -199,6 +166,21 @@ export const insertBlock = (
     );
     return;
   }
+  if (type === ACTION_THREE_COLUMNS) {
+    editor.plugin(BaseColumnItemPlugin).update.insertGroup({
+      at: PathApi.next(path),
+      columns: 3,
+      select: true,
+    });
+
+    if (!isSameBlockType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
+    return;
+  }
   if (type === KEYS.table) {
     editor.plugin(BaseTablePlugin).update.insert({}, { select: true });
 
@@ -210,10 +192,59 @@ export const insertBlock = (
 
     return;
   }
+  if (type === KEYS.callout) {
+    editor.plugin(BaseCalloutPlugin).update.insert({ select: true });
 
+    if (!isSameBlockType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
+    return;
+  }
+  if (type === KEYS.codeDrawing) {
+    editor.plugin(BaseCodeDrawingPlugin).update.insert({}, { select: true });
+
+    if (!isSameBlockType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
+    return;
+  }
   editor.update((tx) => {
-    if (type in insertBlockMap) {
-      insertBlockMap[type](editor, tx, type);
+    const insertByType: Record<string, () => void> = {
+      [KEYS.listTodo]: () =>
+        tx.nodes.insert(
+          createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
+          { select: true }
+        ),
+      [KEYS.ol]: () =>
+        tx.nodes.insert(
+          createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
+          { select: true }
+        ),
+      [KEYS.ul]: () =>
+        tx.nodes.insert(
+          createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
+          { select: true }
+        ),
+      [KEYS.equation]: () =>
+        insertEquation(tx, editor.getType(KEYS.equation), { select: true }),
+      [KEYS.excalidraw]: () =>
+        insertExcalidraw(
+          tx,
+          editor.getType(KEYS.excalidraw),
+          {},
+          { select: true }
+        ),
+    };
+    const insert = insertByType[type];
+
+    if (insert) {
+      insert();
     } else {
       tx.nodes.insert(createBlock({ type: nodeType }), {
         at: PathApi.next(path),
@@ -245,32 +276,6 @@ export const insertInlineElement = (editor: PlateEditor, type: string) => {
   }
 };
 
-const setList = (
-  tx: EditorUpdateTransaction,
-  type: string,
-  entry: NodeEntry<Element>
-) => {
-  tx.nodes.set(
-    {
-      indent: 1,
-      listStyleType: type,
-      type: KEYS.p,
-    },
-    {
-      at: entry[1],
-    }
-  );
-};
-
-const setBlockMap: Record<
-  string,
-  (tx: EditorUpdateTransaction, type: string, entry: NodeEntry<Element>) => void
-> = {
-  [KEYS.listTodo]: setList,
-  [KEYS.ol]: setList,
-  [KEYS.ul]: setList,
-};
-
 const setBlockActionMap: Record<string, (editor: PlateEditor) => void> = {
   [ACTION_THREE_COLUMNS]: (editor) =>
     editor.plugin(BaseColumnItemPlugin).update.toggle({ columns: 3 }),
@@ -296,8 +301,17 @@ export const setBlockType = (
       if ((node as Element & Record<string, unknown>)[KEYS.listType]) {
         tx.nodes.unset([KEYS.listType, 'indent'], { at: path });
       }
-      if (type in setBlockMap) {
-        return setBlockMap[type](tx, type, entry);
+      if (type === KEYS.listTodo || type === KEYS.ol || type === KEYS.ul) {
+        tx.nodes.set(
+          {
+            indent: 1,
+            listStyleType: type,
+            type: KEYS.p,
+          },
+          { at: path }
+        );
+
+        return;
       }
       if (type === KEYS.blockquote) {
         const isActive =

@@ -7,11 +7,6 @@ import { writeHostFragmentData } from '@platejs/plite-dom';
 import { createBaseEditor } from '../editor';
 import { createBasePlugin } from '../plugin';
 
-const extendUnsafeCodecs = (
-  plugin: ReturnType<typeof createBasePlugin>,
-  codecs: () => unknown
-) => (plugin.extend as any)(() => ({ codecs: codecs() }));
-
 const createParagraph = (text: string) => ({
   children: [{ text }],
   type: 'p',
@@ -89,7 +84,6 @@ describe('product codecs', () => {
     const calls: string[] = [];
     const LowerPlugin = createBasePlugin({
       key: 'lowerCodec',
-      priority: 100,
     }).extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'application/x-fallback': {
@@ -105,11 +99,10 @@ describe('product codecs', () => {
     }));
     const HigherPlugin = createBasePlugin({
       key: 'higherCodec',
-      priority: 200,
     }).extend(({ defineCodecs }) => ({
       codecs: defineCodecs({
         'application/x-fallback': {
-          priority: -1000,
+          priority: 2000,
           scope: 'document',
           decode: () => {
             calls.push('higher');
@@ -229,32 +222,28 @@ describe('product codecs', () => {
   it('preserves compiler order across seeded plugin permutations', () => {
     const calls: string[] = [];
     const definitions = [
-      { codecPriority: 10, key: 'generatedA', pluginPriority: 300 },
-      { codecPriority: 20, key: 'generatedB', pluginPriority: 300 },
-      { codecPriority: 0, key: 'generatedC', pluginPriority: 200 },
-      { codecPriority: -10, key: 'generatedD', pluginPriority: 200 },
-      { codecPriority: 0, key: 'generatedE', pluginPriority: 100 },
+      { codecPriority: 40, key: 'generatedA' },
+      { codecPriority: 50, key: 'generatedB' },
+      { codecPriority: 30, key: 'generatedC' },
+      { codecPriority: 20, key: 'generatedD' },
+      { codecPriority: 10, key: 'generatedE' },
     ] as const;
-    const plugins = definitions.map(
-      ({ codecPriority, key, pluginPriority }, index) =>
-        createBasePlugin({
-          key,
-          priority: pluginPriority,
-        }).extend(({ defineCodecs }) => ({
-          codecs: defineCodecs({
-            'application/x-generated-order': {
-              priority: codecPriority,
-              scope: 'document',
-              decode: ({ data }) => {
-                calls.push(key);
+    const plugins = definitions.map(({ codecPriority, key }, index) =>
+      createBasePlugin({ key }).extend(({ defineCodecs }) => ({
+        codecs: defineCodecs({
+          'application/x-generated-order': {
+            priority: codecPriority,
+            scope: 'document',
+            decode: ({ data }) => {
+              calls.push(key);
 
-                return index === definitions.length - 1
-                  ? ContentSlice.closed([createParagraph(`winner:${data}`)])
-                  : null;
-              },
+              return index === definitions.length - 1
+                ? ContentSlice.closed([createParagraph(`winner:${data}`)])
+                : null;
             },
-          }),
-        }))
+          },
+        }),
+      }))
     );
 
     for (let seed = 1; seed <= 32; seed++) {
@@ -400,31 +389,33 @@ describe('product codecs', () => {
 
   it('rejects public identity fields and non-callable callbacks', () => {
     for (const field of ['key', 'owner', 'target'] as const) {
-      const InvalidPlugin = extendUnsafeCodecs(
-        createBasePlugin({ key: `invalid-${field}` }),
-        () => ({
-          'application/x-invalid': {
-            decode: () => null,
-            [field]: 'public-identity',
-            scope: 'document',
-          },
-        })
-      );
+      const InvalidPlugin = createBasePlugin({
+        key: `invalid-${field}`,
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            'application/x-invalid': {
+              decode: () => null,
+              [field]: 'public-identity',
+              scope: 'document',
+            },
+          } as never),
+      });
 
       expect(() => createBaseEditor({ plugins: [InvalidPlugin] })).toThrow(
         `Plate codec "invalid-${field}/application/x-invalid" has unknown field "${field}".`
       );
     }
 
-    const InvalidCallbackPlugin = extendUnsafeCodecs(
-      createBasePlugin({ key: 'invalidCallback' }),
-      () => ({
-        'application/x-invalid': {
-          decode: true,
-          scope: 'document',
-        },
-      })
-    );
+    const InvalidCallbackPlugin = createBasePlugin({
+      key: 'invalidCallback',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-invalid': {
+            decode: true,
+            scope: 'document',
+          },
+        } as never),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidCallbackPlugin] })
@@ -434,27 +425,23 @@ describe('product codecs', () => {
   });
 
   it('rejects malformed author callbacks and codec descriptors', () => {
-    const InvalidAuthorCallbackPlugin = extendUnsafeCodecs(
-      createBasePlugin({
-        key: 'invalidAuthorCallback',
-      }),
-      () => null
-    );
+    const InvalidAuthorCallbackPlugin = createBasePlugin({
+      key: 'invalidAuthorCallback',
+      // @plate-schema-adoption-negative-codec
+      codecs: (() => null) as never,
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidAuthorCallbackPlugin] })
-    ).toThrow(
-      'Plate codec owner "invalidAuthorCallback" callback must return an object.'
-    );
+    ).toThrow('Plate plugin `codecs` must be a MIME-keyed object.');
 
-    const InvalidDescriptorPlugin = extendUnsafeCodecs(
-      createBasePlugin({
-        key: 'invalidDescriptor',
-      }),
-      () => ({
-        'application/x-invalid': null,
-      })
-    );
+    const InvalidDescriptorPlugin = createBasePlugin({
+      key: 'invalidDescriptor',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-invalid': null,
+        } as never),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [InvalidDescriptorPlugin] })
@@ -462,16 +449,15 @@ describe('product codecs', () => {
       'Plate codec "invalidDescriptor/application/x-invalid" must be an object.'
     );
 
-    const MissingDirectionPlugin = extendUnsafeCodecs(
-      createBasePlugin({
-        key: 'missingDirection',
-      }),
-      () => ({
-        'application/x-invalid': {
-          scope: 'document',
-        },
-      })
-    );
+    const MissingDirectionPlugin = createBasePlugin({
+      key: 'missingDirection',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-invalid': {
+            scope: 'document',
+          },
+        } as never),
+    });
 
     expect(() =>
       createBaseEditor({ plugins: [MissingDirectionPlugin] })
@@ -494,17 +480,16 @@ describe('product codecs', () => {
       'Plate codec owner "invalidFormat" must use a MIME format key.'
     );
 
-    const InvalidScopePlugin = extendUnsafeCodecs(
-      createBasePlugin({
-        key: 'invalidScope',
-      }),
-      () => ({
-        'application/x-invalid': {
-          scope: 'node',
-          decode: () => null,
-        },
-      })
-    );
+    const InvalidScopePlugin = createBasePlugin({
+      key: 'invalidScope',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-invalid': {
+            scope: 'node',
+            decode: () => null,
+          },
+        } as never),
+    });
 
     expect(() => createBaseEditor({ plugins: [InvalidScopePlugin] })).toThrow(
       'Plate codec owner "invalidScope" has unknown scope "node".'
@@ -556,16 +541,17 @@ describe('product codecs', () => {
           },
         }),
     });
-    const ArrayPlugin = extendUnsafeCodecs(
-      createBasePlugin({ key: 'arrayCodec' }),
-      () => ({
-        'application/x-array': {
-          priority: 20,
-          scope: 'document',
-          decode: () => [createParagraph('invalid')],
-        },
-      })
-    );
+    const ArrayPlugin = createBasePlugin({
+      key: 'arrayCodec',
+      codecs: ({ defineCodecs }) =>
+        defineCodecs({
+          'application/x-array': {
+            priority: 20,
+            scope: 'document',
+            decode: () => [createParagraph('invalid')],
+          },
+        } as never),
+    });
     const editor = createBaseEditor({
       plugins: [FallbackPlugin, ArrayPlugin],
     });

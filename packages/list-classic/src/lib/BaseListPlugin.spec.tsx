@@ -360,7 +360,7 @@ describe('schema', () => {
           ConfiguredEmbedPlugin,
           BaseListPlugin,
           BaseListItemPlugin.configure({
-            options: { validLiChildren: [EmbedPlugin] },
+            initialState: { validLiChildren: [EmbedPlugin] },
           }),
         ],
       });
@@ -545,7 +545,7 @@ describe('list toggling', () => {
           BaseImagePlugin,
           BaseListPlugin,
           BaseListItemPlugin.configure({
-            options: {
+            initialState: {
               validLiChildren: [BaseImagePlugin],
             },
           }),
@@ -1737,7 +1737,7 @@ describe('line breaks', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseListPlugin.configure({
-            options: { inheritCheckStateOnLineStartBreak: true },
+            initialState: { inheritCheckStateOnLineStartBreak: true },
           }),
         ],
         selection: {
@@ -1773,7 +1773,7 @@ describe('line breaks', () => {
       const editor = createBaseEditor({
         plugins: [
           BaseListPlugin.configure({
-            options: { inheritCheckStateOnLineEndBreak: true },
+            initialState: { inheritCheckStateOnLineEndBreak: true },
           }),
         ],
         selection: {
@@ -3214,7 +3214,9 @@ describe('indentation', () => {
 
     const editor = createBaseEditor({
       plugins: [
-        BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+        BaseListPlugin.configure({
+          initialState: { enableResetOnShiftTab: true },
+        }),
       ],
       selection: input.selection,
       initialValue: input.children,
@@ -3262,7 +3264,9 @@ describe('indentation', () => {
 
     const editor = createBaseEditor({
       plugins: [
-        BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+        BaseListPlugin.configure({
+          initialState: { enableResetOnShiftTab: true },
+        }),
       ],
       selection: input.selection,
       initialValue: input.children,
@@ -3310,7 +3314,9 @@ describe('indentation', () => {
 
     const editor = createBaseEditor({
       plugins: [
-        BaseListPlugin.configure({ options: { enableResetOnShiftTab: true } }),
+        BaseListPlugin.configure({
+          initialState: { enableResetOnShiftTab: true },
+        }),
       ],
       selection: input.selection,
       initialValue: input.children,
@@ -3462,7 +3468,7 @@ describe('editing', () => {
           testInsertText(input, expected, [
             BaseListPlugin,
             BaseListItemPlugin.configure({
-              options: {
+              initialState: {
                 validLiChildren: [BaseParagraphPlugin, BaseBlockquotePlugin],
               },
             }),

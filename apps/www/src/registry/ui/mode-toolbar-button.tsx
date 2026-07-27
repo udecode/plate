@@ -9,7 +9,7 @@ import {
   DropdownMenuItemIndicator,
 } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from 'lucide-react';
-import { useEditor, useEditorViewState, usePluginOption } from 'platejs/react';
+import { useEditor, useEditorViewState, usePluginStore } from 'platejs/react';
 
 import {
   DropdownMenu,
@@ -26,7 +26,7 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
   const readOnly = useEditorViewState(editor, (view) => view.isReadOnly());
   const [open, setOpen] = React.useState(false);
 
-  const isSuggesting = usePluginOption(SuggestionPlugin, 'isSuggesting');
+  const isSuggesting = usePluginStore(SuggestionPlugin, 'isSuggesting');
 
   let value = 'editing';
 
@@ -69,11 +69,11 @@ export function ModeToolbarButton(props: DropdownMenuProps) {
             setEditorReadOnly(editor, false);
 
             if (newValue === 'suggestion') {
-              editor.plugin(SuggestionPlugin).setOption('isSuggesting', true);
+              editor.plugin(SuggestionPlugin).store.set({ isSuggesting: true });
 
               return;
             }
-            editor.plugin(SuggestionPlugin).setOption('isSuggesting', false);
+            editor.plugin(SuggestionPlugin).store.set({ isSuggesting: false });
 
             if (newValue === 'editing') {
               editor.api.dom.focus();

@@ -1,6 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import type { Value } from 'platejs';
+import type { Element, Value } from 'platejs';
 
 import { jsx } from '@platejs/test-utils';
 
@@ -10,7 +10,7 @@ export const createMultiEditorsValue = () => {
   const multiEditors: Value[] = [];
 
   for (let h = 0; h < 300; h++) {
-    const multiEditor: Value = [];
+    const multiEditor: Element[] = [];
     multiEditor.push(<hh1>Amet duis nisi ea enim laborum laboris.</hh1>);
 
     for (let p = 0; p < 2; p++) {

@@ -1,7 +1,15 @@
-import type { Descendant, EditorNodeChangeContext } from '@platejs/plite';
+import type {
+  Descendant,
+  EditorNodeChangeContext,
+  Value,
+} from '@platejs/plite';
 
-import { createBaseEditor } from '../editor';
-import { type AnyBasePlugin, createBasePlugin } from '../plugin';
+import { type BaseEditor, createBaseEditor } from '../editor';
+import {
+  type AnyBasePlugin,
+  type AnyPluginConfig,
+  createBasePlugin,
+} from '../plugin';
 import { pipeOnNodeChange } from './pipeOnNodeChange';
 
 type OnNodeChange = NonNullable<
@@ -16,9 +24,9 @@ const createNodeChangePlugin = (key: string, onNodeChange: OnNodeChange) =>
 
 const node: Descendant = { text: 'next' };
 const prevNode: Descendant = { text: 'prev' };
-const createInsertNodeChange = (
-  editor: ReturnType<typeof createBaseEditor>
-): EditorNodeChangeContext<ReturnType<typeof createBaseEditor>> => ({
+const createInsertNodeChange = <P extends AnyPluginConfig>(
+  editor: BaseEditor<Value, P>
+): EditorNodeChangeContext<BaseEditor<Value, P>> => ({
   commit: {} as never,
   editor,
   kind: 'insert',

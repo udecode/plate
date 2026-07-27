@@ -1,6 +1,16 @@
-import { createBasePlugin } from '@platejs/core';
+import { createBasePlugin, createRuleFactory } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+
+export const HighlightRules = {
+  markdown: createRuleFactory<{}, { variant: '==' | '≡' }>({
+    type: 'mark',
+    variant: '==',
+    end: ({ variant }) => (variant === '≡' ? undefined : '='),
+    start: ({ variant }) => (variant === '≡' ? '≡' : '=='),
+    trigger: ({ variant }) => (variant === '≡' ? '≡' : '='),
+  }),
+};
 
 /**
  * Enables support for highlights, useful when reviewing content or highlighting

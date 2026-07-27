@@ -91,7 +91,7 @@ type CommentConfig = ExtendConfig<
 export const commentPlugin = toPlatePlugin<CommentConfig>(
   BaseCommentPlugin,
   ({ editor }) => ({
-    options: {
+    initialState: {
       activeId: null,
       commentingBlock: null,
       hoverId: null,
@@ -100,9 +100,9 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
 ).configure({ component: CommentLeaf });
 ```
 
-- `options.activeId`: Currently active comment ID for visual highlighting
-- `options.commentingBlock`: Path of the block currently being commented
-- `options.hoverId`: Currently hovered comment ID for hover effects
+- `initialState.activeId`: Currently active comment ID for visual highlighting
+- `initialState.commentingBlock`: Path of the block currently being commented
+- `initialState.hoverId`: Currently hovered comment ID for hover effects
 - `.configure({ component: CommentLeaf })`: Renders comment text marks with
   [`CommentLeaf`](/docs/components/comment-node)
 
@@ -116,12 +116,12 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
   ({ editor }) => ({
     handlers: {
       // Set active comment when clicking on comment marks
-      onClick: ({ api, event, setOption, type }) => {
+      onClick: ({ api, event, store, type }) => {
         let leaf = event.target as HTMLElement;
         let isSet = false;
 
         const unsetActiveComment = () => {
-          setOption('activeId', null);
+          store.set({ activeId: null });
           isSet = true;
         };
 
@@ -137,7 +137,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
             }
 
             const id = api.nodeId(commentsEntry[0]);
-            setOption('activeId', id ?? null);
+            store.set({ activeId: id ?? null });
             isSet = true;
             break;
           }
@@ -148,7 +148,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
         if (!isSet) unsetActiveComment();
       },
     },
-    // ... previous options and render
+    // ... previous state and render
   })
 );
 ```
@@ -171,7 +171,7 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extend(({ editor, setOption, type }) => ({
+  .extend(({ editor, store, type }) => ({
     update: ({ tx }) => ({
         setDraft: (options = {}) => {
           const commentingBlock =
@@ -194,8 +194,10 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
           );
 
           tx.selection.collapse();
-          setOption('activeId', getDraftCommentKey());
-          setOption('commentingBlock', commentingBlock);
+          store.set({
+            activeId: getDraftCommentKey(),
+            commentingBlock,
+          });
         },
       }),
   }))
@@ -277,11 +279,11 @@ Plugin for creating and managing text comments with state tracking and discussio
 
 ## API
 
-### `editor.api.comment.has`
+### `editor.read.comment.has`
 
 Checks if a comment with the given ID exists in the editor.
 
-<API name="editor.api.comment.has">
+<API name="editor.read.comment.has">
   <APIParameters>
     <APIItem name="options" type="{ id: string }">
       Options containing the comment ID to check.
@@ -290,11 +292,11 @@ Checks if a comment with the given ID exists in the editor.
   <APIReturns type="boolean">Whether the comment exists.</APIReturns>
 </API>
 
-### `editor.api.comment.node`
+### `editor.read.comment.node`
 
 Gets a comment node entry.
 
-<API name="editor.api.comment.node">
+<API name="editor.read.comment.node">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional
@@ -319,11 +321,11 @@ Gets the ID of a comment from a leaf node.
   <APIReturns type="string | undefined">The comment ID if found.</APIReturns>
 </API>
 
-### `editor.api.comment.nodes`
+### `editor.read.comment.nodes`
 
 Gets all comment node entries matching the options.
 
-<API name="editor.api.comment.nodes">
+<API name="editor.read.comment.nodes">
   <APIOptions
     type="object & { id?: string; isDraft?: boolean }"
     optional

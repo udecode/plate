@@ -41,7 +41,7 @@ describe('CursorOverlayPlugin', () => {
     await waitForDeferredCursorRefresh();
 
     expect(
-      editor.plugin(CursorOverlayPlugin).getOption('cursors').selection
+      editor.plugin(CursorOverlayPlugin).store.get('cursors').selection
         ?.selection
     ).toEqual(nextSelection);
   });
@@ -60,7 +60,7 @@ describe('CursorOverlayPlugin', () => {
     await waitForDeferredCursorRefresh();
 
     expect(
-      editor.plugin(CursorOverlayPlugin).getOption('cursors').selection
+      editor.plugin(CursorOverlayPlugin).store.get('cursors').selection
         ?.selection
     ).toEqual(nextSelectionRange);
   });

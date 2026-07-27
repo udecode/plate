@@ -1,0 +1,6701 @@
+[
+  {
+    "id": 1,
+    "package": "ai",
+    "symbol": "BaseAIPlugin",
+    "file": "packages/ai/src/lib/BaseAIPlugin.ts",
+    "line": 86,
+    "key": "KEYS.ai",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "hasPreview",
+        "undo"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": ["insertNodes", "markBatch", "removeMarks", "removeNodes"],
+      "extension": ["effects.ai.batch", "fields.ai.batch"]
+    },
+    "final": {
+      "api": [],
+      "read": ["hasPreview"],
+      "selectors": [],
+      "update": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "insertNodes",
+        "markBatch",
+        "removeMarks",
+        "removeNodes",
+        "undo"
+      ],
+      "extension": [
+        "effects.ai.batch",
+        "effects.ai.preview",
+        "fields.ai.batch",
+        "fields.ai.preview"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Publish preview state through extension, expose its deterministic query through read, and put every preview or document-state mutation in update.",
+    "evidence": "All six current API methods either inspect or mutate preview, document, selection, or history state in BaseAIPlugin.ts:122-323.",
+    "extendJustified": null,
+    "gaps": [
+      "Preview bookkeeping must move from the WeakMap into the proposed ai.preview effect and field before read.hasPreview is deterministic and replayable.",
+      "acceptPreview and cancelPreview span multiple commits, so migration needs an explicit composite-update contract rather than a namespace-only move."
+    ]
+  },
+  {
+    "id": 2,
+    "package": "ai",
+    "symbol": "AIChatPlugin",
+    "file": "packages/ai/src/react/ai-chat/AIChatPlugin.ts",
+    "line": 164,
+    "key": "KEYS.aiChat",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "accept",
+        "acceptSuggestions",
+        "applySuggestions",
+        "applyTableCellSuggestion",
+        "commentToRange",
+        "deserializeChunk",
+        "deserializeInlineChunk",
+        "getInsertStart",
+        "getMarkdown",
+        "getPrompt",
+        "hide",
+        "insertBelow",
+        "insertChunk",
+        "lastAssistantMessage",
+        "node",
+        "rejectSuggestions",
+        "reload",
+        "removeAnchor",
+        "replacePlaceholders",
+        "replaceSelection",
+        "reset",
+        "serializeChunk",
+        "show",
+        "stop",
+        "submit"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "commands.insertText",
+        "corrections.content",
+        "effects.ai.chat.show",
+        "onCommit"
+      ]
+    },
+    "final": {
+      "api": [
+        "deserializeChunk",
+        "deserializeInlineChunk",
+        "hide",
+        "reload",
+        "reset",
+        "show",
+        "stop",
+        "submit"
+      ],
+      "read": [
+        "commentRange",
+        "insertStart",
+        "markdown",
+        "node",
+        "prompt",
+        "resolvePlaceholders",
+        "serializeChunk"
+      ],
+      "selectors": ["lastAssistantMessage"],
+      "update": [
+        "accept",
+        "acceptSuggestions",
+        "applySuggestions",
+        "applyTableCellSuggestion",
+        "insertBelow",
+        "insertChunk",
+        "rejectSuggestions",
+        "removeAnchor",
+        "replaceSelection"
+      ],
+      "extension": [
+        "commands.insertText",
+        "corrections.content",
+        "effects.ai.chat.show",
+        "onCommit"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Split the monolithic surface into controllers and services in api, deterministic snapshot reads, option selectors, and named transaction mutations.",
+    "evidence": "The API factory at AIChatPlugin.ts:150-1495 mixes markdown services, current-state queries, network control, option state, and direct editor mutations.",
+    "extendJustified": true,
+    "gaps": [
+      "hide must delegate anchor removal and preview undo to AIChat.update.removeAnchor and BaseAI.update.undo or discardPreview while retaining UI, focus, and option control in api.",
+      "reset, reload, and submit stay controllers only after their document, selection, and history work delegates to BaseAI.update and Core or feature update methods.",
+      "show stays api, but its call to reset inherits the same controller and transaction split.",
+      "The read namespace makes getInsertStart, getMarkdown, getPrompt, commentToRange, and replacePlaceholders prefixes redundant."
+    ]
+  },
+  {
+    "id": 3,
+    "package": "ai",
+    "symbol": "AIPlugin",
+    "file": "packages/ai/src/react/ai/AIPlugin.ts",
+    "line": 9,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseAIPlugin",
+    "current": {
+      "api": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "hasPreview",
+        "undo"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": ["insertNodes", "markBatch", "removeMarks", "removeNodes"],
+      "extension": ["effects.ai.batch", "fields.ai.batch"]
+    },
+    "final": {
+      "api": [],
+      "read": ["hasPreview"],
+      "selectors": [],
+      "update": [
+        "acceptPreview",
+        "beginPreview",
+        "cancelPreview",
+        "discardPreview",
+        "insertNodes",
+        "markBatch",
+        "removeMarks",
+        "removeNodes",
+        "undo"
+      ],
+      "extension": [
+        "effects.ai.batch",
+        "effects.ai.preview",
+        "fields.ai.batch",
+        "fields.ai.preview"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Mirror the BaseAIPlugin read and update split on the React adapter.",
+    "evidence": "AIPlugin is a direct toPlatePlugin adapter and therefore exposes the complete BaseAIPlugin capability surface.",
+    "extendJustified": null,
+    "gaps": [
+      "The inherited WeakMap preview state must become the proposed ai.preview extension field and the multi-commit update problem must be fixed at BaseAIPlugin."
+    ]
+  },
+  {
+    "id": 4,
+    "package": "ai",
+    "symbol": "CopilotPlugin",
+    "file": "packages/ai/src/react/copilot/CopilotPlugin.tsx",
+    "line": 77,
+    "key": "KEYS.copilot",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": ["reject", "setBlockSuggestion", "stop", "triggerSuggestion"],
+      "read": [],
+      "selectors": ["isSuggested"],
+      "update": ["accept", "acceptNextWord", "setSuggestion"],
+      "extension": [
+        "commands.insertText",
+        "effects.copilot.suggestion",
+        "fields.copilot.suggestion",
+        "onCommit"
+      ]
+    },
+    "final": {
+      "api": ["stop", "triggerSuggestion"],
+      "read": [],
+      "selectors": ["isSuggested"],
+      "update": [
+        "accept",
+        "acceptNextWord",
+        "reject",
+        "setBlockSuggestion",
+        "setSuggestion"
+      ],
+      "extension": [
+        "commands.insertText",
+        "effects.copilot.suggestion",
+        "fields.copilot.suggestion",
+        "onCommit"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Keep completion control in api and move suggestion-state mutations into update.",
+    "evidence": "reject and setBlockSuggestion both open editor updates while stop and triggerSuggestion own abortable completion control in CopilotPlugin.tsx:167-377.",
+    "extendJustified": true,
+    "gaps": [
+      "The first extend stage can move into the constructor; only the later handlers, selectors, shortcuts, and extension stage genuinely depends on the earlier API and update surface."
+    ]
+  },
+  {
+    "id": 5,
+    "package": "basic-nodes",
+    "symbol": "BaseBlockquotePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts",
+    "line": 41,
+    "key": "KEYS.blockquote",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "priority": "P3",
+    "verdict": "Keep both mutations under update and one trailing shortcut stage.",
+    "evidence": "The update factory uses tx.blocks.toggle and tx.blocks.lift. Constructor shortcut placement erases the inferred plugin declaration in the publishable build, so the shortcut stage must consume the completed update contract.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 6,
+    "package": "basic-nodes",
+    "symbol": "BaseBoldPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseBoldPlugin.ts",
+    "line": 20,
+    "key": "KEYS.bold",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the bold mark through tx.marks.toggle and has no read-only or editor-wide responsibility.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 7,
+    "package": "basic-nodes",
+    "symbol": "BaseCodePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseCodePlugin.ts",
+    "line": 15,
+    "key": "KEYS.code",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the code mark through tx.marks.toggle and does not expose a query or service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 8,
+    "package": "basic-nodes",
+    "symbol": "BaseH1Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 40,
+    "key": "KEYS.h1",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H1 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 9,
+    "package": "basic-nodes",
+    "symbol": "BaseH2Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 61,
+    "key": "KEYS.h2",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H2 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 10,
+    "package": "basic-nodes",
+    "symbol": "BaseH3Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 82,
+    "key": "KEYS.h3",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H3 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 11,
+    "package": "basic-nodes",
+    "symbol": "BaseH4Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 103,
+    "key": "KEYS.h4",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H4 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 12,
+    "package": "basic-nodes",
+    "symbol": "BaseH5Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 124,
+    "key": "KEYS.h5",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H5 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 13,
+    "package": "basic-nodes",
+    "symbol": "BaseH6Plugin",
+    "file": "packages/basic-nodes/src/lib/BaseHeadingPlugins.ts",
+    "line": 145,
+    "key": "KEYS.h6",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle changes selected blocks to or from the H6 type through tx.blocks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 14,
+    "package": "basic-nodes",
+    "symbol": "BaseHighlightPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseHighlightPlugin.ts",
+    "line": 19,
+    "key": "KEYS.highlight",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the highlight mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 15,
+    "package": "basic-nodes",
+    "symbol": "BaseHorizontalRulePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseHorizontalRulePlugin.ts",
+    "line": 28,
+    "key": "KEYS.hr",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this as a schema, codec, and render-only descriptor.",
+    "evidence": "The plugin declares only the horizontal-rule element schema, HTML codec, and static render tag.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 16,
+    "package": "basic-nodes",
+    "symbol": "BaseItalicPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseItalicPlugin.ts",
+    "line": 19,
+    "key": "KEYS.italic",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the italic mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 17,
+    "package": "basic-nodes",
+    "symbol": "BaseKbdPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseKbdPlugin.ts",
+    "line": 6,
+    "key": "KEYS.kbd",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the keyboard-input mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 18,
+    "package": "basic-nodes",
+    "symbol": "BaseScriptPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseScriptPlugin.ts",
+    "line": 15,
+    "key": "KEYS.script",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle mutates the mutually exclusive subscript or superscript mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 19,
+    "package": "basic-nodes",
+    "symbol": "BaseStrikethroughPlugin",
+    "file": "packages/basic-nodes/src/lib/BaseStrikethroughPlugin.ts",
+    "line": 19,
+    "key": "KEYS.strikethrough",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the strikethrough mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 20,
+    "package": "basic-nodes",
+    "symbol": "BaseUnderlinePlugin",
+    "file": "packages/basic-nodes/src/lib/BaseUnderlinePlugin.ts",
+    "line": 19,
+    "key": "KEYS.underline",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle under update.",
+    "evidence": "toggle directly mutates the underline mark through tx.marks.toggle.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 21,
+    "package": "basic-nodes",
+    "symbol": "BlockquotePlugin",
+    "file": "packages/basic-nodes/src/react/BlockquotePlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseBlockquotePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle", "untab"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseBlockquotePlugin update surface.",
+    "evidence": "The React descriptor is a direct toPlatePlugin adapter and adds no capability beyond inherited update.toggle and update.untab.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 22,
+    "package": "basic-nodes",
+    "symbol": "BoldPlugin",
+    "file": "packages/basic-nodes/src/react/BoldPlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseBoldPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React-only shortcut.",
+    "evidence": "The adapter adds only the Mod+B shortcut while BaseBoldPlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 23,
+    "package": "basic-nodes",
+    "symbol": "CodePlugin",
+    "file": "packages/basic-nodes/src/react/CodePlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCodePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseCodePlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the code-mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 24,
+    "package": "basic-nodes",
+    "symbol": "H1Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 12,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseH1Plugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H1 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH1Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 25,
+    "package": "basic-nodes",
+    "symbol": "H2Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 13,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseH2Plugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H2 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH2Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 26,
+    "package": "basic-nodes",
+    "symbol": "H3Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 14,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseH3Plugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H3 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH3Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 27,
+    "package": "basic-nodes",
+    "symbol": "H4Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 15,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseH4Plugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H4 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH4Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 28,
+    "package": "basic-nodes",
+    "symbol": "H5Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 16,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseH5Plugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H5 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH5Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 29,
+    "package": "basic-nodes",
+    "symbol": "H6Plugin",
+    "file": "packages/basic-nodes/src/react/HeadingPlugins.tsx",
+    "line": 17,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseH6Plugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited H6 update surface.",
+    "evidence": "The React descriptor directly adapts BaseH6Plugin and adds no capability of its own.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 30,
+    "package": "basic-nodes",
+    "symbol": "HighlightPlugin",
+    "file": "packages/basic-nodes/src/react/HighlightPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseHighlightPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseHighlightPlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the highlight-mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 31,
+    "package": "basic-nodes",
+    "symbol": "HorizontalRulePlugin",
+    "file": "packages/basic-nodes/src/react/HorizontalRulePlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseHorizontalRulePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the adapter capability-free.",
+    "evidence": "The React descriptor directly adapts the schema, codec, and render-only BaseHorizontalRulePlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 32,
+    "package": "basic-nodes",
+    "symbol": "ItalicPlugin",
+    "file": "packages/basic-nodes/src/react/ItalicPlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseItalicPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React-only shortcut.",
+    "evidence": "The adapter adds only the Mod+I shortcut while BaseItalicPlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 33,
+    "package": "basic-nodes",
+    "symbol": "KbdPlugin",
+    "file": "packages/basic-nodes/src/react/KbdPlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseKbdPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseKbdPlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the keyboard-input mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 34,
+    "package": "basic-nodes",
+    "symbol": "ScriptPlugin",
+    "file": "packages/basic-nodes/src/react/ScriptPlugin.tsx",
+    "line": 18,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseScriptPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React leaf component.",
+    "evidence": "The adapter contributes only ScriptLeaf rendering while BaseScriptPlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 35,
+    "package": "basic-nodes",
+    "symbol": "StrikethroughPlugin",
+    "file": "packages/basic-nodes/src/react/StrikethroughPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseStrikethroughPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited BaseStrikethroughPlugin update surface.",
+    "evidence": "The React descriptor is a direct adapter and inherits only the strikethrough-mark update.toggle capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 36,
+    "package": "basic-nodes",
+    "symbol": "UnderlinePlugin",
+    "file": "packages/basic-nodes/src/react/UnderlinePlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseUnderlinePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Preserve the inherited update toggle and React-only shortcut.",
+    "evidence": "The adapter adds only the Mod+U shortcut while BaseUnderlinePlugin owns the tx-bound update.toggle mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 37,
+    "package": "basic-styles",
+    "symbol": "BaseFontBackgroundColorPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontBackgroundColorPlugin.ts",
+    "line": 5,
+    "key": "KEYS.backgroundColor",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the flat mark mutations.",
+    "evidence": "The constructor owns both operations and each directly mutates the plugin mark through the active transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 38,
+    "package": "basic-styles",
+    "symbol": "BaseFontColorPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontColorPlugin.ts",
+    "line": 5,
+    "key": "KEYS.color",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the flat mark mutations.",
+    "evidence": "The constructor owns both operations and each directly mutates the plugin mark through the active transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 39,
+    "package": "basic-styles",
+    "symbol": "BaseFontFamilyPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontFamilyPlugin.ts",
+    "line": 5,
+    "key": "KEYS.fontFamily",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the minimal set mutation.",
+    "evidence": "The only production behavior sets the font-family mark and no production reset caller justifies another public verb.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 40,
+    "package": "basic-styles",
+    "symbol": "BaseFontSizePlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontSizePlugin.ts",
+    "line": 5,
+    "key": "KEYS.fontSize",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the minimal set mutation.",
+    "evidence": "The registry toolbar only sets a concrete font-size mark, so a speculative clear operation would add API without a caller.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 41,
+    "package": "basic-styles",
+    "symbol": "BaseFontWeightPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontWeightPlugin.ts",
+    "line": 5,
+    "key": "KEYS.fontWeight",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the minimal set mutation.",
+    "evidence": "The plugin owns one transaction-bound mark write and has no production reset consumer.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 42,
+    "package": "basic-styles",
+    "symbol": "BaseLineHeightPlugin",
+    "file": "packages/basic-styles/src/lib/BaseLineHeightPlugin.ts",
+    "line": 17,
+    "key": "KEYS.lineHeight",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep one semantic set operation.",
+    "evidence": "set owns both setting and clearing by unsetting the property when the configured default value is supplied.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 43,
+    "package": "basic-styles",
+    "symbol": "BaseTextAlignPlugin",
+    "file": "packages/basic-styles/src/lib/BaseTextAlignPlugin.ts",
+    "line": 23,
+    "key": "KEYS.textAlign",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep one semantic set operation.",
+    "evidence": "set owns both setting and clearing by unsetting the property when the configured default alignment is supplied.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 44,
+    "package": "basic-styles",
+    "symbol": "BaseTextIndentPlugin",
+    "file": "packages/basic-styles/src/lib/BaseTextIndentPlugin.ts",
+    "line": 11,
+    "key": "KEYS.textIndent",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the explicit property mutations.",
+    "evidence": "set and unset map exactly to the underlying transaction property operations and accept their honest node-update options.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 45,
+    "package": "basic-styles",
+    "symbol": "FontColorPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 11,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFontColorPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontColorPlugin clear and set updates.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 46,
+    "package": "basic-styles",
+    "symbol": "FontSizePlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 13,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFontSizePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontSizePlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 47,
+    "package": "basic-styles",
+    "symbol": "FontFamilyPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 15,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFontFamilyPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontFamilyPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 48,
+    "package": "basic-styles",
+    "symbol": "FontBackgroundColorPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 17,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFontBackgroundColorPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontBackgroundColorPlugin clear and set updates.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 49,
+    "package": "basic-styles",
+    "symbol": "FontWeightPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 21,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFontWeightPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontWeightPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 50,
+    "package": "basic-styles",
+    "symbol": "LineHeightPlugin",
+    "file": "packages/basic-styles/src/react/LineHeightPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseLineHeightPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseLineHeightPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 51,
+    "package": "basic-styles",
+    "symbol": "TextAlignPlugin",
+    "file": "packages/basic-styles/src/react/TextAlignPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTextAlignPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseTextAlignPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 52,
+    "package": "basic-styles",
+    "symbol": "TextIndentPlugin",
+    "file": "packages/basic-styles/src/react/TextIndentPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTextIndentPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseTextIndentPlugin set and unset updates.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 53,
+    "package": "callout",
+    "symbol": "BaseCalloutPlugin",
+    "file": "packages/callout/src/lib/BaseCalloutPlugin.ts",
+    "line": 12,
+    "key": "KEYS.callout",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the single flat plugin update.",
+    "evidence": "insertCallout mutates through the provided transaction and is already exposed as update.insert at BaseCalloutPlugin.ts:35-37.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 54,
+    "package": "callout",
+    "symbol": "CalloutPlugin",
+    "file": "packages/callout/src/react/CalloutPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCalloutPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "CalloutPlugin is a direct React adapter over BaseCalloutPlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 55,
+    "package": "code-block",
+    "symbol": "BaseCodeLinePlugin",
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "line": 36,
+    "key": "KEYS.codeLine",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the structural code-line descriptor capability-free.",
+    "evidence": "BaseCodeLinePlugin declares only schema, type, and HTML codec behavior at BaseCodeBlockPlugin.ts:85-108.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 56,
+    "package": "code-block",
+    "symbol": "BaseCodeBlockPlugin",
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "line": 61,
+    "key": "KEYS.codeBlock",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "resetBlock", "selectAll", "tab", "toggle", "untab"],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": ["entry", "indentDepth", "isAtStart", "isEmpty"],
+      "selectors": [],
+      "update": [
+        "format",
+        "insert",
+        "resetBlock",
+        "selectAll",
+        "tab",
+        "toggle",
+        "untab"
+      ],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Keep flat transaction updates and editor-wide interception, but absorb the package's public code-block queries and formatter into read and update.",
+    "evidence": "getCodeLineEntry, getIndentDepth, isSelectionAtCodeBlockStart, isCodeBlockEmpty, and formatCodeBlock are exported editor-bound feature helpers outside the descriptor while its existing methods already use update.",
+    "extendJustified": true,
+    "gaps": [
+      "Fold insertEmptyCodeBlock into update.insert semantics instead of publishing a second insertion verb.",
+      "Move formatCodeBlock to update.format and keep setCodeBlockContent, insertCodeLine, indent, outdent, deleteStartSpace, and unwrap mechanics internal.",
+      "rules.match should consume the earlier read.isEmpty contribution from the existing dependency-justified extend stage."
+    ]
+  },
+  {
+    "id": 57,
+    "package": "code-block",
+    "symbol": "BaseCodeHighlightPlugin",
+    "file": "packages/code-block/src/lib/BaseCodeBlockPlugin.ts",
+    "line": 691,
+    "key": "KEYS.codeSyntax",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.content", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.content", "onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Keep syntax-cache maintenance as editor-wide extension lifecycle behavior.",
+    "evidence": "The content correction and transaction listener refresh WeakMap-backed decorations rather than expose callable plugin capabilities.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 58,
+    "package": "code-block",
+    "symbol": "CodeLinePlugin",
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "line": 11,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCodeLinePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited structural descriptor capability-free.",
+    "evidence": "CodeLinePlugin directly adapts BaseCodeLinePlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 59,
+    "package": "code-block",
+    "symbol": "CodeBlockPlugin",
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "line": 14,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCodeBlockPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "resetBlock", "selectAll", "tab", "toggle", "untab"],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": ["entry", "indentDepth", "isAtStart", "isEmpty"],
+      "selectors": [],
+      "update": [
+        "format",
+        "insert",
+        "resetBlock",
+        "selectAll",
+        "tab",
+        "toggle",
+        "untab"
+      ],
+      "extension": [
+        "clipboard.insertData",
+        "commands.delete",
+        "commands.insertBreak",
+        "commands.replaceSlice"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the Base owner's added read queries and update.format surface on the React adapter.",
+    "evidence": "CodeBlockPlugin changes only the React dependency descriptor and inherits the complete Base owner capability surface.",
+    "extendJustified": null,
+    "gaps": [
+      "The standalone query and formatter adoption must be implemented at BaseCodeBlockPlugin."
+    ]
+  },
+  {
+    "id": 60,
+    "package": "code-block",
+    "symbol": "CodeHighlightPlugin",
+    "file": "packages/code-block/src/react/CodeBlockPlugin.tsx",
+    "line": 19,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCodeHighlightPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "corrections.content",
+        "onTransactionChange",
+        "react.onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "corrections.content",
+        "onTransactionChange",
+        "react.onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep Base cache maintenance plus the React decoration-refresh listener as extensions.",
+    "evidence": "The adapter inherits BaseCodeHighlightPlugin lifecycle behavior and adds only the keyed React onTransactionChange listener at CodeBlockPlugin.tsx:20-33.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 61,
+    "package": "code-drawing",
+    "symbol": "BaseCodeDrawingPlugin",
+    "file": "packages/code-drawing/src/lib/BaseCodeDrawingPlugin.ts",
+    "line": 19,
+    "key": "KEYS.codeDrawing",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the flat code-drawing update.",
+    "evidence": "insert delegates to insertCodeDrawing with the current transaction at BaseCodeDrawingPlugin.ts:53-57.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 62,
+    "package": "code-drawing",
+    "symbol": "CodeDrawingPlugin",
+    "file": "packages/code-drawing/src/react/CodeDrawingPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCodeDrawingPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "CodeDrawingPlugin directly adapts BaseCodeDrawingPlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 63,
+    "package": "comment",
+    "symbol": "BaseCommentPlugin",
+    "file": "packages/comment/src/lib/BaseCommentPlugin.ts",
+    "line": 18,
+    "key": "KEYS.comment",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["has", "node", "nodeId", "nodes"],
+      "read": [],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": ["nodeId"],
+      "read": ["has", "node", "nodes"],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "P1",
+    "verdict": "Move snapshot-backed comment searches to read and retain only the leaf decoder in api.",
+    "evidence": "has, node, and nodes call editor.read while nodeId derives only from its leaf argument at BaseCommentPlugin.ts:62-111.",
+    "extendJustified": true,
+    "gaps": [
+      "The update stage must depend on the earlier read surface after the move because removeMark and unsetMark consume node and nodes."
+    ]
+  },
+  {
+    "id": 64,
+    "package": "comment",
+    "symbol": "CommentPlugin",
+    "file": "packages/comment/src/react/CommentPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseCommentPlugin",
+    "current": {
+      "api": ["has", "node", "nodeId", "nodes"],
+      "read": [],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": ["nodeId"],
+      "read": ["has", "node", "nodes"],
+      "selectors": [],
+      "update": ["removeMark", "setDraft", "unsetMark"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the BaseCommentPlugin read split on the React adapter.",
+    "evidence": "CommentPlugin is a direct adapter and exposes the complete BaseCommentPlugin capability surface.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 65,
+    "package": "core",
+    "symbol": "internalRootDescriptor",
+    "file": "packages/core/src/lib/editor/withPlite.ts",
+    "line": 858,
+    "key": "'root'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this capability-neutral internal root carrier.",
+    "evidence": "The fixed declaration contributes no capability; its spread pluginConfig is dynamic editor-constructor input rather than a stable package plugin surface.",
+    "extendJustified": null,
+    "gaps": [
+      "Dynamic root configuration cannot be enumerated as fixed descriptor members."
+    ]
+  },
+  {
+    "id": 66,
+    "package": "core",
+    "symbol": "AffinityPlugin",
+    "file": "packages/core/src/lib/plugins/affinity/AffinityPlugin.ts",
+    "line": 29,
+    "key": "'affinity'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["setSelection"],
+      "extension": ["commands.delete", "commands.insertText", "commands.move"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["setSelection"],
+      "extension": ["commands.delete", "commands.insertText", "commands.move"]
+    },
+    "priority": "keep",
+    "verdict": "Keep mutation scoped and command interception editor-wide.",
+    "evidence": "setSelection mutates the active transaction, while the three Plite command wrappers enforce affinity across the editor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 67,
+    "package": "core",
+    "symbol": "DebugPlugin",
+    "file": "packages/core/src/lib/plugins/debug/DebugPlugin.ts",
+    "line": 59,
+    "key": "'debug'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["debug.error", "debug.info", "debug.log", "debug.warn"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["error", "info", "log", "warn"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Publish debug once through its matching plugin key.",
+    "evidence": "The descriptor key is debug, so constructor api preserves editor.api.debug while also making editor.plugin(DebugPlugin).api the same inferred service.",
+    "extendJustified": null,
+    "gaps": [
+      "The extension implementation bypasses the plugin portal even though its namespace exactly matches the plugin key."
+    ]
+  },
+  {
+    "id": 68,
+    "package": "core",
+    "symbol": "DOMPluginBase",
+    "file": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+    "line": 70,
+    "key": "'dom'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Keep Plate auto-scroll attached to the editor-wide DOM capability.",
+    "evidence": "autoScroll owns the active transaction scope, while the status probe and transaction hook extend the Plite DOM platform group.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 69,
+    "package": "core",
+    "symbol": "DOMPlugin",
+    "file": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+    "line": 217,
+    "key": null,
+    "kind": "derivedPlugin.extend",
+    "base": "DOMPluginBase",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep the composed DOM bridge as an editor-wide extension.",
+    "evidence": "The derived descriptor effectively inherits Plate autoScroll and composes the standalone Plite DOM lifecycle, clipboard, and DOM capability.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 70,
+    "package": "core",
+    "symbol": "ElementStatePlugin",
+    "file": "packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts",
+    "line": 6,
+    "key": "'elementState'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["isElementStateEmpty"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["isEmpty"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Scope and shorten the pure element-state service.",
+    "evidence": "The method classifies a supplied element with compiled schema metadata rather than reading document position, so editor.api.elementState.isEmpty is the honest keyed plugin API.",
+    "extendJustified": null,
+    "gaps": [
+      "The unkeyed root name repeats its owner and the typed plugin portal exposes no API."
+    ]
+  },
+  {
+    "id": 71,
+    "package": "core",
+    "symbol": "HistoryPlugin",
+    "file": "packages/core/src/lib/plugins/HistoryPlugin.ts",
+    "line": 5,
+    "key": "'history'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "activate",
+        "onCommit",
+        "state.history",
+        "state.history.redos",
+        "state.history.undos",
+        "tx.history.discardRedo",
+        "tx.history.merge",
+        "tx.history.newBatch",
+        "tx.history.redo",
+        "tx.history.restore",
+        "tx.history.skip",
+        "tx.history.undo",
+        "validateConfiguration"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "activate",
+        "onCommit",
+        "state.history",
+        "state.history.redos",
+        "state.history.undos",
+        "tx.history.discardRedo",
+        "tx.history.merge",
+        "tx.history.newBatch",
+        "tx.history.redo",
+        "tx.history.restore",
+        "tx.history.skip",
+        "tx.history.undo",
+        "validateConfiguration"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep history as a foundational editor-wide extension.",
+    "evidence": "history() owns editor lifecycle, snapshot reads, and transaction controls whose semantics are global rather than feature-plugin scoped.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 72,
+    "package": "core",
+    "symbol": "HtmlPlugin",
+    "file": "packages/core/src/lib/plugins/html/HtmlPlugin.ts",
+    "line": 2810,
+    "key": "HTML_PLUGIN_KEY",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep deserialize as a plugin codec service.",
+    "evidence": "deserialize converts supplied HTML through the compiled codec/schema and does not query document content or mutate the editor.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 73,
+    "package": "core",
+    "symbol": "InputRulesPlugin",
+    "file": "packages/core/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "line": 20,
+    "key": "'inputRules'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "clipboard.insertData",
+        "commands.insertBreak",
+        "commands.insertText"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "clipboard.insertData",
+        "commands.insertBreak",
+        "commands.insertText"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep input interception editor-wide.",
+    "evidence": "The plugin contributes clipboard and command pipeline wrappers rather than a callable feature service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 74,
+    "package": "core",
+    "symbol": "NodeIdPlugin",
+    "file": "packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts",
+    "line": 691,
+    "key": "'nodeId'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["normalize"],
+      "extension": ["onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["normalize"],
+      "extension": ["onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Keep explicit normalization scoped and automatic repair global.",
+    "evidence": "normalize writes IDs through the active transaction, while onTransactionChange enforces ID invariants for every structural commit.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 75,
+    "package": "core",
+    "symbol": "OverridePlugin",
+    "file": "packages/core/src/lib/plugins/override/OverridePlugin.ts",
+    "line": 42,
+    "key": "'override'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "executeBreakRuleAction",
+        "executeDeleteRuleAction",
+        "resetBlock",
+        "selectAdjacentBlockVoid"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "queries.nodes.shouldMergeNodesRemovePrevNode"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "executeBreakRuleAction",
+        "executeDeleteRuleAction",
+        "resetBlock",
+        "selectAdjacentBlockVoid"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "queries.nodes.shouldMergeNodesRemovePrevNode"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep rule actions transactional and editor overrides global.",
+    "evidence": "The command/correction/query extension consumes the earlier scoped update group inside the same transaction.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 76,
+    "package": "core",
+    "symbol": "BaseParagraphPlugin",
+    "file": "packages/core/src/lib/plugins/paragraph/BaseParagraphPlugin.ts",
+    "line": 5,
+    "key": "'p'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only descriptor capability-neutral.",
+    "evidence": "The plugin owns paragraph schema, codec, and merge rules without publishing callable behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 77,
+    "package": "core",
+    "symbol": "ReactDOMPlugin",
+    "file": "packages/core/src/react/editor/getPlateCorePlugins.ts",
+    "line": 9,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "DOMPluginBase",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Mirror the DOM base capability unchanged.",
+    "evidence": "The same-key Plate adapter adds no declaration behavior and effectively inherits DOMPluginBase auto-scroll update and extension members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 78,
+    "package": "core",
+    "symbol": "getPlugin()",
+    "file": "packages/core/src/react/plugin/getPlugin.ts",
+    "line": 15,
+    "key": "plugin.key",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the missing-plugin fallback capability-neutral.",
+    "evidence": "The dynamic descriptor only preserves a requested key when no compiled plugin exists and deliberately publishes no methods.",
+    "extendJustified": null,
+    "gaps": [
+      "This runtime fallback is not a stable exported plugin descriptor."
+    ]
+  },
+  {
+    "id": 79,
+    "package": "core",
+    "symbol": "EventEditorPlugin",
+    "file": "packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts",
+    "line": 8,
+    "key": "'eventEditor'",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep DOM event bookkeeping in handlers.",
+    "evidence": "The plugin only reacts to blur and focus events and exposes no reusable query, service, or mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 80,
+    "package": "core",
+    "symbol": "NavigationFeedbackPlugin",
+    "file": "packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts",
+    "line": 48,
+    "key": "NAVIGATION_FEEDBACK_KEY",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "navigation.activeTarget",
+        "navigation.clear",
+        "navigation.isTarget"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "navigation.clear",
+        "navigation.flashTarget",
+        "navigation.navigate"
+      ],
+      "extension": ["effects[plate.navigation-feedback]", "onCommit"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": ["activeTarget", "isTarget"],
+      "update": ["clear", "flashTarget", "navigate"],
+      "extension": ["effects[plate.navigation-feedback]", "onCommit"]
+    },
+    "priority": "P0",
+    "verdict": "Make navigation one plugin-owned selector/update surface.",
+    "evidence": "Renaming the descriptor key to navigation preserves editor.update.navigation while pure option-derived selectors and scoped updates remove the parallel extension api/tx ownership.",
+    "extendJustified": null,
+    "gaps": [
+      "The descriptor key navigationFeedback disagrees with its public navigation namespace.",
+      "activeTarget and therefore isTarget can call clear and mutate options, anchors, timeouts, and decorations while evaluating a query.",
+      "clear is duplicated across imperative api and tx surfaces.",
+      "The stored activeTarget option must become an internal differently named option so the pure activeTarget selector has one unambiguous key."
+    ]
+  },
+  {
+    "id": 81,
+    "package": "core",
+    "symbol": "ParagraphPlugin",
+    "file": "packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseParagraphPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral.",
+    "evidence": "It inherits a schema-only Base descriptor and adds only a paragraph shortcut handler.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 82,
+    "package": "core",
+    "symbol": "ViewPlugin",
+    "file": "packages/core/src/static/plugins/ViewPlugin.ts",
+    "line": 4,
+    "key": null,
+    "kind": "derivedPlugin.extend",
+    "base": "DOMPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "api.getFragment",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "api.dom.getSelectedFragment",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Keep the helper, but name it inside the DOM substrate.",
+    "evidence": "Plite read.getFragment returns a model-selection fragment, while this helper reconstructs a static browser selection from mounted block DOM and therefore belongs at editor.api.dom.getSelectedFragment.",
+    "extendJustified": true,
+    "gaps": [
+      "Unkeyed api.getFragment is ambiguous with Plite's model-state getFragment despite returning a DOM-derived static selection."
+    ]
+  },
+  {
+    "id": 83,
+    "package": "csv",
+    "symbol": "CsvPlugin",
+    "file": "packages/csv/src/lib/CsvPlugin.ts",
+    "line": 30,
+    "key": "KEYS.csv",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep deserialize as a plugin service API.",
+    "evidence": "deserialize converts caller-provided CSV through editor schema and plugin options without reading or mutating the current document at CsvPlugin.ts:54-55.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 84,
+    "package": "date",
+    "symbol": "BaseDatePlugin",
+    "file": "packages/date/src/lib/BaseDatePlugin.ts",
+    "line": 9,
+    "key": "KEYS.date",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the flat date update.",
+    "evidence": "insertDate receives and mutates the current transaction at BaseDatePlugin.ts:20-21.",
+    "extendJustified": null,
+    "gaps": [
+      "isPointNextToNode is generic over an arbitrary nodeType and should remain outside DatePlugin.read or move to Core."
+    ]
+  },
+  {
+    "id": 85,
+    "package": "date",
+    "symbol": "DatePlugin",
+    "file": "packages/date/src/react/DatePlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseDatePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "DatePlugin directly adapts BaseDatePlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 86,
+    "package": "dnd",
+    "symbol": "DndPlugin",
+    "file": "packages/dnd/src/DndPlugin.tsx",
+    "line": 54,
+    "key": "KEYS.dnd",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep drag state private to options, handlers, and hooks rather than inventing a callable capability surface.",
+    "evidence": "DndPlugin manages ephemeral UI state only through option access in handlers and useHooks at DndPlugin.tsx:54-166.",
+    "extendJustified": null,
+    "gaps": [
+      "getBlocksWithId and block-selection helpers are cross-domain editor utilities, while getDropPath, onHoverNode, and onDropNode are React-DnD boundary helpers, so none belongs on DndPlugin."
+    ]
+  },
+  {
+    "id": 87,
+    "package": "docx",
+    "symbol": "DocxPlugin",
+    "file": "packages/docx/src/lib/DocxPlugin.ts",
+    "line": 55,
+    "key": "KEYS.docx",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep DOCX paste cleanup inside parser behavior with no public capability surface.",
+    "evidence": "DocxPlugin contributes only an HTML transformData parser at DocxPlugin.ts:55-63.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 88,
+    "package": "docx-io",
+    "symbol": "DocxIOPlugin",
+    "file": "packages/docx-io/src/lib/DocxIOPlugin.tsx",
+    "line": 502,
+    "key": "'docxIO'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "docxExport.download",
+        "docxExport.exportAndDownload",
+        "docxExport.exportToBlob"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["import", "toBlob"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Rename the feature owner to DocxIOPlugin, expose explicit-input api.import and api.toBlob services, and use standalone downloadDocx for browser downloading.",
+    "evidence": "Import and export are asynchronous conversion services; toBlob can render components and fetch remote images, so it must accept an explicit value or snapshot rather than pretending to be a replayable read.",
+    "extendJustified": null,
+    "gaps": [
+      "Feature-scoped methods are incorrectly published on root editor.api through extension.",
+      "download duplicates the public standalone downloadDocx helper and exportAndDownload combines a snapshot read with a generic browser side effect.",
+      "The current DocxExportPlugin name and docxExport key are too narrow once the existing importDocx service is colocated as api.import.",
+      "api.toBlob must require an explicit value or snapshot; callers capture current children through Core read before invoking the asynchronous converter."
+    ]
+  },
+  {
+    "id": 89,
+    "package": "emoji",
+    "symbol": "BaseEmojiInputPlugin",
+    "file": "packages/emoji/src/lib/BaseEmojiPlugin.ts",
+    "line": 29,
+    "key": "KEYS.emojiInput",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the transient emoji input descriptor capability-free.",
+    "evidence": "BaseEmojiInputPlugin owns only inline schema and edit-only behavior at BaseEmojiPlugin.ts:29-43.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 90,
+    "package": "emoji",
+    "symbol": "BaseEmojiPlugin",
+    "file": "packages/emoji/src/lib/BaseEmojiPlugin.ts",
+    "line": 56,
+    "key": "KEYS.emoji",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Keep trigger interception as extension and absorb standalone insertEmoji as update.insert.",
+    "evidence": "insertEmoji reads BaseEmojiPlugin options and mutates the document through editor.update while withTriggerCombobox remains an editor-wide insertText wrapper.",
+    "extendJustified": null,
+    "gaps": [
+      "Inline insertEmoji into update.insert so callers no longer pass editor to a package-owned transform."
+    ]
+  },
+  {
+    "id": 91,
+    "package": "emoji",
+    "symbol": "EmojiInputPlugin",
+    "file": "packages/emoji/src/react/EmojiPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseEmojiInputPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited emoji-input descriptor capability-free.",
+    "evidence": "EmojiInputPlugin directly adapts BaseEmojiInputPlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 92,
+    "package": "emoji",
+    "symbol": "EmojiPlugin",
+    "file": "packages/emoji/src/react/EmojiPlugin.tsx",
+    "line": 7,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseEmojiPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror BaseEmojiPlugin update.insert while retaining the inherited trigger command extension.",
+    "evidence": "EmojiPlugin changes only the React dependency and inherits the complete BaseEmojiPlugin capability surface.",
+    "extendJustified": null,
+    "gaps": [
+      "The standalone insertEmoji adoption must be implemented at BaseEmojiPlugin."
+    ]
+  },
+  {
+    "id": 93,
+    "package": "excalidraw",
+    "symbol": "BaseExcalidrawPlugin",
+    "file": "packages/excalidraw/src/lib/BaseExcalidrawPlugin.ts",
+    "line": 23,
+    "key": "KEYS.excalidraw",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep insert as the flat Excalidraw update.",
+    "evidence": "insert delegates to insertExcalidraw with the active transaction at BaseExcalidrawPlugin.ts:46-50.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 94,
+    "package": "excalidraw",
+    "symbol": "ExcalidrawPlugin",
+    "file": "packages/excalidraw/src/react/ExcalidrawPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseExcalidrawPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited update.insert surface unchanged.",
+    "evidence": "ExcalidrawPlugin directly adapts BaseExcalidrawPlugin and adds no capability behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 95,
+    "package": "find-replace",
+    "symbol": "FindReplacePlugin",
+    "file": "packages/find-replace/src/lib/FindReplacePlugin.ts",
+    "line": 18,
+    "key": "KEYS.searchHighlight",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep search calculation private to decorate rather than duplicate it as public read API.",
+    "evidence": "FindReplacePlugin computes decoration ranges only for the decorate lifecycle at FindReplacePlugin.ts:25-121.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 96,
+    "package": "footnote",
+    "symbol": "BaseFootnoteDefinitionPlugin",
+    "file": "packages/footnote/src/lib/BaseFootnoteDefinitionPlugin.ts",
+    "line": 6,
+    "key": "KEYS.footnoteDefinition",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the definition descriptor structural and capability-free.",
+    "evidence": "BaseFootnoteDefinitionPlugin declares only its block schema at BaseFootnoteDefinitionPlugin.ts:6-16.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 97,
+    "package": "footnote",
+    "symbol": "BaseFootnoteInputPlugin",
+    "file": "packages/footnote/src/lib/BaseFootnoteInputPlugin.ts",
+    "line": 6,
+    "key": "KEYS.footnoteInput",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the transient input descriptor capability-free.",
+    "evidence": "BaseFootnoteInputPlugin owns only inline schema and edit-only behavior at BaseFootnoteInputPlugin.ts:6-18.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 98,
+    "package": "footnote",
+    "symbol": "BaseFootnotePlugin",
+    "file": "packages/footnote/src/lib/BaseFootnotePlugin.ts",
+    "line": 46,
+    "key": "'footnote'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "footnote.definition",
+        "footnote.definitions",
+        "footnote.definitionText",
+        "footnote.duplicateDefinitions",
+        "footnote.duplicateIdentifiers",
+        "footnote.hasDuplicateDefinitions",
+        "footnote.identifiers",
+        "footnote.isDuplicateDefinition",
+        "footnote.isResolved",
+        "footnote.nextId",
+        "footnote.references"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "footnote.createDefinition",
+        "footnote.focusDefinition",
+        "footnote.focusReference",
+        "footnote.normalizeDuplicateDefinition",
+        "insert.footnote"
+      ],
+      "extension": ["commands.insertText", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [
+        "definition",
+        "definitions",
+        "definitionText",
+        "duplicateDefinitions",
+        "duplicateIdentifiers",
+        "hasDuplicateDefinitions",
+        "identifiers",
+        "isDuplicateDefinition",
+        "isResolved",
+        "nextId",
+        "references"
+      ],
+      "selectors": [],
+      "update": [
+        "createDefinition",
+        "focusDefinition",
+        "focusReference",
+        "insert",
+        "normalizeDuplicateDefinition"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Use a footnote feature plugin key with footnoteReference only as its serialized type, compute flat reads directly from the supplied active state, keep mutations in update, and retain only trigger middleware in extension.",
+    "evidence": "The current editor-keyed registry allocates and releases anchors, mutates during queries, and invalidates only after transaction change; it cannot back committed and uncommitted snapshot reads.",
+    "extendJustified": null,
+    "gaps": [
+      "Feature-scoped reads and updates are incorrectly published as root editor groups through extension.",
+      "footnote.* and insert.footnote repeat the owning plugin domain and lengthen every call.",
+      "The owning descriptor should target key footnote and explicit type footnoteReference so feature identity is not coupled to the serialized node type.",
+      "Rename the owner BaseFootnotePlugin and make read.definitions accept an optional identifier so it absorbs both exported definition-list helpers.",
+      "Delete the mutable registry and onTransactionChange invalidation, or replace them with an immutable cache keyed by the supplied state revision; no read may allocate anchors or mutate editor-keyed state."
+    ]
+  },
+  {
+    "id": 99,
+    "package": "footnote",
+    "symbol": "FootnoteDefinitionPlugin",
+    "file": "packages/footnote/src/react/FootnoteDefinitionPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFootnoteDefinitionPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited definition descriptor capability-free.",
+    "evidence": "FootnoteDefinitionPlugin directly adapts BaseFootnoteDefinitionPlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 100,
+    "package": "footnote",
+    "symbol": "FootnoteInputPlugin",
+    "file": "packages/footnote/src/react/FootnoteInputPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFootnoteInputPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the inherited transient-input descriptor capability-free.",
+    "evidence": "FootnoteInputPlugin directly adapts BaseFootnoteInputPlugin without adding behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 101,
+    "package": "footnote",
+    "symbol": "FootnotePlugin",
+    "file": "packages/footnote/src/react/FootnotePlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFootnotePlugin",
+    "current": {
+      "api": [
+        "footnote.definition",
+        "footnote.definitions",
+        "footnote.definitionText",
+        "footnote.duplicateDefinitions",
+        "footnote.duplicateIdentifiers",
+        "footnote.hasDuplicateDefinitions",
+        "footnote.identifiers",
+        "footnote.isDuplicateDefinition",
+        "footnote.isResolved",
+        "footnote.nextId",
+        "footnote.references"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "footnote.createDefinition",
+        "footnote.focusDefinition",
+        "footnote.focusReference",
+        "footnote.normalizeDuplicateDefinition",
+        "insert.footnote"
+      ],
+      "extension": ["commands.insertText", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [
+        "definition",
+        "definitions",
+        "definitionText",
+        "duplicateDefinitions",
+        "duplicateIdentifiers",
+        "hasDuplicateDefinitions",
+        "identifiers",
+        "isDuplicateDefinition",
+        "isResolved",
+        "nextId",
+        "references"
+      ],
+      "selectors": [],
+      "update": [
+        "createDefinition",
+        "focusDefinition",
+        "focusReference",
+        "insert",
+        "normalizeDuplicateDefinition"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the footnote feature key with registry-free flat reads and scoped updates while retaining footnoteReference only as the rendered serialized type.",
+    "evidence": "FootnoteReferencePlugin changes only the React input dependency and must inherit the Base owner's state-native read implementation rather than editor-keyed mutable query state.",
+    "extendJustified": null,
+    "gaps": [
+      "Rename the adapter FootnotePlugin; the root publication, feature-key coupling, definitions query consolidation, and registry removal must be repaired at the Base owner."
+    ]
+  },
+  {
+    "id": 102,
+    "package": "indent",
+    "symbol": "BaseIndentPlugin",
+    "file": "packages/indent/src/lib/BaseIndentPlugin.ts",
+    "line": 82,
+    "key": "KEYS.indent",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "P2",
+    "verdict": "Keep every capability bucket and one trailing shortcut stage.",
+    "evidence": "All five methods mutate through the active tx and the properties correction is editor lifecycle behavior. Constructor shortcut placement erases the inferred plugin declaration in the publishable build, so the shortcut stage must consume the completed update contract.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 103,
+    "package": "indent",
+    "symbol": "IndentPlugin",
+    "file": "packages/indent/src/react/IndentPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseIndentPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit the Base descriptor unchanged.",
+    "evidence": "toPlatePlugin adds no local contribution, so its effective update and correction surface is owned entirely by BaseIndentPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 104,
+    "package": "juice",
+    "symbol": "JuicePlugin",
+    "file": "packages/juice/src/lib/JuicePlugin.ts",
+    "line": 5,
+    "key": "KEYS.juice",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this as a parser-only plugin with no public capability surface.",
+    "evidence": "The descriptor only transforms incoming HTML data and publishes no query, service, mutation, selector, or editor-wide behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 105,
+    "package": "layout",
+    "symbol": "BaseColumnItemPlugin",
+    "file": "packages/layout/src/lib/BaseColumnPlugin.ts",
+    "line": 47,
+    "key": "KEYS.column",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "priority": "P2",
+    "verdict": "Keep the update and correction ownership plus one trailing shortcut stage.",
+    "evidence": "Every public method mutates document or selection through tx and the width repair is a content correction. Constructor shortcut placement erases the inferred plugin declaration in the publishable build, so the shortcut stage must consume the completed update contract.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 106,
+    "package": "layout",
+    "symbol": "BaseColumnPlugin",
+    "file": "packages/layout/src/lib/BaseColumnPlugin.ts",
+    "line": 329,
+    "key": "KEYS.columnGroup",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the column-group descriptor capability-free.",
+    "evidence": "This descriptor owns group schema and installs the column-item dependency, whose scoped plugin owns the mutations.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 107,
+    "package": "layout",
+    "symbol": "ColumnItemPlugin",
+    "file": "packages/layout/src/react/ColumnPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseColumnItemPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit the Base column-item surface.",
+    "evidence": "toPlatePlugin contributes nothing locally; all effective methods and correction behavior remain owned by BaseColumnItemPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 108,
+    "package": "layout",
+    "symbol": "ColumnPlugin",
+    "file": "packages/layout/src/react/ColumnPlugin.tsx",
+    "line": 8,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseColumnPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this adapter capability-free and let its ColumnItemPlugin dependency own column operations.",
+    "evidence": "The adapter only replaces the Base dependency with its React peer and publishes no capability under the column-group key.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 109,
+    "package": "link",
+    "symbol": "BaseLinkPlugin",
+    "file": "packages/link/src/lib/BaseLinkPlugin.ts",
+    "line": 133,
+    "key": "'link'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["getAttributes", "validateUrl"],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "link.insert",
+        "link.unwrap",
+        "link.upsert",
+        "link.upsertText",
+        "link.wrap"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": ["getAttributes", "validateUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "unwrap", "upsert", "upsertText", "wrap"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Move link's scoped mutation group from extension.tx.link to plugin update and keep only command interception in extension.",
+    "evidence": "insert, unwrap, upsert, upsertText, and wrap are link-owned tx mutations, whereas insertText interception is genuinely editor-wide middleware.",
+    "extendJustified": true,
+    "gaps": [
+      "The public mutation surface is published through extension.tx.link instead of plugin update."
+    ]
+  },
+  {
+    "id": 110,
+    "package": "link",
+    "symbol": "LinkPlugin",
+    "file": "packages/link/src/react/LinkPlugin.tsx",
+    "line": 47,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseLinkPlugin",
+    "current": {
+      "api": [
+        "decodeUrl",
+        "encodeUrl",
+        "getAttributes",
+        "hide",
+        "reset",
+        "show",
+        "submit",
+        "trigger",
+        "triggerEdit",
+        "triggerInsert",
+        "validateUrl"
+      ],
+      "read": [],
+      "selectors": ["isOpen"],
+      "update": [
+        "link.insert",
+        "link.unwrap",
+        "link.upsert",
+        "link.upsertText",
+        "link.wrap"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": [
+        "decodeUrl",
+        "encodeUrl",
+        "getAttributes",
+        "hide",
+        "reset",
+        "show",
+        "submit",
+        "trigger",
+        "triggerEdit",
+        "triggerInsert",
+        "validateUrl"
+      ],
+      "read": [],
+      "selectors": ["isOpen"],
+      "update": ["insert", "unwrap", "upsert", "upsertText", "wrap"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Keep the floating-link controller and isOpen selector, but inherit BaseLink mutations through plugin update rather than extension.tx.",
+    "evidence": "The React-only methods coordinate option-store and UI effects while delegating the actual document change to link update; isOpen is option-derived.",
+    "extendJustified": true,
+    "gaps": [
+      "The inherited BaseLink mutation surface is misowned by extension.tx.link."
+    ]
+  },
+  {
+    "id": 111,
+    "package": "list",
+    "symbol": "BaseListPlugin",
+    "file": "packages/list/src/lib/BaseListPlugin.tsx",
+    "line": 175,
+    "key": "KEYS.list",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep the modern list capability split exactly as authored.",
+    "evidence": "Sequence policy helpers are snapshot-free api, sibling and active-list queries consume the current state, mutations use tx, and command/change/correction hooks are editor lifecycle behavior.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 112,
+    "package": "list",
+    "symbol": "ListPlugin",
+    "file": "packages/list/src/react/ListPlugin.tsx",
+    "line": 8,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseListPlugin",
+    "current": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit the modern Base list surface.",
+    "evidence": "toPlatePlugin contributes no local behavior, so the effective api, read, update, and extension members preserve their Base owners.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 113,
+    "package": "list-classic",
+    "symbol": "BaseListItemContentPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 55,
+    "key": "KEYS.lic",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only list-item-content descriptor capability-free.",
+    "evidence": "The plugin only defines list-item-content grammar and slice behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 114,
+    "package": "list-classic",
+    "symbol": "BaseListItemPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 66,
+    "key": "KEYS.li",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema and codec descriptor capability-free.",
+    "evidence": "The plugin compiles allowed child types and HTML decoding but publishes no runtime operation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 115,
+    "package": "list-classic",
+    "symbol": "BaseBulletedListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 121,
+    "key": "KEYS.ulClassic",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the bulleted-list node descriptor capability-free.",
+    "evidence": "Its sole jobs are schema, HTML decoding, and render metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 116,
+    "package": "list-classic",
+    "symbol": "BaseNumberedListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 148,
+    "key": "KEYS.olClassic",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the numbered-list node descriptor capability-free.",
+    "evidence": "Its sole jobs are schema, HTML decoding, and render metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 117,
+    "package": "list-classic",
+    "symbol": "BaseTaskListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 175,
+    "key": "KEYS.taskList",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the task-list container descriptor capability-free.",
+    "evidence": "The descriptor owns task-list schema, options, and render metadata while list behavior is owned elsewhere.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 118,
+    "package": "list-classic",
+    "symbol": "BaseTodoListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 203,
+    "key": "KEYS.listTodoClassic",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle in update and the insert-break override in extension.",
+    "evidence": "toggle is a direct node mutation, while intercepting editor insertBreak to preserve checked state is editor-wide command behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 119,
+    "package": "list-classic",
+    "symbol": "BaseListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 284,
+    "key": "KEYS.listClassic",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [
+        "getListItemEntry",
+        "getListRoot",
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListNested",
+        "isListRoot"
+      ],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "final": {
+      "api": [
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListRoot"
+      ],
+      "read": ["getListItemEntry", "getListRoot", "isListNested"],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Move four snapshot-free type and node helpers from read to api; keep traversal reads, tx mutations, and editor middleware where they are.",
+    "evidence": "getListTypes, getPropsIfTaskListLiNode, hasListChild, and isListRoot inspect only configured types or supplied nodes, while the remaining reads call the active state view.",
+    "extendJustified": true,
+    "gaps": [
+      "Snapshot-free helpers are currently published through read and therefore pretend to require a state view."
+    ]
+  },
+  {
+    "id": 120,
+    "package": "list-classic",
+    "symbol": "BulletedListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 13,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseBulletedListPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React bulleted-list adapter capability-neutral.",
+    "evidence": "It only adapts BaseBulletedListPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 121,
+    "package": "list-classic",
+    "symbol": "TaskListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 15,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTaskListPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React task-list adapter capability-neutral.",
+    "evidence": "It only adapts BaseTaskListPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 122,
+    "package": "list-classic",
+    "symbol": "NumberedListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 17,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseNumberedListPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React numbered-list adapter capability-neutral.",
+    "evidence": "It only adapts BaseNumberedListPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 123,
+    "package": "list-classic",
+    "symbol": "ListItemContentPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 19,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseListItemContentPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React list-item-content adapter capability-neutral.",
+    "evidence": "It only adapts BaseListItemContentPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 124,
+    "package": "list-classic",
+    "symbol": "ListItemPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 21,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseListItemPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React list-item adapter capability-neutral.",
+    "evidence": "It only adapts BaseListItemPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 125,
+    "package": "list-classic",
+    "symbol": "ListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 27,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseListPlugin",
+    "current": {
+      "api": [],
+      "read": [
+        "getListItemEntry",
+        "getListRoot",
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListNested",
+        "isListRoot"
+      ],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "final": {
+      "api": [
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListRoot"
+      ],
+      "read": ["getListItemEntry", "getListRoot", "isListNested"],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Inherit the Base classic-list split after its snapshot-free helpers move from read to api.",
+    "evidence": "This React adapter adds only dependency replacement, so its effective public correction is entirely owned by BaseListPlugin.",
+    "extendJustified": null,
+    "gaps": [
+      "The inherited Base descriptor publishes four pure helpers through read."
+    ]
+  },
+  {
+    "id": 126,
+    "package": "list-classic",
+    "symbol": "TodoListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 37,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTodoListPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit Todo toggle and insert-break behavior.",
+    "evidence": "toPlatePlugin adds nothing locally, so its effective mutation and command middleware remain owned by BaseTodoListPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 127,
+    "package": "markdown",
+    "symbol": "MarkdownPlugin",
+    "file": "packages/markdown/src/lib/MarkdownPlugin.ts",
+    "line": 64,
+    "key": "KEYS.markdown",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "markdown.deserialize",
+        "markdown.deserializeInline",
+        "markdown.serialize"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["deserialize", "deserializeInline", "serializeInline"],
+      "read": ["serialize"],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Replace the manually injected extension group with keyed plugin capabilities: explicit-input conversion stays under editor.api.markdown, while current-document serialization moves to editor.read.markdown.serialize.",
+    "evidence": "Plugin api still projects through the markdown key, so deserialize and deserializeInline keep their root call shape; serialize defaults to runtime.state.value() and must observe the active snapshot, while serializeInlineMd converts explicit input.",
+    "extendJustified": null,
+    "gaps": [
+      "Manual extension publication hides plugin ownership; constructor api preserves editor.api.markdown.deserialize and deserializeInline without that second owner.",
+      "Only editor.api.markdown.serialize is cut in favor of editor.read.markdown.serialize so current-document conversion uses the active snapshot.",
+      "The tested public serializeInlineMd(editor, options) operation has no scoped Markdown plugin capability."
+    ]
+  },
+  {
+    "id": 128,
+    "package": "math",
+    "symbol": "BaseEquationPlugin",
+    "file": "packages/math/src/lib/BaseEquationPlugin.ts",
+    "line": 11,
+    "key": "KEYS.equation",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep block-equation insertion in plugin update.",
+    "evidence": "insert writes a void equation node through the active tx and exposes no separate query or service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 129,
+    "package": "math",
+    "symbol": "BaseInlineEquationPlugin",
+    "file": "packages/math/src/lib/BaseInlineEquationPlugin.ts",
+    "line": 9,
+    "key": "KEYS.inlineEquation",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep inline-equation insertion in plugin update.",
+    "evidence": "insert writes an inline void equation through the active tx and exposes no separate query or service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 130,
+    "package": "math",
+    "symbol": "EquationPlugin",
+    "file": "packages/math/src/react/EquationPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseEquationPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit block-equation insert.",
+    "evidence": "toPlatePlugin contributes nothing locally and preserves BaseEquationPlugin's scoped update surface.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 131,
+    "package": "math",
+    "symbol": "InlineEquationPlugin",
+    "file": "packages/math/src/react/InlineEquationPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseInlineEquationPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit inline-equation insert.",
+    "evidence": "toPlatePlugin contributes nothing locally and preserves BaseInlineEquationPlugin's scoped update surface.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 132,
+    "package": "media",
+    "symbol": "BaseAudioPlugin",
+    "file": "packages/media/src/lib/BaseAudioPlugin.ts",
+    "line": 12,
+    "key": "KEYS.audio",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the pure URL normalization service in api and both document mutations in update.",
+    "evidence": "defineMediaPlugin adds normalizeUrl plus transaction-bound insert and setUrl to the audio descriptor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 133,
+    "package": "media",
+    "symbol": "BaseFilePlugin",
+    "file": "packages/media/src/lib/BaseFilePlugin.ts",
+    "line": 12,
+    "key": "KEYS.file",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the pure URL normalization service in api and both document mutations in update.",
+    "evidence": "defineMediaPlugin adds normalizeUrl plus transaction-bound insert and setUrl to the file descriptor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 134,
+    "package": "media",
+    "symbol": "BaseVideoPlugin",
+    "file": "packages/media/src/lib/BaseVideoPlugin.ts",
+    "line": 13,
+    "key": "KEYS.video",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the pure URL normalization service in api and both document mutations in update.",
+    "evidence": "defineMediaPlugin adds normalizeUrl plus transaction-bound insert and setUrl to the video descriptor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 135,
+    "package": "media",
+    "symbol": "BaseImagePlugin",
+    "file": "packages/media/src/lib/image/BaseImagePlugin.ts",
+    "line": 32,
+    "key": "KEYS.img",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "priority": "keep",
+    "verdict": "Keep URL normalization scoped, media writes transactional, and clipboard interception editor-wide.",
+    "evidence": "The clipboard extension delegates insertion to the earlier tx.img.insert capability supplied by defineMediaPlugin.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 136,
+    "package": "media",
+    "symbol": "BaseMediaEmbedPlugin",
+    "file": "packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts",
+    "line": 46,
+    "key": "KEYS.mediaEmbed",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep normalized embed parsing in api and both element mutations in update.",
+    "evidence": "defineMediaPlugin publishes the parser-backed normalizeUrl service and transaction-bound insert and setUrl methods.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 137,
+    "package": "media",
+    "symbol": "BasePlaceholderPlugin",
+    "file": "packages/media/src/lib/placeholder/BasePlaceholderPlugin.ts",
+    "line": 19,
+    "key": "KEYS.placeholder",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep placeholder insertion as a flat scoped update.",
+    "evidence": "insert constructs and inserts a placeholder node through the active transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 138,
+    "package": "media",
+    "symbol": "PlaceholderPlugin",
+    "file": "packages/media/src/react/placeholder/PlaceholderPlugin.tsx",
+    "line": 173,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BasePlaceholderPlugin",
+    "current": {
+      "api": ["addUploadingFile", "getUploadingFile", "removeUploadingFile"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "insertMedia", "replaceMedia"],
+      "extension": []
+    },
+    "final": {
+      "api": ["addUploadingFile", "removeUploadingFile"],
+      "read": [],
+      "selectors": ["uploadingFile"],
+      "update": ["insert", "insertMedia", "replaceMedia"],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Replace the API getter with an uploadingFile selector; keep upload-state controllers in api and node writes in update.",
+    "evidence": "getUploadingFile only reads uploadingFiles, while add and remove update plugin state and all three update methods mutate editor nodes.",
+    "extendJustified": true,
+    "gaps": [
+      "Hard-cut getUploadingFile in favor of the uploadingFile selector because it is exactly the option projection uploadingFiles[id]."
+    ]
+  },
+  {
+    "id": 139,
+    "package": "media",
+    "symbol": "ImagePlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 11,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseImagePlugin",
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": ["clipboard.insertData"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseImagePlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves BaseImagePlugin normalizeUrl, insert, setUrl, and clipboard insertion behavior without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 140,
+    "package": "media",
+    "symbol": "MediaEmbedPlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 12,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseMediaEmbedPlugin",
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseMediaEmbedPlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base media-embed API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 141,
+    "package": "media",
+    "symbol": "AudioPlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 13,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseAudioPlugin",
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseAudioPlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base audio API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 142,
+    "package": "media",
+    "symbol": "FilePlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 14,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseFilePlugin",
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseFilePlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base file API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 143,
+    "package": "media",
+    "symbol": "VideoPlugin",
+    "file": "packages/media/src/react/plugins.ts",
+    "line": 15,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseVideoPlugin",
+    "current": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "final": {
+      "api": ["normalizeUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "setUrl"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited BaseVideoPlugin capability placement unchanged.",
+    "evidence": "toPlatePlugin preserves the Base video API and updates without adding another capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 144,
+    "package": "mention",
+    "symbol": "BaseMentionInputPlugin",
+    "file": "packages/mention/src/lib/BaseMentionPlugin.ts",
+    "line": 29,
+    "key": "KEYS.mentionInput",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only input descriptor capability-free.",
+    "evidence": "The mention-input plugin owns only inline schema and type metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 145,
+    "package": "mention",
+    "symbol": "BaseMentionPlugin",
+    "file": "packages/mention/src/lib/BaseMentionPlugin.ts",
+    "line": 45,
+    "key": "KEYS.mention",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "priority": "P1",
+    "verdict": "Keep one insert update, but make it own the complete mention-selection operation; keep trigger interception editor-wide.",
+    "evidence": "The exported getMentionOnSelectItem helper only wraps this plugin's insert with cursor movement and optional end-of-block spacing.",
+    "extendJustified": null,
+    "gaps": [
+      "Absorb getMentionOnSelectItem cursor movement and optional trailing-space behavior into update.insert, then delete the editor-parameter helper."
+    ]
+  },
+  {
+    "id": 146,
+    "package": "mention",
+    "symbol": "MentionInputPlugin",
+    "file": "packages/mention/src/react/MentionPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseMentionInputPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the schema-only React adapter capability-free.",
+    "evidence": "toPlatePlugin adds no capabilities to BaseMentionInputPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 147,
+    "package": "mention",
+    "symbol": "MentionPlugin",
+    "file": "packages/mention/src/react/MentionPlugin.tsx",
+    "line": 7,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseMentionPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands"]
+    },
+    "priority": "P1",
+    "verdict": "Inherit the complete Base mention insert operation and command interception without preserving a parallel editor-parameter helper.",
+    "evidence": "The React adapter owns no additional behavior, so getMentionOnSelectItem must delegate to the Base update rather than remain a second operation owner.",
+    "extendJustified": null,
+    "gaps": [
+      "Adopt the Base update.insert behavior expansion and hard-cut the standalone getMentionOnSelectItem implementation."
+    ]
+  },
+  {
+    "id": 148,
+    "package": "selection",
+    "symbol": "BlockMenuPlugin",
+    "file": "packages/selection/src/react/BlockMenuPlugin.tsx",
+    "line": 35,
+    "key": "KEYS.blockMenu",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": ["hide", "show", "showContextMenu"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["hide", "show", "showContextMenu"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep these imperative UI-state services in api rather than opening editor transactions.",
+    "evidence": "All three methods coordinate plugin option state and menu presentation without mutating document or editor selection state.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 149,
+    "package": "selection",
+    "symbol": "BlockSelectionPlugin",
+    "file": "packages/selection/src/react/BlockSelectionPlugin.tsx",
+    "line": 251,
+    "key": "KEYS.blockSelection",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "add",
+        "addOnContextMenu",
+        "addSelectedRow",
+        "clear",
+        "delete",
+        "deselect",
+        "first",
+        "focus",
+        "getNodes",
+        "has",
+        "isSelectable",
+        "moveSelection",
+        "selectAll",
+        "set",
+        "setSelectedIds",
+        "shiftSelection"
+      ],
+      "read": [],
+      "selectors": ["isSelected", "isSelectingSome"],
+      "update": [
+        "duplicate",
+        "insertBlocksAndSelect",
+        "removeNodes",
+        "select",
+        "setIndent",
+        "setNodes",
+        "setTexts"
+      ],
+      "extension": ["commands", "onCommit"]
+    },
+    "final": {
+      "api": [
+        "add",
+        "addOnContextMenu",
+        "addSelectedRow",
+        "clear",
+        "copy",
+        "delete",
+        "deselect",
+        "focus",
+        "isSelectable",
+        "moveSelection",
+        "selectAll",
+        "selectInserted",
+        "set",
+        "setSelectedIds",
+        "shiftSelection"
+      ],
+      "read": ["first", "getNodes", "isSelecting"],
+      "selectors": ["has", "isSelected", "isSelectingSome"],
+      "update": [
+        "duplicate",
+        "insertBlocksAndSelect",
+        "paste",
+        "removeNodes",
+        "select",
+        "setIndent",
+        "setNodes",
+        "setTexts"
+      ],
+      "extension": ["commands", "onCommit"]
+    },
+    "priority": "P1",
+    "verdict": "Make BlockSelection the sole owner of selected-node reads, clipboard behavior, inserted-node selection, UI controllers, tx mutations, and editor-wide interception.",
+    "evidence": "Standalone isSelecting, copySelectedBlocks, pasteSelectedBlocks, selectInsertedBlocks, and duplicated helper families all operate on this descriptor's state and behavior.",
+    "extendJustified": false,
+    "gaps": [
+      "Move first and getNodes from api to read so they observe the caller's state or transaction snapshot.",
+      "Move standalone isSelecting to read.isSelecting because it combines active selection state with this plugin's selectedIds.",
+      "Move has from api to selectors because it only derives selectedIds.",
+      "Move copySelectedBlocks to api.copy and selectInsertedBlocks to api.selectInserted; both are scoped imperative services, not document transactions.",
+      "Move pasteSelectedBlocks to update.paste with DataTransfer input so the active tx owns insertion and after-commit selection.",
+      "Expand update.removeNodes to own the component's insertText, selectPrevious, focus, and selectedIds cleanup options.",
+      "Delete the duplicate addOnContextMenu implementation and inline the move, selection-state, and transform helper families into their existing scoped members.",
+      "Reuse read.getNodes from active state and tx instead of retaining getBlockSelectionNodes(tx, selectedIds).",
+      "Fold the current capability stage into createPlatePlugin because it has no imported-descriptor or earlier-capability dependency."
+    ]
+  },
+  {
+    "id": 150,
+    "package": "selection",
+    "symbol": "CursorOverlayPlugin",
+    "file": "packages/selection/src/react/CursorOverlayPlugin.tsx",
+    "line": 43,
+    "key": "KEYS.cursorOverlay",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": ["addCursor", "removeCursor"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["onCommit"]
+    },
+    "final": {
+      "api": ["addCursor", "removeCursor"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["onCommit"]
+    },
+    "priority": "keep",
+    "verdict": "Keep cursor option-state controllers in api and commit-driven cursor refresh editor-wide.",
+    "evidence": "addCursor and removeCursor update overlay state only, while onCommit reacts to editor selection commits.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 151,
+    "package": "slash-command",
+    "symbol": "BaseSlashInputPlugin",
+    "file": "packages/slash-command/src/lib/BaseSlashPlugin.ts",
+    "line": 11,
+    "key": "KEYS.slashInput",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only input descriptor capability-free.",
+    "evidence": "The slash-input plugin owns only inline schema, type, and edit-only metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 152,
+    "package": "slash-command",
+    "symbol": "BaseSlashPlugin",
+    "file": "packages/slash-command/src/lib/BaseSlashPlugin.ts",
+    "line": 36,
+    "key": "KEYS.slashCommand",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "priority": "keep",
+    "verdict": "Keep slash-trigger interception as editor-wide command behavior.",
+    "evidence": "withTriggerCombobox contributes an insertText command handler and no scoped service, read, or mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 153,
+    "package": "slash-command",
+    "symbol": "SlashInputPlugin",
+    "file": "packages/slash-command/src/react/SlashPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseSlashInputPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the schema-only React adapter capability-free.",
+    "evidence": "toPlatePlugin adds no capabilities to BaseSlashInputPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 154,
+    "package": "slash-command",
+    "symbol": "SlashPlugin",
+    "file": "packages/slash-command/src/react/SlashPlugin.tsx",
+    "line": 7,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseSlashPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter's inherited slash command interception unchanged.",
+    "evidence": "toPlatePlugin swaps the React input dependency but preserves BaseSlashPlugin command behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 155,
+    "package": "suggestion",
+    "symbol": "BaseSuggestionPlugin",
+    "file": "packages/suggestion/src/lib/BaseSuggestionPlugin.ts",
+    "line": 196,
+    "key": "KEYS.suggestion",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "activeDescriptions",
+        "createFragment",
+        "dataList",
+        "findProps",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "node",
+        "nodeEntries",
+        "nodeId",
+        "nodes",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "final": {
+      "api": [
+        "createFragment",
+        "createIdentity",
+        "dataList",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "nodeId",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [
+        "activeDescriptions",
+        "findIdentity",
+        "node",
+        "nodeEntries",
+        "nodes"
+      ],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "priority": "P1",
+    "verdict": "Use deterministic read lookup plus explicit API identity creation, keep all suggestion document mutations transactional, and leave command interception or correction editor-wide.",
+    "evidence": "The derived descriptor inherits the 21-member API, adds ten tx mutations, and installs editor command middleware plus schema corrections.",
+    "extendJustified": true,
+    "gaps": [
+      "Move activeDescriptions, node, nodeEntries, and nodes to read.",
+      "Replace findProps with deterministic read.findIdentity and resolve fallback through api.createIdentity at the command or update boundary.",
+      "Keep api.createFragment pure by requiring an explicit identity instead of accepting state."
+    ]
+  },
+  {
+    "id": 156,
+    "package": "suggestion",
+    "symbol": "SuggestionPlugin",
+    "file": "packages/suggestion/src/react/SuggestionPlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseSuggestionPlugin",
+    "current": {
+      "api": [
+        "activeDescriptions",
+        "createFragment",
+        "dataList",
+        "findProps",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "node",
+        "nodeEntries",
+        "nodeId",
+        "nodes",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "final": {
+      "api": [
+        "createFragment",
+        "createIdentity",
+        "dataList",
+        "getProps",
+        "inlineData",
+        "isBlockSuggestion",
+        "isCurrentUser",
+        "isTracking",
+        "key",
+        "keyId",
+        "keys",
+        "nodeId",
+        "skipDeletes",
+        "suggestionData",
+        "untracked",
+        "userId",
+        "userIds"
+      ],
+      "read": [
+        "activeDescriptions",
+        "findIdentity",
+        "node",
+        "nodeEntries",
+        "nodes"
+      ],
+      "selectors": [],
+      "update": [
+        "accept",
+        "addMark",
+        "delete",
+        "deleteFragment",
+        "insertFragment",
+        "insertText",
+        "reject",
+        "removeMark",
+        "removeNodes",
+        "setNodes"
+      ],
+      "extension": ["commands", "corrections"]
+    },
+    "priority": "P1",
+    "verdict": "Mirror the Base suggestion split through the React adapter without adding a second capability owner.",
+    "evidence": "toPlatePlugin inherits the complete BaseSuggestionPlugin API, update group, and editor-wide extension unchanged.",
+    "extendJustified": null,
+    "gaps": [
+      "The adapter must inherit Base read.findIdentity, api.createIdentity, and pure api.createFragment without a second implementation."
+    ]
+  },
+  {
+    "id": 157,
+    "package": "tabbable",
+    "symbol": "BaseTabbablePlugin",
+    "file": "packages/tabbable/src/lib/BaseTabbablePlugin.ts",
+    "line": 41,
+    "key": "KEYS.tabbable",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": ["findDestination"],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Fold the state-bound tab destination query into BaseTabbablePlugin.read.",
+    "evidence": "findTabDestination reads the live selection and document points through a passed BaseEditor, while the descriptor currently publishes no capability.",
+    "extendJustified": null,
+    "gaps": [
+      "Replace exported findTabDestination(editor, options) with read.findDestination(options) and let the read context own the active snapshot."
+    ]
+  },
+  {
+    "id": 158,
+    "package": "tabbable",
+    "symbol": "TabbablePlugin",
+    "file": "packages/tabbable/src/react/TabbablePlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTabbablePlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": ["findDestination"],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Inherit BaseTabbablePlugin.read and call it from TabbableEffects.",
+    "evidence": "The React adapter adds only afterEditable rendering, so its effective final read surface should be the Base descriptor's findDestination method.",
+    "extendJustified": null,
+    "gaps": [
+      "TabbableEffects imports the standalone helper instead of discovering the installed plugin read capability."
+    ]
+  },
+  {
+    "id": 159,
+    "package": "table",
+    "symbol": "BaseTableRowPlugin",
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "line": 330,
+    "key": "KEYS.tr",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema and codec descriptor capability-free.",
+    "evidence": "The row descriptor owns only schema and HTML codec behavior and exposes no plugin service, state query, selector, mutation, or editor-wide extension.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 160,
+    "package": "table",
+    "symbol": "BaseTableCellPlugin",
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "line": 372,
+    "key": "KEYS.td",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema, codec, render-props, and rules descriptor capability-free.",
+    "evidence": "The cell descriptor contributes declarative node behavior without any callable plugin-owned capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 161,
+    "package": "table",
+    "symbol": "BaseTableCellHeaderPlugin",
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "line": 409,
+    "key": "KEYS.th",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema, codec, render-props, and rules descriptor capability-free.",
+    "evidence": "The header-cell descriptor contributes declarative node behavior without any callable plugin-owned capability.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 162,
+    "package": "table",
+    "symbol": "BaseTablePlugin",
+    "file": "packages/table/src/lib/BaseTablePlugin.ts",
+    "line": 490,
+    "key": "KEYS.table",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [
+        "createCell",
+        "getCellChildren",
+        "getCellTypes",
+        "getColSpan",
+        "getColumnCount",
+        "getRowSpan",
+        "isRectangular",
+        "createRow",
+        "getOverriddenColumnSizes",
+        "create",
+        "getCellIndices",
+        "getColumnIndex",
+        "getRowIndex",
+        "getSelection",
+        "createCellSelection",
+        "getAdjacentCell",
+        "getCellInNextRow",
+        "getCellInPreviousRow",
+        "getEntries",
+        "getGridAbove",
+        "getGridByRange",
+        "getMergeGridByRange",
+        "getNextCell",
+        "getPreviousCell",
+        "getSelectedCell",
+        "getSelectedCellEntries",
+        "getSelectedCellIds",
+        "getSelectedCells",
+        "getSelectedCellsBoundingBox",
+        "getSelectedTableIds",
+        "getSelectedTables",
+        "isCellSelected",
+        "isSelectingCell",
+        "getLeftCell",
+        "getTopCell",
+        "getCellBorders",
+        "getCellSize",
+        "getSelectedCellsBorders",
+        "isBorderHidden",
+        "isSelectedCellBorder",
+        "isSelectedCellBordersNone",
+        "isSelectedCellBordersOuter",
+        "writeSelection"
+      ],
+      "read": [],
+      "selectors": [
+        "cellIndices",
+        "isCellSelected",
+        "isSelectingCell",
+        "selectedCell",
+        "selectedCellIds",
+        "selectedCells",
+        "selectedTableIds",
+        "selectedTables"
+      ],
+      "update": [
+        "insert",
+        "insertColumn",
+        "insertRow",
+        "remove",
+        "removeColumn",
+        "removeRow",
+        "setBorderSizes",
+        "toggleBorders",
+        "setBorderSize",
+        "merge",
+        "moveSelection",
+        "selectAll",
+        "setCellBackground",
+        "setColumnSize",
+        "setMarginLeft",
+        "setRowSize",
+        "split",
+        "tab"
+      ],
+      "extension": [
+        "commands.select",
+        "commands.setSelection",
+        "commands.delete",
+        "commands.deleteFragment",
+        "queries.fragment.get",
+        "clipboard.insertData",
+        "commands.replaceSlice",
+        "commands.insertText",
+        "corrections.content",
+        "selections.table-cell",
+        "commands.addMark",
+        "commands.removeMark",
+        "commands.setNodes",
+        "queries.marks.get"
+      ]
+    },
+    "final": {
+      "api": [
+        "createCell",
+        "getCellChildren",
+        "getCellTypes",
+        "getColSpan",
+        "getColumnCount",
+        "getRowSpan",
+        "isRectangular",
+        "createRow",
+        "getOverriddenColumnSizes",
+        "create",
+        "writeSelection"
+      ],
+      "read": [
+        "createCellSelection",
+        "getAdjacentCell",
+        "getCellBorders",
+        "getCellInNextRow",
+        "getCellInPreviousRow",
+        "getCellIndices",
+        "getCellIndicesById",
+        "getCellSize",
+        "getColumnIndex",
+        "getEntries",
+        "getGridAbove",
+        "getGridByRange",
+        "getLeftCell",
+        "getMergeGridByRange",
+        "getNextCell",
+        "getPreviousCell",
+        "getRowIndex",
+        "getSelectedCell",
+        "getSelectedCellEntries",
+        "getSelectedCellIds",
+        "getSelectedCells",
+        "getSelectedCellsBorders",
+        "getSelectedCellsBoundingBox",
+        "getSelectedTableIds",
+        "getSelectedTables",
+        "getSelection",
+        "getTopCell",
+        "isBorderHidden",
+        "isCellSelected",
+        "isSelectedCellBorder",
+        "isSelectedCellBordersNone",
+        "isSelectedCellBordersOuter",
+        "isSelectingCell"
+      ],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertColumn",
+        "insertRow",
+        "remove",
+        "removeColumn",
+        "removeRow",
+        "setBorderSizes",
+        "toggleBorders",
+        "setBorderSize",
+        "merge",
+        "moveSelection",
+        "selectAll",
+        "setCellBackground",
+        "setColumnSize",
+        "setMarginLeft",
+        "setRowSize",
+        "split",
+        "tab"
+      ],
+      "extension": [
+        "commands.select",
+        "commands.setSelection",
+        "commands.delete",
+        "commands.deleteFragment",
+        "queries.fragment.get",
+        "clipboard.insertData",
+        "commands.replaceSlice",
+        "commands.insertText",
+        "corrections.content",
+        "selections.table-cell",
+        "commands.addMark",
+        "commands.removeMark",
+        "commands.setNodes",
+        "queries.marks.get"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Keep pure table construction and schema services in api, move every implicit snapshot query to read, keep all transaction mutations in update, and retain the editor-wide behavior in extension.",
+    "evidence": "Thirty-plus current api methods and every selector call editor.read or derive the live selection, while the update methods already mutate through one active tx and the extension blocks genuinely intercept editor-wide behavior.",
+    "extendJustified": true,
+    "gaps": [
+      "State-bound API and non-option selectors must move to read so the same methods use the current editor snapshot or active transaction snapshot without an explicit state parameter.",
+      "Replace selector cellIndices with read.getCellIndicesById and consume the existing read methods from reactive editor selectors.",
+      "Remove editor.api.debug.warn from getCellIndices before publishing it as read.getCellIndices, or return structured diagnostic data for an outer controller to report.",
+      "Keep host-side-effect writeSelection in api rather than pretending a DataTransfer write is a read or editor update.",
+      "The six extend stages have real earlier-capability dependencies today, but local reuse inside one api factory plus one read stage and one dependent api/update/extension stage can collapse the chain to two extends."
+    ]
+  },
+  {
+    "id": 163,
+    "package": "table",
+    "symbol": "TableRowPlugin",
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "line": 28,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTableRowPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React row adapter capability-free.",
+    "evidence": "TableRowPlugin is a direct adapter of the capability-free BaseTableRowPlugin and contributes no additional behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 164,
+    "package": "table",
+    "symbol": "TableCellPlugin",
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "line": 30,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTableCellPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React cell adapter capability-free.",
+    "evidence": "TableCellPlugin is a direct adapter of the capability-free BaseTableCellPlugin and contributes no additional behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 165,
+    "package": "table",
+    "symbol": "TableCellHeaderPlugin",
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "line": 32,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTableCellHeaderPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React header-cell adapter capability-free.",
+    "evidence": "TableCellHeaderPlugin is a direct adapter of the capability-free BaseTableCellHeaderPlugin and contributes no additional behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 166,
+    "package": "table",
+    "symbol": "TablePlugin",
+    "file": "packages/table/src/react/TablePlugin.tsx",
+    "line": 35,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTablePlugin",
+    "current": {
+      "api": [
+        "createCell",
+        "getCellChildren",
+        "getCellTypes",
+        "getColSpan",
+        "getColumnCount",
+        "getRowSpan",
+        "isRectangular",
+        "createRow",
+        "getOverriddenColumnSizes",
+        "create",
+        "getCellIndices",
+        "getColumnIndex",
+        "getRowIndex",
+        "getSelection",
+        "createCellSelection",
+        "getAdjacentCell",
+        "getCellInNextRow",
+        "getCellInPreviousRow",
+        "getEntries",
+        "getGridAbove",
+        "getGridByRange",
+        "getMergeGridByRange",
+        "getNextCell",
+        "getPreviousCell",
+        "getSelectedCell",
+        "getSelectedCellEntries",
+        "getSelectedCellIds",
+        "getSelectedCells",
+        "getSelectedCellsBoundingBox",
+        "getSelectedTableIds",
+        "getSelectedTables",
+        "isCellSelected",
+        "isSelectingCell",
+        "getLeftCell",
+        "getTopCell",
+        "getCellBorders",
+        "getCellSize",
+        "getSelectedCellsBorders",
+        "isBorderHidden",
+        "isSelectedCellBorder",
+        "isSelectedCellBordersNone",
+        "isSelectedCellBordersOuter",
+        "writeSelection"
+      ],
+      "read": [],
+      "selectors": [
+        "cellIndices",
+        "isCellSelected",
+        "isSelectingCell",
+        "selectedCell",
+        "selectedCellIds",
+        "selectedCells",
+        "selectedTableIds",
+        "selectedTables"
+      ],
+      "update": [
+        "insert",
+        "insertColumn",
+        "insertRow",
+        "remove",
+        "removeColumn",
+        "removeRow",
+        "setBorderSizes",
+        "toggleBorders",
+        "setBorderSize",
+        "merge",
+        "moveSelection",
+        "selectAll",
+        "setCellBackground",
+        "setColumnSize",
+        "setMarginLeft",
+        "setRowSize",
+        "split",
+        "tab"
+      ],
+      "extension": [
+        "commands.select",
+        "commands.setSelection",
+        "commands.delete",
+        "commands.deleteFragment",
+        "queries.fragment.get",
+        "clipboard.insertData",
+        "commands.replaceSlice",
+        "commands.insertText",
+        "corrections.content",
+        "selections.table-cell",
+        "commands.addMark",
+        "commands.removeMark",
+        "commands.setNodes",
+        "queries.marks.get"
+      ]
+    },
+    "final": {
+      "api": [
+        "createCell",
+        "getCellChildren",
+        "getCellTypes",
+        "getColSpan",
+        "getColumnCount",
+        "getRowSpan",
+        "isRectangular",
+        "createRow",
+        "getOverriddenColumnSizes",
+        "create",
+        "writeSelection"
+      ],
+      "read": [
+        "createCellSelection",
+        "getAdjacentCell",
+        "getCellBorders",
+        "getCellInNextRow",
+        "getCellInPreviousRow",
+        "getCellIndices",
+        "getCellIndicesById",
+        "getCellSize",
+        "getColumnIndex",
+        "getEntries",
+        "getGridAbove",
+        "getGridByRange",
+        "getLeftCell",
+        "getMergeGridByRange",
+        "getNextCell",
+        "getPreviousCell",
+        "getRowIndex",
+        "getSelectedCell",
+        "getSelectedCellEntries",
+        "getSelectedCellIds",
+        "getSelectedCells",
+        "getSelectedCellsBorders",
+        "getSelectedCellsBoundingBox",
+        "getSelectedTableIds",
+        "getSelectedTables",
+        "getSelection",
+        "getTopCell",
+        "isBorderHidden",
+        "isCellSelected",
+        "isSelectedCellBorder",
+        "isSelectedCellBordersNone",
+        "isSelectedCellBordersOuter",
+        "isSelectingCell"
+      ],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertColumn",
+        "insertRow",
+        "remove",
+        "removeColumn",
+        "removeRow",
+        "setBorderSizes",
+        "toggleBorders",
+        "setBorderSize",
+        "merge",
+        "moveSelection",
+        "selectAll",
+        "setCellBackground",
+        "setColumnSize",
+        "setMarginLeft",
+        "setRowSize",
+        "split",
+        "tab"
+      ],
+      "extension": [
+        "commands.select",
+        "commands.setSelection",
+        "commands.delete",
+        "commands.deleteFragment",
+        "queries.fragment.get",
+        "clipboard.insertData",
+        "commands.replaceSlice",
+        "commands.insertText",
+        "corrections.content",
+        "selections.table-cell",
+        "commands.addMark",
+        "commands.removeMark",
+        "commands.setNodes",
+        "queries.marks.get"
+      ]
+    },
+    "priority": "P0",
+    "verdict": "Expose the inherited BaseTable split unchanged and keep React handlers as adapters over read and update.",
+    "evidence": "TablePlugin inherits the full BaseTable capability surface, and its handlers currently prove that selection/grid calls are reads while move, tab, and selection changes are updates.",
+    "extendJustified": null,
+    "gaps": [
+      "React handlers currently call inherited state queries through api and option selectors and must adopt the BaseTable read surface.",
+      "The inherited read.getCellIndices implementation must be side-effect-free; warning/logging stays outside read.",
+      "onCopy and onCut should keep using the inherited host-side-effect api.writeSelection while every document and selection query moves to read."
+    ]
+  },
+  {
+    "id": 167,
+    "package": "tag",
+    "symbol": "BaseTagPlugin",
+    "file": "packages/tag/src/lib/BaseTagPlugin.ts",
+    "line": 10,
+    "key": "KEYS.tag",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": ["getSelectedItems", "isEqual"],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Keep insert in update and move the package's editor-bound tag queries into read.",
+    "evidence": "The descriptor correctly owns insertion through tx, but getSelectedItems and isEqualTags separately accept BaseEditor and scan the current tag nodes.",
+    "extendJustified": null,
+    "gaps": [
+      "Fold getSelectedItems(editor) and isEqualTags(editor, tags) into read.getSelectedItems() and read.isEqual(tags).",
+      "The read implementation should capture the resolved plugin type instead of hard-coding KEYS.tag."
+    ]
+  },
+  {
+    "id": 168,
+    "package": "tag",
+    "symbol": "TagPlugin",
+    "file": "packages/tag/src/react/TagPlugin.tsx",
+    "line": 13,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTagPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": ["getSelectedItems", "isEqual"],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Inherit the BaseTag read and update surface without adding React-only capability.",
+    "evidence": "TagPlugin is a direct adapter, so its current insert update is inherited and its final query surface should also come from BaseTagPlugin.",
+    "extendJustified": null,
+    "gaps": [
+      "React consumers currently import editor-taking tag helpers instead of using the installed descriptor's inherited read surface."
+    ]
+  },
+  {
+    "id": 169,
+    "package": "tag",
+    "symbol": "MultiSelectPlugin",
+    "file": "packages/tag/src/react/TagPlugin.tsx",
+    "line": 15,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTagPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands.delete", "onCommit", "corrections.content"]
+    },
+    "final": {
+      "api": [],
+      "read": ["getSelectedItems", "isEqual"],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": ["commands.delete", "onCommit", "corrections.content"]
+    },
+    "priority": "P1",
+    "verdict": "Inherit BaseTag reads and insertion while retaining the multi-select-wide command, commit, and correction behavior in extension.",
+    "evidence": "This adapter inherits BaseTagPlugin.update.insert and adds genuine editor-wide deletion, cleanup, and correction behavior through one extension.",
+    "extendJustified": false,
+    "gaps": [
+      "The multi-select hooks should consume inherited read.getSelectedItems and read.isEqual instead of standalone editor-taking helpers.",
+      "The extension consumes only the inherited descriptor context and can live in the initial toPlatePlugin adapter contribution without a continuation stage."
+    ]
+  },
+  {
+    "id": 170,
+    "package": "toc",
+    "symbol": "BaseTocPlugin",
+    "file": "packages/toc/src/lib/BaseTocPlugin.ts",
+    "line": 23,
+    "key": "KEYS.toc",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": ["headings"],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Publish heading discovery as read.headings and keep insertion in update.",
+    "evidence": "getHeadingList scans the live document through a passed BaseEditor, while insert is already correctly bound to the active transaction.",
+    "extendJustified": null,
+    "gaps": [
+      "Fold internal getHeadingList(editor) into read.headings() and make the custom heading callback operate on the active read state.",
+      "Delete the exported insertToc(editor, tx, options) parallel path and route composition through tx.toc.insert or the scoped one-shot update."
+    ]
+  },
+  {
+    "id": 171,
+    "package": "toc",
+    "symbol": "TocPlugin",
+    "file": "packages/toc/src/react/TocPlugin.tsx",
+    "line": 5,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTocPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": ["headings"],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Inherit BaseTocPlugin.read.headings and update.insert unchanged.",
+    "evidence": "The React descriptor is a direct adapter whose hooks currently prove heading discovery is a reactive editor-state read.",
+    "extendJustified": null,
+    "gaps": [
+      "TOC hooks currently subscribe through a standalone getHeadingList callback rather than the installed plugin read capability."
+    ]
+  },
+  {
+    "id": 172,
+    "package": "toggle",
+    "symbol": "BaseTogglePlugin",
+    "file": "packages/toggle/src/lib/BaseTogglePlugin.ts",
+    "line": 5,
+    "key": "KEYS.toggle",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": ["toggleIds"],
+      "read": [],
+      "selectors": ["isOpen", "someClosed"],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["toggleIds"],
+      "read": ["isActive", "lastEnclosedEntry"],
+      "selectors": ["isOpen", "someClosed"],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Keep option-state actions in api, keep option-derived selectors, and absorb document-state toggle queries into read.",
+    "evidence": "toggleIds changes only plugin option state, isOpen and someClosed derive only from those options, while someToggle and getLastEntryEnclosedInToggle read the current document and selection.",
+    "extendJustified": null,
+    "gaps": [
+      "Fold someToggle(editor) into read.isActive() and getLastEntryEnclosedInToggle(editor, id) into read.lastEnclosedEntry(id).",
+      "Do not force option-only toggleIds through update because opening UI state must not create an editor transaction."
+    ]
+  },
+  {
+    "id": 173,
+    "package": "toggle",
+    "symbol": "TogglePlugin",
+    "file": "packages/toggle/src/react/TogglePlugin.tsx",
+    "line": 27,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseTogglePlugin",
+    "current": {
+      "api": ["toggleIds"],
+      "read": [],
+      "selectors": ["isOpen", "someClosed"],
+      "update": [],
+      "extension": [
+        "commands.insertBreak",
+        "commands.delete",
+        "queries.nodes.isSelectable"
+      ]
+    },
+    "final": {
+      "api": ["toggleIds"],
+      "read": ["isActive", "lastEnclosedEntry"],
+      "selectors": ["isOpen", "someClosed", "enclosingIds", "isClosed"],
+      "update": [],
+      "extension": [
+        "commands.insertBreak",
+        "commands.delete",
+        "queries.nodes.isSelectable"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Inherit the Base reads and API, publish adapter-option lookups as selectors, and retain command and selectability interception in extension.",
+    "evidence": "The adapter's commands and nodes query are editor-wide behavior, but its standalone enclosing and closed lookups derive from toggleIndex and openIds while two other helpers read the live document.",
+    "extendJustified": false,
+    "gaps": [
+      "Move getEnclosingToggleIds and isInClosedToggle into option-derived selectors enclosingIds and isClosed.",
+      "The extension can live in the existing toPlatePlugin adapter contribution because it consumes no capability introduced by a later stage.",
+      "Inline the one-owner editor-plus-tx movement helpers into the extension instead of exporting transaction plumbing.",
+      "Inline openNextToggles into its hook or expose a purpose-built option-state action only if another real consumer appears."
+    ]
+  },
+  {
+    "id": 174,
+    "package": "utils",
+    "symbol": "ExitBreakPlugin",
+    "file": "packages/utils/src/lib/plugins/ExitBreakPlugin.ts",
+    "line": 16,
+    "key": "KEYS.exitBreak",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "insertBefore"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "insertBefore"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep both exit-break mutations in update.",
+    "evidence": "insert and insertBefore derive their target from the active tx and mutate nodes and selection without opening a nested update.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 175,
+    "package": "utils",
+    "symbol": "NormalizeTypesPlugin",
+    "file": "packages/utils/src/lib/plugins/NormalizeTypesPlugin.ts",
+    "line": 30,
+    "key": "KEYS.normalizeTypes",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.children"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.children"]
+    },
+    "priority": "keep",
+    "verdict": "Keep root child normalization as editor-wide correction behavior.",
+    "evidence": "The correction enforces configured root structure during editor normalization and mutates only through the correction transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 176,
+    "package": "utils",
+    "symbol": "SingleBlockPlugin",
+    "file": "packages/utils/src/lib/plugins/SingleBlockPlugin.ts",
+    "line": 7,
+    "key": "KEYS.singleBlock",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands.insertBreak", "corrections.children"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["commands.insertBreak", "corrections.children"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the soft-break command override and root correction in extension.",
+    "evidence": "Both contributions redefine editor-wide behavior needed to maintain the one-block invariant and correctly use the command or correction transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 177,
+    "package": "utils",
+    "symbol": "SingleLinePlugin",
+    "file": "packages/utils/src/lib/plugins/SingleLinePlugin.ts",
+    "line": 9,
+    "key": "KEYS.singleLine",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "commands.insertBreak",
+        "commands.insertSoftBreak",
+        "corrections.children",
+        "corrections.content"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "commands.insertBreak",
+        "commands.insertSoftBreak",
+        "corrections.children",
+        "corrections.content"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep break interception and one-line corrections in extension.",
+    "evidence": "The plugin must globally suppress both break commands and repair root and text content to enforce its editor-wide invariant.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 178,
+    "package": "utils",
+    "symbol": "TrailingBlockPlugin",
+    "file": "packages/utils/src/lib/plugins/TrailingBlockPlugin.ts",
+    "line": 29,
+    "key": "KEYS.trailingBlock",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.children"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": ["corrections.children"]
+    },
+    "priority": "keep",
+    "verdict": "Keep trailing-block enforcement as an editor-wide root correction.",
+    "evidence": "The correction owns a document invariant, reads live options at correction time, and performs insertion through the provided correction tx.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 179,
+    "package": "utils",
+    "symbol": "BlockPlaceholderPlugin",
+    "file": "packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx",
+    "line": 32,
+    "key": "KEYS.blockPlaceholder",
+    "kind": "createPlatePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": ["placeholder"],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": ["placeholder"],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep placeholder as an option-derived selector.",
+    "evidence": "placeholder reads only the plugin's _target option and compares its path, so it is configuration-derived rather than an editor snapshot query.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 180,
+    "package": "yjs",
+    "symbol": "BaseYjsPlugin",
+    "file": "packages/yjs/src/lib/BaseYjsPlugin.ts",
+    "line": 7,
+    "key": "'yjs'",
+    "kind": "createBasePlugin",
+    "base": null,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "name",
+        "activate",
+        "onCommit",
+        "onTransactionChange",
+        "state.yjs.awarenessRevision",
+        "state.yjs.clientId",
+        "state.yjs.connected",
+        "state.yjs.doc",
+        "state.yjs.paused",
+        "state.yjs.providerRevision",
+        "state.yjs.providerStatus",
+        "state.yjs.providerSynced",
+        "state.yjs.remoteCursor",
+        "state.yjs.remoteCursors",
+        "state.yjs.root",
+        "state.yjs.subscribeAwareness",
+        "state.yjs.subscribeProvider",
+        "state.yjs.trace",
+        "tx.yjs.clearSelection",
+        "tx.yjs.clearTrace",
+        "tx.yjs.connect",
+        "tx.yjs.disconnect",
+        "tx.yjs.pause",
+        "tx.yjs.reconcile",
+        "tx.yjs.reconnect",
+        "tx.yjs.resume",
+        "tx.yjs.retireSharedEffectPeer",
+        "tx.yjs.sendCursorData",
+        "tx.yjs.sendSelection",
+        "validateConfiguration"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "name",
+        "activate",
+        "onCommit",
+        "onTransactionChange",
+        "state.yjs.awarenessRevision",
+        "state.yjs.clientId",
+        "state.yjs.connected",
+        "state.yjs.doc",
+        "state.yjs.paused",
+        "state.yjs.providerRevision",
+        "state.yjs.providerStatus",
+        "state.yjs.providerSynced",
+        "state.yjs.remoteCursor",
+        "state.yjs.remoteCursors",
+        "state.yjs.root",
+        "state.yjs.subscribeAwareness",
+        "state.yjs.subscribeProvider",
+        "state.yjs.trace",
+        "tx.yjs.clearSelection",
+        "tx.yjs.clearTrace",
+        "tx.yjs.connect",
+        "tx.yjs.disconnect",
+        "tx.yjs.pause",
+        "tx.yjs.reconcile",
+        "tx.yjs.reconnect",
+        "tx.yjs.resume",
+        "tx.yjs.retireSharedEffectPeer",
+        "tx.yjs.sendCursorData",
+        "tx.yjs.sendSelection",
+        "validateConfiguration"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep Yjs as one genuine editor extension with its existing state and transaction groups.",
+    "evidence": "createYjsExtension owns activation, cleanup, commit and transaction synchronization, schema validation, persistent state.yjs, and tx.yjs across the whole editor runtime.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 181,
+    "package": "yjs",
+    "symbol": "YjsPlugin",
+    "file": "packages/yjs/src/react/YjsPlugin.tsx",
+    "line": 6,
+    "key": null,
+    "kind": "toPlatePlugin",
+    "base": "BaseYjsPlugin",
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "name",
+        "activate",
+        "onCommit",
+        "onTransactionChange",
+        "state.yjs.awarenessRevision",
+        "state.yjs.clientId",
+        "state.yjs.connected",
+        "state.yjs.doc",
+        "state.yjs.paused",
+        "state.yjs.providerRevision",
+        "state.yjs.providerStatus",
+        "state.yjs.providerSynced",
+        "state.yjs.remoteCursor",
+        "state.yjs.remoteCursors",
+        "state.yjs.root",
+        "state.yjs.subscribeAwareness",
+        "state.yjs.subscribeProvider",
+        "state.yjs.trace",
+        "tx.yjs.clearSelection",
+        "tx.yjs.clearTrace",
+        "tx.yjs.connect",
+        "tx.yjs.disconnect",
+        "tx.yjs.pause",
+        "tx.yjs.reconcile",
+        "tx.yjs.reconnect",
+        "tx.yjs.resume",
+        "tx.yjs.retireSharedEffectPeer",
+        "tx.yjs.sendCursorData",
+        "tx.yjs.sendSelection",
+        "validateConfiguration"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "name",
+        "activate",
+        "onCommit",
+        "onTransactionChange",
+        "state.yjs.awarenessRevision",
+        "state.yjs.clientId",
+        "state.yjs.connected",
+        "state.yjs.doc",
+        "state.yjs.paused",
+        "state.yjs.providerRevision",
+        "state.yjs.providerStatus",
+        "state.yjs.providerSynced",
+        "state.yjs.remoteCursor",
+        "state.yjs.remoteCursors",
+        "state.yjs.root",
+        "state.yjs.subscribeAwareness",
+        "state.yjs.subscribeProvider",
+        "state.yjs.trace",
+        "tx.yjs.clearSelection",
+        "tx.yjs.clearTrace",
+        "tx.yjs.connect",
+        "tx.yjs.disconnect",
+        "tx.yjs.pause",
+        "tx.yjs.reconcile",
+        "tx.yjs.reconnect",
+        "tx.yjs.resume",
+        "tx.yjs.retireSharedEffectPeer",
+        "tx.yjs.sendCursorData",
+        "tx.yjs.sendSelection",
+        "validateConfiguration"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Inherit the BaseYjs editor extension without adding a parallel plugin read or update surface.",
+    "evidence": "The React descriptor is a direct adapter and the inherited Yjs state and tx groups are intentionally editor-wide Plite extension capabilities.",
+    "extendJustified": null,
+    "gaps": []
+  }
+]

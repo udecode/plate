@@ -261,7 +261,7 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
     const editor = createPlateEditor({
       plugins: [
         LinkPlugin.configure({
-          options: {
+          initialState: {
             keepSelectedTextOnPaste: false,
           },
         }),

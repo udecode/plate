@@ -16,7 +16,7 @@
 
   - Add `userId` option to `usePlateEditor`/`createSlateEditor` options
   - Add `editor.meta.userId` for accessing the current user ID
-  - **Breaking**: Remove `getUserId` option from `TriggerComboboxPluginOptions`. Use `editor.meta.userId` instead.
+  - **Breaking**: Remove `getUserId` option from `TriggerComboboxPluginState`. Use `editor.meta.userId` instead.
 
   Migration:
 
@@ -45,7 +45,7 @@
 
 ### Patch Changes
 
-- [#4762](https://github.com/udecode/plate/pull/4762) by [@felixfeng33](https://github.com/felixfeng33) – Add `getUserId` option to `TriggerComboboxPluginOptions` to fix combobox popover opening for all users in Yjs collaboration mode
+- [#4762](https://github.com/udecode/plate/pull/4762) by [@felixfeng33](https://github.com/felixfeng33) – Add `getUserId` option to `TriggerComboboxPluginState` to fix combobox popover opening for all users in Yjs collaboration mode
 
   When a user types a trigger character (e.g. `/` or `@`), the combobox input now stores the creator's `userId`. Only the creator will see the auto-focused combobox popover.
 

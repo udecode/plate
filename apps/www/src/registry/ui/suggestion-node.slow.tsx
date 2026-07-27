@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test';
 
 const useEditorPluginMock = mock();
-const usePluginOptionMock = mock();
+const usePluginStoreMock = mock();
 
 mock.module('@platejs/suggestion/react', () => ({
   SuggestionPlugin: { key: 'suggestion' },
@@ -13,7 +13,7 @@ mock.module('@platejs/suggestion/react', () => ({
 mock.module('platejs/react', () => ({
   PlateLeaf: ({ children }: any) => <span>{children}</span>,
   useEditorPlugin: (...args: any[]) => useEditorPluginMock(...args),
-  usePluginOption: (...args: any[]) => usePluginOptionMock(...args),
+  usePluginStore: (...args: any[]) => usePluginStoreMock(...args),
 }));
 
 mock.module('lucide-react', () => ({
@@ -30,12 +30,12 @@ mock.module('@/lib/utils', () => ({
 describe('SuggestionLineBreakContent', () => {
   beforeEach(() => {
     useEditorPluginMock.mockReset();
-    usePluginOptionMock.mockReset();
+    usePluginStoreMock.mockReset();
 
     useEditorPluginMock.mockReturnValue({
-      setOption: () => {},
+      store: { set: () => {} },
     });
-    usePluginOptionMock.mockReturnValue(null);
+    usePluginStoreMock.mockReturnValue(null);
   });
 
   afterAll(() => {

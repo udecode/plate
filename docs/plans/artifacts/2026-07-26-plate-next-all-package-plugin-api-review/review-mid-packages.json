@@ -1,0 +1,994 @@
+[
+  {
+    "id": 102,
+    "package": "indent",
+    "symbol": "BaseIndentPlugin",
+    "file": "packages/indent/src/lib/BaseIndentPlugin.ts",
+    "line": 82,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "P2",
+    "verdict": "Keep every capability bucket and one trailing shortcut stage.",
+    "evidence": "All five methods mutate through the active tx and the properties correction is editor lifecycle behavior. Constructor shortcut placement erases the inferred plugin declaration in the publishable build, so the shortcut stage must consume the completed update contract.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 103,
+    "package": "indent",
+    "symbol": "IndentPlugin",
+    "file": "packages/indent/src/react/IndentPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["decrease", "increase", "set", "tab", "untab"],
+      "extension": ["corrections.properties"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit the Base descriptor unchanged.",
+    "evidence": "toPlatePlugin adds no local contribution, so its effective update and correction surface is owned entirely by BaseIndentPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 104,
+    "package": "juice",
+    "symbol": "JuicePlugin",
+    "file": "packages/juice/src/lib/JuicePlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this as a parser-only plugin with no public capability surface.",
+    "evidence": "The descriptor only transforms incoming HTML data and publishes no query, service, mutation, selector, or editor-wide behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 105,
+    "package": "layout",
+    "symbol": "BaseColumnItemPlugin",
+    "file": "packages/layout/src/lib/BaseColumnPlugin.ts",
+    "line": 50,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "priority": "P2",
+    "verdict": "Keep the update and correction ownership plus one trailing shortcut stage.",
+    "evidence": "Every public method mutates document or selection through tx and the width repair is a content correction. Constructor shortcut placement erases the inferred plugin declaration in the publishable build, so the shortcut stage must consume the completed update contract.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 106,
+    "package": "layout",
+    "symbol": "BaseColumnPlugin",
+    "file": "packages/layout/src/lib/BaseColumnPlugin.ts",
+    "line": 134,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the column-group descriptor capability-free.",
+    "evidence": "This descriptor owns group schema and installs the column-item dependency, whose scoped plugin owns the mutations.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 107,
+    "package": "layout",
+    "symbol": "ColumnItemPlugin",
+    "file": "packages/layout/src/react/ColumnPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "insert",
+        "insertGroup",
+        "moveMiddle",
+        "selectAll",
+        "set",
+        "toggle"
+      ],
+      "extension": ["corrections.content"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit the Base column-item surface.",
+    "evidence": "toPlatePlugin contributes nothing locally; all effective methods and correction behavior remain owned by BaseColumnItemPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 108,
+    "package": "layout",
+    "symbol": "ColumnPlugin",
+    "file": "packages/layout/src/react/ColumnPlugin.tsx",
+    "line": 8,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this adapter capability-free and let its ColumnItemPlugin dependency own column operations.",
+    "evidence": "The adapter only replaces the Base dependency with its React peer and publishes no capability under the column-group key.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 109,
+    "package": "link",
+    "symbol": "BaseLinkPluginDefinition",
+    "file": "packages/link/src/lib/BaseLinkPlugin.ts",
+    "line": 133,
+    "current": {
+      "api": ["getAttributes", "validateUrl"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["getAttributes", "validateUrl"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep both option-backed, snapshot-free link services in plugin api.",
+    "evidence": "getAttributes and validateUrl derive values only from their arguments and configured options and neither reads editor state nor mutates it.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 110,
+    "package": "link",
+    "symbol": "BaseLinkPlugin",
+    "file": "packages/link/src/lib/BaseLinkPlugin.ts",
+    "line": 244,
+    "current": {
+      "api": ["getAttributes", "validateUrl"],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "link.insert",
+        "link.unwrap",
+        "link.upsert",
+        "link.upsertText",
+        "link.wrap"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": ["getAttributes", "validateUrl"],
+      "read": [],
+      "selectors": [],
+      "update": ["insert", "unwrap", "upsert", "upsertText", "wrap"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Move link's scoped mutation group from extension.tx.link to plugin update and keep only command interception in extension.",
+    "evidence": "insert, unwrap, upsert, upsertText, and wrap are link-owned tx mutations, whereas insertText interception is genuinely editor-wide middleware.",
+    "extendJustified": true,
+    "gaps": [
+      "The public mutation surface is published through extension.tx.link instead of plugin update."
+    ]
+  },
+  {
+    "id": 111,
+    "package": "link",
+    "symbol": "LinkPlugin",
+    "file": "packages/link/src/react/LinkPlugin.tsx",
+    "line": 47,
+    "current": {
+      "api": [
+        "decodeUrl",
+        "encodeUrl",
+        "getAttributes",
+        "hide",
+        "reset",
+        "show",
+        "submit",
+        "trigger",
+        "triggerEdit",
+        "triggerInsert",
+        "validateUrl"
+      ],
+      "read": [],
+      "selectors": ["isOpen"],
+      "update": [
+        "link.insert",
+        "link.unwrap",
+        "link.upsert",
+        "link.upsertText",
+        "link.wrap"
+      ],
+      "extension": ["commands.insertText"]
+    },
+    "final": {
+      "api": [
+        "decodeUrl",
+        "encodeUrl",
+        "getAttributes",
+        "hide",
+        "reset",
+        "show",
+        "submit",
+        "trigger",
+        "triggerEdit",
+        "triggerInsert",
+        "validateUrl"
+      ],
+      "read": [],
+      "selectors": ["isOpen"],
+      "update": ["insert", "unwrap", "upsert", "upsertText", "wrap"],
+      "extension": ["commands.insertText"]
+    },
+    "priority": "P1",
+    "verdict": "Keep the floating-link controller and isOpen selector, but inherit BaseLink mutations through plugin update rather than extension.tx.",
+    "evidence": "The React-only methods coordinate option-store and UI effects while delegating the actual document change to link update; isOpen is option-derived.",
+    "extendJustified": true,
+    "gaps": [
+      "The inherited BaseLink mutation surface is misowned by extension.tx.link."
+    ]
+  },
+  {
+    "id": 112,
+    "package": "list",
+    "symbol": "BaseListPlugin",
+    "file": "packages/list/src/lib/BaseListPlugin.tsx",
+    "line": 175,
+    "current": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep the modern list capability split exactly as authored.",
+    "evidence": "Sequence policy helpers are snapshot-free api, sibling and active-list queries consume the current state, mutations use tx, and command/change/correction hooks are editor lifecycle behavior.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 113,
+    "package": "list",
+    "symbol": "ListPlugin",
+    "file": "packages/list/src/react/ListPlugin.tsx",
+    "line": 8,
+    "current": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": ["getSequenceSiblingOptions", "isSequenceBoundary"],
+      "read": ["expandItemsWithChildren", "getNext", "getPrevious", "isActive"],
+      "selectors": [],
+      "update": ["indent", "outdent", "toggle"],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit the modern Base list surface.",
+    "evidence": "toPlatePlugin contributes no local behavior, so the effective api, read, update, and extension members preserve their Base owners.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 114,
+    "package": "list-classic",
+    "symbol": "BaseListItemContentPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 55,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only list-item-content descriptor capability-free.",
+    "evidence": "The plugin only defines list-item-content grammar and slice behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 115,
+    "package": "list-classic",
+    "symbol": "BaseListItemPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 66,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema and codec descriptor capability-free.",
+    "evidence": "The plugin compiles allowed child types and HTML decoding but publishes no runtime operation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 116,
+    "package": "list-classic",
+    "symbol": "BaseBulletedListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 121,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the bulleted-list node descriptor capability-free.",
+    "evidence": "Its sole jobs are schema, HTML decoding, and render metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 117,
+    "package": "list-classic",
+    "symbol": "BaseNumberedListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 148,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the numbered-list node descriptor capability-free.",
+    "evidence": "Its sole jobs are schema, HTML decoding, and render metadata.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 118,
+    "package": "list-classic",
+    "symbol": "BaseTaskListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 175,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the task-list container descriptor capability-free.",
+    "evidence": "The descriptor owns task-list schema, options, and render metadata while list behavior is owned elsewhere.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 119,
+    "package": "list-classic",
+    "symbol": "BaseTodoListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 203,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "priority": "keep",
+    "verdict": "Keep toggle in update and the insert-break override in extension.",
+    "evidence": "toggle is a direct node mutation, while intercepting editor insertBreak to preserve checked state is editor-wide command behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 120,
+    "package": "list-classic",
+    "symbol": "BaseListPlugin",
+    "file": "packages/list-classic/src/lib/BaseListPlugin.ts",
+    "line": 284,
+    "current": {
+      "api": [],
+      "read": [
+        "getListItemEntry",
+        "getListRoot",
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListNested",
+        "isListRoot"
+      ],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "final": {
+      "api": [
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListRoot"
+      ],
+      "read": ["getListItemEntry", "getListRoot", "isListNested"],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Move four snapshot-free type and node helpers from read to api; keep traversal reads, tx mutations, and editor middleware where they are.",
+    "evidence": "getListTypes, getPropsIfTaskListLiNode, hasListChild, and isListRoot inspect only configured types or supplied nodes, while the remaining reads call the active state view.",
+    "extendJustified": true,
+    "gaps": [
+      "Snapshot-free helpers are currently published through read and therefore pretend to require a state view."
+    ]
+  },
+  {
+    "id": 121,
+    "package": "list-classic",
+    "symbol": "BulletedListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 13,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React bulleted-list adapter capability-neutral.",
+    "evidence": "It only adapts BaseBulletedListPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 122,
+    "package": "list-classic",
+    "symbol": "TaskListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 15,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React task-list adapter capability-neutral.",
+    "evidence": "It only adapts BaseTaskListPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 123,
+    "package": "list-classic",
+    "symbol": "NumberedListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 17,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React numbered-list adapter capability-neutral.",
+    "evidence": "It only adapts BaseNumberedListPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 124,
+    "package": "list-classic",
+    "symbol": "ListItemContentPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 19,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React list-item-content adapter capability-neutral.",
+    "evidence": "It only adapts BaseListItemContentPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 125,
+    "package": "list-classic",
+    "symbol": "ListItemPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 21,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React list-item adapter capability-neutral.",
+    "evidence": "It only adapts BaseListItemPlugin and inherits no public capability members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 126,
+    "package": "list-classic",
+    "symbol": "ListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 27,
+    "current": {
+      "api": [],
+      "read": [
+        "getListItemEntry",
+        "getListRoot",
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListNested",
+        "isListRoot"
+      ],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "final": {
+      "api": [
+        "getListTypes",
+        "getPropsIfTaskListLiNode",
+        "hasListChild",
+        "isListRoot"
+      ],
+      "read": ["getListItemEntry", "getListRoot", "isListNested"],
+      "selectors": [],
+      "update": [
+        "indent",
+        "moveListItemUp",
+        "moveListItemsToList",
+        "outdent",
+        "removeFirstListItem",
+        "removeListItem",
+        "toggle",
+        "unwrapList"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.deleteFragment",
+        "commands.insertBreak",
+        "commands.replaceSlice",
+        "corrections.content"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Inherit the Base classic-list split after its snapshot-free helpers move from read to api.",
+    "evidence": "This React adapter adds only dependency replacement, so its effective public correction is entirely owned by BaseListPlugin.",
+    "extendJustified": null,
+    "gaps": [
+      "The inherited Base descriptor publishes four pure helpers through read."
+    ]
+  },
+  {
+    "id": 127,
+    "package": "list-classic",
+    "symbol": "TodoListPlugin",
+    "file": "packages/list-classic/src/react/ListPlugin.tsx",
+    "line": 37,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["toggle"],
+      "extension": ["commands.insertBreak"]
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit Todo toggle and insert-break behavior.",
+    "evidence": "toPlatePlugin adds nothing locally, so its effective mutation and command middleware remain owned by BaseTodoListPlugin.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 128,
+    "package": "markdown",
+    "symbol": "MarkdownPlugin",
+    "file": "packages/markdown/src/lib/MarkdownPlugin.ts",
+    "line": 81,
+    "current": {
+      "api": [
+        "markdown.deserialize",
+        "markdown.deserializeInline",
+        "markdown.serialize"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["deserialize", "deserializeInline", "serializeInline"],
+      "read": ["serialize"],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Replace the manually injected extension group with keyed plugin capabilities: explicit-input conversion stays under editor.api.markdown, while current-document serialization moves to editor.read.markdown.serialize.",
+    "evidence": "Plugin api still projects through the markdown key, so deserialize and deserializeInline keep their root call shape; serialize defaults to runtime.state.value() and must observe the active snapshot, while serializeInlineMd converts explicit input.",
+    "extendJustified": null,
+    "gaps": [
+      "Manual extension publication hides plugin ownership; constructor api preserves editor.api.markdown.deserialize and deserializeInline without that second owner.",
+      "Only editor.api.markdown.serialize is cut in favor of editor.read.markdown.serialize so current-document conversion uses the active snapshot.",
+      "The tested public serializeInlineMd(editor, options) operation has no scoped Markdown plugin capability."
+    ]
+  },
+  {
+    "id": 129,
+    "package": "math",
+    "symbol": "BaseEquationPlugin",
+    "file": "packages/math/src/lib/BaseEquationPlugin.ts",
+    "line": 11,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep block-equation insertion in plugin update.",
+    "evidence": "insert writes a void equation node through the active tx and exposes no separate query or service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 130,
+    "package": "math",
+    "symbol": "BaseInlineEquationPlugin",
+    "file": "packages/math/src/lib/BaseInlineEquationPlugin.ts",
+    "line": 9,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep inline-equation insertion in plugin update.",
+    "evidence": "insert writes an inline void equation through the active tx and exposes no separate query or service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 131,
+    "package": "math",
+    "symbol": "EquationPlugin",
+    "file": "packages/math/src/react/EquationPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit block-equation insert.",
+    "evidence": "toPlatePlugin contributes nothing locally and preserves BaseEquationPlugin's scoped update surface.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 132,
+    "package": "math",
+    "symbol": "InlineEquationPlugin",
+    "file": "packages/math/src/react/InlineEquationPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["insert"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral and inherit inline-equation insert.",
+    "evidence": "toPlatePlugin contributes nothing locally and preserves BaseInlineEquationPlugin's scoped update surface.",
+    "extendJustified": null,
+    "gaps": []
+  }
+]

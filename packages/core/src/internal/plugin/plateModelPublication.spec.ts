@@ -23,7 +23,7 @@ import {
   withCompiledPlatePluginCandidate,
 } from './compilePlateModel';
 import { getPlateRuntimeCandidate } from './plateRuntime';
-import { getPluginOptionsStore } from './pluginOptionsStore';
+import { getPluginStore } from './pluginStore';
 
 describe('Plate model publication', () => {
   it('publishes one final runtime before later extension initializers', () => {
@@ -80,7 +80,7 @@ describe('Plate model publication', () => {
     ).toThrow('broken extension');
     expect(getPlateModelPublication(editor)).toBeUndefined();
     expect(getPlateRuntimeCandidate(editor)).toBeUndefined();
-    expect(getPluginOptionsStore(editor, BrokenPlugin.key)).toBeUndefined();
+    expect(getPluginStore(editor, BrokenPlugin.key)).toBeUndefined();
   });
 
   it('rolls back failed initialization and retries on the same raw editor', () => {
@@ -131,7 +131,7 @@ describe('Plate model publication', () => {
     expect(raw.read.schema.identity()).toBe(previousIdentity);
     expect(getPlateModelPublication(raw)).toBeUndefined();
     expect(getPlateRuntimeCandidate(raw)).toBeUndefined();
-    expect(getPluginOptionsStore(raw, Plugin.key)).toBeUndefined();
+    expect(getPluginStore(raw, Plugin.key)).toBeUndefined();
     expect(
       getInstalledEditorExtension(raw, 'throwing-bootstrap-correction')
     ).toBeUndefined();
@@ -186,11 +186,11 @@ describe('Plate model publication', () => {
   it('publishes canonical dependency identities per editor', () => {
     const Dependency = createBasePlugin({
       key: 'canonicalDependency',
-      options: { n: 1 },
+      initialState: { n: 1 },
     });
     const Child = createBasePlugin({
       key: 'canonicalChild',
-      options: { n: 1 },
+      initialState: { n: 1 },
     });
     const Parent = createBasePlugin({
       dependencies: [Dependency, Child],
@@ -200,8 +200,8 @@ describe('Plate model publication', () => {
       createBaseEditor({
         plugins: [
           Parent,
-          Dependency.configure({ options: { n: dependencyN } }),
-          Child.configure({ options: { n: childN } }),
+          Dependency.configure({ initialState: { n: dependencyN } }),
+          Child.configure({ initialState: { n: childN } }),
         ],
       });
     const first = createConfiguredEditor(2, 3);
@@ -215,20 +215,20 @@ describe('Plate model publication', () => {
 
     expect(firstParent.dependencies[0]).toBe(firstDependency);
     expect(firstParent.dependencies[1]).toBe(firstChild);
-    expect(firstDependency.options.n).toBe(2);
-    expect(firstChild.options.n).toBe(3);
+    expect(firstDependency.initialState.n).toBe(2);
+    expect(firstChild.initialState.n).toBe(3);
     expect(secondParent.dependencies[0]).toBe(secondDependency);
     expect(secondParent.dependencies[1]).toBe(secondChild);
-    expect(secondDependency.options.n).toBe(4);
-    expect(secondChild.options.n).toBe(5);
+    expect(secondDependency.initialState.n).toBe(4);
+    expect(secondChild.initialState.n).toBe(5);
     expect(firstDependency).not.toBe(secondDependency);
     expect(firstChild).not.toBe(secondChild);
   });
 
-  it('shares one Plate publication and option store across root views', () => {
+  it('shares one Plate publication and plugin store across root views', () => {
     const Plugin = createBasePlugin({
       key: 'rootViewOwner',
-      options: { enabled: true },
+      initialState: { enabled: true },
     });
     const editor = createBaseEditor({ plugins: [Plugin] });
     const runtime = Object.freeze({
@@ -253,14 +253,14 @@ describe('Plate model publication', () => {
     expect(getCompiledPlatePlugin(view, Plugin.key)).toBe(
       editor.getPlugin(Plugin)
     );
-    expect(getPluginOptionsStore(view, Plugin.key)).toBe(
-      getPluginOptionsStore(editor, Plugin.key)
+    expect(getPluginStore(view, Plugin.key)).toBe(
+      getPluginStore(editor, Plugin.key)
     );
     expect(getPlateModelPublication(view)).not.toBe(
       getPlateModelPublication(other)
     );
-    expect(getPluginOptionsStore(view, Plugin.key)).not.toBe(
-      getPluginOptionsStore(other, Plugin.key)
+    expect(getPluginStore(view, Plugin.key)).not.toBe(
+      getPluginStore(other, Plugin.key)
     );
   });
 
@@ -393,14 +393,14 @@ describe('Plate model publication', () => {
     expect(writes).toEqual(['compiled']);
   });
 
-  it('keeps runtime closures on the live options store', () => {
+  it('keeps runtime closures on the live plugin store', () => {
     const Plugin = createBasePlugin({
       key: 'liveRuntimeClosure',
-      options: { enabled: false },
-    }).extend(({ getOptions }) => ({
+      initialState: { enabled: false },
+    }).extend(({ store }) => ({
       shortcuts: {
         run: {
-          handler: () => getOptions().enabled,
+          handler: () => store.get().enabled,
           keys: 'mod+k',
         },
       },
@@ -413,31 +413,31 @@ describe('Plate model publication', () => {
 
     expect(run()).toBe(false);
 
-    editor.plugin(Plugin).setOption('enabled', true);
+    editor.plugin(Plugin).store.set({ enabled: true });
 
     expect(run()).toBe(true);
   });
 
-  it('publishes configured options before contextual extensions', () => {
+  it('publishes configured initialState before contextual extensions', () => {
     const Plugin = createBasePlugin({
-      key: 'contextualOptions',
-      options: { label: 'one', projection: '' },
+      key: 'contextualState',
+      initialState: { label: 'one', projection: '' },
       targetPluginKeys: ['firstTarget'],
     })
-      .extend(({ getOptions, plugin }) => ({
-        options: {
-          projection: `${getOptions().label}:${plugin.targetPluginKeys.join(
+      .extend(({ store, plugin }) => ({
+        initialState: {
+          projection: `${store.get().label}:${plugin.targetPluginKeys.join(
             ','
           )}`,
         },
       }))
       .configure({
-        options: { label: 'descriptor' },
+        initialState: { label: 'descriptor' },
         targetPluginKeys: ['descriptorTarget'],
       });
     const editor = createBaseEditor({ plugins: [Plugin] });
 
-    expect(editor.plugin(Plugin).getOption('projection')).toBe(
+    expect(editor.plugin(Plugin).store.get('projection')).toBe(
       'descriptor:descriptorTarget'
     );
   });
@@ -523,9 +523,9 @@ describe('Plate model publication', () => {
   it('never falls through an active candidate to stale publication state', () => {
     const plugin = createBasePlugin({
       key: 'candidateLookup',
-      options: { label: 'one' },
-    }).extend(({ getOptions }) => ({
-      api: { current: () => getOptions().label },
+      initialState: { label: 'one' },
+    }).extend(({ store }) => ({
+      api: { current: () => store.get().label },
     }));
     const firstEditor = createBaseEditor({ plugins: [plugin] });
     const secondEditor = createBaseEditor({ plugins: [plugin] });

@@ -151,10 +151,9 @@ export type StrictPlateType =
       | 'li'
       | 'mention'
       | 'p'
+      | 'script'
       | 'strikethrough'
-      | 'subscript'
       | 'suggestion'
-      | 'superscript'
       | 'table'
       | 'td'
       | 'th'
@@ -190,10 +189,9 @@ type PlateNodeMap = Pick<
   | 'italic'
   | 'mention'
   | 'p'
+  | 'script'
   | 'strikethrough'
-  | 'subscript'
   | 'suggestion'
-  | 'superscript'
   | 'table'
   | 'td'
   | 'th'
@@ -273,8 +271,7 @@ type MdNodeMap = {
   date: MdMdxJsxTextElement;
   underline: MdMdxJsxTextElement;
   comment: MdMdxJsxTextElement;
-  superscript: MdMdxJsxTextElement;
-  subscript: MdMdxJsxTextElement;
+  script: MdMdxJsxTextElement;
   suggestion: MdMdxJsxTextElement;
   file: MdMdxJsxFlowElement;
   video: MdMdxJsxFlowElement;
@@ -303,10 +300,9 @@ const PLATE_TO_MDAST = {
   list: 'list',
   mention: 'mention',
   p: 'paragraph',
+  script: 'script',
   strikethrough: 'delete',
-  subscript: 'sub',
   suggestion: 'suggestion',
-  superscript: 'sup',
   table: 'table',
   td: 'tableCell',
   text: 'text',
@@ -352,8 +348,8 @@ const MDAST_TO_PLATE = {
   mdxTextExpression: 'mdxTextExpression',
   paragraph: 'p',
   strong: 'bold',
-  sub: 'subscript',
-  sup: 'superscript',
+  sub: 'script',
+  sup: 'script',
   table: 'table',
   tableCell: 'td',
   tableRow: 'tr',

@@ -329,13 +329,13 @@ Key results:
       - `useEditorState`: `0.71 ms` update
       - `useEditorValue`: `0.68 ms` update
       - `useEditorSelector`: `1.11 ms` update
-      - `usePluginOption`: `1.83 ms` update and `2` commits
+      - `usePluginStore`: `1.83 ms` update and `2` commits
       - mixed: `3.77 ms` update and `2` commits
     - `1,000` subscribers:
       - `useEditorState`: `2.85 ms` update
       - `useEditorValue`: `3.52 ms` update
       - `useEditorSelector`: `4.04 ms` update
-      - `usePluginOption`: `4.61 ms` update and `2` commits
+      - `usePluginStore`: `4.61 ms` update and `2` commits
       - mixed: `13.95 ms` update and `2` commits
 - Plate `coreMount`:
   - `1,000` blocks:
@@ -1031,7 +1031,7 @@ The deeper split sharpens the take:
   - broad subscriber count is mostly an update-scaling problem, not the main mount bottleneck
   - zero extra subscribers already cost almost the full Plate prebuilt mount tax
   - adding hundreds or even `1,000` null-rendering subscribers barely moves mount time
-  - `usePluginOption` is the heaviest single-hook update lane here and the only one that consistently causes two commits on its own
+  - `usePluginStore` is the heaviest single-hook update lane here and the only one that consistently causes two commits on its own
   - `useEditorValue` scales worse than `useEditorState` once subscriber count gets large
   - `useEditorSelector` is more expensive than plain tracked editor reads, but it still does not explain the mount cliff by itself
 - The new core-mount lane answers the rest of the `jotai-x` suspicion:

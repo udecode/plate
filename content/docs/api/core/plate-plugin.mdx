@@ -3,7 +3,45 @@ title: Plate Plugin
 description: API reference for Plate plugins.
 ---
 
-Plate plugins are descriptors passed to the `Plate` [plugins](/docs/api/core/plate-components#plugins) prop. Installed plugin APIs are inferred on `editor.api` under the plugin key. Pass the descriptor to `editor.plugin(MyPlugin)` when generic code needs the exact plugin API, update commands, type, or live options; React components subscribe with `usePluginOption` or `usePluginOptions`.
+Plate plugins are descriptors passed to the `Plate` [plugins](/docs/api/core/plate-components#plugins) prop. Installed plugin APIs are inferred on `editor.api` under the plugin key. Pass the descriptor to `editor.plugin(MyPlugin)` when generic code needs the exact plugin API, update commands, type, or editor-local state; React components subscribe with `usePluginStore`.
+
+## Authoring Context
+
+Plugin constructor, extension, configuration, handler, codec, and injection
+callbacks receive the current plugin context when their callback contract
+supports it:
+
+```ts
+const UploadPlugin = createPlatePlugin({
+  key: 'upload',
+  initialState: { active: false },
+  api: ({ store }) => ({
+    start: () => store.set({ active: true }),
+  }),
+  read: ({ state }) => ({
+    isReady: () => !!state.selection(),
+  }),
+  update: ({ tx, type }) => ({
+    insert: () => tx.nodes.insert({ children: [{ text: '' }], type }),
+  }),
+}).extend(({ api, read, store, update }) => ({
+  handlers: {
+    onFocus: () => {
+      if (!read.isReady()) return;
+
+      store.set({ active: true });
+      api.start();
+      update.insert();
+    },
+  },
+}));
+```
+
+Use `store`, `api`, `read`, `update`, `type`, `plugin`, and `installed`
+directly for the current plugin. Use `editor` for editor-wide operations,
+another plugin, or transaction metadata unavailable on the scoped `update`
+facade. Specialized callbacks such as shortcut handlers and input rules may
+only receive `editor`; use an exact typed plugin portal there.
 
 ## Plugin Properties
 
@@ -34,13 +72,11 @@ Plugin keys targeted by the plugin's schema contributions and injected behavior.
   `editor.update((tx) => tx[key].method())`.
 </APIItem>
 
-<APIItem name="options" type="Record<string, any>">
-Plugin-owned values used by schema factories, parsers, codecs, and runtime
-behavior. Package authors declare independent defaults with `create*Plugin()`.
-App consumers apply one final
-`.configure({ options: { ... } })`; live values use
-`editor.plugin(MyPlugin).getOptions()`, `.setOption()`, or `.setOptions()`.
-Updating options does not rebuild the compiled schema.
+<APIItem name="initialState" type="Record<string, any>">
+The seed for this plugin's mutable editor-local store. Package authors declare
+defaults with `create*Plugin()`. App consumers override the seed with one final
+`.configure({ initialState: { ... } })`. Runtime code reads and updates the
+installed store through `editor.plugin(MyPlugin).store`.
 </APIItem>
 
 <APIItem name="component" type="NodeComponent" optional>
@@ -154,8 +190,8 @@ must differ from `plugin.key`; do not add a second storage-key option.
 Declares the plugin's Plite model through its `element`, `mark`, `properties`,
 and `contentRoots` fields. A factory declares an element-owned root with
 `contentRoots: [own.contentRoot(...)]`. It receives the resolved plugin `type`,
-its `options` snapshot, and typed helpers for installed plugin types. Boolean
-text properties use
+its configured `initialState` snapshot, and typed helpers for installed plugin
+types. Boolean text properties use
 `property.boolean({ default: false, omitDefault: true })`.
 </APIItem>
 
@@ -408,13 +444,13 @@ editOnly: {
 
 <API name="Methods">
 <APIMethods>
-<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => Partial<Pick<PlatePluginConfig, 'options' | 'handlers' | 'render' | 'shortcuts'>>)) => ConfiguredPlatePlugin">
+<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => Partial<Pick<PlatePluginConfig, 'initialState' | 'handlers' | 'render' | 'shortcuts'>>)) => ConfiguredPlatePlugin">
 Applies one terminal consumer configuration and returns a descriptor that
 cannot be configured or extended again. Use the object form for definition
-fields. The callback form can derive existing `options`, `handlers`, `render`,
-or `shortcuts` from the resolved editor context. Contextual extensions declared
-before this call read the configured values, while the configuration remains
-the final override.
+fields. The callback form can derive existing `initialState`, `handlers`,
+`render`, or `shortcuts` from the resolved editor context. Contextual extensions
+declared before this call read the configured values, while the configuration
+remains the final override.
 
 ```ts
 H1Plugin.configure({
@@ -454,7 +490,7 @@ The contribution fields have distinct owners:
 
 - `api`: plugin-scoped immutable services
 - `read`: snapshot or transaction-local reads
-- `selectors`: derived option values
+- `selectors`: pure projections of editor-local plugin state
 - `update`: plugin-scoped transaction-bound mutations
 - `extension`: Plite runtime capabilities and true editor-wide groups; inline
   objects are contextually typed without a helper
@@ -507,17 +543,9 @@ Returns a merged copy of an unconfigured plugin definition.
       Inline extension objects need no helper. The same-named import from
       `@platejs/plite` owns standalone Plite extensions.
 </APIItem>
-<APIItem name="getOption" type="function">
-      Function to get a specific option value.
-</APIItem>
-<APIItem name="getOptions" type="function">
-      Function to get all options for the plugin.
-</APIItem>
-<APIItem name="setOption" type="function">
-      Function to set a specific option value.
-</APIItem>
-<APIItem name="setOptions" type="function">
-      Function to set multiple options.
+<APIItem name="store" type="PluginStore<C>">
+      Reads, updates, and subscribes to the current plugin's editor-local state.
+      Named selectors are pure functions of that state.
 </APIItem>
 </APIAttributes>
 </API>
@@ -529,8 +557,8 @@ For more detailed information on specific aspects of Plate plugins, refer to the
 <API name="GenericTypes">
 <APIAttributes>
 <APIItem name="C" type="AnyPluginConfig = PluginConfig">
-      Represents the plugin contract, including `key`, `options`, `api`, `tx`,
-      selectors, dependencies, and schema inference.
+      Represents the plugin contract, including `key`, `initialState`, `api`,
+      `read`, `update`, selectors, dependencies, and schema inference.
 </APIItem>
 </APIAttributes>
 </API>

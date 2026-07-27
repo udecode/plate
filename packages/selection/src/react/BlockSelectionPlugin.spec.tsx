@@ -67,14 +67,14 @@ describe('BlockSelectionPlugin', () => {
     });
     expect(runSelectAllShortcut(editor)).toBe(true);
     expect([
-      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+      ...editor.plugin(BlockSelectionPlugin).store.get('selectedIds')!,
     ]).toEqual(['block1', 'block2']);
   });
 
   it('leaves select-all to the browser when custom handling is disabled', () => {
     const editor = createBlockSelectionEditor();
 
-    editor.plugin(BlockSelectionPlugin).setOption('disableSelectAll', true);
+    editor.plugin(BlockSelectionPlugin).store.set({ disableSelectAll: true });
     editor.update.selection.set({
       kind: 'text',
       anchor: { offset: 1, path: [0, 0] },
@@ -94,7 +94,7 @@ describe('BlockSelectionPlugin', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
 
     editor.update.marks.toggle('bold');
 
@@ -103,7 +103,7 @@ describe('BlockSelectionPlugin', () => {
     });
     expect(editor.read.children()[1].children[0]).not.toHaveProperty('bold');
     expect([
-      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+      ...editor.plugin(BlockSelectionPlugin).store.get('selectedIds')!,
     ]).toEqual(['block1']);
   });
 
@@ -112,14 +112,14 @@ describe('BlockSelectionPlugin', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
 
     editor.update.nodes.set({ variant: 'lead' });
 
     expect(editor.read.children()[0]).toMatchObject({ variant: 'lead' });
     expect(editor.read.children()[1]).not.toHaveProperty('variant');
     expect([
-      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+      ...editor.plugin(BlockSelectionPlugin).store.get('selectedIds')!,
     ]).toEqual(['block1']);
   });
 
@@ -128,7 +128,7 @@ describe('BlockSelectionPlugin', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
 
     editor.update.selection.set({
       kind: 'text',
@@ -137,7 +137,7 @@ describe('BlockSelectionPlugin', () => {
     });
 
     expect([
-      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+      ...editor.plugin(BlockSelectionPlugin).store.get('selectedIds')!,
     ]).toEqual([]);
   });
 
@@ -146,8 +146,8 @@ describe('BlockSelectionPlugin', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
-    editor.plugin(BlockMenuPlugin).setOption('openId', 'block1');
+      .store.set({ selectedIds: new Set(['block1']) });
+    editor.plugin(BlockMenuPlugin).store.set({ openId: 'block1' });
 
     editor.update.selection.set({
       kind: 'text',
@@ -156,7 +156,7 @@ describe('BlockSelectionPlugin', () => {
     });
 
     expect([
-      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+      ...editor.plugin(BlockSelectionPlugin).store.get('selectedIds')!,
     ]).toEqual(['block1']);
   });
 
@@ -165,7 +165,7 @@ describe('BlockSelectionPlugin', () => {
 
     editor
       .plugin(BlockSelectionPlugin)
-      .setOption('selectedIds', new Set(['block1']));
+      .store.set({ selectedIds: new Set(['block1']) });
 
     editor.update.selection.set({
       kind: 'text',
@@ -174,7 +174,7 @@ describe('BlockSelectionPlugin', () => {
     });
 
     expect([
-      ...editor.plugin(BlockSelectionPlugin).getOption('selectedIds')!,
+      ...editor.plugin(BlockSelectionPlugin).store.get('selectedIds')!,
     ]).toEqual([]);
   });
 });

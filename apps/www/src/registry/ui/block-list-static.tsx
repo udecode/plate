@@ -1,18 +1,21 @@
 import * as React from 'react';
 
 import type { RenderStaticNodeWrapper, TListElement } from 'platejs';
-import type { PliteRenderElementProps } from 'platejs/static';
 
 import { isOrderedList } from '@platejs/list';
 import { CheckIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
+type BlockListProps = Parameters<
+  NonNullable<ReturnType<RenderStaticNodeWrapper>>
+>[0];
+
 const config: Record<
   string,
   {
-    Li: React.FC<PliteRenderElementProps>;
-    Marker: React.FC<PliteRenderElementProps>;
+    Li: React.FC<BlockListProps>;
+    Marker: React.FC<BlockListProps>;
   }
 > = {
   todo: {
@@ -28,7 +31,7 @@ export const BlockListStatic: RenderStaticNodeWrapper = (props) => {
   return (props) => <List {...props} />;
 };
 
-function List(props: PliteRenderElementProps) {
+function List(props: BlockListProps) {
   const { indent, listStart, listStyleType } = props.element as TListElement & {
     indent?: number;
   };
@@ -50,7 +53,7 @@ function List(props: PliteRenderElementProps) {
   );
 }
 
-function TodoMarkerStatic(props: PliteRenderElementProps) {
+function TodoMarkerStatic(props: BlockListProps) {
   const checked = props.element.checked as boolean;
 
   return (
@@ -71,7 +74,7 @@ function TodoMarkerStatic(props: PliteRenderElementProps) {
   );
 }
 
-function TodoLiStatic(props: PliteRenderElementProps) {
+function TodoLiStatic(props: BlockListProps) {
   return (
     <li
       className={cn(

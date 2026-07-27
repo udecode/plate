@@ -16,9 +16,8 @@ import {
   BaseHighlightPlugin,
   BaseHorizontalRulePlugin,
   BaseItalicPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
   BlockquoteRules,
   BoldRules,
@@ -27,9 +26,8 @@ import {
   HighlightRules,
   HorizontalRuleRules,
   ItalicRules,
+  ScriptRules,
   StrikethroughRules,
-  SubscriptRules,
-  SuperscriptRules,
   UnderlineRules,
 } from '@platejs/basic-nodes';
 import { BaseIndentPlugin } from '@platejs/indent';
@@ -170,11 +168,11 @@ describe('playground rules current contract', () => {
           BaseStrikethroughPlugin.configure({
             inputRules: [StrikethroughRules.markdown()],
           }),
-          BaseSubscriptPlugin.configure({
-            inputRules: [SubscriptRules.markdown()],
-          }),
-          BaseSuperscriptPlugin.configure({
-            inputRules: [SuperscriptRules.markdown()],
+          BaseScriptPlugin.configure({
+            inputRules: [
+              ScriptRules.markdown({ value: 'sub' }),
+              ScriptRules.markdown({ value: 'sup' }),
+            ],
           }),
           BaseHighlightPlugin.configure({
             inputRules: [HighlightRules.markdown({ variant: '==' })],
@@ -190,8 +188,8 @@ describe('playground rules current contract', () => {
       ['__hello_', '_', { underline: true, text: 'hello' }],
       ['`hello', '`', { code: true, text: 'hello' }],
       ['~~hello~', '~', { strikethrough: true, text: 'hello' }],
-      ['~hello', '~', { subscript: true, text: 'hello' }],
-      ['^hello', '^', { superscript: true, text: 'hello' }],
+      ['~hello', '~', { script: 'sub', text: 'hello' }],
+      ['^hello', '^', { script: 'sup', text: 'hello' }],
       ['==hello=', '=', { highlight: true, text: 'hello' }],
     ])('formats mark shorthand `%s`', (prefix, finalInput, expectedLeaf) => {
       const editor = createMarksEditor(prefix);

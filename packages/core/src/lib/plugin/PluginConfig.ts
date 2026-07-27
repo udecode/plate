@@ -29,7 +29,7 @@ export type AnyPluginTx = Record<string, unknown>;
 
 export type AnyPluginConfig = {
   key: any;
-  options: any;
+  initialState: any;
   api: any;
   enabled?: any;
   pluginApi?: any;
@@ -205,23 +205,9 @@ export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
       /** Filter nodes with path above this level. */
       maxLevel?: number;
     }>;
-    /** Mutable runtime state exposed through the plugin store. */
-    options: InferOptions<C>;
+    /** Initial value used to create this plugin's editor-local store. */
+    initialState: InferPluginStoreState<C>;
     override: {};
-    /**
-     * Defines the order in which plugins are registered and executed.
-     *
-     * Plugins with higher priority values are registered and executed before
-     * those with lower values. This affects two main aspects:
-     *
-     * 1. Plugin Order: Plugins with higher priority will be added to the editor
-     *    earlier.
-     * 2. Execution Order: For operations that involve multiple plugins (e.g., editor
-     *    methods), plugins with higher priority will be processed first.
-     *
-     * @default 100
-     */
-    priority: number;
     /** Plugin keys targeted by this plugin's schema and render behavior. */
     readonly targetPluginKeys: readonly string[];
     render: Nullable<{
@@ -391,8 +377,8 @@ export type PluginSchemaContext<
   C extends AnyPluginConfig = PluginConfig,
   TType extends string = InferPluginDocumentType<C>,
 > = Readonly<{
+  initialState: Readonly<InferPluginStoreState<C>>;
   key: C['key'];
-  options: Readonly<InferOptions<C>>;
   own: PluginSchemaOwn<TType>;
   plugins: PluginSchemaReferences;
   targetPluginKeys: readonly string[];
@@ -464,31 +450,9 @@ export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
   update: InferOwnTx<C>;
   /** State-bound reads owned by the current plugin. */
   read: InferOwnState<C>;
-  setOptions: (
-    options:
-      | ((state: Draft<Partial<InferOptions<C>>>) => void)
-      | Partial<InferOptions<C>>
-  ) => void;
+  /** Mutable editor-local state and pure named selectors owned by this plugin. */
+  store: PluginStore<C>;
   type: string;
-  getOption: <
-    K extends keyof InferOptions<C> | keyof InferSelectors<C> | 'state',
-  >(
-    key: K,
-    ...args: K extends keyof InferSelectors<C>
-      ? Parameters<InferSelectors<C>[K]>
-      : unknown[]
-  ) => K extends 'state'
-    ? InferOptions<C>
-    : K extends keyof InferSelectors<C>
-      ? ReturnType<InferSelectors<C>[K]>
-      : K extends keyof InferOptions<C>
-        ? InferOptions<C>[K]
-        : never;
-  getOptions: () => Readonly<InferOptions<C>>;
-  setOption: <K extends keyof InferOptions<C>>(
-    optionKey: K,
-    value: InferOptions<C>[K]
-  ) => void;
 };
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
@@ -610,7 +574,7 @@ export type EditOnlyConfig = {
 
 export type ExtendConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ETx extends AnyPluginTx = {},
   ES = {},
@@ -621,7 +585,7 @@ export type ExtendConfig<
   api: C['api'] & EA;
   dependencies?: C['dependencies'];
   enabled?: C['enabled'];
-  options: C['options'] & EO;
+  initialState: C['initialState'] & EStoreState;
   pluginApi: NonNullable<C['pluginApi']> & EPluginApi;
   schemaModel?: C['schemaModel'];
   selectors: C['selectors'] & ES;
@@ -716,17 +680,17 @@ export type PluginDependencyConfigReferences<
 /**
  * Editor-capability view of a dependency.
  *
- * Runtime options stay on the dependency descriptor itself; copying them into
+ * Runtime store state stays on the dependency descriptor itself; copying it into
  * every dependent editor type leaks UI/provider implementation types into
  * downstream declarations without adding an editor capability.
  */
 type PluginDependencyConfig<C extends AnyPluginConfig> = PluginConfig<
   C['key'],
-  InferState<C>,
+  {},
   InferApi<C>,
   InferTx<C>,
   InferSelectors<C>,
-  {},
+  InferState<C>,
   PluginDependencyReferences<InferDependencies<C>> & readonly PluginReference[],
   InferPluginSchemaModel<C>,
   InferPluginApi<C>,
@@ -769,8 +733,8 @@ export type InferPluginConfigTree<
 
 export type InferOwnApi<P extends AnyPluginConfig> = InferPluginApi<P>;
 
-/** Runtime option shape after plugin descriptors become nominal references. */
-export type NormalizePluginOption<T> =
+/** Runtime state shape after plugin descriptors become nominal references. */
+export type NormalizePluginState<T> =
   IsAny<T> extends true
     ? T
     : T extends PluginReference<infer TKey, infer TDocumentType>
@@ -778,22 +742,24 @@ export type NormalizePluginOption<T> =
       : T extends (...args: any[]) => any
         ? T
         : T extends readonly unknown[]
-          ? { readonly [TIndex in keyof T]: NormalizePluginOption<T[TIndex]> }
+          ? { readonly [TIndex in keyof T]: NormalizePluginState<T[TIndex]> }
           : T extends Readonly<Record<string, unknown>>
-            ? { readonly [TKey in keyof T]: NormalizePluginOption<T[TKey]> }
+            ? { readonly [TKey in keyof T]: NormalizePluginState<T[TKey]> }
             : T;
 
-export type InferOptions<P> = P extends { options: infer O }
-  ? NormalizePluginOption<O>
+export type InferPluginStoreState<P> = P extends {
+  initialState: infer StoreState;
+}
+  ? StoreState
   : never;
 
 /** Plugin capabilities visible to behavior extensions, without schema metadata. */
 export type InferPluginBehaviorConfig<C extends AnyPluginConfig> =
-  IsAny<InferOptions<C>> extends true
+  IsAny<InferPluginStoreState<C>> extends true
     ? C
     : PluginConfig<
         C['key'],
-        InferOptions<C>,
+        InferPluginStoreState<C>,
         InferApi<C>,
         InferTx<C>,
         InferSelectors<C>,
@@ -805,6 +771,69 @@ export type InferPluginBehaviorConfig<C extends AnyPluginConfig> =
       >;
 
 export type InferSelectors<P> = P extends { selectors: infer S } ? S : never;
+
+export type PluginSelector<
+  TState extends object = object,
+  TArgs extends unknown[] = unknown[],
+  TResult = unknown,
+> = (state: Readonly<TState>, ...args: TArgs) => TResult;
+
+export type PluginSelectors<TState extends object = object> = Record<
+  string,
+  PluginSelector<TState, any[], any>
+>;
+
+export type PluginSelectorArgs<T> = T extends (
+  state: any,
+  ...args: infer TArgs
+) => any
+  ? TArgs
+  : never;
+
+export type PluginSelectorReturn<T> = T extends (
+  state: any,
+  ...args: any[]
+) => infer TResult
+  ? TResult
+  : never;
+
+type PluginStoreKey<C extends AnyPluginConfig> =
+  | keyof InferPluginStoreState<C>
+  | keyof InferSelectors<C>;
+
+type PluginStoreValue<
+  C extends AnyPluginConfig,
+  K extends PluginStoreKey<C>,
+> = K extends keyof InferSelectors<C>
+  ? PluginSelectorReturn<InferSelectors<C>[K]>
+  : K extends keyof InferPluginStoreState<C>
+    ? InferPluginStoreState<C>[K]
+    : never;
+
+export type PluginStore<C extends AnyPluginConfig = AnyPluginConfig> = {
+  /** Read the complete current plugin state. */
+  get(): Readonly<InferPluginStoreState<C>>;
+  /** Read one state field or evaluate one named selector. */
+  get<K extends PluginStoreKey<C>>(
+    key: K,
+    ...args: K extends keyof InferSelectors<C>
+      ? PluginSelectorArgs<InferSelectors<C>[K]>
+      : []
+  ): PluginStoreValue<C, K>;
+  /** Replace fields or update the current plugin state through a draft. */
+  set(
+    value:
+      | Partial<InferPluginStoreState<C>>
+      | ((state: Draft<InferPluginStoreState<C>>) => void)
+  ): void;
+  /** Subscribe to raw state changes. */
+  subscribe: (
+    listener: (
+      state: InferPluginStoreState<C>,
+      previousState: InferPluginStoreState<C>
+    ) => void
+  ) => () => void;
+};
 
 export type InferState<P> = P extends { state?: infer State } ? State : {};
 
@@ -867,7 +896,7 @@ export type HtmlPluginRegistry = Readonly<{
 /** Pure context supplied to HTML parser and node-codec callbacks. */
 export type HtmlPluginContext<C extends AnyPluginConfig = PluginConfig> =
   Readonly<{
-    options: Readonly<InferOptions<C>>;
+    pluginState: Readonly<InferPluginStoreState<C>>;
     registry: HtmlPluginRegistry;
     state: EditorCoreStateView;
     type: string;
@@ -875,7 +904,7 @@ export type HtmlPluginContext<C extends AnyPluginConfig = PluginConfig> =
 
 export type PluginConfig<
   K extends string = any,
-  O = {},
+  StoreState = {},
   A = {},
   Tx extends AnyPluginTx = {},
   S = {},
@@ -890,7 +919,7 @@ export type PluginConfig<
   pluginApi: PluginApi;
   dependencies?: D;
   enabled?: Enabled;
-  options: O;
+  initialState: NormalizePluginState<StoreState>;
   /** Exact schema type carried only by the plugin's `__config` type anchor. */
   schemaModel?: SchemaModel;
   selectors: S;
@@ -903,7 +932,7 @@ export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> =
     ? C
     : PluginConfig<
         any,
-        InferOptions<C>,
+        InferPluginStoreState<C>,
         InferApi<C>,
         InferTx<C>,
         InferSelectors<C>,

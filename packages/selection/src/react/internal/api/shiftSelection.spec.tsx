@@ -11,7 +11,6 @@ import {
   TestTableRowPlugin,
 } from '../../../__tests__/testPlugins';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
-import { shiftSelection } from './shiftSelection';
 
 jsxt;
 
@@ -46,14 +45,14 @@ describe('shiftSelection', () => {
       it('expand selection downward', () => {
         editor
           .plugin(BlockSelectionPlugin)
-          .setOption('selectedIds', new Set(['block1']));
-        editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
+          .store.set({ selectedIds: new Set(['block1']) });
+        editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block1' });
 
-        shiftSelection(editor, 'down');
+        editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
         const selectedIds = editor
           .plugin(BlockSelectionPlugin)
-          .getOption('selectedIds');
+          .store.get('selectedIds');
         expect(Array.from(selectedIds!).sort()).toEqual(
           ['block1', 'block2'].sort()
         );
@@ -64,14 +63,14 @@ describe('shiftSelection', () => {
       it('expand further to block3', () => {
         editor
           .plugin(BlockSelectionPlugin)
-          .setOption('selectedIds', new Set(['block1', 'block2']));
-        editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
+          .store.set({ selectedIds: new Set(['block1', 'block2']) });
+        editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block1' });
 
-        shiftSelection(editor, 'down');
+        editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
         const selectedIds = editor
           .plugin(BlockSelectionPlugin)
-          .getOption('selectedIds');
+          .store.get('selectedIds');
         expect(Array.from(selectedIds!).sort()).toEqual(
           ['block1', 'block2', 'block3'].sort()
         );
@@ -82,14 +81,14 @@ describe('shiftSelection', () => {
       it('shrink from the top-most block', () => {
         editor
           .plugin(BlockSelectionPlugin)
-          .setOption('selectedIds', new Set(['block1', 'block2']));
-        editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block2');
+          .store.set({ selectedIds: new Set(['block1', 'block2']) });
+        editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block2' });
 
-        shiftSelection(editor, 'down');
+        editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
         const selectedIds = editor
           .plugin(BlockSelectionPlugin)
-          .getOption('selectedIds');
+          .store.get('selectedIds');
         expect(Array.from(selectedIds!).sort()).toEqual(['block2'].sort());
       });
     });
@@ -98,14 +97,14 @@ describe('shiftSelection', () => {
       it('expand selection upward', () => {
         editor
           .plugin(BlockSelectionPlugin)
-          .setOption('selectedIds', new Set(['block2', 'block3']));
-        editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block3');
+          .store.set({ selectedIds: new Set(['block2', 'block3']) });
+        editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block3' });
 
-        shiftSelection(editor, 'up');
+        editor.plugin(BlockSelectionPlugin).api.shiftSelection('up');
 
         const selectedIds = editor
           .plugin(BlockSelectionPlugin)
-          .getOption('selectedIds');
+          .store.get('selectedIds');
         expect(Array.from(selectedIds!).sort()).toEqual(
           ['block1', 'block2', 'block3'].sort()
         );
@@ -116,14 +115,14 @@ describe('shiftSelection', () => {
       it('shrink from bottom-most block', () => {
         editor
           .plugin(BlockSelectionPlugin)
-          .setOption('selectedIds', new Set(['block1', 'block2', 'block3']));
-        editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block1');
+          .store.set({ selectedIds: new Set(['block1', 'block2', 'block3']) });
+        editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block1' });
 
-        shiftSelection(editor, 'up');
+        editor.plugin(BlockSelectionPlugin).api.shiftSelection('up');
 
         const selectedIds = editor
           .plugin(BlockSelectionPlugin)
-          .getOption('selectedIds');
+          .store.get('selectedIds');
         expect(Array.from(selectedIds!).sort()).toEqual(
           ['block1', 'block2'].sort()
         );
@@ -166,9 +165,11 @@ describe('shiftSelection', () => {
       });
 
       // For testing skipping, let's say child2 is not selectable or something
-      editor.plugin(BlockSelectionPlugin).setOption('isSelectable', (node) => {
-        // We'll skip if node.id === 'child2'
-        return node.id !== 'child2';
+      editor.plugin(BlockSelectionPlugin).store.set({
+        isSelectable: (node) => {
+          // We'll skip if node.id === 'child2'
+          return node.id !== 'child2';
+        },
       });
     });
 
@@ -176,14 +177,14 @@ describe('shiftSelection', () => {
       // parent1 selected, anchor=parent1, SHIFT+DOWN => expand to block3
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['parent1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'parent1');
+        .store.set({ selectedIds: new Set(['parent1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'parent1' });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['parent1', 'block3']);
     });
 
@@ -191,14 +192,14 @@ describe('shiftSelection', () => {
       // parent1, block3 selected; anchor=block3 => top-most=parent1 => remove parent1
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['block3', 'parent1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block3');
+        .store.set({ selectedIds: new Set(['block3', 'parent1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block3' });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block3']);
     });
 
@@ -207,14 +208,14 @@ describe('shiftSelection', () => {
       // Actually, let's do block3, block4 => anchor=block4 => SHIFT+UP => add parent1
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['block3', 'block4']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'block4');
+        .store.set({ selectedIds: new Set(['block3', 'block4']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'block4' });
 
-      shiftSelection(editor, 'up');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('up');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!).sort()).toEqual(
         ['child1', 'block3', 'block4'].sort()
       );
@@ -224,14 +225,14 @@ describe('shiftSelection', () => {
       // parent1, block3, block4 => anchor=parent1 => SHIFT+UP => remove block4
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['block3', 'block4', 'parent1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'parent1');
+        .store.set({ selectedIds: new Set(['block3', 'block4', 'parent1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'parent1' });
 
-      shiftSelection(editor, 'up');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('up');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       // block4 should be removed from selection
       expect(Array.from(selectedIds!).sort()).toEqual(
         ['parent1', 'block3'].sort()
@@ -242,14 +243,14 @@ describe('shiftSelection', () => {
       // We already set child2 as not selectable
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['parent1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'parent1');
+        .store.set({ selectedIds: new Set(['parent1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'parent1' });
 
       // SHIFT+DOWN => next selectable after parent1 is block3, skipping child2
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
 
       expect(Array.from(selectedIds!).sort()).toEqual(
         ['parent1', 'block3'].sort()
@@ -338,25 +339,22 @@ describe('shiftSelection', () => {
       });
 
       // Let’s make only 'table' and 'tr' selectable
-      editor
-        .plugin(BlockSelectionPlugin)
-        .setOption(
-          'isSelectable',
-          (node) => node.type === 'table' || node.type === 'tr'
-        );
+      editor.plugin(BlockSelectionPlugin).store.set({
+        isSelectable: (node) => node.type === 'table' || node.type === 'tr',
+      });
     });
 
     it('does not expand down from table1 => add tr1 if anchor=table1', () => {
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['table1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'table1');
+        .store.set({ selectedIds: new Set(['table1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'table1' });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       // Should now have table1 + tr1
       expect(Array.from(selectedIds!).sort()).toEqual(['table1'].sort());
     });
@@ -365,14 +363,14 @@ describe('shiftSelection', () => {
       // table1, tr1 => anchor=tr1 => top-most=table1 => remove table1
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['table1', 'tr1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr1');
+        .store.set({ selectedIds: new Set(['table1', 'tr1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'tr1' });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['tr1']);
     });
 
@@ -383,15 +381,15 @@ describe('shiftSelection', () => {
       // This scenario is contrived, let's just keep it simple:
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['tr1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr1');
+        .store.set({ selectedIds: new Set(['tr1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'tr1' });
 
-      shiftSelection(editor, 'up');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('up');
 
       // We expect table1 included
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!).sort()).toEqual(['table1'].sort());
     });
 
@@ -399,14 +397,14 @@ describe('shiftSelection', () => {
       // anchor=tr1 => SHIFT+DOWN => add tr2
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['tr1']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr1');
+        .store.set({ selectedIds: new Set(['tr1']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'tr1' });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!).sort()).toEqual(['tr1', 'tr2'].sort());
     });
 
@@ -414,14 +412,14 @@ describe('shiftSelection', () => {
       // anchor=tr2 => top-most=tr1 => remove tr1
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['tr1', 'tr2']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr2');
+        .store.set({ selectedIds: new Set(['tr1', 'tr2']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'tr2' });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['tr2']);
     });
 
@@ -429,32 +427,29 @@ describe('shiftSelection', () => {
       // anchor=tr2 => SHIFT+DOWN => next would be blockZ skipping over child tds
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['tr2']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', 'tr2');
+        .store.set({ selectedIds: new Set(['tr2']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: 'tr2' });
 
       // SHIFT+DOWN => tries to find next block after tr2 => blockZ is next top-level
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const _selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       // Now includes blockZ only if blockZ is selectable.
       // Since we only made 'table' or 'tr' selectable, blockZ might be skipped.
       // For this test let's assume blockZ is also selectable => let's set isSelectable accordingly.
       // We'll do that quickly:
-      editor
-        .plugin(BlockSelectionPlugin)
-        .setOption(
-          'isSelectable',
-          (node) =>
-            node.type === 'table' || node.type === 'tr' || node.id === 'blockZ'
-        );
+      editor.plugin(BlockSelectionPlugin).store.set({
+        isSelectable: (node) =>
+          node.type === 'table' || node.type === 'tr' || node.id === 'blockZ',
+      });
       // Re-run shiftSelection to see if blockZ is included
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       const newSelectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(newSelectedIds!).sort()).toEqual(
         ['blockZ', 'tr2'].sort()
       );
@@ -476,22 +471,22 @@ describe('shiftSelection', () => {
 
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['block2']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', null);
+        .store.set({ selectedIds: new Set(['block2']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: null });
 
-      shiftSelection(editor, 'down');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('down');
 
       // Now block2, block3 selected
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!).sort()).toEqual(
         ['block2', 'block3'].sort()
       );
       // anchor is set to block2
       const anchorId = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('anchorId');
+        .store.get('anchorId');
       expect(anchorId).toBe('block2');
     });
 
@@ -499,20 +494,20 @@ describe('shiftSelection', () => {
       // block1, block2 => no anchor => SHIFT+UP => anchor=bottom-most => block2 => expand up => block3 if existed
       editor
         .plugin(BlockSelectionPlugin)
-        .setOption('selectedIds', new Set(['block1', 'block2']));
-      editor.plugin(BlockSelectionPlugin).setOption('anchorId', null);
+        .store.set({ selectedIds: new Set(['block1', 'block2']) });
+      editor.plugin(BlockSelectionPlugin).store.set({ anchorId: null });
 
-      shiftSelection(editor, 'up');
+      editor.plugin(BlockSelectionPlugin).api.shiftSelection('up');
 
       // Because we only have block1, block2, we can't go "up" further
       const selectedIds = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('selectedIds');
+        .store.get('selectedIds');
       expect(Array.from(selectedIds!)).toEqual(['block1', 'block2']);
 
       const anchorId = editor
         .plugin(BlockSelectionPlugin)
-        .getOption('anchorId');
+        .store.get('anchorId');
       expect(anchorId).toBe('block2');
     });
   });

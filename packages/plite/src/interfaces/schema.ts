@@ -12,6 +12,7 @@ export type PropertyJsonValue =
 
 export type PropertyValueKind =
   | 'boolean'
+  | 'enum'
   | 'json'
   | 'number'
   | 'set'
@@ -58,6 +59,12 @@ export type PropertyBooleanDescriptor = PropertyValueDescriptor<
   boolean,
   'boolean'
 >;
+export type PropertyEnumDescriptor<
+  TValues extends readonly string[] = readonly string[],
+> = PropertyValueDescriptor<TValues[number], 'enum'> &
+  Readonly<{
+    values: TValues;
+  }>;
 export type PropertyJsonDescriptor<TValue = PropertyJsonValue> =
   PropertyValueDescriptor<TValue, 'json'>;
 export type PropertyNumberDescriptor = PropertyValueDescriptor<

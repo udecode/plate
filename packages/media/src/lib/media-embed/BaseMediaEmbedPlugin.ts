@@ -7,7 +7,7 @@ import {
   defineMediaPlugin,
   mediaElementContent,
   mediaElementProperties,
-  type MediaPluginOptions,
+  type MediaPluginState,
 } from '../media/MediaPlugin.internal';
 
 import {
@@ -58,9 +58,9 @@ export const BaseMediaEmbedPlugin = defineMediaPlugin(
       },
     },
     type: NODES.mediaEmbed,
-    options: {
+    initialState: {
       transformUrl: parseIframeUrl,
-    } as MediaPluginOptions,
+    } as MediaPluginState,
 
     codecs: ({ defineCodecs }) =>
       defineCodecs({

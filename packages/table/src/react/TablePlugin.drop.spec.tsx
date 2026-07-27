@@ -7,6 +7,7 @@ import {
   createPlatePlugin,
   type PlateEditor,
 } from '@platejs/core/react';
+import { DebugPlugin } from '@platejs/core';
 import type { Element, Location, Range, Value } from '@platejs/plite';
 import { defineEditorExtension, NodeApi, schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -34,7 +35,7 @@ const createTableEditor = (
   const selection = editor.read.selection();
   const tableSelection =
     selection &&
-    editor.plugin(BaseTablePlugin).api.createCellSelection(selection);
+    editor.plugin(BaseTablePlugin).read.createCellSelection(selection);
 
   if (!tableSelection) throw new Error('Expected table-cell selection');
 
@@ -221,7 +222,7 @@ const createRootMoveEditor = (
   });
   const tableSelection = editor
     .plugin(BaseTablePlugin)
-    .api.createCellSelection(sourceRange);
+    .read.createCellSelection(sourceRange);
 
   if (!tableSelection) throw new Error('Expected root-aware cell selection');
 
@@ -289,10 +290,10 @@ const installEventRangeApi = (
   const eventRanges = locations.map((at) => rangeAt(editor, at));
   const warn = mock();
 
+  editor.plugin(DebugPlugin).store.set({ logger: { warn } });
   editor.extend(
     defineEditorExtension({
       api: {
-        debug: { warn },
         dom: {
           resolveEventRange: () => eventRanges.shift() ?? null,
         },
@@ -379,7 +380,7 @@ const dragSelectedCells = (
     trackCommits?: boolean;
   }
 ) => {
-  const sourceCellId = editor.plugin(BaseTablePlugin).api.getSelection()
+  const sourceCellId = editor.plugin(BaseTablePlugin).read.getSelection()
     ?.cellIds[0];
 
   if (!sourceCellId) throw new Error('Expected source cell id');
@@ -491,7 +492,7 @@ describe('TablePlugin table drag/drop', () => {
 
     editor.update.selection.set({ anchor: point, focus: point });
     expect(
-      editor.plugin(BaseTablePlugin).api.getSelection()?.anchors
+      editor.plugin(BaseTablePlugin).read.getSelection()?.anchors
     ).toHaveLength(1);
 
     dragSelectedCells(editor, {

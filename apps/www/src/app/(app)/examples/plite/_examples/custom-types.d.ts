@@ -194,8 +194,7 @@ export type CustomText = {
   italic?: boolean;
   code?: boolean;
   fontSize?: string;
-  subscript?: boolean;
-  superscript?: boolean;
+  script?: 'sub' | 'sup';
   underline?: boolean;
   strikethrough?: boolean;
   // MARKDOWN PREVIEW SPECIFIC LEAF

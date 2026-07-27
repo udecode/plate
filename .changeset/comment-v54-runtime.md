@@ -2,5 +2,7 @@
 "@platejs/comment": major
 ---
 
-- Move comment mutations to `editor.update.comment.*` commands
-- Register comment marks as boolean text properties in compiled schemas
+Read comment marks through `editor.read.comment`, derive IDs with
+`editor.api.comment.nodeId`, and mutate comments through
+`editor.update.comment`. Register comment marks as boolean text properties in
+compiled schemas.

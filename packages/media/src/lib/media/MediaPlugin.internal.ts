@@ -1,18 +1,9 @@
-import type {
-  AnyPluginConfig,
-  BasePlugin,
-  InferOptions,
-  PluginConfig,
-} from '@platejs/core';
+import type { AnyPluginConfig, BasePlugin, PluginConfig } from '@platejs/core';
 import {
-  type Descendant,
-  ElementApi,
   type NodeInsertNodesOptions,
   property,
   schema,
   type SchemaElementProperties,
-  TextApi,
-  type Value,
 } from '@platejs/plite';
 import type {
   KEYS,
@@ -44,7 +35,7 @@ export const mediaElementContent = schema.content.any(
   { default: 'text', min: 1 }
 );
 
-export type MediaPluginOptions = {
+export type MediaPluginState = {
   isUrl?: (text: string) => boolean;
 
   /** Transforms the url. */
@@ -88,7 +79,7 @@ export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
 
 export type MediaPluginConfig = PluginConfig<
   string,
-  MediaPluginOptions,
+  MediaPluginState,
   {},
   {},
   {},
@@ -128,220 +119,52 @@ type MediaInsertInputForPluginKey<K extends string> = K extends typeof KEYS.img
       ? AlignedMediaInsertInput
       : MediaInsertInput;
 
-const normalizeMediaDescendant = (
-  input: unknown,
-  location: string,
-  {
-    isInline,
-    type,
-  }: {
-    isInline: (node: Descendant) => boolean;
-    type: string;
-  }
-): Descendant => {
-  if (TextApi.isText(input)) return input;
-  if (!ElementApi.isElement(input)) {
-    throw new Error(`Invalid media caption node at ${location}.`);
-  }
-
-  if (input.type !== type) {
-    let changed = false;
-    const children = input.children.map((child, index) => {
-      const normalized = normalizeMediaDescendant(
-        child,
-        `${location}.${index}`,
-        { isInline, type }
-      );
-
-      if (normalized !== child) changed = true;
-
-      return normalized;
-    });
-
-    if (!changed) return input;
-
-    return {
-      ...input,
-      children,
-    };
-  }
-
-  const hasLegacyCaption = Object.hasOwn(input, 'caption');
-  if (!hasLegacyCaption) return input;
-
-  const legacyCaption = Reflect.get(input, 'caption');
-  const normalizeCaptionChildren = (
-    children: readonly unknown[],
-    childLocation: string
-  ) =>
-    children.map((child, index) =>
-      normalizeMediaDescendant(child, `${childLocation}.${index}`, {
-        isInline,
-        type,
-      })
-    );
-  const isInlineCaptionChild = (child: Descendant) =>
-    TextApi.isText(child) || (ElementApi.isElement(child) && isInline(child));
-  const normalizeInlineChildren = (
-    children: readonly unknown[],
-    childLocation: string
-  ) => {
-    const normalized = normalizeCaptionChildren(children, childLocation);
-
-    if (!normalized.every(isInlineCaptionChild)) {
-      throw new Error(
-        `Media caption at ${childLocation} must contain inline content.`
-      );
-    }
-
-    return normalized;
-  };
-  const isAbsent = (children: readonly Descendant[]) =>
-    children.length === 0 ||
-    (children.length === 1 &&
-      TextApi.isText(children[0]) &&
-      children[0].text === '' &&
-      Object.keys(children[0]).every((key) => key === 'text'));
-  const direct = normalizeInlineChildren(
-    input.children,
-    `${location}.children`
-  );
-  let legacy: Descendant[] = [];
-
-  if (!Array.isArray(legacyCaption)) {
-    throw new Error(`Legacy media caption at ${location} must be an array.`);
-  }
-
-  const normalizedLegacy = normalizeCaptionChildren(
-    legacyCaption,
-    `${location}.caption`
-  );
-
-  if (normalizedLegacy.every(isInlineCaptionChild)) {
-    legacy = normalizedLegacy;
-  } else if (
-    normalizedLegacy.length === 1 &&
-    ElementApi.isElement(normalizedLegacy[0]) &&
-    normalizedLegacy[0].children.every(isInlineCaptionChild)
-  ) {
-    legacy = [...normalizedLegacy[0].children];
-  } else {
-    throw new Error(
-      `Legacy media caption at ${location} must contain inline content or one block wrapper.`
-    );
-  }
-
-  const nonEmptySources = [direct, legacy].filter(
-    (children) => !isAbsent(children)
-  );
-
-  if (nonEmptySources.length > 1) {
-    throw new Error(
-      `Media element at ${location} has multiple non-empty caption sources.`
-    );
-  }
-
-  const { caption: _caption, ...element } = input;
-  const children = nonEmptySources[0] ?? [{ text: '' }];
-
-  return {
-    ...element,
-    children,
-  };
-};
-
 /**
  * Installs direct-child caption normalization and media construction.
  *
  * @internal
  */
+type MediaPluginInput = Readonly<{
+  __config: AnyPluginConfig;
+  extend: (...args: never[]) => unknown;
+  key: string;
+}>;
+
 export const defineMediaPlugin = <
-  C extends AnyPluginConfig & { options: MediaPluginOptions },
+  P extends MediaPluginInput,
+  C extends AnyPluginConfig = P['__config'],
 >(
-  plugin: BasePlugin<C>,
+  plugin: P,
   normalizeUrlInput?: (
-    options: Readonly<InferOptions<C>>,
+    state: Readonly<MediaPluginState>,
     url: string
   ) => MediaUrlProperties
-) =>
-  plugin.extend<{
-    api: {
-      normalizeUrl: (url: string) => MediaUrlProperties | undefined;
-    };
-    update: {
-      insert: (
-        input: MediaInsertInputForPluginKey<C['key']>,
-        options?: NodeInsertNodesOptions<MediaElementForPluginKey<C['key']>>
-      ) => void;
-      setUrl: (input: {
-        element: MediaElementForPluginKey<C['key']>;
-        url: string;
-      }) => boolean;
-    };
-  }>((context) => {
+) => {
+  const typedPlugin = plugin as unknown as BasePlugin<C>;
+
+  return typedPlugin.extend((context) => {
+    const getState = () => context.store.get() as Readonly<MediaPluginState>;
     const normalizeUrl = (url: string): MediaUrlProperties | undefined => {
-      const options: Readonly<MediaPluginOptions> = context.getOptions();
-      const normalized = normalizeUrlInput?.(context.getOptions(), url) ?? {
-        url: options.transformUrl?.(url) ?? url,
+      const state = getState();
+      const normalized = normalizeUrlInput?.(state, url) ?? {
+        url: state.transformUrl?.(url) ?? url,
       };
 
-      return (options.isUrl ?? defaultIsUrl)(normalized.url)
+      return (state.isUrl ?? defaultIsUrl)(normalized.url)
         ? normalized
         : undefined;
     };
 
     return {
       api: { normalizeUrl },
-      transformInitialValue: ({ value }) => {
-        let changed = false;
-        const normalizeChildren = (children: Value, root: string) => {
-          let rootChanged = false;
-          const normalized = children.map((child, index) => {
-            const next = normalizeMediaDescendant(child, `${root}.${index}`, {
-              isInline: context.editor.read.schema.isInline,
-              type: context.type,
-            });
-
-            if (next !== child) {
-              changed = true;
-              rootChanged = true;
-            }
-
-            return next;
-          }) as Value;
-
-          return rootChanged ? normalized : children;
-        };
-        const children = normalizeChildren(value.children, 'main');
-        let roots = value.roots;
-
-        if (roots) {
-          let rootsChanged = false;
-          const nextRoots = Object.fromEntries(
-            Object.entries(roots).map(([root, rootChildren]) => {
-              const normalized = normalizeChildren(rootChildren, root);
-
-              if (normalized !== rootChildren) rootsChanged = true;
-
-              return [root, normalized];
-            })
-          );
-
-          if (rootsChanged) roots = nextRoots;
-        }
-
-        if (!changed) return value;
-
-        return { ...value, children, ...(roots ? { roots } : {}) };
-      },
       update: ({ tx }) => ({
-        insert(input, options?) {
+        insert(
+          input: MediaInsertInputForPluginKey<C['key']>,
+          options?: NodeInsertNodesOptions<MediaElementForPluginKey<C['key']>>
+        ) {
           if (!tx.selection() && options?.at === undefined) return;
 
-          const normalized = normalizeUrlInput?.(
-            context.getOptions(),
-            input.url
-          );
+          const normalized = normalizeUrlInput?.(getState(), input.url);
           const { caption, ...properties } = {
             ...input,
             ...normalized,
@@ -365,7 +188,13 @@ export const defineMediaPlugin = <
             tx.nodes.insert(element, options);
           }
         },
-        setUrl({ element, url }) {
+        setUrl({
+          element,
+          url,
+        }: {
+          element: MediaElementForPluginKey<C['key']>;
+          url: string;
+        }) {
           const properties = normalizeUrl(url);
           const at = tx.nodes.path(element);
 
@@ -385,3 +214,4 @@ export const defineMediaPlugin = <
       }),
     };
   });
+};

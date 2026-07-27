@@ -1,14 +1,12 @@
-import { create } from 'mutative';
-
 import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
-  InferOptions,
+  PluginReference,
+  PluginStore,
   WithRequiredKey,
 } from './PluginConfig';
 import type {
   AnyBasePlugin,
-  BasePlugin,
   BasePluginContext,
   InferConfig,
 } from './BasePlugin';
@@ -23,14 +21,11 @@ import {
   hasCompiledPlatePluginApiCandidate,
   isResolvingPlatePlugin,
 } from '../../internal/plugin/compilePlateModel';
-import {
-  getPluginOptionsStore,
-  snapshotPluginOptions,
-} from '../../internal/plugin/pluginOptionsStore';
+import { getPluginStore } from '../../internal/plugin/pluginStore';
 
 export function getEditorPlugin<C extends AnyPluginConfig>(
   editor: BaseEditor,
-  p: BasePlugin<C>
+  p: PluginReference & { readonly __config: C }
 ): BasePluginContext<C>;
 export function getEditorPlugin<P extends AnyPluginConfig>(
   editor: BaseEditor,
@@ -61,13 +56,7 @@ export function getEditorPlugin(
   const isInstalled = () =>
     getCandidate() !== undefined ||
     getCompiledPlatePlugin(editor, p.key) !== undefined;
-  const getStore = () => getPluginOptionsStore(editor, getPlugin().key);
-  const replaceStoreState = (
-    store: NonNullable<ReturnType<typeof getStore>>,
-    value: object
-  ) => {
-    store.set('state', snapshotPluginOptions(value) as never);
-  };
+  const getStore = () => getPluginStore(editor, getPlugin().key);
   const createApiFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) => {
@@ -92,9 +81,12 @@ export function getEditorPlugin(
         return Reflect.apply(value, owner, args);
       },
       {
-        get(_target, key) {
+        get(target, key, receiver) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return;
+          }
+          if (key in target) {
+            return Reflect.get(target, key, receiver);
           }
 
           return createApiFacade([...path, key]);
@@ -162,9 +154,12 @@ export function getEditorPlugin(
         return result;
       },
       {
-        get(_target, key) {
+        get(target, key, receiver) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return;
+          }
+          if (key in target) {
+            return Reflect.get(target, key, receiver);
           }
 
           return createUpdateFacade([...path, key]);
@@ -196,9 +191,12 @@ export function getEditorPlugin(
         return Reflect.apply(value, owner, args);
       },
       {
-        get(_target, key) {
+        get(target, key, receiver) {
           if (key === 'then' || key === 'toJSON' || typeof key === 'symbol') {
             return;
+          }
+          if (key in target) {
+            return Reflect.get(target, key, receiver);
           }
 
           return createReadFacade([...path, key]);
@@ -228,75 +226,42 @@ export function getEditorPlugin(
   );
   const defineCodecs = createDefinePluginCodecs<AnyPluginConfig>();
   const defineEditorExtension = createDefineEditorExtension<AnyPluginConfig>();
+  const store: PluginStore<AnyPluginConfig> = Object.freeze({
+    get(key?: PropertyKey, ...args: unknown[]) {
+      const runtime = getStore();
+
+      if (runtime) return (runtime.public.get as any)(key, ...args);
+      const plugin = getPlugin();
+
+      if (key === undefined) return plugin.initialState;
+      const selector = (
+        plugin.selectors as Record<
+          PropertyKey,
+          ((state: object, ...args: unknown[]) => unknown) | undefined
+        >
+      )[key] as ((state: object, ...args: unknown[]) => unknown) | undefined;
+
+      if (selector) return selector(plugin.initialState, ...args);
+      if (Object.hasOwn(plugin.initialState, key)) {
+        return plugin.initialState[key as never];
+      }
+
+      throw new Error(
+        `Plate plugin "${plugin.key}" has no state field or selector "${String(key)}".`
+      );
+    },
+    set(value: unknown) {
+      getStore()?.public.set(value as never);
+    },
+    subscribe(listener: (state: object, previousState: object) => void) {
+      return getStore()?.public.subscribe(listener) ?? (() => {});
+    },
+  }) as PluginStore<AnyPluginConfig>;
   const context = {
     defineCodecs,
     defineEditorExtension,
     editor,
-    setOption: ((key: keyof InferOptions<AnyPluginConfig>, value: unknown) => {
-      const plugin = getPlugin();
-      const store = getStore();
-
-      if (!store) return;
-
-      const state = store.get('state') as object;
-
-      if (!(key in state)) {
-        editor.api.debug.error(
-          `plugin.setOption: ${String(key)} option is not defined in plugin ${
-            plugin.key
-          }.`,
-          'OPTION_UNDEFINED'
-        );
-        return;
-      }
-
-      replaceStoreState(store, {
-        ...(state as Record<PropertyKey, unknown>),
-        [key]: value,
-      });
-    }) as any,
-    setOptions: ((options: unknown) => {
-      const store = getStore();
-
-      if (!store) return;
-
-      if (typeof options === 'function') {
-        const next = create(store.get('state') as object, options as never);
-
-        replaceStoreState(store, next);
-      } else if (typeof options === 'object' && options !== null) {
-        replaceStoreState(store, {
-          ...(store.get('state') as Record<PropertyKey, unknown>),
-          ...options,
-        });
-      }
-    }) as any,
-    getOption: ((key: PropertyKey, ...args: unknown[]) => {
-      const plugin = getPlugin();
-      const store = getStore() as any;
-
-      if (!store) return plugin.options[key as never];
-
-      if (!(key in store.get('state')) && !(key in store.selectors)) {
-        editor.api.debug.error(
-          `plugin.getOption: ${String(key)} option is not defined in plugin ${
-            plugin.key
-          }.`,
-          'OPTION_UNDEFINED'
-        );
-        return;
-      }
-
-      return store.get(key, ...args);
-    }) as any,
-    getOptions: (() => {
-      const plugin = getPlugin();
-      const store = getStore();
-
-      if (!store) return plugin.options;
-
-      return store.get('state');
-    }) as any,
+    store,
   } as Record<PropertyKey, unknown>;
 
   Object.defineProperties(context, {

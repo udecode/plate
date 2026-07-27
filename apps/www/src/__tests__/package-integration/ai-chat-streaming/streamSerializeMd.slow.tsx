@@ -1,45 +1,39 @@
+import { AIChatPlugin } from '@platejs/ai/react';
+
 import { createTestEditor } from './__tests__/createTestEditor';
-import { streamDeserializeMd } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamDeserializeMd';
-import { streamSerializeMd } from '../../../../../../packages/ai/src/react/ai-chat/streaming/streamSerializeMd';
 
 const { editor } = createTestEditor() as any;
 
-describe('streamSerializeMd', () => {
+describe('AIChatPlugin read.serializeChunk', () => {
   it('keeps content without a trailing line break', () => {
     const chunk = 'chunk1';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe('chunk1');
   });
 
   it('preserves internal text line breaks', () => {
     const chunk = 'chunk1\nchunk2';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe(chunk);
   });
 
   it('preserves markdown hard break syntax', () => {
     const chunk = 'chunk1\\\nchunk2';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe(chunk);
   });
@@ -57,37 +51,31 @@ describe('streamSerializeMd', () => {
       },
     ];
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe(chunk);
   });
 
   it('preserves trailing spaces', () => {
     const chunk = 'chunk1\n ';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe('chunk1\n ');
   });
 
   it('preserves spaces before trailing line breaks', () => {
     const chunk = 'chunk1 \n ';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe(chunk);
   });
@@ -101,24 +89,20 @@ describe('streamSerializeMd', () => {
       },
     ];
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe(chunk);
   });
 
   it('preserves a trailing line break', () => {
     const chunk = 'chunk1\n';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe('chunk1\n');
   });
@@ -126,26 +110,25 @@ describe('streamSerializeMd', () => {
   it('drops an incomplete trailing block without a line break', () => {
     const chunk = 'chunk1\n\n';
 
-    const lastBlock = streamDeserializeMd(editor, chunk).at(-1) as any;
+    const lastBlock = editor
+      .plugin(AIChatPlugin)
+      .api.deserializeChunk(chunk)
+      .at(-1) as any;
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: [lastBlock] } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: [lastBlock] } }, chunk);
 
     expect(output).toBe('');
   });
 
   it('serializes headings with a trailing line break', () => {
     const chunk = '## Heading 1\n';
-    const input = streamDeserializeMd(editor, chunk);
+    const input = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-    const output = streamSerializeMd(
-      editor,
-      { value: { children: input } },
-      chunk
-    );
+    const output = editor
+      .plugin(AIChatPlugin)
+      .read.serializeChunk({ value: { children: input } }, chunk);
 
     expect(output).toBe('## Heading 1\n');
   });
@@ -154,13 +137,11 @@ describe('streamSerializeMd', () => {
     it('preserves complete code blocks', async () => {
       const chunk = '```ts\nconst a = 123\n```';
 
-      const result = streamDeserializeMd(editor, chunk);
+      const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-      const output = streamSerializeMd(
-        editor,
-        { value: { children: result } },
-        chunk
-      );
+      const output = editor
+        .plugin(AIChatPlugin)
+        .read.serializeChunk({ value: { children: result } }, chunk);
 
       expect(output).toBe(chunk);
     });
@@ -168,13 +149,11 @@ describe('streamSerializeMd', () => {
     it('preserves incomplete code blocks', async () => {
       const chunk = '```ts\nconst a = 123';
 
-      const result = streamDeserializeMd(editor, chunk);
+      const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-      const output = streamSerializeMd(
-        editor,
-        { value: { children: result } },
-        chunk
-      );
+      const output = editor
+        .plugin(AIChatPlugin)
+        .read.serializeChunk({ value: { children: result } }, chunk);
 
       expect(output).toBe(chunk);
     });
@@ -182,13 +161,11 @@ describe('streamSerializeMd', () => {
     it('preserves complete math blocks', async () => {
       const chunk = '$$\nE = mc^2\n$$';
 
-      const result = streamDeserializeMd(editor, chunk);
+      const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-      const output = streamSerializeMd(
-        editor,
-        { value: { children: result } },
-        chunk
-      );
+      const output = editor
+        .plugin(AIChatPlugin)
+        .read.serializeChunk({ value: { children: result } }, chunk);
 
       expect(output).toBe(chunk);
     });
@@ -196,13 +173,11 @@ describe('streamSerializeMd', () => {
     it('preserves incomplete math blocks', async () => {
       const chunk = '$$E = mc^2';
 
-      const result = streamDeserializeMd(editor, chunk);
+      const result = editor.plugin(AIChatPlugin).api.deserializeChunk(chunk);
 
-      const output = streamSerializeMd(
-        editor,
-        { value: { children: result } },
-        chunk
-      );
+      const output = editor
+        .plugin(AIChatPlugin)
+        .read.serializeChunk({ value: { children: result } }, chunk);
 
       expect(output).toBe(chunk);
     });

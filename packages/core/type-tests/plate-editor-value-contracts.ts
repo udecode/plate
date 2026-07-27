@@ -16,13 +16,14 @@ type ReadBodyValue = readonly [...BodyValue];
 
 type LayoutVariant = 'compact' | 'full';
 type EditorSummary = `${LayoutVariant}:@`;
+type LayoutStoreState = {
+  density: 1 | 2;
+  variant: LayoutVariant;
+};
 
 type LayoutConfig = PluginConfig<
   'layout',
-  {
-    density: 1 | 2;
-    variant: LayoutVariant;
-  },
+  LayoutStoreState,
   {
     getVariant: () => LayoutVariant;
   },
@@ -32,26 +33,26 @@ type LayoutConfig = PluginConfig<
     };
   },
   {
-    isDense: () => boolean;
+    isDense: (state: Readonly<LayoutStoreState>) => boolean;
   }
 >;
 
 const LayoutPlugin = createPlatePlugin<LayoutConfig>({
   key: 'layout',
-  options: {
+  initialState: {
     density: 1,
     variant: 'full',
   },
 })
-  .extend(({ getOptions }) => ({
+  .extend(() => ({
     selectors: {
-      isDense: () => getOptions().density === 2,
+      isDense: (state) => state.density === 2,
     },
   }))
-  .extend(({ getOptions }) => ({
+  .extend(({ store }) => ({
     extension: {
       api: {
-        getVariant: () => getOptions().variant,
+        getVariant: () => store.get().variant,
       },
     },
   }))
@@ -59,33 +60,33 @@ const LayoutPlugin = createPlatePlugin<LayoutConfig>({
     update: {
       setDensity: (density: 1 | 2) => void;
     };
-  }>(({ setOption }) => ({
+  }>(({ store }) => ({
     update: () => ({
       setDensity: (density) => {
-        setOption('density', density);
+        store.set({ density });
       },
     }),
   }));
 
 const ConfiguredLayoutPlugin = LayoutPlugin.extend({
-  options: {
+  initialState: {
     density: 2,
   },
 }).configure({
-  options: {
+  initialState: {
     variant: 'compact',
   },
 });
 
 const MentionPlugin = createPlatePlugin({
   key: 'mention',
-  options: {
+  initialState: {
     trigger: '@' as const,
   },
-}).extend(({ getOptions }) => ({
+}).extend(({ store }) => ({
   extension: {
     api: {
-      getTrigger: () => getOptions().trigger,
+      getTrigger: () => store.get().trigger,
     },
   },
 }));
@@ -130,7 +131,7 @@ const editorSummary: EditorSummary =
 const toolbarDescription: 'toolbar' = plateEditor.api.describeToolbar();
 const isDense: boolean = plateEditor
   .plugin(ConfiguredLayoutPlugin)
-  .getOption('isDense');
+  .store.get('isDense');
 
 plateEditor.update((tx) => {
   tx.layout.setDensity(1);
@@ -147,7 +148,7 @@ void mentionTrigger;
 void toolbarDescription;
 
 LayoutPlugin.configure({
-  options: {
+  initialState: {
     // @ts-expect-error invalid configured option value
     density: 3,
   },
@@ -164,7 +165,7 @@ plateEditor.update((tx) => {
 });
 
 // @ts-expect-error invalid selector arguments
-plateEditor.plugin(ConfiguredLayoutPlugin).getOption('isDense', true);
+plateEditor.plugin(ConfiguredLayoutPlugin).store.get('isDense', true);
 
 // @ts-expect-error invalid merged editor api
 plateEditor.api.describeToolbar('extra');

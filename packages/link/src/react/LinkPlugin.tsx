@@ -37,7 +37,10 @@ export type LinkConfig = ExtendConfig<
   {},
   {},
   {
-    isOpen?: (editorId: string) => boolean;
+    isOpen?: (
+      state: Readonly<{ openEditorId: string | null }>,
+      editorId: string
+    ) => boolean;
   },
   {},
   FloatingLinkApi
@@ -47,7 +50,7 @@ export type LinkConfig = ExtendConfig<
 export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
   BaseLinkPlugin,
   {
-    options: {
+    initialState: {
       isEditing: false,
       mode: '',
       mouseDown: false,
@@ -61,9 +64,9 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
 ).extend<{
   api: FloatingLinkApi;
   selectors: LinkConfig['selectors'];
-}>(({ editor, getOptions, setOption, setOptions, type }) => {
+}>(({ api, editor, store, type, update }) => {
   const hide = () => {
-    setOptions({
+    store.set({
       isEditing: false,
       mode: '',
       mouseDown: false,
@@ -75,7 +78,7 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
     });
   };
   const show = (mode: FloatingLinkMode, editorId: string) => {
-    setOptions({
+    store.set({
       isEditing: false,
       mode,
       openEditorId: editorId,
@@ -96,18 +99,18 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
     const [link, path] = entry;
     let text = editor.read.text.string(path);
 
-    setOption('url', link.url);
-    setOption('newTab', link.target === '_blank');
+    store.set({ url: link.url });
+    store.set({ newTab: link.target === '_blank' });
 
     if (text === link.url) text = '';
 
-    setOption('text', text);
-    setOption('isEditing', true);
+    store.set({ text });
+    store.set({ isEditing: true });
 
     return true;
   };
   const triggerInsert = ({ focused }: FloatingLinkTriggerOptions = {}) => {
-    if (getOptions().mode || !focused) return;
+    if (store.get().mode || !focused) return;
     if (editor.read.selection.isAcrossBlocks()) return;
 
     const selection = editor.read.selection();
@@ -115,7 +118,7 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
     if (!selection) return;
     if (editor.read.nodes.some({ at: selection, match: { type } })) return;
 
-    setOption('text', editor.read.text.string());
+    store.set({ text: editor.read.text.string() });
     show('insert', editor.id);
 
     return true;
@@ -143,7 +146,7 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
       },
       hide,
       reset: () => {
-        setOptions({
+        store.set({
           isEditing: false,
           mode: '',
           mouseDown: false,
@@ -163,20 +166,17 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
           text,
           transformInput,
           url: inputUrl,
-        } = getOptions();
+        } = store.get();
         const url = transformInput
           ? (transformInput(inputUrl) ?? '')
           : inputUrl;
 
-        if (
-          !forceSubmit &&
-          !editor.plugin(BaseLinkPlugin).api.validateUrl(url)
-        ) {
+        if (!forceSubmit && !api.validateUrl(url)) {
           return;
         }
 
         hide();
-        editor.update.link.upsert({
+        update.upsert({
           skipValidation: true,
           target: newTab ? '_blank' : undefined,
           text,
@@ -187,12 +187,12 @@ export const LinkPlugin = toPlatePlugin<LinkConfig, BaseLinkConfig>(
         return true;
       },
       trigger: (options) =>
-        getOptions().mode === 'edit' ? triggerEdit() : triggerInsert(options),
+        store.get().mode === 'edit' ? triggerEdit() : triggerInsert(options),
       triggerEdit,
       triggerInsert,
     },
     selectors: {
-      isOpen: (editorId) => getOptions().openEditorId === editorId,
+      isOpen: (state, editorId) => state.openEditorId === editorId,
     },
   };
 });

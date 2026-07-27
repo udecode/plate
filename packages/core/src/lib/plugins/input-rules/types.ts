@@ -5,6 +5,7 @@ import type {
   NodeEntry,
   Path,
   Point,
+  PropertyJsonValue,
   Range,
   TextInsertTextOptions,
   ValueOf,
@@ -77,6 +78,7 @@ export type MarkInputRuleConfig = BaseInputRule<InsertTextInputRuleContext> & {
   start: string;
   trim?: 'allow' | 'reject';
   trigger: string;
+  value?: PropertyJsonValue;
 };
 
 export type BlockStartInputRuleMatch = {

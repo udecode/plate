@@ -1,8 +1,7 @@
-import { NO_BREAK_SPACE } from '@platejs/core';
 import { traverseHtmlElements } from '@platejs/core/internal';
 
 const isHtmlOpEmpty = (element: Element): boolean =>
-  element.nodeName === 'O:P' && element.textContent === NO_BREAK_SPACE;
+  element.nodeName === 'O:P' && element.textContent === '\u00A0';
 
 const isHtmlElementEmpty = (element: Element): boolean =>
   element.children.length === 1 &&
@@ -10,7 +9,7 @@ const isHtmlElementEmpty = (element: Element): boolean =>
   (isHtmlOpEmpty(element.firstElementChild) ||
     isHtmlElementEmpty(element.firstElementChild));
 
-/** Remove paragraph innerHTML if its child is 'O:P' with NO_BREAK_SPACE. */
+/** Remove paragraph contents when its only descendant is an empty `O:P`. */
 export const cleanDocxEmptyParagraphs = (rootNode: Node): void => {
   traverseHtmlElements(rootNode, (element) => {
     if (element.tagName === 'P' && isHtmlElementEmpty(element)) {

@@ -28,7 +28,7 @@ description: 配置 Plate 插件的键盘快捷键。
 | `keys` | 由 Plate 的跨 realm 匹配器编译的按键组合，例如 `'mod+b'` 或 `[[Key.Mod, 'b']]`。 |
 | `handler` | 接收 `{ editor, event, eventDetails }` 的显式处理函数。 |
 | `target` | 同名更新方法和 API 方法同时存在时，用 `'update' | 'api'` 消除歧义。 |
-| `priority` | 快捷键优先级；默认使用插件优先级。 |
+| `priority` | 快捷键的局部优先级；默认为 `0`。 |
 | `preventDefault` | 已处理快捷键的浏览器默认行为策略。省略时，Plate 调用 `preventDefault()` 和 `stopPropagation()`。 |
 | `null` | 删除这个命名快捷键。 |
 
@@ -182,14 +182,13 @@ export const ReviewPlugin = createPlatePlugin({
 
 ## 优先级
 
-快捷键默认继承插件优先级。多个处理函数使用相同按键时，可以为需要优先执行的快捷键设置更高的 `priority`。
+快捷键优先级默认为 `0`。多个处理函数使用相同按键时，可以为需要优先执行的快捷键设置更高的 `priority`。
 
 ```tsx title="plugins/priority-plugin.tsx" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
 export const PriorityPlugin = createPlatePlugin({
-  key: 'priority',
-  priority: 20,
+  key: 'commandMenu',
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',
@@ -204,7 +203,7 @@ export const PriorityPlugin = createPlatePlugin({
 });
 ```
 
-Plate 按快捷键优先级、插件顺序、声明顺序排列编译表。第一个已处理的路径胜出。
+Plate 按快捷键优先级、插件应用顺序、声明顺序排列编译表。第一个已处理的路径胜出。
 
 ## 编辑器级快捷键
 

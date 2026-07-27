@@ -103,6 +103,10 @@ type MarkRuleFactoryConfig<
     FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
     string
   >;
+  value?: FactoryValue<
+    FactoryInput<InsertTextInputRuleContext<TEditor>, TDefaults, TRequired>,
+    MarkInputRuleConfig['value']
+  >;
   enabled?: (
     input: FactoryInput<
       InsertTextInputRuleContext<TEditor>,
@@ -597,6 +601,14 @@ export function createRuleFactory(configOrBuilder: unknown): any {
             Record<string, unknown>
           >
         )!,
+        value: resolveFactoryValue(
+          markConfig.value,
+          getFactoryInput({}) as unknown as FactoryInput<
+            InsertTextInputRuleContext,
+            Record<string, unknown>,
+            Record<string, unknown>
+          >
+        ),
         trim: resolveFactoryValue(
           markConfig.trim,
           getFactoryInput({}) as unknown as FactoryInput<

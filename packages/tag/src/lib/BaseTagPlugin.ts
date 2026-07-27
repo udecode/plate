@@ -15,6 +15,28 @@ export const BaseTagPlugin = createBasePlugin({
       void: 'inline',
     },
   },
+  read: ({ state, type }) => {
+    const getSelectedItems = () =>
+      Array.from(
+        state.nodes.entries<TTagElement>({
+          at: [],
+          match: { type },
+        })
+      ).map(([{ children: _children, type: _type, ...item }]) => item);
+
+    return {
+      getSelectedItems,
+      isEqual: (tags: readonly TTagProps[] = []) => {
+        const current = new Set(getSelectedItems().map((item) => item.value));
+        const next = new Set(tags.map((item) => item.value));
+
+        return (
+          current.size === next.size &&
+          [...current].every((value) => next.has(value))
+        );
+      },
+    };
+  },
   update: ({ tx, type }) => ({
     insert: (
       props: TTagProps,

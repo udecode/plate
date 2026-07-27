@@ -1,0 +1,1147 @@
+[
+  {
+    "id": 37,
+    "package": "basic-styles",
+    "symbol": "BaseFontBackgroundColorPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontBackgroundColorPlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the flat mark mutations.",
+    "evidence": "The constructor owns both operations and each directly mutates the plugin mark through the active transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 38,
+    "package": "basic-styles",
+    "symbol": "BaseFontColorPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontColorPlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the flat mark mutations.",
+    "evidence": "The constructor owns both operations and each directly mutates the plugin mark through the active transaction.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 39,
+    "package": "basic-styles",
+    "symbol": "BaseFontFamilyPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontFamilyPlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the minimal set mutation.",
+    "evidence": "The only production behavior sets the font-family mark and no production reset caller justifies another public verb.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 40,
+    "package": "basic-styles",
+    "symbol": "BaseFontSizePlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontSizePlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the minimal set mutation.",
+    "evidence": "The registry toolbar only sets a concrete font-size mark, so a speculative clear operation would add API without a caller.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 41,
+    "package": "basic-styles",
+    "symbol": "BaseFontWeightPlugin",
+    "file": "packages/basic-styles/src/lib/BaseFontWeightPlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the minimal set mutation.",
+    "evidence": "The plugin owns one transaction-bound mark write and has no production reset consumer.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 42,
+    "package": "basic-styles",
+    "symbol": "BaseLineHeightPlugin",
+    "file": "packages/basic-styles/src/lib/BaseLineHeightPlugin.ts",
+    "line": 25,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep one semantic set operation.",
+    "evidence": "set owns both setting and clearing by unsetting the property when the configured default value is supplied.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 43,
+    "package": "basic-styles",
+    "symbol": "BaseTextAlignPlugin",
+    "file": "packages/basic-styles/src/lib/BaseTextAlignPlugin.ts",
+    "line": 25,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep one semantic set operation.",
+    "evidence": "set owns both setting and clearing by unsetting the property when the configured default alignment is supplied.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 44,
+    "package": "basic-styles",
+    "symbol": "BaseTextIndentPlugin",
+    "file": "packages/basic-styles/src/lib/BaseTextIndentPlugin.ts",
+    "line": 35,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the explicit property mutations.",
+    "evidence": "set and unset map exactly to the underlying transaction property operations and accept their honest node-update options.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 45,
+    "package": "basic-styles",
+    "symbol": "FontColorPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 11,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontColorPlugin clear and set updates.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 46,
+    "package": "basic-styles",
+    "symbol": "FontSizePlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 13,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontSizePlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 47,
+    "package": "basic-styles",
+    "symbol": "FontFamilyPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 15,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontFamilyPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 48,
+    "package": "basic-styles",
+    "symbol": "FontBackgroundColorPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 17,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["clear", "set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontBackgroundColorPlugin clear and set updates.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 49,
+    "package": "basic-styles",
+    "symbol": "FontWeightPlugin",
+    "file": "packages/basic-styles/src/react/FontPlugin.tsx",
+    "line": 21,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseFontWeightPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 50,
+    "package": "basic-styles",
+    "symbol": "LineHeightPlugin",
+    "file": "packages/basic-styles/src/react/LineHeightPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseLineHeightPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 51,
+    "package": "basic-styles",
+    "symbol": "TextAlignPlugin",
+    "file": "packages/basic-styles/src/react/TextAlignPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseTextAlignPlugin set.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 52,
+    "package": "basic-styles",
+    "symbol": "TextIndentPlugin",
+    "file": "packages/basic-styles/src/react/TextIndentPlugin.tsx",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["set", "unset"],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Mirror the Base plugin unchanged.",
+    "evidence": "The React adapter adds no behavior and effectively inherits BaseTextIndentPlugin set and unset updates.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 65,
+    "package": "core",
+    "symbol": "internalRootDescriptor",
+    "file": "packages/core/src/lib/editor/withPlite.ts",
+    "line": 858,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this capability-neutral internal root carrier.",
+    "evidence": "The fixed declaration contributes no capability; its spread pluginConfig is dynamic editor-constructor input rather than a stable package plugin surface.",
+    "extendJustified": null,
+    "gaps": [
+      "Dynamic root configuration cannot be enumerated as fixed descriptor members."
+    ]
+  },
+  {
+    "id": 66,
+    "package": "core",
+    "symbol": "AffinityPlugin",
+    "file": "packages/core/src/lib/plugins/affinity/AffinityPlugin.ts",
+    "line": 29,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["setSelection"],
+      "extension": ["commands.delete", "commands.insertText", "commands.move"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["setSelection"],
+      "extension": ["commands.delete", "commands.insertText", "commands.move"]
+    },
+    "priority": "keep",
+    "verdict": "Keep mutation scoped and command interception editor-wide.",
+    "evidence": "setSelection mutates the active transaction, while the three Plite command wrappers enforce affinity across the editor.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 67,
+    "package": "core",
+    "symbol": "DebugPlugin",
+    "file": "packages/core/src/lib/plugins/debug/DebugPlugin.ts",
+    "line": 53,
+    "current": {
+      "api": ["debug.error", "debug.info", "debug.log", "debug.warn"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["error", "info", "log", "warn"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Publish debug once through its matching plugin key.",
+    "evidence": "The descriptor key is debug, so constructor api preserves editor.api.debug while also making editor.plugin(DebugPlugin).api the same inferred service.",
+    "extendJustified": null,
+    "gaps": [
+      "The extension implementation bypasses the plugin portal even though its namespace exactly matches the plugin key."
+    ]
+  },
+  {
+    "id": 68,
+    "package": "core",
+    "symbol": "DOMPluginBase",
+    "file": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+    "line": 70,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Keep Plate auto-scroll attached to the editor-wide DOM capability.",
+    "evidence": "autoScroll owns the active transaction scope, while the status probe and transaction hook extend the Plite DOM platform group.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 69,
+    "package": "core",
+    "symbol": "DOMPlugin",
+    "file": "packages/core/src/lib/plugins/dom/DOMPlugin.ts",
+    "line": 217,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep the composed DOM bridge as an editor-wide extension.",
+    "evidence": "The derived descriptor effectively inherits Plate autoScroll and composes the standalone Plite DOM lifecycle, clipboard, and DOM capability.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 70,
+    "package": "core",
+    "symbol": "ElementStatePlugin",
+    "file": "packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts",
+    "line": 6,
+    "current": {
+      "api": ["isElementStateEmpty"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["isEmpty"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "P1",
+    "verdict": "Scope and shorten the pure element-state service.",
+    "evidence": "The method classifies a supplied element with compiled schema metadata rather than reading document position, so editor.api.elementState.isEmpty is the honest keyed plugin API.",
+    "extendJustified": null,
+    "gaps": [
+      "The unkeyed root name repeats its owner and the typed plugin portal exposes no API."
+    ]
+  },
+  {
+    "id": 71,
+    "package": "core",
+    "symbol": "HistoryPlugin",
+    "file": "packages/core/src/lib/plugins/HistoryPlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "activate",
+        "onCommit",
+        "state.history",
+        "state.history.redos",
+        "state.history.undos",
+        "tx.history.discardRedo",
+        "tx.history.merge",
+        "tx.history.newBatch",
+        "tx.history.redo",
+        "tx.history.restore",
+        "tx.history.skip",
+        "tx.history.undo",
+        "validateConfiguration"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "activate",
+        "onCommit",
+        "state.history",
+        "state.history.redos",
+        "state.history.undos",
+        "tx.history.discardRedo",
+        "tx.history.merge",
+        "tx.history.newBatch",
+        "tx.history.redo",
+        "tx.history.restore",
+        "tx.history.skip",
+        "tx.history.undo",
+        "validateConfiguration"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep history as a foundational editor-wide extension.",
+    "evidence": "history() owns editor lifecycle, snapshot reads, and transaction controls whose semantics are global rather than feature-plugin scoped.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 72,
+    "package": "core",
+    "symbol": "HtmlPlugin",
+    "file": "packages/core/src/lib/plugins/html/HtmlPlugin.ts",
+    "line": 2807,
+    "current": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": ["deserialize"],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep deserialize as a plugin codec service.",
+    "evidence": "deserialize converts supplied HTML through the compiled codec/schema and does not query document content or mutate the editor.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 73,
+    "package": "core",
+    "symbol": "InputRulesPlugin",
+    "file": "packages/core/src/lib/plugins/input-rules/InputRulesPlugin.ts",
+    "line": 20,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "clipboard.insertData",
+        "commands.insertBreak",
+        "commands.insertText"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": [
+        "clipboard.insertData",
+        "commands.insertBreak",
+        "commands.insertText"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep input interception editor-wide.",
+    "evidence": "The plugin contributes clipboard and command pipeline wrappers rather than a callable feature service.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 74,
+    "package": "core",
+    "symbol": "NodeIdPlugin",
+    "file": "packages/core/src/lib/plugins/node-id/NodeIdPlugin.ts",
+    "line": 691,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["normalize"],
+      "extension": ["onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["normalize"],
+      "extension": ["onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Keep explicit normalization scoped and automatic repair global.",
+    "evidence": "normalize writes IDs through the active transaction, while onTransactionChange enforces ID invariants for every structural commit.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 75,
+    "package": "core",
+    "symbol": "OverridePlugin",
+    "file": "packages/core/src/lib/plugins/override/OverridePlugin.ts",
+    "line": 43,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "executeBreakRuleAction",
+        "executeDeleteRuleAction",
+        "resetBlock",
+        "selectAdjacentBlockVoid"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "queries.nodes.shouldMergeNodesRemovePrevNode"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "executeBreakRuleAction",
+        "executeDeleteRuleAction",
+        "resetBlock",
+        "selectAdjacentBlockVoid"
+      ],
+      "extension": [
+        "commands.delete",
+        "commands.insertBreak",
+        "corrections.content",
+        "queries.nodes.shouldMergeNodesRemovePrevNode"
+      ]
+    },
+    "priority": "keep",
+    "verdict": "Keep rule actions transactional and editor overrides global.",
+    "evidence": "The command/correction/query extension consumes the earlier scoped update group inside the same transaction.",
+    "extendJustified": true,
+    "gaps": []
+  },
+  {
+    "id": 76,
+    "package": "core",
+    "symbol": "BaseParagraphPlugin",
+    "file": "packages/core/src/lib/plugins/paragraph/BaseParagraphPlugin.ts",
+    "line": 5,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep this schema-only descriptor capability-neutral.",
+    "evidence": "The plugin owns paragraph schema, codec, and merge rules without publishing callable behavior.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 77,
+    "package": "core",
+    "symbol": "ReactDOMPlugin",
+    "file": "packages/core/src/react/editor/getPlateCorePlugins.ts",
+    "line": 9,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": ["api.dom.isAutoScrolling", "onTransactionChange"]
+    },
+    "priority": "keep",
+    "verdict": "Mirror the DOM base capability unchanged.",
+    "evidence": "The same-key Plate adapter adds no declaration behavior and effectively inherits DOMPluginBase auto-scroll update and extension members.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 78,
+    "package": "core",
+    "symbol": "getPlugin()",
+    "file": "packages/core/src/react/plugin/getPlugin.ts",
+    "line": 15,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the missing-plugin fallback capability-neutral.",
+    "evidence": "The dynamic descriptor only preserves a requested key when no compiled plugin exists and deliberately publishes no methods.",
+    "extendJustified": null,
+    "gaps": [
+      "This runtime fallback is not a stable exported plugin descriptor."
+    ]
+  },
+  {
+    "id": 79,
+    "package": "core",
+    "symbol": "EventEditorPlugin",
+    "file": "packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts",
+    "line": 8,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep DOM event bookkeeping in handlers.",
+    "evidence": "The plugin only reacts to blur and focus events and exposes no reusable query, service, or mutation.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 80,
+    "package": "core",
+    "symbol": "NavigationFeedbackPlugin",
+    "file": "packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts",
+    "line": 48,
+    "current": {
+      "api": [
+        "navigation.activeTarget",
+        "navigation.clear",
+        "navigation.isTarget"
+      ],
+      "read": [],
+      "selectors": [],
+      "update": [
+        "navigation.clear",
+        "navigation.flashTarget",
+        "navigation.navigate"
+      ],
+      "extension": ["effects[plate.navigation-feedback]", "onCommit"]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": ["activeTarget", "isTarget"],
+      "update": ["clear", "flashTarget", "navigate"],
+      "extension": ["effects[plate.navigation-feedback]", "onCommit"]
+    },
+    "priority": "P0",
+    "verdict": "Make navigation one plugin-owned selector/update surface.",
+    "evidence": "Renaming the descriptor key to navigation preserves editor.update.navigation while pure option-derived selectors and scoped updates remove the parallel extension api/tx ownership.",
+    "extendJustified": null,
+    "gaps": [
+      "The descriptor key navigationFeedback disagrees with its public navigation namespace.",
+      "activeTarget and therefore isTarget can call clear and mutate options, anchors, timeouts, and decorations while evaluating a query.",
+      "clear is duplicated across imperative api and tx surfaces.",
+      "The stored activeTarget option must become an internal differently named option so the pure activeTarget selector has one unambiguous key."
+    ]
+  },
+  {
+    "id": 81,
+    "package": "core",
+    "symbol": "ParagraphPlugin",
+    "file": "packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx",
+    "line": 6,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": [],
+      "extension": []
+    },
+    "priority": "keep",
+    "verdict": "Keep the React adapter capability-neutral.",
+    "evidence": "It inherits a schema-only Base descriptor and adds only a paragraph shortcut handler.",
+    "extendJustified": null,
+    "gaps": []
+  },
+  {
+    "id": 82,
+    "package": "core",
+    "symbol": "ViewPlugin",
+    "file": "packages/core/src/static/plugins/ViewPlugin.ts",
+    "line": 4,
+    "current": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "api.getFragment",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "final": {
+      "api": [],
+      "read": [],
+      "selectors": [],
+      "update": ["autoScroll"],
+      "extension": [
+        "activate",
+        "api.clipboard.insertData",
+        "api.clipboard.insertFragmentData",
+        "api.clipboard.insertTextData",
+        "api.clipboard.writeSelection",
+        "api.dom.assertDOMNode",
+        "api.dom.assertDOMPoint",
+        "api.dom.assertDOMRange",
+        "api.dom.assertEventRange",
+        "api.dom.assertPath",
+        "api.dom.assertPliteNode",
+        "api.dom.assertPlitePoint",
+        "api.dom.assertPliteRange",
+        "api.dom.blur",
+        "api.dom.deselect",
+        "api.dom.editable",
+        "api.dom.findDocumentOrShadowRoot",
+        "api.dom.findKey",
+        "api.dom.focus",
+        "api.dom.getWindow",
+        "api.dom.hasDOMNode",
+        "api.dom.hasEditableTarget",
+        "api.dom.hasRange",
+        "api.dom.hasSelectableTarget",
+        "api.dom.hasTarget",
+        "api.dom.isAutoScrolling",
+        "api.dom.isComposing",
+        "api.dom.isFocused",
+        "api.dom.isReadOnly",
+        "api.dom.isTargetInsideNonReadonlyVoid",
+        "api.dom.resolveDOMNode",
+        "api.dom.resolveDOMPoint",
+        "api.dom.resolveDOMRange",
+        "api.dom.resolveEventRange",
+        "api.dom.resolvePath",
+        "api.dom.resolvePliteNode",
+        "api.dom.resolvePlitePoint",
+        "api.dom.resolvePliteRange",
+        "api.dom.resolveRangeRect",
+        "api.dom.root",
+        "api.dom.scroll",
+        "api.dom.scrollIntoView",
+        "api.dom.getSelectedFragment",
+        "onCommit",
+        "onTransactionChange"
+      ]
+    },
+    "priority": "P1",
+    "verdict": "Keep the helper, but name it inside the DOM substrate.",
+    "evidence": "Plite read.getFragment returns a model-selection fragment, while this helper reconstructs a static browser selection from mounted block DOM and therefore belongs at editor.api.dom.getSelectedFragment.",
+    "extendJustified": true,
+    "gaps": [
+      "Unkeyed api.getFragment is ambiguous with Plite's model-state getFragment despite returning a DOM-derived static selection."
+    ]
+  }
+]

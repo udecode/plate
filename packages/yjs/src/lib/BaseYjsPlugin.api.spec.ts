@@ -34,7 +34,7 @@ describe('BaseYjsPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseYjsPlugin.configure({
-          options: {
+          initialState: {
             clientId: 'base-user',
             doc,
             provider,
@@ -64,7 +64,7 @@ describe('BaseYjsPlugin', () => {
     const editor = createPlateEditor({
       plugins: [
         YjsPlugin.configure({
-          options: {
+          initialState: {
             clientId: 'react-user',
             doc,
             rootName: 'react-room',

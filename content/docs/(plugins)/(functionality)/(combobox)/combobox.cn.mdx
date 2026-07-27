@@ -61,28 +61,28 @@ const TagInputPlugin = createBasePlugin({
 
 ```tsx
 import { createBasePlugin } from 'platejs';
-import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
+import type { TriggerComboboxPluginState } from '@platejs/combobox';
 
 export const TagPlugin = createBasePlugin({
   dependencies: [TagInputPlugin],
   key: 'tag',
   schema: { element: { void: 'inline' } },
-  options: {
+  initialState: {
     trigger: '#',
     triggerPreviousCharPattern: /^\s?$/,
     createComboboxInput: () => ({
       children: [{ text: '' }],
       type: 'tag_input',
     }),
-  } satisfies TriggerComboboxPluginOptions,
+  } satisfies TriggerComboboxPluginState,
 });
 ```
 
 - `schema.element`: 定义插件的元素模型行为
 - `schema.element.void: 'inline'`: 将标签定义为行内 void，并防止编辑其内部内容
-- `options.trigger`: 触发组合框的字符(本例为`#`)
-- `options.triggerPreviousCharPattern`: 必须匹配触发器前字符的正则表达式。`/^\s?$/`允许在行首或空白后触发
-- `options.createComboboxInput`: 触发器激活时创建输入元素节点的函数
+- `initialState.trigger`: 触发组合框的字符(本例为`#`)
+- `initialState.triggerPreviousCharPattern`: 必须匹配触发器前字符的正则表达式。`/^\s?$/`允许在行首或空白后触发
+- `initialState.createComboboxInput`: 触发器激活时创建输入元素节点的函数
 
 ### 创建组件
 
@@ -179,7 +179,7 @@ const editor = createPlateEditor({
     // ...其他插件
     TagPlugin.configure({
       component: TagElement,
-      options: {
+      initialState: {
         triggerQuery: (editor) => {
           // 在代码块中禁用
           return !editor.read.nodes.some({ match: { type: 'code_block' } });
@@ -191,7 +191,7 @@ const editor = createPlateEditor({
 });
 ```
 
-- `options.triggerQuery`: 根据编辑器状态有条件启用/禁用触发器的可选函数
+- `initialState.triggerQuery`: 根据编辑器状态有条件启用/禁用触发器的可选函数
 
 </Steps>
 
@@ -203,11 +203,11 @@ const editor = createPlateEditor({
 
 ## 配置选项
 
-### TriggerComboboxPluginOptions
+### TriggerComboboxPluginState
 
 基于触发器的组合框插件的配置选项。
 
-<API name="TriggerComboboxPluginOptions">
+<API name="TriggerComboboxPluginState">
 <APIOptions>
   <APIItem name="createComboboxInput" type="(trigger: string) => Element">
     触发器激活时创建输入节点的函数。

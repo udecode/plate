@@ -5,7 +5,7 @@ import type { PlateEditor } from '@platejs/core/react';
 import type { Path } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
-import { createPlatePlugin, usePluginOption } from '@platejs/core/react';
+import { createPlatePlugin, usePluginStore } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
 import type {
@@ -43,8 +43,8 @@ export type DndConfig = PluginConfig<
 >;
 
 const DndScrollerAfterEditable = () => {
-  const enableScroller = usePluginOption(DndPlugin, 'enableScroller');
-  const scrollerProps = usePluginOption(DndPlugin, 'scrollerProps');
+  const enableScroller = usePluginStore(DndPlugin, 'enableScroller');
+  const scrollerProps = usePluginStore(DndPlugin, 'scrollerProps');
 
   if (!enableScroller) return null;
 
@@ -53,7 +53,7 @@ const DndScrollerAfterEditable = () => {
 
 export const DndPlugin = createPlatePlugin<DndConfig>({
   key: KEYS.dnd,
-  options: {
+  initialState: {
     _isOver: false,
     draggingId: null,
     dropTarget: { id: null, line: '' },
@@ -68,14 +68,14 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
     afterEditable: DndScrollerAfterEditable,
   },
   handlers: {
-    onDragEnd: ({ editor, plugin }) => {
-      editor.plugin(plugin).setOption('isDragging', false);
-      editor.plugin(plugin).setOption('dropTarget', { id: null, line: '' });
+    onDragEnd: ({ store }) => {
+      store.set({ isDragging: false });
+      store.set({ dropTarget: { id: null, line: '' } });
     },
-    onDragEnter: ({ editor, plugin }) => {
-      editor.plugin(plugin).setOption('_isOver', true);
+    onDragEnter: ({ store }) => {
+      store.set({ _isOver: true });
     },
-    onDragStart: ({ editor, event, plugin }) => {
+    onDragStart: ({ event, store }) => {
       if (!(event.target instanceof HTMLElement)) return;
 
       const target = event.target;
@@ -91,22 +91,19 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
 
       if (!id) return;
 
-      editor.plugin(plugin).setOption('draggingId', id);
-      editor.plugin(plugin).setOption('isDragging', true);
-      editor.plugin(plugin).setOption('_isOver', true);
+      store.set({ draggingId: id });
+      store.set({ isDragging: true });
+      store.set({ _isOver: true });
     },
-    onDrop: ({ getOptions }) => getOptions().isDragging,
-    onFocus: ({ editor, plugin }) => {
-      editor.plugin(plugin).setOption('isDragging', false);
-      editor.plugin(plugin).setOption('dropTarget', { id: null, line: '' });
-      editor.plugin(plugin).setOption('_isOver', false);
-      editor
-        .plugin(plugin)
-        .getOption('multiplePreviewRef')
-        ?.current?.replaceChildren();
+    onDrop: ({ store }) => store.get().isDragging,
+    onFocus: ({ store }) => {
+      store.set({ isDragging: false });
+      store.set({ dropTarget: { id: null, line: '' } });
+      store.set({ _isOver: false });
+      store.get('multiplePreviewRef')?.current?.replaceChildren();
     },
   },
-  useHooks: ({ editor, setOption }) => {
+  useHooks: ({ editor, store }) => {
     useEffect(() => {
       const handleDragLeave = (e: DragEvent) => {
         // This event fires for every element that receives a drag leave event. As soon as it is fired on the
@@ -141,7 +138,7 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
                 editorDOMNode.contains(relatedTarget)));
 
           if (isLeavingEditor || isLeavingBlockForEditorWhitespace) {
-            setOption('dropTarget', undefined);
+            store.set({ dropTarget: undefined });
           }
         }
       };
@@ -151,8 +148,8 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
       // the editor. Needed, if the drag did not start inside the editor, but for example by dragging a
       // file from the filesystem
       const handleDrop = () => {
-        setOption('_isOver', false);
-        setOption('dropTarget', undefined);
+        store.set({ _isOver: false });
+        store.set({ dropTarget: undefined });
       };
 
       document.addEventListener('dragleave', handleDragLeave, true);
@@ -162,6 +159,6 @@ export const DndPlugin = createPlatePlugin<DndConfig>({
         document.removeEventListener('dragleave', handleDragLeave, true);
         document.removeEventListener('drop', handleDrop, true);
       };
-    }, [editor, setOption]);
+    }, [editor, store]);
   },
 });

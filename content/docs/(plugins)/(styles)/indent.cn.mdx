@@ -100,7 +100,7 @@ const editor = createPlateEditor({
           styleKey: "marginLeft",
         },
       },
-      options: {
+      initialState: {
         offset: 24,
         unit: "px",
         indentMax: 10,
@@ -112,9 +112,9 @@ const editor = createPlateEditor({
 
 - `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
 - `targetPluginKeys`：可存储缩进属性的元素插件键。
-- `options.offset`：缩进偏移量（像素）（默认：`24`）。
-- `options.unit`：缩进值的单位（默认：`'px'`）。
-- `options.indentMax`：允许的最大缩进次数。
+- `initialState.offset`：缩进偏移量（像素）（默认：`24`）。
+- `initialState.unit`：缩进值的单位（默认：`'px'`）。
+- `initialState.indentMax`：允许的最大缩进次数。
 
 ### 添加工具栏按钮
 
@@ -140,15 +140,15 @@ const editor = createPlateEditor({
       用于缩进存储和注入的元素插件键。 - **默认值：**
       `[BaseParagraphPlugin.key]`
     </APIItem>
-    <APIItem name="options.offset" type="number" optional>
+    <APIItem name="initialState.offset" type="number" optional>
       在 `(offset * element.indent) + unit` 中使用的缩进偏移量。 - **默认值：**
       `24`
     </APIItem>
-    <APIItem name="options.unit" type="string" optional>
+    <APIItem name="initialState.unit" type="string" optional>
       在 `(offset * element.indent) + unit` 中使用的缩进单位。 - **默认值：**
       `'px'`
     </APIItem>
-    <APIItem name="options.indentMax" type="number" optional>
+    <APIItem name="initialState.indentMax" type="number" optional>
       允许的最大缩进次数。
     </APIItem>
   </APIOptions>

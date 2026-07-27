@@ -128,11 +128,11 @@ Extension of `TagPlugin` that constrains the editor to only contain tag elements
 
 ## API
 
-### tx.insert.tag
+### editor.update.tag.insert
 
 Inserts new multi-select element at current selection.
 
-<API name="tx.insert.tag">
+<API name="editor.update.tag.insert">
 <APIParameters>
   <APIItem name="props" type="TTagProps">
     Properties for multi-select element.
@@ -146,23 +146,23 @@ Inserts new multi-select element at current selection.
 </APIOptions>
 </API>
 
-### getSelectedItems
+### `editor.read.tag.getSelectedItems()`
 
 Gets all tag items in the editor.
 
-<API name="getSelectedItems">
+<API name="editor.read.tag.getSelectedItems">
 <APIReturns type="TTagProps[]">
   Array of tag items in editor.
 </APIReturns>
 </API>
 
-### isEqualTags
+### `editor.read.tag.isEqual(tags)`
 
 Utility function to compare two sets of tags for equality, ignoring order.
 
-<API name="isEqualTags">
+<API name="editor.read.tag.isEqual">
 <APIParameters>
-  <APIItem name="newTags" type="TTagProps[]" optional>
+  <APIItem name="tags" type="TTagProps[]" optional>
     New tags to compare against current editor tags.
   </APIItem>
 </APIParameters>

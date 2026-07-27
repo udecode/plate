@@ -8,9 +8,11 @@
   `editor.plugin(BaseMediaEmbedPlugin).update.insert({ url }, options)`
 - Insert headless placeholders with `editor.plugin(BasePlaceholderPlugin).update.insert(mediaType, options)`
 - Insert React upload placeholders with `editor.plugin(PlaceholderPlugin).update.insertMedia(files, options)`
+- Manage upload records through `PlaceholderPlugin.api` and read one with
+  `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
 - Insert prompted image and embed URLs with `insertMediaUrl` from `@platejs/media/react`
 - Remove the standalone `insertImage`, `insertMedia`, `insertMediaEmbed`,
-  and `insertPlaceholder` helpers
+  `insertPlaceholder`, and `getUploadingFile` helpers
 - Remove `fileSizeToBytes`, `getMediaType`, `groupFilesByType`,
   `matchFileType`, `validateFileItem`, and `validateFiles`
 - Pass image uploads to `uploadImage` as data URL strings
@@ -24,11 +26,13 @@
   arrays when inserting placeholder media
 - Publish pending upload state only after its placeholder transaction commits
 - Expose `MediaPluginConfig` for floating-media URL controls
+- Rename `MediaPluginOptions` to `MediaPluginState` and
+  `MediaPlaceholderOptions` to `MediaPlaceholderState`
 - Register media properties and required direct inline caption children in
   compiled schemas.
-- Normalize the published `caption: Descendant[]` property, including its
-  single-block form, into direct inline children during normal or deferred
-  complete-document loading before schema fitting.
+- Export `MediaV54MigrationPlugin` from `@platejs/media/migrations` to convert
+  the published `caption: Descendant[]` property, including its single-block
+  form, into direct inline children before schema fitting.
 - Accept caption strings or inline children as construction input and persist
   them as direct media children.
 - Use `mediaEmbed` as the media-embed plugin identity while preserving
@@ -38,5 +42,14 @@
 
 **Migration:** Remove `@platejs/caption` imports and caption plugin
 registration. Store captions in each media element's direct children and render
-that child slot as the caption. Document loading converts compatible persisted
-`caption: Descendant[]` data without an application migration script.
+that child slot as the caption. Add the versioned migration plugin while
+loading persisted caption properties:
+
+```tsx
+import { MediaV54MigrationPlugin } from '@platejs/media/migrations';
+import { ImagePlugin } from '@platejs/media/react';
+
+const plugins = [MediaV54MigrationPlugin, ImagePlugin];
+```
+
+Remove `MediaV54MigrationPlugin` after every persisted document is resaved.

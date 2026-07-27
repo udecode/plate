@@ -11,9 +11,8 @@ import {
   H5Plugin,
   H6Plugin,
   ItalicPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import { HorizontalRulePlugin } from '@platejs/basic-nodes/react';
@@ -59,8 +58,7 @@ const basicNodePlugins = [
   CodePlugin,
   ItalicPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
+  ScriptPlugin,
   UnderlinePlugin,
 ] as const;
 

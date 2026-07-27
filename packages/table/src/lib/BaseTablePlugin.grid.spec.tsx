@@ -48,10 +48,10 @@ describe('table grid queries', () => {
       });
 
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c11')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c11')
       ).toEqual({ col: 0, row: 0 });
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
       ).toEqual({ col: 1, row: 0 });
       expect(initialValue).toEqual(inputSnapshot);
     });
@@ -62,7 +62,7 @@ describe('table grid queries', () => {
         nodeId: true,
         plugins: [
           BaseTablePlugin.configure({
-            options: { disableMerge: true },
+            initialState: { disableMerge: true },
             type: 'root',
           }),
         ],
@@ -70,10 +70,10 @@ describe('table grid queries', () => {
       });
 
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c11')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c11')
       ).toEqual({ col: 0, row: 0 });
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
       ).toEqual({ col: 1, row: 0 });
     });
 
@@ -112,10 +112,10 @@ describe('table grid queries', () => {
       });
 
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c11')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c11')
       ).toEqual({ col: 0, row: 0 });
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
       ).toEqual({ col: 1, row: 0 });
     });
 
@@ -129,28 +129,23 @@ describe('table grid queries', () => {
       assert(entry);
       const [cell] = entry;
 
-      expect(editor.plugin(BaseTablePlugin).api.getCellIndices(cell)).toEqual({
+      expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
         col: 1,
         row: 0,
       });
       expect(
-        editor.plugin(BaseTablePlugin).getOption('cellIndices', 'c12')
+        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
       ).toEqual({ col: 1, row: 0 });
-      expect(editor.plugin(BaseTablePlugin).api.getCellIndices(cell)).toEqual({
+      expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
         col: 1,
         row: 0,
       });
     });
 
-    it('warns and falls back when the cell does not belong to a table', () => {
-      const warn = mock();
-      const DebugPlugin = createPlatePlugin({
-        key: 'table-test-debug',
-        extension: { api: { debug: { warn } } },
-      });
+    it('falls back when the cell does not belong to a table', () => {
       const orphanValue: Value = [{ children: [{ text: '' }], type: 'p' }];
       const editor = createPlateEditor({
-        plugins: [...getTestTablePlugins(), DebugPlugin],
+        plugins: getTestTablePlugins(),
         initialValue: orphanValue,
       });
       const cell: TTableCellElement = {
@@ -159,14 +154,10 @@ describe('table grid queries', () => {
         type: 'td',
       };
 
-      expect(editor.plugin(BaseTablePlugin).api.getCellIndices(cell)).toEqual({
+      expect(editor.plugin(BaseTablePlugin).read.getCellIndices(cell)).toEqual({
         col: 0,
         row: 0,
       });
-      expect(warn).toHaveBeenCalledWith(
-        'No table grid entry found for element.',
-        'TABLE_CELL_INDICES'
-      );
     });
   });
 
@@ -211,7 +202,7 @@ describe('table grid queries', () => {
         const cellNode = getCell(editor);
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getColumnIndex(cellNode)
+          editor.plugin(BaseTablePlugin).read.getColumnIndex(cellNode)
         ).toBe(1);
       });
 
@@ -235,10 +226,10 @@ describe('table grid queries', () => {
         const clonedCell = structuredClone(getCell(editor));
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getColumnIndex(clonedCell)
+          editor.plugin(BaseTablePlugin).read.getColumnIndex(clonedCell)
         ).toBe(-1);
         expect(
-          editor.plugin(BaseTablePlugin).api.getColumnIndex({
+          editor.plugin(BaseTablePlugin).read.getColumnIndex({
             children: [{ text: 'ghost' }],
             type: 'td',
           })
@@ -287,7 +278,7 @@ describe('table grid queries', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const entries = editor.plugin(BaseTablePlugin).api.getEntries()!;
+        const entries = editor.plugin(BaseTablePlugin).read.getEntries()!;
 
         expect(entries.cell[0].type).toBe('td');
         expect(entries.cell[1]).toEqual([0, 1, 0]);
@@ -315,7 +306,7 @@ describe('table grid queries', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const entries = editor.plugin(BaseTablePlugin).api.getEntries({
+        const entries = editor.plugin(BaseTablePlugin).read.getEntries({
           at: { offset: 0, path: [0, 0, 0, 0, 0] },
         })!;
 
@@ -336,9 +327,11 @@ describe('table grid queries', () => {
 
         const editor = createTableEditor(input);
 
-        expect(editor.plugin(BaseTablePlugin).api.getEntries()).toBeUndefined();
         expect(
-          editor.plugin(BaseTablePlugin).api.getEntries({ at: null })
+          editor.plugin(BaseTablePlugin).read.getEntries()
+        ).toBeUndefined();
+        expect(
+          editor.plugin(BaseTablePlugin).read.getEntries({ at: null })
         ).toBeUndefined();
       });
     });
@@ -378,7 +371,7 @@ describe('table grid queries', () => {
         assert(entry);
         const [cellNode] = entry;
 
-        expect(editor.plugin(BaseTablePlugin).api.getRowIndex(cellNode)).toBe(
+        expect(editor.plugin(BaseTablePlugin).read.getRowIndex(cellNode)).toBe(
           1
         );
       });
@@ -393,7 +386,7 @@ describe('table grid queries', () => {
         );
 
         expect(
-          editor.plugin(BaseTablePlugin).api.getRowIndex({
+          editor.plugin(BaseTablePlugin).read.getRowIndex({
             children: [{ text: 'ghost' }],
             type: 'td',
           })

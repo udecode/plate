@@ -12,7 +12,8 @@ import { BaseTagPlugin } from '../lib';
 
 export const TagPlugin = toPlatePlugin(BaseTagPlugin);
 
-export const MultiSelectPlugin = toPlatePlugin(BaseTagPlugin).extend(
+export const MultiSelectPlugin = toPlatePlugin(
+  BaseTagPlugin,
   ({ editor, type }) => ({
     extension: {
       commands: ({ around }) => [

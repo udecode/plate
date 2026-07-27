@@ -23,9 +23,8 @@ import {
   HorizontalRulePlugin,
   ItalicPlugin,
   KbdPlugin,
+  ScriptPlugin,
   StrikethroughPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
 import type { Editor, Element as PliteElement } from '@platejs/plite';
@@ -59,7 +58,7 @@ import {
   useNodeAttributes,
   usePath,
   usePlateEditor,
-  usePluginOption,
+  usePluginStore,
   type PlateEditor,
 } from 'platejs/react';
 import { BelowRootNodes } from '@platejs/core/react/internal';
@@ -356,7 +355,7 @@ type FanoutCaseId =
   | 'editor-state'
   | 'editor-value'
   | 'editor-selector'
-  | 'plugin-option'
+  | 'plugin-store'
   | 'mixed';
 
 type FanoutCase = {
@@ -691,13 +690,13 @@ const FANOUT_CASES: FanoutCase[] = [
   },
   {
     description:
-      'Many components reading a plugin zustand store through usePluginOption().',
-    id: 'plugin-option',
-    label: 'usePluginOption',
+      'Many components reading a plugin Zustand store through usePluginStore().',
+    id: 'plugin-store',
+    label: 'usePluginStore',
   },
   {
     description:
-      'Each subscriber mixes tracked editor, tracked value, selector, and plugin option reads.',
+      'Each subscriber mixes tracked editor, tracked value, selector, and plugin store reads.',
     id: 'mixed',
     label: 'Mixed hook stack',
   },
@@ -1685,8 +1684,7 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
       CodePlugin,
       ItalicPlugin,
       StrikethroughPlugin,
-      SubscriptPlugin,
-      SuperscriptPlugin,
+      ScriptPlugin,
       UnderlinePlugin,
     ];
   }
@@ -1727,12 +1725,8 @@ function getScenarioPlugins(plugins: BenchmarkPlugins): any[] {
     return [StrikethroughPlugin];
   }
 
-  if (plugins === 'subscript-only') {
-    return [SubscriptPlugin];
-  }
-
-  if (plugins === 'superscript-only') {
-    return [SuperscriptPlugin];
+  if (plugins === 'script-only') {
+    return [ScriptPlugin];
   }
 
   if (plugins === 'underline-only') {
@@ -1931,7 +1925,7 @@ function createFanoutEditor({
 }) {
   return createPlateEditor({
     nodeId: false,
-    plugins: [BenchmarkOptionPlugin],
+    plugins: [BenchmarkStorePlugin],
     initialValue: value,
   });
 }
@@ -1978,11 +1972,11 @@ function createFanoutParagraph(index: number): Descendant {
 const getBenchmarkDOMStrategy = (config: BenchmarkConfig) =>
   config.chunking ? ('auto' as const) : ('full' as const);
 
-const BenchmarkOptionPlugin = createPlatePlugin({
-  key: 'benchmarkOption',
-  options: {
+const BenchmarkStorePlugin = createPlatePlugin({
+  initialState: {
     enabled: false,
   },
+  key: 'benchmarkStore',
 });
 
 function BenchmarkElement({
@@ -2406,8 +2400,8 @@ function EditorSelectorSubscriber() {
   return null;
 }
 
-function PluginOptionSubscriber() {
-  const enabled = usePluginOption(BenchmarkOptionPlugin, 'enabled');
+function PluginStoreSubscriber() {
+  const enabled = usePluginStore(BenchmarkStorePlugin, 'enabled');
 
   consume(enabled);
 
@@ -2421,7 +2415,7 @@ function MixedSubscriber() {
     (nextEditor) => nextEditor.read.children().length,
     { equalityFn: (a, b) => a === b }
   );
-  const enabled = usePluginOption(BenchmarkOptionPlugin, 'enabled');
+  const enabled = usePluginStore(BenchmarkStorePlugin, 'enabled');
 
   consume(stateBlockCount, value.length, blockCount, enabled);
 
@@ -2436,8 +2430,8 @@ function FanoutSubscriber({ caseId }: { caseId: FanoutCaseId }) {
       return <EditorValueSubscriber />;
     case 'editor-selector':
       return <EditorSelectorSubscriber />;
-    case 'plugin-option':
-      return <PluginOptionSubscriber />;
+    case 'plugin-store':
+      return <PluginStoreSubscriber />;
     case 'mixed':
       return <MixedSubscriber />;
     default:
@@ -2495,7 +2489,7 @@ function FanoutSurface({
           );
         };
 
-        const benchmarkOption = editor.plugin(BenchmarkOptionPlugin);
+        const benchmarkStore = editor.plugin(BenchmarkStorePlugin);
 
         switch (caseId) {
           case 'editor-value': {
@@ -2503,20 +2497,18 @@ function FanoutSurface({
 
             break;
           }
-          case 'plugin-option': {
-            benchmarkOption.setOption(
-              'enabled',
-              !benchmarkOption.getOption('enabled')
-            );
+          case 'plugin-store': {
+            benchmarkStore.store.set({
+              enabled: !benchmarkStore.store.get('enabled'),
+            });
 
             break;
           }
           case 'mixed': {
             insertFanoutParagraph();
-            benchmarkOption.setOption(
-              'enabled',
-              !benchmarkOption.getOption('enabled')
-            );
+            benchmarkStore.store.set({
+              enabled: !benchmarkStore.store.get('enabled'),
+            });
 
             break;
           }

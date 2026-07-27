@@ -3,4 +3,4 @@
  */
 
 export * from './CommentPlugin';
-export * from './hooks/index';
+export * from './useCommentId';

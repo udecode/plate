@@ -3,7 +3,7 @@ import type {
   InferApi,
   InferDependencies,
   InferEnabled,
-  InferOptions,
+  InferPluginStoreState,
   InferPluginApi,
   InferPluginSchemaModel,
   InferSelectors,
@@ -11,13 +11,14 @@ import type {
   InferTx,
   NodeComponent,
   PluginConfig,
+  PluginDependencyReferences,
   PluginShortcutInput,
   PluginReference,
   BasePlugin,
-  ConfiguredBasePlugin,
 } from '../../lib';
 import type {
   ConfiguredPlatePlugin,
+  AuthoringPlateEditorExtensionInput,
   PlatePlugin,
   PlatePluginContext,
   PlatePluginMethods,
@@ -35,7 +36,7 @@ type PlateShortcutRecord = Record<string, Shortcut | null | undefined>;
 
 type PlatePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   TShortcuts extends PlateShortcutRecord = {},
@@ -46,12 +47,12 @@ type PlatePluginConfig<
     PlatePlugin<
       PluginConfig<
         C['key'],
-        EO & InferOptions<C>,
+        EStoreState & InferPluginStoreState<C>,
         EA & InferApi<C>,
         InferTx<C>,
         ES & InferSelectors<C>,
         InferState<C>,
-        D,
+        PluginDependencyReferences<D>,
         InferPluginSchemaModel<C>,
         InferPluginApi<C>,
         Enabled
@@ -60,25 +61,27 @@ type PlatePluginConfig<
   >,
   | keyof PlatePluginMethods
   | 'api'
-  | 'options'
+  | 'dependencies'
+  | 'initialState'
   | 'render'
   | 'schema'
   | 'shortcuts'
 > & {
   api?: EA & Partial<InferApi<C>>;
   component?: NodeComponent;
-  options?: EO & Partial<InferOptions<C>>;
+  dependencies?: D;
+  initialState?: EStoreState & Partial<InferPluginStoreState<C>>;
   render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'node'> | null;
   selectors?: ES & Partial<InferSelectors<C>>;
   shortcuts?: PluginShortcutInput<
     PluginConfig<
       C['key'],
-      EO & InferOptions<C>,
+      EStoreState & InferPluginStoreState<C>,
       EA & InferApi<C>,
       InferTx<C>,
       ES & InferSelectors<C>,
       InferState<C>,
-      D,
+      PluginDependencyReferences<D>,
       InferPluginSchemaModel<C>,
       InferPluginApi<C>,
       Enabled
@@ -90,23 +93,40 @@ type PlatePluginConfig<
 
 type RuntimePlatePluginConfig<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
-  PlatePluginConfig<C, EO, EA, ES, TShortcuts>,
-  'component' | 'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
+  PlatePluginConfig<C, EStoreState, EA, ES, TShortcuts>,
+  | 'component'
+  | 'dependencies'
+  | 'extension'
+  | 'parsers'
+  | 'render'
+  | 'schema'
+  | 'type'
 > & {
+  extension?: AuthoringPlateEditorExtensionInput<C>;
   render?: Omit<
-    NonNullable<PlatePluginConfig<C, EO, EA, ES, TShortcuts>['render']>,
+    NonNullable<
+      PlatePluginConfig<C, EStoreState, EA, ES, TShortcuts>['render']
+    >,
     'isDecoration' | 'node'
   > | null;
 };
 
-type BasePluginDescriptorInput = PluginReference & {
-  readonly __config: AnyPluginConfig;
-  readonly __configured?: never;
+type BasePluginDescriptorInput<C extends AnyPluginConfig = AnyPluginConfig> =
+  PluginReference & {
+    readonly __config: C;
+    readonly __configured?: never;
+  };
+
+type ConfiguredBasePluginDescriptorInput<
+  C extends AnyPluginConfig = AnyPluginConfig,
+> = PluginReference & {
+  readonly __config: C;
+  readonly __configured: true;
 };
 
 const methodsToWrap = [
@@ -121,7 +141,6 @@ const extensionArrayKeys = [
   '__htmlCodecExtensions',
   '__editorExtensions',
   '__readExtensions',
-  '__selectorExtensions',
   '__txExtensions',
 ] as const;
 
@@ -158,7 +177,7 @@ type ExtendPlatePluginConfig<
     PlatePlugin<
       PluginConfig<
         C['key'],
-        Partial<InferOptions<C>>,
+        Partial<InferPluginStoreState<C>>,
         Partial<InferApi<C>>,
         Partial<InferTx<C>>,
         Partial<InferSelectors<C>>,
@@ -182,8 +201,15 @@ type RuntimeExtendPlatePluginConfig<
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
   ExtendPlatePluginConfig<C, TShortcuts>,
-  'component' | 'dependencies' | 'parsers' | 'render' | 'schema' | 'type'
+  | 'component'
+  | 'dependencies'
+  | 'extension'
+  | 'parsers'
+  | 'render'
+  | 'schema'
+  | 'type'
 > & {
+  extension?: AuthoringPlateEditorExtensionInput<C>;
   render?: Omit<
     NonNullable<ExtendPlatePluginConfig<C, TShortcuts>['render']>,
     'isDecoration' | 'node'
@@ -203,24 +229,28 @@ type RuntimeExtendPlatePluginConfig<
  *   with React-specific features defined in the extension configuration.
  */
 export function toPlatePlugin<C extends AnyPluginConfig>(
-  basePlugin: ConfiguredBasePlugin<C>
+  basePlugin: ConfiguredBasePluginDescriptorInput<C>
 ): ConfiguredPlatePlugin<C>;
+
+export function toPlatePlugin<C extends AnyPluginConfig>(
+  basePlugin: BasePluginDescriptorInput<C>
+): PlatePlugin<C>;
 
 export function toPlatePlugin<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   const TShortcuts extends PlateShortcutRecord = {},
 >(
-  basePlugin: BasePlugin<C> & { readonly __configured?: never },
+  basePlugin: BasePluginDescriptorInput<C>,
   extendConfig: (
     ctx: PlatePluginContext<C>
-  ) => RuntimePlatePluginConfig<C, EO, EA, ES, TShortcuts>
+  ) => RuntimePlatePluginConfig<C, EStoreState, EA, ES, TShortcuts>
 ): PlatePlugin<
   PluginConfig<
     C['key'],
-    EO & InferOptions<C>,
+    EStoreState & InferPluginStoreState<C>,
     EA & InferApi<C>,
     InferTx<C>,
     ES & InferSelectors<C>,
@@ -234,24 +264,32 @@ export function toPlatePlugin<
 
 export function toPlatePlugin<
   C extends AnyPluginConfig,
-  EO = {},
+  EStoreState = {},
   EA = {},
   ES = {},
   const TShortcuts extends PlateShortcutRecord = {},
   const D extends readonly PluginReference[] = InferDependencies<C>,
   const Enabled extends boolean = InferEnabled<C>,
 >(
-  basePlugin: BasePlugin<C> & { readonly __configured?: never },
-  extendConfig?: PlatePluginConfig<C, EO, EA, ES, TShortcuts, D, Enabled>
+  basePlugin: BasePluginDescriptorInput<C>,
+  extendConfig: PlatePluginConfig<
+    C,
+    EStoreState,
+    EA,
+    ES,
+    TShortcuts,
+    D,
+    Enabled
+  >
 ): PlatePlugin<
   PluginConfig<
     C['key'],
-    EO & InferOptions<C>,
+    EStoreState & InferPluginStoreState<C>,
     EA & InferApi<C>,
     InferTx<C>,
     ES & InferSelectors<C>,
     InferState<C>,
-    D,
+    PluginDependencyReferences<D>,
     InferPluginSchemaModel<C>,
     InferPluginApi<C>,
     Enabled
@@ -272,7 +310,7 @@ export function toPlatePlugin<
 ): PlatePlugin<
   PluginConfig<
     C['key'],
-    InferOptions<C>,
+    InferPluginStoreState<C>,
     InferApi<C>,
     InferTx<C>,
     InferSelectors<C>,
@@ -297,6 +335,10 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
     },
     basePlugin
   ) as unknown as PlatePlugin<any>;
+  const convertBasePlugin = toPlatePlugin as (
+    basePlugin: BasePluginDescriptorInput,
+    extendConfig?: unknown
+  ) => PlatePlugin<AnyPluginConfig>;
 
   methodsToWrap.forEach((method) => {
     const originalMethod = plugin[method];
@@ -313,14 +355,14 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
           originalMethod as unknown as (...args: any[]) => BasePlugin
         )(baseConfig);
 
-        return toPlatePlugin(configuredBasePlugin, { component });
+        return convertBasePlugin(configuredBasePlugin, { component });
       }
 
       const basePlugin = (
         originalMethod as unknown as (...args: any[]) => BasePlugin
       )(...args);
 
-      return preserveExtensionArrays(plugin, toPlatePlugin(basePlugin));
+      return preserveExtensionArrays(plugin, convertBasePlugin(basePlugin));
     };
   });
 
@@ -371,9 +413,8 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
   const extendedBasePlugin = createBasePlugin(
     mergePlugins(plugin, normalizedConfig) as any
   );
-
   return preserveExtensionArrays(
     plugin,
-    toPlatePlugin(extendedBasePlugin)
+    convertBasePlugin(extendedBasePlugin)
   ) as any;
 }

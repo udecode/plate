@@ -61,7 +61,7 @@ describe('suggestion link integration', () => {
     ) as TestEditorFixture;
 
     const editor = createEditor(input);
-    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
     deleteBackwardCharacter(editor);
 

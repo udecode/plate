@@ -1,10 +1,6 @@
 import * as React from 'react';
 
-import {
-  BoldPlugin,
-  SubscriptPlugin,
-  SuperscriptPlugin,
-} from '@platejs/basic-nodes/react';
+import { BoldPlugin, ScriptPlugin } from '@platejs/basic-nodes/react';
 import { FontColorPlugin, FontSizePlugin } from '@platejs/basic-styles/react';
 import {
   BaseAudioPlugin,
@@ -22,8 +18,7 @@ const isUrlMock = mock((value: string) => /^https?:\/\//.test(value));
 const openFilePickerMock = mock();
 const setMock = mock();
 const recentColorsChangeMock = mock();
-const subscriptToggleMock = mock();
-const superscriptToggleMock = mock();
+const scriptToggleMock = mock();
 const toastErrorMock = mock();
 const toggleMock = mock();
 const pluginMock = mock();
@@ -246,8 +241,7 @@ describe('feature toolbar plugin portals', () => {
     pluginMock.mockClear();
     recentColorsChangeMock.mockClear();
     setMock.mockClear();
-    subscriptToggleMock.mockClear();
-    superscriptToggleMock.mockClear();
+    scriptToggleMock.mockClear();
     toastErrorMock.mockClear();
     toggleMock.mockClear();
 
@@ -289,13 +283,10 @@ describe('feature toolbar plugin portals', () => {
     expect(focusMock).toHaveBeenCalledTimes(1);
   });
 
-  it('uses installed mark portals for mutually exclusive script marks', async () => {
-    pluginMock.mockImplementation((plugin: { key: string }) => ({
+  it('uses the installed script portal for both script values', async () => {
+    pluginMock.mockImplementation(() => ({
       update: {
-        toggle:
-          plugin.key === SubscriptPlugin.key
-            ? subscriptToggleMock
-            : superscriptToggleMock,
+        toggle: scriptToggleMock,
       },
     }));
     const { MoreToolbarButton } = await import(
@@ -306,10 +297,10 @@ describe('feature toolbar plugin portals', () => {
     fireEvent.click(view.getByRole('button', { name: 'Superscript' }));
     fireEvent.click(view.getByRole('button', { name: 'Subscript' }));
 
-    expect(pluginMock).toHaveBeenNthCalledWith(1, SuperscriptPlugin);
-    expect(pluginMock).toHaveBeenNthCalledWith(2, SubscriptPlugin);
-    expect(superscriptToggleMock).toHaveBeenCalledTimes(1);
-    expect(subscriptToggleMock).toHaveBeenCalledTimes(1);
+    expect(pluginMock).toHaveBeenNthCalledWith(1, ScriptPlugin);
+    expect(pluginMock).toHaveBeenNthCalledWith(2, ScriptPlugin);
+    expect(scriptToggleMock).toHaveBeenNthCalledWith(1, 'sup');
+    expect(scriptToggleMock).toHaveBeenNthCalledWith(2, 'sub');
     expect(focusMock).toHaveBeenCalledTimes(2);
   });
 

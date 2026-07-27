@@ -3,7 +3,7 @@ title: Plate Editor
 description: API reference for the Plate editor runtime.
 ---
 
-`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with typed plugin portals, typed `api`, typed `editor.update()` transactions, DOM services, and live plugin options.
+`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with typed plugin portals, typed `api`, typed `editor.update()` transactions, DOM services, and editor-local plugin stores.
 
 ## Ownership
 
@@ -43,7 +43,7 @@ The editor is still a Plite editor. Plate adds typed plugin access, DOM services
     Transaction entrypoint for document, selection, history, and plugin commands.
   </APIItem>
   <APIItem name="plugin" type="<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>">
-    Return the descriptor-scoped portal for a plugin's API, update commands, type, and live options.
+    Return the descriptor-scoped portal for a plugin's API, update commands, type, and store.
   </APIItem>
   <APIItem name="dom" type="PlateEditor['dom']">
     Runtime DOM state owned by the editor instance.
@@ -73,7 +73,7 @@ React and DOM runtime state is read through Plite runtime APIs. Plate exposes on
 
 Use `editor.api.<pluginKey>` for installed plugin queries and services on a
 concrete editor. Pass the descriptor to `editor.plugin(plugin)` when generic
-code needs the exact plugin API, update commands, type, or live options. The
+code needs the exact plugin API, update commands, type, or store. The
 root and scoped API paths reference the same immutable object.
 
 ```ts title="Plugin API access"
@@ -83,13 +83,13 @@ editor.api.table.getColumnCount();
 editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
-```ts title="Plugin option access"
+```ts title="Plugin state access"
 import { FindReplacePlugin } from '@platejs/find-replace';
 
 const findReplace = editor.plugin(FindReplacePlugin);
 
-const search = findReplace.getOption('search');
-findReplace.setOption('search', search.trim());
+const search = findReplace.store.get('search');
+findReplace.store.set({ search: search.trim() });
 ```
 
 | Helper | Type | Use it for |
@@ -98,19 +98,22 @@ findReplace.setOption('search', search.trim());
 | `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | Open a typed portal to one installed plugin. |
 | `plugin(plugin).api` | `InferOwnApi<C>` | Call the same plugin API from generic or exact-descriptor code. |
 | `plugin(plugin).update` | `InferOwnTx<C>` | Run one plugin-owned update command. |
-| `plugin(plugin).getOption(key, ...args)` | `(key, ...args) => value` | Read one live option or selector result. |
-| `plugin(plugin).getOptions()` | `() => InferOptions<C>` | Read all live options. |
-| `plugin(plugin).setOption(key, value)` | `(key, value) => void` | Update one live option. |
-| `plugin(plugin).setOptions(options)` | `(partialOrRecipe) => void` | Merge option fields or update them through a draft recipe. |
+| `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value` | Read one state field or named selector result. |
+| `plugin(plugin).store.get()` | `() => InferPluginStoreState<C>` | Read the complete current plugin state. |
+| `plugin(plugin).store.set(partial)` | `(partial) => void` | Merge state fields. |
+| `plugin(plugin).store.set(recipe)` | `(draft) => void` | Update state through a draft recipe. |
 | `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the resolved plugin instance after overrides and configuration. |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | Resolve the node type for a plugin key. |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | Read injected node props with default `nodeKey` and `styleKey` filled from the plugin type. |
 
-In React, subscribe with `usePluginOption(plugin, key)` or `usePluginOptions(plugin)` instead of reading a portal during render.
+In React, subscribe with `usePluginStore(plugin, key)` or
+`usePluginStore(plugin, selector)` instead of reading a portal during render.
 
 ## Initialization
 
-`withPlate` wraps `withPlite` with React defaults. It initializes private live option state and prepends the React core plugins before user plugins.
+`withPlate` wraps `withPlite` with React defaults. It creates each plugin's
+editor-local store from `initialState` and prepends the React core plugins
+before user plugins.
 
 ```tsx title="Create a typed editor"
 import { usePlateEditor } from 'platejs/react';

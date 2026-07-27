@@ -10,7 +10,7 @@ export const useListToolbarButtonState = ({
   nodeType?: string;
 } = {}) => {
   const pressed = useEditorSelector((editor) =>
-    editor.plugin(ListPlugin).api.isActive(nodeType)
+    editor.plugin(ListPlugin).read.isActive(nodeType)
   );
 
   return {
@@ -42,7 +42,7 @@ export const useListToolbarButton = ({
 
 export const useTodoListToolbarButtonState = () => {
   const pressed = useEditorSelector((editor) =>
-    editor.plugin(ListPlugin).api.isActive(KEYS.listTodo)
+    editor.plugin(ListPlugin).read.isActive(KEYS.listTodo)
   );
 
   return { pressed };

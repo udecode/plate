@@ -118,7 +118,7 @@ describe('table merge', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const result = editor.plugin(BaseTablePlugin).api.getMergeGridByRange({
+        const result = editor.plugin(BaseTablePlugin).read.getMergeGridByRange({
           at: editor.read.selection()!,
           format: 'all',
         });
@@ -167,7 +167,7 @@ describe('table merge', () => {
         ) as TestEditor;
 
         const editor = createTableEditor(input);
-        const result = editor.plugin(BaseTablePlugin).api.getMergeGridByRange({
+        const result = editor.plugin(BaseTablePlugin).read.getMergeGridByRange({
           at: editor.read.selection()!,
           format: 'cell',
         });

@@ -4,12 +4,14 @@
 
 - Handle trigger-combobox insertion through the typed `insertText` command
 - Keep transient collaboration metadata on inserted combobox inputs
+- Rename `TriggerComboboxPluginOptions` to `TriggerComboboxPluginState`
 
-**Migration:** Install `withTriggerCombobox` through the unified extension
-field:
+**Migration:** Replace `withTriggerCombobox` with
+`createTriggerComboboxExtension` in the plugin constructor:
 
 ```ts
-BasePlugin.extend((context) => ({
-  extension: withTriggerCombobox(context),
-}));
+const BasePlugin = createBasePlugin({
+  extension: (context) => createTriggerComboboxExtension(context),
+  // ...
+});
 ```

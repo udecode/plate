@@ -190,4 +190,119 @@ describe('BaseDatePlugin', () => {
       focus: { offset: 0, path: [0, 1, 0] },
     });
   });
+
+  it('inserts a canonical date node and trailing spacer', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseDatePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hi' }], type: KEYS.p }],
+    });
+
+    editor.update.date.insert({ date: 'Mon Mar 23 2026' });
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [
+          { text: 'hi' },
+          {
+            children: [{ text: '' }],
+            date: '2026-03-23',
+            type: KEYS.date,
+          },
+          { text: ' ' },
+        ],
+        type: KEYS.p,
+      },
+    ]);
+  });
+
+  it('uses the configured date node type', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseDatePlugin.configure({ type: 'custom-date' })],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'x' }], type: KEYS.p }],
+    });
+
+    editor.update.date.insert({ date: 'Mon Mar 23 2026' });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [
+        { text: 'x' },
+        { date: '2026-03-23', type: 'custom-date' },
+        { text: ' ' },
+      ],
+    });
+  });
+
+  it('forwards explicit insertion options', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseDatePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [
+        {
+          children: [
+            { text: 'a' },
+            {
+              children: [{ text: '' }],
+              date: '2025-01-01',
+              type: KEYS.date,
+            },
+            { text: 'b' },
+          ],
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.update.date.insert({
+      at: [0, 1],
+      date: 'Mon Mar 23 2026',
+    });
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [
+          { text: 'a' },
+          { date: '2026-03-23', type: KEYS.date },
+          { text: ' ' },
+          { date: '2025-01-01', type: KEYS.date },
+          { text: 'b' },
+        ],
+      },
+    ]);
+  });
+
+  it('preserves non-normalizable input on the raw fallback field', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseDatePlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 1, path: [0, 0] },
+        focus: { offset: 1, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'x' }], type: KEYS.p }],
+    });
+
+    editor.update.date.insert({ date: 'sometime next week' });
+
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [
+        { text: 'x' },
+        { rawDate: 'sometime next week', type: KEYS.date },
+        { text: ' ' },
+      ],
+    });
+  });
 });

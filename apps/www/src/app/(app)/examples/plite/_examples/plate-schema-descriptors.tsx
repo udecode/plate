@@ -61,18 +61,18 @@ const CodecProofFallbackPlugin = createPlatePlugin({
 });
 
 const CodecProofPlugin = createPlatePlugin<CodecProofConfig>({
-  key: 'codecProof',
-  options: {
+  initialState: {
     label: 'initial',
   },
-  codecs: ({ defineCodecs, editor, getOptions }) =>
+  key: 'codecProof',
+  codecs: ({ defineCodecs, editor, store }) =>
     defineCodecs({
       [CODEC_PROOF_FORMAT]: {
         priority: 20,
         scope: 'document',
         decode: ({ data }) => {
           const { kind } = parseCodecProofPayload(data);
-          const { label } = getOptions();
+          const { label } = store.get();
 
           if (kind === 'delegate') return null;
           if (kind === 'throw') {
@@ -121,7 +121,7 @@ const CodecProofPlugin = createPlatePlugin<CodecProofConfig>({
         },
         encode: ({ slice }) =>
           JSON.stringify({
-            label: getOptions().label,
+            label: store.get('label'),
             slice,
           }),
       },
@@ -419,12 +419,12 @@ const PlateSchemaDescriptorControls = () => {
         <button
           className="rounded border px-3 py-1"
           onClick={() => {
-            editor.plugin(CodecProofPlugin).setOption('label', 'replacement');
+            editor.plugin(CodecProofPlugin).store.set({ label: 'replacement' });
             setCodecLabel('replacement');
           }}
           type="button"
         >
-          Use replacement codec options
+          Use replacement codec state
         </button>
         <button
           className="rounded border px-3 py-1"
@@ -474,7 +474,7 @@ const PlateSchemaDescriptorsExample = () => {
       CodecProofFallbackPlugin,
       CodecProofPlugin,
       MarkdownPlugin.configure({
-        options: {
+        initialState: {
           plainMarks: ['fontSize', 'schemaAdvanced'],
         },
       }),

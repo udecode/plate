@@ -105,7 +105,7 @@ describe('useTableElement family', () => {
 
     const selection = editor
       .plugin(TablePlugin)
-      .api.createCellSelection({ anchor, focus });
+      .read.createCellSelection({ anchor, focus });
 
     assert(selection);
 
@@ -129,7 +129,7 @@ describe('useTableElement family', () => {
 
     const backwardSelection = editor
       .plugin(TablePlugin)
-      .api.createCellSelection({ anchor: focus, focus: anchor });
+      .read.createCellSelection({ anchor: focus, focus: anchor });
 
     assert(backwardSelection);
 

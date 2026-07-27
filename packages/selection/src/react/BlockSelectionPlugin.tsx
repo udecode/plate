@@ -14,27 +14,28 @@ import type { BaseEditor, PluginConfig } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import type { TIdElement } from '@platejs/utils';
 
-import { ElementApi, PathApi, editorCommands } from '@platejs/plite';
+import {
+  ContentSlice,
+  ElementApi,
+  PathApi,
+  TextApi,
+  editorCommands,
+} from '@platejs/plite';
+import {
+  getDOMClipboardFormatKey,
+  writeDOMFragmentData,
+  writeDOMRangeData,
+} from '@platejs/plite-dom';
 import { createPlatePlugin, type InferConfig } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
+import copyToClipboard from 'copy-to-clipboard';
 
 import type { PartialSelectionOptions } from '../internal';
+import { extractSelectableIds, querySelectorSelectable } from '../lib';
 
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import { BlockSelectionAfterEditable } from './components/BlockSelectionAfterEditable';
 import { useBlockSelectable } from './hooks/useBlockSelectable';
-import { moveSelection } from './internal/api/moveSelection';
-import { addSelectedRow, setSelectedIds } from './internal/api/setSelectedIds';
-import { shiftSelection } from './internal/api/shiftSelection';
-import { duplicateBlockSelectionNodes } from './transforms/duplicateBlockSelectionNodes';
-import { insertBlocksAndSelect } from './transforms/insertBlocksAndSelect';
-import { removeBlockSelectionNodes } from './transforms/removeBlockSelectionNodes';
-import { selectBlockSelectionNodes } from './transforms/selectBlockSelectionNodes';
-import {
-  setBlockSelectionIndent,
-  setBlockSelectionNodes,
-  setBlockSelectionTexts,
-} from './transforms/setBlockSelectionNodes';
 
 const BLOCK_SELECTION_PRESERVE_TAG = 'block-selection-preserve';
 const BLOCK_SELECTION_DESELECT_TAG = 'block-selection-deselect';
@@ -42,8 +43,23 @@ const BLOCK_SELECTION_DESELECT_TAG = 'block-selection-deselect';
 const isBlockMenuOpen = (editor: BaseEditor) =>
   Boolean(
     getPlateRuntime(editor).plugins[KEYS.blockMenu] &&
-      editor.plugin(BlockMenuPlugin).getOption('openId')
+      editor.plugin(BlockMenuPlugin).store.get('openId')
   );
+
+const getSelectedEntries = (
+  state: Pick<EditorStateView, 'nodes'>,
+  selectedIds?: Set<string>
+) => {
+  if (!selectedIds?.size) return [];
+
+  return state.nodes.toArray<TIdElement>({
+    at: [],
+    match: (node) =>
+      ElementApi.isElement(node) &&
+      typeof node.id === 'string' &&
+      selectedIds.has(node.id),
+  });
+};
 
 type BlockSelectionApi = {
   /** Add block selection when right click on a block. */
@@ -70,39 +86,99 @@ type BlockSelectionApi = {
   add: (id: string[] | string) => void;
   /** Clear block selection */
   clear: () => void;
+  /** Copy selected blocks to the clipboard. */
+  copy: (dataTransfer?: DataTransfer) => boolean;
   /** Delete a block from the selection. */
   delete: (id: string[] | string) => void;
   /** Deselect all blocks */
   deselect: () => void;
-  /** Get the first selected block */
-  first: () => NodeEntry<TIdElement> | null;
   /** Focus block selection – that differs from the editor focus */
   focus: () => void;
-  /**
-   * Get selected blocks
-   *
-   * @param options.sort - Sort the nodes by path
-   * @param options.collapseTableRows - If all table rows are selected, return
-   *   the table node with all selected rows instead.
-   */
-  getNodes: (options?: {
-    collapseTableRows?: boolean;
-    /** Use the editor selection when block selection is empty. */
-    selectionFallback?: boolean;
-    sort?: boolean;
-  }) => readonly NodeEntry<TIdElement>[];
-  /** Check if a block is selected. */
-  has: (id: string[] | string) => boolean;
   /** Check if a block is selectable. */
   isSelectable: (element: Element, path: Path) => boolean;
   /** Arrow-based move selection */
   moveSelection: (direction: 'down' | 'up') => void;
   /** Select all selectable blocks */
   selectAll: () => void;
+  /** Select blocks inserted by the latest commit. */
+  selectInserted: () => void;
   /** Set a block to be selected. */
   set: (id: string[] | string) => void;
   /** Shift-based expand/shrink selection */
   shiftSelection: (direction: 'down' | 'up') => void;
+};
+
+type BlockSelectionRead = {
+  /** Get the first selected block. */
+  first: () => NodeEntry<TIdElement> | null;
+  /**
+   * Get selected blocks.
+   *
+   * @param options.sort - Sort the nodes by path.
+   * @param options.collapseTableRows - Collapse fully selected table rows.
+   */
+  getNodes: (options?: {
+    collapseTableRows?: boolean;
+    selectionFallback?: boolean;
+    sort?: boolean;
+  }) => readonly NodeEntry<TIdElement>[];
+  /** Check whether text or block selection is active. */
+  isSelecting: () => boolean;
+};
+
+const selectedEntriesFromState = (
+  state: Pick<EditorStateView, 'nodes'>,
+  selectedIds: Set<string> | undefined,
+  options?: Parameters<BlockSelectionRead['getNodes']>[0]
+): readonly NodeEntry<TIdElement>[] => {
+  const nodes = [...getSelectedEntries(state, selectedIds)];
+
+  if (options?.sort) {
+    nodes.sort(([, pathA], [, pathB]) => PathApi.compare(pathA, pathB));
+  }
+
+  if (options?.collapseTableRows) {
+    const collapsedNodes: NodeEntry<TIdElement>[] = [];
+
+    nodes.forEach(([node, path]) => {
+      if (node.type !== KEYS.tr) {
+        collapsedNodes.push([node, path]);
+        return;
+      }
+
+      const tableEntry = state.nodes.get<TIdElement>(PathApi.parent(path));
+
+      if (!tableEntry) return;
+
+      const existingIndex = collapsedNodes.findIndex(
+        ([existing]) =>
+          existing.type === tableEntry[0].type &&
+          existing.id === tableEntry[0].id
+      );
+
+      if (existingIndex === -1) {
+        collapsedNodes.push([
+          { ...tableEntry[0], children: [node] },
+          tableEntry[1],
+        ]);
+        return;
+      }
+
+      const [existing, existingPath] = collapsedNodes[existingIndex]!;
+      collapsedNodes[existingIndex] = [
+        { ...existing, children: [...existing.children, node] },
+        existingPath,
+      ];
+    });
+
+    return collapsedNodes;
+  }
+
+  if (nodes.length === 0 && options?.selectionFallback) {
+    return state.nodes.toArray({ mode: 'highest' });
+  }
+
+  return nodes;
 };
 
 type BlockSelectionTx = {
@@ -114,8 +190,13 @@ type BlockSelectionTx = {
       nodes: Element[],
       options: { at: Path; insertedCallback?: () => void }
     ) => void;
+    /** Paste clipboard data after the selected blocks. */
+    paste: (data: DataTransfer) => void;
     /** Remove selected blocks. */
-    removeNodes: () => void;
+    removeNodes: (options?: {
+      insertText?: string;
+      selectPrevious?: boolean;
+    }) => void;
     /** Set editor selection from block selection. */
     select: () => void;
     /** Set block indent on selected blocks. */
@@ -154,12 +235,22 @@ export type BlockSelectionConfig = PluginConfig<
   {},
   BlockSelectionTx,
   {
+    /** Check if all ids are selected. */
+    has?: (
+      state: Readonly<{ selectedIds?: Set<string> }>,
+      id: string[] | string
+    ) => boolean;
     /** Check if a block is selected by id. */
-    isSelected?: (id?: string) => boolean;
+    isSelected?: (
+      state: Readonly<{ selectedIds?: Set<string> }>,
+      id?: string
+    ) => boolean;
     /** Check if any blocks are selected. */
-    isSelectingSome?: () => boolean;
+    isSelectingSome?: (
+      state: Readonly<{ selectedIds?: Set<string> }>
+    ) => boolean;
   },
-  {},
+  { blockSelection: BlockSelectionRead },
   readonly [],
   never,
   BlockSelectionApi
@@ -167,7 +258,7 @@ export type BlockSelectionConfig = PluginConfig<
 
 export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
   key: KEYS.blockSelection,
-  options: {
+  initialState: {
     anchorId: null,
     areaOptions: {
       features: {
@@ -198,48 +289,55 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
   render: {
     afterEditable: BlockSelectionAfterEditable,
   },
-}).extend<{
-  api: BlockSelectionConfig['pluginApi'];
-  selectors: BlockSelectionConfig['selectors'];
-  update: BlockSelectionConfig['tx']['blockSelection'];
-}>((context) => {
-  const { api, editor, getOption, getOptions, setOption } = context;
-  const getSelectedEntries = (state: Pick<EditorStateView, 'nodes'>) => {
-    const selectedIds = getOptions().selectedIds;
+  read: ({ store, state }) => ({
+    first: () => {
+      const selectedIds = store.get('selectedIds');
 
-    if (!selectedIds?.size) return [];
+      if (!selectedIds?.size) return null;
 
-    return state.nodes.toArray<TIdElement>({
-      at: [],
-      match: (node) =>
-        ElementApi.isElement(node) &&
-        typeof node.id === 'string' &&
-        selectedIds.has(node.id),
-    });
-  };
-
-  return {
-    handlers: {
-      onMouseDown: ({ api, editor, event, getOptions }) => {
-        const target = event.target as HTMLElement;
-
-        if (target.dataset.platePreventDeselect) return;
-        if (
-          event.button === 0 &&
-          getOptions().selectedIds!.size > 0 &&
-          !isBlockMenuOpen(editor)
-        ) {
-          api.deselect();
-        }
-      },
+      return (
+        state.nodes.find<TIdElement>({
+          at: [],
+          match: (node) =>
+            ElementApi.isElement(node) &&
+            typeof node.id === 'string' &&
+            selectedIds.has(node.id),
+        }) ?? null
+      );
     },
-    selectors: {
-      isSelected: (id?: string) => !!id && getOptions().selectedIds!.has(id),
-      isSelectingSome: () => getOptions().selectedIds!.size > 0,
+    getNodes: (options) =>
+      selectedEntriesFromState(state, store.get().selectedIds, options),
+    isSelecting: () =>
+      state.selection.isExpanded() || Boolean(store.get().selectedIds?.size),
+  }),
+  handlers: {
+    onMouseDown: ({ api, editor, event, store }) => {
+      const target = event.target as HTMLElement;
+
+      if (target.dataset.platePreventDeselect) return;
+      if (
+        event.button === 0 &&
+        store.get().selectedIds!.size > 0 &&
+        !isBlockMenuOpen(editor)
+      ) {
+        api.deselect();
+      }
     },
-    api: {
+  },
+  selectors: {
+    has: (state, id) =>
+      Array.isArray(id)
+        ? id.every((singleId) => state.selectedIds!.has(singleId))
+        : state.selectedIds!.has(id),
+    isSelected: (state, id?: string) => !!id && state.selectedIds!.has(id),
+    isSelectingSome: (state) => state.selectedIds!.size > 0,
+  },
+  api: (context) => {
+    const { api, editor, store } = context;
+
+    return {
       addOnContextMenu: ({ disabledWhenFocused = true, element, event }) => {
-        const { enableContextMenu, selectedIds } = getOptions();
+        const { enableContextMenu, selectedIds } = store.get();
 
         if (!enableContextMenu) return;
 
@@ -253,7 +351,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
             PathApi.isCommon(elementPath, nodeEntry[1])
           ) {
             const id = nodeEntry[0].id as string | undefined;
-            const isSelected = getOption('isSelected', id);
+            const isSelected = id && selectedIds?.has(id);
             const isOpenAlways =
               (event.target as HTMLElement).dataset?.plateOpenContextMenu ===
               'true';
@@ -280,15 +378,176 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
         const clickAlreadySelected = selectedIds?.has(id);
 
         if (!clickAlreadySelected) {
-          setOption('selectedIds', new Set([id]));
+          store.set({ selectedIds: new Set([id]) });
         }
       },
-      moveSelection: (direction) => moveSelection(editor, direction),
-      addSelectedRow: (id, options) => addSelectedRow(editor, id, options),
-      setSelectedIds: (options) => setSelectedIds(editor, options),
-      shiftSelection: (direction) => shiftSelection(editor, direction),
+      moveSelection: (direction) => {
+        const blocks = editor.read((state) =>
+          selectedEntriesFromState(state, store.get().selectedIds)
+        );
+
+        if (blocks.length === 0) return;
+
+        if (direction === 'up') {
+          const [, topPath] = blocks[0]!;
+          const previous = editor.read.nodes.previous<TIdElement>({
+            at: topPath,
+            from: 'parent',
+            match: (node, path) =>
+              ElementApi.isElement(node) && api.isSelectable(node, path),
+          });
+          const id = previous?.[0].id ?? blocks[0]![0].id;
+
+          if (typeof id !== 'string') return;
+          if (previous) store.set({ anchorId: id });
+          api.set(id);
+          return;
+        }
+
+        const [, bottomPath] = blocks.at(-1)!;
+        const next = editor.read.nodes.next<TIdElement>({
+          at: bottomPath,
+          from: 'child',
+          match: (node, path) =>
+            ElementApi.isElement(node) && api.isSelectable(node, path),
+        });
+        const id = next?.[0].id ?? blocks.at(-1)![0].id;
+
+        if (typeof id !== 'string') return;
+        if (next) store.set({ anchorId: id });
+        api.set(id);
+      },
+      addSelectedRow: (id, { clear = true, delay } = {}) => {
+        const element = querySelectorSelectable(id);
+
+        if (!element) return;
+
+        if (!store.get().selectedIds?.has(id) && clear) {
+          store.set({ selectedIds: new Set() });
+        }
+
+        api.setSelectedIds({ added: [element], removed: [] });
+
+        if (delay) {
+          setTimeout(() => {
+            api.setSelectedIds({ added: [], removed: [element] });
+          }, delay);
+        }
+      },
+      setSelectedIds: ({ added, ids, removed }) => {
+        if (ids) store.set({ selectedIds: new Set(ids) });
+
+        if (added || removed) {
+          const next = new Set(store.get().selectedIds);
+
+          if (added) {
+            extractSelectableIds(added).forEach((id) => {
+              if (id) next.add(id);
+            });
+          }
+          if (removed) {
+            extractSelectableIds(removed).forEach((id) => {
+              if (id) next.delete(id);
+            });
+          }
+
+          store.set({ selectedIds: next });
+        }
+
+        store.set({ isSelecting: true });
+      },
+      shiftSelection: (direction) => {
+        const blocks = editor.read((state) =>
+          selectedEntriesFromState(state, store.get().selectedIds)
+        );
+
+        if (blocks.length === 0) return;
+
+        const [topNode, topPath] = blocks[0]!;
+        const [bottomNode, bottomPath] = blocks.at(-1)!;
+        let anchorId = store.get().anchorId;
+
+        if (!anchorId) {
+          const fallback = direction === 'up' ? bottomNode.id : topNode.id;
+
+          if (typeof fallback !== 'string') return;
+          anchorId = fallback;
+          store.set({ anchorId });
+        }
+
+        const anchorIndex = blocks.findIndex(([node]) => node.id === anchorId);
+
+        if (anchorIndex === -1) {
+          if (typeof bottomNode.id === 'string') {
+            store.set({ anchorId: bottomNode.id });
+          }
+          return;
+        }
+
+        const anchorIsTop = anchorIndex === 0;
+        const anchorIsBottom = anchorIndex === blocks.length - 1;
+        const selectedIds = new Set(store.get('selectedIds'));
+
+        if (direction === 'down') {
+          if (anchorIsTop) {
+            const below = editor.read.nodes.next({
+              at: bottomPath,
+              mode: 'highest',
+              match: (node, path) =>
+                ElementApi.isElement(node) &&
+                api.isSelectable(node, path) &&
+                !PathApi.isAncestor(path, bottomPath),
+            });
+
+            if (!below || typeof below[0].id !== 'string') return;
+            selectedIds.add(below[0].id);
+          } else if (
+            typeof topNode.id === 'string' &&
+            topNode.id !== anchorId
+          ) {
+            selectedIds.delete(topNode.id);
+          }
+        } else if (anchorIsBottom) {
+          const above = editor.read.nodes.previous<TIdElement>({
+            at: topPath,
+            from: 'parent',
+            match: (node, path) =>
+              ElementApi.isElement(node) && api.isSelectable(node, path),
+          });
+
+          if (!above || typeof above[0].id !== 'string') return;
+
+          if (PathApi.isAncestor(above[1], topPath)) {
+            selectedIds.forEach((id) => {
+              const entry = editor.read.nodes.find({
+                at: above[1],
+                match: { id },
+              });
+
+              if (entry && PathApi.isDescendant(entry[1], above[1])) {
+                selectedIds.delete(id);
+
+                if (id === anchorId) {
+                  anchorId = above[0].id;
+                  store.set({ anchorId });
+                }
+              }
+            });
+          }
+
+          selectedIds.add(above[0].id);
+        } else if (
+          typeof bottomNode.id === 'string' &&
+          bottomNode.id !== anchorId
+        ) {
+          selectedIds.delete(bottomNode.id);
+        }
+
+        selectedIds.add(anchorId);
+        store.set({ selectedIds });
+      },
       add: (id) => {
-        const next = new Set(getOptions().selectedIds!);
+        const next = new Set(store.get().selectedIds!);
 
         if (Array.isArray(id)) {
           for (const singleId of id) {
@@ -298,13 +557,102 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           next.add(id);
         }
 
-        setOption('selectedIds', next);
+        store.set({ selectedIds: next });
       },
       clear: () => {
-        setOption('selectedIds', new Set());
+        store.set({ selectedIds: new Set() });
+      },
+      copy: (dataTransfer) => {
+        const write = (data: DataTransfer) => {
+          const selectedEntries = editor.read((state) =>
+            selectedEntriesFromState(state, store.get().selectedIds, {
+              collapseTableRows: true,
+            })
+          );
+
+          if (selectedEntries.length === 0) return false;
+
+          const blocks = editor.read((state) =>
+            selectedEntries.flatMap(([node, path]) => {
+              if (!state.nodes.get(path) || !ElementApi.isElement(node)) {
+                return [];
+              }
+
+              const start = state.points.start(path);
+              const end = state.points.end(path);
+
+              if (!start || !end) return [];
+
+              return [
+                {
+                  empty: state.nodes.isEmpty(node),
+                  node,
+                  range: {
+                    anchor: start,
+                    focus: end,
+                    kind: 'text' as const,
+                  },
+                },
+              ];
+            })
+          );
+
+          if (blocks.length === 0) return false;
+
+          const textParts: string[] = [];
+          const div = document.createElement('div');
+
+          blocks.forEach(({ empty, range }) => {
+            const values = new Map<string, string>();
+            const blockData = {
+              getData: (format: string) => values.get(format) ?? '',
+              setData: (format: string, value: string) => {
+                values.set(format, value);
+              },
+            };
+
+            if (!empty) writeDOMRangeData(editor, blockData, range);
+
+            textParts.push(empty ? '' : blockData.getData('text/plain'));
+
+            const child = document.createElement('div');
+
+            child.innerHTML = empty
+              ? '<p></p>'
+              : blockData.getData('text/html');
+            child
+              .querySelectorAll('[data-plite-fragment]')
+              .forEach((element) => {
+                element.removeAttribute('data-plite-fragment');
+                element.removeAttribute('data-plite-fragment-format');
+              });
+            div.append(child);
+          });
+
+          writeDOMFragmentData(data, {
+            clipboardFormatKey: getDOMClipboardFormatKey(editor),
+            html: div.innerHTML,
+            slice: ContentSlice.closed(blocks.map(({ node }) => node)),
+            text: `${textParts.join('\n')}\n`,
+            window: editor.api.dom.getWindow(),
+          });
+
+          return true;
+        };
+
+        if (dataTransfer) return write(dataTransfer);
+
+        let didWrite = false;
+        const didCopy = copyToClipboard(' ', {
+          onCopy: (data) => {
+            didWrite = write(data as DataTransfer);
+          },
+        });
+
+        return didCopy && didWrite;
       },
       delete: (id) => {
-        const next = new Set(getOptions().selectedIds!);
+        const next = new Set(store.get().selectedIds!);
 
         if (Array.isArray(id)) {
           for (const i of id) {
@@ -314,114 +662,25 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           next.delete(id);
         }
 
-        setOption('selectedIds', next);
+        store.set({ selectedIds: next });
       },
       deselect: () => {
-        setOption('selectedIds', new Set());
-        setOption('isSelecting', false);
-      },
-      first: () => {
-        const selectedIds = getOption('selectedIds');
-
-        if (!selectedIds || selectedIds.size === 0) return null;
-
-        return editor.read.nodes.find<TIdElement>({
-          at: [],
-          match: (node) =>
-            ElementApi.isElement(node) &&
-            !!node.id &&
-            selectedIds.has(node.id as string),
-        })!;
+        store.set({ selectedIds: new Set() });
+        store.set({ isSelecting: false });
       },
       focus: () => {
-        const shadowInputRef = getOption('shadowInputRef');
+        const shadowInputRef = store.get('shadowInputRef');
 
         if (shadowInputRef?.current) {
           shadowInputRef.current.focus({ preventScroll: true });
         }
       },
-      getNodes: (options) => {
-        const selectedIds = getOption('selectedIds');
-
-        const nodes = [
-          ...editor.read.nodes.toArray<TIdElement>({
-            at: [],
-            match: (node) =>
-              ElementApi.isElement(node) &&
-              !!node.id &&
-              !!selectedIds?.has(node.id as string),
-          }),
-        ];
-
-        if (options?.sort) {
-          nodes.sort(([, pathA], [, pathB]) => PathApi.compare(pathA, pathB));
-        }
-
-        if (options?.collapseTableRows) {
-          const collapsedNodes: NodeEntry<TIdElement>[] = [];
-
-          nodes.forEach(([node, path]) => {
-            if (node.type === KEYS.tr) {
-              const tablePath = PathApi.parent(path);
-              const tableNodeEntry =
-                editor.read.nodes.get<TIdElement>(tablePath)!;
-
-              // Check if table already exists in collapsedNodes
-              const existingTableIndex = collapsedNodes.findIndex(
-                ([existingNode]) =>
-                  existingNode.type === tableNodeEntry[0].type &&
-                  existingNode.id === tableNodeEntry[0].id
-              );
-
-              if (existingTableIndex === -1) {
-                // Create new table with this row
-                const tableNodeCopy = {
-                  ...tableNodeEntry[0],
-                  children: [node],
-                };
-
-                collapsedNodes.push([tableNodeCopy, tableNodeEntry[1]]);
-              } else {
-                // Add the row to existing table
-                const [existingTable, existingPath] =
-                  collapsedNodes[existingTableIndex];
-
-                collapsedNodes[existingTableIndex] = [
-                  {
-                    ...existingTable,
-                    children: [...existingTable.children, node],
-                  },
-                  existingPath,
-                ];
-              }
-              return;
-            }
-
-            collapsedNodes.push([node, path]);
-          });
-
-          return collapsedNodes;
-        }
-
-        if (nodes.length === 0 && options?.selectionFallback) {
-          return editor.read.nodes.toArray({ mode: 'highest' });
-        }
-
-        return nodes;
-      },
-      has: (id) => {
-        if (Array.isArray(id)) {
-          return id.every((i) => getOptions().selectedIds!.has(i));
-        }
-
-        return getOptions().selectedIds!.has(id);
-      },
       isSelectable: (element, path) =>
         !!element.id &&
         editor.read.schema.isBlock(element) &&
-        getOptions().isSelectable!(element, path),
+        store.get().isSelectable!(element, path),
       set: (id) => {
-        setOption('selectedIds', new Set(Array.isArray(id) ? id : [id]));
+        store.set({ selectedIds: new Set(Array.isArray(id) ? id : [id]) });
       },
       selectAll: () => {
         const ids = editor.read.nodes
@@ -433,16 +692,45 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           })
           .map((n) => n[0].id as string);
 
-        setOption('selectedIds', new Set(ids));
+        store.set({ selectedIds: new Set(ids) });
         api.focus();
       },
-    },
-    extension: {
+      selectInserted: () => {
+        const ids = new Set<string>();
+        const commit = editor.read.lastCommit();
+
+        if (commit) {
+          for (const runtimeId of commit.changed.runtimeIds('node')) {
+            if (commit.before.index.pathOf(runtimeId)) continue;
+
+            const path = commit.after.index.pathOf(runtimeId);
+            const node = path ? editor.read.nodes.get(path)?.[0] : undefined;
+
+            if (
+              node &&
+              typeof node.id === 'string' &&
+              editor.read.schema.isBlock(node)
+            ) {
+              ids.add(node.id);
+            }
+          }
+        }
+
+        store.set({ selectedIds: ids });
+      },
+    };
+  },
+  extension: (context) => {
+    const { editor, store } = context;
+    const selectedEntries = (state: Pick<EditorStateView, 'nodes'>) =>
+      getSelectedEntries(state, store.get().selectedIds);
+
+    return {
       commands: ({ around }) => [
         around(editorCommands.addMark, ({ state, next }) => {
-          if (!getOptions().selectedIds?.size) return next();
+          if (!store.get().selectedIds?.size) return next();
 
-          const range = state.ranges.fromEntries(getSelectedEntries(state));
+          const range = state.ranges.fromEntries(selectedEntries(state));
 
           if (!range) return next();
 
@@ -454,9 +742,9 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           );
         }),
         around(editorCommands.toggleMark, ({ state, next }) => {
-          if (!getOptions().selectedIds?.size) return next();
+          if (!store.get().selectedIds?.size) return next();
 
-          const range = state.ranges.fromEntries(getSelectedEntries(state));
+          const range = state.ranges.fromEntries(selectedEntries(state));
 
           if (!range) return next();
 
@@ -468,9 +756,9 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           );
         }),
         around(editorCommands.setNodes, ({ state, next }) => {
-          if (!getOptions().selectedIds?.size) return next();
+          if (!store.get().selectedIds?.size) return next();
 
-          const range = state.ranges.fromEntries(getSelectedEntries(state));
+          const range = state.ranges.fromEntries(selectedEntries(state));
 
           if (!range) return next();
 
@@ -482,7 +770,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           );
         }),
         around(editorCommands.select, ({ state, next }) => {
-          if (!getOptions().selectedIds?.size || isBlockMenuOpen(editor)) {
+          if (!store.get().selectedIds?.size || isBlockMenuOpen(editor)) {
             return next();
           }
 
@@ -493,7 +781,7 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           );
         }),
         around(editorCommands.setSelection, ({ state, next }) => {
-          if (!getOptions().selectedIds?.size || isBlockMenuOpen(editor)) {
+          if (!store.get().selectedIds?.size || isBlockMenuOpen(editor)) {
             return next();
           }
 
@@ -509,57 +797,198 @@ export const BlockSelectionPlugin = createPlatePlugin<BlockSelectionConfig>({
           (commit.tags.includes(BLOCK_SELECTION_DESELECT_TAG) ||
             (commit.selectionChanged &&
               !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
-          getOptions().selectedIds!.size > 0 &&
+          store.get().selectedIds!.size > 0 &&
           !isBlockMenuOpen(editor)
         ) {
           context.api.deselect();
         }
       },
-    },
-    shortcuts: {
-      selectAll: {
-        keys: 'mod+a',
-        priority: 0,
-        handler: () => {
-          if (getOptions().disableSelectAll) return false;
+    };
+  },
+  shortcuts: {
+    selectAll: {
+      keys: 'mod+a',
+      priority: 0,
+      handler: ({ editor }) => {
+        const blockSelection = editor.plugin(BlockSelectionPlugin);
 
-          const selection = editor.read.selection();
-          const block = editor.read.nodes.block({ mode: 'highest' });
+        if (blockSelection.store.get('disableSelectAll')) return false;
 
-          if (!selection || !block) return false;
+        const selection = editor.read.selection();
+        const block = editor.read.nodes.block({ mode: 'highest' });
 
-          if (
-            !editor.read.selection.isWithinBlock() ||
-            (editor.read.selection.isAtBlockStart() &&
-              editor.read.selection.isAtBlockEnd())
-          ) {
-            editor.plugin(BlockSelectionPlugin).api.selectAll();
-            return true;
-          }
+        if (!selection || !block) return false;
 
-          editor.update.selection.set(block[1]);
+        if (
+          !editor.read.selection.isWithinBlock() ||
+          (editor.read.selection.isAtBlockStart() &&
+            editor.read.selection.isAtBlockEnd())
+        ) {
+          blockSelection.api.selectAll();
           return true;
-        },
+        }
+
+        editor.update.selection.set(block[1]);
+        return true;
       },
     },
-    update: ({ context: updateContext, tx }) => ({
-      duplicate: () => duplicateBlockSelectionNodes(editor, tx, updateContext),
-      insertBlocksAndSelect: (nodes, { at, insertedCallback }) => {
-        insertBlocksAndSelect(editor, tx, updateContext, nodes, {
-          at,
-          insertedCallback,
+  },
+  update: ({ api, context: updateContext, editor, store, tx }) => {
+    const getSelectedBlocks = () =>
+      tx.nodes.toArray<TIdElement>({
+        at: [],
+        match: (node) =>
+          ElementApi.isElement(node) &&
+          typeof node.id === 'string' &&
+          Boolean(store.get('selectedIds')?.has(node.id)),
+      });
+
+    return {
+      duplicate: () => {
+        const blocks = getSelectedBlocks();
+        const lastBlock = blocks.at(-1);
+
+        if (!lastBlock) return;
+
+        tx.nodes.duplicate(blocks);
+
+        const path = PathApi.next(lastBlock[1]);
+        const ids = blocks.flatMap((_, index) => {
+          const target = tx.nodes.get([path[0] + index]);
+
+          return typeof target?.[0].id === 'string' ? [target[0].id] : [];
+        });
+
+        updateContext.afterCommit(() => {
+          store.set({ selectedIds: new Set(ids) });
         });
       },
-      removeNodes: () => removeBlockSelectionNodes(editor, tx),
-      select: () => selectBlockSelectionNodes(editor, tx, updateContext),
-      setIndent: (indent, options) =>
-        setBlockSelectionIndent(editor, tx, indent, options),
-      setNodes: (props, options) =>
-        setBlockSelectionNodes(editor, tx, props, options),
-      setTexts: (props, options) =>
-        setBlockSelectionTexts(editor, tx, props, options),
-    }),
-  };
+      insertBlocksAndSelect: (nodes, { at, insertedCallback }) => {
+        tx.nodes.insert(nodes, { at });
+
+        const ids: string[] = [];
+        let path = at;
+
+        for (const _ of nodes) {
+          const entry = tx.nodes.get<Element>(path);
+
+          if (typeof entry?.[0].id === 'string') ids.push(entry[0].id);
+          path = PathApi.next(path);
+        }
+
+        updateContext.afterCommit(() => {
+          insertedCallback?.();
+          store.set({ selectedIds: new Set(ids) });
+        });
+      },
+      paste: (data) => {
+        const entry = getSelectedBlocks().at(-1);
+
+        if (!entry) return;
+
+        const [node, path] = entry;
+
+        if (!tx.nodes.isEmpty(node)) {
+          tx.nodes.insert(
+            {
+              children: [{ text: '' }],
+              type: editor.getType(KEYS.p),
+            },
+            { at: PathApi.next(path), select: true }
+          );
+        }
+
+        editor.api.clipboard.insertData(data);
+        updateContext.afterCommit(() => api.selectInserted());
+      },
+      removeNodes: (options = {}) => {
+        const entries = getSelectedBlocks();
+
+        if (entries.length === 0) return;
+
+        const firstPath = entries[0]![1];
+
+        for (const [, path] of entries.toReversed()) {
+          tx.nodes.remove({ at: path });
+        }
+
+        if (options.insertText !== undefined) {
+          tx.nodes.insert(
+            {
+              children: [{ text: options.insertText }],
+              type: editor.getType(KEYS.p),
+            },
+            { at: firstPath, select: true }
+          );
+        }
+
+        const shouldFocus = tx.children().length === 0;
+        const deletedIds = entries.flatMap(([node]) =>
+          typeof node.id === 'string' ? [node.id] : []
+        );
+        let previousId: string | undefined;
+
+        if (!shouldFocus && options.selectPrevious) {
+          const previousPath = PathApi.previous(firstPath);
+          const previous = previousPath
+            ? tx.nodes.block({ at: previousPath })
+            : undefined;
+
+          if (typeof previous?.[0].id === 'string') {
+            previousId = previous[0].id;
+          }
+        }
+
+        updateContext.afterCommit(() => {
+          const selectedIds = new Set(store.get('selectedIds'));
+
+          deletedIds.forEach((id) => {
+            selectedIds.delete(id);
+          });
+          store.set({
+            selectedIds: previousId ? new Set([previousId]) : selectedIds,
+          });
+
+          if (options.insertText !== undefined || shouldFocus) {
+            editor.api.dom.focus();
+          }
+        });
+      },
+      select: () => {
+        const range = tx.ranges.fromEntries(getSelectedBlocks());
+
+        if (!range) return;
+
+        tx.selection.set(range);
+        updateContext.afterCommit(() => api.clear());
+      },
+      setIndent: (indent, options) => {
+        getSelectedBlocks().forEach(([node, path]) => {
+          const previous = (node as { indent?: number }).indent ?? 0;
+
+          tx.nodes.set(
+            { indent: Math.max(previous + indent, 0) },
+            { ...options, at: path }
+          );
+        });
+      },
+      setNodes: (props, options) => {
+        getSelectedBlocks().forEach(([, path]) => {
+          tx.nodes.set(props, { ...options, at: path });
+        });
+      },
+      setTexts: (props, options) => {
+        getSelectedBlocks().forEach(([, path]) => {
+          tx.nodes.set(props, {
+            mode: 'all',
+            ...options,
+            at: path,
+            match: TextApi.isText,
+          });
+        });
+      },
+    };
+  },
 });
 
 export type BlockSelectionPluginConfig = InferConfig<

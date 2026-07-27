@@ -1053,22 +1053,26 @@ export const defaultRules = {
     deserialize: (mdastNode, deco, options) =>
       convertTextsDeserialize(mdastNode, deco, options),
   },
-  subscript: {
+  script: {
     mark: true,
     deserialize: (mdastNode, deco, options) =>
       convertChildrenDeserialize(
         mdastNode.children,
         {
-          [getPluginType(options, KEYS.sub)]: true,
+          [getPluginType(options, KEYS.script)]:
+            mdastNode.name === 'sub' ? 'sub' : 'sup',
           ...deco,
         },
         options
       ),
-    serialize(slateNode, _options): MdMdxJsxTextElement {
+    serialize(slateNode, options): MdMdxJsxTextElement {
       return {
         attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
-        name: 'sub',
+        name:
+          slateNode[getPluginType(options, KEYS.script)] === 'sub'
+            ? 'sub'
+            : 'sup',
         type: 'mdxJsxTextElement',
       };
     },
@@ -1096,26 +1100,6 @@ export const defaultRules = {
         attributes: [],
         children: [{ type: 'text', value: slateNode.text }],
         name: 'suggestion',
-        type: 'mdxJsxTextElement',
-      };
-    },
-  },
-  superscript: {
-    mark: true,
-    deserialize: (mdastNode, deco, options) =>
-      convertChildrenDeserialize(
-        mdastNode.children,
-        {
-          [getPluginType(options, KEYS.sup)]: true,
-          ...deco,
-        },
-        options
-      ),
-    serialize(slateNode, _options): MdMdxJsxTextElement {
-      return {
-        attributes: [],
-        children: [{ type: 'text', value: slateNode.text }],
-        name: 'sup',
         type: 'mdxJsxTextElement',
       };
     },

@@ -1,6 +1,19 @@
-import { createBasePlugin, someHtmlElement } from '@platejs/core';
+import {
+  createBasePlugin,
+  createRuleFactory,
+  someHtmlElement,
+} from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
+
+export const ItalicRules = {
+  markdown: createRuleFactory<{}, { variant: '*' | '_' }>({
+    type: 'mark',
+    variant: '*',
+    start: ({ variant }) => variant,
+    trigger: ({ variant }) => variant,
+  }),
+};
 
 /** Enables support for italic formatting. */
 export const BaseItalicPlugin = createBasePlugin({

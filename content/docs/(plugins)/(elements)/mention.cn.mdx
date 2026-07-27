@@ -89,7 +89,7 @@ const editor = createPlateEditor({
     // ...其他插件
     MentionPlugin.configure({
       component: MentionElement,
-      options: {
+      initialState: {
         trigger: '@',
         triggerPreviousCharPattern: /^$|^[\s"']$/,
         insertSpaceAfterMention: false,
@@ -111,7 +111,7 @@ const editor = createPlateEditor({
 
 ### MentionPlugin
 
-提供提及功能的插件。扩展自 [TriggerComboboxPluginOptions](/docs/combobox#triggercomboboxpluginoptions)，并要求安装 `MentionInputPlugin`。
+提供提及功能的插件。扩展自 [TriggerComboboxPluginState](/docs/combobox#triggercomboboxpluginstate)，并要求安装 `MentionInputPlugin`。
 
 <API name="MentionPlugin">
 <APIOptions>
@@ -159,21 +159,4 @@ const editor = createPlateEditor({
     </APISubList>
   </APIItem>
 </APIParameters>
-</API>
-
-### getMentionOnSelectItem
-
-获取处理提及组合框项选择的处理器。
-
-<API name="getMentionOnSelectItem">
-<APIOptions>
-  <APIItem name="key" type="string" optional>
-    提及插件的插件键。
-    - **默认值:** `MentionPlugin.key`
-  </APIItem>
-</APIOptions>
-
-<APIReturns>
-  处理提及项选择的函数。
-</APIReturns>
 </API>

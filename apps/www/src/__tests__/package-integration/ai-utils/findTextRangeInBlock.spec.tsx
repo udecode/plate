@@ -1,4 +1,5 @@
 import { BaseCommentPlugin } from '@platejs/comment';
+import { findTextRangeInBlock } from '@platejs/ai';
 import { BaseLinkPlugin } from '@platejs/link';
 import {
   BaseBoldPlugin,
@@ -9,8 +10,6 @@ import {
   BaseUnderlinePlugin,
 } from '@platejs/basic-nodes';
 import { BaseParagraphPlugin, createBaseEditor, type Value } from 'platejs';
-
-import { findTextRangeInBlock } from '../../../../../../packages/ai/src/react/ai/utils/findTextRangeInBlock';
 
 const plugins = [
   BaseParagraphPlugin,

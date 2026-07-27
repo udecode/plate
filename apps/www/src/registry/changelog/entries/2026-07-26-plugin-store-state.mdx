@@ -1,0 +1,14 @@
+---
+id: 2026-07-26-plugin-store-state
+date: 2026-07-26
+status: draft
+kind: wiring
+summary: "Use plugin stores for editor-local state"
+change: {"type":"source","date":"2026-07-26","commits":[]}
+release: {"status":"unresolved"}
+diagnostics: []
+---
+<!-- entry: {"id":"2026-07-26-ai-plugin-stores-editor-local-e7558eb2","kind":"wiring","migrationNotes":[]} -->
+- **`ai-kit`**, **`block-placeholder-kit`**, **`block-selection-kit`**, **`code-block-base-kit`**, **`code-block-kit`**, **`comment-kit`**, **`copilot-kit`**, **`discussion-kit`**, **`dnd-kit`**, **`emoji-kit`**, **`indent-base-kit`**, **`indent-kit`**, **`markdown-kit`**, **`media-kit`**, **`mention-kit`**, **`slash-kit`**, **`suggestion-kit`**, **`tabbable-kit`**, **`toc-kit`**: Seed editor-local plugin stores with `initialState`.
+- **`ai-menu`**, **`ai-node`**, **`block-context-menu`**, **`block-discussion`**, **`block-draggable`**, **`block-selection`**, **`block-suggestion`**, **`column-node`**, **`comment-node`**, **`cursor-overlay`**, **`emoji-node`**, **`floating-toolbar`**, **`ghost-text`**, **`link-toolbar`**, **`media-placeholder-node`**, **`media-upload-toast`**, **`mode-toolbar-button`**, **`settings-dialog`**, **`suggestion-node`**, **`suggestion-toolbar-button`**, **`table-node`**, **`use-chat`**: Read, update, and subscribe to plugin state through the typed store API.
+- **`collaboration-demo`**, **`markdown-streaming-demo`**: Configure and update plugin store state through the same API used by copied registry code.

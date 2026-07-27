@@ -57,7 +57,7 @@ import {
   useEditorSelector,
   useElement,
   useFocusedLast,
-  usePluginOption,
+  usePluginStore,
   useEditorReadOnly,
   useRemoveNodeButton,
   useElementSelected,
@@ -140,7 +140,7 @@ const TABLE_MULTI_SELECTION_TOOLBAR_DELAY_MS = 150;
 
 const getTablePlugin = (editor: PlateEditor) => editor.plugin(TablePlugin);
 
-const getTableApi = (editor: PlateEditor) => editor.plugin(TablePlugin).api;
+const getTableRead = (editor: PlateEditor) => editor.plugin(TablePlugin).read;
 
 const TableResizeContext = React.createContext<TableResizeContextValue | null>(
   null
@@ -175,8 +175,8 @@ function useTableResizeController({
   tableRef: React.RefObject<HTMLTableElement | null>;
   wrapperRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const { editor, getOptions } = useEditorPlugin(TablePlugin);
-  const { disableMarginLeft = false, minColumnWidth = 0 } = getOptions();
+  const { editor, store } = useEditorPlugin(TablePlugin);
+  const { disableMarginLeft = false, minColumnWidth = 0 } = store.get();
   const colSizes = useTableColSizes({
     disableOverrides: true,
   });
@@ -625,7 +625,7 @@ export const TableElement = withHOC(
   }: PlateElementProps<TTableElement>) {
     const { api } = useEditorPlugin(TablePlugin);
     const readOnly = useEditorReadOnly();
-    const isSelectionAreaVisible = usePluginOption(
+    const isSelectionAreaVisible = usePluginStore(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );
@@ -644,7 +644,7 @@ export const TableElement = withHOC(
     const tableRef = React.useRef<HTMLTableElement>(null);
     const wrapperRef = React.useRef<HTMLDivElement>(null);
     const dragCellId = useEditorSelector((editor) => {
-      const view = getTableApi(editor).getSelection();
+      const view = getTableRead(editor).getSelection();
 
       if (
         !view?.complete ||
@@ -827,7 +827,7 @@ function TableFloatingToolbar({
   ...props
 }: React.ComponentProps<typeof PopoverContent>) {
   const selectedCellCount = useEditorSelector(
-    (editor) => getTableApi(editor).getSelectedCellIds()?.length ?? 0
+    (editor) => getTableRead(editor).getSelectedCellIds()?.length ?? 0
   );
   const selected = useElementSelected();
   const collapsedInside = useEditorSelector(
@@ -1178,7 +1178,7 @@ function ColorDropdownMenu({
       setOpen(false);
       getTablePlugin(editor).update.setCellBackground({
         color,
-        selectedCells: getTableApi(editor).getSelectedCells() ?? [],
+        selectedCells: getTableRead(editor).getSelectedCells() ?? [],
       });
     },
     [editor]
@@ -1188,7 +1188,7 @@ function ColorDropdownMenu({
     setOpen(false);
     getTablePlugin(editor).update.setCellBackground({
       color: null,
-      selectedCells: getTableApi(editor).getSelectedCells() ?? [],
+      selectedCells: getTableRead(editor).getSelectedCells() ?? [],
     });
   }, [editor]);
 
@@ -1237,7 +1237,7 @@ export function TableRowElement({
   );
   const rowSizeOverrides = useTableValue('rowSizeOverrides');
   const rowMinHeight = rowSizeOverrides.get?.(rowIndex) ?? rowSize;
-  const isSelectionAreaVisible = usePluginOption(
+  const isSelectionAreaVisible = usePluginStore(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
   );
@@ -1367,7 +1367,7 @@ export function TableCellElement({
   });
   const isSelectingTable = useBlockSelected(tableId);
   const isSelectingRow = useBlockSelected(rowId) || isSelectingTable;
-  const isSelectionAreaVisible = usePluginOption(
+  const isSelectionAreaVisible = usePluginStore(
     BlockSelectionPlugin,
     'isSelectionAreaVisible'
   );

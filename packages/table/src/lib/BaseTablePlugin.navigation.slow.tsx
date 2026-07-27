@@ -47,7 +47,7 @@ describe('table navigation slow contracts', () => {
 
     it('returns the cell above the current cell', () => {
       const editor = createEditorInstance(input);
-      const cellAbove = editor.plugin(BaseTablePlugin).api.getTopCell();
+      const cellAbove = editor.plugin(BaseTablePlugin).read.getTopCell();
       expect((cellAbove?.[0].children as Element[])[0].children[0].text).toBe(
         '12'
       );
@@ -60,7 +60,7 @@ describe('table navigation slow contracts', () => {
         anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0, 0, 0] },
       });
-      const cellAbove = editor.plugin(BaseTablePlugin).api.getTopCell({
+      const cellAbove = editor.plugin(BaseTablePlugin).read.getTopCell({
         at: editor.read.selection()!.anchor.path,
       });
       expect(cellAbove).toBeUndefined();
@@ -74,7 +74,7 @@ describe('table navigation slow contracts', () => {
           </editor>
         ) as TestEditor
       );
-      const cellAbove = editor.plugin(BaseTablePlugin).api.getTopCell();
+      const cellAbove = editor.plugin(BaseTablePlugin).read.getTopCell();
       expect(cellAbove).toBeUndefined();
     });
 
@@ -109,7 +109,7 @@ describe('table navigation slow contracts', () => {
       ) as TestEditor;
       const editor = createEditorInstance(mergedInput);
 
-      expect(editor.plugin(BaseTablePlugin).api.getTopCell()).toEqual([
+      expect(editor.plugin(BaseTablePlugin).read.getTopCell()).toEqual([
         expect.objectContaining({ id: 'c11' }),
         [0, 0, 0],
       ]);

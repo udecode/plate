@@ -178,7 +178,7 @@ describe('BaseTablePlugin prepared paste', () => {
     );
 
     expect(
-      editor.plugin(BaseTablePlugin).api.getSelection()?.anchors.length
+      editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
     ).toBeGreaterThan(1);
     expect(editor.api.clipboard.insertData(data)).toBe(true);
     unsubscribe();
@@ -214,7 +214,7 @@ describe('BaseTablePlugin prepared paste', () => {
     data.setData('text/plain', 'plain fallback');
 
     expect(
-      editor.plugin(BaseTablePlugin).api.getSelection()?.anchors.length
+      editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
     ).toBe(1);
     expect(editor.api.clipboard.insertData(data)).toBe(true);
     expect(tableText(editor)).toEqual([['plain fallbacka']]);
@@ -275,7 +275,7 @@ describe('BaseTablePlugin prepared paste', () => {
       nodeId: true,
       plugins: [
         BaseTablePlugin,
-        BaseYjsPlugin.configure({ options: { clientId: 'source' } }),
+        BaseYjsPlugin.configure({ initialState: { clientId: 'source' } }),
       ],
       selection,
       initialValue,
@@ -286,7 +286,7 @@ describe('BaseTablePlugin prepared paste', () => {
       plugins: [
         BaseTablePlugin,
         BaseYjsPlugin.configure({
-          options: { clientId: 'replay', doc },
+          initialState: { clientId: 'replay', doc },
         }),
       ],
       initialValue: [{ children: [{ text: 'local' }], type: 'p' }],

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import { formatCodeBlock, isLangSupported } from '@platejs/code-block';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BracesIcon, Check, CheckIcon, CopyIcon } from 'lucide-react';
 import { type TCodeBlockElement, type TCodeSyntaxLeaf, NodeApi } from 'platejs';
 import {
@@ -156,12 +156,14 @@ export function CodeBlockElement({
           className="absolute top-1 right-1 z-10 flex select-none gap-0.5"
           contentEditable={false}
         >
-          {isLangSupported(element.lang) && (
+          {element.lang === 'json' && (
             <Button
               size="icon"
               variant="ghost"
               className="size-6 text-xs"
-              onClick={() => formatCodeBlock(editor, { element })}
+              onClick={() =>
+                editor.plugin(BaseCodeBlockPlugin).update.format({ element })
+              }
               title="Format code"
             >
               <BracesIcon className="!size-3.5 text-muted-foreground" />

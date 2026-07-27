@@ -5,6 +5,7 @@ import {
   createBaseEditor,
   createBasePlugin,
   type BaseEditor,
+  type BasePluginInput,
 } from '@platejs/core';
 import { BaseIndentPlugin } from '@platejs/indent';
 import {
@@ -26,11 +27,10 @@ import { BaseListPlugin, type ToggleListOptions } from './BaseListPlugin';
 jsxt;
 
 const listPluginPage = BaseListPlugin.configure({
-  options: {
+  initialState: {
     getSiblingListOptions: {
       getNextEntry: ([, path], state) => {
-        const nodes = state?.nodes;
-        if (!nodes) return;
+        const { nodes } = state;
 
         const nextPath = PathApi.next(path);
         const nextNode = nodes.get<Element>(nextPath)?.[0];
@@ -48,8 +48,7 @@ const listPluginPage = BaseListPlugin.configure({
         return [nextNode, nextPath];
       },
       getPreviousEntry: ([, path], state) => {
-        const nodes = state?.nodes;
-        if (!nodes) return;
+        const { nodes } = state;
 
         const prevPath = PathApi.hasPrevious(path)
           ? PathApi.previous(path)
@@ -146,7 +145,7 @@ describe('BaseListPlugin toggle behavior', () => {
   }: {
     input: TestEditor;
     options: ToggleListOptions;
-    plugins?: any[];
+    plugins?: readonly BasePluginInput[];
   }) => {
     const editor = createBaseEditor({
       plugins,
@@ -1243,7 +1242,7 @@ describe('BaseListPlugin numbering behavior', () => {
     value,
   }: {
     value: Value;
-    headingPlugin?: any;
+    headingPlugin?: typeof CustomH1Plugin | typeof H1Plugin;
     normalizeInitial?: boolean;
     pages?: boolean;
     targetPluginKeys?: readonly string[];
@@ -2255,7 +2254,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
           const replayEditor = createEditor({ value: input });
 
-          replayEditor.update((tx) => tx.changes.apply(change));
+          replayEditor.update.changes.apply(change);
           expect(replayEditor.read.children()).toEqual(output);
 
           editor.update.history.undo();

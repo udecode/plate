@@ -9,9 +9,15 @@ export * from './lib/plugins/affinity/index';
 export * from './lib/plugins/debug/index';
 export * from './lib/plugins/dom/index';
 export * from './lib/plugins/element-state/index';
-export * from './lib/plugins/html/HtmlPlugin';
-export * from './lib/plugins/html/constants';
-export * from './lib/plugins/html/utils/findHtmlElement';
+export {
+  collapseWhiteSpace,
+  type HtmlApi,
+  htmlBrToNewLine,
+  HtmlPlugin,
+  htmlStringToDOMNode,
+  htmlTextNodeToString,
+} from './lib/plugins/html/HtmlPlugin';
+export { someHtmlElement } from './lib/plugins/html/htmlDom';
 export * from './lib/plugins/input-rules/index';
 export * from './lib/plugins/node-id/index';
 export * from './lib/plugins/override/index';

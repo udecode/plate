@@ -465,7 +465,7 @@ const createPeerEditor = (
     plugins: [
       ...BasicNodesKit,
       YjsPlugin.configure({
-        options: {
+        initialState: {
           clientId: provider.peer.id,
           provider,
           rootName: ROOT_NAME,
@@ -512,7 +512,7 @@ const testSchemaJoin = (room: DemoRoom, version: number) => {
       plugins: [
         ...BasicNodesKit,
         YjsPlugin.configure({
-          options: {
+          initialState: {
             clientId: `schema-probe-${version}`,
             provider,
             rootName: ROOT_NAME,

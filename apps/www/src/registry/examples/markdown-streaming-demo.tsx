@@ -7,7 +7,7 @@ import {
   useState,
 } from 'react';
 
-import { AIChatPlugin, streamInsertChunk } from '@platejs/ai/react';
+import { AIChatPlugin } from '@platejs/ai/react';
 import {
   ChevronFirstIcon,
   ChevronLastIcon,
@@ -340,9 +340,9 @@ export default function MarkdownStreamingDemo() {
     setPausedState(false);
     setActiveIndex(0);
 
-    editor.plugin(AIChatPlugin).setOption('streaming', false);
-    editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
-    editor.plugin(AIChatPlugin).setOption('_blockPath', null);
+    editor.plugin(AIChatPlugin).store.set({ streaming: false });
+    editor.plugin(AIChatPlugin).store.set({ _blockChunks: '' });
+    editor.plugin(AIChatPlugin).store.set({ _blockPath: null });
 
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
       while (pausedRef.current) {
@@ -356,7 +356,7 @@ export default function MarkdownStreamingDemo() {
 
       const chunk = transformedCurrentChunks[i];
 
-      streamInsertChunk(editor, chunk.chunk, {
+      editor.plugin(AIChatPlugin).update.insertChunk(chunk.chunk, {
         textProps: {
           [getPluginType(editor, KEYS.ai)]: true,
         },
@@ -406,9 +406,9 @@ export default function MarkdownStreamingDemo() {
       forceUpdate();
     } else {
       editor.update.value.replace({ children: [] });
-      editor.plugin(AIChatPlugin).setOption('streaming', false);
-      editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
-      editor.plugin(AIChatPlugin).setOption('_blockPath', null);
+      editor.plugin(AIChatPlugin).store.set({ streaming: false });
+      editor.plugin(AIChatPlugin).store.set({ _blockChunks: '' });
+      editor.plugin(AIChatPlugin).store.set({ _blockPath: null });
     }
   }, [editor, editorStatic, isPlateStatic]);
 
@@ -432,12 +432,12 @@ export default function MarkdownStreamingDemo() {
       } else {
         editor.update.value.replace({ children: [] });
 
-        editor.plugin(AIChatPlugin).setOption('streaming', false);
-        editor.plugin(AIChatPlugin).setOption('_blockChunks', '');
-        editor.plugin(AIChatPlugin).setOption('_blockPath', null);
+        editor.plugin(AIChatPlugin).store.set({ streaming: false });
+        editor.plugin(AIChatPlugin).store.set({ _blockChunks: '' });
+        editor.plugin(AIChatPlugin).store.set({ _blockPath: null });
 
         for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-          streamInsertChunk(editor, chunk.chunk, {
+          editor.plugin(AIChatPlugin).update.insertChunk(chunk.chunk, {
             textProps: {
               [getPluginType(editor, KEYS.ai)]: true,
             },

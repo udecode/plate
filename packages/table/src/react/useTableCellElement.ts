@@ -17,7 +17,6 @@ import {
   useElement,
   useElementSelector,
   useOptionalElement,
-  usePluginOption,
 } from '@platejs/core/react';
 import type { Element, NodeEntry } from '@platejs/plite';
 import {
@@ -46,7 +45,7 @@ export const useIsCellSelected = (element: Element) => {
   return useEditorSelector<boolean, typeof editor>((editor) =>
     editor
       .plugin(TablePlugin)
-      .api.isCellSelected(element.id as string | null | undefined)
+      .read.isCellSelected(element.id as string | null | undefined)
   );
 };
 
@@ -61,7 +60,7 @@ export function useTableCellBorders({
 
   return React.useMemo(
     () =>
-      editor.plugin(TablePlugin).api.getCellBorders({ cellIndices, element }),
+      editor.plugin(TablePlugin).read.getCellBorders({ cellIndices, element }),
     [editor, element, cellIndices]
   );
 }
@@ -69,7 +68,7 @@ export function useTableCellBorders({
 export const useTableBordersDropdownMenuContentState = () => {
   const { editor } = useEditorPlugin(TablePlugin);
   const borderStates = useEditorSelector<TableBorderStates>((editor) =>
-    editor.plugin(TablePlugin).api.getSelectedCellsBorders()
+    editor.plugin(TablePlugin).read.getSelectedCellsBorders()
   );
 
   return {
@@ -111,7 +110,7 @@ export function useTableCellSize({
       );
     }
 
-    return editor.plugin(TablePlugin).api.getCellSize({
+    return editor.plugin(TablePlugin).read.getCellSize({
       cellIndices,
       colSizes,
       element,
@@ -135,7 +134,7 @@ export const useTableCellElement = (): TableCellElementState => {
   const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableCellElement>();
   const selectionState = useEditorSelector<number, typeof editor>((editor) => {
-    const table = editor.plugin(TablePlugin).api;
+    const table = editor.plugin(TablePlugin).read;
 
     return (
       (table.isCellSelected(element.id) ? 1 : 0) |
@@ -193,9 +192,9 @@ export const useTableCellElementResizable = ({
   leftProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
   rightProps: React.ComponentPropsWithoutRef<typeof ResizeHandle>;
 } => {
-  const { editor, getOptions } = useEditorPlugin(TablePlugin);
+  const { editor, store } = useEditorPlugin(TablePlugin);
   const element = useElement();
-  const { disableMarginLeft, minColumnWidth = 0 } = getOptions();
+  const { disableMarginLeft, minColumnWidth = 0 } = store.get();
 
   const initialWidth = useElementSelector(
     ([node]) =>
@@ -369,10 +368,15 @@ export const useCellIndices = (providedElement?: TTableCellElement) => {
   const { editor } = useEditorPlugin(TablePlugin);
   const contextElement = useOptionalElement<TTableCellElement>();
   const element = providedElement ?? contextElement ?? null;
-  const cellIndices = usePluginOption(
-    TablePlugin,
-    'cellIndices',
-    element?.id ?? ''
+  const cellIndices = useEditorSelector(
+    (editor) =>
+      element
+        ? editor.plugin(TablePlugin).read.getCellIndices(element)
+        : undefined,
+    {
+      equalityFn: (next, previous) =>
+        next?.col === previous?.col && next?.row === previous?.row,
+    }
   );
 
   return React.useMemo(() => {
@@ -380,10 +384,6 @@ export const useCellIndices = (providedElement?: TTableCellElement) => {
       throw new Error(
         'useCellIndices() requires a table-cell element provider or an explicit element.'
       );
-    }
-
-    if (!cellIndices) {
-      return editor.plugin(TablePlugin).api.getCellIndices(element);
     }
 
     return cellIndices ?? { col: 0, row: 0 };

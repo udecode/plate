@@ -3,4 +3,4 @@
  */
 
 export * from './ColumnPlugin';
-export * from './hooks/index';
+export * from './useDebouncePopoverOpen';

@@ -30,13 +30,15 @@ const createEditor = ({
 }: {
   selection?: Selection;
   value: Value;
-  options?: Partial<BaseLinkConfig['options']>;
+  options?: Partial<BaseLinkConfig['initialState']>;
 }) =>
   createBaseEditor({
     plugins: [
       mark('bold'),
       mark('italic'),
-      options ? BaseLinkPlugin.configure({ options }) : BaseLinkPlugin,
+      options
+        ? BaseLinkPlugin.configure({ initialState: options })
+        : BaseLinkPlugin,
     ],
     selection,
     initialValue: value,

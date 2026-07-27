@@ -3,31 +3,22 @@
 import * as React from 'react';
 
 import type { Element } from '@platejs/plite';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { cva } from 'class-variance-authority';
 import { CornerDownLeftIcon } from 'lucide-react';
-import type {
-  TSuggestionData,
-  TSuggestionText,
-  WithAnyKey,
-  WithRequiredKey,
-} from 'platejs';
-import { KEYS, NODES } from 'platejs';
+import type { TSuggestionData, TSuggestionText } from 'platejs';
+import { NODES } from 'platejs';
 import type {
   PlateEditor,
   PlateLeafProps,
   RenderNodeWrapper,
 } from 'platejs/react';
-import { PlateLeaf, useEditorPlugin, usePluginOption } from 'platejs/react';
+import { PlateLeaf, useEditorPlugin, usePluginStore } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
-import type { SuggestionConfig } from '@/registry/components/editor/plugins/suggestion-kit';
-
-const suggestionPlugin: WithRequiredKey<SuggestionConfig> = {
-  key: KEYS.suggestion,
-};
 
 const getSuggestionApi = (editor: PlateEditor) =>
-  editor.plugin<SuggestionConfig>(suggestionPlugin).api;
+  editor.plugin(SuggestionPlugin).api;
 
 export const suggestionVariants = cva(
   cn(
@@ -223,18 +214,12 @@ function SuggestionLineBreakElementAnchor({
 }
 
 export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
-  const { api, setOption } = useEditorPlugin(suggestionPlugin);
+  const { api, store } = useEditorPlugin(SuggestionPlugin);
   const leaf = props.leaf;
 
   const leafId: string = api.nodeId(leaf) ?? '';
-  const activeSuggestionId = usePluginOption<
-    WithRequiredKey<SuggestionConfig>,
-    SuggestionConfig
-  >(suggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginOption<
-    WithRequiredKey<SuggestionConfig>,
-    SuggestionConfig
-  >(suggestionPlugin, 'hoverId');
+  const activeSuggestionId = usePluginStore(SuggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginStore(SuggestionPlugin, 'hoverId');
   const dataList = api.dataList(leaf);
 
   const hasRemove = dataList.some((data) => data.type === 'remove');
@@ -260,18 +245,18 @@ export function SuggestionLeaf(props: PlateLeafProps<TSuggestionText>) {
       )}
       attributes={{
         ...props.attributes,
-        onMouseEnter: () => setOption('hoverId', leafId),
-        onMouseLeave: () => setOption('hoverId', null),
+        onMouseEnter: () => store.set({ hoverId: leafId }),
+        onMouseLeave: () => store.set({ hoverId: null }),
       }}
     >
       {props.children}
     </PlateLeaf>
   );
 }
-export const SuggestionLineBreak: RenderNodeWrapper<
-  WithAnyKey<SuggestionConfig>
-> = ({ api, element }) => {
-  if (!api.isBlockSuggestion(element)) return;
+export const SuggestionLineBreak: RenderNodeWrapper = ({ editor, element }) => {
+  if (!getSuggestionApi(editor).isBlockSuggestion(element)) {
+    return;
+  }
 
   const suggestionData = element.suggestion as TSuggestionData;
 
@@ -300,19 +285,13 @@ export function SuggestionLineBreakContent({
   const isRemove = type === 'remove';
   const isInsert = type === 'insert';
 
-  const activeSuggestionId = usePluginOption<
-    WithRequiredKey<SuggestionConfig>,
-    SuggestionConfig
-  >(suggestionPlugin, 'activeId');
-  const hoverSuggestionId = usePluginOption<
-    WithRequiredKey<SuggestionConfig>,
-    SuggestionConfig
-  >(suggestionPlugin, 'hoverId');
+  const activeSuggestionId = usePluginStore(SuggestionPlugin, 'activeId');
+  const hoverSuggestionId = usePluginStore(SuggestionPlugin, 'hoverId');
 
   const isActive = activeSuggestionId === suggestionData.id;
   const isHover = hoverSuggestionId === suggestionData.id;
 
-  const { setOption } = useEditorPlugin(suggestionPlugin);
+  const { store } = useEditorPlugin(SuggestionPlugin);
   const lineBreakBadgeClassName = cn(
     isInsert &&
       'bg-transparent! text-emerald-700! transition-colors duration-200',
@@ -329,7 +308,7 @@ export function SuggestionLineBreakContent({
             badgeProps={{
               onClick: (event) => {
                 event.stopPropagation();
-                setOption('activeId', suggestionData.id);
+                store.set({ activeId: suggestionData.id });
               },
               onMouseDown: (event) => {
                 event.preventDefault();
@@ -345,7 +324,7 @@ export function SuggestionLineBreakContent({
             badgeProps={{
               onClick: (event) => {
                 event.stopPropagation();
-                setOption('activeId', suggestionData.id);
+                store.set({ activeId: suggestionData.id });
               },
               onMouseDown: (event) => {
                 event.preventDefault();
@@ -360,7 +339,7 @@ export function SuggestionLineBreakContent({
             badgeProps={{
               onClick: (event) => {
                 event.stopPropagation();
-                setOption('activeId', suggestionData.id);
+                store.set({ activeId: suggestionData.id });
               },
               onMouseDown: (event) => {
                 event.preventDefault();
@@ -380,8 +359,8 @@ export function SuggestionLineBreakContent({
             isInsert,
             isRemove,
           })}
-          onMouseEnter={() => setOption('hoverId', suggestionData.id)}
-          onMouseLeave={() => setOption('hoverId', null)}
+          onMouseEnter={() => store.set({ hoverId: suggestionData.id })}
+          onMouseLeave={() => store.set({ hoverId: null })}
           data-block-suggestion="true"
         >
           {children}

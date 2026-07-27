@@ -34,7 +34,7 @@ type OpenId = (string & {}) | typeof BLOCK_CONTEXT_MENU_ID;
 
 export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
   key: KEYS.blockMenu,
-  options: {
+  initialState: {
     openId: null,
     position: {
       x: -10_000,
@@ -43,9 +43,9 @@ export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
   },
 
   editOnly: true,
-  api: ({ api, editor, setOption, setOptions }) => ({
+  api: ({ api, editor, store }) => ({
     hide: () => {
-      setOptions({
+      store.set({
         openId: null,
         position: {
           x: -10_000,
@@ -55,24 +55,24 @@ export const BlockMenuPlugin = createPlatePlugin<BlockMenuConfig>({
     },
     show: (id, position) => {
       if (position) {
-        setOptions({
+        store.set({
           openId: id,
           position,
         });
       } else {
-        setOption('openId', id);
+        store.set({ openId: id });
       }
     },
     showContextMenu: (blockId, position) => {
       editor
         .plugin({ key: KEYS.blockSelection })
-        .setOption('selectedIds', new Set([blockId]));
+        .store.set({ selectedIds: new Set([blockId]) });
       api.show(BLOCK_CONTEXT_MENU_ID, position);
     },
   }),
   handlers: {
-    onMouseDown: ({ api, event, getOptions }) => {
-      if (event.button === 0 && getOptions().openId) {
+    onMouseDown: ({ api, event, store }) => {
+      if (event.button === 0 && store.get().openId) {
         event.preventDefault();
         api.hide();
       }

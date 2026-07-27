@@ -2,18 +2,15 @@ import type { UseChatHelpers } from '@ai-sdk/react';
 import type { ChatRequestOptions, ChatStatus, UIMessage } from 'ai';
 import cloneDeep from 'lodash/cloneDeep.js';
 
-import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
+import type { TriggerComboboxPluginState } from '@platejs/combobox';
 import {
   type DeserializeMdOptions,
   MarkdownPlugin,
   type SerializeMdOptions,
 } from '@platejs/markdown';
-import { isSelecting } from '@platejs/selection';
 import {
   BlockSelectionPlugin,
   CursorOverlayPlugin,
-  insertBlocksAndSelect,
-  removeBlockSelectionNodes,
 } from '@platejs/selection/react';
 import {
   diffToSuggestions,
@@ -38,7 +35,11 @@ import {
   schema,
   TextApi,
 } from '@platejs/plite';
-import { nanoid } from '@platejs/core';
+import {
+  nanoid,
+  type PlatePluginReadState,
+  type PluginConfig,
+} from '@platejs/core';
 import {
   type InferConfig,
   type PlateEditor,
@@ -105,7 +106,7 @@ export type TableCellUpdate = {
   id: string;
 };
 
-export type AIChatPluginOptions = {
+export type AIChatPluginState = {
   _blockChunks: string;
   _blockPath: Path | null;
   _mdxName: string | null;
@@ -118,7 +119,7 @@ export type AIChatPluginOptions = {
   open: boolean;
   streaming: boolean;
   toolName: AIToolName;
-} & TriggerComboboxPluginOptions;
+} & TriggerComboboxPluginState;
 
 type MarkdownType =
   | 'block'
@@ -144,10 +145,48 @@ const dependencies = [
   BlockSelectionPlugin,
   CursorOverlayPlugin,
   SuggestionPlugin,
+  BaseTablePlugin,
 ] as const;
 
+type AIChatPluginContextConfig = PluginConfig<
+  typeof KEYS.aiChat,
+  AIChatPluginState,
+  {},
+  {},
+  {},
+  {},
+  typeof dependencies
+>;
+type AIChatPluginReadState = PlatePluginReadState<AIChatPluginContextConfig>;
+type AIChatInsertState = Pick<AIChatPluginReadState, 'nodes' | 'selection'>;
+type AIChatPromptState = Pick<AIChatPluginReadState, 'blockSelection'>;
+
 export const AIChatPlugin = createPlatePlugin({
-  api: (context) => {
+  dependencies,
+  key: KEYS.aiChat,
+  initialState: {
+    _blockChunks: '',
+    _blockPath: null,
+    _mdxName: null,
+    _replaceIds: [],
+    aiEditor: null,
+    chat: null,
+    chatNodes: [],
+    chatSelection: null,
+    mode: 'insert',
+    open: false,
+    streaming: false,
+    toolName: null,
+    trigger: ' ',
+    triggerPreviousCharPattern: /^\s?$/,
+  } as AIChatPluginState,
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+})
+  .extend((context) => {
     const editor = context.editor;
     const getChunkTrimmed = (
       chunk: string,
@@ -246,11 +285,11 @@ export const AIChatPlugin = createPlatePlugin({
         input = data.replace('$$', String.raw`\$\$`);
       }
 
-      const mdxName = context.getOption('_mdxName');
+      const mdxName = context.store.get('_mdxName');
 
       if (mdxName) {
         if (input.includes(`</${mdxName}>`)) {
-          context.setOption('_mdxName', null);
+          context.store.set({ _mdxName: null });
         } else {
           return [
             {
@@ -263,7 +302,7 @@ export const AIChatPlugin = createPlatePlugin({
         const nextMdxName = statMdxTagRegex.exec(input)?.[1];
 
         if (nextMdxName && input.startsWith(`<${nextMdxName}`)) {
-          context.setOption('_mdxName', nextMdxName);
+          context.store.set({ _mdxName: nextMdxName });
         }
       }
 
@@ -399,7 +438,7 @@ export const AIChatPlugin = createPlatePlugin({
         throw new Error('Markdown documents must contain block elements.');
       }
 
-      let result = editor.api.markdown.serialize({
+      let result = editor.read.markdown.serialize({
         ...rest,
         value: { ...sourceValue, children: escaped },
       });
@@ -436,8 +475,22 @@ export const AIChatPlugin = createPlatePlugin({
 
       return result.replace(/\\([\\`*_{}[\]()#+\-.!~<>|$])/g, '$1');
     };
-    const currentBlockPath = () => {
-      const anchor = editor.read.nodes.find({
+    const serializeChunkFromState = (
+      state: Pick<AIChatPluginReadState, 'children'>,
+      options: SerializeMdOptions,
+      chunk: string
+    ) =>
+      serializeChunk(
+        options.value
+          ? options
+          : {
+              ...options,
+              value: { children: [...state.children()] },
+            },
+        chunk
+      );
+    const currentBlockPath = (state: AIChatInsertState) => {
+      const anchor = state.nodes.find({
         at: [],
         match: { type: context.type },
       });
@@ -446,19 +499,19 @@ export const AIChatPlugin = createPlatePlugin({
           ? PathApi.previous(anchor[1])
           : undefined;
       const path = anchorPrevious ??
-        editor.read.selection()?.focus.path.slice(0, 1) ?? [0];
-      const entry = editor.read.nodes.get<Element>(path);
+        state.selection()?.focus.path.slice(0, 1) ?? [0];
+      const entry = state.nodes.get<Element>(path);
 
       return entry &&
         [editor.getType(KEYS.columnGroup), editor.getType(KEYS.table)].includes(
           entry[0].type
         )
-        ? (editor.read.nodes.above()?.[1] ?? path)
+        ? (state.nodes.above()?.[1] ?? path)
         : path;
     };
-    const getInsertStart = () => {
-      const path = currentBlockPath();
-      const startBlock = editor.read.nodes.get<Element>(path)?.[0];
+    const getInsertStart = (state: AIChatInsertState) => {
+      const path = currentBlockPath(state);
+      const startBlock = state.nodes.get<Element>(path)?.[0];
 
       return {
         path,
@@ -468,167 +521,6 @@ export const AIChatPlugin = createPlatePlugin({
           NodeApi.string(startBlock).length === 0 &&
           startBlock.type === editor.getType(KEYS.p),
       };
-    };
-    const insertChunk = (chunk: string, options: StreamInsertOptions = {}) => {
-      const insertOptions = editor.plugin(BaseAIPlugin).api.hasPreview()
-        ? {
-            ...options,
-            elementProps: {
-              ...options.elementProps,
-              [AI_PREVIEW_KEY]: true,
-            },
-          }
-        : options;
-      const { _blockChunks, _blockPath } = context.getOptions();
-
-      if (_blockPath === null) {
-        const blocks = deserializeChunk(chunk);
-        const { path, startInEmptyParagraph } = getInsertStart();
-
-        if (blocks.length === 0) return;
-
-        const insertPath = startInEmptyParagraph ? path : PathApi.next(path);
-        const insertedBlocks = withNodeProps(blocks, insertOptions);
-
-        editor.update({ history: 'skip' }, (tx) => {
-          const insert = () => {
-            if (startInEmptyParagraph) {
-              tx.nodes.replace(insertedBlocks, { at: path, select: true });
-            } else {
-              tx.blocks.insertAfter(insertedBlocks, {
-                at: path,
-                select: true,
-              });
-            }
-          };
-
-          if (options.autoScroll) tx.dom.autoScroll(insert);
-          else insert();
-        });
-
-        let lastPath = insertPath;
-
-        for (let index = 1; index < blocks.length; index++) {
-          lastPath = PathApi.next(lastPath);
-        }
-
-        const lastBlock = editor.read.nodes.get<Element>(lastPath);
-
-        if (!lastBlock) return;
-
-        context.setOptions({
-          _blockChunks:
-            blocks.length > 1
-              ? serializeChunk({ value: { children: [lastBlock[0]] } }, chunk)
-              : chunk,
-          _blockPath: lastPath,
-        });
-
-        return;
-      }
-
-      const combined = _blockChunks + chunk;
-      const blocks = deserializeChunk(combined);
-
-      if (blocks.length === 0) {
-        console.warn(`Unsupported Markdown nodes: ${JSON.stringify(combined)}`);
-
-        return;
-      }
-
-      let nextChunks = _blockChunks;
-      let nextPath = _blockPath;
-
-      editor.update({ history: 'skip' }, (tx) => {
-        const update = () => {
-          if (blocks.length === 1) {
-            const current = tx.nodes.get<Element>(_blockPath)?.[0];
-
-            if (!current) return;
-
-            if (isSameNode(current, blocks[0])) {
-              const end = tx.points.end(_blockPath);
-
-              if (!end) return;
-
-              tx.nodes.insert(
-                withNodeProps(deserializeInlineChunk(chunk), insertOptions),
-                { at: end, select: true }
-              );
-
-              const updated = tx.nodes.get<Element>(_blockPath);
-
-              if (!updated) return;
-
-              const serialized = serializeChunk(
-                { value: { children: [updated[0]] } },
-                combined
-              );
-
-              if (
-                serialized === combined &&
-                NodeApi.string(blocks[0]) === serialized
-              ) {
-                nextChunks = combined;
-              } else {
-                tx.nodes.replace(withNodeProps(blocks, insertOptions), {
-                  at: _blockPath,
-                  select: true,
-                });
-                const replacement = serializeChunk(
-                  { value: { children: blocks } },
-                  combined
-                );
-
-                nextChunks = [
-                  editor.getType(KEYS.codeBlock),
-                  editor.getType(KEYS.table),
-                  editor.getType(KEYS.equation),
-                ].includes(blocks[0].type)
-                  ? combined
-                  : replacement;
-              }
-            } else {
-              nextChunks = serializeChunk(
-                { value: { children: blocks } },
-                combined
-              );
-              tx.nodes.replace(withNodeProps(blocks, insertOptions), {
-                at: _blockPath,
-                select: true,
-              });
-            }
-
-            return;
-          }
-
-          tx.nodes.replace(withNodeProps(blocks, insertOptions), {
-            at: _blockPath,
-            select: true,
-          });
-          nextPath = _blockPath;
-          for (let index = 1; index < blocks.length; index++) {
-            nextPath = PathApi.next(nextPath);
-          }
-
-          const end = tx.nodes.get<Element>(nextPath);
-
-          if (end) {
-            nextChunks = serializeChunk(
-              { value: { children: [end[0]] } },
-              combined
-            );
-          }
-        };
-
-        if (options.autoScroll) tx.dom.autoScroll(update);
-        else update();
-      });
-
-      context.setOptions({
-        _blockChunks: nextChunks,
-        _blockPath: nextPath,
-      });
     };
     const withoutSuggestionData = (
       nodes: readonly Descendant[]
@@ -665,7 +557,7 @@ export const AIChatPlugin = createPlatePlugin({
             }
       );
     const diffNodes = (content: string) => {
-      const rawChatNodes = context.getOption('chatNodes');
+      const rawChatNodes = context.store.get('chatNodes');
       let chatNodes = withoutSuggestionData(cloneDeep(rawChatNodes));
       const first = chatNodes[0];
 
@@ -707,167 +599,6 @@ export const AIChatPlugin = createPlatePlugin({
         })
       );
     };
-    const reviewSuggestions = (action: 'accept' | 'reject') => {
-      const suggestion = editor.plugin(SuggestionPlugin);
-
-      suggestion.api.nodes({ transient: true }).forEach(([node]) => {
-        const data = suggestion.api.suggestionData(node);
-
-        if (!data) return;
-
-        editor.update.suggestion[action]({
-          createdAt: new Date(data.createdAt),
-          keyId: suggestion.api.key(data.id),
-          suggestionId: data.id,
-          type: data.type,
-          userId: data.userId,
-        });
-      });
-      editor.update.nodes.unset([SUGGESTION_TRANSIENT_KEY], {
-        at: [],
-        mode: 'all',
-        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
-      });
-    };
-    const applySuggestions = (
-      content: string,
-      { split }: { split?: boolean } = {}
-    ) => {
-      editor.plugin(CursorOverlayPlugin).api.removeCursor('selection');
-
-      const chatNodes = context.getOption('chatNodes');
-      const nextNodes = diffNodes(content);
-
-      if (chatNodes.length <= 1) {
-        editor.update({ history: split ? 'new-batch' : 'merge' }, (tx) => {
-          tx.ai.markBatch();
-          tx.fragment.replace(nextNodes);
-
-          const range = tx.ranges.fromEntries(
-            tx.nodes.toArray({
-              at: [],
-              mode: 'lowest',
-              match: (node) =>
-                TextApi.isText(node) && !!node[SUGGESTION_TRANSIENT_KEY],
-            })
-          );
-
-          if (range) tx.selection.set(range);
-        });
-
-        return;
-      }
-
-      if (context.getOption('_replaceIds').length === 0) {
-        context.setOption(
-          '_replaceIds',
-          chatNodes.map((node) => node.id as string)
-        );
-      }
-
-      const replaceNodes = editor.read.nodes.toArray<Element>({
-        at: [],
-        match: (node) =>
-          ElementApi.isElement(node) &&
-          typeof node.id === 'string' &&
-          context.getOption('_replaceIds').includes(node.id),
-      });
-      const suggestion = editor.plugin(SuggestionPlugin).api;
-      const groups: {
-        at: number[];
-        children: Descendant[];
-        count: number;
-        index: number;
-      }[] = [];
-
-      replaceNodes.forEach(([node, path], index) => {
-        const next = nextNodes[index];
-        let replacement: Descendant[] = [];
-
-        if (next) {
-          const candidates =
-            index === replaceNodes.length - 1 &&
-            nextNodes.length > replaceNodes.length
-              ? nextNodes.slice(index)
-              : [next];
-          replacement =
-            candidates.length === 1 &&
-            suggestion.skipDeletes(node) === suggestion.skipDeletes(next) &&
-            ElementApi.isElement(next) &&
-            suggestion.suggestionData(node)?.type ===
-              suggestion.suggestionData(next)?.type &&
-            node.id === next.id
-              ? [node]
-              : candidates;
-        }
-
-        const at = path.slice(0, -1);
-        const childIndex = path.at(-1);
-
-        if (childIndex === undefined) return;
-
-        const previous = groups.at(-1);
-
-        if (
-          previous &&
-          PathApi.equals(previous.at, at) &&
-          childIndex === previous.index + previous.count
-        ) {
-          previous.children.push(...replacement);
-          previous.count++;
-        } else {
-          groups.push({
-            at,
-            children: replacement,
-            count: 1,
-            index: childIndex,
-          });
-        }
-      });
-
-      editor.update({ history: split ? 'new-batch' : 'merge' }, (tx) => {
-        tx.ai.markBatch();
-        groups.toReversed().forEach((group) => {
-          tx.nodes.replaceChildren(group.children, group);
-        });
-      });
-
-      const ids = nextNodes.flatMap((node) =>
-        ElementApi.isElement(node) && typeof node.id === 'string'
-          ? [node.id]
-          : []
-      );
-
-      editor.plugin(BlockSelectionPlugin).api.set(ids);
-      context.setOption('_replaceIds', ids);
-    };
-    const applyTableCellSuggestion = ({ content, id }: TableCellUpdate) => {
-      const entry = editor.read.nodes.find<Element>({
-        at: [],
-        match: { id },
-      });
-
-      if (!entry) {
-        console.warn(`Table cell with id "${id}" not found`);
-
-        return;
-      }
-
-      const [cell, path] = entry;
-      const next = withTransient(
-        diffToSuggestions(
-          editor,
-          withoutSuggestionData(cell.children),
-          editor.api.markdown.deserialize(content).children,
-          { ignoreProps: ['id'] }
-        )
-      );
-
-      editor.update({ history: 'merge' }, (tx) => {
-        tx.ai.markBatch();
-        tx.nodes.replaceChildren(next, { at: path });
-      });
-    };
     const createFormattedBlocks = ({
       blocks,
       format,
@@ -906,28 +637,45 @@ export const AIChatPlugin = createPlatePlugin({
       );
     };
     const stop = () => {
-      context.setOption('streaming', false);
-      context.setOption('_blockChunks', '');
-      context.setOption('_blockPath', null);
-      context.setOption('_mdxName', null);
-      context.getOptions().chat?.stop?.();
+      context.store.set({ streaming: false });
+      context.store.set({ _blockChunks: '' });
+      context.store.set({ _blockPath: null });
+      context.store.set({ _mdxName: null });
+      context.store.get().chat?.stop?.();
     };
-    const reset = ({ undo = true }: { undo?: boolean } = {}) => {
+    const resetOptions = () => {
       stop();
 
-      const chat = context.getOptions().chat;
+      const chat = context.store.get().chat;
 
       if (chat?.messages.length) chat.clear();
 
-      context.setOptions({
+      context.store.set({
         _replaceIds: [],
         chatNodes: [],
         mode: 'insert',
         toolName: null,
       });
+    };
+    const reset = ({ undo = true }: { undo?: boolean } = {}) => {
+      resetOptions();
 
-      if (undo) editor.plugin(BaseAIPlugin).api.undo();
-      else editor.plugin(BaseAIPlugin).api.discardPreview();
+      if (undo) editor.plugin(BaseAIPlugin).update.undo();
+      else editor.plugin(BaseAIPlugin).update.discardPreview();
+    };
+    const hideOptions = ({ focus = true }: { focus?: boolean } = {}) => {
+      resetOptions();
+      context.store.set({ open: false });
+
+      if (!focus) return;
+
+      const blockSelection = editor.plugin(BlockSelectionPlugin);
+
+      if (blockSelection.store.get('isSelectingSome')) {
+        blockSelection.api.focus();
+      } else {
+        editor.api.dom.focus();
+      }
     };
     const hide = ({
       focus = true,
@@ -937,18 +685,7 @@ export const AIChatPlugin = createPlatePlugin({
       undo?: boolean;
     } = {}) => {
       reset({ undo });
-      context.setOption('open', false);
-
-      if (focus) {
-        const blockSelection = editor.plugin(BlockSelectionPlugin);
-
-        if (blockSelection.getOption('isSelectingSome')) {
-          blockSelection.api.focus();
-        } else {
-          editor.api.dom.focus();
-        }
-      }
-
+      hideOptions({ focus });
       editor.update({ history: 'skip' }, (tx) => {
         tx.nodes.remove({
           at: [],
@@ -956,49 +693,50 @@ export const AIChatPlugin = createPlatePlugin({
         });
       });
     };
-    const getMarkdown = ({ type }: { type: MarkdownType }) => {
+    const serializeMarkdown = (
+      state: AIChatPluginReadState,
+      { type }: { type: MarkdownType }
+    ) => {
       if (type === 'editor' || type === 'editorWithBlockId') {
-        return editor.api.markdown.serialize({
+        return state.markdown.serialize({
           withBlockId: type === 'editorWithBlockId',
         });
       }
       if (type === 'block' || type === 'blockWithBlockId') {
-        const blocks = editor.read.nodes
+        const blocks = state.nodes
           .toArray<Element>({
             match: (node) =>
-              ElementApi.isElement(node) && editor.read.schema.isBlock(node),
+              ElementApi.isElement(node) && state.schema.isBlock(node),
             mode: 'lowest',
           })
           .map(([node]) => node);
 
-        return editor.api.markdown.serialize({
+        return state.markdown.serialize({
           value: { children: blocks },
           withBlockId: type === 'blockWithBlockId',
         });
       }
       if (type === 'blockSelection' || type === 'blockSelectionWithBlockId') {
-        const fragment = editor.read.fragment();
-        const value =
+        const fragment = state.fragment();
+        const value: Element[] =
           fragment.length === 1 && ElementApi.isElement(fragment[0])
             ? [{ children: fragment[0].children, type: KEYS.p }]
-            : fragment;
+            : fragment.flatMap((node) =>
+                ElementApi.isElement(node) ? [node] : []
+              );
 
-        if (
-          !value.every((node): node is Element => ElementApi.isElement(node))
-        ) {
+        if (value.length !== fragment.length) {
           throw new Error('Block selections must contain block elements.');
         }
 
-        return editor.api.markdown.serialize({
+        return state.markdown.serialize({
           value: { children: value },
           withBlockId: type === 'blockSelectionWithBlockId',
         });
       }
       if (type !== 'tableCellWithId') return '';
 
-      const cells = editor
-        .plugin(BaseTablePlugin)
-        .api.getGridAbove({ format: 'cell' });
+      const cells = state.table.getGridAbove({ format: 'cell' });
 
       if (cells.length === 0) return '';
 
@@ -1007,7 +745,7 @@ export const AIChatPlugin = createPlatePlugin({
           typeof cell.id === 'string' ? [cell.id] : []
         )
       );
-      const table = editor.read.nodes.block<TTableElement>({
+      const table = state.nodes.block<TTableElement>({
         match: { type: editor.getType(KEYS.table) },
       })?.[0];
 
@@ -1028,7 +766,7 @@ export const AIChatPlugin = createPlatePlugin({
                 throw new Error('Table cells must contain block elements.');
               }
 
-              return editor.api.markdown
+              return state.markdown
                 .serialize({ value: { children: [child] } })
                 .trim();
             })
@@ -1051,7 +789,7 @@ export const AIChatPlugin = createPlatePlugin({
             throw new Error('Table cells must contain block elements.');
           }
 
-          return `<Cell id="${id}">\n${editor.api.markdown
+          return `<Cell id="${id}">\n${state.markdown
             .serialize({ value: { children: cell.children } })
             .trim()}\n</Cell>`;
         })
@@ -1059,13 +797,16 @@ export const AIChatPlugin = createPlatePlugin({
 
       return `${rows.join('\n')}\n\n${cellBlocks}`;
     };
-    const getPrompt = ({ prompt = '' }: { prompt?: EditorPrompt }) => {
+    const getPrompt = (
+      state: AIChatPromptState,
+      { prompt = '' }: { prompt?: EditorPrompt }
+    ) => {
       const params = {
         editor,
         isBlockSelecting: editor
           .plugin(BlockSelectionPlugin)
-          .getOption('isSelectingSome'),
-        isSelecting: isSelecting(editor),
+          .store.get('isSelectingSome'),
+        isSelecting: state.blockSelection.isSelecting(),
       };
 
       if (typeof prompt === 'function') return prompt(params);
@@ -1079,513 +820,866 @@ export const AIChatPlugin = createPlatePlugin({
     };
 
     return {
-      accept: () => {
-        if (context.getOption('mode') === 'insert') {
-          let focus: ReturnType<typeof editor.read.points.end>;
+      api: {
+        deserializeChunk,
+        deserializeInlineChunk,
+        hide,
+        reload: () => {
+          const { chat, chatNodes, chatSelection, toolName } =
+            context.store.get();
 
-          editor.read.children().forEach((node, index) => {
-            if (ElementApi.isElement(node) && node[AI_PREVIEW_KEY]) {
-              focus = editor.read.points.end([index]);
+          editor.plugin(BaseAIPlugin).update.undo();
+          if (chatSelection) editor.update.selection.set(chatSelection);
+          else {
+            editor
+              .plugin(BlockSelectionPlugin)
+              .api.set(chatNodes.map((node) => node.id));
+          }
+
+          const blocks = editor.plugin(BlockSelectionPlugin).read.getNodes({});
+          const selection = blocks.length
+            ? editor.read.ranges.fromEntries(blocks)
+            : editor.read.selection();
+
+          void chat?.regenerate({
+            body: {
+              ctx: {
+                children: editor.read.children(),
+                selection: selection ?? null,
+                toolName,
+              },
+            },
+          });
+        },
+        reset,
+        show: () => {
+          reset();
+          context.store.set({ toolName: null });
+          context.store.get().chat?.clear();
+          context.store.set({ open: true });
+        },
+        stop,
+        submit: (
+          input: string,
+          {
+            mode,
+            options,
+            prompt,
+            toolName: requestedToolName,
+          }: {
+            mode?: AIMode;
+            options?: ChatRequestOptions;
+            prompt?: EditorPrompt;
+            toolName?: AIToolName;
+          } = {}
+        ) => {
+          const { chat, toolName } = context.store.get();
+          const nextToolName = requestedToolName ?? toolName ?? null;
+
+          if (!prompt && input.length === 0) return;
+
+          const nextMode =
+            mode ??
+            (editor.plugin(BlockSelectionPlugin).read.isSelecting()
+              ? 'chat'
+              : 'insert');
+
+          if (nextMode === 'insert') editor.plugin(BaseAIPlugin).update.undo();
+
+          context.store.set({ mode: nextMode });
+          context.store.set({ toolName: nextToolName });
+
+          const blocks = editor.plugin(BlockSelectionPlugin).read.getNodes({});
+          const promptText = getPrompt(editor.read, {
+            prompt: prompt ?? input,
+          });
+          const chatSelection = blocks.length ? null : editor.read.selection();
+          const selection = blocks.length
+            ? editor.read.ranges.fromEntries(blocks)
+            : chatSelection;
+          const chatNodes = blocks.length
+            ? blocks.map(([block]) => block)
+            : editor.read.nodes
+                .toArray<TIdElement>({
+                  match: (node) =>
+                    ElementApi.isElement(node) &&
+                    editor.read.schema.isBlock(node),
+                  mode: 'highest',
+                })
+                .map(([block]) => block);
+
+          context.store.set({ chatNodes });
+          context.store.set({ chatSelection });
+
+          void chat?.sendMessage(promptText, {
+            body: {
+              ctx: {
+                children: [...editor.read.children()],
+                selection: selection ?? null,
+                toolName: nextToolName,
+              },
+            },
+            ...options,
+          });
+        },
+      },
+      read: ({ state }) => ({
+        commentRange: (comment: TComment) => {
+          const nodes = editor.api.markdown.deserialize(
+            comment.content
+          ).children;
+          let firstBlock: NodeEntry<Element> | undefined;
+          const ranges: Range[] = [];
+
+          nodes.forEach((node, index) => {
+            const block =
+              index === 0
+                ? state.nodes.find<Element>({
+                    at: [],
+                    match: { id: comment.blockId },
+                  })
+                : firstBlock
+                  ? state.nodes.get<Element>([firstBlock[1][0] + index])
+                  : undefined;
+
+            if (index === 0) firstBlock = block;
+            if (!block) return;
+
+            const range = findTextRangeInBlock({
+              block,
+              findText: NodeApi.string(node),
+            });
+
+            if (range) ranges.push(range);
+          });
+
+          const first = ranges[0];
+          const last = ranges.at(-1);
+
+          if (!first || !last) return;
+
+          return { anchor: first.anchor, focus: last.focus };
+        },
+        insertStart: getInsertStart.bind(null, state),
+        markdown: serializeMarkdown.bind(null, state),
+        node: (
+          options: EditorNodesOptions<Node> & {
+            anchor?: boolean;
+            streaming?: boolean;
+          } = {}
+        ) => {
+          const { anchor = false, streaming = false, ...rest } = options;
+
+          if (anchor) {
+            return state.nodes.find<Node>({
+              at: [],
+              match: { type: context.type },
+              ...rest,
+            });
+          }
+          if (streaming) {
+            const path = context.store.get('_blockPath');
+
+            if (!context.store.get('streaming') || !path) return;
+
+            return state.nodes.find<Node>({
+              at: path,
+              match: (node) =>
+                Boolean(Reflect.get(node, editor.getType(KEYS.ai))),
+              mode: 'lowest',
+              reverse: true,
+              ...rest,
+            });
+          }
+
+          return state.nodes.find<Node>({
+            match: (node) =>
+              Boolean(Reflect.get(node, editor.getType(KEYS.ai))),
+            ...rest,
+          });
+        },
+        prompt: getPrompt.bind(null, state),
+        resolvePlaceholders: (
+          text: string,
+          { prompt }: { prompt?: string } = {}
+        ) => {
+          let result = text.split('{prompt}').join(prompt ?? '');
+          const placeholders: Record<string, MarkdownType> = {
+            '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
+            '{blockSelection}': 'blockSelection',
+            '{blockWithBlockId}': 'blockWithBlockId',
+            '{block}': 'block',
+            '{editorWithBlockId}': 'editorWithBlockId',
+            '{editor}': 'editor',
+            '{tableCellWithId}': 'tableCellWithId',
+          };
+
+          Object.entries(placeholders).forEach(([placeholder, type]) => {
+            if (result.includes(placeholder)) {
+              result = result
+                .split(placeholder)
+                .join(serializeMarkdown(state, { type }));
             }
           });
 
-          if (!editor.plugin(BaseAIPlugin).api.acceptPreview()) {
-            editor.update({ history: 'merge' }, (tx) => {
-              tx.ai.markBatch();
-              tx.nodes.unset(AI_PREVIEW_KEY, {
-                at: [],
-                match: (node) =>
-                  ElementApi.isElement(node) && !!node[AI_PREVIEW_KEY],
+          return result;
+        },
+        serializeChunk: serializeChunkFromState.bind(null, state),
+      }),
+      selectors: {
+        lastAssistantMessage: (state) =>
+          state.chat?.messages.findLast(
+            (message) => message.role === 'assistant'
+          ),
+      },
+      update: ({ context: updateContext, tx }) => {
+        const insertChunk = (
+          chunk: string,
+          options: StreamInsertOptions = {}
+        ) => {
+          const insertOptions = tx.ai.hasPreview()
+            ? {
+                ...options,
+                elementProps: {
+                  ...options.elementProps,
+                  [AI_PREVIEW_KEY]: true,
+                },
+              }
+            : options;
+          const { _blockChunks, _blockPath } = context.store.get();
+
+          if (_blockPath === null) {
+            const blocks = deserializeChunk(chunk);
+            const { path, startInEmptyParagraph } = getInsertStart(tx);
+
+            if (blocks.length === 0) return;
+
+            const insertPath = startInEmptyParagraph
+              ? path
+              : PathApi.next(path);
+            const insertedBlocks = withNodeProps(blocks, insertOptions);
+
+            const insert = () => {
+              if (startInEmptyParagraph) {
+                tx.nodes.replace(insertedBlocks, { at: path, select: true });
+              } else {
+                tx.blocks.insertAfter(insertedBlocks, {
+                  at: path,
+                  select: true,
+                });
+              }
+            };
+
+            if (options.autoScroll) tx.dom.autoScroll(insert);
+            else insert();
+
+            let lastPath = insertPath;
+
+            for (let index = 1; index < blocks.length; index++) {
+              lastPath = PathApi.next(lastPath);
+            }
+
+            const lastBlock = tx.nodes.get<Element>(lastPath);
+
+            if (!lastBlock) return;
+
+            updateContext.afterCommit(() => {
+              context.store.set({
+                _blockChunks:
+                  blocks.length > 1
+                    ? serializeChunk(
+                        { value: { children: [lastBlock[0]] } },
+                        chunk
+                      )
+                    : chunk,
+                _blockPath: lastPath,
               });
-              tx.ai.removeMarks();
+            });
+
+            return;
+          }
+
+          const combined = _blockChunks + chunk;
+          const blocks = deserializeChunk(combined);
+
+          if (blocks.length === 0) {
+            console.warn(
+              `Unsupported Markdown nodes: ${JSON.stringify(combined)}`
+            );
+
+            return;
+          }
+
+          let nextChunks = _blockChunks;
+          let nextPath = _blockPath;
+
+          const update = () => {
+            if (blocks.length === 1) {
+              const current = tx.nodes.get<Element>(_blockPath)?.[0];
+
+              if (!current) return;
+
+              if (isSameNode(current, blocks[0])) {
+                const end = tx.points.end(_blockPath);
+
+                if (!end) return;
+
+                tx.nodes.insert(
+                  withNodeProps(deserializeInlineChunk(chunk), insertOptions),
+                  { at: end, select: true }
+                );
+
+                const updated = tx.nodes.get<Element>(_blockPath);
+
+                if (!updated) return;
+
+                const serialized = serializeChunk(
+                  { value: { children: [updated[0]] } },
+                  combined
+                );
+
+                if (
+                  serialized === combined &&
+                  NodeApi.string(blocks[0]) === serialized
+                ) {
+                  nextChunks = combined;
+                } else {
+                  tx.nodes.replace(withNodeProps(blocks, insertOptions), {
+                    at: _blockPath,
+                    select: true,
+                  });
+                  const replacement = serializeChunk(
+                    { value: { children: blocks } },
+                    combined
+                  );
+
+                  nextChunks = [
+                    editor.getType(KEYS.codeBlock),
+                    editor.getType(KEYS.table),
+                    editor.getType(KEYS.equation),
+                  ].includes(blocks[0].type)
+                    ? combined
+                    : replacement;
+                }
+              } else {
+                nextChunks = serializeChunk(
+                  { value: { children: blocks } },
+                  combined
+                );
+                tx.nodes.replace(withNodeProps(blocks, insertOptions), {
+                  at: _blockPath,
+                  select: true,
+                });
+              }
+
+              return;
+            }
+
+            tx.nodes.replace(withNodeProps(blocks, insertOptions), {
+              at: _blockPath,
+              select: true,
+            });
+            nextPath = _blockPath;
+            for (let index = 1; index < blocks.length; index++) {
+              nextPath = PathApi.next(nextPath);
+            }
+
+            const end = tx.nodes.get<Element>(nextPath);
+
+            if (end) {
+              nextChunks = serializeChunk(
+                { value: { children: [end[0]] } },
+                combined
+              );
+            }
+          };
+
+          if (options.autoScroll) tx.dom.autoScroll(update);
+          else update();
+
+          updateContext.afterCommit(() => {
+            context.store.set({
+              _blockChunks: nextChunks,
+              _blockPath: nextPath,
+            });
+          });
+        };
+        const reviewSuggestions = (action: 'accept' | 'reject') => {
+          const suggestion = editor.plugin(SuggestionPlugin);
+
+          tx.suggestion.nodes({ transient: true }).forEach(([node]) => {
+            const data = suggestion.api.suggestionData(node);
+
+            if (!data) return;
+
+            tx.suggestion[action]({
+              createdAt: new Date(data.createdAt),
+              keyId: suggestion.api.key(data.id),
+              suggestionId: data.id,
+              type: data.type,
+              userId: data.userId,
+            });
+          });
+          tx.nodes.unset([SUGGESTION_TRANSIENT_KEY], {
+            at: [],
+            mode: 'all',
+            match: (node) =>
+              Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
+          });
+        };
+        const applySuggestions = (
+          content: string,
+          _options: { split?: boolean } = {}
+        ) => {
+          editor.plugin(CursorOverlayPlugin).api.removeCursor('selection');
+
+          const chatNodes = context.store.get('chatNodes');
+          const nextNodes = diffNodes(content);
+
+          if (chatNodes.length <= 1) {
+            tx.ai.markBatch();
+            tx.fragment.replace(nextNodes);
+
+            const range = tx.ranges.fromEntries(
+              tx.nodes.toArray({
+                at: [],
+                mode: 'lowest',
+                match: (node) =>
+                  TextApi.isText(node) && !!node[SUGGESTION_TRANSIENT_KEY],
+              })
+            );
+
+            if (range) tx.selection.set(range);
+
+            return;
+          }
+
+          if (context.store.get('_replaceIds').length === 0) {
+            context.store.set({
+              _replaceIds: chatNodes.map((node) => node.id as string),
+            });
+          }
+
+          const replaceNodes = tx.nodes.toArray<Element>({
+            at: [],
+            match: (node) =>
+              ElementApi.isElement(node) &&
+              typeof node.id === 'string' &&
+              context.store.get('_replaceIds').includes(node.id),
+          });
+          const suggestion = editor.plugin(SuggestionPlugin).api;
+          const groups: {
+            at: number[];
+            children: Descendant[];
+            count: number;
+            index: number;
+          }[] = [];
+
+          replaceNodes.forEach(([node, path], index) => {
+            const next = nextNodes[index];
+            let replacement: Descendant[] = [];
+
+            if (next) {
+              const candidates =
+                index === replaceNodes.length - 1 &&
+                nextNodes.length > replaceNodes.length
+                  ? nextNodes.slice(index)
+                  : [next];
+              replacement =
+                candidates.length === 1 &&
+                suggestion.skipDeletes(node) === suggestion.skipDeletes(next) &&
+                ElementApi.isElement(next) &&
+                suggestion.suggestionData(node)?.type ===
+                  suggestion.suggestionData(next)?.type &&
+                node.id === next.id
+                  ? [node]
+                  : candidates;
+            }
+
+            const at = path.slice(0, -1);
+            const childIndex = path.at(-1);
+
+            if (childIndex === undefined) return;
+
+            const previous = groups.at(-1);
+
+            if (
+              previous &&
+              PathApi.equals(previous.at, at) &&
+              childIndex === previous.index + previous.count
+            ) {
+              previous.children.push(...replacement);
+              previous.count++;
+            } else {
+              groups.push({
+                at,
+                children: replacement,
+                count: 1,
+                index: childIndex,
+              });
+            }
+          });
+
+          tx.ai.markBatch();
+          groups.toReversed().forEach((group) => {
+            tx.nodes.replaceChildren(group.children, group);
+          });
+
+          const ids = nextNodes.flatMap((node) =>
+            ElementApi.isElement(node) && typeof node.id === 'string'
+              ? [node.id]
+              : []
+          );
+
+          updateContext.afterCommit(() => {
+            editor.plugin(BlockSelectionPlugin).api.set(ids);
+            context.store.set({ _replaceIds: ids });
+          });
+        };
+        const applyTableCellSuggestion = ({ content, id }: TableCellUpdate) => {
+          const entry = tx.nodes.find<Element>({
+            at: [],
+            match: { id },
+          });
+
+          if (!entry) {
+            console.warn(`Table cell with id "${id}" not found`);
+
+            return;
+          }
+
+          const [cell, path] = entry;
+          const next = withTransient(
+            diffToSuggestions(
+              editor,
+              withoutSuggestionData(cell.children),
+              editor.api.markdown.deserialize(content).children,
+              { ignoreProps: ['id'] }
+            )
+          );
+
+          tx.ai.markBatch();
+          tx.nodes.replaceChildren(next, { at: path });
+        };
+        const getSelectedBlocks = () => {
+          const selectedIds = editor
+            .plugin(BlockSelectionPlugin)
+            .store.get('selectedIds');
+
+          if (!selectedIds?.size) return [];
+
+          return tx.nodes.toArray<TIdElement>({
+            at: [],
+            match: (node) =>
+              ElementApi.isElement(node) &&
+              typeof node.id === 'string' &&
+              selectedIds.has(node.id),
+          });
+        };
+
+        return {
+          accept: () => {
+            if (context.store.get('mode') === 'insert') {
+              let focus: ReturnType<typeof tx.points.end>;
+
+              tx.children().forEach((node, index) => {
+                if (ElementApi.isElement(node) && node[AI_PREVIEW_KEY]) {
+                  focus = tx.points.end([index]);
+                }
+              });
+
+              if (!tx.ai.acceptPreview()) {
+                tx.ai.markBatch();
+                tx.nodes.unset(AI_PREVIEW_KEY, {
+                  at: [],
+                  match: (node) =>
+                    ElementApi.isElement(node) && !!node[AI_PREVIEW_KEY],
+                });
+                tx.ai.removeMarks();
+                tx.nodes.remove({
+                  at: [],
+                  match: { type: context.type },
+                });
+              }
+
+              if (focus) tx.selection.set({ anchor: focus, focus });
+              updateContext.afterCommit(() => hideOptions());
+            } else {
+              reviewSuggestions('accept');
               tx.nodes.remove({
                 at: [],
                 match: { type: context.type },
               });
+              updateContext.afterCommit(() => hideOptions());
+            }
+          },
+          acceptSuggestions: () => reviewSuggestions('accept'),
+          applySuggestions,
+          applyTableCellSuggestion,
+          insertBelow: (
+            sourceEditor: PlateEditor,
+            { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
+          ) => {
+            const source = [...sourceEditor.read.children()];
+
+            if (
+              source.length === 0 ||
+              source.every((node) => sourceEditor.read.nodes.isEmpty(node))
+            ) {
+              return;
+            }
+
+            const blockSelection = editor.plugin(BlockSelectionPlugin);
+
+            if (context.store.get('toolName') !== 'generate') {
+              const selected = getSelectedBlocks();
+              const selectedIds = blockSelection.store.get('selectedIds');
+              const nodes = cloneDeep(selected.map(([node]) => node));
+
+              tx.ai.undo();
+
+              if (!selectedIds || selectedIds.size === 0) return;
+
+              const last = getSelectedBlocks().at(-1);
+
+              if (!last) return;
+
+              tx.blockSelection.insertBlocksAndSelect(nodes, {
+                at: PathApi.next(last[1]),
+              });
+              reviewSuggestions('accept');
+              tx.nodes.remove({
+                at: [],
+                match: { type: context.type },
+              });
+              updateContext.afterCommit(() => hideOptions({ focus: false }));
+
+              return;
+            }
+
+            const isBlockSelecting =
+              blockSelection.store.get('isSelectingSome');
+
+            tx.ai.undo();
+            tx.nodes.remove({
+              at: [],
+              match: { type: context.type },
             });
-          }
+            updateContext.afterCommit(() => hideOptions());
 
-          hide();
-          editor.api.dom.focus();
-          if (focus) editor.update.selection.set({ anchor: focus, focus });
-        } else {
-          reviewSuggestions('accept');
-          hide();
-        }
-      },
-      acceptSuggestions: () => reviewSuggestions('accept'),
-      applySuggestions,
-      applyTableCellSuggestion,
-      commentToRange: (comment: TComment) => {
-        const nodes = editor.api.markdown.deserialize(comment.content).children;
-        let firstBlock: NodeEntry<Element> | undefined;
-        const ranges: Range[] = [];
+            if (isBlockSelecting) {
+              const selected = getSelectedBlocks();
+              const selectedIds = blockSelection.store.get('selectedIds');
 
-        nodes.forEach((node, index) => {
-          const block =
-            index === 0
-              ? editor.read.nodes.find<Element>({
-                  at: [],
-                  match: { id: comment.blockId },
-                })
-              : firstBlock
-                ? editor.read.nodes.get<Element>([firstBlock[1][0] + index])
-                : undefined;
+              if (!selectedIds || selectedIds.size === 0) return;
 
-          if (index === 0) firstBlock = block;
-          if (!block) return;
+              const last = selected.at(-1);
 
-          const range = findTextRangeInBlock({
-            block,
-            findText: NodeApi.string(node),
-          });
+              if (!last) return;
 
-          if (range) ranges.push(range);
-        });
+              const blocks =
+                format === 'none'
+                  ? cloneDeep(source)
+                  : createFormattedBlocks({
+                      blocks: cloneDeep(source),
+                      format,
+                      sourceBlock: last,
+                    });
 
-        const first = ranges[0];
-        const last = ranges.at(-1);
+              if (!blocks) return;
 
-        if (!first || !last) return;
-
-        return { anchor: first.anchor, focus: last.focus };
-      },
-      deserializeChunk,
-      deserializeInlineChunk,
-      getInsertStart,
-      getMarkdown,
-      getPrompt,
-      hide,
-      insertBelow: (
-        sourceEditor: PlateEditor,
-        { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
-      ) => {
-        const source = [...sourceEditor.read.children()];
-
-        if (
-          source.length === 0 ||
-          source.every((node) => sourceEditor.read.nodes.isEmpty(node))
-        ) {
-          return;
-        }
-
-        const blockSelection = editor.plugin(BlockSelectionPlugin);
-
-        if (context.getOption('toolName') !== 'generate') {
-          const selected = blockSelection.api.getNodes({});
-          const selectedIds = blockSelection.getOption('selectedIds');
-          const nodes = cloneDeep(selected.map(([node]) => node));
-
-          editor.plugin(BaseAIPlugin).api.undo();
-
-          if (!selectedIds || selectedIds.size === 0) return;
-
-          const last = blockSelection.api.getNodes({}).at(-1);
-
-          if (!last) return;
-
-          blockSelection.update.insertBlocksAndSelect(nodes, {
-            at: PathApi.next(last[1]),
-          });
-          reviewSuggestions('accept');
-          hide({ focus: false });
-
-          return;
-        }
-
-        const isBlockSelecting = blockSelection.getOption('isSelectingSome');
-
-        hide();
-
-        if (isBlockSelecting) {
-          const selected = blockSelection.api.getNodes({});
-          const selectedIds = blockSelection.getOption('selectedIds');
-
-          if (!selectedIds || selectedIds.size === 0) return;
-
-          const last = selected.at(-1);
-
-          if (!last) return;
-
-          const blocks =
-            format === 'none'
-              ? cloneDeep(source)
-              : createFormattedBlocks({
-                  blocks: cloneDeep(source),
-                  format,
-                  sourceBlock: last,
-                });
-
-          if (!blocks) return;
-
-          blockSelection.update.insertBlocksAndSelect(blocks, {
-            at: PathApi.next(last[1]),
-          });
-
-          return;
-        }
-
-        const selection = editor.read.selection();
-
-        if (!selection) return;
-
-        const edges = editor.read.ranges.edges(selection);
-
-        if (!edges) return;
-
-        const [, end] = edges;
-        const endPath = [end.path[0]];
-        const current = editor.read.nodes.block({ at: endPath });
-
-        if (!current) return;
-
-        const blocks =
-          format === 'none'
-            ? cloneDeep(source)
-            : createFormattedBlocks({
-                blocks: cloneDeep(source),
-                format,
-                sourceBlock: current,
+              tx.blockSelection.insertBlocksAndSelect(blocks, {
+                at: PathApi.next(last[1]),
               });
 
-        if (!blocks) return;
+              return;
+            }
 
-        blockSelection.update.insertBlocksAndSelect(blocks, {
-          at: PathApi.next(endPath),
-        });
-      },
-      insertChunk,
-      lastAssistantMessage: () =>
-        context
-          .getOptions()
-          .chat?.messages.findLast((message) => message.role === 'assistant'),
-      node: (
-        options: EditorNodesOptions<Node> & {
-          anchor?: boolean;
-          streaming?: boolean;
-        } = {}
-      ) => {
-        const { anchor = false, streaming = false, ...rest } = options;
+            const selection = tx.selection();
 
-        if (anchor) {
-          return editor.read.nodes.find<Node>({
-            at: [],
-            match: { type: context.type },
-            ...rest,
-          });
-        }
-        if (streaming) {
-          const path = context.getOption('_blockPath');
+            if (!selection) return;
 
-          if (!context.getOption('streaming') || !path) return;
+            const edges = tx.ranges.edges(selection);
 
-          return editor.read.nodes.find<Node>({
-            at: path,
-            match: (node) =>
-              Boolean(Reflect.get(node, editor.getType(KEYS.ai))),
-            mode: 'lowest',
-            reverse: true,
-            ...rest,
-          });
-        }
+            if (!edges) return;
 
-        return editor.read.nodes.find<Node>({
-          match: (node) => Boolean(Reflect.get(node, editor.getType(KEYS.ai))),
-          ...rest,
-        });
-      },
-      rejectSuggestions: () => reviewSuggestions('reject'),
-      reload: () => {
-        const { chat, chatNodes, chatSelection, toolName } =
-          context.getOptions();
+            const [, end] = edges;
+            const endPath = [end.path[0]];
+            const current = tx.nodes.block({ at: endPath });
 
-        editor.plugin(BaseAIPlugin).api.undo();
-        if (chatSelection) editor.update.selection.set(chatSelection);
-        else {
-          editor
-            .plugin(BlockSelectionPlugin)
-            .api.set(chatNodes.map((node) => node.id));
-        }
+            if (!current) return;
 
-        const blocks = editor.plugin(BlockSelectionPlugin).api.getNodes({});
-        const selection = blocks.length
-          ? editor.read.ranges.fromEntries(blocks)
-          : editor.read.selection();
-
-        void chat?.regenerate({
-          body: {
-            ctx: {
-              children: editor.read.children(),
-              selection: selection ?? null,
-              toolName,
-            },
-          },
-        });
-      },
-      removeAnchor: (options?: NodeRemoveNodesOptions) => {
-        editor.update({ history: 'skip' }).nodes.remove({
-          at: [],
-          match: { type: context.type },
-          ...options,
-        });
-      },
-      replacePlaceholders: (
-        text: string,
-        { prompt }: { prompt?: string } = {}
-      ) => {
-        let result = text.split('{prompt}').join(prompt ?? '');
-        const placeholders: Record<string, MarkdownType> = {
-          '{blockSelectionWithBlockId}': 'blockSelectionWithBlockId',
-          '{blockSelection}': 'blockSelection',
-          '{blockWithBlockId}': 'blockWithBlockId',
-          '{block}': 'block',
-          '{editorWithBlockId}': 'editorWithBlockId',
-          '{editor}': 'editor',
-          '{tableCellWithId}': 'tableCellWithId',
-        };
-
-        Object.entries(placeholders).forEach(([placeholder, type]) => {
-          if (result.includes(placeholder)) {
-            result = result.split(placeholder).join(getMarkdown({ type }));
-          }
-        });
-
-        return result;
-      },
-      replaceSelection: (
-        sourceEditor: PlateEditor,
-        { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
-      ) => {
-        const source = [...sourceEditor.read.children()];
-
-        if (
-          source.length === 0 ||
-          source.every((node) => sourceEditor.read.nodes.isEmpty(node))
-        ) {
-          return;
-        }
-
-        hide();
-
-        const blockSelection = editor.plugin(BlockSelectionPlugin);
-
-        if (!blockSelection.getOption('isSelectingSome')) {
-          const block = editor.read.nodes.block();
-
-          if (
-            block &&
-            editor.read.selection.contains(block[1]) &&
-            format !== 'none'
-          ) {
-            const blocks = createFormattedBlocks({
-              blocks: cloneDeep(source),
-              format,
-              sourceBlock: block,
-            });
+            const blocks =
+              format === 'none'
+                ? cloneDeep(source)
+                : createFormattedBlocks({
+                    blocks: cloneDeep(source),
+                    format,
+                    sourceBlock: current,
+                  });
 
             if (!blocks) return;
 
-            if (
-              block[0].type === NODES.codeLine &&
-              source[0].type === NODES.codeBlock &&
-              source.length === 1
-            ) {
-              editor.update.fragment.replace(blocks[0].children);
-            } else {
-              editor.update.fragment.replace(blocks);
-            }
-          } else {
-            editor.update.fragment.replace(source);
-          }
-
-          editor.api.dom.focus();
-
-          return;
-        }
-
-        const selected = blockSelection.api.getNodes({});
-
-        if (selected.length === 0) return;
-
-        const blocks =
-          format === 'none' || (format === 'single' && selected.length > 1)
-            ? cloneDeep(source)
-            : createFormattedBlocks({
-                blocks: cloneDeep(source),
-                format,
-                sourceBlock: selected[0],
-              });
-
-        if (!blocks) return;
-
-        editor.update({ history: 'new-batch' }, (tx, transactionContext) => {
-          removeBlockSelectionNodes(editor, tx);
-          insertBlocksAndSelect(editor, tx, transactionContext, blocks, {
-            at: selected[0][1],
-          });
-        });
-        blockSelection.api.focus();
-      },
-      reset,
-      serializeChunk,
-      show: () => {
-        reset();
-        context.setOption('toolName', null);
-        context.getOptions().chat?.clear();
-        context.setOption('open', true);
-      },
-      stop,
-      submit: (
-        input: string,
-        {
-          mode,
-          options,
-          prompt,
-          toolName: requestedToolName,
-        }: {
-          mode?: AIMode;
-          options?: ChatRequestOptions;
-          prompt?: EditorPrompt;
-          toolName?: AIToolName;
-        } = {}
-      ) => {
-        const { chat, toolName } = context.getOptions();
-        const nextToolName = requestedToolName ?? toolName ?? null;
-
-        if (!prompt && input.length === 0) return;
-
-        const nextMode = mode ?? (isSelecting(editor) ? 'chat' : 'insert');
-
-        if (nextMode === 'insert') editor.plugin(BaseAIPlugin).api.undo();
-
-        context.setOption('mode', nextMode);
-        context.setOption('toolName', nextToolName);
-
-        const blocks = editor.plugin(BlockSelectionPlugin).api.getNodes({});
-        const promptText = getPrompt({ prompt: prompt ?? input });
-        const chatSelection = blocks.length ? null : editor.read.selection();
-        const selection = blocks.length
-          ? editor.read.ranges.fromEntries(blocks)
-          : chatSelection;
-        const chatNodes = blocks.length
-          ? blocks.map(([block]) => block)
-          : editor.read.nodes
-              .toArray<TIdElement>({
-                match: (node) =>
-                  ElementApi.isElement(node) &&
-                  editor.read.schema.isBlock(node),
-                mode: 'highest',
-              })
-              .map(([block]) => block);
-
-        context.setOption('chatNodes', chatNodes);
-        context.setOption('chatSelection', chatSelection);
-
-        void chat?.sendMessage(promptText, {
-          body: {
-            ctx: {
-              children: [...editor.read.children()],
-              selection: selection ?? null,
-              toolName: nextToolName,
-            },
+            tx.blockSelection.insertBlocksAndSelect(blocks, {
+              at: PathApi.next(endPath),
+            });
           },
-          ...options,
-        });
+          insertChunk,
+          rejectSuggestions: () => reviewSuggestions('reject'),
+          removeAnchor: (options?: NodeRemoveNodesOptions) => {
+            tx.nodes.remove({
+              at: [],
+              match: { type: context.type },
+              ...options,
+            });
+          },
+          replaceSelection: (
+            sourceEditor: PlateEditor,
+            { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
+          ) => {
+            const source = [...sourceEditor.read.children()];
+
+            if (
+              source.length === 0 ||
+              source.every((node) => sourceEditor.read.nodes.isEmpty(node))
+            ) {
+              return;
+            }
+
+            tx.ai.undo();
+            tx.nodes.remove({
+              at: [],
+              match: { type: context.type },
+            });
+            updateContext.afterCommit(() => hideOptions());
+
+            const blockSelection = editor.plugin(BlockSelectionPlugin);
+
+            if (!blockSelection.store.get('isSelectingSome')) {
+              const block = tx.nodes.block();
+
+              if (
+                block &&
+                tx.selection.contains(block[1]) &&
+                format !== 'none'
+              ) {
+                const blocks = createFormattedBlocks({
+                  blocks: cloneDeep(source),
+                  format,
+                  sourceBlock: block,
+                });
+
+                if (!blocks) return;
+
+                if (
+                  block[0].type === NODES.codeLine &&
+                  source[0].type === NODES.codeBlock &&
+                  source.length === 1
+                ) {
+                  tx.fragment.replace(blocks[0].children);
+                } else {
+                  tx.fragment.replace(blocks);
+                }
+              } else {
+                tx.fragment.replace(source);
+              }
+
+              return;
+            }
+
+            const selected = getSelectedBlocks();
+
+            if (selected.length === 0) return;
+
+            const blocks =
+              format === 'none' || (format === 'single' && selected.length > 1)
+                ? cloneDeep(source)
+                : createFormattedBlocks({
+                    blocks: cloneDeep(source),
+                    format,
+                    sourceBlock: selected[0],
+                  });
+
+            if (!blocks) return;
+
+            tx.blockSelection.removeNodes();
+            tx.blockSelection.insertBlocksAndSelect(blocks, {
+              at: selected[0][1],
+            });
+          },
+        };
       },
     };
-  },
-  dependencies,
-  key: KEYS.aiChat,
-  options: {
-    _blockChunks: '',
-    _blockPath: null,
-    _mdxName: null,
-    _replaceIds: [],
-    aiEditor: null,
-    chat: null,
-    chatNodes: [],
-    chatSelection: null,
-    mode: 'insert',
-    open: false,
-    streaming: false,
-    toolName: null,
-    trigger: ' ',
-    triggerPreviousCharPattern: /^\s?$/,
-  } as AIChatPluginOptions,
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-}).extend((context) => ({
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertText, ({ input, state }) => {
-        const { trigger, triggerPreviousCharPattern, triggerQuery } =
-          context.getOptions();
-        const selection = state.selection();
-        const matches =
-          trigger instanceof RegExp
-            ? trigger.test(input.text)
-            : Array.isArray(trigger)
-              ? trigger.includes(input.text)
-              : input.text === trigger;
+  })
+  .extend((context) => ({
+    extension: {
+      commands: ({ handle }) => [
+        handle(editorCommands.insertText, ({ input, state }) => {
+          const { trigger, triggerPreviousCharPattern, triggerQuery } =
+            context.store.get();
+          const selection = state.selection();
+          const matches =
+            trigger instanceof RegExp
+              ? trigger.test(input.text)
+              : Array.isArray(trigger)
+                ? trigger.includes(input.text)
+                : input.text === trigger;
 
-        if (
-          !selection ||
-          !matches ||
-          (triggerQuery && !triggerQuery(context.editor))
-        ) {
-          return false;
-        }
-
-        const before = state.points.before(selection);
-        const previous = before
-          ? state.text.string({ anchor: before, focus: selection.anchor })
-          : '';
-        const block = state.nodes.block({ mode: 'highest' });
-
-        if (
-          !triggerPreviousCharPattern?.test(previous) ||
-          !block ||
-          !state.nodes.isEmpty(block[0])
-        ) {
-          return false;
-        }
-
-        return state.transaction((tx) => {
-          tx.effects.emit(aiChatShowEffect, null);
-        });
-      }),
-    ],
-    corrections: [
-      {
-        event: 'content',
-        correct({ entry: [node, path], tx }) {
-          if (Reflect.get(node, KEYS.ai) && !context.getOption('open')) {
-            const aiType = context.editor.getType(KEYS.ai);
-
-            tx.nodes.unset(aiType, {
-              at: path,
-              match: (candidate) => Boolean(Reflect.get(candidate, aiType)),
-            });
-          } else if (
-            ElementApi.isElement(node) &&
-            node.type === context.type &&
-            !context.getOption('open')
+          if (
+            !selection ||
+            !matches ||
+            (triggerQuery && !triggerQuery(context.editor))
           ) {
-            tx.nodes.remove({ at: path });
+            return false;
           }
+
+          const before = state.points.before(selection);
+          const previous = before
+            ? state.text.string({ anchor: before, focus: selection.anchor })
+            : '';
+          const block = state.nodes.block({ mode: 'highest' });
+
+          if (
+            !triggerPreviousCharPattern?.test(previous) ||
+            !block ||
+            !state.nodes.isEmpty(block[0])
+          ) {
+            return false;
+          }
+
+          return state.transaction((tx) => {
+            tx.effects.emit(aiChatShowEffect, null);
+          });
+        }),
+      ],
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry: [node, path], tx }) {
+            if (Reflect.get(node, KEYS.ai) && !context.store.get('open')) {
+              const aiType = context.editor.getType(KEYS.ai);
+
+              tx.nodes.unset(aiType, {
+                at: path,
+                match: (candidate) => Boolean(Reflect.get(candidate, aiType)),
+              });
+            } else if (
+              ElementApi.isElement(node) &&
+              node.type === context.type &&
+              !context.store.get('open')
+            ) {
+              tx.nodes.remove({ at: path });
+            }
+          },
         },
+      ],
+      effects: [aiChatShowEffect],
+      onCommit({ commit }) {
+        if (commit.effects.some((effect) => effect.type === aiChatShowEffect)) {
+          context.api.show();
+        }
       },
-    ],
-    effects: [aiChatShowEffect],
-    onCommit({ commit }) {
-      if (commit.effects.some((effect) => effect.type === aiChatShowEffect)) {
-        context.api.show();
-      }
     },
-  },
-}));
+  }));
 
 export type AIChatPluginConfig = InferConfig<typeof AIChatPlugin>;

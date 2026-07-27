@@ -14,7 +14,7 @@ export function TableElementStatic({
 }: PliteElementProps<TTableElement>) {
   const { disableMarginLeft } = props.editor
     .plugin(BaseTablePlugin)
-    .getOptions();
+    .store.get();
   const marginLeft = disableMarginLeft ? 0 : props.element.marginLeft;
 
   return (
@@ -50,10 +50,10 @@ export function TableCellElementStatic({
   isHeader?: boolean;
 }) {
   const { editor, element } = props;
-  const api = editor.plugin(BaseTablePlugin).api;
+  const table = editor.plugin(BaseTablePlugin);
 
-  const { minHeight, width } = api.getCellSize({ element });
-  const borders = api.getCellBorders({ element });
+  const { minHeight, width } = table.read.getCellSize({ element });
+  const borders = table.read.getCellBorders({ element });
 
   return (
     <PliteElement
@@ -82,8 +82,8 @@ export function TableCellElementStatic({
       }
       attributes={{
         ...props.attributes,
-        colSpan: api.getColSpan(element),
-        rowSpan: api.getRowSpan(element),
+        colSpan: table.api.getColSpan(element),
+        rowSpan: table.api.getRowSpan(element),
       }}
     >
       <div

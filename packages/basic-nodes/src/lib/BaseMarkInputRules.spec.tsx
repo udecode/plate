@@ -8,18 +8,16 @@ import {
   BaseCodePlugin,
   BaseHighlightPlugin,
   BaseItalicPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
   BoldRules,
   CodeRules,
   HighlightRules,
   ItalicRules,
   MarkComboRules,
+  ScriptRules,
   StrikethroughRules,
-  SubscriptRules,
-  SuperscriptRules,
   UnderlineRules,
 } from './index';
 
@@ -30,9 +28,8 @@ const basicMarkPlugins = [
   BaseCodePlugin,
   BaseHighlightPlugin,
   BaseItalicPlugin,
+  BaseScriptPlugin,
   BaseStrikethroughPlugin,
-  BaseSubscriptPlugin,
-  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 ] as const;
 
@@ -120,12 +117,12 @@ describe('basic mark input rules', () => {
       output: (
         <editor>
           <hp>
-            <htext subscript>hello</htext>
+            <htext script="sub">hello</htext>
           </hp>
         </editor>
       ),
-      plugin: BaseSubscriptPlugin.configure({
-        inputRules: [SubscriptRules.markdown()],
+      plugin: BaseScriptPlugin.configure({
+        inputRules: [ScriptRules.markdown({ value: 'sub' })],
       }),
       text: ['~'],
       title: 'formats subscript delimiters',
@@ -142,12 +139,12 @@ describe('basic mark input rules', () => {
       output: (
         <editor>
           <hp>
-            <htext superscript>hello</htext>
+            <htext script="sup">hello</htext>
           </hp>
         </editor>
       ),
-      plugin: BaseSuperscriptPlugin.configure({
-        inputRules: [SuperscriptRules.markdown()],
+      plugin: BaseScriptPlugin.configure({
+        inputRules: [ScriptRules.markdown({ value: 'sup' })],
       }),
       text: ['^'],
       title: 'formats superscript delimiters',

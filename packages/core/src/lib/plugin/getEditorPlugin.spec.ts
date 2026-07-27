@@ -10,7 +10,7 @@ describe('getEditorPlugin', () => {
   type TestConfig = PluginConfig<
     'test',
     {
-      testOption: string;
+      testValue: string;
     }
   >;
 
@@ -21,8 +21,8 @@ describe('getEditorPlugin', () => {
     testPlugin = createBasePlugin<TestConfig>({
       key: 'test',
       type: 'test-type',
-      options: {
-        testOption: 'testValue',
+      initialState: {
+        testValue: 'initial',
       },
     });
 
@@ -34,7 +34,7 @@ describe('getEditorPlugin', () => {
   it('get plugin context by plugin object', () => {
     const context = getEditorPlugin(
       editor,
-      testPlugin.configure({ options: { testOption: 't' } })
+      testPlugin.configure({ initialState: { testValue: 'configured' } })
     );
 
     expect(context).toMatchObject({
@@ -53,14 +53,14 @@ describe('getEditorPlugin', () => {
     type Config = PluginConfig<
       'test',
       {
-        testOption: string;
+        testValue: string;
       }
     >;
     const plugin = createBasePlugin<Config>({
       key: 'test',
       type: 'test-type',
-      options: {
-        testOption: 'testValue',
+      initialState: {
+        testValue: 'initial',
       },
     });
 
@@ -68,24 +68,24 @@ describe('getEditorPlugin', () => {
       plugins: [plugin],
     });
     const context = getEditorPlugin(typedEditor, plugin);
-    const option = context.getOption('testOption');
-    const options = context.getOptions();
+    const value = context.store.get('testValue');
+    const initialState = context.store.get();
 
-    expect(option satisfies string).toBe('testValue');
-    expect(options.testOption satisfies string).toBe('testValue');
+    expect(value satisfies string).toBe('initial');
+    expect(initialState.testValue satisfies string).toBe('initial');
 
     const assertTypedContext = () => {
-      // @ts-expect-error invalid option keys should stay rejected.
-      context.getOption('missingOption');
+      // @ts-expect-error invalid state keys should stay rejected.
+      context.store.get('missingValue');
     };
     void assertTypedContext;
   });
 
   it('exposes plugin context as an editor method', () => {
     const context = editor.plugin(testPlugin);
-    const option = context.getOption('testOption');
+    const value = context.store.get('testValue');
 
-    expect(option satisfies string).toBe('testValue');
+    expect(value satisfies string).toBe('initial');
     expect(context.plugin.key).toBe('test');
   });
 
@@ -107,8 +107,8 @@ describe('getEditorPlugin', () => {
     const unresolvedPlugin = createBasePlugin({
       key: 'unresolved',
       type: 'unresolved-type',
-      options: {
-        unresolvedOption: 'unresolvedValue',
+      initialState: {
+        unresolvedValue: 'initial',
       },
     });
 
@@ -157,6 +157,31 @@ describe('getEditorPlugin', () => {
     expect(context.api.editorMethod).toBeUndefined();
     // @ts-expect-error plugin APIs do not leak into the root editor API
     expect(typedEditor.api.pluginMethod).toBeUndefined();
+  });
+
+  it('preserves function introspection on plugin capability facades', () => {
+    const plugin = createBasePlugin({
+      key: 'capability',
+      read: () => ({
+        isActive: () => true,
+      }),
+      update: () => ({
+        toggle: () => {},
+      }),
+    }).extend(() => ({
+      api: {
+        inspect: () => 'ready',
+      },
+    }));
+    const typedEditor = createBaseEditor({
+      plugins: [plugin],
+    });
+    const context = typedEditor.plugin(plugin);
+
+    expect(context.api.inspect.constructor).toBe(Function);
+    expect(context.read.isActive.constructor).toBe(Function);
+    expect(context.update.toggle.constructor).toBe(Function);
+    expect(context.read.isActive()).toBe(true);
   });
 
   it('exposes plugin-owned updates without their key namespace', () => {

@@ -13,7 +13,7 @@ describe('BaseMediaEmbedPlugin', () => {
       plugins: [BaseMediaEmbedPlugin],
     });
     const plugin = editor.getPlugin(BaseMediaEmbedPlugin);
-    const transformUrl = plugin.options.transformUrl!;
+    const transformUrl = plugin.initialState.transformUrl!;
 
     expect(plugin.key).toBe('mediaEmbed');
     expect(plugin.type).toBe(NODES.mediaEmbed);

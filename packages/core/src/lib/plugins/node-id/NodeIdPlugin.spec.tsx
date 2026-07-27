@@ -5,11 +5,7 @@ import { property, DocumentChange, schema } from '@platejs/plite';
 
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
-import {
-  NodeIdPlugin,
-  normalizeNodeId,
-  normalizeNodeIdWithEditor,
-} from './NodeIdPlugin';
+import { NodeIdPlugin, normalizeNodeId } from './NodeIdPlugin';
 
 jsxt;
 
@@ -174,7 +170,7 @@ describe('normalizeNodeId', () => {
   });
 });
 
-describe('normalizeNodeIdWithEditor', () => {
+describe('NodeIdPlugin initial value', () => {
   it('uses editor block semantics instead of raw inline flags', () => {
     const input = (
       <editor>
@@ -185,14 +181,13 @@ describe('normalizeNodeIdWithEditor', () => {
     ) as any;
 
     const editor = createBaseEditor({
-      nodeId: false,
+      nodeId: {
+        idCreator: createIdFactory(),
+      },
       plugins: [TestLinkPlugin],
       initialValue: input.children,
     });
-
-    const output = normalizeNodeIdWithEditor(editor, input.children, {
-      idCreator: createIdFactory(),
-    }) as any;
+    const output = editor.read.children() as any;
 
     expect(output[0].id).toBe(1);
     expect(output[0].children[1].id).toBeUndefined();
@@ -212,7 +207,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createIdFactory(),
           },
         }),
@@ -234,7 +229,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createIdFactory(),
           },
         }),
@@ -260,7 +255,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             filterInline: false,
             idCreator: createIdFactory(),
           },
@@ -286,7 +281,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createIdFactory(),
           },
         }),
@@ -311,7 +306,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createIdFactory(100),
             initialValueIds: 'always',
           },
@@ -337,7 +332,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createIdFactory(),
             initialValueIds: false,
           },
@@ -363,7 +358,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createIdFactory(),
             idKey: 'foo',
             initialValueIds: 'if-needed',
@@ -388,7 +383,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
           },
         }),
@@ -422,7 +417,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
           },
         }),
@@ -454,7 +449,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
           },
         }),
@@ -486,7 +481,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
             reuseId: true,
           },
@@ -530,7 +525,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
           },
         }),
@@ -560,7 +555,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
             match: { type: 'p' },
           },
@@ -589,7 +584,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
           },
         }),
@@ -619,7 +614,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
             onDuplicateIdScan,
           },
@@ -674,7 +669,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
             reuseId: true,
           },
@@ -720,7 +715,7 @@ describe('NodeIdPlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         NodeIdPlugin.configure({
-          options: {
+          initialState: {
             idCreator: createStringIdFactory(),
             reuseId: true,
           },

@@ -71,47 +71,29 @@ npm install @platejs/suggestion @platejs/plite-dom
 
 ```tsx
 import { isEditor, isElement, isString } from '@platejs/plite-dom';
-import { type ExtendConfig, type Path } from 'platejs';
-import {
-  type BaseSuggestionConfig,
-  BaseSuggestionPlugin,
-} from '@platejs/suggestion';
-import { createPlatePlugin, toPlatePlugin } from 'platejs/react';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { BlockSuggestion } from '@/components/ui/block-suggestion';
 import { SuggestionLeaf } from '@/components/ui/suggestion-node';
 
-export type SuggestionConfig = ExtendConfig<
-  BaseSuggestionConfig,
-  {
-    activeId: string | null;
-    hoverId: string | null;
-  }
->;
+export const suggestionPlugin = SuggestionPlugin.configure({
+  component: SuggestionLeaf,
+  initialState: {
+    currentUserId: 'alice', // 设置当前用户ID
+  },
+  render: {
+    belowRootNodes: ({ api, element }) => {
+      if (!api.isBlockSuggestion(element)) {
+        return null;
+      }
 
-export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
-  BaseSuggestionPlugin,
-  ({ editor }) => ({
-    options: {
-      activeId: null,
-      currentUserId: 'alice', // 设置当前用户ID
-      hoverId: null,
+      return <BlockSuggestion element={element} />;
     },
-    render: {
-      belowRootNodes: ({ api, element }) => {
-        if (!api.isBlockSuggestion(element)) {
-          return null;
-        }
-
-        return <BlockSuggestion element={element} />;
-      },
-    },
-  })
-).configure({ component: SuggestionLeaf });
+  },
+});
 ```
 
-- `options.activeId`：当前活跃建议ID，用于视觉高亮
-- `options.currentUserId`：创建建议的当前用户ID  
-- `options.hoverId`：当前悬停建议ID，用于悬停效果
+- `SuggestionPlugin` 拥有渲染器使用的当前活跃和悬停建议状态
+- `initialState.currentUserId`：创建建议的当前用户ID
 - `.configure({ component: SuggestionLeaf })`：使用
   [`SuggestionLeaf`](/docs/components/suggestion-node) 渲染建议文本标记
 - `render.belowRootNodes`：为区块级建议渲染 [`BlockSuggestion`](/docs/components/block-suggestion)
@@ -121,50 +103,49 @@ export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
 添加点击处理以管理活跃建议状态：
 
 ```tsx
-export const suggestionPlugin = toPlatePlugin<SuggestionConfig>(
-  BaseSuggestionPlugin,
-  ({ editor }) => ({
-    handlers: {
-      // 当点击建议外部时取消活跃建议
-      onClick: ({ api, event, setOption, type }) => {
-        let leaf = event.target as HTMLElement;
-        let isSet = false;
+export const suggestionPlugin = SuggestionPlugin.configure({
+  handlers: {
+    // 当点击建议外部时取消活跃建议
+    onClick: ({ api, editor, event, store, type }) => {
+      let leaf = event.target as HTMLElement;
+      let isSet = false;
 
-        const unsetActiveSuggestion = () => {
-          setOption('activeId', null);
-          isSet = true;
-        };
+      const unsetActiveSuggestion = () => {
+        store.set({ activeId: null });
+        isSet = true;
+      };
 
-        if (!isString(leaf)) unsetActiveSuggestion();
+      if (!isString(leaf)) unsetActiveSuggestion();
 
-        while (
-          leaf.parentElement &&
-          !isElement(leaf.parentElement) &&
-          !isEditor(leaf.parentElement)
-        ) {
-          if (leaf.classList.contains(`plite-${type}`)) {
-            const suggestionEntry = api.node({ isText: true });
+      while (
+        leaf.parentElement &&
+        !isElement(leaf.parentElement) &&
+        !isEditor(leaf.parentElement)
+      ) {
+        if (leaf.classList.contains(`plite-${type}`)) {
+          const suggestionEntry = editor
+            .plugin(SuggestionPlugin)
+            .read.node({ isText: true });
 
-            if (!suggestionEntry) {
-              unsetActiveSuggestion();
-              break;
-            }
-
-            const id = api.nodeId(suggestionEntry[0]);
-            setOption('activeId', id ?? null);
-            isSet = true;
+          if (!suggestionEntry) {
+            unsetActiveSuggestion();
             break;
           }
 
-          leaf = leaf.parentElement;
+          const id = api.nodeId(suggestionEntry[0]);
+          store.set({ activeId: id ?? null });
+          isSet = true;
+          break;
         }
 
-        if (!isSet) unsetActiveSuggestion();
-      },
+        leaf = leaf.parentElement;
+      }
+
+      if (!isSet) unsetActiveSuggestion();
     },
-    // ... 之前的选项和渲染配置
-  })
-);
+  },
+  // ... 之前的状态和渲染配置
+});
 ```
 
 点击处理器追踪当前活跃建议：
@@ -200,14 +181,16 @@ const editor = createPlateEditor({
 使用插件API控制建议模式：
 
 ```tsx
-import { useEditor, usePluginOption } from 'platejs/react';
+import { useEditor, usePluginStore } from 'platejs/react';
 
 function SuggestionToolbar() {
   const editor = useEditor();
-  const isSuggesting = usePluginOption(suggestionPlugin, 'isSuggesting');
+  const isSuggesting = usePluginStore(suggestionPlugin, 'isSuggesting');
 
   const toggleSuggesting = () => {
-    editor.plugin(suggestionPlugin).setOption('isSuggesting', !isSuggesting);
+    editor
+      .plugin(suggestionPlugin)
+      .store.set({ isSuggesting: !isSuggesting });
   };
 
   return (
@@ -232,7 +215,7 @@ const editor = createPlateEditor({
     // ...其他插件,
     discussionPlugin,
     suggestionPlugin.configure({
-      options: {
+      initialState: {
         currentUserId: 'alice',
       },
     }),
@@ -278,25 +261,26 @@ const editor = createPlateEditor({
 保持在类型推断路径中。
 
 ```tsx
-const { api } = editor.plugin(BaseSuggestionPlugin);
-const suggestions = api.nodes();
-const descriptions = api.activeDescriptions();
+const { api, read } = editor.plugin(BaseSuggestionPlugin);
+const suggestions = read.nodes();
+const descriptions = read.activeDescriptions();
 ```
 
 | 方法 | 说明 |
 | --- | --- |
-| `api.activeDescriptions()` | 返回当前建议描述。 |
-| `api.createFragment(fragment, at, state?)` | 为片段添加插入建议数据。 |
+| `read.activeDescriptions()` | 返回当前建议描述。 |
+| `api.createFragment(fragment, identity)` | 使用明确的建议身份为片段添加插入建议数据。 |
+| `api.createIdentity(options?)` | 创建建议 ID 和时间戳。 |
 | `api.dataList(node)` | 返回文本节点上的所有内联建议记录。 |
-| `api.findProps(options)` | 复用或创建更新所需的 ID 和时间戳。 |
+| `read.findIdentity(options)` | 查找已有的建议身份。 |
 | `api.getProps(node, options?)` | 构建节点的建议属性。 |
 | `api.inlineData(node)` | 返回当前内联建议记录。 |
 | `api.isBlockSuggestion(node)` | 将节点收窄为区块建议。 |
 | `api.isCurrentUser(node)` | 根据 `currentUserId` 检查建议归属。 |
 | `api.isTracking(tags)` | 检查建议中间件是否追踪更新。 |
 | `api.key(id?)` / `api.keyId(node)` / `api.keys(node)` | 读取和构建内联建议键。 |
-| `api.node(options?)` / `api.nodes(options?)` | 查找一个或全部建议条目。 |
-| `api.nodeEntries(id, options?)` | 查找建议 ID 对应的内联条目。 |
+| `read.node(options?)` / `read.nodes(options?)` | 查找一个或全部建议条目。 |
+| `read.nodeEntries(id, options?)` | 查找建议 ID 对应的内联条目。 |
 | `api.nodeId(node)` | 返回节点的建议 ID。 |
 | `api.skipDeletes(node)` | 返回不含删除建议的文本。 |
 | `api.suggestionData(node)` | 返回内联或区块建议数据。 |

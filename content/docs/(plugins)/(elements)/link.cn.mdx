@@ -150,7 +150,7 @@ URL 解析、回调函数、UI 状态和交互行为共享同一个 options 对�
 
 ```tsx
 LinkPlugin.configure({
-  options: {
+  initialState: {
     allowedSchemes: ['http', 'https', 'mailto', 'tel'],
     dangerouslySkipSanitization: false,
     triggerFloatingLinkHotkeys: 'meta+k, ctrl+k',

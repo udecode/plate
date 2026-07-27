@@ -19,7 +19,7 @@ import {
   useEditorSelector,
   useElement,
   useFocusedLast,
-  usePluginOption,
+  usePluginStore,
   useEditorReadOnly,
   useRemoveNodeButton,
   useElementSelected,
@@ -46,7 +46,7 @@ export const ColumnElement = withHOC(
   function ColumnElement(props: PlateElementProps<TColumnElement>) {
     const { width } = props.element;
     const readOnly = useEditorReadOnly();
-    const isSelectionAreaVisible = usePluginOption(
+    const isSelectionAreaVisible = usePluginStore(
       BlockSelectionPlugin,
       'isSelectionAreaVisible'
     );

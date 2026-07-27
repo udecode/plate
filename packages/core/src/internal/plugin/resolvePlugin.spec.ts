@@ -12,15 +12,15 @@ describe('resolvePlugin', () => {
     const seen: string[] = [];
     const plugin = createBasePlugin({
       key: 'orderedConfiguration',
-      options: { label: 'base', mode: 'base' },
+      initialState: { label: 'base', mode: 'base' },
     })
       .extend(({ plugin }) => {
-        seen.push(plugin.options.label);
+        seen.push(plugin.initialState.label);
 
-        return { options: { label: 'extension' } };
+        return { initialState: { label: 'extension' } };
       })
       .configure({
-        options: {
+        initialState: {
           label: 'consumer',
           mode: 'consumer',
         },
@@ -28,7 +28,7 @@ describe('resolvePlugin', () => {
     const editor = createBaseEditor({ plugins: [plugin] });
 
     expect(seen).toEqual(['consumer']);
-    expect(editor.getPlugin(plugin).options).toEqual({
+    expect(editor.getPlugin(plugin).initialState).toEqual({
       label: 'consumer',
       mode: 'consumer',
     });
@@ -128,7 +128,7 @@ describe('resolvePlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         DebugPlugin.configure({
-          options: {
+          initialState: {
             logger: { error: errorLogger } as any,
             throwErrors: false,
           },

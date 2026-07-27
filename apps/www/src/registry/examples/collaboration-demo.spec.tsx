@@ -33,7 +33,7 @@ mock.module('platejs/react', () => ({
     );
     const editor = {
       id: options.id,
-      provider: yjsPlugin.options.provider,
+      provider: yjsPlugin.initialState.provider,
       read: {
         history: {
           redos: () => [],

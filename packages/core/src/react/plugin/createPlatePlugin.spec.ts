@@ -44,7 +44,7 @@ describe('createPlatePlugin', () => {
     createPlatePlugin<CodeBlockConfig>({
       key: 'codeBlock',
       type: 'code_block',
-      options: { syntax: true, syntaxPopularFirst: false },
+      initialState: { syntax: true, syntaxPopularFirst: false },
       extension: {
         api: {
           plugin: {
@@ -54,7 +54,7 @@ describe('createPlatePlugin', () => {
         },
       },
     }).extend(() => ({
-      options: {
+      initialState: {
         hotkey: ['mod+opt+8', 'mod+shift+8'],
       },
     }));
@@ -226,12 +226,12 @@ describe('createPlatePlugin', () => {
 
     const MethodPlugin = createPlatePlugin<MethodConfig>({
       key: 'methodPlugin',
-      options: { enabled: true },
-    }).extend<{ extension: { api: MethodConfig['api'] } }>(({ getOption }) => ({
+      initialState: { enabled: true },
+    }).extend<{ extension: { api: MethodConfig['api'] } }>(({ store }) => ({
       extension: {
         api: {
           method: {
-            isEnabled: () => getOption('enabled'),
+            isEnabled: () => store.get('enabled'),
           },
         },
       },
@@ -242,7 +242,7 @@ describe('createPlatePlugin', () => {
     });
     const pluginContext = editor.plugin(MethodPlugin);
 
-    expect(pluginContext.getOption('enabled') satisfies boolean).toBe(true);
+    expect(pluginContext.store.get('enabled') satisfies boolean).toBe(true);
     expect(editor.api.method.isEnabled() satisfies boolean).toBe(true);
     // @ts-expect-error root editor APIs do not leak into plugin portals
     expect(pluginContext.api.method).toBeUndefined();

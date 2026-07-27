@@ -27,7 +27,7 @@ describe('BaseIndentPlugin Plite runtime', () => {
       plugins: [
         BaseParagraphPlugin,
         BaseIndentPlugin.configure({
-          options: { indentMax: 2 },
+          initialState: { indentMax: 2 },
         }),
       ],
       initialValue: value,
@@ -52,7 +52,7 @@ describe('BaseIndentPlugin Plite runtime', () => {
               nodeKey: 'legacyIndent',
             },
           },
-          options: { indentMax: 2 },
+          initialState: { indentMax: 2 },
           type: 'depth',
         }),
       ],

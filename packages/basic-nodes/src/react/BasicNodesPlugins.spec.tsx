@@ -15,9 +15,8 @@ import {
 } from '../lib/BaseHeadingPlugins';
 import { BaseHorizontalRulePlugin } from '../lib/BaseHorizontalRulePlugin';
 import { BaseItalicPlugin } from '../lib/BaseItalicPlugin';
+import { BaseScriptPlugin } from '../lib/BaseScriptPlugin';
 import { BaseStrikethroughPlugin } from '../lib/BaseStrikethroughPlugin';
-import { BaseSubscriptPlugin } from '../lib/BaseSubscriptPlugin';
-import { BaseSuperscriptPlugin } from '../lib/BaseSuperscriptPlugin';
 import { BaseUnderlinePlugin } from '../lib/BaseUnderlinePlugin';
 import { BlockquotePlugin } from './BlockquotePlugin';
 import { BoldPlugin } from './BoldPlugin';
@@ -32,9 +31,8 @@ import {
 } from './HeadingPlugins';
 import { HorizontalRulePlugin } from './HorizontalRulePlugin';
 import { ItalicPlugin } from './ItalicPlugin';
+import { ScriptPlugin } from './ScriptPlugin';
 import { StrikethroughPlugin } from './StrikethroughPlugin';
-import { SubscriptPlugin } from './SubscriptPlugin';
-import { SuperscriptPlugin } from './SuperscriptPlugin';
 import { UnderlinePlugin } from './UnderlinePlugin';
 
 describe('basic node plugin composition', () => {
@@ -52,9 +50,8 @@ describe('basic node plugin composition', () => {
         BaseBoldPlugin,
         BaseCodePlugin,
         BaseItalicPlugin,
+        BaseScriptPlugin,
         BaseStrikethroughPlugin,
-        BaseSubscriptPlugin,
-        BaseSuperscriptPlugin,
         BaseUnderlinePlugin,
       ],
       selection: {
@@ -71,6 +68,33 @@ describe('basic node plugin composition', () => {
     expect(editor.read.children()[0]).toMatchObject({
       children: [{ bold: true, text: 'text' }],
       type: KEYS.h1,
+    });
+  });
+
+  it('switches one script property between subscript and superscript', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseScriptPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'text' }], type: KEYS.p }],
+    });
+
+    editor.update.script.toggle('sub');
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ script: 'sub', text: 'text' }],
+    });
+
+    editor.update.script.toggle('sup');
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ script: 'sup', text: 'text' }],
+    });
+
+    editor.update.script.toggle('sup');
+    expect(editor.read.children()[0]).toMatchObject({
+      children: [{ text: 'text' }],
     });
   });
 
@@ -108,9 +132,8 @@ describe('basic node plugin composition', () => {
         BoldPlugin,
         CodePlugin,
         ItalicPlugin,
+        ScriptPlugin,
         StrikethroughPlugin,
-        SubscriptPlugin,
-        SuperscriptPlugin,
         UnderlinePlugin,
       ],
       selection: {

@@ -37,7 +37,7 @@ import { createPlateEditor } from 'platejs/react';
 export const editor = createPlateEditor({
   plugins: [
     NormalizeTypesPlugin.configure({
-      options: {
+      initialState: {
         rules: [
           { path: [0], strictType: KEYS.h1 },
           { path: [1], type: KEYS.p },
@@ -81,7 +81,7 @@ If inserting a missing node fails, `withNormalizeTypes` calls `onError(error)` a
 import { NormalizeTypesPlugin } from 'platejs';
 
 export const requiredTitle = NormalizeTypesPlugin.configure({
-  options: {
+  initialState: {
     onError: (error) => {
       console.error(error);
     },
@@ -111,7 +111,7 @@ The registry playground demonstrates this pattern by enabling the plugin only fo
 ```tsx
 NormalizeTypesPlugin.configure({
   enabled: id === 'forced-layout',
-  options: {
+  initialState: {
     rules: [{ path: [0], strictType: 'h1' }],
   },
 });
@@ -124,8 +124,8 @@ That example keeps the first playground block as an H1 while leaving the rest of
 | API | Package | Use |
 |-----|---------|-----|
 | `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Path-based type normalization plugin. |
-| `NormalizeTypesConfig.options.rules` | `@platejs/utils` | Ordered list of path rules. Defaults to `[]`. |
+| `NormalizeTypesConfig.initialState.rules` | `@platejs/utils` | Ordered list of path rules. Defaults to `[]`. |
 | `Rule.path` | `@platejs/utils` | Plite `Path` where the rule applies. |
 | `Rule.strictType` | `@platejs/utils` | Required type for an existing or missing node. |
 | `Rule.type` | `@platejs/utils` | Type for a missing node only. |
-| `NormalizeTypesConfig.options.onError` | `@platejs/utils` | Called when inserting a missing node throws. |
+| `NormalizeTypesConfig.initialState.onError` | `@platejs/utils` | Called when inserting a missing node throws. |

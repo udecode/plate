@@ -24,7 +24,7 @@ describe('BaseTabbablePlugin', () => {
     const plugin = editor.getPlugin(BaseTabbablePlugin);
     const voidEntry = editor.read.nodes.get([0]);
     const textEntry = editor.read.nodes.get([1, 0]);
-    const { insertTabbableEntries, isTabbable, query } = plugin.options;
+    const { insertTabbableEntries, isTabbable, query } = plugin.initialState;
 
     if (
       !voidEntry ||
@@ -43,7 +43,7 @@ describe('BaseTabbablePlugin', () => {
     });
     const event = new KeyboardEvent('keydown', { key: 'Tab' });
 
-    expect(plugin.options.globalEventListener).toBe(false);
+    expect(plugin.initialState.globalEventListener).toBe(false);
     expect(insertTabbableEntries(event)).toEqual([]);
     expect(query(event)).toBe(true);
     expect(isTabbable(createEntry(voidEntry[0]))).toBe(true);

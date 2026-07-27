@@ -117,12 +117,12 @@ import { GhostText } from '@/components/ui/ghost-text';
 const plugins = [
   // ...其他插件,
   MarkdownPlugin.configure({
-    options: {
+    initialState: {
       remarkPlugins: [remarkMath, remarkGfm, remarkMdx],
     },
   }),
   CopilotPlugin.extend(({ api }) => ({
-    options: {
+    initialState: {
       completeOptions: {
         api: '/api/ai/copilot',
         onError: () => {
@@ -222,7 +222,7 @@ export async function POST(req: NextRequest) {
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
@@ -253,13 +253,13 @@ CopilotPlugin.extend(({ api }) => ({
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     getPrompt: ({ editor }) => {
         const contextEntry = editor.api.block({ highest: true });
 
         if (!contextEntry) return '';
 
-        const prompt = editor.api.markdown.serialize({
+        const prompt = editor.read.markdown.serialize({
           value: [contextEntry[0] as Element],
         });
 
@@ -325,7 +325,7 @@ export async function POST(req: NextRequest) {
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     completeOptions: {
       api: '/api/ai/copilot',
       body: {
@@ -347,7 +347,7 @@ CopilotPlugin.extend(({ api }) => ({
 
 ```tsx
 CopilotPlugin.extend(({ api }) => ({
-  options: {
+  initialState: {
     triggerQuery: ({ editor }) => {
       // 仅在段落块中触发
       const block = editor.api.block();

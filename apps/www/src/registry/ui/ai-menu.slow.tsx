@@ -10,7 +10,7 @@ const useLastAssistantMessageMock = mock();
 const useIsSelectingMock = mock();
 const useFocusedLastMock = mock();
 const useHotkeysMock = mock();
-const usePluginOptionMock = mock();
+const usePluginStoreMock = mock();
 const useEditorMock = mock();
 const toDOMNodeMock = mock();
 const setBlockSelectionMock = mock();
@@ -92,7 +92,7 @@ mock.module('platejs/react', () => ({
   useEditor: useEditorMock,
   useFocusedLast: useFocusedLastMock,
   useHotkeys: useHotkeysMock,
-  usePluginOption: usePluginOptionMock,
+  usePluginStore: usePluginStoreMock,
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -135,7 +135,7 @@ describe('AIMenu slow contracts', () => {
     useIsSelectingMock.mockReset();
     useFocusedLastMock.mockReset();
     useHotkeysMock.mockReset();
-    usePluginOptionMock.mockReset();
+    usePluginStoreMock.mockReset();
     useEditorMock.mockReset();
     toDOMNodeMock.mockReset();
     setBlockSelectionMock.mockReset();
@@ -175,24 +175,22 @@ describe('AIMenu slow contracts', () => {
 
     useEditorMock.mockReturnValue(editor);
 
-    usePluginOptionMock.mockImplementation(
-      (_plugin: unknown, option: string) => {
-        switch (option) {
-          case 'mode':
-            return 'insert';
-          case 'toolName':
-            return null;
-          case 'streaming':
-            return true;
-          case 'open':
-            return false;
-          case 'chat':
-            return { messages: [], status: 'streaming' };
-          default:
-            return;
-        }
+    usePluginStoreMock.mockImplementation((_plugin: unknown, key: string) => {
+      switch (key) {
+        case 'mode':
+          return 'insert';
+        case 'toolName':
+          return null;
+        case 'streaming':
+          return true;
+        case 'open':
+          return false;
+        case 'chat':
+          return { messages: [], status: 'streaming' };
+        default:
+          return;
       }
-    );
+    });
 
     useEditorPluginMock.mockReturnValue({
       api: {

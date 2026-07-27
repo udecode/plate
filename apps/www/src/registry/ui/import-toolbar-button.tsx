@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
-import { importDocx } from '@platejs/docx-io';
+import { DocxIOPlugin } from '@platejs/docx-io';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { ArrowUpToLineIcon } from 'lucide-react';
 import { HtmlPlugin } from 'platejs';
@@ -59,7 +59,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     multiple: false,
     onFilesSelected: async ({ plainFiles }) => {
       const arrayBuffer = await plainFiles[0].arrayBuffer();
-      const result = await importDocx(editor, arrayBuffer);
+      const result = await editor.plugin(DocxIOPlugin).api.import(arrayBuffer);
 
       editor.update.fragment.replace(result.nodes);
     },

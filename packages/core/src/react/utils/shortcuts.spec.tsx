@@ -60,25 +60,26 @@ describe('extend method with shortcuts', () => {
   it('publishes one frozen shortcut table in deterministic order', () => {
     const firstPlugin = createPlatePlugin({
       key: 'first',
-      priority: 10,
       shortcuts: {
         first: {
           keys: 'ctrl+1',
           handler: () => {},
+          priority: 10,
         },
         second: {
           keys: 'ctrl+2',
           handler: () => {},
+          priority: 10,
         },
       },
     });
     const secondPlugin = createPlatePlugin({
       key: 'second',
-      priority: 20,
       shortcuts: {
         first: {
           keys: 'ctrl+3',
           handler: () => {},
+          priority: 20,
         },
       },
     });

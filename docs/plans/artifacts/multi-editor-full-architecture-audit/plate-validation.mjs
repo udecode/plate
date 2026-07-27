@@ -1,18 +1,18 @@
-import crypto from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const root = path.resolve(import.meta.dirname, "../../../..");
+const root = path.resolve(import.meta.dirname, '../../../..');
 const manifestPath = path.join(
   import.meta.dirname,
-  "plate-coverage-manifest.json"
+  'plate-coverage-manifest.json'
 );
-const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
 const fail = (message) => {
   throw new Error(`Plate coverage manifest: ${message}`);
 };
-const relative = (file) => path.relative(root, file).replaceAll(path.sep, "/");
+const relative = (file) => path.relative(root, file).replaceAll(path.sep, '/');
 const walk = (directory, accept) => {
   if (!fs.existsSync(directory)) return [];
   const files = [];
@@ -24,9 +24,9 @@ const walk = (directory, accept) => {
       const file = path.join(current, entry.name);
       if (entry.isDirectory()) {
         if (
-          entry.name === "dist" ||
-          entry.name === "node_modules" ||
-          entry.name === ".next"
+          entry.name === 'dist' ||
+          entry.name === 'node_modules' ||
+          entry.name === '.next'
         ) {
           continue;
         }
@@ -42,15 +42,15 @@ const walk = (directory, accept) => {
 
 const expected = [];
 const packageDirectories = fs
-  .readdirSync(path.join(root, "packages"), { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && !entry.name.startsWith("plite"))
+  .readdirSync(path.join(root, 'packages'), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && !entry.name.startsWith('plite'))
   .map((entry) => entry.name);
 
 for (const packageName of packageDirectories) {
-  const packageRoot = path.join(root, "packages", packageName);
-  const packageJson = path.join(packageRoot, "package.json");
+  const packageRoot = path.join(root, 'packages', packageName);
+  const packageJson = path.join(packageRoot, 'package.json');
   if (fs.existsSync(packageJson)) expected.push(packageJson);
-  for (const directory of ["src", "test", "type-tests"]) {
+  for (const directory of ['src', 'test', 'type-tests']) {
     expected.push(
       ...walk(path.join(packageRoot, directory), (file) =>
         /\.[cm]?[jt]sx?$/.test(file)
@@ -59,28 +59,28 @@ for (const packageName of packageDirectories) {
   }
 }
 expected.push(
-  ...walk(path.join(root, "apps/www/src/registry"), (file) =>
+  ...walk(path.join(root, 'apps/www/src/registry'), (file) =>
     /\.[cm]?[jt]sx?$/.test(file)
   ),
-  ...walk(path.join(root, "apps/www/src/__tests__"), (file) =>
+  ...walk(path.join(root, 'apps/www/src/__tests__'), (file) =>
     /\.[cm]?[jt]sx?$/.test(file)
   ),
-  ...walk(path.join(root, "content/docs"), (file) => /\.mdx?$/.test(file))
+  ...walk(path.join(root, 'content/docs'), (file) => /\.mdx?$/.test(file))
 );
 
 const expectedPaths = [...new Set(expected.map(relative))].sort();
 const actualPaths = manifest.files.map((file) => file.path);
 if (new Set(actualPaths).size !== actualPaths.length) {
-  fail("duplicate file paths");
+  fail('duplicate file paths');
 }
 if (JSON.stringify([...actualPaths].sort()) !== JSON.stringify(expectedPaths)) {
   const actual = new Set(actualPaths);
   const expectedSet = new Set(expectedPaths);
   fail(
     `scope drift; missing=${
-      expectedPaths.filter((file) => !actual.has(file)).join(",") || "none"
+      expectedPaths.filter((file) => !actual.has(file)).join(',') || 'none'
     } extra=${
-      actualPaths.filter((file) => !expectedSet.has(file)).join(",") || "none"
+      actualPaths.filter((file) => !expectedSet.has(file)).join(',') || 'none'
     }`
   );
 }
@@ -90,7 +90,7 @@ for (const file of manifest.files) {
   const absolute = path.join(root, file.path);
   if (!fs.existsSync(absolute)) fail(`missing file ${file.path}`);
   const source = fs.readFileSync(absolute);
-  const sha256 = crypto.createHash("sha256").update(source).digest("hex");
+  const sha256 = crypto.createHash('sha256').update(source).digest('hex');
   if (sha256 !== file.sha256) fail(`content drift in ${file.path}`);
   if (!file.exclusion && file.concepts.length === 0) {
     fail(`unmapped file ${file.path}`);
@@ -120,7 +120,7 @@ for (const file of manifest.files) {
 const includedFiles = manifest.files.filter((file) => !file.exclusion);
 const declarations = includedFiles.flatMap((file) => file.declarations);
 const sourceLines = (file) =>
-  fs.readFileSync(path.join(root, file), "utf8").split(/\r?\n/);
+  fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/);
 const countLineMatches = (paths, pattern, accept = () => true) =>
   paths.reduce(
     (count, file) =>
@@ -131,7 +131,7 @@ const countLineMatches = (paths, pattern, accept = () => true) =>
     0
   );
 const productionOptionMutations = includedFiles
-  .filter((file) => file.kind === "product" || file.kind === "source")
+  .filter((file) => file.kind === 'product' || file.kind === 'source')
   .flatMap((file) =>
     sourceLines(file.path).flatMap((line, index) =>
       /\bsetOptions?\s*\(/.test(line)
@@ -144,18 +144,18 @@ const expectedPressure = {
     conceptualPublicScalars: 2,
     consumptionSites: countLineMatches(
       [
-        "packages/core/src/internal/plugin/resolvePlugins.ts",
-        "packages/core/src/internal/plugin/compilePlateHtmlCodec.ts",
-        "packages/core/src/internal/plugin/compilePlateCodecs.ts",
-        "packages/plite/src/core/editor-extension.ts",
+        'packages/core/src/internal/plugin/resolvePlugins.ts',
+        'packages/core/src/internal/plugin/compilePlateHtmlCodec.ts',
+        'packages/core/src/internal/plugin/compilePlateCodecs.ts',
+        'packages/plite/src/core/editor-extension.ts',
       ],
       /(?:\bplugin\??\.priority|\bownerPlugin\.priority|\b(?:a|b)\.resolved\.priority|\bextension\.priority)/
     ),
     repeatedTypeDeclarations: countLineMatches(
       [
-        "packages/core/src/lib/plugin/BasePlugin.ts",
-        "packages/core/src/lib/plugin/PluginConfig.ts",
-        "packages/plite/src/interfaces/editor.ts",
+        'packages/core/src/lib/plugin/BasePlugin.ts',
+        'packages/core/src/lib/plugin/PluginConfig.ts',
+        'packages/plite/src/interfaces/editor.ts',
       ],
       /\bpriority\??:\s*number;/
     ),
@@ -171,32 +171,32 @@ const expectedPressure = {
     files: 6,
     occurrences: countLineMatches(
       [
-        "packages/plite/src/interfaces/editor.ts",
-        "packages/plite/src/editor/toggle-mark.ts",
-        "packages/plite/src/core/editor-commands.ts",
-        "packages/basic-nodes/src/lib/BaseSubscriptPlugin.ts",
-        "packages/basic-nodes/src/lib/BaseSuperscriptPlugin.ts",
-        "packages/utils/src/react/hooks/useMarkToolbarButton.ts",
+        'packages/plite/src/interfaces/editor.ts',
+        'packages/plite/src/editor/toggle-mark.ts',
+        'packages/plite/src/core/editor-commands.ts',
+        'packages/basic-nodes/src/lib/BaseSubscriptPlugin.ts',
+        'packages/basic-nodes/src/lib/BaseSuperscriptPlugin.ts',
+        'packages/utils/src/react/hooks/useMarkToolbarButton.ts',
       ],
       /\bclear\b/,
       (file, line) =>
-        file !== "packages/plite/src/interfaces/editor.ts" ||
+        file !== 'packages/plite/src/interfaces/editor.ts' ||
         /clear\?: string\[\] \| string/.test(line)
     ),
   },
   orderedContentPressure: {
     activeCorrectionEntries: countLineMatches(
       [
-        "packages/utils/src/lib/plugins/single-block/SingleBlockPlugin.ts",
-        "packages/utils/src/lib/plugins/single-block/SingleLinePlugin.ts",
-        "packages/utils/src/lib/plugins/trailing-block/TrailingBlockPlugin.ts",
-        "packages/utils/src/lib/plugins/normalize-types/NormalizeTypesPlugin.ts",
+        'packages/utils/src/lib/plugins/single-block/SingleBlockPlugin.ts',
+        'packages/utils/src/lib/plugins/single-block/SingleLinePlugin.ts',
+        'packages/utils/src/lib/plugins/trailing-block/TrailingBlockPlugin.ts',
+        'packages/utils/src/lib/plugins/normalize-types/NormalizeTypesPlugin.ts',
       ],
       /\bevent:\s*'(?:children|content)'/
     ),
     activeCorrectionOwners: 4,
     classicListPositionalAssumptions: countLineMatches(
-      ["packages/list-classic/src/lib/BaseListPlugin.ts"],
+      ['packages/list-classic/src/lib/BaseListPlugin.ts'],
       /concat\(0\)|concat\(\[1\]\)|concat\(1\)|children\[0\]|children\[1\]|\[\.\.\.liPath, 1(?:, 0)?\]/
     ),
   },
@@ -204,26 +204,26 @@ const expectedPressure = {
     executionOwnerLines:
       fs
         .readFileSync(
-          path.join(root, "packages/plite/src/core/query-middleware.ts"),
-          "utf8"
+          path.join(root, 'packages/plite/src/core/query-middleware.ts'),
+          'utf8'
         )
         .match(/\n/g)?.length ?? 0,
     exportedTypes: 4,
     plateRegistrationFiles: 4,
     plateRegistrations: countLineMatches(
       [
-        "packages/core/src/lib/plugins/override/OverridePlugin.ts",
-        "packages/diff/src/lib/excludeDiffFromFragment.ts",
-        "packages/table/src/lib/BaseTablePlugin.ts",
-        "packages/toggle/src/react/TogglePlugin.tsx",
+        'packages/core/src/lib/plugins/override/OverridePlugin.ts',
+        'packages/diff/src/lib/excludeDiffFromFragment.ts',
+        'packages/table/src/lib/BaseTablePlugin.ts',
+        'packages/toggle/src/react/TogglePlugin.tsx',
       ],
       /\bqueries:/
     ),
     wrapperCalls: countLineMatches(
       [
-        "packages/plite/src/core/editor-query-runtime.ts",
-        "packages/plite/src/core/public-state.ts",
-        "packages/plite/src/core/query-middleware.ts",
+        'packages/plite/src/core/editor-query-runtime.ts',
+        'packages/plite/src/core/public-state.ts',
+        'packages/plite/src/core/query-middleware.ts',
       ],
       /\bexecuteQueryMiddleware\(/
     ),
@@ -255,10 +255,10 @@ const recomputed = {
   lines: manifest.files.reduce((sum, file) => sum + file.lines, 0),
   packages: packageDirectories.length,
   publicPackages: packageDirectories.filter((packageName) =>
-    fs.existsSync(path.join(root, "packages", packageName, "package.json"))
+    fs.existsSync(path.join(root, 'packages', packageName, 'package.json'))
   ).length,
   targetPublicPackages: manifest.files.filter(
-    (file) => file.kind === "package" && !file.exclusion
+    (file) => file.kind === 'package' && !file.exclusion
   ).length,
 };
 

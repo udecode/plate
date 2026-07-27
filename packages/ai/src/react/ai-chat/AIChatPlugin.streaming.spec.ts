@@ -30,7 +30,7 @@ describe('AIChatPlugin streaming', () => {
   it('streams into the current empty block with supplied element props', () => {
     const editor = createEditor();
 
-    editor.plugin(AIChatPlugin).api.insertChunk('hello', {
+    editor.plugin(AIChatPlugin).update.insertChunk('hello', {
       elementProps: { [AI_PREVIEW_KEY]: true },
     });
 

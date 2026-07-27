@@ -19,7 +19,7 @@ import { NormalizeTypesPlugin } from 'platejs';
 const plugins = [
   // ...其他插件
   NormalizeTypesPlugin.configure({
-    options: {
+    initialState: {
       rules: [{ path: [0], strictType: 'h1' }],
     },
   }),

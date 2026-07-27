@@ -2,7 +2,16 @@
 "@platejs/toggle": major
 ---
 
-Run toggle navigation and editing through Plite reads, schema, and transactions
+Own toggle behavior through the plugin portal:
 
-**Migration:** Replace `editor.getApi(TogglePlugin).toggle.toggleIds(ids, force)`
-with `editor.api.toggle.toggleIds(ids, force)`.
+- `editor.plugin(TogglePlugin).api.toggleIds(ids, force)`
+- `editor.plugin(TogglePlugin).read.isActive()`
+- `editor.plugin(TogglePlugin).read.lastEnclosedEntry(toggleId)`
+- `editor.plugin(TogglePlugin).store.get('enclosingIds', elementId)`
+- `editor.plugin(TogglePlugin).store.get('isClosed', elementId)`
+
+Remove the standalone toggle query and transform exports. Toggle navigation,
+delete handling, and selectable-node behavior run inside `TogglePlugin`.
+
+Export the toggle button, toolbar button, visibility, and plugin lifecycle
+hooks from the colocated `useToggle` family.

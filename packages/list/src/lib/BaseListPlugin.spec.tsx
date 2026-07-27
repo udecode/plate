@@ -4,16 +4,20 @@ import {
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
-  prepareHtmlPluginContext,
+  type InferConfig,
+  type RenderStaticNodeWrapperProps,
 } from '@platejs/core';
-import { getPlateRuntime } from '@platejs/core/internal';
+import {
+  getPlateRuntime,
+  prepareHtmlPluginContext,
+} from '@platejs/core/internal';
 import { BaseIndentPlugin } from '@platejs/indent';
 import {
   ContentSlice,
   DocumentChange,
   schema,
-  type Descendant,
   type Element,
+  type NodeEntry,
 } from '@platejs/plite';
 import { getExtensionRegistry } from '@platejs/plite/internal';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -30,34 +34,6 @@ import {
 } from './BaseListPlugin';
 
 jsxt;
-
-const serializeHtml = (editor: ReturnType<typeof createBaseEditor>) => {
-  type Registration = {
-    codec: {
-      format: string;
-      serialize?: (context: {
-        format: string;
-        slice: ContentSlice;
-        state: typeof editor.read;
-      }) => null | string;
-    };
-  };
-
-  const registrations = (getExtensionRegistry(editor).capabilities.get(
-    'host.codecs'
-  ) ?? []) as readonly Registration[];
-  const codec = registrations.find(
-    (registration) => registration.codec.format === 'text/html'
-  )?.codec;
-
-  if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
-
-  return codec.serialize({
-    format: 'text/html',
-    slice: ContentSlice.closed(editor.read.children()),
-    state: editor.read,
-  });
-};
 
 const FixtureHeadingPlugin = createBasePlugin({
   key: KEYS.h1,
@@ -83,14 +59,14 @@ const assertScopedListTypes = () => {
   });
   const list = editor.plugin(BaseListPlugin);
 
-  editor.api.list.expandItemsWithChildren([]);
-  editor.api.list.isActive(['disc', 'circle']);
+  editor.read.list.expandItemsWithChildren([]);
+  editor.read.list.isActive(['disc', 'circle']);
   editor.update.list.toggle({ at: [0], listStyleType: 'disc' });
   editor.update.list.indent({ at: { offset: 0, path: [0, 0] } });
   editor.update.list.outdent();
 
-  list.api.expandItemsWithChildren([]);
-  list.api.isActive(['disc', 'circle']);
+  list.read.expandItemsWithChildren([]);
+  list.read.isActive(['disc', 'circle']);
   list.update.toggle({ at: [0], listStyleType: 'disc' });
   list.update.indent({ at: { offset: 0, path: [0, 0] } });
   list.update.outdent({
@@ -268,11 +244,11 @@ describe('BaseListPlugin', () => {
     expect(pluginKeys.indexOf(KEYS.indent)).toBeLessThan(
       pluginKeys.indexOf(KEYS.list)
     );
-    expect(list.api.isActive('disc')).toBe(false);
+    expect(list.read.isActive('disc')).toBe(false);
 
     list.update.toggle({ listStyleType: 'disc' });
 
-    expect(list.api.isActive('disc')).toBe(true);
+    expect(list.read.isActive('disc')).toBe(true);
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
       listStyleType: 'disc',
@@ -281,19 +257,18 @@ describe('BaseListPlugin', () => {
 
   it('publishes staged list queries to required dependents', () => {
     const ListDependentPlugin = createBasePlugin({
-      dependencies: [BaseListPlugin],
-      key: 'listDependent',
-    }).extend(({ editor }) => ({
-      api: {
+      api: ({ editor }) => ({
         getPreviousType: () => {
           const entry = editor.read.nodes.get<Element>([1]);
 
           if (!entry) return;
 
-          return editor.api.list.getPrevious(entry)?.[0].type;
+          return editor.read.list.getPrevious(entry)?.[0].type;
         },
-      },
-    }));
+      }),
+      dependencies: [BaseListPlugin],
+      key: 'listDependent',
+    });
     const editor = createBaseEditor({
       plugins: [ListDependentPlugin],
       initialValue: [
@@ -316,7 +291,7 @@ describe('BaseListPlugin', () => {
     expect(editor.api.listDependent.getPreviousType()).toBe(KEYS.p);
     expect(
       firstEntry
-        ? editor.plugin(BaseListPlugin).api.getNext(firstEntry)?.[1]
+        ? editor.plugin(BaseListPlugin).read.getNext(firstEntry)?.[1]
         : undefined
     ).toEqual([1]);
   });
@@ -354,11 +329,7 @@ describe('BaseListPlugin', () => {
       const lastEntry = tx.nodes.get<Element>([2]);
 
       expect(
-        lastEntry
-          ? editor
-              .plugin(BaseListPlugin)
-              .api.getPrevious(lastEntry, undefined, tx)?.[0]
-          : undefined
+        lastEntry ? tx.list.getPrevious(lastEntry)?.[0] : undefined
       ).toMatchObject({
         children: [{ text: 'Inserted' }],
       });
@@ -493,37 +464,56 @@ describe('BaseListPlugin', () => {
       plugins: [BaseListPlugin],
     });
     const plugin = editor.getPlugin(BaseListPlugin);
-    const renderBelow = plugin.render.belowNodes as any;
-    const orderedElement = {
-      children: [{ text: 'Item' }],
-      listStart: 4,
-      listStyleType: 'decimal',
-      type: editor.getType(KEYS.p),
-    } as any;
-    const unorderedElement = {
-      children: [{ text: 'Bullet' }],
-      listStyleType: 'disc',
-      type: editor.getType(KEYS.p),
-    } as any;
-    const wrapper = renderBelow({
-      children: 'Item',
-      element: orderedElement,
-    } as any)!;
-    const markup = ReactDOMServer.renderToStaticMarkup(
-      wrapper({
-        children: 'Item',
-        element: orderedElement,
-      } as any)
+    const renderBelow = plugin.render.belowNodes;
+
+    if (!renderBelow) throw new Error('Missing list wrapper renderer');
+
+    const context = editor.plugin(BaseListPlugin);
+    const props = (element: Element, children: string) =>
+      ({
+        ...context,
+        attributes: { 'data-plite-node': 'element' as const },
+        children,
+        element,
+        key: KEYS.list,
+        slots: {
+          children: () => null,
+          contentBoundary: ({ children }) => children,
+          contentRoot: () => null,
+        },
+      }) satisfies RenderStaticNodeWrapperProps<
+        InferConfig<typeof BaseListPlugin>
+      >;
+    const orderedProps = props(
+      {
+        children: [{ text: 'Item' }],
+        listStart: 4,
+        listStyleType: 'decimal',
+        type: KEYS.p,
+      },
+      'Item'
     );
-    const unorderedWrapper = renderBelow({
-      children: 'Bullet',
-      element: unorderedElement,
-    } as any)!;
+    const orderedWrapper = renderBelow(orderedProps);
+
+    if (!orderedWrapper) throw new Error('Missing ordered list wrapper');
+
+    const markup = ReactDOMServer.renderToStaticMarkup(
+      orderedWrapper(orderedProps)
+    );
+    const unorderedProps = props(
+      {
+        children: [{ text: 'Bullet' }],
+        listStyleType: 'disc',
+        type: KEYS.p,
+      },
+      'Bullet'
+    );
+    const unorderedWrapper = renderBelow(unorderedProps);
+
+    if (!unorderedWrapper) throw new Error('Missing unordered list wrapper');
+
     const unorderedMarkup = ReactDOMServer.renderToStaticMarkup(
-      unorderedWrapper({
-        children: 'Bullet',
-        element: unorderedElement,
-      } as any)
+      unorderedWrapper(unorderedProps)
     );
 
     expect(
@@ -545,10 +535,15 @@ describe('BaseListPlugin', () => {
     expect(unorderedMarkup).toContain('<ul');
     expect(unorderedMarkup).toContain('<li>Bullet</li>');
     expect(
-      renderBelow({
-        children: 'Item',
-        element: { children: [{ text: 'Item' }], type: editor.getType(KEYS.p) },
-      } as any)
+      renderBelow(
+        props(
+          {
+            children: [{ text: 'Plain' }],
+            type: KEYS.p,
+          },
+          'Plain'
+        )
+      )
     ).toBeUndefined();
   });
 
@@ -593,11 +588,34 @@ describe('BaseListPlugin', () => {
         },
       ],
     });
-    const html = serializeHtml(editor);
+    type Registration = {
+      codec: {
+        format: string;
+        serialize?: (context: {
+          format: string;
+          slice: ContentSlice;
+          state: typeof editor.read;
+        }) => null | string;
+      };
+    };
+    const registrations = (getExtensionRegistry(editor).capabilities.get(
+      'host.codecs'
+    ) ?? []) as readonly Registration[];
+    const codec = registrations.find(
+      (registration) => registration.codec.format === 'text/html'
+    )?.codec;
 
-    expect(html).not.toBeNull();
+    if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
 
-    const body = new DOMParser().parseFromString(html!, 'text/html').body;
+    const html = codec.serialize({
+      format: 'text/html',
+      slice: ContentSlice.closed(editor.read.children()),
+      state: editor.read,
+    });
+
+    if (html === null) throw new Error('HTML codec did not serialize the list');
+
+    const body = new DOMParser().parseFromString(html, 'text/html').body;
     const list = body.querySelector('ol') as HTMLOListElement;
     const listItem = list.querySelector('li') as HTMLLIElement;
 
@@ -610,7 +628,7 @@ describe('BaseListPlugin', () => {
     expect(listItem.dataset.listStart).toBe('6');
     expect(listItem.dataset.listStyleType).toBe('decimal');
     expect(listItem.style.marginLeft).toBe('48px');
-    expect(editor.api.html.deserialize({ element: html! })).toEqual([
+    expect(editor.api.html.deserialize({ element: html })).toEqual([
       ...editor.read.children(),
     ]);
   });
@@ -636,7 +654,7 @@ describe('list input rules', () => {
         focus: { offset, path: [0, 0] },
       },
       initialValue: [{ children: [{ text }], type: 'p' }],
-    } as any);
+    });
 
   it('creates a bullet list item when markdown group is enabled', () => {
     const editor = createEditor('-', 1);
@@ -866,7 +884,7 @@ describe('keyboard handling', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -874,7 +892,7 @@ describe('keyboard handling', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
@@ -885,7 +903,7 @@ describe('keyboard handling', () => {
       editor.update.break.insert();
 
       expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 
@@ -897,7 +915,7 @@ describe('keyboard handling', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -905,7 +923,7 @@ describe('keyboard handling', () => {
             <htext />
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
@@ -927,7 +945,7 @@ describe('keyboard handling', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -938,7 +956,7 @@ describe('keyboard handling', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
@@ -961,7 +979,7 @@ describe('keyboard handling', () => {
             One
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -970,7 +988,7 @@ describe('keyboard handling', () => {
             One
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
@@ -1079,7 +1097,7 @@ describe('keyboard handling', () => {
             One
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -1088,7 +1106,7 @@ describe('keyboard handling', () => {
             One
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
@@ -1098,7 +1116,7 @@ describe('keyboard handling', () => {
 
       expect(editor.update.indent.tab()).toBe(true);
       expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
 
     it('outdents a nested list item one level on Shift+Tab', () => {
@@ -1109,7 +1127,7 @@ describe('keyboard handling', () => {
             One
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const output = (
         <editor>
@@ -1118,7 +1136,7 @@ describe('keyboard handling', () => {
             One
           </hp>
         </editor>
-      ) as any;
+      ) as TestEditor;
 
       const editor = createBaseEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
@@ -1128,7 +1146,7 @@ describe('keyboard handling', () => {
 
       expect(editor.update.indent.untab()).toBe(true);
       expect(editor.read.children()).toEqual(output.children);
-      expect(editor.read.selection()).toEqual(output.selection);
+      expect(editor.read.selection()).toEqual(output.selection!);
     });
   });
 });
@@ -1145,7 +1163,7 @@ describe('apply override', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.update.nodes.insert(
       [
@@ -1161,7 +1179,7 @@ describe('apply override', () => {
           listStyleType: 'lower-roman',
           type: 'p',
         },
-      ] as any,
+      ],
       { at: [1] }
     );
 
@@ -1183,18 +1201,16 @@ describe('apply override', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.update.nodes.insert({
       children: [{ text: 'i' }],
       indent: 1,
       listStyleType: 'lower-roman',
       type: 'p',
-    } as any);
+    });
 
-    expect((editor.read.children()[1] as any).listStyleType).toBe(
-      'lower-alpha'
-    );
+    expect(editor.read.children()[1]?.listStyleType).toBe('lower-alpha');
   });
 
   it('drops list restart props from split list items', () => {
@@ -1215,7 +1231,7 @@ describe('apply override', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.update.nodes.split({ always: true });
 
@@ -1360,21 +1376,21 @@ describe('BaseListPlugin expansion', () => {
           <hp id="2">paragraph 2</hp>
           <hh1 id="3">heading</hh1>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [
-        [input[0], [0]],
-        [input[1], [1]],
-        [input[2], [2]],
-      ] as any;
+        [input[0]!, [0]],
+        [input[1]!, [1]],
+        [input[2]!, [2]],
+      ] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual(entries);
     });
@@ -1394,21 +1410,21 @@ describe('BaseListPlugin expansion', () => {
             item 3
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [
-        [input[0], [0]],
-        [input[1], [1]],
-        [input[2], [2]],
-      ] as any;
+        [input[0]!, [0]],
+        [input[1]!, [1]],
+        [input[2]!, [2]],
+      ] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual(entries);
     });
@@ -1432,24 +1448,24 @@ describe('BaseListPlugin expansion', () => {
             sibling
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
       );
 
       // Only pass the parent item
-      const entries = [[input[0], [0]]] as any;
+      const entries = [[input[0]!, [0]]] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual([
         [input[0], [0]], // parent
         [input[1], [1]], // child 1
         [input[2], [2]], // child 2
-      ] as any);
+      ]);
     });
 
     it('handle multiple list items with children', () => {
@@ -1471,7 +1487,7 @@ describe('BaseListPlugin expansion', () => {
             grandchild 2.1.1
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
@@ -1479,13 +1495,13 @@ describe('BaseListPlugin expansion', () => {
 
       // Pass both parent items
       const entries = [
-        [input[0], [0]],
-        [input[2], [2]],
-      ] as any;
+        [input[0]!, [0]],
+        [input[2]!, [2]],
+      ] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual([
         [input[0], [0]], // parent 1
@@ -1493,7 +1509,7 @@ describe('BaseListPlugin expansion', () => {
         [input[2], [2]], // parent 2
         [input[3], [3]], // child 2.1
         [input[4], [4]], // grandchild 2.1.1
-      ] as any);
+      ]);
     });
 
     it('avoid duplicates when children are already in input', () => {
@@ -1509,7 +1525,7 @@ describe('BaseListPlugin expansion', () => {
             child 2
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
@@ -1517,20 +1533,20 @@ describe('BaseListPlugin expansion', () => {
 
       // Pass parent and one child (child 1)
       const entries = [
-        [input[0], [0]],
-        [input[1], [1]],
-      ] as any;
+        [input[0]!, [0]],
+        [input[1]!, [1]],
+      ] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       // Should not duplicate child 1, but should add child 2
       expect(result).toEqual([
         [input[0], [0]], // parent
         [input[1], [1]], // child 1 (from input)
         [input[2], [2]], // child 2 (added)
-      ] as any);
+      ]);
     });
   });
 
@@ -1548,28 +1564,28 @@ describe('BaseListPlugin expansion', () => {
           </hp>
           <hh1 id="4">heading after</hh1>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
       );
 
       const entries = [
-        [input[0], [0]], // paragraph
-        [input[1], [1]], // list parent
-        [input[3], [3]], // heading
-      ] as any;
+        [input[0]!, [0]], // paragraph
+        [input[1]!, [1]], // list parent
+        [input[3]!, [3]], // heading
+      ] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual([
         [input[0], [0]], // paragraph (unchanged)
         [input[1], [1]], // list parent
         [input[2], [2]], // list child (added)
         [input[3], [3]], // heading (unchanged)
-      ] as any);
+      ]);
     });
   });
 
@@ -1579,7 +1595,7 @@ describe('BaseListPlugin expansion', () => {
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren([]);
+        .read.expandItemsWithChildren([]);
 
       expect(result).toEqual([]);
     });
@@ -1595,22 +1611,22 @@ describe('BaseListPlugin expansion', () => {
             child at end
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
       );
 
-      const entries = [[input[0], [0]]] as any;
+      const entries = [[input[0]!, [0]]] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual([
         [input[0], [0]], // parent
         [input[1], [1]], // child
-      ] as any);
+      ]);
     });
 
     it('handle deeply nested lists', () => {
@@ -1632,17 +1648,17 @@ describe('BaseListPlugin expansion', () => {
             level 5
           </hp>
         </fragment>
-      ) as any as Descendant[];
+      ) as Element[];
 
       const editor = createListEditorFromFixture(
         (<editor>{input}</editor>) as TestEditor
       );
 
-      const entries = [[input[0], [0]]] as any;
+      const entries = [[input[0]!, [0]]] satisfies NodeEntry<Element>[];
 
       const result = editor
         .plugin(BaseListPlugin)
-        .api.expandItemsWithChildren(entries);
+        .read.expandItemsWithChildren(entries);
 
       expect(result).toEqual([
         [input[0], [0]], // level 1
@@ -1650,7 +1666,7 @@ describe('BaseListPlugin expansion', () => {
         [input[2], [2]], // level 3
         [input[3], [3]], // level 4
         [input[4], [4]], // level 5
-      ] as any);
+      ]);
     });
   });
 });
@@ -1664,6 +1680,8 @@ describe('isOrderedList', () => {
     [ListStyleType.DecimalLeadingZero, true],
     [ListStyleType.LowerRoman, true],
   ])('treats %s as ordered=%s', (listStyleType, expected) => {
-    expect(isOrderedList({ listStyleType } as any)).toBe(expected);
+    expect(isOrderedList({ children: [], listStyleType, type: KEYS.p })).toBe(
+      expected
+    );
   });
 });

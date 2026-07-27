@@ -277,14 +277,14 @@ describe('DOMPlugin', () => {
 
   it('maps temporary scrolling options and restores them after the callback', () => {
     const editor = createBaseEditor();
-    const previousOptions = { ...editor.plugin(DOMPlugin).getOptions() };
+    const previousOptions = { ...editor.plugin(DOMPlugin).store.get() };
     let callbackOptions: typeof previousOptions | undefined;
     let callbackScrolling = false;
 
     editor.update((tx) => {
       tx.dom.autoScroll(
         () => {
-          callbackOptions = editor.plugin(DOMPlugin).getOptions();
+          callbackOptions = editor.plugin(DOMPlugin).store.get();
           callbackScrolling = editor.api.dom.isAutoScrolling();
         },
         {
@@ -310,12 +310,12 @@ describe('DOMPlugin', () => {
       scrollMode: 'if-needed',
     });
     expect(editor.api.dom.isAutoScrolling()).toBe(false);
-    expect(editor.plugin(DOMPlugin).getOptions()).toEqual(previousOptions);
+    expect(editor.plugin(DOMPlugin).store.get()).toEqual(previousOptions);
   });
 
   it('restores scrolling state even if the callback throws', () => {
     const editor = createBaseEditor();
-    const previousOptions = { ...editor.plugin(DOMPlugin).getOptions() };
+    const previousOptions = { ...editor.plugin(DOMPlugin).store.get() };
 
     expect(() =>
       editor.update((tx) => {
@@ -329,7 +329,7 @@ describe('DOMPlugin', () => {
     ).toThrow('boom');
 
     expect(editor.api.dom.isAutoScrolling()).toBe(false);
-    expect(editor.plugin(DOMPlugin).getOptions()).toEqual(previousOptions);
+    expect(editor.plugin(DOMPlugin).store.get()).toEqual(previousOptions);
   });
 
   it('exposes Plate auto-scroll state and leaves view state on the Plite view', () => {

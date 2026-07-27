@@ -1,5 +1,10 @@
 export * from '../lib/libs/zustand';
-export * from '../lib/plugins/html/utils/index';
+export * from '../lib/plugins/html/htmlDom';
+export {
+  pipePreparedInsertDataQuery,
+  prepareHtmlPluginContext,
+  prepareHtmlRegistry,
+} from '../lib/plugins/html/HtmlPlugin';
 export {
   getPlateRuntime,
   getResolvedPluginTargetTypes,

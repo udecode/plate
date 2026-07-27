@@ -48,7 +48,7 @@ The registry kit uses a `before:` pseudo-element that reads the injected `placeh
 
 ```tsx
 BlockPlaceholderPlugin.configure({
-  options: {
+  initialState: {
     className:
       'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',
   },
@@ -83,7 +83,7 @@ import { BlockPlaceholderPlugin, createPlateEditor } from 'platejs/react';
 export const editor = createPlateEditor({
   plugins: [
     BlockPlaceholderPlugin.configure({
-      options: {
+      initialState: {
         className:
           'before:absolute before:cursor-text before:text-muted-foreground/80 before:content-[attr(placeholder)]',
         placeholders: {
@@ -102,7 +102,7 @@ Keys in `placeholders` are plugin keys. The plugin resolves each key with `edito
 
 ```tsx
 BlockPlaceholderPlugin.configure({
-  options: {
+  initialState: {
     placeholders: {
       [KEYS.p]: 'Type something...',
       [KEYS.h1]: 'Untitled',
@@ -130,8 +130,9 @@ The plugin shows a placeholder only when every gate passes.
 | Query | `query({ editor, node, path, ...ctx })` returns `true`. |
 
 The default `query` returns `true` for root blocks only. The whole-editor guard
-uses `editor.api.isElementStateEmpty`, so only `type` and compiled element
-properties declared with `significant: false` are treated as pristine metadata.
+uses `editor.plugin(ElementStatePlugin).api.isEmpty`, so only `type` and
+compiled element properties declared with `significant: false` are treated as
+pristine metadata.
 
 ```tsx
 query: ({ path }) => path.length === 1
@@ -146,7 +147,7 @@ The plugin injects two props on the target block:
 | Prop | Source |
 |------|--------|
 | `placeholder` | Resolved string from `placeholders`. |
-| `className` | `options.className`. |
+| `className` | `initialState.className`. |
 
 Use CSS that reads `attr(placeholder)`. Tailwind arbitrary content works well for this because the placeholder text stays in the DOM attribute instead of document data.
 
@@ -160,8 +161,8 @@ className:
 | API | Package | Use |
 |-----|---------|-----|
 | `BlockPlaceholderPlugin` | `platejs/react` / `@platejs/utils/react` | Adds block placeholders through injected node props. |
-| `options.placeholders` | `Record<string, string>` | Maps plugin keys to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
-| `options.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
-| `options.className` | `string` | Class applied to the block only while its placeholder is active. |
-| `options._target` | Internal runtime state | Stores the current target node and placeholder string. |
+| `initialState.placeholders` | `Record<string, string>` | Maps plugin keys to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
+| `initialState.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
+| `initialState.className` | `string` | Class applied to the block only while its placeholder is active. |
+| `initialState._target` | Internal runtime state | Stores the current target node and placeholder string. |
 | `selectors.placeholder(node)` | Plugin selector | Returns the placeholder string for the current target node. |

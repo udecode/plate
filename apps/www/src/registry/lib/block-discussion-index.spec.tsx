@@ -315,7 +315,7 @@ describe('buildBlockDiscussionIndex', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseSuggestionPlugin.configure({
-          options: { currentUserId: 'u1' },
+          initialState: { currentUserId: 'u1' },
         }),
         ...plugins,
       ],
@@ -327,7 +327,7 @@ describe('buildBlockDiscussionIndex', () => {
       initialValue: input.children,
     });
 
-    editor.plugin(BaseSuggestionPlugin).setOption('isSuggesting', true);
+    editor.plugin(BaseSuggestionPlugin).store.set({ isSuggesting: true });
 
     editor.update.text.deleteBackward({ unit: 'character' });
     editor.update.text.deleteBackward({ unit: 'character' });

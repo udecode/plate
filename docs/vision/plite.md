@@ -153,13 +153,17 @@ status -> gap scan -> behavior proof -> missing oracle repair -> visual proof
 - `editor-audit`: exhaustive comparison of selected local editor source trees,
   verified commit tracking, incremental sync, and material change dossiers
   routed to `best-api`, `plite-plan`, or `plate-plan`.
-- `plite-patch`: direct bug fix, reproduction, class-level behavior coverage,
-  proof, and autoreview.
+- `resolve-slate-issue`: one public Slate issue coordinated through a local
+  Plite repair, Plate PR targeting `next`, verified issue update, and honest
+  integration/release state.
+- `plite-patch`: sole local Plite regression owner; reproduction, class-level
+  behavior coverage, durable fix, architecture pressure, proof, and autoreview
+  without public GitHub mutation.
 - `best-api`: concrete public API design, review, and P0/P1/P2/P3 debt
   ranking.
 - `plite-plan`: substrate architecture, adoption/proof planning, and accepted
   plan execution after the target API is clear.
-- `plite-migration`: migration closure and stale API audits.
+- `slate-migration`: migration closure and stale API audits.
 - `tdd`: missing oracle/test design when the proof itself does not exist.
 
 Do not merge distinct owners into one vague mega-skill. Repair confusing

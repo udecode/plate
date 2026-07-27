@@ -1,19 +1,10 @@
-import type { BaseEditor } from '@platejs/core';
 import { useEditorSelector } from '@platejs/core/react';
-import type { TTagElement } from '@platejs/utils';
-import { KEYS } from '@platejs/utils';
 
-export const getSelectedItems = (editor: BaseEditor) =>
-  Array.from(
-    editor.read.nodes.entries<TTagElement>({
-      at: [],
-      match: { type: KEYS.tag },
-    })
-  ).map(([{ children, type, ...option }]) => option);
+import { BaseTagPlugin } from '../lib';
 
 export const useSelectedItems = () => {
   const selectedItems = useEditorSelector(
-    (editor) => getSelectedItems(editor),
+    (editor) => editor.plugin(BaseTagPlugin).read.getSelectedItems(),
     {
       equalityFn: (prev, next) => {
         if (!prev || prev.length !== next.length) return false;

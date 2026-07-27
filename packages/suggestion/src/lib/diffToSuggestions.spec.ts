@@ -7,7 +7,7 @@ const createSuggestionEditor = () =>
   createBaseEditor({
     plugins: [
       BaseSuggestionPlugin.configure({
-        options: {
+        initialState: {
           currentUserId: 'user-1',
         },
       }),

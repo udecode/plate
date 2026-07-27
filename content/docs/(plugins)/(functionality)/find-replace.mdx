@@ -19,7 +19,7 @@ Find highlights matching text in editor blocks. `FindReplacePlugin` owns the sea
 - Case-insensitive search highlighting.
 - Multiple matches inside the same block.
 - Matches split across adjacent text leaves.
-- App-controlled search state through plugin options.
+- App-controlled search state through plugin state.
 - Registry highlight leaf for visible matches.
 
 </PackageInfo>
@@ -51,18 +51,18 @@ Update the `search` option from your toolbar and ask Plate to redecorate the edi
 
 ```tsx title="components/find-toolbar.tsx" showLineNumbers
 import { FindReplacePlugin } from '@platejs/find-replace';
-import { useEditorPlugin, usePluginOption } from 'platejs/react';
+import { useEditorPlugin, usePluginStore } from 'platejs/react';
 
 export function FindToolbar() {
-  const { editor, setOption } = useEditorPlugin(FindReplacePlugin);
-  const search = usePluginOption(FindReplacePlugin, 'search');
+  const { editor, store } = useEditorPlugin(FindReplacePlugin);
+  const search = usePluginStore(FindReplacePlugin, 'search');
 
   return (
     <input
       type="search"
       value={search}
       onChange={(event) => {
-        setOption('search', event.target.value);
+        store.set({ search: event.target.value });
         editor.api.redecorate();
       }}
     />
@@ -82,9 +82,9 @@ The demo combines `FindReplacePlugin`, `FixedToolbar`, `Input`, and `SearchHighl
 
 | Surface | Owner | What It Does |
 |---------|-------|--------------|
-| `FindReplacePlugin` | `@platejs/find-replace` | Stores `options.search`, registers a leaf node, and decorates matching text ranges. |
+| `FindReplacePlugin` | `@platejs/find-replace` | Stores `initialState.search`, registers a leaf node, and decorates matching text ranges. |
 | `SearchHighlightLeaf` | Registry UI | Renders decorated ranges with a yellow background. |
-| `FindToolbar` | App or registry example | Updates `options.search` and calls `editor.api.redecorate()`. |
+| `FindToolbar` | App or registry example | Updates `initialState.search` and calls `editor.api.redecorate()`. |
 | Replace actions | App code | Perform text replacement with editor transforms. The package does not replace content for you. |
 
 The package is headless. The registry gives you a visible highlight leaf and a demo toolbar.
@@ -127,4 +127,4 @@ Change the class name when your design system needs a different search color.
 | API | Package | Use |
 |-----|---------|-----|
 | `FindReplacePlugin` | `@platejs/find-replace` | Main plugin for search highlighting. |
-| `options.search` | `string` | Query text to highlight. Defaults to `''`. |
+| `initialState.search` | `string` | Query text to highlight. Defaults to `''`. |

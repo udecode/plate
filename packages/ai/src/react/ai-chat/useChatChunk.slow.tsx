@@ -18,7 +18,7 @@ const createChat = (status: 'ready' | 'streaming', text: string) =>
       },
     ],
     status,
-  }) as unknown as NonNullable<AIChatPluginConfig['options']['chat']>;
+  }) as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
 
 describe('useChatChunk', () => {
   it('emits new text chunks and calls finish when streaming stops', () => {
@@ -29,7 +29,7 @@ describe('useChatChunk', () => {
     });
     editor
       .plugin(AIChatPlugin)
-      .setOption('chat', createChat('streaming', 'he'));
+      .store.set({ chat: createChat('streaming', 'he') });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>
     );
@@ -40,14 +40,14 @@ describe('useChatChunk', () => {
     act(() => {
       editor
         .plugin(AIChatPlugin)
-        .setOption('chat', createChat('streaming', 'hello'));
+        .store.set({ chat: createChat('streaming', 'hello') });
       hook.rerender();
     });
 
     act(() => {
       editor
         .plugin(AIChatPlugin)
-        .setOption('chat', createChat('ready', 'hello'));
+        .store.set({ chat: createChat('ready', 'hello') });
       hook.rerender();
     });
 
@@ -74,7 +74,7 @@ describe('useChatChunk', () => {
     });
     editor
       .plugin(AIChatPlugin)
-      .setOption('chat', createChat('streaming', 'he'));
+      .store.set({ chat: createChat('streaming', 'he') });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <Plate editor={editor}>{children}</Plate>
     );
@@ -85,7 +85,7 @@ describe('useChatChunk', () => {
     act(() => {
       editor
         .plugin(AIChatPlugin)
-        .setOption('chat', createChat('ready', 'hello'));
+        .store.set({ chat: createChat('ready', 'hello') });
       hook.rerender();
     });
 

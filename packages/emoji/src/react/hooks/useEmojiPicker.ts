@@ -11,8 +11,8 @@ import {
   type EmojiSettingsType,
   type i18nProps,
   i18n,
-  insertEmoji,
 } from '../../lib';
+import { EmojiPlugin } from '../EmojiPlugin';
 import {
   type IEmojiFloatingLibrary,
   type SetFocusedAndVisibleSectionsType,
@@ -158,7 +158,7 @@ export const useEmojiPicker = ({
 
   const onSelectEmoji = React.useCallback(
     (emoji: Emoji) => {
-      insertEmoji(editor, emoji);
+      editor.plugin(EmojiPlugin).update.insert(emoji);
       updateFrequentEmojis(emoji.id);
     },
     [editor, updateFrequentEmojis]

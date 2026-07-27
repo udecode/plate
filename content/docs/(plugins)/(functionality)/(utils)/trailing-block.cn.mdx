@@ -10,8 +10,8 @@ title: 尾部块
 
 - 在文档末尾或指定嵌套层级维护所需块
 - 空编辑器保护
-- 通过 `options.match` 匹配当前最后一个节点
-- 通过 `options.insert` 包装生成的插入
+- 通过 `initialState.match` 匹配当前最后一个节点
+- 通过 `initialState.insert` 包装生成的插入
 - `EditorKit` 默认安装该插件
 
 </PackageInfo>
@@ -46,7 +46,7 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     TrailingBlockPlugin.configure({
-      options: {
+      initialState: {
         type: 'p', // 段落块
         match: { type: 'blockquote' },
       },

@@ -10,7 +10,7 @@ import {
 } from '@platejs/selection/react';
 import { BaseTablePlugin } from '@platejs/table';
 import { RangeApi } from 'platejs';
-import { useEditor, usePluginOption } from 'platejs/react';
+import { useEditor, usePluginStore } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -34,7 +34,7 @@ function Cursor({
   selectionRects,
 }: CursorOverlayState<CursorData>) {
   const editor = useEditor();
-  const streaming = usePluginOption(AIChatPlugin, 'streaming');
+  const streaming = usePluginStore(AIChatPlugin, 'streaming');
   const { style, selectionStyle = style } = data ?? ({} as CursorData);
   const isCursor = selection ? RangeApi.isCollapsed(selection) : false;
 
@@ -42,7 +42,7 @@ function Cursor({
 
   // Skip overlay for multi-cell table selection (table has its own selection UI)
   if (id === 'selection' && selection) {
-    const cellEntries = editor.plugin(BaseTablePlugin).api.getGridAbove({
+    const cellEntries = editor.plugin(BaseTablePlugin).read.getGridAbove({
       at: selection,
       format: 'cell',
     });

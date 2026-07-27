@@ -22,15 +22,15 @@ describe('plugin source resolution', () => {
   it('selects whole descriptors by user, React core, then Base core precedence', () => {
     const Base = createBasePlugin({
       key: 'shared',
-      options: { owner: 'base' },
+      initialState: { owner: 'base' },
     });
     const React = createBasePlugin({
       key: 'shared',
-      options: { owner: 'react' },
+      initialState: { owner: 'react' },
     });
     const User = createBasePlugin({
       key: 'shared',
-      options: { owner: 'user' },
+      initialState: { owner: 'user' },
     });
     const editor = createBaseEditor();
     const [winner] = resolveAndSortPlugins(editor, {
@@ -39,19 +39,19 @@ describe('plugin source resolution', () => {
       user: [User],
     } as any);
 
-    expect(winner.options).toEqual({ owner: 'user' });
-    expect(winner.options).not.toHaveProperty('base');
-    expect(winner.options).not.toHaveProperty('react');
+    expect(winner.initialState).toEqual({ owner: 'user' });
+    expect(winner.initialState).not.toHaveProperty('base');
+    expect(winner.initialState).not.toHaveProperty('react');
   });
 
   it('selects React core over Base core without merging descriptors', () => {
     const Base = createBasePlugin({
       key: 'shared',
-      options: { base: true },
+      initialState: { base: true },
     });
     const React = createBasePlugin({
       key: 'shared',
-      options: { react: true },
+      initialState: { react: true },
     });
     const editor = createBaseEditor();
     const [winner] = resolveAndSortPlugins(editor, {
@@ -60,7 +60,7 @@ describe('plugin source resolution', () => {
       user: [],
     } as any);
 
-    expect(winner.options).toEqual({ react: true });
+    expect(winner.initialState).toEqual({ react: true });
   });
 
   it('lets a disabled user descriptor suppress a non-required core default', () => {
@@ -132,31 +132,23 @@ describe('plugin source resolution', () => {
     expect(resolveSourceKeys({ user: [Disabled] })).toEqual([]);
   });
 
-  it('uses stable Kahn ordering by priority then canonical source order', () => {
-    const Shared = createBasePlugin({
-      key: 'shared',
-      priority: 1,
-    });
+  it('uses stable Kahn ordering by canonical source order', () => {
+    const Shared = createBasePlugin({ key: 'shared' });
     const First = createBasePlugin({
       dependencies: [Shared],
       key: 'first',
-      priority: 3,
     });
     const Second = createBasePlugin({
       dependencies: [Shared],
       key: 'second',
-      priority: 3,
     });
-    const Independent = createBasePlugin({
-      key: 'independent',
-      priority: 4,
-    });
+    const Independent = createBasePlugin({ key: 'independent' });
 
     expect(resolveSourceKeys({ user: [First, Second, Independent] })).toEqual([
-      'independent',
       'shared',
       'first',
       'second',
+      'independent',
     ]);
   });
 

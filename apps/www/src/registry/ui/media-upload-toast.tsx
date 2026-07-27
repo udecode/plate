@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { PlaceholderPlugin, UploadErrorCode } from '@platejs/media/react';
-import { usePluginOption } from 'platejs/react';
+import { usePluginStore } from 'platejs/react';
 import { toast } from 'sonner';
 
 export function MediaUploadToast() {
@@ -13,7 +13,7 @@ export function MediaUploadToast() {
 }
 
 const useUploadErrorToast = () => {
-  const uploadError = usePluginOption(PlaceholderPlugin, 'error');
+  const uploadError = usePluginStore(PlaceholderPlugin, 'error');
 
   React.useEffect(() => {
     if (!uploadError) return;
