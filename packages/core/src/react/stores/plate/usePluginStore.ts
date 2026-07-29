@@ -137,14 +137,14 @@ function useResolvedPluginStore(
     | undefined;
   const selector = namedSelector
     ? (state: object) => namedSelector(state, ...args)
-    : (state: Record<PropertyKey, unknown>) => {
+    : (state: object) => {
         if (!Object.hasOwn(state, keyOrSelector)) {
           throw new Error(
             `Plate plugin "${plugin.key}" has no state field or selector "${String(keyOrSelector)}".`
           );
         }
 
-        return state[keyOrSelector];
+        return Reflect.get(state, keyOrSelector);
       };
 
   return useStoreWithEqualityFn(store.base.store, selector);

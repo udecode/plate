@@ -3,13 +3,12 @@ import type {
   EditorCommitListener,
   EditorCorrection,
   EditorEffectType,
+  EditorExtension,
   EditorExtensionStateGroup,
   EditorExtensionTxGroup,
   EditorFacet,
   EditorFacetProvider,
   EditorNodeChangeHandler,
-  EditorQueryGroup,
-  EditorQueryMiddlewareMap,
   EditorSelectionSpec,
   EditorStateField,
   EditorTextChangeHandler,
@@ -50,17 +49,32 @@ export type CompiledCommandRegistry = Readonly<{
   revision: number;
 }>;
 
+export type CompiledReadPipeline = Readonly<{
+  descriptor: object;
+  entries: readonly unknown[];
+  id: string;
+}>;
+
+export type CompiledReadRegistry = Readonly<{
+  byDescriptor: ReadonlyMap<object, CompiledReadPipeline>;
+  byId: ReadonlyMap<string, object>;
+  revision: number;
+}>;
+
 export type ExtensionRegistry<TEditor extends Editor = Editor> = {
-  capabilities: Map<string, unknown[]>;
+  apiGroups: Map<string, unknown[]>;
   commands: CompiledCommandRegistry;
   commitListeners: Set<EditorCommitListener<ValueOf<TEditor>>>;
   configurationRevision: number;
+  contributions: Map<object, EditorExtensionContributionRegistration[]>;
+  dependencyOrder: readonly EditorExtension[];
   effectTypes: Map<string, EditorEffectTypeRegistration>;
   extensions: Map<string, RegisteredEditorExtension>;
+  extensionsByDescriptor: Map<EditorExtension, RegisteredEditorExtension>;
   facets: Map<string, EditorFacetProvider[]>;
   nodeChangeListeners: Set<EditorNodeChangeHandler<TEditor>>;
   corrections: Map<string, EditorCorrection<TEditor>>;
-  queryMiddlewares: Map<string, unknown[]>;
+  reads: CompiledReadRegistry;
   schemaContributions: EditorSchemaContributionRegistry;
   schemaRevision: number;
   selectionSpecs: Map<string, EditorSelectionSpecRegistration>;
@@ -95,6 +109,12 @@ export type EditorSelectionSpecRegistration = Readonly<{
   spec: EditorSelectionSpec;
 }>;
 
+export type EditorExtensionContributionRegistration = Readonly<{
+  owner: object;
+  sourceIndex: number;
+  value: unknown;
+}>;
+
 const EXTENSION_REGISTRIES = new WeakMap<Editor, ExtensionRegistryStore>();
 
 const reservedStateGroupNames = new Set([
@@ -117,7 +137,7 @@ export const createExtensionRegistry = <TEditor extends Editor = Editor>(
     stateFieldIdentities?: ReadonlyMap<string, EditorStateField<any>>;
   }> = {}
 ): ExtensionRegistry<TEditor> => ({
-  capabilities: new Map(),
+  apiGroups: new Map(),
   commands: {
     byDescriptor: new Map(),
     byId: new Map(),
@@ -125,12 +145,19 @@ export const createExtensionRegistry = <TEditor extends Editor = Editor>(
   },
   commitListeners: new Set(),
   configurationRevision: options.configurationRevision ?? 0,
+  contributions: new Map(),
+  dependencyOrder: [],
   effectTypes: new Map(),
   extensions: new Map(),
+  extensionsByDescriptor: new Map(),
   facets: new Map(),
   nodeChangeListeners: new Set(),
   corrections: new Map(),
-  queryMiddlewares: new Map(),
+  reads: {
+    byDescriptor: new Map(),
+    byId: new Map(),
+    revision: options.configurationRevision ?? 0,
+  },
   schemaContributions: createSchemaContributionRegistry(
     options.schemaRevision ?? 0
   ),
@@ -233,21 +260,43 @@ const finalizeCommandRegistry = (
     revision: registry.revision,
   });
 
+const finalizeReadRegistry = (
+  registry: CompiledReadRegistry
+): CompiledReadRegistry =>
+  Object.freeze({
+    byDescriptor: freezeMap(
+      new Map(
+        [...registry.byDescriptor].map(([descriptor, pipeline]) => [
+          descriptor,
+          Object.freeze({
+            ...pipeline,
+            entries: Object.freeze([...pipeline.entries]),
+          }),
+        ])
+      )
+    ),
+    byId: freezeMap(registry.byId),
+    revision: registry.revision,
+  });
+
 /** Freeze a detached registry after all declarations have been validated. */
 export const finalizeExtensionRegistry = <TEditor extends Editor>(
   registry: ExtensionRegistry<TEditor>
 ): ExtensionRegistry<TEditor> =>
   Object.freeze({
     ...registry,
-    capabilities: freezeArrayMap(registry.capabilities),
+    apiGroups: freezeArrayMap(registry.apiGroups),
     commands: finalizeCommandRegistry(registry.commands),
     commitListeners: freezeSet(registry.commitListeners),
+    contributions: freezeArrayMap(registry.contributions),
+    dependencyOrder: Object.freeze([...registry.dependencyOrder]),
     effectTypes: freezeMap(registry.effectTypes),
     extensions: freezeMap(registry.extensions),
+    extensionsByDescriptor: freezeMap(registry.extensionsByDescriptor),
     facets: freezeArrayMap(registry.facets),
     nodeChangeListeners: freezeSet(registry.nodeChangeListeners),
     corrections: freezeMap(registry.corrections),
-    queryMiddlewares: freezeArrayMap(registry.queryMiddlewares),
+    reads: finalizeReadRegistry(registry.reads),
     schemaContributions: finalizeSchemaContributionRegistry(
       registry.schemaContributions
     ),
@@ -271,6 +320,22 @@ const mergeArrayMap = <TKey, T>(
   }
 
   return result;
+};
+
+const assertExtensionPointIdentities = (points: Iterable<object>): void => {
+  const pointsById = new Map<string, object>();
+
+  for (const point of points) {
+    const id = (point as Readonly<{ id: string }>).id;
+    const known = pointsById.get(id);
+
+    if (known && known !== point) {
+      throw new Error(
+        `Editor extension point id "${id}" cannot install multiple descriptor identities.`
+      );
+    }
+    pointsById.set(id, point);
+  }
 };
 
 const mergeCommandRegistries = (
@@ -329,6 +394,59 @@ const mergeCommandRegistries = (
   };
 };
 
+const mergeReadRegistries = (
+  configured: CompiledReadRegistry,
+  base: CompiledReadRegistry,
+  revision: number
+): CompiledReadRegistry => {
+  const descriptorsById = new Map<string, object>();
+
+  for (const descriptor of [
+    ...configured.byDescriptor.keys(),
+    ...base.byDescriptor.keys(),
+  ]) {
+    const id = (descriptor as Readonly<{ id: string }>).id;
+    const known = descriptorsById.get(id);
+
+    if (known && known !== descriptor) {
+      throw new Error(
+        `Editor read id "${id}" cannot install multiple descriptor identities.`
+      );
+    }
+    descriptorsById.set(id, descriptor);
+  }
+
+  const entriesByDescriptor = mergeArrayMap(
+    new Map(
+      [...configured.byDescriptor].map(([descriptor, pipeline]) => [
+        descriptor,
+        pipeline.entries,
+      ])
+    ),
+    new Map(
+      [...base.byDescriptor].map(([descriptor, pipeline]) => [
+        descriptor,
+        pipeline.entries,
+      ])
+    )
+  );
+
+  return {
+    byDescriptor: new Map(
+      [...entriesByDescriptor].map(([descriptor, entries]) => [
+        descriptor,
+        {
+          descriptor,
+          entries,
+          id: (descriptor as Readonly<{ id: string }>).id,
+        },
+      ])
+    ),
+    byId: descriptorsById,
+    revision,
+  };
+};
+
 const assertNoMapConflicts = (
   kind: string,
   configured: ReadonlyMap<string, unknown>,
@@ -348,6 +466,10 @@ const mergeRegistries = (
   base: ExtensionRegistry,
   previousSchemaContributions: EditorSchemaContributionRegistry | null = null
 ): ExtensionRegistry => {
+  assertExtensionPointIdentities([
+    ...configured.contributions.keys(),
+    ...base.contributions.keys(),
+  ]);
   assertNoMapConflicts('effect', configured.effectTypes, base.effectTypes);
   assertNoMapConflicts(
     'selection kind',
@@ -383,7 +505,7 @@ const mergeRegistries = (
   }
 
   return finalizeExtensionRegistry({
-    capabilities: mergeArrayMap(configured.capabilities, base.capabilities),
+    apiGroups: mergeArrayMap(configured.apiGroups, base.apiGroups),
     commands: mergeCommandRegistries(
       configured.commands,
       base.commands,
@@ -394,17 +516,21 @@ const mergeRegistries = (
       ...base.commitListeners,
     ]),
     configurationRevision: configured.configurationRevision,
+    contributions: mergeArrayMap(configured.contributions, base.contributions),
+    dependencyOrder: [...configured.dependencyOrder],
     effectTypes: new Map([...configured.effectTypes, ...base.effectTypes]),
     extensions: new Map(configured.extensions),
+    extensionsByDescriptor: new Map(configured.extensionsByDescriptor),
     facets: mergeArrayMap(configured.facets, base.facets),
     nodeChangeListeners: new Set([
       ...configured.nodeChangeListeners,
       ...base.nodeChangeListeners,
     ]),
     corrections: new Map([...configured.corrections, ...base.corrections]),
-    queryMiddlewares: mergeArrayMap(
-      configured.queryMiddlewares,
-      base.queryMiddlewares
+    reads: mergeReadRegistries(
+      configured.reads,
+      base.reads,
+      configured.configurationRevision
     ),
     schemaContributions: mergeSchemaContributionRegistries(
       configured.schemaContributions,
@@ -777,31 +903,57 @@ export const inheritExtensionRegistry = <
   EXTENSION_REGISTRIES.set(editor, getExtensionRegistryStore(source));
 };
 
-export const registerCapabilityInRegistry = <TEditor extends Editor>(
+export const registerApiGroupInRegistry = <TEditor extends Editor>(
   registry: ExtensionRegistry<TEditor>,
   name: string,
-  capability: unknown
+  value: unknown
 ) => {
-  const capabilities = registry.capabilities.get(name) ?? [];
+  const values = registry.apiGroups.get(name) ?? [];
 
-  capabilities.push(capability);
-  registry.capabilities.set(name, capabilities);
+  values.push(value);
+  registry.apiGroups.set(name, values);
 
   return () => {
-    const current = registry.capabilities.get(name);
+    const current = registry.apiGroups.get(name);
 
     if (!current) {
       return;
     }
 
-    const index = current.indexOf(capability);
+    const index = current.indexOf(value);
     if (index >= 0) {
       current.splice(index, 1);
     }
 
     if (current.length === 0) {
-      registry.capabilities.delete(name);
+      registry.apiGroups.delete(name);
     }
+  };
+};
+
+export const registerExtensionContributionInRegistry = <TEditor extends Editor>(
+  registry: ExtensionRegistry<TEditor>,
+  point: object,
+  registration: EditorExtensionContributionRegistration
+) => {
+  assertExtensionPointIdentities([...registry.contributions.keys(), point]);
+  const contributions = registry.contributions.get(point) ?? [];
+
+  contributions.push(Object.freeze(registration));
+  registry.contributions.set(point, contributions);
+
+  return () => {
+    const current = registry.contributions.get(point);
+
+    if (!current) return;
+    const index = current.findIndex(
+      (entry) =>
+        entry.owner === registration.owner &&
+        entry.sourceIndex === registration.sourceIndex
+    );
+
+    if (index >= 0) current.splice(index, 1);
+    if (current.length === 0) registry.contributions.delete(point);
   };
 };
 
@@ -950,45 +1102,6 @@ export const hasChangeListeners = (editor: Editor) => {
     registry.nodeChangeListeners.size > 0 ||
     registry.textChangeListeners.size > 0
   );
-};
-
-export const getQueryMiddlewareKey = (
-  group: EditorQueryGroup,
-  method: string
-) => `${group}.${method}`;
-
-export const registerQueryMiddlewareInRegistry = <
-  TEditor extends Editor,
-  TGroup extends EditorQueryGroup,
-  TMethod extends keyof NonNullable<EditorQueryMiddlewareMap<TEditor>[TGroup]>,
->(
-  registry: ExtensionRegistry<TEditor>,
-  group: TGroup,
-  method: TMethod,
-  middleware: NonNullable<EditorQueryMiddlewareMap<TEditor>[TGroup]>[TMethod]
-) => {
-  const key = getQueryMiddlewareKey(group, String(method));
-  const middlewares = registry.queryMiddlewares.get(key) ?? [];
-
-  middlewares.push(middleware);
-  registry.queryMiddlewares.set(key, middlewares);
-
-  return () => {
-    const current = registry.queryMiddlewares.get(key);
-
-    if (!current) {
-      return;
-    }
-
-    const index = current.indexOf(middleware);
-    if (index >= 0) {
-      current.splice(index, 1);
-    }
-
-    if (current.length === 0) {
-      registry.queryMiddlewares.delete(key);
-    }
-  };
 };
 
 const registerViewGroup = <TRegistration>(

@@ -1,24 +1,9 @@
-import { createBasePlugin, type PluginConfig } from '@platejs/core';
+import { createBasePlugin, type InferConfig } from '@platejs/core';
 import { ElementApi, type Path } from '@platejs/plite';
 
 import { KEYS } from '../plate-keys';
 
-export type NormalizeTypesConfig = PluginConfig<
-  'normalizeTypes',
-  {
-    /**
-     * Set of rules for the types. For each rule, provide a `path` and either
-     * `strictType` or `type`. If there is no node existing at `path`: insert a
-     * node with `strictType`. If there is a node existing at `path` but its
-     * type is not `strictType` or `type`: set the node type to `strictType` or
-     * `type`.
-     */
-    rules?: Rule[];
-    onError?: (err: unknown) => void;
-  }
->;
-
-type Rule = {
+export type NormalizeTypesRule = {
   /** Path where the rule applies */
   path: Path;
   /** Force the type of the node at the given path */
@@ -27,11 +12,24 @@ type Rule = {
   type?: string;
 };
 
-export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
+export type NormalizeTypesPluginState = {
+  /**
+   * Set of rules for the types. For each rule, provide a `path` and either
+   * `strictType` or `type`. If there is no node existing at `path`: insert a
+   * node with `strictType`. If there is a node existing at `path` but its type
+   * is not `strictType` or `type`: set the node type to `strictType` or `type`.
+   */
+  rules: NormalizeTypesRule[];
+  onError?: (err: unknown) => void;
+};
+
+const initialState: NormalizeTypesPluginState = {
+  rules: [],
+};
+
+export const NormalizeTypesPlugin = createBasePlugin({
   key: KEYS.normalizeTypes,
-  initialState: {
-    rules: [],
-  },
+  initialState,
   extension: ({ store }) => ({
     corrections: [
       {
@@ -75,3 +73,5 @@ export const NormalizeTypesPlugin = createBasePlugin<NormalizeTypesConfig>({
     ],
   }),
 });
+
+export type NormalizeTypesConfig = InferConfig<typeof NormalizeTypesPlugin>;

@@ -1,4 +1,3 @@
-import type { PluginConfig } from '@platejs/core';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 
 type BodyValue = [
@@ -21,28 +20,14 @@ type LayoutStoreState = {
   variant: LayoutVariant;
 };
 
-type LayoutConfig = PluginConfig<
-  'layout',
-  LayoutStoreState,
-  {
-    getVariant: () => LayoutVariant;
-  },
-  {
-    layout: {
-      setDensity: (density: 1 | 2) => void;
-    };
-  },
-  {
-    isDense: (state: Readonly<LayoutStoreState>) => boolean;
-  }
->;
+const layoutInitialState: LayoutStoreState = {
+  density: 1,
+  variant: 'full',
+};
 
-const LayoutPlugin = createPlatePlugin<LayoutConfig>({
+const LayoutPlugin = createPlatePlugin({
   key: 'layout',
-  initialState: {
-    density: 1,
-    variant: 'full',
-  },
+  initialState: layoutInitialState,
 })
   .extend(() => ({
     selectors: {
@@ -56,13 +41,9 @@ const LayoutPlugin = createPlatePlugin<LayoutConfig>({
       },
     },
   }))
-  .extend<{
-    update: {
-      setDensity: (density: 1 | 2) => void;
-    };
-  }>(({ store }) => ({
+  .extend(({ store }) => ({
     update: () => ({
-      setDensity: (density) => {
+      setDensity: (density: 1 | 2) => {
         store.set({ density });
       },
     }),

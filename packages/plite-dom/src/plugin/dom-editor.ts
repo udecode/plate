@@ -10,6 +10,7 @@ import {
   type RootKey,
   type RuntimeId,
   type Editor as EditorType,
+  type EditorUpdateTransaction,
   TextApi,
   type Value,
 } from '@platejs/plite';
@@ -20,7 +21,7 @@ import {
   getSelection as editorGetSelection,
   getActiveEditorTransaction,
   getEditorRuntimeIdForNode,
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   hasPath as editorHasPath,
   isVoid as editorIsVoid,
   point as editorPoint,
@@ -73,9 +74,15 @@ import {
   NODE_TO_KEY,
 } from '../utils/weak-maps';
 import {
+  type ClipboardSliceRead,
+  type ClipboardSliceWrite,
+  dispatchDOMClipboardHandlers,
+  type DOMClipboardHandler,
   insertDOMData,
   insertDOMFragmentData,
   insertDOMTextData,
+  readDOMClipboardSlice,
+  writeDOMClipboardSlice,
   writeDOMSelectionData,
 } from './dom-clipboard-runtime';
 import { DOMCoverage } from './dom-coverage';
@@ -179,12 +186,12 @@ export interface DOMApi {
   ) => Range;
 }
 
-export interface DOMEditorCapability extends DOMApi {
-  clipboard: DOMEditorClipboardCapability;
+export interface DOMEditorCapability<V extends Value = Value> extends DOMApi {
+  clipboard: DOMEditorClipboardCapability<V>;
 }
 
 /** Clipboard methods installed by the Plite DOM bridge. */
-export interface DOMEditorClipboardCapability {
+export interface DOMEditorClipboardCapability<V extends Value = Value> {
   /**
    * Insert data from a `DataTransfer` into the editor.
    */
@@ -200,13 +207,25 @@ export interface DOMEditorClipboardCapability {
    */
   insertTextData: (data: DataTransfer) => boolean;
 
+  /** Read an exact Plite slice and distinguish absence from invalid data. */
+  readSlice: (
+    data: Pick<DataTransfer, 'getData' | 'types'>
+  ) => ClipboardSliceRead<V>;
+
   /**
    * Write the current selection to a `DataTransfer`.
    */
   writeSelection: (data: Pick<DataTransfer, 'getData' | 'setData'>) => void;
+
+  /** Write one exact Plite slice plus optional host formats. */
+  writeSlice: (
+    data: Pick<DataTransfer, 'getData' | 'setData'>,
+    payload: ClipboardSliceWrite<V>
+  ) => void;
 }
 
-export interface DOMClipboardApi extends DOMEditorClipboardCapability {}
+export interface DOMClipboardApi<V extends Value = Value>
+  extends DOMEditorClipboardCapability<V> {}
 
 export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
 
@@ -1116,7 +1135,7 @@ export const DOMEditor: DOMEditorInterface = {
 
       if (selection) {
         const domSelection = getSelection(root);
-        const projectedSelection = getSelectionDOMRange(editor, selection);
+        const projectedSelection = getSelectionPrimaryRange(editor, selection);
 
         if (!domSelection) {
           return;
@@ -2272,27 +2291,34 @@ export const createDOMEditorCapability = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  editor: DOMEditor<V, TExtensions>
-): DOMEditorCapability => {
-  const runClipboardInsert = (insert: () => boolean) => {
+  editor: DOMEditor<V, TExtensions>,
+  clipboardHandlers: readonly DOMClipboardHandler<NoInfer<V>>[] = []
+): DOMEditorCapability<V> => {
+  const runClipboardInsert = (
+    data: DataTransfer,
+    fallback: (data: DataTransfer) => boolean,
+    handlers: readonly DOMClipboardHandler<NoInfer<V>>[] = []
+  ) => {
     const transaction = getActiveEditorTransaction(editor);
+    const insert = (tx: EditorUpdateTransaction<V, TExtensions>) =>
+      dispatchDOMClipboardHandlers(handlers, data, tx, fallback);
 
     if (transaction) {
       transaction.tags.add('paste');
 
-      return insert();
+      return insert(transaction);
     }
 
     let handled = false;
 
     editor.update((tx) => {
       tx.tags.add('paste');
-      handled = insert();
+      handled = insert(tx);
     });
 
     return handled;
   };
-  const capability: DOMEditorCapability = {
+  const capability: DOMEditorCapability<V> = {
     blur: () => DOMEditor.blur(editor),
     deselect: () => DOMEditor.deselect(editor),
     editable: (root) => DOMEditor.editable(editor, root),
@@ -2311,17 +2337,27 @@ export const createDOMEditorCapability = <
     hasTarget: (target) => DOMEditor.hasTarget(editor, target),
     clipboard: Object.freeze({
       insertData: (data: DataTransfer) =>
-        runClipboardInsert(() => DOMEditor.clipboard.insertData(editor, data)),
+        runClipboardInsert(
+          data,
+          (nextData) => DOMEditor.clipboard.insertData(editor, nextData),
+          clipboardHandlers
+        ),
       insertFragmentData: (data: DataTransfer) =>
-        runClipboardInsert(() =>
-          DOMEditor.clipboard.insertFragmentData(editor, data)
+        runClipboardInsert(data, (nextData) =>
+          DOMEditor.clipboard.insertFragmentData(editor, nextData)
         ),
       insertTextData: (data: DataTransfer) =>
-        runClipboardInsert(() =>
-          DOMEditor.clipboard.insertTextData(editor, data)
+        runClipboardInsert(data, (nextData) =>
+          DOMEditor.clipboard.insertTextData(editor, nextData)
         ),
+      readSlice: (data: Pick<DataTransfer, 'getData' | 'types'>) =>
+        readDOMClipboardSlice(editor, data),
       writeSelection: (data: Pick<DataTransfer, 'getData' | 'setData'>) =>
         DOMEditor.clipboard.writeSelection(editor, data),
+      writeSlice: (
+        data: Pick<DataTransfer, 'getData' | 'setData'>,
+        payload: ClipboardSliceWrite<V>
+      ) => writeDOMClipboardSlice(editor, data, payload),
     }),
     isComposing: () => DOMEditor.isComposing(editor),
     isFocused: () => DOMEditor.isFocused(editor),

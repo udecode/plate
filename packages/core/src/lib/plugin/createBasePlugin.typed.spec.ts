@@ -5,13 +5,12 @@ import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { toPlatePlugin } from '../../react/plugin/toPlatePlugin';
 import { createBaseEditor } from '../editor';
+import { createRuleFactory } from '../plugins/input-rules/createRuleFactory';
 import type { BasePluginOverride } from './BasePlugin';
 import { createBasePlugin } from './createBasePlugin';
 
 const assertTypedSchemaContributions = () => {
-  type SchemaConfig = PluginConfig<'validSchema', { targetTypes: string[] }>;
-
-  createBasePlugin<SchemaConfig>({
+  createBasePlugin({
     key: 'validSchema',
     initialState: { targetTypes: ['cell', 'header'] },
     schema: ({ initialState }) => ({
@@ -115,9 +114,7 @@ const assertTypedNodeSchemas = () => {
 void assertTypedNodeSchemas;
 
 const assertTypedContextualConfiguration = () => {
-  const BasePlugin = createBasePlugin<
-    PluginConfig<'baseContextual', { enabled: boolean }>
-  >({
+  const BasePlugin = createBasePlugin({
     key: 'baseContextual',
     initialState: { enabled: false },
   });
@@ -149,9 +146,7 @@ const assertTypedContextualConfiguration = () => {
   // @ts-expect-error contextual configure cannot define model fields
   BasePlugin.configure(() => ({ type: 'other' }));
 
-  const PlatePlugin = createPlatePlugin<
-    PluginConfig<'plateContextual', { enabled: boolean }>
-  >({
+  const PlatePlugin = createPlatePlugin({
     key: 'plateContextual',
     initialState: { enabled: false },
   });
@@ -179,6 +174,24 @@ const assertTypedContextualConfiguration = () => {
 
 void assertTypedContextualConfiguration;
 
+const assertTypedInputRuleConfiguration = () => {
+  const BaseRulePlugin = createBasePlugin({
+    key: 'typedInputRuleOwner',
+    read: () => ({ enabled: () => true }),
+  });
+  const rule = createRuleFactory(BaseRulePlugin)({
+    apply: () => {},
+    resolve: ({ editor }) =>
+      editor.plugin(BaseRulePlugin).read.enabled() ? true : undefined,
+    trigger: ' ',
+    type: 'insertText',
+  })();
+
+  toPlatePlugin(BaseRulePlugin).configure({ inputRules: [rule] });
+};
+
+void assertTypedInputRuleConfiguration;
+
 const assertTypedInitialAuthoringContext = () => {
   const BasePlugin = createBasePlugin({
     key: 'baseInitialContext',
@@ -188,14 +201,13 @@ const assertTypedInitialAuthoringContext = () => {
     api: ({ editor, store, plugin, type }) => ({
       label: () => `${editor.id}:${plugin.key}:${type}:${store.get('prefix')}`,
     }),
-    extension: ({ defineEditorExtension, plugin }) =>
-      defineEditorExtension({
-        api: {
-          baseInitialExtension: {
-            key: () => plugin.key,
-          },
+    extension: ({ plugin }) => ({
+      api: {
+        baseInitialExtension: {
+          key: () => plugin.key,
         },
-      }),
+      },
+    }),
     read: ({ editor, store, state }) => ({
       readLabel: () => {
         state satisfies object;
@@ -227,7 +239,9 @@ const assertTypedInitialAuthoringContext = () => {
 
   const BehaviorOnlyPlugin = createBasePlugin({
     extension: {
-      onCommit: () => {},
+      on: {
+        commit: () => {},
+      },
     },
     key: 'behaviorOnly',
   });

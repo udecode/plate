@@ -38,9 +38,8 @@ import {
   type TSuggestionText,
   type TUpdateSuggestionData,
 } from '@platejs/utils';
+import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import isEqual from 'lodash/isEqual.js';
-
-import type { TResolvedSuggestion, TSuggestionDescription } from './types';
 
 /** Tag applied when an update must bypass suggestion tracking. */
 export const SUGGESTION_SKIP_TAG = 'skip-suggestion' as const;
@@ -55,9 +54,41 @@ export const SuggestionUpdatePolicy = Object.freeze({
   }) satisfies EditorUpdatePolicy,
 });
 
-type BaseSuggestionPluginState = {
+export type BaseSuggestionPluginState = {
   currentUserId: string | null;
   isSuggesting: boolean;
+};
+
+export type TResolvedSuggestion = {
+  createdAt: Date;
+  keyId: string;
+  suggestionId: string;
+  type: 'insert' | 'remove' | 'replace' | 'update';
+  userId: string;
+  newProperties?: Record<string, unknown>;
+  newText?: string;
+  properties?: Record<string, unknown>;
+  text?: string;
+};
+
+export type TSuggestionDescription =
+  | ({
+      deletedText: string;
+      type: 'deletion';
+    } & TSuggestionCommonDescription)
+  | ({
+      insertedText: string;
+      type: 'insertion';
+    } & TSuggestionCommonDescription)
+  | ({
+      deletedText: string;
+      insertedText: string;
+      type: 'replacement';
+    } & TSuggestionCommonDescription);
+
+type TSuggestionCommonDescription = {
+  suggestionId: string;
+  userId: string;
 };
 
 type SuggestionIdentity = {
@@ -66,12 +97,24 @@ type SuggestionIdentity = {
 };
 
 type BaseSuggestionApi = {
-  dataList: (node: Text) => TInlineSuggestionData[];
+  dataList: (node: Element | Text) => TInlineSuggestionData[];
   createFragment: (
     fragment: readonly Descendant[],
     identity: SuggestionIdentity
   ) => Descendant[];
   createIdentity: () => SuggestionIdentity;
+  diff: {
+    (
+      doc0: readonly Element[],
+      doc1: readonly Element[],
+      options?: Partial<ComputeDiffOptions>
+    ): Element[];
+    (
+      doc0: readonly Descendant[],
+      doc1: readonly Descendant[],
+      options?: Partial<ComputeDiffOptions>
+    ): Descendant[];
+  };
   getProps: (
     node: Descendant,
     options?: {
@@ -104,37 +147,19 @@ type BaseSuggestionApi = {
   userIds: (node: Node) => string[];
 };
 
-type BaseSuggestionTx = {
-  accept: (description: TResolvedSuggestion) => void;
-  addMark: (key: string, value: unknown) => void;
-  delete: (
-    at: Range,
-    options?: {
-      moveSelection?: boolean;
-      reverse?: boolean;
-      unit?: TextUnit;
-    }
-  ) => string | undefined;
-  deleteFragment: (options?: {
-    moveSelection?: boolean;
-    reverse?: boolean;
-  }) => string | undefined;
-  insertFragment: (
-    fragment: readonly Descendant[],
-    insertContent?: (fragment: readonly Descendant[]) => void
-  ) => void;
-  insertText: (text: string) => void;
-  reject: (description: TResolvedSuggestion) => void;
-  removeMark: (key: string, previousValue?: unknown) => void;
-  removeNodes: (nodes: readonly NodeEntry<Element | Text>[]) => void;
-  setNodes: (
-    options?: {
-      createdAt?: number;
-      includeInlineElements?: boolean;
-      suggestionId?: string;
-    } & NodeSetNodesOptions<Node>
-  ) => string | undefined;
+type DeleteSuggestionOptions = {
+  moveSelection?: boolean;
+  reverse?: boolean;
+  unit?: TextUnit;
 };
+
+type DeleteSuggestionFragmentOptions = Omit<DeleteSuggestionOptions, 'unit'>;
+
+type SetSuggestionNodesOptions = {
+  createdAt?: number;
+  includeInlineElements?: boolean;
+  suggestionId?: string;
+} & NodeSetNodesOptions<Node>;
 
 const suggestionUntrackedDepth = new WeakMap<BaseEditor, number>();
 
@@ -192,6 +217,11 @@ const inlineSuggestionDataProperty = property.json({
   validate: isInlineSuggestionData,
   validationVersion: 1,
 });
+
+const initialState: BaseSuggestionPluginState = {
+  currentUserId: 'alice',
+  isSuggesting: false,
+};
 
 export const BaseSuggestionPlugin = createBasePlugin({
   key: KEYS.suggestion,
@@ -277,11 +307,8 @@ export const BaseSuggestionPlugin = createBasePlugin({
     ],
   },
   rules: { selection: { affinity: 'outward' } },
-  initialState: {
-    currentUserId: 'alice',
-    isSuggesting: false,
-  } as BaseSuggestionPluginState,
-  api: ({ editor, store, type }) => {
+  initialState,
+  api: ({ editor, store, type }): BaseSuggestionApi => {
     const key = (id = '0') => `${KEYS.suggestion}_${id}`;
     const keyId = (node: Element | Text) =>
       Object.keys(node)
@@ -300,7 +327,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
 
       return isInlineSuggestionData(value) ? value : undefined;
     };
-    const dataList = (node: Text): TInlineSuggestionData[] =>
+    const dataList = (node: Element | Text): TInlineSuggestionData[] =>
       Object.keys(node)
         .filter((nodeKey) => nodeKey.startsWith(`${KEYS.suggestion}_`))
         .map((nodeKey) => node[nodeKey])
@@ -340,9 +367,128 @@ export const BaseSuggestionPlugin = createBasePlugin({
         .map(([child]) => skipDeletes(child))
         .join('');
     };
+    const getProps: BaseSuggestionApi['getProps'] = (
+      node,
+      {
+        id = nanoid(),
+        createdAt = Date.now(),
+        suggestionDeletion,
+        suggestionUpdate,
+        transient,
+      } = {}
+    ) => {
+      const currentUserId = store.get().currentUserId;
+
+      if (currentUserId === null) return {};
+
+      const suggestion = {
+        id,
+        createdAt,
+        type: suggestionDeletion
+          ? 'remove'
+          : suggestionUpdate
+            ? 'update'
+            : 'insert',
+        userId: currentUserId,
+        ...suggestionUpdate,
+      };
+
+      if (ElementApi.isElement(node) && !editor.read.schema.isInline(node)) {
+        return { [KEYS.suggestion]: suggestion };
+      }
+
+      return {
+        [key(id)]: suggestion,
+        [KEYS.suggestion]: true,
+        ...(transient ? { [SUGGESTION_TRANSIENT_KEY]: true } : {}),
+      };
+    };
+    function diff(
+      doc0: readonly Element[],
+      doc1: readonly Element[],
+      options?: Partial<ComputeDiffOptions>
+    ): Element[];
+    function diff(
+      doc0: readonly Descendant[],
+      doc1: readonly Descendant[],
+      options?: Partial<ComputeDiffOptions>
+    ): Descendant[];
+    function diff(
+      doc0: readonly Descendant[],
+      doc1: readonly Descendant[],
+      {
+        getDeleteProps = (node) => getProps(node, { suggestionDeletion: true }),
+        getInsertProps = (node) => getProps(node),
+        getUpdateProps = (node, properties, newProperties) =>
+          getProps(node, {
+            suggestionUpdate: {
+              newProperties: Object.fromEntries(
+                Object.entries(newProperties).filter(
+                  ([, value]) => value !== undefined
+                )
+              ),
+              properties: Object.fromEntries(
+                Object.entries(properties).filter(
+                  ([, value]) => value !== undefined
+                )
+              ),
+            },
+          }),
+        isInline = editor.read.schema.isInline,
+        ...options
+      }: Partial<ComputeDiffOptions> = {}
+    ): Descendant[] {
+      const values = computeDiff(doc0, doc1, {
+        getDeleteProps,
+        getInsertProps,
+        getUpdateProps,
+        isInline,
+        ...options,
+      });
+      const traverse = (nodes: readonly Descendant[]): Descendant[] =>
+        nodes.map((node, index) => {
+          if (ElementApi.isElement(node)) {
+            return { ...node, children: traverse(node.children) };
+          }
+          if (!TextApi.isText(node) || !node[KEYS.suggestion]) return node;
+
+          const current = suggestionData(node);
+          const previous = index > 0 ? nodes[index - 1] : undefined;
+          const previousData =
+            previous && Boolean(previous[KEYS.suggestion])
+              ? suggestionData(previous)
+              : undefined;
+
+          if (current?.type !== 'insert' || previousData?.type !== 'remove') {
+            return node;
+          }
+
+          const next = {
+            ...node,
+            [key(previousData.id)]: {
+              ...current,
+              id: previousData.id,
+              createdAt: previousData.createdAt,
+            },
+          };
+
+          delete next[key(current.id)];
+
+          return next;
+        });
+
+      return traverse(values);
+    }
+
     return {
-      createFragment: (fragment, { createdAt, id }) =>
-        fragment.map((source) => {
+      createFragment: (fragment, { createdAt, id }) => {
+        const currentUserId = store.get().currentUserId;
+
+        if (currentUserId === null) {
+          return fragment.map((source) => ({ ...source }));
+        }
+
+        return fragment.map((source) => {
           if (TextApi.isText(source)) {
             const node: { [key: string]: unknown; text: string } = {
               ...source,
@@ -356,7 +502,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
               id,
               createdAt,
               type: 'insert',
-              userId: store.get().currentUserId!,
+              userId: currentUserId,
             };
 
             return node;
@@ -368,49 +514,21 @@ export const BaseSuggestionPlugin = createBasePlugin({
               id,
               createdAt,
               type: 'insert',
-              userId: store.get().currentUserId!,
+              userId: currentUserId,
             },
           };
-        }),
+        });
+      },
       createIdentity: () => ({ createdAt: Date.now(), id: nanoid() }),
       dataList,
-      getProps: (
-        node,
-        {
-          id = nanoid(),
-          createdAt = Date.now(),
-          suggestionDeletion,
-          suggestionUpdate,
-          transient,
-        } = {}
-      ) => {
-        const suggestion = {
-          id,
-          createdAt,
-          type: suggestionDeletion
-            ? 'remove'
-            : suggestionUpdate
-              ? 'update'
-              : 'insert',
-          userId: store.get().currentUserId!,
-          ...suggestionUpdate,
-        };
-
-        if (ElementApi.isElement(node) && !editor.read.schema.isInline(node)) {
-          return { [KEYS.suggestion]: suggestion };
-        }
-
-        return {
-          [key(id)]: suggestion,
-          [KEYS.suggestion]: true,
-          ...(transient ? { [SUGGESTION_TRANSIENT_KEY]: true } : {}),
-        };
-      },
+      diff,
+      getProps,
       inlineData,
       isBlockSuggestion,
       isCurrentUser: (node) =>
         inlineData(node)?.userId === store.get().currentUserId,
       isTracking: (tags) =>
+        store.get().currentUserId !== null &&
         (suggestionUntrackedDepth.get(editor) ?? 0) === 0 &&
         !tags.includes(SUGGESTION_SKIP_TAG),
       key,
@@ -441,17 +559,29 @@ export const BaseSuggestionPlugin = createBasePlugin({
         keys(node)
           .map((nodeKey) => Reflect.get(node, nodeKey)?.userId)
           .filter((id): id is string => typeof id === 'string'),
-    } satisfies BaseSuggestionApi;
+    };
   },
 })
   .extend(({ api, store, type }) => ({
     read: ({ state }) => {
-      const node = (
+      function node(
+        options: EditorNodesOptions<Node> & {
+          id?: string;
+          isText: true;
+        }
+      ): NodeEntry<TSuggestionText> | undefined;
+      function node(
+        options?: EditorNodesOptions<Node> & {
+          id?: string;
+          isText?: boolean;
+        }
+      ): NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
+      function node(
         options: EditorNodesOptions<Node> & {
           id?: string;
           isText?: boolean;
         } = {}
-      ) => {
+      ) {
         const { id, isText, ...rest } = options;
 
         return state.nodes.find<TSuggestionElement | TSuggestionText>({
@@ -469,7 +599,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
           },
           ...rest,
         });
-      };
+      }
       const findIdentity = ({
         at,
         type: suggestionType,
@@ -493,7 +623,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
               Boolean(api.nodeId(candidate)),
           });
 
-        let entry = getTextEntry(at) as NodeEntry<TSuggestionText> | undefined;
+        let entry = getTextEntry(at);
         let inlineEntry: NodeEntry<Element> | undefined;
 
         if (!entry) {
@@ -570,7 +700,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
           if (!suggestionId) return [];
 
           return api
-            .dataList(entry[0] as TSuggestionText)
+            .dataList(entry[0])
             .map(({ id, userId }): TSuggestionDescription => {
               const suggestionKey = api.key(id);
               const nodes = state.nodes
@@ -659,12 +789,16 @@ export const BaseSuggestionPlugin = createBasePlugin({
       };
     },
   }))
-  .extend<{
-    update: BaseSuggestionTx;
-  }>((context) => ({
+  .extend((context) => ({
     update: ({ tx }) => {
       const { api, store } = context;
-      const setNodes: BaseSuggestionTx['setNodes'] = (options) => {
+      const setNodes = (
+        options: SetSuggestionNodesOptions = {}
+      ): string | undefined => {
+        const currentUserId = store.get().currentUserId;
+
+        if (currentUserId === null) return;
+
         const {
           createdAt = Date.now(),
           includeInlineElements = true,
@@ -690,7 +824,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
           id: suggestionId,
           createdAt,
           type: 'remove',
-          userId: store.get().currentUserId!,
+          userId: currentUserId,
         };
         const props = {
           [api.key(suggestionId)]: suggestion,
@@ -731,10 +865,18 @@ export const BaseSuggestionPlugin = createBasePlugin({
 
         return suggestionId;
       };
-      const deleteRange: BaseSuggestionTx['delete'] = (
-        at,
-        { moveSelection = true, reverse, unit = 'character' } = {}
-      ) => {
+      const deleteRange = (
+        at: Range,
+        {
+          moveSelection = true,
+          reverse,
+          unit = 'character',
+        }: DeleteSuggestionOptions = {}
+      ): string | undefined => {
+        const currentUserId = store.get().currentUserId;
+
+        if (currentUserId === null) return;
+
         const getInlineEntryAt = (point: Point) =>
           tx.nodes.above<Element>({
             at: point,
@@ -876,7 +1018,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                   id,
                   createdAt,
                   type: 'remove',
-                  userId: store.get().currentUserId!,
+                  userId: currentUserId,
                 },
                 [KEYS.suggestion]: true,
               },
@@ -953,7 +1095,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                     id,
                     createdAt,
                     type: 'remove',
-                    userId: store.get().currentUserId!,
+                    userId: currentUserId,
                     ...(isVoid ? {} : { isLineBreak: true }),
                   },
                 },
@@ -966,7 +1108,12 @@ export const BaseSuggestionPlugin = createBasePlugin({
             break;
           }
 
-          if (PointApi.equals(pointCurrent, tx.selection()!.anchor)) {
+          const currentSelection = tx.selection();
+
+          if (
+            currentSelection &&
+            PointApi.equals(pointCurrent, currentSelection.anchor)
+          ) {
             if (unit === 'character') {
               tx.selection.move({ reverse, unit: 'character' });
             } else if (moveSelection) {
@@ -999,10 +1146,12 @@ export const BaseSuggestionPlugin = createBasePlugin({
 
         return id;
       };
-      const deleteFragment: BaseSuggestionTx['deleteFragment'] = ({
+      const deleteFragment = ({
         moveSelection = false,
         reverse,
-      } = {}) => {
+      }: DeleteSuggestionFragmentOptions = {}): string | undefined => {
+        if (store.get().currentUserId === null) return;
+
         const selection = tx.selection();
 
         if (!selection) return;
@@ -1030,7 +1179,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
         );
       };
       return {
-        accept: (description) => {
+        accept: (description: TResolvedSuggestion) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
           const mergeNodes = tx.nodes.toArray({
@@ -1057,7 +1206,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                   TextApi.isText(node) ||
                   (ElementApi.isElement(node) && tx.schema.isInline(node))
                 ) {
-                  const suggestions = api.dataList(node as TSuggestionText);
+                  const suggestions = api.dataList(node);
 
                   if (suggestions.some((data) => data.type === 'update')) {
                     return suggestions.some(
@@ -1130,7 +1279,11 @@ export const BaseSuggestionPlugin = createBasePlugin({
             },
           });
         },
-        addMark: (mark, value) => {
+        addMark: (mark: string, value: unknown) => {
+          const currentUserId = store.get().currentUserId;
+
+          if (currentUserId === null) return;
+
           const id = nanoid();
           const createdAt = Date.now();
           const match = (node: Node) => {
@@ -1148,7 +1301,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                 createdAt,
                 newProperties: { [mark]: value },
                 type: 'update',
-                userId: store.get().currentUserId,
+                userId: currentUserId,
               },
               [KEYS.suggestion]: true,
             },
@@ -1158,9 +1311,13 @@ export const BaseSuggestionPlugin = createBasePlugin({
         delete: deleteRange,
         deleteFragment,
         insertFragment: (
-          fragment,
-          insertContent = (content) => tx.fragment.replace(content)
+          fragment: readonly Descendant[],
+          insertContent: (fragment: readonly Descendant[]) => void = (
+            content
+          ) => tx.fragment.replace(content)
         ) => {
+          if (store.get().currentUserId === null) return;
+
           deleteFragment();
 
           const selection = tx.selection();
@@ -1177,7 +1334,11 @@ export const BaseSuggestionPlugin = createBasePlugin({
             )
           );
         },
-        insertText: (text) => {
+        insertText: (text: string) => {
+          const currentUserId = store.get().currentUserId;
+
+          if (currentUserId === null) return;
+
           const selection = tx.selection();
 
           if (!selection) return;
@@ -1198,7 +1359,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                 id: suggestionId,
                 createdAt,
                 type: 'insert',
-                userId: store.get().currentUserId!,
+                userId: currentUserId,
               },
               suggestion: true,
               text,
@@ -1206,7 +1367,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
             { at: tx.selection() ?? selection, select: true }
           );
         },
-        reject: (description) => {
+        reject: (description: TResolvedSuggestion) => {
           tx.tags.add(SUGGESTION_SKIP_TAG);
 
           const inlineInsertElements = tx.nodes.toArray({
@@ -1332,7 +1493,11 @@ export const BaseSuggestionPlugin = createBasePlugin({
               tx.nodes.unset([api.key(suggestion.id)], { at: path });
             });
         },
-        removeMark: (mark, previousValue = true) => {
+        removeMark: (mark: string, previousValue: unknown = true) => {
+          const currentUserId = store.get().currentUserId;
+
+          if (currentUserId === null) return;
+
           const id = nanoid();
           const createdAt = Date.now();
           const match = (node: Node) => {
@@ -1350,14 +1515,17 @@ export const BaseSuggestionPlugin = createBasePlugin({
                 createdAt,
                 properties: { [mark]: previousValue },
                 type: 'update',
-                userId: store.get().currentUserId,
+                userId: currentUserId,
               },
               [KEYS.suggestion]: true,
             },
             { match }
           );
         },
-        removeNodes: (nodes) => {
+        removeNodes: (nodes: readonly NodeEntry<Element | Text>[]) => {
+          const currentUserId = store.get().currentUserId;
+
+          if (currentUserId === null) return;
           if (nodes.length === 0) return;
 
           const selection = tx.selection();
@@ -1377,7 +1545,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                   id,
                   createdAt,
                   type: 'remove',
-                  userId: store.get().currentUserId!,
+                  userId: currentUserId,
                 },
               },
               { at: path }
@@ -1441,20 +1609,17 @@ export const BaseSuggestionPlugin = createBasePlugin({
                 return;
               }
 
-              const clear = input.options?.clear;
-
-              for (const key of clear
-                ? Array.isArray(clear)
-                  ? clear
-                  : [clear]
-                : []) {
-                tx.suggestion.removeMark(key, state.marks()?.[key] ?? true);
-              }
               tx.suggestion.addMark(input.key, input.value);
             });
           }),
           around(editorCommands.insertNodes, ({ input, tags, next }) => {
-            if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+            const currentUserId = store.get().currentUserId;
+
+            if (
+              !store.get().isSuggesting ||
+              currentUserId === null ||
+              !context.api.isTracking(tags)
+            ) {
               return next();
             }
 
@@ -1477,7 +1642,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                 id: nanoid(),
                 createdAt: Date.now(),
                 type: 'insert',
-                userId: store.get().currentUserId!,
+                userId: currentUserId,
               },
             }));
 
@@ -1619,7 +1784,13 @@ export const BaseSuggestionPlugin = createBasePlugin({
             });
           }),
           around(editorCommands.insertBreak, ({ state, tags, next }) => {
-            if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+            const currentUserId = store.get().currentUserId;
+
+            if (
+              !store.get().isSuggesting ||
+              currentUserId === null ||
+              !context.api.isTracking(tags)
+            ) {
               return false;
             }
 
@@ -1654,7 +1825,7 @@ export const BaseSuggestionPlugin = createBasePlugin({
                     createdAt,
                     isLineBreak: true,
                     type: 'insert',
-                    userId: store.get().currentUserId!,
+                    userId: currentUserId,
                   },
                 },
                 { at: path }
@@ -1683,18 +1854,19 @@ export const BaseSuggestionPlugin = createBasePlugin({
           event: 'properties',
           correct({ entry, tx }) {
             const [node, path] = entry;
-            const hasSuggestion = !!(node as Record<string, unknown>)[
-              KEYS.suggestion
-            ];
-            const inlineSuggestion =
-              (ElementApi.isElement(node) && tx.schema.isInline(node)) ||
-              TextApi.isText(node);
+            const inlineNode =
+              TextApi.isText(node) ||
+              (ElementApi.isElement(node) && tx.schema.isInline(node))
+                ? node
+                : undefined;
 
-            if (
-              hasSuggestion &&
-              inlineSuggestion &&
-              !context.api.keyId(node as Element)
-            ) {
+            if (!inlineNode || !Reflect.get(inlineNode, KEYS.suggestion)) {
+              return;
+            }
+
+            const keyId = context.api.keyId(inlineNode);
+
+            if (!keyId) {
               context.api.untracked(() => {
                 tx.nodes.unset([KEYS.suggestion, 'suggestionData'], {
                   at: path,
@@ -1704,27 +1876,18 @@ export const BaseSuggestionPlugin = createBasePlugin({
               return;
             }
 
-            if (
-              hasSuggestion &&
-              inlineSuggestion &&
-              !context.api.inlineData(node as Element)?.userId
-            ) {
-              if (context.api.inlineData(node as Element)?.type === 'remove') {
-                context.api.untracked(() => {
-                  tx.nodes.unset(
-                    [KEYS.suggestion, context.api.keyId(node as Element)!],
-                    {
-                      at: path,
-                    }
-                  );
-                });
-              } else {
-                context.api.untracked(() => {
-                  tx.nodes.remove({ at: path });
-                });
-              }
+            const inlineData = context.api.inlineData(inlineNode);
 
-              return;
+            if (inlineData?.userId) return;
+
+            if (inlineData?.type === 'remove') {
+              context.api.untracked(() => {
+                tx.nodes.unset([KEYS.suggestion, keyId], { at: path });
+              });
+            } else {
+              context.api.untracked(() => {
+                tx.nodes.remove({ at: path });
+              });
             }
           },
         },

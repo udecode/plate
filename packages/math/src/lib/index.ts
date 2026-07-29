@@ -3,7 +3,3 @@
  */
 
 export * from './BaseEquationPlugin';
-export * from './BaseInlineEquationPlugin';
-export * from './MathRules';
-export * from './transforms/index';
-export * from './utils/index';

@@ -112,6 +112,63 @@ describe('cursor overlay hooks', () => {
     });
   });
 
+  it('centers narrow selection rects at the configured minimum width', async () => {
+    const { useCursorOverlayPositions } = await importHooks();
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    } satisfies Range;
+
+    useEditorMock.mockReturnValue(createBaseEditor());
+    getSelectionRectsMock.mockReturnValue([
+      { height: 10, left: 10, top: 2, width: 0 },
+    ]);
+    getCursorOverlayStateMock.mockImplementation((value) => value);
+
+    const { result } = renderHook(() =>
+      useCursorOverlayPositions({
+        cursors: { a: { selection: range } },
+        minSelectionWidth: 2,
+        refreshOnResize: false,
+      })
+    );
+
+    expect(result.current.cursors.selectionRects).toEqual({
+      a: [{ height: 10, left: 9, top: 2, width: 2 }],
+    });
+  });
+
+  it('recomputes cached rects when the minimum width changes', async () => {
+    const { useCursorOverlayPositions } = await importHooks();
+    const range = {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    } satisfies Range;
+    let minSelectionWidth = 2;
+
+    useEditorMock.mockReturnValue(createBaseEditor());
+    getSelectionRectsMock.mockReturnValue([
+      { height: 10, left: 10, top: 2, width: 0 },
+    ]);
+    getCursorOverlayStateMock.mockImplementation((value) => value);
+
+    const { rerender, result } = renderHook(() =>
+      useCursorOverlayPositions({
+        cursors: { a: { selection: range } },
+        minSelectionWidth,
+        refreshOnResize: false,
+      })
+    );
+
+    minSelectionWidth = 4;
+    rerender();
+
+    expect(getSelectionRectsMock).toHaveBeenCalledTimes(2);
+    expect(result.current.cursors.selectionRects).toEqual({
+      a: [{ height: 10, left: 8, top: 2, width: 4 }],
+    });
+  });
+
   it('coalesces scheduled renders even when the frame id is zero', async () => {
     const { useRequestReRender } = await importHooks();
     const originalRequestAnimationFrame = globalThis.requestAnimationFrame;

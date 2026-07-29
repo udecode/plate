@@ -27,7 +27,7 @@ describe('MarkdownKit', () => {
     ];
 
     for (const editor of editors) {
-      expect(typeof editor.read.markdown.serialize).toBe('function');
+      expect(typeof editor.api.markdown.serialize).toBe('function');
     }
   });
 
@@ -47,7 +47,7 @@ describe('MarkdownKit', () => {
     expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
       FootnoteDefinitionElement
     );
-    expect(typeof editor.read.markdown.serialize).toBe('function');
+    expect(typeof editor.api.markdown.serialize).toBe('function');
   });
 
   it('composes once with static Footnote renderers', () => {
@@ -66,7 +66,7 @@ describe('MarkdownKit', () => {
     expect(getPlateRuntime(editor).components[KEYS.footnoteDefinition]).toBe(
       FootnoteDefinitionElementStatic
     );
-    expect(typeof editor.read.markdown.serialize).toBe('function');
+    expect(typeof editor.api.markdown.serialize).toBe('function');
   });
 
   it('installs renderer-specific Footnote kits from editor presets', () => {

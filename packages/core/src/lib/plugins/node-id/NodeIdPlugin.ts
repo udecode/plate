@@ -40,19 +40,19 @@ export type NodeIdPluginState = {
    *
    * @default true
    */
-  filterInline?: boolean;
+  filterInline: boolean;
   /**
    * Filter `Text` nodes.
    *
    * @default true
    */
-  filterText?: boolean;
+  filterText: boolean;
   /**
    * Node key to store the id.
    *
    * @default 'id'
    */
-  idKey?: string;
+  idKey: string;
   /**
    * Controls how missing ids are assigned in the initial value.
    *
@@ -85,23 +85,19 @@ export type NodeIdPluginState = {
    *
    * @default () => nanoid(10)
    */
-  idCreator?: () => any;
+  idCreator: () => string;
   /** Match nodes that receive IDs. */
   match?: NodeMatch<Descendant>;
 };
 
-export type NormalizeNodeIdOptions = Pick<
-  NodeIdPluginState,
-  'filterInline' | 'filterText' | 'idCreator' | 'idKey' | 'match'
+export type NormalizeNodeIdOptions = Partial<
+  Pick<NodeIdPluginState, 'filterText' | 'idCreator' | 'idKey' | 'match'>
 >;
 
-type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
-  isBlock?: (node: Descendant) => boolean;
-};
-
-const hasElementType = (node: unknown) =>
-  typeof (node as { type?: unknown }).type === 'string' &&
-  !TextApi.isText(node);
+type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions &
+  Partial<Pick<NodeIdPluginState, 'filterInline'>> & {
+    isBlock?: (node: Descendant) => boolean;
+  };
 
 const isDefaultNodeIdFastPath = ({
   filterInline = true,
@@ -113,33 +109,31 @@ const isDefaultNodeIdFastPath = ({
 const isBlockCandidate = (
   node: Descendant,
   isBlock?: (node: Descendant) => boolean
+) => ElementApi.isElement(node) && (isBlock === undefined || isBlock(node));
+
+const matchesNodeIdPolicy = (
+  [node, path]: NodeEntry,
+  {
+    filterInline = true,
+    filterText = true,
+    isBlock,
+    match,
+  }: NormalizeNodeIdRuntimeOptions,
+  matchNode: Descendant = node as Descendant
 ) =>
-  ElementApi.isElement(node) &&
-  (isBlock ? isBlock(node) : (node as { inline?: boolean }).inline !== true);
+  (!match || NodeApi.matches(matchNode, match, path)) &&
+  (!filterText || ElementApi.isElement(node)) &&
+  (!filterInline ||
+    !ElementApi.isElement(node) ||
+    isBlockCandidate(node as Descendant, isBlock));
 
 const shouldAssignNodeId = (
   entry: readonly [Descendant, Path],
   options: NormalizeNodeIdRuntimeOptions = {}
 ) => {
-  const {
-    filterInline = true,
-    filterText = true,
-    isBlock,
-    idKey = 'id',
-    match,
-  } = options;
-  const [node, path] = entry;
+  const { idKey = 'id' } = options;
 
-  return (
-    !node[idKey] &&
-    (!match || NodeApi.matches(node, match, path)) &&
-    (!filterText || ElementApi.isElement(node)) &&
-    (!filterInline ||
-      !ElementApi.isElement(node) ||
-      (isBlock
-        ? isBlock(node)
-        : (node as { inline?: boolean }).inline !== true))
-  );
+  return !entry[0][idKey] && matchesNodeIdPolicy(entry, options);
 };
 
 const resolveInitialValueIds = (
@@ -170,17 +164,15 @@ const normalizeInsertedNodeIds = (
     path: Path;
     root: string;
   },
-  options: NodeIdPluginState,
+  options: NodeIdPluginState & Pick<NormalizeNodeIdRuntimeOptions, 'isBlock'>,
   before: EditorDocumentValue,
   reservedIds: Set<unknown>,
   freshIds: boolean
 ) => {
   const {
     disableInsertOverrides,
-    filterText = true,
     idCreator = () => nanoid(10),
     idKey = 'id',
-    match,
   } = options;
   const node = cloneDeep(input.node) as Descendant & {
     _id?: unknown;
@@ -190,9 +182,10 @@ const normalizeInsertedNodeIds = (
   const collectCandidateIds = (entry: NodeEntry) => {
     const [entryNode, path] = entry;
     const entryRecord = entryNode as Record<string, unknown>;
-    const matches =
-      (!match || NodeApi.matches(entryNode as Descendant, match, path)) &&
-      (!filterText || hasElementType(entryNode));
+    const matches = matchesNodeIdPolicy(
+      [entryNode as Descendant, path],
+      options
+    );
 
     if (matches && !freshIds) {
       if (entryRecord[idKey] !== undefined) {
@@ -249,9 +242,10 @@ const normalizeInsertedNodeIds = (
   const normalizeInsertedNode = (entry: NodeEntry) => {
     const [entryNode, path] = entry;
     const entryRecord = entryNode as Record<string, unknown>;
-    const matches =
-      (!match || NodeApi.matches(entryNode as Descendant, match, path)) &&
-      (!filterText || hasElementType(entryNode));
+    const matches = matchesNodeIdPolicy(
+      [entryNode as Descendant, path],
+      options
+    );
 
     if (matches) {
       if (
@@ -299,23 +293,20 @@ const normalizeSplitNodeIds = (
     path: Path;
     root: string;
   },
-  options: NodeIdPluginState,
+  options: NodeIdPluginState & Pick<NormalizeNodeIdRuntimeOptions, 'isBlock'>,
   before: EditorDocumentValue,
   reservedIds: Set<unknown>
 ) => {
-  const {
-    filterText = true,
-    idCreator = () => nanoid(10),
-    idKey = 'id',
-    match,
-    reuseId,
-  } = options;
+  const { idCreator = () => nanoid(10), idKey = 'id', reuseId } = options;
   const properties = {
     ...NodeApi.extractProps(input.node),
   } as NodeProps<Descendant> & Record<string, unknown>;
   if (
-    (!match || NodeApi.matches(properties as Descendant, match, input.path)) &&
-    (!filterText || hasElementType(properties))
+    matchesNodeIdPolicy(
+      [input.node, input.path],
+      options,
+      properties as Descendant
+    )
   ) {
     const id = properties[idKey];
     const duplicate =
@@ -561,27 +552,30 @@ const isSplitNodeEntry = (
 /**
  * Normalize node IDs in a value without using editor operations. This is a pure
  * function that returns the normalized value and preserves references for
- * unchanged branches.
+ * unchanged branches. Raw values do not carry schema block semantics, so this
+ * standalone helper treats every element as an ID candidate. Use `match` when
+ * raw element types need filtering. NodeIdPlugin owns schema-aware inline
+ * filtering.
  */
-const normalizeNodeIdRuntime = <V extends Value>(
-  value: V,
+const normalizeNodeIdRuntime = (
+  value: Value,
   options: NormalizeNodeIdRuntimeOptions = {}
-): V => {
+): Value => {
   const { idCreator = () => nanoid(10), idKey = 'id' } = options;
 
   if (isDefaultNodeIdFastPath(options)) {
-    const normalizeNodeFast = (node: Descendant): Descendant => {
+    const normalizeNodeFast = <N extends Descendant>(node: N): N => {
       if (!ElementApi.isElement(node)) return node;
       if (!isBlockCandidate(node, options.isBlock)) return node;
 
       let nextChildren: Descendant[] | undefined;
 
       node.children.forEach((child, index) => {
-        const nextChild = normalizeNodeFast(child as Descendant);
+        const nextChild = normalizeNodeFast(child);
 
         if (nextChild !== child) {
           if (!nextChildren) {
-            nextChildren = [...node.children] as Descendant[];
+            nextChildren = [...node.children];
           }
 
           nextChildren[index] = nextChild;
@@ -609,19 +603,19 @@ const normalizeNodeIdRuntime = <V extends Value>(
     let valueChanged = false;
 
     const nextValue = value.map((node) => {
-      const nextNode = normalizeNodeFast(node as Descendant);
+      const nextNode = normalizeNodeFast(node);
 
       if (nextNode !== node) {
         valueChanged = true;
       }
 
       return nextNode;
-    }) as unknown as V;
+    });
 
     return valueChanged ? nextValue : value;
   }
 
-  const normalizeNode = (node: Descendant, path: Path): Descendant => {
+  const normalizeNode = <N extends Descendant>(node: N, path: Path): N => {
     let nextNode = node;
     let childrenChanged = false;
 
@@ -634,7 +628,7 @@ const normalizeNodeIdRuntime = <V extends Value>(
 
     if (ElementApi.isElement(node)) {
       const nextChildren = node.children.map((child, index) => {
-        const nextChild = normalizeNode(child as Descendant, [...path, index]);
+        const nextChild = normalizeNode(child, [...path, index]);
 
         if (nextChild !== child) {
           childrenChanged = true;
@@ -670,15 +664,21 @@ const normalizeNodeIdRuntime = <V extends Value>(
     }
 
     return nextNode;
-  }) as unknown as V;
+  });
 
   return valueChanged ? nextValue : value;
 };
 
-export const normalizeNodeId = <V extends Value>(
+export function normalizeNodeId<V extends Value>(
   value: V,
+  options?: NormalizeNodeIdOptions
+): V;
+export function normalizeNodeId(
+  value: Value,
   options: NormalizeNodeIdOptions = {}
-): V => normalizeNodeIdRuntime(value, options);
+): Value {
+  return normalizeNodeIdRuntime(value, options);
+}
 
 // This annotation widens literal defaults to the complete public state.
 const nodeIdInitialState: NodeIdPluginState = {
@@ -705,8 +705,10 @@ export const NodeIdPlugin = createBasePlugin({
   update: ({ store, tx }) => ({
     normalize() {
       const state = store.get();
-      const { idCreator } = state;
-      const { idKey = 'id' } = state;
+      const {
+        idCreator = nodeIdInitialState.idCreator,
+        idKey = nodeIdInitialState.idKey,
+      } = state;
       const updates: { at: Path; props: Record<string, unknown> }[] = [];
       const isBlock = (node: Descendant) =>
         ElementApi.isElement(node) && tx.schema.isBlock(node);
@@ -727,10 +729,10 @@ export const NodeIdPlugin = createBasePlugin({
           if (!ElementApi.isElement(node)) return;
           if (!isBlockCandidate(node, isBlock)) return;
 
-          if (!node[idKey!]) {
+          if (!node[idKey]) {
             updates.push({
               at: [...path],
-              props: { [idKey!]: idCreator!() },
+              props: { [idKey]: idCreator() },
             });
           }
 
@@ -741,7 +743,7 @@ export const NodeIdPlugin = createBasePlugin({
           });
         };
 
-        tx.nodes.children().forEach((node: Descendant, index: number) => {
+        tx.nodes.children().forEach((node, index) => {
           path.push(index);
           visitFast(node);
           path.pop();
@@ -758,7 +760,7 @@ export const NodeIdPlugin = createBasePlugin({
         if (shouldAssignNodeId(entry, { ...state, isBlock })) {
           updates.push({
             at: path,
-            props: { [idKey!]: idCreator!() },
+            props: { [idKey]: idCreator() },
           });
         }
 
@@ -779,101 +781,112 @@ export const NodeIdPlugin = createBasePlugin({
     },
   }),
   extension: ({ editor, store }) => ({
-    onTransactionChange({ after, before, change, changed, tx }) {
-      if (tx.tags.has('node-id-normalizing') || editor.runtime.isNormalizing) {
-        return;
-      }
+    on: {
+      transactionChange({ after, before, change, changed, tx }) {
+        if (
+          tx.tags.has('node-id-normalizing') ||
+          editor.runtime.isNormalizing
+        ) {
+          return;
+        }
 
-      const state = store.get();
-      const { idKey = 'id' } = state;
-      const runtimeOptions = { ...state, idKey };
-      const roots = new Set([
-        ...getInternalDocumentChangeRootKeys(change),
-        ...change.createRoots,
-      ]);
-      const updates: {
-        node: Descendant;
-        path: Path;
-        root: string;
-      }[] = [];
-
-      for (const root of roots) {
-        const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-
-        if (!changed.has('structure', publicRoot)) continue;
-
-        const beforeChildren =
-          root === MAIN_ROOT_KEY
-            ? before.children
-            : (before.roots?.[root] ?? []);
-        const afterChildren =
-          root === MAIN_ROOT_KEY ? after.children : (after.roots?.[root] ?? []);
-        const insertedEntries = collectInsertedNodeEntries(
-          beforeChildren,
-          afterChildren,
+        const state = store.get();
+        const { idKey = 'id' } = state;
+        const runtimeOptions = {
+          ...state,
           idKey,
-          changed.topLevelRanges(publicRoot)
-        );
-        const reservedIds = new Set<unknown>();
+          isBlock: (node: Descendant) => editor.read.schema.isBlock(node),
+        };
+        const roots = new Set([
+          ...getInternalDocumentChangeRootKeys(change),
+          ...change.createRoots,
+        ]);
+        const updates: {
+          node: Descendant;
+          path: Path;
+          root: string;
+        }[] = [];
 
-        for (const entry of insertedEntries) {
-          const splitPath = isSplitNodeEntry(
+        for (const root of roots) {
+          const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
+
+          if (!changed.has('structure', publicRoot)) continue;
+
+          const beforeChildren =
+            root === MAIN_ROOT_KEY
+              ? before.children
+              : (before.roots?.[root] ?? []);
+          const afterChildren =
+            root === MAIN_ROOT_KEY
+              ? after.children
+              : (after.roots?.[root] ?? []);
+          const insertedEntries = collectInsertedNodeEntries(
             beforeChildren,
             afterChildren,
-            entry
+            idKey,
+            changed.topLevelRanges(publicRoot)
           );
-          const normalized = splitPath
-            ? normalizeSplitNodeIds(
-                { node: entry.node, path: splitPath, root },
-                runtimeOptions,
-                before,
-                reservedIds
-              )
-            : normalizeInsertedNodeIds(
-                { ...entry, root },
-                runtimeOptions,
-                before,
-                reservedIds,
-                tx.tags.has('paste') && state.reuseId !== true
-              );
+          const reservedIds = new Set<unknown>();
 
-          if (!isEqual(normalized, entry.node)) {
-            updates.push({ node: normalized, path: entry.path, root });
+          for (const entry of insertedEntries) {
+            const splitPath = isSplitNodeEntry(
+              beforeChildren,
+              afterChildren,
+              entry
+            );
+            const normalized = splitPath
+              ? normalizeSplitNodeIds(
+                  { node: entry.node, path: splitPath, root },
+                  runtimeOptions,
+                  before,
+                  reservedIds
+                )
+              : normalizeInsertedNodeIds(
+                  { ...entry, root },
+                  runtimeOptions,
+                  before,
+                  reservedIds,
+                  tx.tags.has('paste') && state.reuseId !== true
+                );
+
+            if (!isEqual(normalized, entry.node)) {
+              updates.push({ node: normalized, path: entry.path, root });
+            }
           }
         }
-      }
 
-      if (updates.length === 0) return;
+        if (updates.length === 0) return;
 
-      tx.tags.add('node-id-normalizing');
-      let corrected = after;
+        tx.tags.add('node-id-normalizing');
+        let corrected = after;
 
-      for (const update of updates) {
-        if (update.root === MAIN_ROOT_KEY) {
-          corrected = {
-            ...corrected,
-            children: replaceNodeAt(
-              corrected.children,
-              update.path,
-              update.node
-            ) as Value,
-          };
-        } else {
-          corrected = {
-            ...corrected,
-            roots: {
-              ...corrected.roots,
-              [update.root]: replaceNodeAt(
-                corrected.roots?.[update.root] ?? [],
+        for (const update of updates) {
+          if (update.root === MAIN_ROOT_KEY) {
+            corrected = {
+              ...corrected,
+              children: replaceNodeAt(
+                corrected.children,
                 update.path,
                 update.node
               ) as Value,
-            },
-          };
+            };
+          } else {
+            corrected = {
+              ...corrected,
+              roots: {
+                ...corrected.roots,
+                [update.root]: replaceNodeAt(
+                  corrected.roots?.[update.root] ?? [],
+                  update.path,
+                  update.node
+                ) as Value,
+              },
+            };
+          }
         }
-      }
 
-      tx.changes.apply(DocumentChange.between(after, corrected));
+        tx.changes.apply(DocumentChange.between(after, corrected));
+      },
     },
   }),
   transformInitialValue: ({ editor, store, value }) => {
@@ -881,7 +894,7 @@ export const NodeIdPlugin = createBasePlugin({
     const { idKey = 'id' } = state;
     const runtimeOptions = { ...state, idKey };
     const initialValueIds = resolveInitialValueIds(state);
-    const normalize = <V extends Value>(children: V): V =>
+    const normalize = (children: Value) =>
       normalizeNodeIdRuntime(children, {
         ...runtimeOptions,
         isBlock: (node) =>

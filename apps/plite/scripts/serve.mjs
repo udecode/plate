@@ -12,6 +12,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const publicPath = path.resolve(__dirname, '../out');
 const defaultBaseURL = new URL(resolvePliteBrowserBaseURL());
+const host = process.env.PLITE_SERVE_HOST ?? defaultBaseURL.hostname;
 const port = Number(process.env.PORT ?? defaultBaseURL.port);
 const snapshot = createStaticSnapshot(publicPath);
 
@@ -19,8 +20,8 @@ const server = configureStaticServer(
   http.createServer(createStaticRequestHandler(snapshot))
 );
 
-server.listen(port, defaultBaseURL.hostname, () => {
+server.listen(port, host, () => {
   console.log(
-    `plite serving ${snapshot.files} files (${snapshot.bytes} bytes) from ${publicPath} on http://${defaultBaseURL.hostname}:${port}`
+    `plite serving ${snapshot.files} files (${snapshot.bytes} bytes) from ${publicPath} on http://${host}:${port}`
   );
 });

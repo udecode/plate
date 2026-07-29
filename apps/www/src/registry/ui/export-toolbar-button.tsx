@@ -27,7 +27,7 @@ import { ToolbarButton } from './toolbar';
 const siteUrl = 'https://platejs.org';
 
 export function ExportToolbarButton(props: DropdownMenuProps) {
-  const { editor, read } = useEditorPlugin(MarkdownPlugin);
+  const { editor } = useEditorPlugin(MarkdownPlugin);
   const [open, setOpen] = React.useState(false);
 
   const getCanvas = async () => {
@@ -150,7 +150,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = read.serialize();
+    const md = editor.api.markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };

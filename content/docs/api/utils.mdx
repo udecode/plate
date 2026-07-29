@@ -112,7 +112,7 @@ Use the plugin guide pages for options and examples:
 | ------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------- |
 | `useEditorString()`                               | `string`                       | Reads `editor.api.string([])` through `useEditorSelector`.                                      |
 | `useFormInputProps(options?)`                     | `{ props }`                    | Adds an optional `onKeyDownCapture` handler that prevents Enter from submitting a wrapper form. |
-| `useMarkToolbarButtonState({ nodeType, clear? })` | `{ clear, nodeType, pressed }` | Reads whether a mark is active.                                                                 |
+| `useMarkToolbarButtonState({ nodeType })` | `{ nodeType, pressed }` | Reads whether a mark is active.                                                                 |
 | `useMarkToolbarButton(state)`                     | `{ props }`                    | Provides `pressed`, `onClick`, and `onMouseDown` props that toggle a mark and focus the editor. |
 | `useRemoveNodeButton({ element })`                | `{ props }`                    | Provides button props that remove an element by path.                                           |
 | `useSelectionCollapsed()`                         | `boolean`                      | Selection is collapsed.                                                                         |

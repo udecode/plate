@@ -18,7 +18,7 @@ import { convertNodesSerialize } from '../serializer';
 import { isMdPhrasingContent } from '../serializer/wrapWithBlockId';
 import { parseAttributes, propsToAttributes } from './utils';
 
-function createMediaRule() {
+function createMediaRule(key: string) {
   return {
     deserialize: (
       node: MdMdxJsxFlowElement,
@@ -28,14 +28,14 @@ function createMediaRule() {
       const { src, ...props } = parseAttributes(node.attributes);
 
       return {
+        ...props,
         children: toMarkdownCaptionContent(
           options,
           convertChildrenDeserialize(node.children, {}, options)
         ),
-        type: node.name!,
-        url: src,
-        ...props,
-      } as TMediaElement;
+        type: node.name ?? options.getPluginType(key),
+        url: typeof src === 'string' ? src : '',
+      };
     },
     serialize: (
       node: TMediaElement,
@@ -64,46 +64,44 @@ function createMediaRule() {
   };
 }
 
-const imageFigureRule = {
-  deserialize: (
-    node: MdMdxJsxFlowElement,
-    _deco: MdDecoration,
-    options: DeserializeMdContext
-  ) => {
-    const [image, caption] = node.children;
-
-    if (
-      node.children.length !== 2 ||
-      image?.type !== 'mdxJsxFlowElement' ||
-      image.name !== 'img' ||
-      image.children.length > 0 ||
-      caption?.type !== 'mdxJsxFlowElement' ||
-      caption.name !== 'figcaption'
-    ) {
-      return {
-        children: [{ text: serializeUnknownMdxNode(node) }],
-        type: options.getPluginType(KEYS.p),
-      };
-    }
-
-    const { src, ...properties } = parseAttributes(image.attributes);
-
-    return {
-      ...properties,
-      children: toMarkdownCaptionContent(
-        options,
-        convertChildrenDeserialize(caption.children, {}, options)
-      ),
-      type: options.getPluginType(KEYS.img),
-      url: src,
-    };
-  },
-};
-
 export const mediaRules = {
-  audio: createMediaRule(),
-  file: createMediaRule(),
-  figure: imageFigureRule,
-  media_embed: createMediaRule(),
-  video: createMediaRule(),
+  audio: createMediaRule(KEYS.audio),
+  file: createMediaRule(KEYS.file),
+  figure: {
+    deserialize: (
+      node: MdMdxJsxFlowElement,
+      _deco: MdDecoration,
+      options: DeserializeMdContext
+    ) => {
+      const [image, caption] = node.children;
+
+      if (
+        node.children.length !== 2 ||
+        image?.type !== 'mdxJsxFlowElement' ||
+        image.name !== 'img' ||
+        image.children.length > 0 ||
+        caption?.type !== 'mdxJsxFlowElement' ||
+        caption.name !== 'figcaption'
+      ) {
+        return {
+          children: [{ text: serializeUnknownMdxNode(node) }],
+          type: options.getPluginType(KEYS.p),
+        };
+      }
+
+      const { src, ...properties } = parseAttributes(image.attributes);
+
+      return {
+        ...properties,
+        children: toMarkdownCaptionContent(
+          options,
+          convertChildrenDeserialize(caption.children, {}, options)
+        ),
+        type: options.getPluginType(KEYS.img),
+        url: src,
+      };
+    },
+  },
+  media_embed: createMediaRule(KEYS.mediaEmbed),
+  video: createMediaRule(KEYS.video),
 } satisfies MdRules;

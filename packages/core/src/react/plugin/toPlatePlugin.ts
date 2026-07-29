@@ -14,9 +14,10 @@ import type {
   PluginDependencyReferences,
   PluginShortcutInput,
   PluginReference,
-  BasePlugin,
+  AnyBasePlugin,
 } from '../../lib';
 import type {
+  AnyPlatePlugin,
   ConfiguredPlatePlugin,
   AuthoringPlateEditorExtensionInput,
   PlatePlugin,
@@ -36,9 +37,9 @@ type PlateShortcutRecord = Record<string, Shortcut | null | undefined>;
 
 type PlatePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   TShortcuts extends PlateShortcutRecord = {},
   D extends readonly PluginReference[] = InferDependencies<C>,
   Enabled extends boolean = InferEnabled<C>,
@@ -93,9 +94,9 @@ type PlatePluginConfig<
 
 type RuntimePlatePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   TShortcuts extends PlateShortcutRecord = {},
 > = Omit<
   PlatePluginConfig<C, EStoreState, EA, ES, TShortcuts>,
@@ -134,6 +135,11 @@ const methodsToWrap = [
   'configure',
   'extend',
 ] as const satisfies readonly (keyof PlatePluginMethods)[];
+
+const isObjectRecord = (
+  value: unknown
+): value is Record<PropertyKey, unknown> =>
+  typeof value === 'object' && value !== null;
 
 const extensionArrayKeys = [
   '__apiExtensions',
@@ -238,9 +244,9 @@ export function toPlatePlugin<C extends AnyPluginConfig>(
 
 export function toPlatePlugin<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   const TShortcuts extends PlateShortcutRecord = {},
 >(
   basePlugin: BasePluginDescriptorInput<C>,
@@ -264,9 +270,9 @@ export function toPlatePlugin<
 
 export function toPlatePlugin<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   const TShortcuts extends PlateShortcutRecord = {},
   const D extends readonly PluginReference[] = InferDependencies<C>,
   const Enabled extends boolean = InferEnabled<C>,
@@ -322,8 +328,24 @@ export function toPlatePlugin<
   >
 >;
 
-export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
-  if (!isNominalPluginDescriptor(basePlugin)) {
+export function toPlatePlugin(
+  basePlugin: unknown,
+  extendConfig?: unknown
+): unknown {
+  return toPlatePluginRuntime(basePlugin, extendConfig);
+}
+
+const isRuntimeBasePlugin = (value: unknown): value is AnyBasePlugin =>
+  isNominalPluginDescriptor(value) &&
+  ['clone', 'configure', 'extend'].every(
+    (method) => typeof Reflect.get(value, method) === 'function'
+  );
+
+const toPlatePluginRuntime = (
+  basePlugin: unknown,
+  extendConfig?: unknown
+): AnyPlatePlugin => {
+  if (!isRuntimeBasePlugin(basePlugin)) {
     throw new Error(
       'toPlatePlugin requires a plugin descriptor created by createBasePlugin.'
     );
@@ -334,64 +356,66 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
       ...basePlugin,
     },
     basePlugin
-  ) as unknown as PlatePlugin<any>;
-  const convertBasePlugin = toPlatePlugin as (
-    basePlugin: BasePluginDescriptorInput,
-    extendConfig?: unknown
-  ) => PlatePlugin<AnyPluginConfig>;
+  ) as unknown as AnyPlatePlugin;
 
   methodsToWrap.forEach((method) => {
-    const originalMethod = plugin[method];
+    const originalMethod = Reflect.get(plugin, method);
 
-    (plugin as any)[method] = (...args: any[]) => {
+    if (typeof originalMethod !== 'function') {
+      throw new TypeError(`Plate plugin method "${method}" is not callable.`);
+    }
+
+    Reflect.set(plugin, method, (...args: unknown[]) => {
       if (
         method === 'configure' &&
-        typeof args[0] === 'object' &&
-        args[0] !== null &&
+        isObjectRecord(args[0]) &&
         Object.hasOwn(args[0], 'component')
       ) {
         const { component, ...baseConfig } = args[0];
-        const configuredBasePlugin = (
-          originalMethod as unknown as (...args: any[]) => BasePlugin
-        )(baseConfig);
+        const configuredBasePlugin = Reflect.apply(originalMethod, basePlugin, [
+          baseConfig,
+        ]);
 
-        return convertBasePlugin(configuredBasePlugin, { component });
+        return toPlatePluginRuntime(configuredBasePlugin, { component });
       }
 
-      const basePlugin = (
-        originalMethod as unknown as (...args: any[]) => BasePlugin
-      )(...args);
+      const nextBasePlugin = Reflect.apply(originalMethod, basePlugin, args);
 
-      return preserveExtensionArrays(plugin, convertBasePlugin(basePlugin));
-    };
+      return preserveExtensionArrays(
+        plugin,
+        toPlatePluginRuntime(nextBasePlugin)
+      );
+    });
   });
 
-  if (!extendConfig) return plugin as any;
+  if (extendConfig === undefined) return plugin;
 
   if (typeof extendConfig === 'function') {
-    const extendedPlugin = plugin.extend(extendConfig);
+    const extend = Reflect.get(basePlugin, 'extend');
+
+    if (typeof extend !== 'function') {
+      throw new TypeError('Plate plugin extend method is not callable.');
+    }
+    const extendedBasePlugin = Reflect.apply(extend, basePlugin, [
+      extendConfig,
+    ]);
 
     return preserveExtensionArrays(
       plugin,
-      extendedPlugin as PlatePlugin<any>
-    ) as any;
+      toPlatePluginRuntime(extendedBasePlugin)
+    );
   }
-  if (
-    typeof extendConfig === 'object' &&
-    extendConfig !== null &&
-    Object.hasOwn(extendConfig, 'schema')
-  ) {
+  if (!isObjectRecord(extendConfig)) {
+    throw new Error('Plate plugin extension values must be objects.');
+  }
+  if (Object.hasOwn(extendConfig, 'schema')) {
     throw new Error(
       `Plate plugin '${plugin.key}' cannot define schema through toPlatePlugin(). Declare schema when creating the base plugin.`
     );
   }
-  if (
-    typeof extendConfig === 'object' &&
-    extendConfig !== null &&
-    typeof extendConfig.render === 'object' &&
-    extendConfig.render !== null &&
-    Object.hasOwn(extendConfig.render, 'node')
-  ) {
+  const render = Reflect.get(extendConfig, 'render');
+
+  if (isObjectRecord(render) && Object.hasOwn(render, 'node')) {
     throw new Error(
       'Plate plugin `render.node` is private. Use top-level `component`.'
     );
@@ -399,22 +423,19 @@ export function toPlatePlugin(basePlugin: any, extendConfig?: any): any {
 
   let normalizedConfig = extendConfig;
 
-  if (
-    typeof extendConfig === 'object' &&
-    extendConfig !== null &&
-    Object.hasOwn(extendConfig, 'component')
-  ) {
+  if (Object.hasOwn(extendConfig, 'component')) {
     const { component, ...configWithoutComponent } = extendConfig;
 
     normalizedConfig = mergePlugins(configWithoutComponent, {
       render: { node: component },
     });
   }
-  const extendedBasePlugin = createBasePlugin(
-    mergePlugins(plugin, normalizedConfig) as any
-  );
+  const extendedBasePlugin = Reflect.apply(createBasePlugin, undefined, [
+    mergePlugins(plugin, normalizedConfig),
+  ]);
+
   return preserveExtensionArrays(
     plugin,
-    convertBasePlugin(extendedBasePlugin)
-  ) as any;
-}
+    toPlatePluginRuntime(extendedBasePlugin)
+  );
+};

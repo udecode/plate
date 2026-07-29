@@ -12,6 +12,13 @@ one-shot execution
 Goal plan:
 docs/plans/2026-07-23-wordgard-full-architecture-audit.md
 
+Donor freshness note:
+- This plan's Wordgard comparison is the accepted 2026-07-24 snapshot at
+  `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`. Current donor freshness is owned
+  by the registered multi-editor audit in
+  `docs/plans/2026-07-25-multi-editor-full-architecture-audit.md` and
+  `docs/editor-audits/index.json`.
+
 Template:
 docs/plans/templates/plite-plan.md
 
@@ -53,7 +60,8 @@ Completion threshold:
   slices are concrete, conditional gates are resolved, and `check-complete`
   passes.
 - The previously audited donor is explicitly anchored to `../wordgard-v0`;
-  latest `../wordgard` becomes the current primary reference.
+  the 2026-07-24 `../wordgard` snapshot is the primary reference for this
+  accepted execution plan.
 - Every added, removed, moved, or materially changed donor mechanism is mapped
   to the existing ledger or a new concept, and every affected verdict, score,
   packet, ranking, adoption, deletion, risk, and proof row is reconciled.
@@ -642,7 +650,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 | --- | --- | --- | --- |
-| Ground | complete | `wordgard-v0` is byte-identical to baseline commit `1acb231df7067bf5f85e694aaf4646181441e9ab`; latest is `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`; every current local owner implicated by the user’s changes was reread. | Decide |
+| Ground | complete | `wordgard-v0` is byte-identical to baseline commit `1acb231df7067bf5f85e694aaf4646181441e9ab`; the audited 2026-07-24 snapshot is `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`; every current local owner implicated by the user’s changes was reread. | Decide |
 | Decide | complete | All 52 donor changes and every relevant current-checkout path map to existing concepts; affected scores, verdicts, API targets, packets, and stale claims are reconciled. | Prove and hand off |
 | Planning proof and handoff | complete | The accepted planning snapshot was green, live source citations are refreshed, and the settled local checkout has a fresh zero-unmapped manifest. Final generated-output proof remains separate. | Execute |
 | Execute | complete | All local source outcomes are complete; C05/C30/C31 are frozen and all four no-execution audits hold. | Final proof and handoff |
@@ -702,7 +710,8 @@ Conditional evidence:
   release claim is made for unimplemented work.
 
 Findings:
-- Latest Wordgard is better than the audited baseline at native DOM-delta
+- The 2026-07-24 Wordgard snapshot is better than the audited baseline at
+  native DOM-delta
   reconciliation, correction-aware central-authority updates, readonly
   behavior, compact change/slice JSON, and direct browser fixtures. It remains
   best-in-class at local cohesion around `TableMap`, precedence, and compact
@@ -1219,7 +1228,7 @@ below remain the only architectural verdicts.
 
 - `../wordgard-v0` is not a Git checkout, but its tracked bytes exactly match
   Wordgard commit `1acb231df7067bf5f85e694aaf4646181441e9ab`.
-- Latest `../wordgard` is commit
+- The audited 2026-07-24 `../wordgard` snapshot is commit
   `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`, version `0.3.1`, from
   `https://code.haverbeke.berlin/wordgard/wordgard.git`.
 - The exact 76-commit range changes 52 files: one added, zero removed, 51
@@ -1239,7 +1248,7 @@ below remain the only architectural verdicts.
 - Artifact:
   `docs/plans/artifacts/wordgard-full-architecture-audit/current-checkout-refresh.json`.
 
-### Latest Wordgard changes that matter
+### 2026-07-24 Wordgard snapshot changes that mattered
 
 | Delta | Exact latest owner | Ledger consequence |
 | --- | --- | --- |
@@ -1308,7 +1317,7 @@ Three machine-readable artifacts form one versioned coverage authority:
   maps every baseline file/declaration at
   `1acb231df7067bf5f85e694aaf4646181441e9ab`.
 - `docs/plans/artifacts/wordgard-full-architecture-audit/latest-delta-manifest.json`
-  overlays every change through
+  is the historical execution-plan overlay through
   `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`.
 - `docs/plans/artifacts/wordgard-full-architecture-audit/current-checkout-refresh.json`
   is regenerated after local source/browser/docs/review closure; it records
@@ -3900,29 +3909,21 @@ registry and reusable package code that knows a descriptor but not the concrete
 editor type uses `editor.plugin(Plugin).api/update`.
 
 **Internal TypeScript:** Each plugin contributes through ordinary `.extend()`.
-Link uses the low-level `extension.tx` field because its named transaction
-group is also consumed by middleware:
+Link publishes its inferred transaction group through `update` and keeps
+middleware in the same contribution:
 
 ```ts
-BaseLinkPluginDefinition.extend<{
-  extension: {
-    tx: {
-      link: PlatePluginTxGroup<
-        BaseLinkTx,
-        InferConfig<typeof BaseLinkPluginDefinition>
-      >;
-    };
-  };
-}>(({ type }) => ({
-  extension: {
-    tx: {
-      link: (tx) => ({
-        upsert: (input) => {
-          // current validation and owning link transform
-        },
-      }),
+BaseLinkPluginDefinition.extend(({ api, type }) => ({
+  update: ({ tx }) => ({
+    upsert: (input: UpsertLinkOptions) => {
+      // current validation and owning link transform
     },
-  },
+  }),
+  extension: {
+    commands: ({ around }) => [
+      // current link command middleware
+    ],
+  }
 }));
 ```
 

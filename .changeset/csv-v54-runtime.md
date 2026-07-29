@@ -2,6 +2,8 @@
 "@platejs/csv": major
 ---
 
+Export `CsvPluginState` as the complete mutable state contract for `CsvPlugin`.
+
 - Move `CsvPlugin` to the Plite plugin runtime with typed CSV deserialization
   through `editor.api.csv.deserialize`
 - Seed CSV codec behavior through `CsvPlugin.initialState`

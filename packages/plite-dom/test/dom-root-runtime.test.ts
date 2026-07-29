@@ -264,6 +264,24 @@ test('DOM input runtime owns renderer-neutral event decisions', () => {
   });
 
   const inputRuntime = DOMRootRuntime.createDetachedInputRuntime();
+  expect(
+    inputRuntime.selectDefaultActionPhase({
+      action: 'delete-backward',
+      host: { isIOS: true, language: 'ko-KR' },
+    })
+  ).toBe('beforeinput');
+  expect(
+    inputRuntime.selectDefaultActionPhase({
+      action: 'delete-backward',
+      host: { isIOS: true, language: 'en-US' },
+    })
+  ).toBe('keydown');
+  expect(
+    inputRuntime.selectDefaultActionPhase({
+      action: 'insert-break',
+      host: { isIOS: true, language: 'ko-KR' },
+    })
+  ).toBe('keydown');
   const keyDown = inputRuntime.prepareKeyDownDecision({
     authoritativeModelSelection: false,
     command: { kind: 'insert-break' },

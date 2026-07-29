@@ -87,8 +87,16 @@ const MyPlugin = createPlatePlugin({
 `store` 读取、更新和订阅当前插件的 editor-local state：
 
 ```ts
+type MyPluginState = {
+  myValue: string;
+};
+
+const initialState: MyPluginState = {
+  myValue: 'default',
+};
+
 const MyPlugin = createPlatePlugin({
-  initialState: { myValue: 'default' },
+  initialState,
   key: 'myPlugin',
   handlers: {
     onClick: ({ store }) => {
@@ -102,8 +110,18 @@ const MyPlugin = createPlatePlugin({
 调用 `store.get()` 读取完整 state：
 
 ```ts
+type MyPluginState = {
+  value1: string;
+  value2: string;
+};
+
+const initialState: MyPluginState = {
+  value1: 'a',
+  value2: 'b',
+};
+
 const MyPlugin = createPlatePlugin({
-  initialState: { value1: 'a', value2: 'b' },
+  initialState,
   key: 'myPlugin',
   handlers: {
     onClick: ({ store }) => {
@@ -116,8 +134,16 @@ const MyPlugin = createPlatePlugin({
 调用 `store.set(partial)` 合并字段：
 
 ```ts
+type MyPluginState = {
+  count: number;
+};
+
+const initialState: MyPluginState = {
+  count: 0,
+};
+
 const MyPlugin = createPlatePlugin({
-  initialState: { count: 0 },
+  initialState,
   key: 'myPlugin',
   handlers: {
     onClick: ({ store }) => {
@@ -130,8 +156,16 @@ const MyPlugin = createPlatePlugin({
 调用 `store.set(recipe)` 通过 draft 更新：
 
 ```ts
+type MyPluginState = {
+  count: number;
+};
+
+const initialState: MyPluginState = {
+  count: 0,
+};
+
 const MyPlugin = createPlatePlugin({
-  initialState: { count: 0 },
+  initialState,
   key: 'myPlugin',
   handlers: {
     onClick: ({ store }) => {
@@ -186,14 +220,13 @@ Self/product map 使用 `defineCodecs(map)`。Foreign contribution 使用
 Map 保持 MIME-keyed；`'text/html'` 使用单个 rule 或非空有序 rule tuple。
 不要直接声明 codec map，也不要标注 callback 参数。
 
-### `defineEditorExtension`
+### Extension inference
 
-Inline constructor 中的 `extension` object 有 contextual typing。抽取后可复用
-的 factory 必须接收 `BasePluginContext<C>`，并返回 callback context 中的
-`context.defineEditorExtension({ ... })` identity helper。完整示例见
+Constructor 和 `.extend()` callback 直接返回 extension object。Plate context
+保持在这些 callback 内，嵌套 command、input、state、transaction、dependency
+和 plugin state 就能获得 contextual typing。抽取 domain input，不要抽取
+Plate plugin context。
+
+从 `@platejs/plite` import 的 `defineEditorExtension` 只用于独立复用的
+standalone Plite descriptor。完整示例见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。
-
-把抽取后的 factory 传给 constructor 的 `extension` callback。Inline extension
-object 不需要 helper。从 `@platejs/plite` import 的同名
-`defineEditorExtension` 用于
-standalone Plite extension，不携带抽取后 Plate plugin 的 context。

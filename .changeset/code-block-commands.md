@@ -2,6 +2,11 @@
 "@platejs/code-block": major
 ---
 
+Export `CodeHighlightPluginState` as the complete mutable state contract for
+`BaseCodeHighlightPlugin`.
+
+Keep the Python grammar stabilization internal to the highlighting owner.
+
 Expose code-block queries through `editor.read.codeBlock` and mutations through
 `editor.update.codeBlock`. Register code-block and syntax properties in
 compiled schemas.

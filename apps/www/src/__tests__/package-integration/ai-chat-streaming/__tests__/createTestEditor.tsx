@@ -7,7 +7,7 @@ import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 // biome-ignore lint/suspicious/noUnusedExpressions: required to prevent removal by compiler
 jsxt;
 
-import { AIChatPlugin } from '../../../../../../../packages/ai/src/react/ai-chat/AIChatPlugin';
+import { AIChatPlugin } from '../../../../../../../packages/ai/src/react/AIChatPlugin';
 import { BaseAIPlugin } from '../../../../../../../packages/ai/src/lib/BaseAIPlugin';
 export const defaultPlugins = [...BaseEditorKit, BaseAIPlugin, AIChatPlugin];
 

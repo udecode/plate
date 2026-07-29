@@ -16,7 +16,7 @@ insertion ownership.
 | Need                                                 | Start with                                                 | Owner                                               |
 | ---------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
 | One editor instance needs a local paste/drop hook    | `Editable` `onPaste` or `onDrop`                           | `@platejs/plite-react`                              |
-| A reusable package owns paste/drop import policy     | extension `clipboard.insertData`                           | `@platejs/plite`                                    |
+| A reusable package owns paste/drop import policy     | extension contribution `clipboardHandler(...)`             | `@platejs/plite-dom`                                |
 | A host format needs parsing or serialization         | Inline a codec in `hostCodecs`                             | `@platejs/plite-dom`                                |
 | Framework code needs to import a `DataTransfer`      | `editor.api.clipboard.insertData(data)`                    | `@platejs/plite-dom` through `@platejs/plite-react` |
 | Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `@platejs/plite`                                    |
@@ -24,7 +24,7 @@ insertion ownership.
 | Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `@platejs/plite-dom` and `@platejs/plite-react`     |
 | The claim depends on real browser clipboard behavior | `@platejs/browser` clipboard helpers                       | `@platejs/browser`                                  |
 
-Use `Editable` for local event interception. Use extension clipboard policy when
+Use `Editable` for local event interception. Use a DOM clipboard handler when
 the behavior should apply to native paste, drop, browser tests, and every React
 surface that installs the extension.
 
@@ -36,7 +36,7 @@ Clipboard data enters Plite through explicit layers.
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
 | Browser event        | The browser produces `paste`, `cut`, `copy`, `dragstart`, or `drop` with a `DataTransfer`.                             | Browser                                     |
 | Editable handler     | App handlers can handle the event or let Plite continue.                                                               | `@platejs/plite-react`                      |
-| Clipboard middleware | Extension `clipboard.insertData` handlers can claim the payload.                                                       | `@platejs/plite`                            |
+| Clipboard handlers   | Descriptor-owned `clipboardHandler(...)` contributions can claim the payload.                                          | `@platejs/plite-dom`                        |
 | DOM clipboard import | Plite reads its internal fragment, then registered host codecs, then plain text.                                       | `@platejs/plite-dom`                        |
 | Transaction          | A parsed slice is fitted at the actual range and applied through one canonical replacement.                            | `@platejs/plite`                            |
 | Commit and render    | Plite publishes one change; React renders and repairs selection.                                                       | `@platejs/plite` and `@platejs/plite-react` |
@@ -47,32 +47,37 @@ browser event, DOM clipboard payload, native selection, or follow-up typing.
 
 ## Extension Clipboard Policy
 
-Use `clipboard.insertData` when a feature owns a reusable import rule.
+Use `clipboardHandler(...)` when a feature owns a reusable DOM import rule.
 
 ```ts
 import { defineEditorExtension } from "@platejs/plite";
+import { clipboardHandler } from "@platejs/plite-dom";
 
 const pasteTodoPrefix = defineEditorExtension({
   name: "paste-todo-prefix",
-  clipboard: {
-    insertData(data, { next, tx }) {
-      const text = data.getData("text/plain");
+  contributions: [
+    clipboardHandler({
+      insertData(data, { next, transaction }) {
+        const text = data.getData("text/plain");
 
-      if (!text.startsWith("todo:")) {
-        return next();
-      }
+        if (!text.startsWith("todo:")) {
+          return next();
+        }
 
-      tx.text.insert(text.slice("todo:".length).trim());
+        transaction.text.insert(text.slice("todo:".length).trim());
 
-      return true;
-    },
-  },
+        return true;
+      },
+    }),
+  ],
 });
 ```
 
-The handler receives the transaction owned by clipboard ingress. Return `true`
-when the extension handled the payload. Return `next()` when Plite should keep
-running the internal fragment and plain-text import path in that transaction.
+The handler receives the transaction owned by DOM clipboard ingress. Return
+`true` when the extension handled the payload. Return `next()` when Plite
+should keep running the exact-slice and plain-text import path in that
+transaction. `DataTransfer` does not enter `@platejs/plite`; headless code
+starts from a `ContentSlice`.
 
 Use this for package-owned import rules such as custom inline syntax, pasted
 URLs, product fragments, and table-specific paste policy. Do not put those rules
@@ -86,13 +91,20 @@ React editors expose DOM clipboard helpers through `editor.api.clipboard`.
 editor.api.clipboard.insertData(dataTransfer);
 editor.api.clipboard.insertFragmentData(dataTransfer);
 editor.api.clipboard.insertTextData(dataTransfer);
+editor.api.clipboard.readSlice(dataTransfer);
 editor.api.clipboard.writeSelection(dataTransfer);
+editor.api.clipboard.writeSlice(dataTransfer, { slice });
 ```
 
 Use these APIs from framework bridges, tests, or low-level event code that
 already has a `DataTransfer`. `insertData` owns a transaction when called
 directly and joins the active transaction when framework code already opened
-one. Clipboard middleware mutates through the supplied `tx`.
+one. Clipboard handlers mutate through the supplied `transaction`.
+
+`readSlice` distinguishes `{ kind: "absent" }`, malformed MIME or HTML data as
+`{ kind: "invalid", source }`, and `{ kind: "slice", slice }`. `writeSlice`
+writes one exact `ContentSlice` plus optional host formats. This keeps missing,
+invalid, and valid empty clipboard payloads distinct.
 
 Plite writes plain text, HTML, and an internal Plite fragment payload. The
 fragment payload uses `application/${clipboardFormatKey}`, so editors with
@@ -179,7 +191,7 @@ Clipboard proof should name the layer that can fail.
 | The DOM payload was imported correctly | browser clipboard helper or dispatched `DataTransfer`                        |
 | Hidden content copied correctly        | copied plain text, HTML, Plite fragment, and DOM coverage policy             |
 | Selection survived paste               | model selection, DOM/native selection where observable, and follow-up typing |
-| A feature owns paste policy            | focused extension test plus browser paste smoke                              |
+| A feature owns paste policy            | focused DOM contribution test plus browser paste smoke                       |
 
 Use [Browser](/docs/browser) for clipboard helpers and
 [Editing Behavior](15-editing-behavior) for the full event-to-commit pipeline.

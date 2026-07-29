@@ -1,5 +1,5 @@
 import { type Descendant, defineEditorExtension, schema } from '@platejs/plite';
-import { parseDOMClipboardHtml } from '@platejs/plite-dom';
+import { clipboardHandler, parseDOMClipboardHtml } from '@platejs/plite-dom';
 import { jsx } from '@platejs/plite-hyperscript';
 
 import type {
@@ -673,34 +673,36 @@ export const deserialize = (
 export const html = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'paste-html',
-    clipboard: {
-      insertData(data, { next, tx }) {
-        const html = data.getData('text/html');
+    contributions: [
+      clipboardHandler({
+        insertData(data, { next, transaction }) {
+          const html = data.getData('text/html');
 
-        if (!html) return next();
+          if (!html) return next();
 
-        const hasPlainText = Array.from(data.types).includes('text/plain');
-        const text = hasPlainText ? data.getData('text/plain') : '';
+          const hasPlainText = Array.from(data.types).includes('text/plain');
+          const text = hasPlainText ? data.getData('text/plain') : '';
 
-        // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
-        if (isPlainTextClipboardHtml(html, text)) return next();
+          // Prediction/autocorrect paste can carry plain text as identical or wrapper-only HTML.
+          if (isPlainTextClipboardHtml(html, text)) return next();
 
-        const parsed = parseDOMClipboardHtml(html);
-        const deserialized = deserialize(
-          getCommentBoundedFragmentRoot(parsed.body)
-        );
-        const fragment = (
-          Array.isArray(deserialized)
-            ? deserialized
-            : deserialized == null
-              ? []
-              : [deserialized]
-        ).filter(isDescendant);
+          const parsed = parseDOMClipboardHtml(html);
+          const deserialized = deserialize(
+            getCommentBoundedFragmentRoot(parsed.body)
+          );
+          const fragment = (
+            Array.isArray(deserialized)
+              ? deserialized
+              : deserialized == null
+                ? []
+                : [deserialized]
+          ).filter(isDescendant);
 
-        tx.fragment.replace(fragment);
-        return true;
-      },
-    },
+          transaction.fragment.replace(fragment);
+          return true;
+        },
+      }),
+    ],
     schema: {
       elements: {
         image: { void: 'block' },

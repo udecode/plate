@@ -92,13 +92,24 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
     join(root, '.agents/rules/plate-next.mdc'),
     'Current doctrine version: `3`.\n'
   );
+  writeFileSync(
+    join(root, '.agents/rules/plate-plugin-creator.mdc'),
+    'plugin authoring doctrine\n'
+  );
   writeFileSync(join(root, 'docs/plans/templates/plate-next.md'), 'template\n');
+
+  const before = computeDoctrineFingerprint(root);
 
   assert.equal(
     readDeclaredDoctrineVersion('Current doctrine version: `3`.\n'),
     3
   );
-  assert.match(computeDoctrineFingerprint(root), /^sha256:[a-f0-9]{64}$/);
+  assert.match(before, /^sha256:[a-f0-9]{64}$/);
+  writeFileSync(
+    join(root, '.agents/rules/plate-plugin-creator.mdc'),
+    'updated plugin authoring doctrine\n'
+  );
+  assert.notEqual(computeDoctrineFingerprint(root), before);
   assert.equal(
     haveMatchingSkillSource(
       "---\nargument-hint: '[sync]'\n---\n# Plate Next\nbody\n",

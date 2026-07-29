@@ -5,10 +5,8 @@ import path from 'node:path';
 
 import type { Node as PliteNode } from '@platejs/plite';
 
-import { cleanDocx } from '@platejs/docx';
-import { htmlToDocxBlob, preprocessMammothHtml } from '@platejs/docx-io';
+import { DocxIOPlugin, htmlToDocxBlob } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
-import mammoth from 'mammoth';
 import { createBaseEditor, type Value } from 'platejs';
 import { renderStaticHtml } from 'platejs/static';
 
@@ -33,15 +31,10 @@ const importDocxBuffer = async (
   editor: ReturnType<typeof createTestEditor>,
   buffer: Buffer
 ): Promise<PliteNode[]> => {
-  const mammothResult = await mammoth.convertToHtml(
-    { buffer },
-    { styleMap: ['comment-reference => sup'] }
-  );
-  const { html: preprocessedHtml } = preprocessMammothHtml(mammothResult.value);
-  const cleanedHtml = cleanDocx(preprocessedHtml, '');
-  const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
+  const arrayBuffer = new ArrayBuffer(buffer.byteLength);
+  new Uint8Array(arrayBuffer).set(buffer);
 
-  return editor.api.html.deserialize({ element: doc.body }) ?? [];
+  return (await editor.plugin(DocxIOPlugin).api.import(arrayBuffer)).nodes;
 };
 
 const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {

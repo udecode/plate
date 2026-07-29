@@ -13,8 +13,10 @@ runtime unit an extension.
 - [Smallest Extension](08-extensions#smallest-extension)
 - [Read And Write Helpers](08-extensions#read-and-write-helpers)
 - [Extension Order](08-extensions#extension-order)
+- [Typed Extension Points](08-extensions#typed-extension-points)
 - [Activation And Reconfiguration](08-extensions#activation-and-reconfiguration)
 - [Schema Contributions](08-extensions#schema-contributions)
+- [Read Middleware](08-extensions#read-middleware)
 - [Commands And Corrections](08-extensions#commands-and-corrections)
 - [Clipboard And Fragment Policy](08-extensions#clipboard-and-fragment-policy)
 - [Slot Reference](08-extensions#slot-reference)
@@ -113,9 +115,22 @@ Extensions are named so Plite can compose them deterministically. Use
 `dependencies` when one extension needs another installed first.
 
 ```ts
+import { createEditor, defineEditorExtension } from "@platejs/plite";
+
+const links = defineEditorExtension({
+  name: "links",
+  api: {
+    links: {
+      normalizeHref(href: string) {
+        return new URL(href).toString();
+      },
+    },
+  },
+});
+
 const mentions = defineEditorExtension({
   name: "mentions",
-  dependencies: ["links"],
+  dependencies: [links],
   tx: {
     mention(tx) {
       return {
@@ -132,26 +147,67 @@ const mentions = defineEditorExtension({
 });
 
 const editor = createEditor({
-  extensions: [mentions, links],
+  extensions: [mentions],
+});
+
+editor.getApi(links).normalizeHref("https://example.com");
+```
+
+Plite installs `links` transitively before `mentions` because the dependency is
+the extension descriptor, not its name. Shared dependencies activate once and
+remain installed until their last direct or transitive owner is removed.
+`conflicts` also accepts descriptors. Configuration fails for dependency
+cycles, duplicate active names, or installed conflicting descriptors.
+
+Use `editor.getApi(descriptor)` when code needs the API owned by a particular
+installed dependency. The descriptor preserves the inferred API type and works
+while Plite validates a detached configuration candidate. Do not search
+dependencies by string or publish a second capability registry.
+
+## Typed Extension Points
+
+Use `defineExtensionPoint(...)` when another package owns an ordered,
+typed contribution channel that is not part of the headless model.
+
+```ts
+import {
+  defineEditorExtension,
+  defineExtensionPoint,
+} from "@platejs/plite";
+
+type MeasurementSource = {
+  measure(): number;
+};
+
+const measurements =
+  defineExtensionPoint<MeasurementSource>("app:measurement-source");
+
+const measured = defineEditorExtension({
+  name: "measured",
+  contributions: [
+    measurements.of({
+      measure: () => performance.now(),
+    }),
+  ],
 });
 ```
 
-Plite installs `links` before `mentions` because `mentions` declares the
-dependency. Use `peerDependencies` when a companion extension must be present
-without forcing order. Use `conflicts` when two extensions cannot be installed
-together.
+The extension point owns identity and type. Configuration factories and
+validators collect its ordered values with
+`context.getContributions(measurements)`, so arbitrary strings do not become a
+hidden dependency API.
 
 ## Activation And Reconfiguration
 
 Keep schema, state, transaction, command, and API declarations on the extension
 descriptor. Use `activate(editor, context)` only for synchronous resource
 ownership. Register cleanup before activation returns, and defer external work
-that must observe the published configuration to `context.onReady(...)`.
+that must observe the published configuration to `context.afterPublish(...)`.
 
 ```ts
 const tableNavigation = defineEditorExtension({
   name: "table-navigation",
-  options: { initialMode: "text" as const },
+  config: { initialMode: "text" as const },
   tx: {
     table(tx) {
       return {
@@ -165,17 +221,17 @@ const tableNavigation = defineEditorExtension({
     },
   },
   activate(_editor, context) {
-    const controller = createTableNavigationController(context.options);
+    const controller = createTableNavigationController(context.config);
 
     context.onCleanup(({ reason }) => controller.dispose(reason));
-    context.onReady(() => controller.start({ signal: context.signal }));
+    context.afterPublish(() => controller.start({ signal: context.signal }));
   },
 });
 ```
 
 Plite compiles and validates a detached immutable configuration candidate before
 publication. Every functional `api(editor, context)` factory sees the same
-declarative schema and statically declared capabilities. Factory outputs become
+declarative schema and descriptor-resolved dependency APIs. Factory results become
 visible together in the final candidate passed to
 `validateConfiguration(context)`; factory registration order cannot change what
 another factory observes. Ordinary editor reads still see the published
@@ -257,9 +313,9 @@ const tables = defineEditorExtension({
 });
 ```
 
-When schema semantics depend on extension options, put the immutable value in
-`options` and return the declaration from a pure schema factory. The factory
-receives only the frozen options and extension name.
+When schema semantics depend on extension configuration, put the immutable
+value in `config` and return the declaration from a pure schema factory. The
+factory receives only the frozen config and extension name.
 
 ```ts
 import {
@@ -271,11 +327,11 @@ import {
 
 const comments = defineEditorExtension({
   name: "comments",
-  options: { prefix: "comment_" },
-  schema: ({ options }) => ({
+  config: { prefix: "comment_" },
+  schema: ({ config }) => ({
     properties: [
       schema.textProperty(
-        schema.key.prefix(options.prefix),
+        schema.key.prefix(config.prefix),
         property.boolean({ default: false, omitDefault: true }),
         {
           split: "preserve",
@@ -304,6 +360,54 @@ structural JSON equality and can declare canonical defaults. Defaults are read
 through `state.schema` or `tx.schema`; they do not require stored duplicate
 values.
 
+## Read Middleware
+
+Use `read` to customize a declared core read without adding a one-off root
+hook. Register middleware against an `editorReads` descriptor. The descriptor
+infers the input, result, editor, and state types.
+
+```ts
+import {
+  defineEditorExtension,
+  editorReads,
+} from "@platejs/plite";
+
+const closedSections = defineEditorExtension({
+  name: "closed-sections",
+  read: ({ around }) => [
+    around(
+      editorReads.nodes.isSelectable,
+      ({ input: { element }, next }) =>
+        element.closed === true ? false : next()
+    ),
+  ],
+});
+```
+
+Middleware runs in extension order. `next()` delegates once and accepts a
+replacement input when needed. The provided `state` is read-only and observes
+the active transaction draft when the caller is already evaluating one.
+Generator results keep their iteration and cleanup inside the same read
+boundary.
+
+Use `editorReads.slice.export` for ordered export projection:
+
+```ts
+const cleanExport = defineEditorExtension({
+  name: "clean-export",
+  read: ({ around }) => [
+    around(editorReads.slice.export, ({ next }) => {
+      const slice = next();
+
+      return {
+        ...slice,
+        content: removeTransientProperties(slice.content),
+      };
+    }),
+  ],
+});
+```
+
 ## Commands And Corrections
 
 Use a typed `defineCommand(...)` when an action needs headless evaluation or
@@ -318,16 +422,19 @@ converge. Keyboard events and host UI remain React or DOM adapter concerns.
 
 ## Clipboard And Fragment Policy
 
-Use `clipboard.insertData` for paste/drop ingress. The handler receives the
-`DataTransfer` and the ingress transaction as `tx`. Mutate through that
-transaction and return `true` when the handler owns the payload. Return `next()`
-to keep Plite's fragment and plain-text fallback in the same transaction.
+DOM clipboard ingress is a typed extension point owned by
+`@platejs/plite-dom`. Add `clipboardHandler(...)` to `contributions`. Its
+`insertData` callback receives the `DataTransfer`, `next`, and the ingress
+`transaction`. Mutate through that transaction and return `true` when the
+handler owns the payload. Return `next()` to keep Plite's slice and plain-text
+fallback in the same transaction.
 Use [Clipboard And Paste](17-clipboard-and-paste) for the full clipboard
 pipeline and proof boundary.
 
-Use `queries.fragment.get` to sanitize copied or dragged Plite fragments, such
-as removing local preview marks before DOM clipboard serialization. Product
-formats belong in those extension policies, not in Plite core.
+Wrap `editorReads.slice.export` to sanitize copied or dragged Plite content,
+such as removing local preview marks before host clipboard serialization. Call
+`editor.read.slice.export()` when the result is leaving the editor;
+`editor.read.slice.get()` returns the structural selection slice unchanged.
 
 Plite's core slice replacement stays structural and schema-fitted. Grid-aware
 table paste, such as mapping copied cells onto existing target cells by row and
@@ -338,21 +445,28 @@ column, belongs in the table extension's clipboard policy.
 Start with `schema`, `state`, and `tx`. Reach for the other slots only when
 the behavior needs that runtime phase.
 
-| Slot                    | Use it for                                                 |
-| ----------------------- | ---------------------------------------------------------- |
-| `schema`                | immutable element, property, group, and root contributions |
-| `state`                 | read helpers available inside `editor.read(...)`           |
-| `tx`                    | write helpers for atomic and direct `editor.update` calls  |
-| `commands`              | pure typed command interceptors                            |
-| `corrections`           | deterministic changed-range structural repairs             |
-| `queries`               | middleware for Plite query behavior                        |
-| `clipboard.insertData`  | DataTransfer ingress hooks                                 |
-| `fields`                | typed persisted or runtime state                           |
-| `effects`               | typed commit effects and codecs                            |
-| `onCommit`              | observing committed changes                                |
-| `api`                   | mounted host/runtime services exposed through `editor.api` |
-| `activate`              | synchronous resource ownership and cleanup registration    |
-| `validateConfiguration` | detached candidate validation                              |
+| Slot                    | Use it for                                                       |
+| ----------------------- | ---------------------------------------------------------------- |
+| `name`                  | stable extension identity                                        |
+| `enabled`               | declarative inclusion                                            |
+| `dependencies`          | descriptors installed before this extension                      |
+| `conflicts`             | descriptors that cannot be installed with this extension         |
+| `config`                | immutable schema/API/validation/activation input                  |
+| `schema`                | immutable element, property, group, and root contributions        |
+| `state`                 | read helpers available inside `editor.read(...)`                  |
+| `tx`                    | write helpers for atomic and direct `editor.update` calls         |
+| `read`                  | typed middleware over `editorReads` descriptors                   |
+| `commands`              | pure typed command interceptors                                   |
+| `corrections`           | deterministic changed-range structural repairs                    |
+| `stateFields`           | typed persisted or runtime state descriptors                      |
+| `effectTypes`           | typed commit-effect descriptors and codecs                        |
+| `facetProviders`        | derived state providers                                           |
+| `selectionKinds`        | custom selection codecs and behavior                              |
+| `api`                   | mounted host/runtime services exposed through `editor.api`        |
+| `contributions`         | typed ordered values consumed through an extension point          |
+| `on.*`                  | transaction, commit, node, and text change handlers               |
+| `activate`              | synchronous resource ownership and cleanup registration           |
+| `validateConfiguration` | detached candidate validation                                     |
 
 Do not use `api` as a product command bus. A checklist toggle that changes the
 document belongs in `tx.checklist.toggle()`. Host services such as DOM focus,

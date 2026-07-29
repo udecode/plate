@@ -1,5 +1,5 @@
 import type { HeaderFooterType } from './constants';
-import type { DocxListStyleType } from './utils/list';
+import type { DocxListStyleType } from './list';
 
 type UnitValue = number | string;
 

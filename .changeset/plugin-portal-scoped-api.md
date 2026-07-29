@@ -2,6 +2,11 @@
 "@platejs/core": major
 ---
 
+Export named `*PluginState` contracts for state-owning Core descriptors,
+including debug, DOM, navigation feedback, and node ID plugins.
+Require node ID generators to return strings. Treat every raw element as an ID
+candidate in schema-free `normalizeNodeId`; use `match` to filter raw types.
+
 Publish every installed non-empty plugin API under its inferred plugin key on
 `editor.api`, while retaining `editor.plugin(FooPlugin).api` as the exact
 generic portal. Both paths reference the same immutable API object. Reject
@@ -10,10 +15,14 @@ Expose `editor.plugin(Plugin).installed` for optional package integrations.
 
 Contextually infer callbacks for contract-declared explicit transaction groups
 and plugin extension command transactions.
+Keep each input-rule factory's exact editor contract while normalizing
+heterogeneous descriptor storage through an unknown-context rule reference.
 Infer callback-created plugin state from its return type without erasing
 constructor `read`, `update`, or other inferred capabilities.
 
 Replace Slate-era Core exports with Plite and Plate-owned names.
+Delete the dead `isType` wrapper; compare configured element types at the
+owning call site.
 
 Replace `pipeInsertDataQuery` with `prepareHtmlParserQuery`, which compiles one
 resolved plugin query and runs it against an immutable editor state.

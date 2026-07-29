@@ -1,10 +1,14 @@
 import type {
+  ContentSlice,
   Editor,
   EditorDocumentValue,
+  EditorMarks,
   EditorSelectionMapContext,
+  EditorStateView,
   RootKey,
   SerializedEditorSelection,
   SnapshotIndex,
+  Value,
 } from '../interfaces/editor';
 import { PathApi, type Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
@@ -51,14 +55,16 @@ type SelectionMappingOptions = RangeMappingOptions & {
 
 type RuntimeSelectionSpec = Readonly<{
   codec?: import('../interfaces/editor').EditorValueCodec<EditorSelection>;
-  domRange?: (selection: EditorSelection) => Range | null;
   kind: string;
   map?: (
     selection: EditorSelection,
     context: EditorSelectionMapContext
   ) => Selection;
+  marks?: (...args: any[]) => any;
+  primaryRange?: (selection: EditorSelection) => Range | null;
   ranges?: (selection: EditorSelection) => readonly Range[];
   replacementRange?: (selection: EditorSelection) => Range | null;
+  slice?: (...args: any[]) => any;
   validate?: (selection: EditorSelection) => boolean;
 }>;
 
@@ -566,16 +572,44 @@ export const getSelectionReplacementRange = (
   );
 };
 
-export const getSelectionDOMRange = <TEditor extends Editor<any, any>>(
+export const getSelectionPrimaryRange = <TEditor extends Editor<any, any>>(
   editor: TEditor,
   selection: Selection
 ): Range | null => {
   if (!selection) return null;
   if (SelectionApi.isNode(selection)) return null;
 
-  const domRange = getSelectionSpec(editor as Editor, selection).domRange;
+  const primaryRange = getSelectionSpec(
+    editor as Editor,
+    selection
+  ).primaryRange;
 
-  return domRange ? domRange(selection) : selection;
+  return primaryRange ? primaryRange(selection) : selection;
+};
+
+export const getSelectionSpecMarks = <V extends Value>(
+  editor: Editor,
+  selection: Selection,
+  state: EditorStateView<V>
+): EditorMarks<V> | null | undefined => {
+  if (!selection) return;
+
+  return getSelectionSpec(editor, selection).marks?.(selection, state) as
+    | EditorMarks<V>
+    | null
+    | undefined;
+};
+
+export const getSelectionSpecSlice = <V extends Value>(
+  editor: Editor,
+  selection: Selection,
+  state: EditorStateView<V>
+): ContentSlice<V> | undefined => {
+  if (!selection) return;
+
+  return getSelectionSpec(editor, selection).slice?.(selection, state) as
+    | ContentSlice<V>
+    | undefined;
 };
 
 export const assertSelectionSupported = (

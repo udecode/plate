@@ -3,4 +3,3 @@
  */
 
 export * from './parseMediaUrl';
-export * from './types';

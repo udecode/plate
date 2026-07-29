@@ -116,8 +116,10 @@ describe('collab and history runtime contract', () => {
         history(),
         defineEditorExtension({
           name: 'collab-commit-listener',
-          onCommit({ commit }) {
-            extensionCommits.push(commit);
+          on: {
+            commit({ commit }) {
+              extensionCommits.push(commit);
+            },
           },
         }),
       ] as const,

@@ -11,7 +11,6 @@ import { ContentSlice, property } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import { TablePlugin } from '@platejs/table/react';
 import { useState } from 'react';
-import type { PluginConfig } from 'platejs';
 import {
   createPlatePlugin,
   ParagraphPlugin,
@@ -28,12 +27,9 @@ type CodecProofPayload = {
   kind: 'block' | 'code' | 'delegate' | 'inline' | 'throw';
 };
 
-type CodecProofConfig = PluginConfig<
-  'codecProof',
-  {
-    label: string;
-  }
->;
+type CodecProofPluginState = {
+  label: string;
+};
 
 const parseCodecProofPayload = (data: string): CodecProofPayload =>
   JSON.parse(data) as CodecProofPayload;
@@ -60,10 +56,12 @@ const CodecProofFallbackPlugin = createPlatePlugin({
     }),
 });
 
-const CodecProofPlugin = createPlatePlugin<CodecProofConfig>({
-  initialState: {
-    label: 'initial',
-  },
+const codecProofInitialState: CodecProofPluginState = {
+  label: 'initial',
+};
+
+const CodecProofPlugin = createPlatePlugin({
+  initialState: codecProofInitialState,
   key: 'codecProof',
   codecs: ({ defineCodecs, editor, store }) =>
     defineCodecs({

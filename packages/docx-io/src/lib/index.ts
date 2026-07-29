@@ -4,5 +4,3 @@
 
 export * from './DocxIOPlugin';
 export * from './html-to-docx';
-export * from './preprocessMammothHtml';
-export * from './types';

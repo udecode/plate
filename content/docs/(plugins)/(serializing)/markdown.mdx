@@ -125,10 +125,8 @@ const editor = createPlateEditor({
 ```
 
 <Callout type="info">
-  `MarkdownPlugin` publishes explicit-input conversion through
-  `editor.api.markdown` and snapshot serialization through
-  `editor.read.markdown`. Plugin state remains under
-  `editor.plugin(MarkdownPlugin)`.
+  `MarkdownPlugin` publishes conversion through `editor.api.markdown`. Plugin
+  state remains under `editor.plugin(MarkdownPlugin)`.
 </Callout>
 
 <Callout type="warning" title="Primary content only">
@@ -174,7 +172,7 @@ const editor = createPlateEditor({
 
 ### Plate to Markdown (Serialization)
 
-Use `editor.read.markdown.serialize` to convert the current editor document or a specific `EditorDocumentValue` into a Markdown string.
+Use `editor.api.markdown.serialize` to convert the current editor document or a specific `EditorDocumentValue` into a Markdown string.
 
 Serialization reads the document's primary `children`. Named roots are outside
 Markdown's representation.
@@ -183,7 +181,7 @@ Markdown's representation.
 
 ```tsx
 // Assuming `editor` is your Plate editor instance with content
-const markdownOutput = editor.read.markdown.serialize();
+const markdownOutput = editor.api.markdown.serialize();
 console.info(markdownOutput);
 ```
 
@@ -196,7 +194,7 @@ const specificNodes = [
 ];
 
 // Assuming `editor` is your Plate editor instance
-const partialMarkdownOutput = editor.read.markdown.serialize({
+const partialMarkdownOutput = editor.api.markdown.serialize({
   value: { children: specificNodes },
 });
 console.info(partialMarkdownOutput);
@@ -324,9 +322,8 @@ Pass Markdown conversion behavior through `MarkdownPlugin.configure({ initialSta
 
 ### `MarkdownPlugin`
 
-`MarkdownPlugin` exposes explicit-input methods through `editor.api.markdown`,
-snapshot serialization through `editor.read.markdown`, and these product
-codecs:
+`MarkdownPlugin` exposes conversion methods through `editor.api.markdown` and
+these product codecs:
 
 | Format | Decode | Encode | Representation |
 | --- | --- | --- | --- |
@@ -408,7 +405,7 @@ Converts inline Markdown text into Plite children.
 
 ---
 
-### `editor.read.markdown.serialize`
+### `editor.api.markdown.serialize`
 
 Converts an `EditorDocumentValue` into a Markdown string.
 
@@ -547,7 +544,7 @@ editor.update((tx) => {
   tx.value.replace(document);
 });
 
-const markdownOutput = editor.read.markdown.serialize();
+const markdownOutput = editor.api.markdown.serialize();
 // markdownOutput will contain GFM syntax
 ```
 
@@ -681,7 +678,7 @@ $$
 const document = editor.api.markdown.deserialize(markdown);
 // document.children contains 'inline_equation' and 'equation' nodes.
 
-const markdownOutput = editor.read.markdown.serialize({ value: document });
+const markdownOutput = editor.api.markdown.serialize({ value: document });
 // markdownOutput will contain $...$ and $$...$$ syntax.
 ```
 
@@ -725,7 +722,7 @@ Full name with ID: [Jane Smith](mention:user_123)
 const slateValue = editor.api.markdown.deserialize(markdown);
 // Creates mention nodes with appropriate values and display text
 
-const markdownOutput = editor.read.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // All mentions use the link format: [Alice](mention:alice), [John Doe](mention:john_doe), etc.
 ```
 
@@ -785,7 +782,7 @@ const markdown = `
 const slateValue = editor.api.markdown.deserialize(markdown);
 // Creates column_group with nested column elements
 
-const markdownOutput = editor.read.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // Preserves column structure with width attributes
 ```
 

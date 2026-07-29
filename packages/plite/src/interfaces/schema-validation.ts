@@ -2,6 +2,7 @@ import type { SchemaTarget } from './schema';
 
 /** Stable runtime schema-validation failure categories. */
 export type EditorSchemaValidationCode =
+  | 'exclusive-property-conflict'
   | 'invalid-content'
   | 'invalid-document'
   | 'invalid-json'

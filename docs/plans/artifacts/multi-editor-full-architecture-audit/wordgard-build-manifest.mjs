@@ -10,7 +10,7 @@ const artifactDirectory = dirname(fileURLToPath(import.meta.url));
 const plateRepository = join(artifactDirectory, '../../../..');
 const repository = join(plateRepository, '../wordgard');
 const outputPath = join(artifactDirectory, 'wordgard-source-manifest.json');
-const expectedHead = '8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e';
+const expectedHead = '01eb2b5eae509509677345fd603acad001827dff';
 
 const runGitBuffer = (...args) =>
   execFileSync('git', ['-C', repository, ...args], {

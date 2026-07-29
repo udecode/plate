@@ -144,7 +144,7 @@ const path = editor.read.nodes.path(element);
 The read returns `undefined` for an unresolved node. Resolution is scoped to
 the editor root, so nodes from another editor or another root do not resolve.
 Strict static helpers keep their non-optional contracts and treat a missing
-result from query middleware as an internal invariant failure.
+result as an internal invariant failure.
 
 Node queries accept predicates and shallow property objects.
 

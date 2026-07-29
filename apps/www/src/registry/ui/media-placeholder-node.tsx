@@ -5,11 +5,7 @@ import * as React from 'react';
 import type { TPlaceholderElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
-import {
-  PlaceholderPlugin,
-  PlaceholderProvider,
-  type PlaceholderUpdates,
-} from '@platejs/media/react';
+import { PlaceholderPlugin, PlaceholderProvider } from '@platejs/media/react';
 import { AudioLines, FileUp, Film, ImageIcon, Loader2Icon } from 'lucide-react';
 import { KEYS } from 'platejs';
 import {
@@ -57,10 +53,10 @@ const CONTENT: Record<
 export const PlaceholderElement = withHOC(
   PlaceholderProvider,
   function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
-    const { editor, element } = props;
+    const { element } = props;
     const path = usePath();
 
-    const { api } = useEditorPlugin(PlaceholderPlugin);
+    const { api, editor } = useEditorPlugin(PlaceholderPlugin);
     const currentFile = usePluginStore(
       PlaceholderPlugin,
       'uploadingFile',
@@ -108,23 +104,20 @@ export const PlaceholderElement = withHOC(
 
       if (!path) return;
 
-      editor.update<{ placeholder: PlaceholderUpdates }>(
-        { history: 'skip' },
-        (tx) => {
-          tx.placeholder.replaceMedia(
-            {
-              initialHeight: imageRef.current?.height,
-              initialWidth: imageRef.current?.width,
-              isUpload: true,
-              name: element.mediaType === KEYS.file ? uploadedFile.name : '',
-              placeholderId: element.id as string,
-              type: element.mediaType!,
-              url: uploadedFile.url,
-            },
-            { at: path }
-          );
-        }
-      );
+      editor.update({ history: 'skip' }, (tx) => {
+        tx.placeholder.replaceMedia(
+          {
+            initialHeight: imageRef.current?.height,
+            initialWidth: imageRef.current?.width,
+            isUpload: true,
+            name: element.mediaType === KEYS.file ? uploadedFile.name : '',
+            placeholderId: element.id as string,
+            type: element.mediaType!,
+            url: uploadedFile.url,
+          },
+          { at: path }
+        );
+      });
 
       api.removeUploadingFile(element.id as string);
       // eslint-disable-next-line react-hooks/exhaustive-deps

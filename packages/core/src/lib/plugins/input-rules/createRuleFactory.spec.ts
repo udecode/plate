@@ -3,7 +3,7 @@ import type { Range } from '@platejs/plite';
 import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
 import { createRuleFactory } from './createRuleFactory';
-import type { BlockStartInputRuleMatch, InsertTextInputRule } from './types';
+import type { InsertTextInputRule } from './types';
 
 const resolveInsertTextRule = <TMatch>(
   rule: InsertTextInputRule<TMatch>,
@@ -43,27 +43,89 @@ const resolveInsertTextRule = <TMatch>(
 };
 
 describe('createRuleFactory', () => {
+  it('keeps every rule family discriminated at runtime', () => {
+    const mark = createRuleFactory({
+      type: 'mark',
+      start: '**',
+      trigger: '*',
+    })();
+    const blockFence = createRuleFactory({
+      type: 'blockFence',
+      apply: () => {},
+      fence: '```',
+    })();
+    const insertText = createRuleFactory({
+      type: 'insertText',
+      apply: () => {},
+      trigger: '!',
+    })();
+    const insertBreak = createRuleFactory({
+      type: 'insertBreak',
+      apply: () => {},
+    })();
+    const insertData = createRuleFactory({
+      type: 'insertData',
+      apply: () => {},
+      mimeTypes: ['text/plain'],
+    })();
+    const textSubstitution = createRuleFactory({
+      type: 'textSubstitution',
+      patterns: [{ format: '—', match: '--' }],
+    })();
+
+    expect(mark).toMatchObject({ target: 'insertText', trigger: '*' });
+    expect(blockFence).toMatchObject({ target: 'insertText', trigger: '`' });
+    expect(insertText).toMatchObject({
+      target: 'insertText',
+      trigger: '!',
+    });
+    expect(insertBreak).toMatchObject({ target: 'insertBreak' });
+    expect(insertData).toMatchObject({
+      mimeTypes: ['text/plain'],
+      target: 'insertData',
+    });
+    expect(textSubstitution).toMatchObject({
+      target: 'insertText',
+      trigger: ['-'],
+    });
+  });
+
   it('binds a plugin owner without changing rule factory behavior', () => {
     const plugin = createBasePlugin({ key: 'blockquote' });
+    const editor = createBaseEditor({ plugins: [plugin] });
     const rule = createRuleFactory(plugin)<{}, { marker: string }>({
       type: 'blockStart',
       marker: '>',
       trigger: ' ',
       match: ({ marker }) => marker,
-    })() as InsertTextInputRule<BlockStartInputRuleMatch>;
+    })();
     const range = {
       kind: 'text',
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };
+    let match: ReturnType<NonNullable<typeof rule.resolve>>;
 
-    expect(
-      resolveInsertTextRule(rule, {
-        blockText: '>',
+    editor.update((tx) => {
+      match = rule.resolve?.({
+        cause: 'insertText',
+        editor,
+        getBlockEntry: () => undefined,
+        getBlockStartRange: () => range,
+        getBlockStartText: () => '>',
+        getBlockTextBeforeSelection: () => '>',
+        getCharAfter: () => undefined,
+        getCharBefore: () => undefined,
+        insertText: () => {},
+        isCollapsed: true,
+        options: undefined,
         pluginKey: plugin.key,
-        range,
-      })
-    ).toEqual({ range, text: '>' });
+        text: ' ',
+        tx,
+      });
+    });
+
+    expect(match).toEqual({ range, text: '>' });
   });
 
   it('passes config defaults into block-start match resolvers when no public options are provided', () => {
@@ -72,7 +134,7 @@ describe('createRuleFactory', () => {
       marker: '>',
       trigger: ' ',
       match: ({ marker }) => marker,
-    })() as InsertTextInputRule<BlockStartInputRuleMatch>;
+    })();
 
     const range = {
       kind: 'text',
@@ -97,7 +159,7 @@ describe('createRuleFactory', () => {
       resolveMatch: ({ match }) => ({
         start: Number((match as RegExpMatchArray)[1]),
       }),
-    })() as InsertTextInputRule<BlockStartInputRuleMatch & { start: number }>;
+    })();
 
     const range = {
       kind: 'text',

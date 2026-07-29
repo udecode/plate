@@ -55,6 +55,7 @@ const reviewedPackageSlugs = [
   'test-utils',
   'toc',
   'toggle',
+  'yjs',
 ];
 
 const packageSlugs = [...basePackageSlugs, ...reviewedPackageSlugs];

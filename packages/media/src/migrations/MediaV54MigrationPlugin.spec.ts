@@ -2,12 +2,13 @@ import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { property, schema, target } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { BaseAudioPlugin } from '../lib/BaseAudioPlugin';
-import { BaseFilePlugin } from '../lib/BaseFilePlugin';
-import { BaseVideoPlugin } from '../lib/BaseVideoPlugin';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseVideoPlugin,
+} from '../lib/BaseMediaPlugin';
 import { BaseImagePlugin } from '../lib/image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from '../lib/media-embed/BaseMediaEmbedPlugin';
-import { migrateMediaV54Document } from './MediaV54Migration.internal';
 import { MediaV54MigrationPlugin } from './MediaV54MigrationPlugin';
 
 const TestBoldPlugin = createBasePlugin({
@@ -192,9 +193,23 @@ describe('MediaV54MigrationPlugin', () => {
     });
   });
 
-  it('preserves canonical and foreign caption document identity', () => {
-    const value = {
-      children: [
+  it('preserves canonical and foreign caption content', () => {
+    const editor = createBaseEditor({
+      nodeId: false,
+      plugins: [
+        MediaV54MigrationPlugin,
+        BaseImagePlugin,
+        createBasePlugin({
+          key: 'foreign',
+          schema: {
+            element: {
+              content: schema.content.text({ default: 'text', min: 1 }),
+              properties: { caption: property.string() },
+            },
+          },
+        }),
+      ],
+      initialValue: [
         {
           caption: 'foreign',
           children: [{ text: 'Canonical caption' }],
@@ -206,14 +221,20 @@ describe('MediaV54MigrationPlugin', () => {
           url: 'https://platejs.org/media',
         },
       ],
-    };
+    });
 
-    expect(
-      migrateMediaV54Document(value, {
-        isInline: () => false,
-        types: new Set([KEYS.img]),
-      })
-    ).toBe(value);
+    expect(editor.read.children()).toEqual([
+      {
+        caption: 'foreign',
+        children: [{ text: 'Canonical caption' }],
+        type: 'foreign',
+      },
+      {
+        children: [{ text: 'Media caption' }],
+        type: KEYS.img,
+        url: 'https://platejs.org/media',
+      },
+    ]);
   });
 
   it('rejects ambiguous caption sources with their document path', () => {

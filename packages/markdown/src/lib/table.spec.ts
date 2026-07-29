@@ -1,6 +1,4 @@
 import { createTestEditor } from './__tests__/createTestEditor';
-import { deserializeMd } from './deserializer';
-import { serializeMd } from './serializer';
 
 const createTableEditor = () => createTestEditor();
 
@@ -12,7 +10,7 @@ describe('markdown tables', () => {
     const expected =
       '| Name  | Value |\n| ----- | ----- |\n| Alpha | Beta  |\n| Gamma | Delta |\n';
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -61,10 +59,10 @@ describe('markdown tables', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value });
+    const markdown = editor.api.markdown.serialize({ value });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject(value);
+    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
   });
 
   it('keeps unescaped less-than text inside table cells when MDX fallback is used', () => {
@@ -72,7 +70,7 @@ describe('markdown tables', () => {
     const input =
       '| Dimension | Basis |\n| --- | --- |\n| Volume trend | a<b |\n';
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -119,7 +117,7 @@ describe('markdown tables', () => {
       'After',
     ].join('\n');
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -172,7 +170,7 @@ describe('markdown tables', () => {
       '| Later | Table |',
     ].join('\n');
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -246,7 +244,7 @@ describe('markdown tables', () => {
       '\n'
     );
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -325,10 +323,12 @@ describe('markdown tables', () => {
     const expected =
       '| Name           | Value |\n| -------------- | ----- |\n| Alpha<br/>Beta | Gamma |\n';
 
-    const markdown = serializeMd(editor, { value: { children: input } });
+    const markdown = editor.api.markdown.serialize({
+      value: { children: input },
+    });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown).children).toMatchObject([
+    expect(editor.api.markdown.deserialize(markdown).children).toMatchObject([
       {
         type: 'table',
         children: [

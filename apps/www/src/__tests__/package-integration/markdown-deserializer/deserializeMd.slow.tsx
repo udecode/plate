@@ -6,7 +6,7 @@ import { createBaseEditor } from 'platejs';
 
 import { createTestEditor } from '../../../../../../packages/markdown/src/lib/__tests__/createTestEditor';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer/deserializeMd';
+import type { DeserializeMdOptions } from '../../../../../../packages/markdown/src/lib/types';
 jsxt;
 
 const editor = createTestEditor();
@@ -17,10 +17,10 @@ const listEditor = createBaseEditor({
 const parseMarkdown = (
   input: string,
   currentEditor = editor,
-  options?: Parameters<typeof deserializeMd>[2]
-) => deserializeMd(currentEditor, input, options).children;
+  options?: DeserializeMdOptions
+) => currentEditor.api.markdown.deserialize(input, options).children;
 
-describe('deserializeMd', () => {
+describe('editor.api.markdown.deserialize', () => {
   describe('inline content', () => {
     it.each([
       {

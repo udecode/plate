@@ -96,11 +96,7 @@ describe('resolvePlugins', () => {
       key: 'unifiedRuntime',
       initialState: { label: 'unified' },
     })
-      .extend<{
-        api: { label: () => string };
-        read: { hasSelection: () => boolean };
-        selectors: { selected: () => boolean };
-      }>(({ store }) => {
+      .extend(({ store }) => {
         extensionCalls++;
 
         return {
@@ -115,9 +111,7 @@ describe('resolvePlugins', () => {
           },
         };
       })
-      .extend<{
-        update: { apiLabel: () => string; selectAndRead: () => boolean };
-      }>(({ api, read }) => {
+      .extend(({ api, read }) => {
         extensionCalls++;
         const hasSelection = read.hasSelection;
 
@@ -544,25 +538,24 @@ describe('resolvePlugins', () => {
   });
 
   it('rejects plugin-set mutation after atomic model publication', () => {
+    const PluginApi = createBasePlugin({
+      key: 'pluginApi',
+      api: {
+        run: () => 'run',
+      },
+    });
     const editor = createBaseEditor({
-      plugins: [
-        createBasePlugin({
-          key: 'pluginApi',
-          api: {
-            run: () => 'run',
-          },
-        }),
-      ],
+      plugins: [PluginApi],
     });
 
-    expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
+    expect(editor.plugin(PluginApi).api.run()).toBe('run');
     expect(editor.api.pluginApi.run()).toBe('run');
-    expect(editor.plugin({ key: 'pluginApi' }).api).toBe(editor.api.pluginApi);
+    expect(editor.plugin(PluginApi).api).toBe(editor.api.pluginApi);
 
     expect(() => resolvePlugins(editor, [])).toThrow(
       'Plate plugins are fixed after model publication. Configure plugin `initialState` before creating the editor.'
     );
-    expect(editor.plugin({ key: 'pluginApi' }).api.run()).toBe('run');
+    expect(editor.plugin(PluginApi).api.run()).toBe('run');
   });
 
   it('throws when inputRules is configured as a boolean map', () => {
@@ -621,8 +614,7 @@ describe('resolveAndSortPlugins', () => {
     expect(calls).toBe(1);
     expect(
       resolved.find((plugin) => plugin.key === dependency.key)?.initialState
-        .source
-    ).toBe('configured');
+    ).toEqual({ source: 'configured' });
   });
 
   it('whole-replaces a dependency default without leaking its extensions', () => {
@@ -691,8 +683,7 @@ describe('resolveAndSortPlugins', () => {
 
       expect(
         resolved.find((plugin) => plugin.key === 'dependency')?.initialState
-          .source
-      ).toBe('explicit');
+      ).toEqual({ source: 'explicit' });
     }
   });
 
@@ -797,6 +788,22 @@ describe('applyPluginOverrides', () => {
 
     expect(getPlugin(editor, { key: 'f' }).render.node).toBe(
       PreservedOriginalComponent
+    );
+    expect(() => getPlugin(editor, { key: 'missing' })).toThrow(
+      'Plate plugin "missing" is not installed.'
+    );
+  });
+
+  it('does not fabricate a descriptor for a disabled plugin', () => {
+    const Disabled = createPlatePlugin({
+      enabled: false,
+      key: 'disabledPlugin',
+    });
+    const editor = createPlateEditor({ plugins: [Disabled] });
+
+    expect(editor.plugin(Disabled).installed).toBe(false);
+    expect(() => getPlugin(editor, Disabled)).toThrow(
+      'Plate plugin "disabledPlugin" is not installed.'
     );
   });
 
@@ -1083,7 +1090,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    const published = getPlateRuntime(editor).plugins.test;
+    const published = editor.getPlugin(plugin);
 
     expect(published.initialState).not.toBe(plugin.initialState);
     expect(Object.isFrozen(published.initialState)).toBe(true);
@@ -1100,7 +1107,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       initialState: { entries, nested },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const published = getPlateRuntime(editor).plugins.test;
+    const published = editor.getPlugin(plugin);
     const listener = vi.fn();
     const unsubscribe = getPluginStore(editor, plugin.key)!.public.subscribe(
       listener
@@ -1141,7 +1148,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       initialState: { cycle, first: shared, second: shared },
     });
     const editor = createBaseEditor({ plugins: [plugin] });
-    const initialState = getPlateRuntime(editor).plugins.test.initialState;
+    const initialState = editor.getPlugin(plugin).initialState;
 
     expect(initialState.first).toBe(initialState.second);
     expect(initialState.first).not.toBe(shared);
@@ -1228,8 +1235,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       initialState: { cycle, first: Target, second: Target },
     });
     const editor = createBaseEditor({ plugins: [Target, Owner] });
-    const publishedState =
-      getPlateRuntime(editor).plugins.stateOwner.initialState;
+    const publishedState = editor.getPlugin(Owner).initialState;
     const targetReference = publishedState.first;
 
     expect(targetReference).toEqual({
@@ -1251,8 +1257,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [Target, ContextOwner],
     });
     const contextPublished =
-      getPlateRuntime(contextEditor).plugins.contextStateOwner.initialState
-        .target;
+      contextEditor.getPlugin(ContextOwner).initialState.target;
 
     expect(contextPublished).toBe(
       contextEditor.plugin(ContextOwner).store.get('target')
@@ -1286,9 +1291,7 @@ describe('mergePlugins behavior in resolvePlugins', () => {
     editor.plugin(plugin).store.set({ value: 'modified' });
 
     expect(editor.plugin(plugin).store.get('value')).toBe('modified');
-    expect(getPlateRuntime(editor).plugins.test.initialState.value).toBe(
-      'original'
-    );
+    expect(editor.getPlugin(plugin).initialState.value).toBe('original');
     expect(plugin.initialState.value).toBe('original');
   });
 
@@ -1307,16 +1310,12 @@ describe('mergePlugins behavior in resolvePlugins', () => {
       plugins: [plugin],
     });
 
-    expect(getPlateRuntime(editor).plugins.test.initialState.value).toBe(
-      'modified'
-    );
+    expect(editor.getPlugin(plugin).initialState.value).toBe('modified');
 
     editor.plugin(plugin).store.set({ value: 'runtime' });
 
     expect(editor.plugin(plugin).store.get('value')).toBe('runtime');
-    expect(getPlateRuntime(editor).plugins.test.initialState.value).toBe(
-      'modified'
-    );
+    expect(editor.getPlugin(plugin).initialState.value).toBe('modified');
     expect(plugin.initialState.value).toBe('original');
   });
 });

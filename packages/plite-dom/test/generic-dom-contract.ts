@@ -1,9 +1,15 @@
 import {
   ContentSlice,
   createEditor,
+  defineEditorExtension,
   type Node as PliteNode,
 } from '@platejs/plite';
-import { defineHostCodec, dom, hostCodecs } from '@platejs/plite-dom';
+import {
+  clipboardHandler,
+  defineHostCodec,
+  dom,
+  hostCodecs,
+} from '@platejs/plite-dom';
 
 type CustomText = {
   text: string;
@@ -41,9 +47,21 @@ const jsonCodec = defineHostCodec<CustomValue>({
 });
 
 const DomExtension = dom();
+const ClipboardExtension = defineEditorExtension({
+  name: 'clipboard-handler',
+  contributions: [
+    clipboardHandler({
+      insertData(_data, { next, transaction }) {
+        transaction.selection();
+
+        return next();
+      },
+    }),
+  ],
+});
 const HostCodecsExtension = hostCodecs('custom-value-host-codecs', [jsonCodec]);
 const editor = createEditor({
-  extensions: [DomExtension, HostCodecsExtension],
+  extensions: [DomExtension, HostCodecsExtension, ClipboardExtension],
   initialValue,
 });
 
@@ -57,6 +75,7 @@ const plainEditor = createEditor({ initialValue });
 // @ts-expect-error DOM methods are installed extension API only
 plainEditor.api.dom.focus();
 
+// @ts-expect-error clipboard is installed by the DOM extension only
 plainEditor.api.clipboard.insertData(dataTransfer);
 
 // @ts-expect-error clipboard export is installed by the DOM extension only
@@ -67,6 +86,7 @@ const insertionOnlyEditor = createEditor({
   initialValue,
 });
 
+// @ts-expect-error clipboard is disabled explicitly
 insertionOnlyEditor.api.clipboard.insertData(dataTransfer);
 
 // @ts-expect-error clipboard export is disabled explicitly
@@ -94,4 +114,21 @@ editor.read((state) => {
 editor.update((tx) => {
   // @ts-expect-error DOM is not replayable transaction state
   tx.dom.focus();
+
+  tx.clipboard.insertData(dataTransfer);
+});
+
+plainEditor.update((tx) => {
+  // @ts-expect-error clipboard is installed by the DOM extension only
+  tx.clipboard.insertData(dataTransfer);
+});
+
+insertionOnlyEditor.update((tx) => {
+  // @ts-expect-error clipboard is disabled explicitly
+  tx.clipboard.insertData(dataTransfer);
+});
+
+maybeClipboardEditor.update((tx) => {
+  // @ts-expect-error clipboard is not guaranteed by dynamic options
+  tx.clipboard.insertData(dataTransfer);
 });

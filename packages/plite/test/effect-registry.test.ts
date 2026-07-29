@@ -13,7 +13,7 @@ import {
 import { screenReaderAnnouncementEffect } from '../src/core/screen-reader-announcement';
 
 const owner = (name: string, type: EditorEffectType) =>
-  defineEditorExtension({ effects: [type], name });
+  defineEditorExtension({ effectTypes: [type], name });
 
 describe('installed editor effect registry', () => {
   it('keeps the intrinsic screen-reader effect zero-config', () => {

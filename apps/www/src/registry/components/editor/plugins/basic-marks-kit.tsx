@@ -83,4 +83,4 @@ export const BasicMarksKit = [
     shortcuts: { toggle: { keys: 'mod+shift+h' } },
   }),
   KbdPlugin.configure({ component: KbdLeaf }),
-];
+] as const;

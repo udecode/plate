@@ -2,6 +2,10 @@ import { createBasePlugin, type InferConfig } from '@platejs/core';
 import { ElementApi, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
+export type BaseTogglePluginState = {
+  openIds: Set<string>;
+};
+
 export const BaseTogglePlugin = createBasePlugin({
   api: ({ store }) => ({
     toggleIds: (ids: string[], force: boolean | null = null) => {
@@ -24,9 +28,9 @@ export const BaseTogglePlugin = createBasePlugin({
     },
   }),
   key: KEYS.toggle,
-  initialState: {
-    openIds: new Set<string>(),
-  },
+  initialState: (): BaseTogglePluginState => ({
+    openIds: new Set(),
+  }),
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),

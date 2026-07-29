@@ -16,14 +16,13 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { MarkdownPlugin } from '../MarkdownPlugin';
-import type { DeserializeMdOptions } from '../deserializer';
-import type { SerializeMdOptions } from '../serializer';
+import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
 
-import { withMarkdownRuntime } from '../internal/markdownRuntime';
+import { withMarkdownRuntime } from '../internal/markdownConversion';
 import {
   getMergedOptionsDeserialize,
   getMergedOptionsSerialize,
-} from '../internal/markdownOptions';
+} from '../internal/markdownConversion';
 import { remarkMdx, remarkMention } from '../plugins';
 
 type TestElementOptions = {
@@ -191,14 +190,18 @@ export const getTestDeserializeOptions = (
   editor: ReturnType<typeof createTestEditor>,
   options?: DeserializeMdOptions
 ) =>
-  withMarkdownRuntime(editor, (runtime) =>
-    getMergedOptionsDeserialize(runtime, options)
+  withMarkdownRuntime(
+    editor,
+    editor.plugin(MarkdownPlugin).store.get(),
+    (runtime) => getMergedOptionsDeserialize(runtime, options)
   );
 
 export const getTestSerializeOptions = (
   editor: ReturnType<typeof createTestEditor>,
   options?: SerializeMdOptions
 ) =>
-  withMarkdownRuntime(editor, (runtime) =>
-    getMergedOptionsSerialize(runtime, options)
+  withMarkdownRuntime(
+    editor,
+    editor.plugin(MarkdownPlugin).store.get(),
+    (runtime) => getMergedOptionsSerialize(runtime, options)
   );

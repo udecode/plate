@@ -117,7 +117,6 @@ export {
   type DocumentChangeRelocation,
 } from '../core/change/mapping';
 export {
-  createInternalClipboardApi,
   type EditorExtensionsFromOptions,
   type EditorValueFromOptions,
   initializeEditorExtensions,
@@ -143,7 +142,10 @@ export {
 } from '../core/schema-compiler';
 export {
   getCompiledEditorConfiguration,
+  getCandidateEditorExtensionApi,
+  getEditorExtensionContributions,
   getInstalledEditorExtension,
+  getInstalledEditorExtensionApi,
   reportEditorLifecycleError,
 } from '../core/editor-extension';
 export {
@@ -203,7 +205,7 @@ export {
   assertSelectionSupported,
   decodeEditorSelection,
   encodeEditorSelection,
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   mapSelectionThroughChange,
 } from '../core/selection-protocol';
 export { createEditorEffect } from '../core/transaction-values';

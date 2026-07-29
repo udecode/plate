@@ -249,7 +249,7 @@ const removeEscapeSelection = (editor: MarkdownEditor, text: string) => {
 
     if (!node) return newText;
     if (editor.read.schema.isVoid(node[0])) {
-      const voidString = editor.read.markdown.serialize({
+      const voidString = editor.api.markdown.serialize({
         value: { children: [node[0]] },
       });
 
@@ -297,7 +297,7 @@ export const serializePromptBlocks = (
     })
     .map(([node]) => node);
 
-  return editor.read.markdown.serialize({
+  return editor.api.markdown.serialize({
     value: { children: blocks },
     withBlockId,
   });

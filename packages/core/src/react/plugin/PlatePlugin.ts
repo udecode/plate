@@ -2,7 +2,6 @@ import type React from 'react';
 
 import type {
   DecoratedRange,
-  EditorClipboardMiddlewareMap,
   Element,
   EditorNodeChangeContext,
   EditorTextChangeContext,
@@ -61,11 +60,11 @@ import type {
   PluginSelectors,
   PluginShortcutInput,
   BasePlugin,
-  DefineEditorExtension,
   DefinePluginCodecs,
   PluginCodecMapDeclaration,
   PlatePluginReadState,
   PlatePluginTransaction,
+  PlateClipboardHandler,
   WithAnyKey,
 } from '../../lib';
 import type {
@@ -102,7 +101,7 @@ export type EditorPlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
 
 export type PlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
   Omit<EditorExtension<any, any>, 'clipboard' | 'name'> & {
-    clipboard?: EditorClipboardMiddlewareMap<PlateEditor<Value, C>>;
+    clipboard?: PlateClipboardHandler<PlatePluginTransaction<C>>;
     key?: string;
     name?: string;
   };
@@ -120,7 +119,7 @@ type ContextualPlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
       | (Record<string, unknown | readonly unknown[]> &
           Deep2Partial<InferApi<C>>)
       | EditorExtensionApiFactory<PlatePluginExtensionEditor<C>>;
-    clipboard?: EditorClipboardMiddlewareMap<PlateEditor<Value, C>>;
+    clipboard?: PlateClipboardHandler<PlatePluginTransaction<C>>;
     key?: string;
     name?: string;
   };
@@ -139,12 +138,12 @@ type UnifiedEditorExtensionInput<
   C extends AnyPluginConfig,
   TExtension extends object | readonly object[],
 > = TExtension &
-  (TExtension extends { api: (...args: any[]) => any }
+  (TExtension extends { api: (...args: never[]) => unknown }
     ? {}
     : NoInfer<AuthoringPlateEditorExtensionInput<C>>);
 
 type ExtensionInputFromArgument<TExtension> = TExtension extends (
-  ...args: any[]
+  ...args: never[]
 ) => infer TResult
   ? NonNullable<TResult>
   : TExtension;
@@ -225,13 +224,13 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
      *
      * @default clsx(className, classNames[value])
      */
-    transformClassName?: (options: TransformOptions<C>) => any;
+    transformClassName?: (options: TransformOptions<C>) => string | undefined;
     /**
      * Transform the node value for the style or className.
      *
      * @default nodeValue
      */
-    transformNodeValue?: (options: TransformOptions<C>) => any;
+    transformNodeValue?: (options: TransformOptions<C>) => unknown;
     /** Transform the injected props. */
     transformProps?: (
       options: TransformOptions<C> & {
@@ -425,17 +424,17 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   };
 
 export type PlatePluginConfig<
-  K extends string = any,
-  StoreState = {},
-  A = {},
+  K extends string = string,
+  StoreState extends object = {},
+  A extends object = {},
   Tx extends AnyPluginTx = {},
-  S = {},
+  S extends object = {},
   D extends readonly PluginReference[] = readonly [],
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   SchemaModel = never,
-  PluginApi = {},
+  PluginApi extends object = {},
   Enabled extends boolean = boolean,
 > = Partial<
   Omit<
@@ -496,10 +495,9 @@ export type PlatePluginConfig<
 
 export type PlatePluginContext<
   C extends AnyPluginConfig = PluginConfig,
-  E extends PlateEditor<any, C> = PlateEditor<any, C>,
+  E extends PlateEditor<Value, C> = PlateEditor<Value, C>,
 > = PluginBaseContext<C> & {
   defineCodecs: DefinePluginCodecs<C>;
-  defineEditorExtension: DefineEditorExtension<C>;
   editor: E;
   plugin: EditorPlatePlugin<C>;
 };
@@ -520,9 +518,9 @@ type WithPlatePluginContext<C extends AnyPluginConfig, TConfig> = Omit<
 
 type RuntimePlatePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
 > = WithPlatePluginContext<
   C,
   Omit<
@@ -565,7 +563,7 @@ type PlateContractExtension<
   : {};
 
 type PlateTransactionReadGroup<TGroup extends object> = {
-  [TKey in keyof TGroup]: TGroup[TKey] extends (...args: any[]) => any
+  [TKey in keyof TGroup]: TGroup[TKey] extends (...args: never[]) => unknown
     ? TxReadMethod<TGroup[TKey]>
     : TGroup[TKey];
 };
@@ -828,9 +826,9 @@ type UnifiedStaticExtendedPlatePlugin<
 
 type StaticPlatePluginConfigBase<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   Enabled extends boolean = InferEnabled<C>,
 > = WithPlatePluginContext<
   C,
@@ -855,9 +853,9 @@ type StaticPlatePluginConfigBase<
 
 type StaticPlatePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   Enabled extends boolean = InferEnabled<C>,
 > = Omit<
   StaticPlatePluginConfigBase<C, EStoreState, EA, ES, Enabled>,
@@ -868,9 +866,9 @@ type StaticPlatePluginConfig<
 
 type TerminalPlatePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   Enabled extends boolean = InferEnabled<C>,
 > = Omit<StaticPlatePluginConfig<C, EStoreState, EA, ES, Enabled>, 'schema'> & {
   component?: NodeComponent;
@@ -985,8 +983,8 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __codecExtensions: BasePlugin<C>['__codecExtensions'];
   __htmlCodecExtensions: BasePlugin<C>['__htmlCodecExtensions'];
   __configurationLayers: BasePlugin<C>['__configurationLayers'];
-  __editorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
-  __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __editorExtensions: BasePlugin<C>['__editorExtensions'];
+  __extensions: BasePlugin<C>['__extensions'];
   __readExtensions: BasePlugin<C>['__readExtensions'];
   __txExtensions: BasePlugin<C>['__txExtensions'];
   clone: () => PlatePlugin<C>;
@@ -1015,7 +1013,10 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      TerminalPlatePluginConfig<C, {}, {}, {}, Enabled> & {
+      Omit<
+        TerminalPlatePluginConfig<C, {}, {}, {}, Enabled>,
+        'enabled' | 'type'
+      > & {
         enabled: Enabled;
         type: TType;
       },
@@ -1028,7 +1029,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      TerminalPlatePluginConfig<C> & { type: TType },
+      Omit<TerminalPlatePluginConfig<C>, 'type'> & { type: TType },
       TShortcuts
     >
   ): ConfiguredPlatePluginType<C, TType>;
@@ -1038,7 +1039,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedPlateShortcuts<
       C,
-      TerminalPlatePluginConfig<C, {}, {}, {}, Enabled> & {
+      Omit<TerminalPlatePluginConfig<C, {}, {}, {}, Enabled>, 'enabled'> & {
         enabled: Enabled;
       },
       TShortcuts
@@ -1117,9 +1118,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     TExtension
   >;
   extend<
-    EStoreState = {},
-    EA = {},
-    ES = {},
+    EStoreState extends object = {},
+    EA extends object = {},
+    ES extends object = {},
     const TShortcuts extends PlateShortcutRecord = {},
     const Enabled extends boolean = InferEnabled<C>,
   >(

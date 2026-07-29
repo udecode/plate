@@ -375,7 +375,7 @@ const PliteRuntimeView = <
       <ProjectionContext.Provider value={projectionContextValue}>
         <PliteAnnotationStoreContext.Provider value={annotationStore}>
           <EditorContext.Provider
-            value={reactEditor as ReactEditorContextValue<any>}
+            value={reactEditor as unknown as ReactEditorContextValue<any>}
           >
             <ReadOnlyContext.Provider value={readOnly}>
               <FocusedContext.Provider value={isFocused}>
@@ -956,7 +956,7 @@ const PliteSingleEditor = <
           <PliteRuntimeContext.Provider value={runtimeContextValue as any}>
             <EditorAnnouncementLiveRegion editor={editor} />
             <EditorContext.Provider
-              value={reactEditor as ReactEditorContextValue<any>}
+              value={reactEditor as unknown as ReactEditorContextValue<any>}
             >
               <ReadOnlyContext.Provider value={readOnly}>
                 <FocusedContext.Provider value={isFocused}>

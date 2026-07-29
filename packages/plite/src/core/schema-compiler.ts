@@ -336,6 +336,7 @@ export type CompiledSchemaPropertyMergeStrategy = 'replace' | 'set';
 
 export type CompiledSchemaProperty = Readonly<{
   descriptor: PropertyValueDescriptor;
+  exclusiveGroupIds: readonly string[];
   id: string;
   key: SchemaPropertyKey;
   lifecycle: Readonly<{
@@ -382,6 +383,7 @@ export type CompiledEditorSchema = Readonly<{
   primaryRoot: CompiledSchemaRoot;
   properties: Readonly<{
     byId: ReadonlyMap<string, CompiledSchemaProperty>;
+    conflictsByPropertyId: ReadonlyMap<string, ReadonlySet<string>>;
     elementAllowedByType: ReadonlyMap<string, ReadonlySet<string>>;
     lifecycle: ReadonlyMap<string, CompiledSchemaProperty['lifecycle']>;
     lookup: Readonly<{
@@ -389,6 +391,7 @@ export type CompiledEditorSchema = Readonly<{
       text: CompiledSchemaPropertyLookup;
     }>;
     mergeStrategies: ReadonlyMap<string, CompiledSchemaPropertyMergeStrategy>;
+    membersByExclusiveGroup: ReadonlyMap<string, ReadonlySet<string>>;
     textAllowedByParentType: ReadonlyMap<string, ReadonlySet<string>>;
   }>;
   revision: number;
@@ -1074,6 +1077,7 @@ const collectSchemaKeyDiagnostics = (
             property,
             placement === 'text'
               ? [
+                  'exclusive',
                   'inclusive',
                   'key',
                   'placement',
@@ -1086,6 +1090,37 @@ const collectSchemaKeyDiagnostics = (
             extensionName,
             path
           );
+          if (property.exclusive !== undefined) {
+            array(
+              property.exclusive,
+              extensionName,
+              `${path}.exclusive`
+            )?.forEach((value, groupIndex) => {
+              const groupPath = `${path}.exclusive.${groupIndex}`;
+              const group = check(
+                value,
+                ['id', 'kind'],
+                extensionName,
+                groupPath
+              );
+
+              if (
+                group &&
+                (typeof group.id !== 'string' ||
+                  group.id.length === 0 ||
+                  group.kind !== 'exclusive')
+              ) {
+                diagnostics.push(
+                  Object.freeze({
+                    code: 'invalid-schema-declaration',
+                    extensions: Object.freeze([extensionName]),
+                    message: `Schema declaration at ${groupPath} must be an exclusive property group with a non-empty id.`,
+                    path: groupPath,
+                  })
+                );
+              }
+            });
+          }
           if (
             property.key !== null &&
             typeof property.key === 'object' &&
@@ -3240,7 +3275,8 @@ const compileEditorSchemaInternal = (
     placement: 'element' | 'text',
     target: SchemaTarget | null,
     lifecycle: CompiledSchemaProperty['lifecycle'],
-    source: Source<SchemaProperty | PropertyValueDescriptor>
+    source: Source<SchemaProperty | PropertyValueDescriptor>,
+    exclusiveGroupIds: readonly string[] = []
   ) => {
     const clonedKey = validatePropertyKey(key, placement, source);
     const clonedTarget = target
@@ -3253,6 +3289,11 @@ const compileEditorSchemaInternal = (
 
     mutableProperties.push({
       descriptor,
+      exclusiveGroupIds: Object.freeze(
+        [...new Set(exclusiveGroupIds)].sort((left, right) =>
+          left.localeCompare(right)
+        )
+      ),
       key: clonedKey,
       lifecycle,
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
@@ -3334,7 +3375,8 @@ const compileEditorSchemaInternal = (
             split: property.split,
             typeChange: property.typeChange,
           }),
-          source
+          source,
+          (textProperty.exclusive ?? []).map(({ id }) => id)
         );
       } else {
         compileFailure(
@@ -3393,6 +3435,7 @@ const compileEditorSchemaInternal = (
 
       return Object.freeze({
         descriptor: property.descriptor,
+        exclusiveGroupIds: property.exclusiveGroupIds,
         id,
         key: property.key,
         lifecycle: property.lifecycle,
@@ -3415,6 +3458,28 @@ const compileEditorSchemaInternal = (
       );
     }
     byId.set(property.id, property);
+  }
+  const membersByExclusiveGroup = new Map<string, Set<string>>();
+
+  for (const property of compiledProperties) {
+    for (const groupId of property.exclusiveGroupIds) {
+      const members = membersByExclusiveGroup.get(groupId) ?? new Set();
+
+      members.add(property.id);
+      membersByExclusiveGroup.set(groupId, members);
+    }
+  }
+  const conflictsByPropertyId = new Map<string, Set<string>>();
+
+  for (const property of compiledProperties) {
+    const conflicts = new Set<string>();
+
+    for (const groupId of property.exclusiveGroupIds) {
+      for (const memberId of membersByExclusiveGroup.get(groupId) ?? []) {
+        if (memberId !== property.id) conflicts.add(memberId);
+      }
+    }
+    conflictsByPropertyId.set(property.id, conflicts);
   }
 
   const propertyIdsByElement = new Map<string, Set<string>>(
@@ -3600,6 +3665,7 @@ const compileEditorSchemaInternal = (
       .map(([group, parents]) => ({ group, parents: sortedStrings(parents) })),
     properties: compiledProperties.map((property) => ({
       descriptor: canonicalDescriptor(property.descriptor),
+      exclusiveGroupIds: property.exclusiveGroupIds,
       id: property.id,
       key:
         typeof property.key === 'string'
@@ -3665,10 +3731,12 @@ const compileEditorSchemaInternal = (
     }),
     properties: Object.freeze({
       byId: freezeMap(byId),
+      conflictsByPropertyId: freezeSetMap(conflictsByPropertyId),
       elementAllowedByType: freezeSetMap(propertyIdsByElement),
       lifecycle: freezeMap(lifecycle),
       lookup: Object.freeze({ element: elementLookup, text: textLookup }),
       mergeStrategies: freezeMap(mergeStrategies),
+      membersByExclusiveGroup: freezeSetMap(membersByExclusiveGroup),
       textAllowedByParentType: freezeSetMap(textIdsByParent),
     }),
     revision,

@@ -183,6 +183,7 @@ export function FindReplaceControl() {
         editor
           .plugin(FindReplacePlugin)
           .store.set({ search: event.target.value });
+        editor.api.react.refreshDecorations();
       }}
     />
   );

@@ -18,6 +18,7 @@ const useEditorMock = mock();
 const useEditorPluginMock = mock();
 const useEditorScrollElementMock = mock();
 const useEditorSelectorMock = mock();
+const usePluginStoreMock = mock();
 const observeMock = mock();
 const disconnectMock = mock();
 const OriginalIntersectionObserver = globalThis.IntersectionObserver;
@@ -45,6 +46,7 @@ mock.module('@platejs/core/react', () => ({
   useEditorPlugin: useEditorPluginMock,
   useEditorScrollElement: useEditorScrollElementMock,
   useEditorSelector: useEditorSelectorMock,
+  usePluginStore: usePluginStoreMock,
 }));
 
 const createEditor = (element = document.createElement('h2')) => ({
@@ -87,6 +89,7 @@ describe('useToc hook family', () => {
     useEditorPluginMock.mockReset();
     useEditorScrollElementMock.mockReset();
     useEditorSelectorMock.mockReset();
+    usePluginStoreMock.mockReset();
     Object.defineProperty(globalThis, 'IntersectionObserver', {
       configurable: true,
       value: IntersectionObserverMock,
@@ -151,6 +154,9 @@ describe('useToc hook family', () => {
     heading.getBoundingClientRect = () => DOMRect.fromRect({ y: 40 });
 
     useEditorMock.mockReturnValue(editor);
+    useEditorPluginMock.mockReturnValue({
+      update: editor.update.navigation,
+    });
     useEditorSelectorMock.mockReturnValue([]);
 
     const { useContentController } = await import(
@@ -272,12 +278,18 @@ describe('useToc hook family', () => {
     const container = createScrollableContainer();
 
     useEditorMock.mockReturnValue(editor);
-    useEditorPluginMock.mockReturnValue({
-      editor,
-      store: {
-        get: () => ({ isScroll: false, topOffset: 5 }),
-      },
-    });
+    useEditorPluginMock.mockImplementation((plugin) =>
+      plugin === actualPlatejsReact.NavigationFeedbackPlugin
+        ? {
+            update: editor.update.navigation,
+          }
+        : {
+            editor,
+            store: {
+              get: () => ({ isScroll: false, topOffset: 5 }),
+            },
+          }
+    );
     useEditorSelectorMock.mockReturnValue([
       {
         depth: 1,
@@ -287,6 +299,9 @@ describe('useToc hook family', () => {
         type: 'h1',
       },
     ]);
+    usePluginStoreMock.mockImplementation((_plugin, key) =>
+      key === 'isScroll' ? false : 5
+    );
     useEditorScrollElementMock.mockReturnValue(container);
 
     const { useTocElement, useTocElementState } = await import(
@@ -322,6 +337,9 @@ describe('useToc hook family', () => {
     const container = createScrollableContainer();
 
     useEditorMock.mockReturnValue(editor);
+    useEditorPluginMock.mockReturnValue({
+      update: editor.update.navigation,
+    });
     useEditorSelectorMock.mockReturnValue([
       {
         depth: 1,

@@ -2,6 +2,9 @@
 "@platejs/footnote": major
 ---
 
+Export `FootnotePluginState` as the complete mutable state contract for
+`BaseFootnotePlugin`.
+
 Use `BaseFootnotePlugin` / `FootnotePlugin` for footnote references and
 document-level footnote behavior. Read footnotes through `editor.read.footnote`
 and mutate them through `editor.update.footnote`, including

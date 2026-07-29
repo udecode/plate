@@ -5,7 +5,7 @@ import type {
 } from '../interfaces/editor';
 import { ElementApi } from '../interfaces/element';
 import { type Descendant, NodeApi } from '../interfaces/node';
-import type { Point } from '../interfaces/point';
+import { type Point, PointApi } from '../interfaces/point';
 import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { ContentSlice, createContentSliceFromFragment } from './content-slice';
@@ -39,9 +39,23 @@ export const getContentSlice = <V extends Value>(
   const selectedNode = SelectionApi.isNode(selection)
     ? (NodeApi.getIf(editor, selection.path) ?? null)
     : null;
+  const fullRootContent = selectedNode
+    ? null
+    : editor.read((state) => {
+        const [start, end] = RangeApi.edges(selection);
+        const rootStart = state.points.start([]);
+        const rootEnd = state.points.end([]);
+
+        return rootStart &&
+          rootEnd &&
+          PointApi.equals(start, rootStart) &&
+          PointApi.equals(end, rootEnd)
+          ? state.children()
+          : null;
+      });
   const content = selectedNode
     ? ([selectedNode] as readonly Descendant[])
-    : NodeApi.fragment(editor, selection);
+    : (fullRootContent ?? NodeApi.fragment(editor, selection));
   const document = editor.read((state) => state.value());
   const roots: Record<string, readonly Descendant[]> = {};
   const visitedRoots = new Set<string>();
@@ -64,7 +78,9 @@ export const getContentSlice = <V extends Value>(
       collect(node.children);
     });
   };
-  collect(content);
+  if (editor.read.schema.hasContentRoots()) {
+    collect(content);
+  }
 
   if (selectedNode) {
     return createContentSliceFromFragment<V>(content, 0, 0, roots);

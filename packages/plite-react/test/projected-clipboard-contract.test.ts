@@ -278,6 +278,42 @@ describe('projected clipboard', () => {
     });
   });
 
+  it('serializes projected selections from a root-scoped editor view', () => {
+    const runtime = createEditorRuntime({
+      extensions: [contentRootExtension],
+      initialValue: {
+        children: [contentCard()],
+        roots: { [SHARED_ROOT]: [paragraph('Inside')] },
+      },
+    });
+    const editor = createEditorView(runtime, {
+      root: SHARED_ROOT,
+    }) as unknown as ReactRuntimeEditor;
+    const graph = createPliteProjectionGraph([
+      { path: [0], root: SHARED_ROOT },
+    ]);
+
+    writePliteViewSelection(
+      editor,
+      createPliteViewSelection(graph, {
+        anchor: { point: point(SHARED_ROOT, [0, 0], 0) },
+        focus: { point: point(SHARED_ROOT, [0, 0], 'Inside'.length) },
+      })
+    );
+
+    expect(getProjectedViewSelectionSlice(editor)).toEqual({
+      content: [paragraph('Inside')],
+      openEnd: 1,
+      openStart: 1,
+    });
+    const clipboardData = createClipboardData();
+
+    expect(
+      writeProjectedViewSelectionClipboardData(editor, clipboardData)
+    ).toBe(true);
+    expect(clipboardData.data.get('text/plain')).toBe('Inside');
+  });
+
   it('writes plain text, html, and Plite fragment data from the projected model selection', () => {
     const { editor } = createFixture();
     const clipboardData = createClipboardData();

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "kind": "editor-audit-source-manifest",
-  "generatedAt": "2026-07-26T00:01:58.548Z",
+  "generatedAt": "2026-07-27T14:48:08.578Z",
   "authority": {
     "branch": "main",
     "clean": true,
-    "commit": "8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e",
+    "commit": "01eb2b5eae509509677345fd603acad001827dff",
     "license": {
       "file": "LICENSE",
       "packageDeclaration": "MIT",
@@ -25440,7 +25440,7 @@
       "status": "mapped"
     },
     {
-      "bytes": 34046,
+      "bytes": 34155,
       "conceptIds": [
         "WG-VIEW-007",
         "WG-VIEW-008",
@@ -26874,7 +26874,7 @@
           "visibility": "private"
         },
         {
-          "atomicConceptId": "WG-SOURCE-cd41e979edafee46",
+          "atomicConceptId": "WG-SOURCE-0847c31c7fe645dd",
           "conceptIds": [
             "WG-VIEW-007",
             "WG-VIEW-008",
@@ -26882,18 +26882,18 @@
             "WG-VIEW-010",
             "WG-VIEW-012"
           ],
-          "evidence": "src/editor/input.ts:860",
+          "evidence": "src/editor/input.ts:861",
           "kind": "variable",
-          "line": 860,
+          "line": 861,
           "name": "baseObservers",
           "status": "mapped",
           "visibility": "private"
         }
       ],
-      "evidence": "src/editor/input.ts:1-900",
-      "lineCount": 900,
+      "evidence": "src/editor/input.ts:1-901",
+      "lineCount": 901,
       "path": "src/editor/input.ts",
-      "sha256": "2306b71f7631b4710adc63c64e488feb7acd65842e2cb4a3b4745c1bdca2c091",
+      "sha256": "c3f2b44f3eb6df52bf87dcfc213345852ff6ae8fecf076d63984855fc7f90640",
       "status": "mapped"
     },
     {

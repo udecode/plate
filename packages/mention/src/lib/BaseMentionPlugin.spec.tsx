@@ -78,6 +78,35 @@ describe('BaseMentionPlugin', () => {
     expect(children[2]).toEqual({ text: 'llo' });
   });
 
+  it('replaces a typed trigger with the transient mention input', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseMentionPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor.update.text.insert('@');
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [
+          { text: '' },
+          {
+            children: [{ text: '' }],
+            trigger: '@',
+            type: NODES.mentionInput,
+          },
+          { text: '' },
+        ],
+        type: KEYS.p,
+      },
+    ]);
+  });
+
   it('inserts a trailing space when the mention lands at block end', () => {
     const MentionPlugin = BaseMentionPlugin.configure({
       initialState: { insertSpaceAfterMention: true },
@@ -92,9 +121,7 @@ describe('BaseMentionPlugin', () => {
       initialValue: [{ children: [{ text: 'hi' }], type: 'p' }],
     });
 
-    editor
-      .plugin(MentionPlugin)
-      .update.insert({ key: 'u1', search: 'ad', value: 'Ada' });
+    editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
 
     const entry = editor.read.nodes.get<Element>([0]);
     assert(entry);
@@ -128,9 +155,7 @@ describe('BaseMentionPlugin', () => {
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
 
-    editor
-      .plugin(MentionPlugin)
-      .update.insert({ key: 'u1', search: 'ad', value: 'Ada' });
+    editor.plugin(MentionPlugin).update.insert({ key: 'u1', value: 'Ada' });
 
     const entry = editor.read.nodes.get<Element>([0]);
     assert(entry);

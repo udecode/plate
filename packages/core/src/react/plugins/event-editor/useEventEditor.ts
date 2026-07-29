@@ -1,12 +1,18 @@
 import { useEffect } from 'react';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
-import { useEditorId } from '../../stores/plate/createPlateStore';
 import {
   BLUR_EDITOR_EVENT,
+  EventEditorStore,
   FOCUS_EDITOR_EVENT,
-  useEventEditorValue,
 } from './EventEditorStore';
+import {
+  PLATE_SCOPE,
+  useEditor,
+  usePlateLocalValue,
+} from '../../stores/plate/createPlateStore';
+
+export const { useValue: useEventEditorValue } = EventEditorStore;
 
 export const useFocusEditorEvents = ({
   editorRef,
@@ -41,9 +47,25 @@ export const useFocusEditorEvents = ({
 
 /** Whether the current editor is the last focused editor. */
 export const useFocusedLast = (id?: string) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const editorId = id ?? useEditorId();
+  const fallbackEditorId = usePlateLocalValue('editor', {
+    warnIfNoStore: false,
+  })?.id;
+  const editorId = id ?? fallbackEditorId;
   const lastFocusedEditorId = useEventEditorValue('last');
 
   return editorId === lastFocusedEditorId;
+};
+
+/** Get last event editor id: focus, blur or last. */
+export const useEventPlateId = (id?: string) => {
+  const focus = useEventEditorValue('focus');
+  const blur = useEventEditorValue('blur');
+  const last = useEventEditorValue('last');
+  const providerId = useEditor().id;
+
+  if (id) return id;
+  if (focus) return focus;
+  if (blur) return blur;
+
+  return last ?? providerId ?? PLATE_SCOPE;
 };

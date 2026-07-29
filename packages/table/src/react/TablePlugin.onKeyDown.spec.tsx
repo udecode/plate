@@ -49,11 +49,11 @@ const runKeyDown = (
   editor: ReturnType<typeof createTableEditor>,
   event: KeyboardEvent
 ) => {
-  const handler = (editor.getPlugin(TablePlugin) as any).handlers?.onKeyDown;
+  const handler = pipeHandler(editor, { handlerKey: 'onKeyDown' });
 
   if (!handler) throw new Error('Expected TablePlugin onKeyDown handler');
 
-  return handler({ editor, event });
+  return handler(event);
 };
 
 describe('TablePlugin onKeyDown', () => {

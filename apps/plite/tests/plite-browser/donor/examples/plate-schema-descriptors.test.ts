@@ -387,7 +387,7 @@ test('preserves exact product codec slices across priority, fallback, errors, co
     await expect.poll(() => editor.get.modelText()).toBe('fallback:throw');
 
     await page
-      .getByRole('button', { name: 'Use replacement codec options' })
+      .getByRole('button', { name: 'Use replacement codec state' })
       .click();
     await expect(page.getByTestId('plate-codec-label')).toHaveText(
       'replacement'

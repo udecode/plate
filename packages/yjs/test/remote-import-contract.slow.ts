@@ -72,16 +72,18 @@ const recordRemoteImportCommits = (
   editor.extend(
     defineEditorExtension({
       name: 'remote-import-commit-recorder',
-      onCommit({ commit }): void {
-        if (!commit.tags.includes('remote-yjs-import')) {
-          return;
-        }
+      on: {
+        commit({ commit }): void {
+          if (!commit.tags.includes('remote-yjs-import')) {
+            return;
+          }
 
-        commits.push({
-          documentChanged: commit.changed.has('document'),
-          replaced: commit.changed.has('replace'),
-          tags: [...commit.tags],
-        });
+          commits.push({
+            documentChanged: commit.changed.has('document'),
+            replaced: commit.changed.has('replace'),
+            tags: [...commit.tags],
+          });
+        },
       },
     })
   );
@@ -142,7 +144,7 @@ describe('@platejs/yjs remote import contract', () => {
     });
     const incrementExtension = defineEditorExtension({
       name: 'counter-increment-effect',
-      effects: [increment],
+      effectTypes: [increment],
     });
     const createPeer = (clientId: string, doc = new Y.Doc()) => {
       const editor = createEditor({
@@ -190,7 +192,7 @@ describe('@platejs/yjs remote import contract', () => {
     });
     const effects = defineEditorExtension({
       name: 'effect-only-announcement',
-      effects: [announce],
+      effectTypes: [announce],
     });
     const createPeer = (doc: Y.Doc, record = false) => {
       const received: string[] = [];
@@ -202,12 +204,14 @@ describe('@platejs/yjs remote import contract', () => {
         ? editor.extend(
             defineEditorExtension({
               name: 'effect-only-recorder',
-              onCommit({ commit }) {
-                if (!commit.tags.includes('remote-yjs-import')) return;
+              on: {
+                commit({ commit }) {
+                  if (!commit.tags.includes('remote-yjs-import')) return;
 
-                for (const effect of commit.effects) {
-                  if (effect.type === announce) received.push(effect.value);
-                }
+                  for (const effect of commit.effects) {
+                    if (effect.type === announce) received.push(effect.value);
+                  }
+                },
               },
             })
           )
@@ -258,7 +262,7 @@ describe('@platejs/yjs remote import contract', () => {
       key: 'effect-codec-identity.nested',
     });
     const effects = defineEditorExtension({
-      effects: [nested],
+      effectTypes: [nested],
       name: 'effect-codec-identity',
     });
     const sourceDoc = new Y.Doc();
@@ -281,14 +285,16 @@ describe('@platejs/yjs remote import contract', () => {
     const cleanupRecorder = target.extend(
       defineEditorExtension({
         name: 'effect-codec-identity-recorder',
-        onCommit({ commit }) {
-          if (!commit.tags.includes('remote-yjs-import')) return;
+        on: {
+          commit({ commit }) {
+            if (!commit.tags.includes('remote-yjs-import')) return;
 
-          for (const effect of commit.effects) {
-            if (effect.type === nested) {
-              received.push(effect as EditorEffect<Payload>);
+            for (const effect of commit.effects) {
+              if (effect.type === nested) {
+                received.push(effect as EditorEffect<Payload>);
+              }
             }
-          }
+          },
         },
       })
     );
@@ -333,7 +339,7 @@ describe('@platejs/yjs remote import contract', () => {
     });
     const incrementExtension = defineEditorExtension({
       name: 'concurrent-counter-increment-effect',
-      effects: [increment],
+      effectTypes: [increment],
     });
     const createPeer = (
       clientId: string,
@@ -405,11 +411,11 @@ describe('@platejs/yjs remote import contract', () => {
     });
     const extensionA = defineEditorExtension({
       name: 'source-a-effects',
-      effects: [effectA],
+      effectTypes: [effectA],
     });
     const extensionB = defineEditorExtension({
       name: 'source-b-effects',
-      effects: [effectB],
+      effectTypes: [effectB],
     });
     const createSource = (
       doc: Y.Doc,
@@ -442,12 +448,14 @@ describe('@platejs/yjs remote import contract', () => {
     const cleanupRecorder = targetEditor.extend(
       defineEditorExtension({
         name: 'per-source-effect-recorder',
-        onCommit({ commit }) {
-          if (!commit.tags.includes('remote-yjs-import')) return;
+        on: {
+          commit({ commit }) {
+            if (!commit.tags.includes('remote-yjs-import')) return;
 
-          received.push(
-            ...commit.effects.map((effect) => String(effect.value))
-          );
+            received.push(
+              ...commit.effects.map((effect) => String(effect.value))
+            );
+          },
         },
       })
     );
@@ -502,7 +510,7 @@ describe('@platejs/yjs remote import contract', () => {
     });
     const incrementExtension = defineEditorExtension({
       name: 'atomic-counter-increment-effect',
-      effects: [increment],
+      effectTypes: [increment],
     });
     const createPeer = (doc: Y.Doc) => {
       const editor = createEditor({
@@ -516,13 +524,15 @@ describe('@platejs/yjs remote import contract', () => {
       const cleanupRecorder = editor.extend(
         defineEditorExtension({
           name: 'atomic-shared-effect-recorder',
-          onCommit({ commit }): void {
-            if (!commit.tags.includes('remote-yjs-import')) return;
+          on: {
+            commit({ commit }): void {
+              if (!commit.tags.includes('remote-yjs-import')) return;
 
-            remoteCommits.push({
-              documentChanged: commit.changed.has('document'),
-              effectKeys: commit.effects.map((effect) => effect.type.key),
-            });
+              remoteCommits.push({
+                documentChanged: commit.changed.has('document'),
+                effectKeys: commit.effects.map((effect) => effect.type.key),
+              });
+            },
           },
         })
       );
@@ -604,7 +614,7 @@ describe('@platejs/yjs remote import contract', () => {
     const sourceCounter = createCounter('source-counter', incrementV2);
     const sourceEffectExtension = defineEditorExtension({
       name: 'source-versioned-effect',
-      effects: [incrementV2],
+      effectTypes: [incrementV2],
     });
     const sourceDoc = new Y.Doc();
     const sourceEditor = createEditor({
@@ -624,7 +634,7 @@ describe('@platejs/yjs remote import contract', () => {
     const oldCounter = createCounter('old-counter', incrementV1);
     const oldEffectExtension = defineEditorExtension({
       name: 'old-versioned-effect',
-      effects: [incrementV1],
+      effectTypes: [incrementV1],
     });
     const oldEditor = createEditor({
       extensions: [oldCounter, oldEffectExtension] as const,
@@ -650,7 +660,7 @@ describe('@platejs/yjs remote import contract', () => {
     const upgradedCounter = createCounter('upgraded-counter', incrementV2);
     const upgradedEffectExtension = defineEditorExtension({
       name: 'upgraded-versioned-effect',
-      effects: [incrementV2],
+      effectTypes: [incrementV2],
     });
     const upgradedEditor = createEditor({
       extensions: [upgradedCounter, upgradedEffectExtension] as const,
@@ -714,7 +724,7 @@ describe('@platejs/yjs remote import contract', () => {
       reduce: (value, effect) => (effect.type === focus ? effect.value : value),
     });
     const focusExtension = defineEditorExtension({
-      effects: [focus],
+      effectTypes: [focus],
       name: 'collab-focus-point-effect',
     });
     const createPeer = (doc: Y.Doc) => {
@@ -942,13 +952,15 @@ describe('@platejs/yjs remote import contract', () => {
       const cleanupRecorder = editor.extend(
         defineEditorExtension({
           name: 'set-valued-yjs-commit-recorder',
-          onCommit({ commit }) {
-            if (!commit.changed.has('document')) return;
+          on: {
+            commit({ commit }) {
+              if (!commit.changed.has('document')) return;
 
-            (commit.tags.includes('remote-yjs-import')
-              ? remoteChanges
-              : localChanges
-            ).push(commit.changes.toJSON());
+              (commit.tags.includes('remote-yjs-import')
+                ? remoteChanges
+                : localChanges
+              ).push(commit.changes.toJSON());
+            },
           },
         })
       );

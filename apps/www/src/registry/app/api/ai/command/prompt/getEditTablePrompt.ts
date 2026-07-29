@@ -45,7 +45,7 @@ export function buildEditTableMultiCellPrompt(
               throw new Error('Table cells must contain block elements.');
             }
 
-            return editor.read.markdown
+            return editor.api.markdown
               .serialize({ value: { children: [child] } })
               .trim();
           })
@@ -64,7 +64,7 @@ export function buildEditTableMultiCellPrompt(
         throw new Error('Table cells must contain block elements.');
       }
 
-      return `<Cell id="${id}">\n${editor.read.markdown
+      return `<Cell id="${id}">\n${editor.api.markdown
         .serialize({ value: { children: cell.children } })
         .trim()}\n</Cell>`;
     })

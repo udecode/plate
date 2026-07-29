@@ -16,7 +16,6 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer/deserializeMd';
 
 jsxt;
 
@@ -44,7 +43,7 @@ const createTestEditor = (plugins: any[] = []) =>
 
 const editor = createTestEditor();
 
-describe('deserializeMd - paragraph', () => {
+describe('editor.api.markdown.deserialize - paragraph', () => {
   it('deserialize paragraph with one linebreak', () => {
     const input = `
 Paragaph with two new Lines\\
@@ -59,7 +58,9 @@ Paragaph with two new Lines\\
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual({ children: output });
+    expect(editor.api.markdown.deserialize(input)).toEqual({
+      children: output,
+    });
   });
 
   it('deserialize paragraph with two leading linebreaks', () => {
@@ -78,7 +79,9 @@ Paragaph with two new Lines\\
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual({ children: output });
+    expect(editor.api.markdown.deserialize(input)).toEqual({
+      children: output,
+    });
   });
 
   it('deserialize paragraph with leading linebreaks in the middle', () => {
@@ -98,7 +101,9 @@ followed by text`;
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual({ children: output });
+    expect(editor.api.markdown.deserialize(input)).toEqual({
+      children: output,
+    });
   });
 
   it('deserialize paragraph with leading linebreaks in the middle', () => {
@@ -118,7 +123,9 @@ followed by text`;
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual({ children: output });
+    expect(editor.api.markdown.deserialize(input)).toEqual({
+      children: output,
+    });
   });
 
   it('deserialize leading empty paragraphts as <br />', () => {
@@ -141,7 +148,9 @@ Paragaph followed by two empty paragraphts
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual({ children: output });
+    expect(editor.api.markdown.deserialize(input)).toEqual({
+      children: output,
+    });
   });
 
   it('collapse leading linebreak - collapsing break', () => {
@@ -158,6 +167,8 @@ Paragaph followed by two empty paragraphts
       </fragment>
     );
 
-    expect(deserializeMd(editor, input)).toEqual({ children: output });
+    expect(editor.api.markdown.deserialize(input)).toEqual({
+      children: output,
+    });
   });
 });

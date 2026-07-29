@@ -1,30 +1,23 @@
 import type { BaseEditor } from '../editor';
-import type { PluginConfig } from './PluginConfig';
-import type { BasePlugin } from './BasePlugin';
 
 import { createBaseEditor } from '../editor';
 import { createBasePlugin } from './createBasePlugin';
 import { getEditorPlugin } from './getEditorPlugin';
 
 describe('getEditorPlugin', () => {
-  type TestConfig = PluginConfig<
-    'test',
-    {
-      testValue: string;
-    }
-  >;
+  const TestPlugin = createBasePlugin({
+    key: 'test',
+    type: 'test-type',
+    initialState: {
+      testValue: 'initial',
+    },
+  });
 
   let editor: BaseEditor;
-  let testPlugin: BasePlugin<TestConfig>;
+  let testPlugin: typeof TestPlugin;
 
   beforeEach(() => {
-    testPlugin = createBasePlugin<TestConfig>({
-      key: 'test',
-      type: 'test-type',
-      initialState: {
-        testValue: 'initial',
-      },
-    });
+    testPlugin = TestPlugin;
 
     editor = createBaseEditor({
       plugins: [testPlugin],
@@ -50,13 +43,7 @@ describe('getEditorPlugin', () => {
   });
 
   it('works with extension context typing', () => {
-    type Config = PluginConfig<
-      'test',
-      {
-        testValue: string;
-      }
-    >;
-    const plugin = createBasePlugin<Config>({
+    const plugin = createBasePlugin({
       key: 'test',
       type: 'test-type',
       initialState: {

@@ -1547,7 +1547,7 @@ describe('fragment deletion', () => {
         type: 'list-test-root-owner',
       });
       const editor = createBaseEditor({
-        plugins: [BaseListPlugin, RootOwnerPlugin],
+        plugins: [BaseListPlugin, RootOwnerPlugin] as AnyBasePlugin[],
         selection: input.selection,
         initialValue: input.children,
       });

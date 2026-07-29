@@ -564,13 +564,13 @@ Required shape:
      global codec helper, casts, or callback annotations
    - document the MIME-keyed map's `'text/html'` value as one rule or a
      non-empty ordered rule tuple; multiple representations stay in that map
-   - keep inline `extension` objects plain; constructors and `.extend()`
-     contextually type them
-   - when documenting an extracted reusable Plate extension factory, pass the
-     plugin context and return `context.defineEditorExtension({ ... })` to
-     preserve nested command/input/state/transaction inference
-   - distinguish that context helper from `defineEditorExtension` imported
-     from `@platejs/plite`, which is for standalone Plite extensions
+   - keep Plate `extension` objects and callback returns plain; constructors
+     and `.extend()` contextually type them
+   - keep Plate-context capture inside the authoring callback and extract
+     domain inputs; never teach a context identity helper, callback annotation,
+     cast, or `any` to recover nested inference
+   - use `defineEditorExtension` imported from `@platejs/plite` only for
+     independently reusable standalone Plite descriptors
    - put constructor-accessible fields and their context callbacks directly in
      `createBasePlugin()` / `createPlatePlugin()`; use `.extend()` only for an
      imported/prebuilt descriptor, a shared factory the constructor cannot

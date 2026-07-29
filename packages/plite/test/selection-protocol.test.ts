@@ -76,10 +76,10 @@ const cellSelectionCodec = defineValueCodec<CellSelection>({
 
 const cellSelectionExtension = defineEditorExtension({
   name: 'cell-selection',
-  selections: [
+  selectionKinds: [
     {
       codec: cellSelectionCodec,
-      domRange(selection) {
+      primaryRange(selection) {
         return selection.cells[1] ?? null;
       },
       kind: 'cell',
@@ -110,7 +110,7 @@ const cellSelectionExtension = defineEditorExtension({
 
 const conflictingCellSelectionExtension = defineEditorExtension({
   name: 'other-cell-selection',
-  selections: cellSelectionExtension.selections,
+  selectionKinds: cellSelectionExtension.selectionKinds,
 });
 
 const initialValue = [
@@ -224,7 +224,7 @@ describe('extensible selection protocol', () => {
       cellSelection().cells[0]
     );
     assert.deepEqual(
-      editor.read.selection.domRange(),
+      editor.read.selection.primaryRange(),
       cellSelection().cells[1]
     );
 
@@ -253,7 +253,7 @@ describe('extensible selection protocol', () => {
     });
 
     assert.deepEqual(editor.read.selection(), selection);
-    assert.equal(editor.read.selection.domRange(), null);
+    assert.equal(editor.read.selection.primaryRange(), null);
   });
 
   it('preserves an explicit null custom DOM range projection', () => {
@@ -268,7 +268,7 @@ describe('extensible selection protocol', () => {
     });
 
     assert.deepEqual(editor.read.selection(), selection);
-    assert.equal(editor.read.selection.domRange(), null);
+    assert.equal(editor.read.selection.primaryRange(), null);
   });
 
   it('reads a node selection from its named root as one closed exact-owner slice', () => {

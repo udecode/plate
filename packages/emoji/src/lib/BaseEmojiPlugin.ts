@@ -4,13 +4,13 @@ import {
   createTriggerComboboxExtension,
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
-import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { createBasePlugin } from '@platejs/core';
 import { type EditorUpdateTransaction, property } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { DEFAULT_EMOJI_LIBRARY } from './constants';
+import { DEFAULT_EMOJI_LIBRARY } from './EmojiLibrary';
 
-type EmojiPluginState = {
+export type EmojiPluginState = {
   /**
    * The emoji data.
    *
@@ -23,6 +23,13 @@ type EmojiPluginState = {
   ) => Exclude<
     Parameters<EditorUpdateTransaction['nodes']['insert']>[0],
     unknown[]
+  >;
+  createComboboxInput: NonNullable<
+    TriggerComboboxPluginState['createComboboxInput']
+  >;
+  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
+  triggerPreviousCharPattern: NonNullable<
+    TriggerComboboxPluginState['triggerPreviousCharPattern']
   >;
 } & TriggerComboboxPluginState;
 
@@ -59,12 +66,16 @@ export const BaseEmojiPlugin = createBasePlugin({
   initialState: emojiInitialState,
 
   editOnly: true,
-  extension: (context) => createTriggerComboboxExtension(context),
+  extension: ({ editor, plugin, store, type }) =>
+    createTriggerComboboxExtension({
+      editor,
+      getState: () => store.get(),
+      name: plugin.key,
+      type,
+    }),
   update: ({ store, tx }) => ({
     insert: (emoji: Emoji) => {
       tx.nodes.insert(store.get('createEmojiNode')(emoji));
     },
   }),
 });
-
-export type EmojiInputConfig = InferConfig<typeof BaseEmojiPlugin>;

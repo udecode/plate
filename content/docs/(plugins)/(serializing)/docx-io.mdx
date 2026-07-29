@@ -196,6 +196,8 @@ Downloads an existing DOCX blob.
 ```ts
 type DocxComment = {
   id: string;
+  /** Positions of this comment in result.nodes. */
+  references: Point[];
   text: string;
 };
 ```

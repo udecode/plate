@@ -1,21 +1,14 @@
 import { renderHook } from '@testing-library/react';
 import * as actualCoreReact from '@platejs/core/react';
-import * as actualPliteReact from '@platejs/plite-react';
 import { KEYS } from '@platejs/utils';
 
 const useEditorMock = mock();
 const useEditorSelectorMock = mock();
-const useEditorReadOnlyMock = mock();
 
 mock.module('@platejs/core/react', () => ({
   ...actualCoreReact,
   useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
-}));
-
-mock.module('@platejs/plite-react', () => ({
-  ...actualPliteReact,
-  useEditorReadOnly: useEditorReadOnlyMock,
 }));
 
 mock.module('./ListPlugin', () => ({
@@ -26,7 +19,6 @@ describe('list-classic hooks', () => {
   beforeEach(() => {
     useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
-    useEditorReadOnlyMock.mockReset();
   });
 
   afterAll(() => {
@@ -78,11 +70,12 @@ describe('list-classic hooks', () => {
     );
     const setNodes = mock();
     const element = { checked: false, id: 'todo-1' };
+    let readOnly = false;
 
     useEditorMock.mockReturnValue({
+      read: { view: { isReadOnly: () => readOnly } },
       update: { nodes: { set: setNodes } },
     });
-    useEditorReadOnlyMock.mockReturnValue(false);
 
     const { result } = renderHook(() => {
       const state = useTodoListElementState({ element } as any);
@@ -93,5 +86,10 @@ describe('list-classic hooks', () => {
     result.current.checkboxProps.onCheckedChange(true);
 
     expect(setNodes).toHaveBeenCalledWith({ checked: true }, { at: element });
+
+    readOnly = true;
+    result.current.checkboxProps.onCheckedChange(false);
+
+    expect(setNodes).toHaveBeenCalledTimes(1);
   });
 });

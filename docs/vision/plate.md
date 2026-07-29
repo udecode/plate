@@ -60,6 +60,12 @@ Current priorities:
   projection, and declaration emit. If it only carries a type through, fix the
   owning generic or keep the stage; callback annotations, casts, and `any` are
   not parity.
+- A field that already owns contextual typing does not expose a second public
+  identity helper merely to reapply its nested type. Fix the owning generic and
+  hard-cut that compiler machinery. Plate `extension` objects and callback
+  returns stay plain; context-dependent behavior stays inside the authoring
+  callback, while independently reusable standalone descriptors use the Plite
+  builder with domain inputs.
 - Plugin constructors own every independent author contribution: `api`,
   `read`, `selectors`, `update`, `extension`, `codecs`, and ordinary static
   fields and their context callbacks. Codec maps use the constructor callback's context-bound
@@ -89,6 +95,11 @@ Current priorities:
   `editor.plugin(Plugin).store`. React subscriptions use `usePluginStore` or
   `useEditorPluginStore`. Do not restore deleted option accessors or add a
   parallel immutable `config` channel.
+- Every state-owning production descriptor has a named `*PluginState`, exported
+  with an exported descriptor. Owner defaults are checked against that contract
+  through a typed constant or explicit factory return type; they never define
+  the contract by inference, `as`, or `satisfies`. Consumer configuration stays
+  partial and inline.
 - Capability names encode execution boundaries. `selectors` are pure
   projections of plugin store state; `read` is a pure, replayable query over a
   supplied document snapshot; `api` is a stable plugin service not bound to a

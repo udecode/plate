@@ -10,5 +10,6 @@ export const ViewPlugin = DOMPlugin.extend(({ editor }) => ({
         },
       },
     },
+    key: 'view',
   },
 }));

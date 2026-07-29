@@ -1,8 +1,10 @@
 import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
+  ContentSlice,
   type Descendant,
   defineEditorExtension,
+  editorReads,
   ElementApi,
 } from '@platejs/plite';
 
@@ -31,9 +33,24 @@ export const excludeDiffFromFragment = (
 export const createExcludeDiffFragmentExtension = () =>
   defineEditorExtension({
     name: 'exclude-diff-fragment',
-    queries: {
-      fragment: {
-        get: ({ next }) => excludeDiffFromFragment(next()),
-      },
-    },
+    read: ({ around }) => [
+      around(editorReads.slice.export, ({ next }) => {
+        const slice = next();
+
+        return ContentSlice.fromJSON({
+          ...slice,
+          content: excludeDiffFromFragment(slice.content),
+          ...(slice.roots
+            ? {
+                roots: Object.fromEntries(
+                  Object.entries(slice.roots).map(([root, children]) => [
+                    root,
+                    excludeDiffFromFragment(children),
+                  ])
+                ),
+              }
+            : {}),
+        });
+      }),
+    ],
   });

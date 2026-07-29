@@ -1,7 +1,6 @@
 import type {
   AnyPluginConfig,
   BasePlugin,
-  DefineEditorExtension,
   InferDependencies,
   InferPluginStoreState,
   PluginConfig,
@@ -76,47 +75,11 @@ const RequiredBranchPlugin = createBasePlugin({
   },
 });
 
-type ExtractedDependencyExtensionConfig = PluginConfig<
-  'extractedDependencyExtension',
-  {},
-  {},
-  {},
-  {},
-  {},
-  readonly [typeof RequiredLeafPlugin]
->;
-
-const withRequiredLeafExtension = (
-  defineEditorExtension: DefineEditorExtension<ExtractedDependencyExtensionConfig>
-) =>
-  defineEditorExtension({
-    commands: ({ handle }) => [
-      handle(editorCommands.insertText, ({ input, state }) => {
-        const exactText: string = input.text;
-
-        void exactText;
-
-        return state.transaction((tx) => {
-          tx.requiredLeaf.runRequiredLeaf();
-        });
-      }),
-    ],
-    name: 'extracted-required-leaf',
-  });
-
-export const ExtractedDependencyExtensionPlugin =
-  createBasePlugin<ExtractedDependencyExtensionConfig>({
-    dependencies: [RequiredLeafPlugin],
-    key: 'extractedDependencyExtension',
-  }).extend(({ defineEditorExtension }) => ({
-    extension: withRequiredLeafExtension(defineEditorExtension),
-  }));
-
 export const DependencyAwareBaseExtensionPlugin = createBasePlugin({
   dependencies: [RequiredLeafPlugin],
   key: 'dependencyAwareBaseExtension',
-}).extend(({ defineEditorExtension }) => ({
-  extension: defineEditorExtension({
+}).extend(() => ({
+  extension: {
     commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {
         const exactText: string = input.text;
@@ -125,10 +88,12 @@ export const DependencyAwareBaseExtensionPlugin = createBasePlugin({
 
         return state.transaction((tx) => {
           tx.requiredLeaf.runRequiredLeaf();
+          // @ts-expect-error Extension transactions expose installed dependency groups only.
+          tx.missingDependency.run();
         });
       }),
     ],
-  }),
+  },
 }));
 
 const portableStateField = defineStateField({
@@ -358,8 +323,8 @@ const ReactRequiredLeafPlugin = createPlatePlugin({
 export const DependencyAwareReactExtensionPlugin = createPlatePlugin({
   dependencies: [ReactRequiredLeafPlugin],
   key: 'dependencyAwareReactExtension',
-}).extend(({ defineEditorExtension }) => ({
-  extension: defineEditorExtension({
+}).extend(() => ({
+  extension: {
     commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {
         const exactText: string = input.text;
@@ -368,10 +333,12 @@ export const DependencyAwareReactExtensionPlugin = createPlatePlugin({
 
         return state.transaction((tx) => {
           tx.reactRequiredLeaf.runReactRequiredLeaf();
+          // @ts-expect-error Extension transactions expose installed dependency groups only.
+          tx.missingDependency.run();
         });
       }),
     ],
-  }),
+  },
 }));
 export const ReactParentPlugin = createPlatePlugin({
   dependencies: [ReactRequiredLeafPlugin],
@@ -436,9 +403,11 @@ const ConvertedExtensionInferencePlugin = toPlatePlugin(
           event: 'content',
         },
       ],
-      onCommit({ commit }) {
-        void commit.tags;
-        editor.api.requiredBranch.read();
+      on: {
+        commit({ commit }) {
+          void commit.tags;
+          editor.api.requiredBranch.read();
+        },
       },
     },
   })

@@ -93,14 +93,15 @@ findReplace.store.set({ search: search.trim() });
 | Helper | 类型 | 用途 |
 | --- | --- | --- |
 | `api[pluginKey]` | `InferOwnApi<C>` | 从具体推断编辑器调用已安装插件的 query 和 service。 |
-| `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | 打开一个已安装插件的类型化 portal。 |
+| `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | 打开插件描述符的类型化 portal。 |
+| `plugin(plugin).installed` | `boolean` | 插件可选时，先检查是否已安装，再读取其他 portal 字段。 |
 | `plugin(plugin).api` | `InferOwnApi<C>` | 从通用代码或精确描述符调用同一个插件 API。 |
 | `plugin(plugin).update` | `InferOwnTx<C>` | 执行一个插件拥有的 update 命令。 |
 | `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value` | 读取一个 state 字段或命名 selector 结果。 |
 | `plugin(plugin).store.get()` | `() => InferPluginStoreState<C>` | 读取完整的当前插件 state。 |
 | `plugin(plugin).store.set(partial)` | `(partial) => void` | 合并 state 字段。 |
 | `plugin(plugin).store.set(recipe)` | `(draft) => void` | 通过 draft recipe 更新 state。 |
-| `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | 读取 overrides 和配置后的插件实例。 |
+| `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | 读取 overrides 和配置后的已安装插件实例；插件缺失或禁用时抛出错误。 |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | 解析插件 key 对应的节点 type。 |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | 读取 injected node props，并从插件 type 填充默认 `nodeKey` 和 `styleKey`。 |
 

@@ -56,7 +56,8 @@
     "@ai-sdk/react": "^3.0.0",
     "@plate/scripts": "workspace:*",
     "@platejs/test-utils": "workspace:^",
-    "ai": "^6.0.0"
+    "ai": "^6.0.0",
+    "remark-math": "6.0.0"
   },
   "peerDependencies": {
     "@ai-sdk/react": "^3.0.0",

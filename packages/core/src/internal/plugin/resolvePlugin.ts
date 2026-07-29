@@ -1,16 +1,11 @@
 import type { BaseEditor } from '../../lib/editor';
-import type {
-  AnyPluginConfig,
-  AnyPluginTx,
-  PluginConfig,
-} from '../../lib/plugin/PluginConfig';
+import type { AnyPluginConfig } from '../../lib/plugin/PluginConfig';
 import type {
   PlatePluginReadState,
   PlatePluginTransaction,
 } from '../../lib/editor/pluginRuntimeTypes';
 import type {
   AnyBasePlugin,
-  BasePlugin,
   BasePluginContext,
   PlateEditorExtensionInput,
   PlatePluginReadExtension,
@@ -70,7 +65,7 @@ const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
   (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
     Object.freeze([...plugin.targetPluginKeys]);
 
-  (validatePlugin as any)(editor, plugin);
+  validatePlugin(editor, plugin);
 
   return plugin;
 };
@@ -86,6 +81,11 @@ type UnifiedExtensionResult = Record<PropertyKey, unknown> & {
     tx: PlatePluginTransaction<AnyPluginConfig>;
   }) => object;
 };
+
+const isUnifiedExtensionResult = (
+  value: unknown
+): value is UnifiedExtensionResult =>
+  typeof value === 'object' && value !== null;
 
 const snapshotStaticExtensionApis = (
   input: PlateEditorExtensionInput
@@ -281,7 +281,9 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
     const rawConfigResult =
       layer.kind === 'context'
         ? withResolvingPlatePlugin(editor, plugin, () =>
-            layer.value(getEditorPlugin(editor, plugin))
+            Reflect.apply(layer.value, undefined, [
+              getEditorPlugin(editor, plugin),
+            ])
           )
         : layer.value;
     // Copy before merging: descriptor snapshots and callback results can be
@@ -305,12 +307,17 @@ export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
     for (const extension of extensions) {
       plugin = withResolvingPlatePlugin(editor, plugin, () => {
         const pluginContext = getEditorPlugin(editor, plugin);
+        const extensionResult = Reflect.apply(extension, undefined, [
+          pluginContext,
+        ]);
 
-        return applyUnifiedExtension(
-          plugin,
-          extension(pluginContext),
-          pluginContext
-        );
+        if (!isUnifiedExtensionResult(extensionResult)) {
+          throw new Error(
+            `Plate plugin "${plugin.key}" extension must return an object.`
+          );
+        }
+
+        return applyUnifiedExtension(plugin, extensionResult, pluginContext);
       });
     }
     plugin.__extensions = extensions;
@@ -334,15 +341,9 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
   plugin: P
 ): P => resolvePluginWithConfigurations(editor, plugin).plugin;
 
-export const validatePlugin = <
-  K extends string = any,
-  StoreState = {},
-  A = {},
-  Tx extends AnyPluginTx = {},
-  S = {},
->(
+export const validatePlugin = (
   editor: BaseEditor,
-  plugin: BasePlugin<PluginConfig<K, StoreState, A, Tx, S>>
+  plugin: Pick<AnyBasePlugin, '__extensions' | 'key'>
 ) => {
   if (!plugin.__extensions) {
     getEditorPlugin(editor, DebugPlugin).api.error(

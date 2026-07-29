@@ -26,8 +26,6 @@ export const EventEditorStore = createZustandStore(
   }
 );
 
-export const { useValue: useEventEditorValue } = EventEditorStore;
-
 export const getEventPlateId = (id?: string) => {
   if (id) return id;
 

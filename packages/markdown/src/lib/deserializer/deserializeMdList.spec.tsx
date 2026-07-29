@@ -3,7 +3,6 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { deserializeMd } from './deserializeMd';
 jsxt;
 
 describe('deserializeMdList - comprehensive coverage', () => {
@@ -20,7 +19,7 @@ Break between lists.
 3. Third list item
 `.trim();
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -50,7 +49,7 @@ Break between lists.
       },
     ]);
 
-    editor.update((tx) => tx.value.replace(value));
+    editor.update.value.replace(value);
 
     expect(editor.read.value().children).toMatchObject([
       {
@@ -291,7 +290,7 @@ Break between lists.
       },
     ];
 
-    expect(deserializeMd(editor, input).children).toEqual(output);
+    expect(editor.api.markdown.deserialize(input).children).toEqual(output);
   });
 
   it('deserializes an empty list', () => {
@@ -303,7 +302,7 @@ Break between lists.
     - 
       `;
 
-    expect(deserializeMd(editor, input).children).toMatchSnapshot();
+    expect(editor.api.markdown.deserialize(input).children).toMatchSnapshot();
   });
 
   it('deserializes a todo list', () => {
@@ -311,6 +310,6 @@ Break between lists.
     - [ ] todo list
     - [x] todo list
     `;
-    expect(deserializeMd(editor, input).children).toMatchSnapshot();
+    expect(editor.api.markdown.deserialize(input).children).toMatchSnapshot();
   });
 });

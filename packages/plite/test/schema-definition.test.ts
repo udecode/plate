@@ -242,6 +242,25 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(Suggestions.key), true);
   });
 
+  it('declares frozen exclusive text-property groups', () => {
+    const ScriptPosition = schema.property.exclusive('plate:script-position');
+    const Subscript = schema.textProperty('subscript', property.boolean(), {
+      exclusive: [ScriptPosition],
+    });
+
+    assert.deepEqual(ScriptPosition, {
+      id: 'plate:script-position',
+      kind: 'exclusive',
+    });
+    assert.equal(Object.isFrozen(ScriptPosition), true);
+    assert.deepEqual(Subscript.exclusive, [ScriptPosition]);
+    assert.equal(Object.isFrozen(Subscript.exclusive), true);
+    assert.throws(
+      () => schema.property.exclusive(''),
+      /Schema exclusive property group cannot be empty/
+    );
+  });
+
   it('freezes raw element shape, content roots, owned properties, and slice policy during normalization', () => {
     const groups = ['inline'];
     const slice = { preserveContext: true };

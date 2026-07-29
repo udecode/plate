@@ -25,6 +25,9 @@ export interface CursorOverlayProps<
   /** Cursor states to use for calculating the overlay positions, by key. */
   cursors?: Record<string, CursorState<TCursorData>>;
 
+  /** Minimum width of a selection rectangle. */
+  minSelectionWidth?: number;
+
   /** Component used to render each cursor state. */
   onRenderCursor: React.FC<CursorProps<TCursorData>>;
 

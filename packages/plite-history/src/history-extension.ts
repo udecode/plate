@@ -391,7 +391,6 @@ const createHistoryExtension = <
   defineEditorExtension()({
     enabled: options.enabled as TEnabled,
     name: 'history',
-    options,
     state: {
       history(_state, editor) {
         return Object.assign(() => getHistory(editor), {
@@ -469,134 +468,138 @@ const createHistoryExtension = <
       });
       if (configureHistoryState(editor, getHistoryMaxDepth(options))) {
         PENDING_HISTORY_SCHEMA_ACTIVATION.set(editor, activation);
-        context.onReady(() => {
+        context.afterPublish(() => {
           if (PENDING_HISTORY_SCHEMA_ACTIVATION.get(editor) === activation) {
             PENDING_HISTORY_SCHEMA_ACTIVATION.delete(editor);
           }
         });
       }
     },
-    onCommit({ commit, editor }) {
-      if (
-        synchronizeHistorySchema(editor) ||
-        PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
-      ) {
-        return;
-      }
-
-      const changes = commit.changes;
-      const inverseChanges = commit.inverseChanges;
-
-      const effects = commit.effects.filter(
-        (effect) => effect.type.history === 'push'
-      );
-      const action = commit.annotations[historyAction.key] as
-        | HistoryAction
-        | undefined;
-      const discardRedos = Boolean(commit.annotations[historyDiscardRedo.key]);
-      const restoredHistoryJSON = commit.annotations[historyRestore.key] as
-        | HistoryJSON
-        | undefined;
-
-      if (restoredHistoryJSON) {
-        replaceHistoryState(
-          editor,
-          decodeHistoryValue(editor, restoredHistoryJSON, {
-            validateDocument: false,
-          })
-        );
-      }
-
-      if (action) {
-        const source = action === 'undo' ? 'undos' : 'redos';
-        const destination = action === 'undo' ? 'redos' : 'undos';
-        const batch = peekHistoryBatch(editor, source);
-
-        if (!batch) {
-          throw new Error(`Missing history batch for ${action}.`);
+    on: {
+      commit({ commit, editor }) {
+        if (
+          synchronizeHistorySchema(editor) ||
+          PENDING_HISTORY_SCHEMA_ACTIVATION.has(editor)
+        ) {
+          return;
         }
 
-        completeHistoryAction(
-          editor,
-          source,
-          destination,
-          {
-            ...batch,
-            change: commit.inverseChanges,
-            effects: commit.effects.toReversed().map(invertEffect),
-          },
-          discardRedos
+        const changes = commit.changes;
+        const inverseChanges = commit.inverseChanges;
+
+        const effects = commit.effects.filter(
+          (effect) => effect.type.history === 'push'
         );
-        return;
-      }
+        const action = commit.annotations[historyAction.key] as
+          | HistoryAction
+          | undefined;
+        const discardRedos = Boolean(
+          commit.annotations[historyDiscardRedo.key]
+        );
+        const restoredHistoryJSON = commit.annotations[historyRestore.key] as
+          | HistoryJSON
+          | undefined;
 
-      if (!shouldSaveCommit(commit, effects)) {
-        if (discardRedos) clearHistoryStack(editor, 'redos');
-
-        if (!commit.tags.includes('historic') && !changes.empty) {
-          const after = editor.read.value();
-          const before = inverseChanges.apply(toChangeValue(after));
-
-          queueHistoryMapping(editor, changes, before);
+        if (restoredHistoryJSON) {
+          replaceHistoryState(
+            editor,
+            decodeHistoryValue(editor, restoredHistoryJSON, {
+              validateDocument: false,
+            })
+          );
         }
-        return;
-      }
 
-      const prepared = prepareHistoryBatch(inverseChanges, commit, effects);
+        if (action) {
+          const source = action === 'undo' ? 'undos' : 'redos';
+          const destination = action === 'undo' ? 'redos' : 'undos';
+          const batch = peekHistoryBatch(editor, source);
 
-      if (!prepared) return;
+          if (!batch) {
+            throw new Error(`Missing history batch for ${action}.`);
+          }
 
-      const preparedBatch = prepared.batch;
-      const lastEntry = peekHistoryEntry(editor, 'undos');
-      const merge =
-        lastEntry != null &&
-        !commit.tags.includes('history-push') &&
-        (commit.tags.includes('history-merge')
-          ? shouldMergeExplicitBatch(
-              preparedBatch,
-              prepared.group,
-              lastEntry.batch,
-              lastEntry.group,
-              commit.tags.includes('native-text-input')
-            )
-          : preparedBatch.effects.length === 0 &&
-            shouldMergeBatch(
-              preparedBatch,
-              prepared.group,
-              lastEntry.batch,
-              lastEntry.group
-            ));
+          completeHistoryAction(
+            editor,
+            source,
+            destination,
+            {
+              ...batch,
+              change: commit.inverseChanges,
+              effects: commit.effects.toReversed().map(invertEffect),
+            },
+            discardRedos
+          );
+          return;
+        }
 
-      if (lastEntry && merge) {
-        const { selectionAfterRoot: _selectionAfterRoot, ...previousBatch } =
-          lastEntry.batch;
-        const mergedBatch = {
-          ...previousBatch,
-          change: preparedBatch.change.compose(
-            lastEntry.batch.change,
-            toChangeValue(editor.read.value())
-          ),
-          effects: [...preparedBatch.effects, ...lastEntry.batch.effects],
-          selectionAfter: preparedBatch.selectionAfter,
-          ...(preparedBatch.selectionAfterRoot
-            ? { selectionAfterRoot: preparedBatch.selectionAfterRoot }
-            : {}),
-        };
-        const mergedGroup = mergeHistoryBatchGroups(
-          lastEntry.group,
-          prepared.group
-        );
+        if (!shouldSaveCommit(commit, effects)) {
+          if (discardRedos) clearHistoryStack(editor, 'redos');
 
-        replaceHistoryHead(editor, 'undos', mergedBatch, {
-          clearRedos: true,
-          group: mergedGroup,
-        });
-      } else {
-        writeHistory(editor, 'undos', preparedBatch, {
-          clearRedos: true,
-          group: prepared.group,
-        });
-      }
+          if (!commit.tags.includes('historic') && !changes.empty) {
+            const after = editor.read.value();
+            const before = inverseChanges.apply(toChangeValue(after));
+
+            queueHistoryMapping(editor, changes, before);
+          }
+          return;
+        }
+
+        const prepared = prepareHistoryBatch(inverseChanges, commit, effects);
+
+        if (!prepared) return;
+
+        const preparedBatch = prepared.batch;
+        const lastEntry = peekHistoryEntry(editor, 'undos');
+        const merge =
+          lastEntry != null &&
+          !commit.tags.includes('history-push') &&
+          (commit.tags.includes('history-merge')
+            ? shouldMergeExplicitBatch(
+                preparedBatch,
+                prepared.group,
+                lastEntry.batch,
+                lastEntry.group,
+                commit.tags.includes('native-text-input')
+              )
+            : preparedBatch.effects.length === 0 &&
+              shouldMergeBatch(
+                preparedBatch,
+                prepared.group,
+                lastEntry.batch,
+                lastEntry.group
+              ));
+
+        if (lastEntry && merge) {
+          const { selectionAfterRoot: _selectionAfterRoot, ...previousBatch } =
+            lastEntry.batch;
+          const mergedBatch = {
+            ...previousBatch,
+            change: preparedBatch.change.compose(
+              lastEntry.batch.change,
+              toChangeValue(editor.read.value())
+            ),
+            effects: [...preparedBatch.effects, ...lastEntry.batch.effects],
+            selectionAfter: preparedBatch.selectionAfter,
+            ...(preparedBatch.selectionAfterRoot
+              ? { selectionAfterRoot: preparedBatch.selectionAfterRoot }
+              : {}),
+          };
+          const mergedGroup = mergeHistoryBatchGroups(
+            lastEntry.group,
+            prepared.group
+          );
+
+          replaceHistoryHead(editor, 'undos', mergedBatch, {
+            clearRedos: true,
+            group: mergedGroup,
+          });
+        } else {
+          writeHistory(editor, 'undos', preparedBatch, {
+            clearRedos: true,
+            group: prepared.group,
+          });
+        }
+      },
     },
     validateConfiguration() {
       getHistoryMaxDepth(options);

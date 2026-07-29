@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 16,
+  "latestVersion": 23,
   "versions": [
     {
       "version": 0,
@@ -197,6 +197,87 @@
         "Do not move, split, or wrap a coherent declaration solely to manufacture a shortcut; repair the owning Core contextual type when a documented shortcut is exposed but loses inference.",
         "Prove the migration with affected package and app typechecks plus exact source scans across package, registry, and public plugin-authoring examples."
       ]
+    },
+    {
+      "version": 17,
+      "date": "2026-07-27",
+      "doctrineFingerprint": "sha256:a02ad8091c26ee48cc2d05e1131f1a7b639cf309ba60ea86d5f94fcb34545990",
+      "summary": "State-owning production descriptors publish an explicit state contract and check owner defaults without inference casts.",
+      "migrationChecks": [
+        "Audit every state-owning production descriptor for a named *PluginState contract, exported whenever its descriptor is exported.",
+        "Check owner defaults through a typed constant or explicit factory return type; reject state contracts inferred from default objects, as casts, and satisfies patches.",
+        "Keep consumer .configure({ initialState }) overrides inline and partial instead of redeclaring the complete state contract.",
+        "Prove the state contract, default values, partial overrides, and exported descriptor inference with package typecheck and focused declaration or runtime coverage."
+      ]
+    },
+    {
+      "version": 18,
+      "date": "2026-07-28",
+      "doctrineFingerprint": "sha256:eb1775897f5fc085d1a349e03e88ede18cd552ac6723c5bef90d2cfae4a652d4",
+      "summary": "Plugin authoring explicitly rejects deleted builder helpers and routes same-key optional-kit membership to the composition owner.",
+      "migrationChecks": [
+        "Audit plugin-builder chains, tests, examples, and docs for extendApi, extendEditorApi, extendSelectors, extendTx, extendTxGroup, extendExtension, extendCodecs, and extendHtmlCodec; classify the receiver so same-named non-plugin builders remain untouched.",
+        "Hard-delete every matching Plate plugin-builder helper, alias, shim, forwarding wrapper, export, and documentation path; author capabilities through the constructor or an honest staged .extend() contribution.",
+        "Audit same-key descriptors across independently optional app or registry kits as membership ownership, not mechanical deduplication; route unresolved public composition identity to best-api.",
+        "Prove the final package shape with focused source audits, package typecheck and behavior tests, plus optional-kit composition coverage when same-key descriptors exist."
+      ]
+    },
+    {
+      "version": 19,
+      "date": "2026-07-29",
+      "doctrineFingerprint": "sha256:4aa3f3a73b95892752426a256f4e46cb0fbead8295ee79f70aaf0ae3c77b0c23",
+      "summary": "Extension ownership uses the exact flat Plite descriptor vocabulary and rejects plugin-scoped behavior hidden in extension declarations.",
+      "migrationChecks": [
+        "Audit extension declarations for the flat Plite descriptor vocabulary: activate, afterPublish, stateFields, effectTypes, facetProviders, selectionKinds, commands, corrections, contributions, config, tx, read, api, and on.*.",
+        "Reject stale extension field aliases, nested lifecycle bags, and plugin-scoped state, reads, services, or updates routed through extension.",
+        "Keep descriptor-owned read middleware and genuine root editor capabilities in extension; keep plugin-scoped read, api, selectors, and update on the plugin owner.",
+        "Prove the final extension shape with the schema-adoption checker, package typecheck, and focused lifecycle or capability behavior tests."
+      ]
+    },
+    {
+      "version": 20,
+      "date": "2026-07-29",
+      "doctrineFingerprint": "sha256:b27807602c6a917e25651f6ce2e0491b4b10962cc53b40ed09aeab6ccbee5a80",
+      "summary": "Extension authoring names raw descriptor declarations precisely and keeps plugin-scoped capabilities on the plugin owner.",
+      "migrationChecks": [
+        "Treat constructor and justified staged extension values as built extensions or raw descriptor declarations, not legacy extension option bags.",
+        "Keep activation, state fields, effect types, commands, corrections, root capabilities, and descriptor-owned read middleware on extension.",
+        "Reject plugin-scoped state, reads, services, and updates hidden behind extension declarations.",
+        "Prove the final doctrine fingerprint, generated skill parity, schema-adoption checker, package typecheck, and focused behavior tests."
+      ]
+    },
+    {
+      "version": 21,
+      "date": "2026-07-29",
+      "doctrineFingerprint": "sha256:eeb7dcd4b21e085c5896791491ef8a4a6fb9c7f3c182b69cd71436d5c6639c6d",
+      "summary": "Registry cleanup preserves explicit teaching declarations and durable package semantic owners.",
+      "migrationChecks": [
+        "Preserve explicit feature plugin, kit, renderer, and dependency declarations in registry examples when metadata names the feature kit or the example intentionally teaches its binding, even if EditorKit installs the descriptor transitively.",
+        "Reject package cleanup that copies a transform, query, navigation controller, or cross-layer algorithm into app or registry JSX; reuse the scoped capability or keep a flat standalone package owner.",
+        "Prove affected example install metadata, package exports and behavior, focused app typing, generated skill parity, and the relevant Browser demo routes."
+      ]
+    },
+    {
+      "version": 22,
+      "date": "2026-07-29",
+      "doctrineFingerprint": "sha256:02dfc3d23a749537befde114810ccf43998fc2f5cd8151f9032d45f9358dcbf9",
+      "summary": "Transparent registry feature wiring installs each descriptor exactly once.",
+      "migrationChecks": [
+        "When an example explicitly teaches a feature descriptor already present in EditorKit, filter that descriptor from EditorKit by key and add or configure it explicitly once.",
+        "Reject both failure modes: deleting the explicit teaching declaration and installing duplicate same-key runtime descriptors.",
+        "Prove registry metadata alignment, focused app typing, generated skill parity, and the relevant Browser demo without duplicate-plugin diagnostics."
+      ]
+    },
+    {
+      "version": 23,
+      "date": "2026-07-29",
+      "doctrineFingerprint": "sha256:981d71528564584266e31c38964cb7f971ad5b8d942c1ddc634ffb6d28805927",
+      "summary": "Plate extension fields own contextual typing without a duplicate context identity helper.",
+      "migrationChecks": [
+        "Return plain extension objects from Plate constructors and .extend() callbacks, preserving nested command, input, state, transaction, dependency, and plugin-state inference.",
+        "Reject and delete Plate context identity helpers, aliases, annotations, casts, and any-based workarounds that compensate for a broken extension-field generic.",
+        "Keep Plate context capture inside authoring callbacks, extract domain inputs, and reserve Plite defineEditorExtension for independently reusable standalone descriptors."
+      ]
     }
   ],
   "retiredPackages": {
@@ -208,250 +289,256 @@
   },
   "packages": {
     "ai": {
-      "appliedVersion": 11,
-      "fingerprint": "sha256:f2dbd24879babb3a38895f58e5ed5aaa4d603d40b1b4ffa1b3b60560b748331a",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-25-plate-next-ai-colocation.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:5fdf26155aaf2d1217e972ad8eb855add06791a1cdcbd036653eb21c708e4c2e",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "basic-nodes": {
-      "appliedVersion": 13,
-      "fingerprint": "sha256:f93f0e18eacfd56c880cc6cf548811fe567d00c04bf31bfb7b275a9a35cbe7fc",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:8c31d76e003f7b6eafc1d7b8dc39ed53f7db7a9dc538383d2a4f9946be69cfb6",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "basic-styles": {
-      "appliedVersion": 13,
-      "fingerprint": "sha256:946d95b1034504d3dc0206806b2a3d81333382717011630afc0c15bd5bfc0eb8",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:c72fdd1a89d036a76096ab2b3814b91e48d4ac7c040477d81316a12a93d88260",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "callout": {
-      "appliedVersion": 13,
+      "appliedVersion": 17,
       "fingerprint": "sha256:2c8ef015f1186bd0335b2d3c36fbb18bfff30818b9956d9b941aae161471964a",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-next-five-packages.md"
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "code-block": {
-      "appliedVersion": 12,
-      "fingerprint": "sha256:6c3f94ef764e0e761e6548eb7b03fcc92ea61adbd383b27772c89829d082899a",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-five-package-colocation.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:f91fab069efa16a4c3c03dbe3a79a20e45afa6f1c2f9ac20559efa457355e4e7",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "code-drawing": {
-      "appliedVersion": 13,
-      "fingerprint": "sha256:1b68a575a04901c357bddaf20e16e43c46784a7dcbf911e42ea93377042b629c",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:8a35bc231e4666aa8da66c911df02c4ee0d3a86509c4da09dcbae8ec00a70ecf",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "combobox": {
-      "appliedVersion": 13,
-      "fingerprint": "sha256:aeba658832778238a4b7f75d8580edc954f397bf2a8a639c639040c6bf79903b",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:0462f8d72a0828377dfa0fde9858041d49e2d282f8a37b902332af096408ac82",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "comment": {
-      "appliedVersion": 16,
-      "fingerprint": "sha256:04ada857e9269f1a1d963f981a5896000dfedc705f51f60925f9f664a1c27c40",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:805268dd7388a547ed3481ab7a2bbf6d4a9970949d2657bd3893c307d36d84d6",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "csv": {
-      "appliedVersion": 16,
-      "fingerprint": "sha256:e8110dd01409d8567904474ac6853418ab32fb937148462858f46d6afae5a1da",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:26f52ed1687eb4c734921b9027b1481665efbcfc6238b4abf5d81dc64c5f009e",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "cursor": {
-      "appliedVersion": 16,
-      "fingerprint": "sha256:3fba495a5754e1ff3eb9ad68aa58dcc956acdd950d166e142c0cabf9145bde80",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:da28b1074db027d956d2b69971f8ab79d357e4a5e00e705f419de91125f3d2cd",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "date": {
-      "appliedVersion": 16,
+      "appliedVersion": 17,
       "fingerprint": "sha256:51a842375b52d74cebf213bd78c11d8b7e8c00b3cbfe7f29fbc26e3ebdfe7a13",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-next-five-packages.md"
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "diff": {
-      "appliedVersion": 16,
-      "fingerprint": "sha256:d9863df3c07d2f9922529230fba40dbc35e39f3d1c93879b8d886187085ddf8c",
-      "verifiedAt": "2026-07-27",
-      "evidence": "docs/plans/2026-07-27-plate-next-next-five-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:5366f3ebeab88dc1503707ac337244518dc3ef388b451f8a39957f04af9aa099",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "dnd": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:39ce75639b68fd47a7da9ad8cb32cfac59c819b3735c8c83c74f08399559b162",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "docx": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:16b0960105668dd20294685083a39ca599abd58c3f0cfadb5d94667c4238e5a5",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "docx-io": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:f8997ddc886a60fc6559445669d19423079703b9ecf26dbb77c0e94b50354cdf",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "emoji": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:671bdb87a7988131c2350e6b3bc474bd57cd4de83df5b3095dfb5fcbb28b9543",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "excalidraw": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:a9cd2e7fa449539a92dcb627649a2854cb3f73a42435416b41c4dfef788bf163",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "find-replace": {
-      "appliedVersion": 7,
-      "fingerprint": "sha256:dc4eea12c27e180d5c51b8db9cdf0c3e577d0a0caa64231f63fdca658c6bd92e",
-      "verifiedAt": "2026-07-25",
-      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:8a77d766272d13eff49bb64ae5f3aa487439090dc4948eaf2155e1bf9dc9f9f2",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "floating": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:384424236b7163d4afd05b1b0c7bf0b5150403eab4553ea38c4f4fd3c4b7d5d4",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "footnote": {
-      "appliedVersion": 12,
-      "fingerprint": "sha256:823daedba038d9fe0adaaf051f968a4b90efb85c9b921a294c106c886f217e5e",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-five-package-colocation.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:84b53c29f87ea63a9c2e3e20fc5e9f846c2cd79abc184c65e73c23149e4f28b1",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "indent": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:c877d05662a458b5d4ec82bc4d74204841bfdeec9eeebc511dd3349e8a5a3a4a",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "juice": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:3d5de788ff4fb5df8cec6a7f87139691322e2888b8dbb879c92ce0332b4c8904",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "layout": {
-      "appliedVersion": 12,
-      "fingerprint": "sha256:73838699a2d73aee968e4a47925341a9ba9096f193e94fafe2f5ef1f4ecf4bce",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-five-package-colocation.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:081be6e4c33fc031412cffa661c814a4316cfbe60f931f069601037f693094d3",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "link": {
-      "appliedVersion": 7,
-      "fingerprint": "sha256:819409230c09cd265565fb5def7cd1e6ee9055cbcbaabc8238416570332731a5",
-      "verifiedAt": "2026-07-25",
-      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:28386ced98814317741ea69e02fd0cb48acb446a0cafa738532688fe0992afcd",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "list": {
-      "appliedVersion": 12,
-      "fingerprint": "sha256:ac24659472025a87ecbd9361eb3b460307109a28e5e621481783e709e3c96772",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-list-read-hard-cut.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:bafa0444d493179e3e00efd96b14212275185e871052e02d0eaf40191fd1a7c5",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "list-classic": {
-      "appliedVersion": 7,
-      "fingerprint": "sha256:617786c74dea6197a9d78191be0734ea64df541374e93bd95ca60f7ba73c2482",
-      "verifiedAt": "2026-07-25",
-      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:34d8d9bb337dfe416e31a95158fdb6f109e7ae3d829ac3afd655d1ad0bfa2439",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "markdown": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:17bc1e41b0d3394a8b4619f6b86bfa84ac2aa7d3d5bf8760411e2c65046f3203",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "math": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:938d92d9c495ad614d569f12c6a93260ed7c107fb3a9ab34476bac94ad44d9df",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "media": {
-      "appliedVersion": 7,
-      "fingerprint": "sha256:1490143a1a6a11d618a7777c3ff8bcac45f8e04010146f0b82a37dd96bbdcf41",
-      "verifiedAt": "2026-07-25",
-      "evidence": "docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:cb5fbc23db4e28d04c1de5a59742e2bc279615d73fa66014f0c2d481d95c0564",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "mention": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:90ee0df32bb14f92afa57cd75d798ac271ac71b3cfb5726531cf2a1069bdd8b9",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "plate": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:737c67959a4197b1e2dc1a89ea2d6d0941a0e6009a4c63e3a1fbda514adf49d9",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "resizable": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:dbe763dd988cbc9fdcb249f0c384402bb993c76a1a06acfe6a2dec94cfd18615",
+      "verifiedAt": "2026-07-27",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "selection": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:403839df8202d5d61e9b89309b240180d31947737a805bcd10c1f8a1a2c8ff0c",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "slash-command": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:d54532f3e718a2e5fee206ad900992355117cb7f5d471532e3709d88e6276ea1",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "suggestion": {
-      "appliedVersion": 7,
-      "fingerprint": "sha256:00f2fa5fca4fbef94b004be39a0eae0774eeccb090e9763893ef9ad06324d6b5",
-      "verifiedAt": "2026-07-25",
-      "evidence": "docs/plans/2026-07-25-unified-plugin-extend-hard-cut.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:496a102eecc437c5be89ff83beddc3c11cdbf2a6381bc73bdf933813e330e447",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "tabbable": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:e2f389c1c5c093f7b255796b188c76ae6f3f031482a2a9c9f4df61275a453086",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "table": {
-      "appliedVersion": 7,
-      "fingerprint": "sha256:9c4583bc620cd71ef2abf977df08be37155d3e7d7ea43d5f2f56caa390d7af8f",
-      "verifiedAt": "2026-07-25",
-      "evidence": "docs/plans/2026-07-24-plate-next-sync-seven-colocation-packages.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:cd0063d1b0bcada4c549ebca6722644e62754e73487cef0dfe370142a913a6e8",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "tag": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:b36cb76d2fb7aa34c3dd92e1fa3e3befb9d5dae73910e5372a19c3f25d90725f",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "test-utils": {
-      "appliedVersion": 0,
-      "fingerprint": null,
-      "verifiedAt": null,
-      "evidence": null
+      "appliedVersion": 17,
+      "fingerprint": "sha256:4ab82a50f1e70245a4c6a8a99c8c2c942e291628544b8eb42584f1ba0753907a",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "toc": {
-      "appliedVersion": 12,
-      "fingerprint": "sha256:f2713a254b8362045d39a13c646254e3c163725eccd31894fa9174dd30e0ca5d",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-five-package-colocation.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:33008bee7ff64e7748c1415ad42729c79f899d1bf5ac4ec341bffb20c9cff639",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     },
     "toggle": {
-      "appliedVersion": 12,
-      "fingerprint": "sha256:e193084783f332235b8253573a70e4343cc24c26608ad0ed2e1c1e4784005a12",
-      "verifiedAt": "2026-07-26",
-      "evidence": "docs/plans/2026-07-26-plate-next-five-package-colocation.md"
+      "appliedVersion": 17,
+      "fingerprint": "sha256:9dd05b9630746e0c420d02b0880255df14a2f2102608c5713ccf5cdbda5913f9",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
+    },
+    "yjs": {
+      "appliedVersion": 17,
+      "fingerprint": "sha256:52133cd9c9ddfc2c2ca129357974d6b369872f304d53048f1bf22bfc5d5c9ad8",
+      "verifiedAt": "2026-07-28",
+      "evidence": "docs/plans/2026-07-27-plate-next-sync-all-packages-v17.md"
     }
   }
 }

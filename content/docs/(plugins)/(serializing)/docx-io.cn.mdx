@@ -196,6 +196,8 @@ editor.update.value.replace({ children: imported.nodes });
 ```ts
 type DocxComment = {
   id: string;
+  /** 此评论在 result.nodes 中的位置。 */
+  references: Point[];
   text: string;
 };
 ```

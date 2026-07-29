@@ -1,0 +1,111 @@
+{
+  "benchmark": "plite-extension-graph",
+  "budgetRatios": {
+    "cleanup": 0.098465375,
+    "compile": 0.030325582999999996,
+    "install": 0.030684791999999902
+  },
+  "budgets": {
+    "compile1000P95MsExclusive": 1000,
+    "reconfigure1000CleanupP95MsExclusive": 1000,
+    "reconfigure1000InstallP95MsExclusive": 1000
+  },
+  "cohorts": {
+    "large": "100 descriptor DAG",
+    "normal": "10 descriptor DAG",
+    "stress": "1,000 descriptor DAG"
+  },
+  "degradationContract": "Configuration work may scale with installed descriptors; removed roots retain zero registry records.",
+  "generatedAt": "2026-07-28T08:55:19.769Z",
+  "interactionMatrix": [
+    "cold transitive compile",
+    "dynamic root install",
+    "reverse cleanup",
+    "activation and cleanup exactness",
+    "post-removal registry retention"
+  ],
+  "repeatedUnit": "one descriptor with one required predecessor and one branch edge",
+  "rows": [
+    {
+      "cleanupMs": {
+        "p50": 0.1647079999999903,
+        "p95": 0.2831249999999983,
+        "p99": 0.4707080000000019
+      },
+      "compileMs": {
+        "p50": 0.32612499999999756,
+        "p95": 0.5391249999999985,
+        "p99": 5.363624999999999
+      },
+      "compileSamples": 40,
+      "descriptors": 10,
+      "installedRegistryRecords": 10,
+      "lifecycle": {
+        "activations": 400,
+        "cleanups": 400
+      },
+      "reconfigureSamples": 40,
+      "removedRegistryRecords": 0,
+      "installMs": {
+        "p50": 0.21983300000000838,
+        "p95": 0.4038749999999993,
+        "p99": 2.2342499999999887
+      }
+    },
+    {
+      "cleanupMs": {
+        "p50": 1.1818330000000117,
+        "p95": 1.956499999999977,
+        "p99": 2.162417000000005
+      },
+      "compileMs": {
+        "p50": 1.120207999999991,
+        "p95": 1.8945829999999972,
+        "p99": 2.5225829999999974
+      },
+      "compileSamples": 25,
+      "descriptors": 100,
+      "installedRegistryRecords": 100,
+      "lifecycle": {
+        "activations": 2500,
+        "cleanups": 2500
+      },
+      "reconfigureSamples": 25,
+      "removedRegistryRecords": 0,
+      "installMs": {
+        "p50": 0.9902500000000032,
+        "p95": 1.6997920000000022,
+        "p99": 1.8852920000000069
+      }
+    },
+    {
+      "cleanupMs": {
+        "p50": 97.94062500000018,
+        "p95": 98.465375,
+        "p99": 98.465375
+      },
+      "compileMs": {
+        "p50": 26.280374999999992,
+        "p95": 30.325582999999995,
+        "p99": 30.325582999999995
+      },
+      "compileSamples": 10,
+      "descriptors": 1000,
+      "installedRegistryRecords": 1000,
+      "lifecycle": {
+        "activations": 10000,
+        "cleanups": 10000
+      },
+      "reconfigureSamples": 10,
+      "removedRegistryRecords": 0,
+      "installMs": {
+        "p50": 27.10679200000004,
+        "p95": 30.684791999999902,
+        "p99": 30.684791999999902
+      }
+    }
+  ],
+  "rumEvidence": "unavailable; extension configuration is a local runtime lane",
+  "version": 1,
+  "worstBudgetRatio": 0.098465375
+}

@@ -95,14 +95,15 @@ findReplace.store.set({ search: search.trim() });
 | Helper | Type | Use it for |
 | --- | --- | --- |
 | `api[pluginKey]` | `InferOwnApi<C>` | Call an installed plugin's queries and services from a concrete inferred editor. |
-| `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | Open a typed portal to one installed plugin. |
+| `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | Open a typed portal to a plugin descriptor. |
+| `plugin(plugin).installed` | `boolean` | Check installation before reading another portal field when the plugin is optional. |
 | `plugin(plugin).api` | `InferOwnApi<C>` | Call the same plugin API from generic or exact-descriptor code. |
 | `plugin(plugin).update` | `InferOwnTx<C>` | Run one plugin-owned update command. |
 | `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value` | Read one state field or named selector result. |
 | `plugin(plugin).store.get()` | `() => InferPluginStoreState<C>` | Read the complete current plugin state. |
 | `plugin(plugin).store.set(partial)` | `(partial) => void` | Merge state fields. |
 | `plugin(plugin).store.set(recipe)` | `(draft) => void` | Update state through a draft recipe. |
-| `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the resolved plugin instance after overrides and configuration. |
+| `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the installed plugin instance after overrides and configuration. Throws when it is absent or disabled. |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | Resolve the node type for a plugin key. |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | Read injected node props with default `nodeKey` and `styleKey` filled from the plugin type. |
 

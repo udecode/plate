@@ -278,10 +278,33 @@ describe('table selection', () => {
         editor.update.selection.set(selection);
 
         expect(editor.read.selection()).toEqual(selection);
-        expect(editor.read.selection.domRange()).toEqual({
+        expect(editor.read.selection.primaryRange()).toEqual({
           anchor,
           focus: anchor,
         });
+      });
+
+      it('exports projected table content as a closed slice', () => {
+        const editor = createEditor();
+        const anchor = editor.read.points.start([0, 1, 0]);
+        const focus = editor.read.points.end([0, 1, 2]);
+
+        assert(anchor);
+        assert(focus);
+
+        const selection = editor
+          .plugin(BaseTablePlugin)
+          .read.createCellSelection({ anchor, focus });
+
+        assert(selection);
+        editor.update.selection.set(selection);
+
+        const slice = editor.read.slice.get();
+
+        expect(slice.openStart).toBe(0);
+        expect(slice.openEnd).toBe(0);
+        expect(slice.content).toHaveLength(1);
+        expect(slice.content[0]).toMatchObject({ type: 'table' });
       });
     });
   }

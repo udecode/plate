@@ -12,7 +12,6 @@ import {
   createEditor,
   type Descendant,
   type Element,
-  defineEditorExtension,
   type TextInsertFragmentOptions,
 } from '@platejs/plite';
 import { extendTestSchema } from './support/schema';
@@ -44,132 +43,7 @@ const createOpenSlice = (content: readonly Descendant[], depth = 1) =>
     openStart: depth,
   });
 
-const createDataTransfer = (getData: DataTransfer['getData']) =>
-  ({ getData }) as unknown as DataTransfer;
-
-describe('plite clipboard contract', () => {
-  it('exposes a composed clipboard insertData API', () => {
-    const calls: string[] = [];
-    const editor = createEditor({
-      extensions: [
-        defineEditorExtension({
-          name: 'base-clipboard',
-          clipboard: {
-            insertData(_data, { next }) {
-              calls.push('base');
-
-              return next();
-            },
-          },
-        }),
-        defineEditorExtension({
-          name: 'top-clipboard',
-          clipboard: {
-            insertData(_data, { next }) {
-              calls.push('top');
-
-              return next();
-            },
-          },
-        }),
-        defineEditorExtension({
-          name: 'terminal-clipboard',
-          clipboard: {
-            insertData() {
-              calls.push('terminal');
-
-              return true;
-            },
-          },
-        }),
-      ],
-    });
-
-    assert.equal(
-      editor.api.clipboard.insertData(createDataTransfer(() => '')),
-      true
-    );
-    assert.deepEqual(calls, ['terminal']);
-  });
-
-  it('lets clipboard middleware delegate to the previous installed handler', () => {
-    const calls: string[] = [];
-    const editor = createEditor({
-      extensions: [
-        defineEditorExtension({
-          name: 'base-clipboard',
-          clipboard: {
-            insertData() {
-              calls.push('base');
-
-              return true;
-            },
-          },
-        }),
-        defineEditorExtension({
-          name: 'top-clipboard',
-          clipboard: {
-            insertData(_data, { next }) {
-              calls.push('top');
-
-              return next();
-            },
-          },
-        }),
-      ],
-    });
-
-    assert.equal(
-      editor.api.clipboard.insertData(createDataTransfer(() => '')),
-      true
-    );
-    assert.deepEqual(calls, ['top', 'base']);
-  });
-
-  it('lets clipboard middleware delegate with replacement data', () => {
-    const calls: string[] = [];
-    const replacementData = createDataTransfer(
-      (format) => `replacement:${format}`
-    );
-    const editor = createEditor({
-      extensions: [
-        defineEditorExtension({
-          name: 'base-clipboard',
-          clipboard: {
-            insertData(data) {
-              calls.push(data.getData('text/plain'));
-
-              return true;
-            },
-          },
-        }),
-        defineEditorExtension({
-          name: 'top-clipboard',
-          clipboard: {
-            insertData(_data, { next }) {
-              return next(replacementData);
-            },
-          },
-        }),
-      ],
-    });
-
-    assert.equal(
-      editor.api.clipboard.insertData(createDataTransfer(() => 'original')),
-      true
-    );
-    assert.deepEqual(calls, ['replacement:text/plain']);
-  });
-
-  it('returns false from clipboard insertData when no middleware handles it', () => {
-    const editor = createEditor();
-
-    assert.equal(
-      editor.api.clipboard.insertData(createDataTransfer(() => '')),
-      false
-    );
-  });
-
+describe('plite slice contract', () => {
   it('extracts the selected fragment from an expanded selection', () => {
     const editor = createEditor();
 

@@ -11,8 +11,6 @@ import type { SerializeMdContext } from '../types';
 
 import { convertTextsSerialize } from './convertTextsSerialize';
 import { listToMdastTree } from './listToMdastTree';
-import { unreachable } from './utils';
-import { getSerializerByKey } from './utils/getSerializerByKey';
 import { wrapWithBlockId } from './wrapWithBlockId';
 
 export const convertNodesSerialize = (
@@ -101,7 +99,7 @@ export const buildMdastNode = (
     key = 'list';
   }
 
-  const nodeParser = getSerializerByKey(key, options);
+  const nodeParser = options.rules?.[key]?.serialize;
 
   if (nodeParser) {
     const mdastNode = nodeParser(node, options);
@@ -115,7 +113,7 @@ export const buildMdastNode = (
     return mdastNode;
   }
 
-  unreachable(node);
+  console.warn(`Unreachable code: ${JSON.stringify(node)}`);
 };
 
 const isListElement = (

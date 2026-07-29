@@ -11,13 +11,22 @@ import { AIAnchorElement, AILeaf } from '@/registry/ui/ai-node';
 import { useChat } from '../use-chat';
 import { CursorOverlayKit } from './cursor-overlay-kit';
 
-export const aiChatPlugin = AIChatPlugin.extend({
-  initialState: {
-    chatOptions: {
-      api: '/api/ai/command',
-      body: {},
-    },
+export type AIChatKitPluginState = {
+  chatOptions: {
+    api: string;
+    body: Record<string, unknown>;
+  };
+};
+
+const initialState: AIChatKitPluginState = {
+  chatOptions: {
+    api: '/api/ai/command',
+    body: {},
   },
+};
+
+export const aiChatPlugin = AIChatPlugin.extend({
+  initialState,
   render: {
     afterContainer: AILoadingBar,
     afterEditable: AIMenu,

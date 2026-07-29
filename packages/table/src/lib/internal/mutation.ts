@@ -1,11 +1,13 @@
 import type {
   Descendant,
   EditorCoreUpdateTransaction,
+  Element,
   NodeInsertNodesOptions,
   Path,
   Range,
-  Value,
+  Text,
 } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
 import type {
   TTableCellElement,
   TTableElement,
@@ -21,9 +23,45 @@ import {
   type TableGridProblem,
 } from './grid';
 
-type MutableCell = TTableCellElement & { children: Descendant[] };
-type MutableRow = TTableRowElement & { children: TTableCellElement[] };
-type MutableTable = TTableElement & { children: MutableRow[] };
+type MutableDescendant = MutableElement | Text;
+type MutableElement = {
+  children: MutableDescendant[];
+  type: string;
+  [key: string]: unknown;
+};
+type MutableCell = MutableElement & {
+  background?: string;
+  borders?: TTableCellElement['borders'];
+  colSpan?: number;
+  id?: string;
+  rowSpan?: number;
+  size?: number;
+};
+type MutableTable = MutableElement & {
+  colSizes?: number[];
+  marginLeft?: number;
+};
+
+const cloneMutableDescendant = (node: Descendant): MutableDescendant =>
+  ElementApi.isElement(node) ? cloneMutableElement(node) : cloneDeep(node);
+
+const cloneMutableElement = (element: Element): MutableElement => ({
+  ...cloneDeep(element),
+  children: element.children.map(cloneMutableDescendant),
+});
+
+const cloneMutableCell = (cell: TTableCellElement): MutableCell => ({
+  ...cloneDeep(cell),
+  children: cell.children.map(cloneMutableDescendant),
+});
+
+const cloneMutableTable = (table: TTableElement): MutableTable => ({
+  ...cloneDeep(table),
+  children: table.children.map(cloneMutableDescendant),
+});
+
+const isMutableElement = (node: MutableDescendant): node is MutableElement =>
+  ElementApi.isElement(node);
 
 export type TableCellFactory = (options: {
   children?: readonly Descendant[];
@@ -218,11 +256,11 @@ const freezePath = (path: readonly number[]): Path =>
   Object.freeze([...path]) as Path;
 
 const freezeOperation = (operation: MutableOperation): TableOperation => {
-  const frozen = cloneDeep(operation) as MutableOperation;
+  const frozen = cloneDeep(operation);
 
   if ('path' in frozen) frozen.path = freezePath(frozen.path);
 
-  return deepFreeze(frozen) as TableOperation;
+  return deepFreeze(frozen);
 };
 
 const freezePlan = (
@@ -516,7 +554,7 @@ const planInsertColumn = (
       row: anchor.row,
       sourceRow,
     });
-    const nextCell = cloneDeep(cell) as unknown as MutableCell;
+    const nextCell = cloneMutableCell(cell);
 
     setSpan(nextCell, 'rowSpan', anchor.rowSpan);
 
@@ -596,14 +634,14 @@ const planInsertRow = (
 
     const sourceRow = context.table.children[anchor.row] as TTableRowElement;
     const header = intent.header ?? rowIsHeader(sourceRow);
-    const cell = cloneDeep(
+    const cell = cloneMutableCell(
       intent.createCell({
         col: anchor.col,
         header,
         row: insertRow,
         sourceRow,
       })
-    ) as unknown as MutableCell;
+    );
 
     setSpan(cell, 'colSpan', anchor.colSpan);
     newCells.push({ cell, col: anchor.col });
@@ -772,7 +810,7 @@ const planRemoveRow = (
         ...spanOperations(context, anchor, 'rowSpan', anchor.rowSpan - overlap)
       );
     } else if (anchorEnd > end) {
-      const cell = cloneDeep(anchor.cell) as unknown as MutableCell;
+      const cell = cloneMutableCell(anchor.cell);
 
       setSpan(cell, 'rowSpan', anchor.rowSpan - overlap);
       moved.push({ anchor, cell });
@@ -889,11 +927,11 @@ const planMerge = (
     row: minRow,
     sourceRow: context.table.children[minRow] as TTableRowElement,
   });
-  const merged = {
-    ...cloneDeep(fallback),
-    ...cloneDeep(first.cell),
-    children: content.length > 0 ? content : cloneDeep(fallback.children),
-  } as unknown as MutableCell;
+  const merged = cloneMutableCell({
+    ...fallback,
+    ...first.cell,
+    children: content.length > 0 ? content : fallback.children,
+  });
 
   setSpan(merged, 'colSpan', maxCol - minCol + 1);
   setSpan(merged, 'rowSpan', maxRow - minRow + 1);
@@ -974,7 +1012,7 @@ const planSplit = (
 
     for (let colOffset = 0; colOffset < colSpan; colOffset++) {
       if (rowIndex === selected.row && colOffset === 0) {
-        const first = cloneDeep(selected.cell) as unknown as MutableCell;
+        const first = cloneMutableCell(selected.cell);
 
         setSpan(first, 'colSpan', 1);
         setSpan(first, 'rowSpan', 1);
@@ -1271,14 +1309,14 @@ export const planTableMutation = (
 const mutableNodeAt = (
   table: MutableTable,
   path: readonly number[]
-): MutableTable | MutableRow | MutableCell | undefined => {
-  let node: MutableTable | MutableRow | MutableCell = table;
+): MutableElement | undefined => {
+  let node: MutableElement = table;
 
   for (const index of path) {
     const next = node.children[index];
 
-    if (!next || !('children' in next)) return;
-    node = next as MutableRow | MutableCell;
+    if (!next || !isMutableElement(next)) return;
+    node = next;
   }
 
   return node;
@@ -1289,7 +1327,7 @@ const applyOperations = (
   tablePath: readonly number[],
   operations: readonly (MutableOperation | TableOperation)[]
 ): TTableElement | null => {
-  const next = cloneDeep(table) as unknown as MutableTable;
+  const next = cloneMutableTable(table);
 
   for (const operation of operations) {
     if (
@@ -1308,7 +1346,7 @@ const applyOperations = (
         throw new Error(`Invalid table insert path ${operation.path}`);
       }
 
-      parent.children.splice(index, 0, cloneDeep(operation.node) as never);
+      parent.children.splice(index, 0, cloneMutableElement(operation.node));
       continue;
     }
     if (operation.kind === 'remove-node') {
@@ -1329,12 +1367,12 @@ const applyOperations = (
       throw new Error(`Invalid table operation path ${operation.path}`);
 
     if (operation.kind === 'replace-children') {
-      node.children = cloneDeep(operation.children) as never[];
+      node.children = operation.children.map(cloneMutableDescendant);
     } else if (operation.kind === 'set-node') {
       Object.assign(node, cloneDeep(operation.properties));
     } else if (operation.kind === 'unset-node') {
       for (const key of operation.keys) {
-        delete (node as unknown as Record<string, unknown>)[key];
+        delete node[key];
       }
     }
   }
@@ -1348,27 +1386,24 @@ export const applyTableMutationPlanToTable = (
   plan: TableMutationPlan
 ): TTableElement | null => applyOperations(table, tablePath, plan.operations);
 
-export const applyTableMutationPlan = <V extends Value>(
-  tx: Pick<EditorCoreUpdateTransaction<V>, 'nodes' | 'selection'>,
+export const applyTableMutationPlan = (
+  tx: Pick<EditorCoreUpdateTransaction, 'nodes' | 'selection'>,
   plan: TableMutationPlan
 ) => {
   for (const operation of plan.operations) {
     switch (operation.kind) {
       case 'insert-node':
-        tx.nodes.insert(
-          operation.node as never,
-          {
-            ...operation.options,
-            at: operation.path,
-          } as never
-        );
+        tx.nodes.insert(operation.node, {
+          ...operation.options,
+          at: operation.path,
+        });
         break;
       case 'remove-node':
       case 'remove-table':
         tx.nodes.remove({ at: operation.path });
         break;
       case 'replace-children':
-        tx.nodes.replaceChildren(operation.children as never[], {
+        tx.nodes.replaceChildren(operation.children, {
           at: operation.path,
         });
         break;

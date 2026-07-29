@@ -4,6 +4,7 @@
 
 - Kits and UI items stay aligned
 - Examples need explicit deps
+- Examples preserve teaching intent
 - Style deps are real deps
 
 ---
@@ -29,6 +30,38 @@ An example should depend on:
 - any style registry item it needs
 
 **Example:** if the example relies on `--highlight`, add `highlight-style`.
+
+---
+
+## Examples preserve teaching intent
+
+Registry examples are copied documentation and installation surfaces, not
+optimized host-app presets.
+
+Do not remove an explicit feature plugin, kit, renderer binding, or dependency
+merely because an aggregate `EditorKit` also includes it. Keep the explicit
+declaration when:
+
+- the example's `registryDependencies` names that feature kit;
+- the example exists to teach that feature's installation or component
+  binding;
+- removing it would hide which descriptor owns the visible feature.
+
+Transparency is source-level, not duplicate runtime membership. When the
+aggregate already contains the same descriptor, filter it out by descriptor
+key and then explicitly add/configure it once:
+
+```tsx
+plugins: [
+  ...EditorKit.filter((plugin) => plugin.key !== FeaturePlugin.key),
+  FeaturePlugin.configure({ component: FeatureElement }),
+]
+```
+
+Before deduplicating example setup, compare the source with
+`registry-examples.ts`, its feature kit, and the independently copied install
+shape. Runtime duplication proves the aggregate needs filtering; it does not
+prove the explicit teaching declaration is redundant.
 
 ---
 

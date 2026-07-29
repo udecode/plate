@@ -53,29 +53,30 @@ const invalidSymbolConfig: EditorImmutableConfig<symbol> =
 
 const extension = defineEditorExtension<CustomEditor>()({
   name: 'generic-extension',
-  onTransactionChange(context) {
-    const change: DocumentChange = context.change;
-    const changedPaths = context.changed.paths();
-    const changedRanges = context.changed.topLevelRanges();
-    const textChanged = context.changed.has('text');
-    const value: Readonly<ValueOf<typeof context.editor>> = context.editor.read(
-      (state) => state.children()
-    );
+  on: {
+    transactionChange(context) {
+      const change: DocumentChange = context.change;
+      const changedPaths = context.changed.paths();
+      const changedRanges = context.changed.topLevelRanges();
+      const textChanged = context.changed.has('text');
+      const value: Readonly<ValueOf<typeof context.editor>> =
+        context.editor.read((state) => state.children());
 
-    void change;
-    void changedPaths;
-    void changedRanges;
-    void textChanged;
-    void value;
-  },
-  onCommit({ commit, snapshot }) {
-    const change: DocumentChange = commit.changes;
-    const changedPaths = commit.changed.paths();
-    const children: CustomValue = snapshot.children;
+      void change;
+      void changedPaths;
+      void changedRanges;
+      void textChanged;
+      void value;
+    },
+    commit({ commit, snapshot }) {
+      const change: DocumentChange = commit.changes;
+      const changedPaths = commit.changed.paths();
+      const children: CustomValue = snapshot.children;
 
-    void change;
-    void changedPaths;
-    void children;
+      void change;
+      void changedPaths;
+      void children;
+    },
   },
 });
 

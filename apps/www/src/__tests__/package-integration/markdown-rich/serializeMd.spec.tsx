@@ -3,15 +3,14 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { testValue } from '../../../../../../packages/markdown/src/lib/__tests__/testValue';
-import { serializeMd } from '../../../../../../packages/markdown/src/lib/serializer/serializeMd';
 import { createTestEditor } from './createTestEditor';
 const editor = createTestEditor();
 
 jsxt;
 
-describe('serializeMd', () => {
+describe('editor.api.markdown.serialize', () => {
   it('serializes a simple paragraph', () => {
-    const result = serializeMd(editor as any, {
+    const result = editor.api.markdown.serialize({
       spread: true,
       value: { children: testValue },
     });
@@ -61,7 +60,7 @@ describe('serializeMd', () => {
           type: 'p',
         },
       ];
-      const result = serializeMd(editor as any, {
+      const result = editor.api.markdown.serialize({
         value: { children: slateNodes },
       });
       expect(result).toMatchSnapshot();
@@ -104,7 +103,7 @@ describe('serializeMd', () => {
         },
       ];
 
-      const result = serializeMd(editor as any, {
+      const result = editor.api.markdown.serialize({
         value: { children: slateNodes },
       });
       expect(result).toMatchSnapshot();
@@ -126,7 +125,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -143,7 +142,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -161,7 +160,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -178,7 +177,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -196,7 +195,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toMatchSnapshot();
     });
 
@@ -209,7 +208,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toBe('> Block quote\\ \n> <br />\n');
     });
 
@@ -227,7 +226,7 @@ describe('serializeMd', () => {
       ];
 
       expect(
-        serializeMd(editor as any, { value: { children: slateNodes } })
+        editor.api.markdown.serialize({ value: { children: slateNodes } })
       ).toBe('Paragaph with two new Lines\\\n\\ \n<br />\n');
     });
   });
@@ -241,7 +240,7 @@ describe('serializeMd', () => {
     ];
 
     expect(
-      serializeMd(editor as any, { value: { children: slateNodes } })
+      editor.api.markdown.serialize({ value: { children: slateNodes } })
     ).toMatchSnapshot();
   });
 
@@ -258,7 +257,7 @@ describe('serializeMd', () => {
     ];
 
     expect(
-      serializeMd(editor as any, { value: { children: slateNodes } })
+      editor.api.markdown.serialize({ value: { children: slateNodes } })
     ).toMatchSnapshot();
   });
 
@@ -279,12 +278,12 @@ describe('serializeMd', () => {
       },
     ];
 
-    const resultDefault = serializeMd(editor as any, {
+    const resultDefault = editor.api.markdown.serialize({
       value: { children: listFragment },
     });
     expect(resultDefault).toBe('1. 1\n2. 2\n');
 
-    const resultWithSpread = serializeMd(editor as any, {
+    const resultWithSpread = editor.api.markdown.serialize({
       spread: true,
       value: { children: listFragment },
     });
@@ -306,7 +305,7 @@ describe('serializeMd', () => {
         type: 'p',
       },
     ];
-    const result = serializeMd(editor as any, {
+    const result = editor.api.markdown.serialize({
       remarkStringifyOptions: {
         handlers: {
           strong: (node, _parent, state, info) => {
@@ -356,7 +355,7 @@ describe('serializeMd', () => {
       },
     ];
 
-    const result = serializeMd(editor as any, {
+    const result = editor.api.markdown.serialize({
       value: { children: slateNodes },
     });
 

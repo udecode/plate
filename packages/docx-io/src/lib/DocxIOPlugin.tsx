@@ -38,7 +38,13 @@ import type {
   NodeComponents,
 } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import type { Value } from '@platejs/plite';
+import {
+  TextApi,
+  type Descendant,
+  type Path,
+  type Point,
+  type Value,
+} from '@platejs/plite';
 import type {
   PlateStaticProps,
   RenderStaticHtmlOptions,
@@ -52,11 +58,8 @@ import mammoth from 'mammoth';
 import type { Margins, PageSize } from './html-to-docx';
 
 import { htmlToDocxBlob } from './html-to-docx';
-import {
-  extractComments,
-  preprocessMammothHtml,
-} from './preprocessMammothHtml';
-import type { ImportDocxOptions, ImportDocxResult } from './types';
+
+const COMMENT_WHITESPACE_PATTERN = /\s+/g;
 
 // =============================================================================
 // CSS Styles for DOCX Export
@@ -257,6 +260,26 @@ export type DocxIOPluginState = {
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
 };
 
+/** Comment extracted from a DOCX file. */
+export type DocxComment = {
+  id: string;
+  /** Positions of this comment in the imported node snapshot. */
+  references: Point[];
+  text: string;
+};
+
+/** Result of importing a DOCX file. */
+export type ImportDocxResult = {
+  comments: DocxComment[];
+  nodes: Descendant[];
+  warnings: string[];
+};
+
+/** Options for importing a DOCX file. */
+export type ImportDocxOptions = {
+  rtf?: string;
+};
+
 /** Options for standalone DOCX export. */
 export type DocxExportOptions = DocxExportOperationOptions & DocxIOPluginState;
 
@@ -288,29 +311,22 @@ export const DEFAULT_DOCX_MARGINS: DocxExportMargins = {
 // Export Functions
 // =============================================================================
 
-type DocxValue = Value;
-
 /**
  * Internal options for serializing to HTML.
  */
-type SerializeToHtmlInternalOptions = {
-  EditorStaticComponent?: React.ComponentType<PlateStaticProps>;
-  /** Component overrides by plugin key */
-  components?: NodeComponents;
-  fontFamily?: string;
-  plugins?: readonly BasePluginInput[];
-  value: DocxValue;
-};
-
 /**
  * Serializes Plate.js editor value to HTML string.
  *
  * @param options - Serialization options
  * @returns HTML string representation of the editor content
  */
-async function serializeToHtml(
-  options: SerializeToHtmlInternalOptions
-): Promise<string> {
+async function serializeToHtml(options: {
+  EditorStaticComponent?: React.ComponentType<PlateStaticProps>;
+  components?: NodeComponents;
+  fontFamily?: string;
+  plugins?: readonly BasePluginInput[];
+  value: Value;
+}): Promise<string> {
   const { EditorStaticComponent, components, fontFamily, plugins, value } =
     options;
 
@@ -361,14 +377,6 @@ function wrapHtmlForDocx(bodyHtml: string, customStyles?: string): string {
 /**
  * Internal options for exportToDocxInternal.
  */
-interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
-  /** Component overrides by plugin key */
-  components?: NodeComponents;
-  editorPlugins?: readonly BasePluginInput[];
-  editorStaticComponent?: React.ComponentType<PlateStaticProps>;
-  value: DocxValue;
-}
-
 /**
  * Internal function to convert Plate.js editor content to a DOCX blob.
  *
@@ -376,7 +384,12 @@ interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
  * @returns A Promise that resolves to a Blob containing the DOCX file
  */
 async function exportToDocxInternal(
-  options: ExportToDocxInternalOptions
+  options: DocxExportOperationOptions & {
+    components?: NodeComponents;
+    editorPlugins?: readonly BasePluginInput[];
+    editorStaticComponent?: React.ComponentType<PlateStaticProps>;
+    value: Value;
+  }
 ): Promise<Blob> {
   const {
     allowRemoteImages,
@@ -449,7 +462,7 @@ async function exportToDocxInternal(
  * ```
  */
 export async function exportToDocx(
-  value: DocxValue,
+  value: Value,
   options: DocxExportOptions = {}
 ): Promise<Blob> {
   const { editorPlugins, editorStaticComponent, ...operationOptions } = options;
@@ -504,17 +517,101 @@ export const DocxIOPlugin = createBasePlugin({
       arrayBuffer: ArrayBuffer,
       options: ImportDocxOptions = {}
     ): Promise<ImportDocxResult> => {
-      const mammothResult = await mammoth.convertToHtml(
-        { arrayBuffer },
-        { styleMap: ['comment-reference => sup'] }
-      );
+      // Mammoth selects `buffer` in Node and `arrayBuffer` in its browser build.
+      const mammothInput = { arrayBuffer, buffer: arrayBuffer };
+      const mammothResult = await mammoth.convertToHtml(mammothInput, {
+        styleMap: ['comment-reference => sup'],
+      });
       const warnings = mammothResult.messages.map((message) => message.message);
-      const {
-        commentById,
-        commentIds,
-        html: preprocessedHtml,
-      } = preprocessMammothHtml(mammothResult.value);
-      const cleanedHtml = cleanDocx(preprocessedHtml, options.rtf ?? '');
+      const mammothDocument = new DOMParser().parseFromString(
+        mammothResult.value,
+        'text/html'
+      );
+      const commentById = new Map<string, string>();
+
+      for (const dl of Array.from(mammothDocument.querySelectorAll('dl'))) {
+        const definitions = Array.from(
+          dl.querySelectorAll('dt[id^="comment-"]')
+        );
+
+        if (definitions.length === 0) continue;
+
+        for (const definition of definitions) {
+          const id = (definition.getAttribute('id') ?? '').slice(
+            'comment-'.length
+          );
+          const description = definition.nextElementSibling;
+
+          if (!(id && description?.matches('dd'))) continue;
+
+          const descriptionClone = description.cloneNode(true);
+
+          if (!(descriptionClone instanceof HTMLElement)) continue;
+
+          for (const backReference of Array.from(
+            descriptionClone.querySelectorAll('a[href^="#comment-ref-"]')
+          )) {
+            backReference.remove();
+          }
+
+          for (const block of Array.from(
+            descriptionClone.querySelectorAll('br, div, li, p')
+          )) {
+            if (block.matches('br')) {
+              block.replaceWith(
+                descriptionClone.ownerDocument.createTextNode(' ')
+              );
+            } else {
+              block.append(descriptionClone.ownerDocument.createTextNode(' '));
+            }
+          }
+
+          const text = (descriptionClone.textContent ?? '')
+            .replaceAll(COMMENT_WHITESPACE_PATTERN, ' ')
+            .trim();
+
+          commentById.set(
+            id,
+            text.endsWith('↑') ? text.slice(0, -1).trim() : text
+          );
+        }
+
+        dl.remove();
+      }
+
+      const commentIds: string[] = [];
+      const seenCommentIds = new Set<string>();
+
+      for (const reference of Array.from(
+        mammothDocument.querySelectorAll('a[id^="comment-ref-"]')
+      )) {
+        const id = (reference.getAttribute('id') ?? '').slice(
+          'comment-ref-'.length
+        );
+
+        if (!id) continue;
+
+        if (!seenCommentIds.has(id)) {
+          seenCommentIds.add(id);
+          commentIds.push(id);
+        }
+
+        const marker = mammothDocument.createTextNode(
+          `[[DOCX_COMMENT_REF:${id}]]`
+        );
+        const parent = reference.parentElement;
+
+        if (parent?.matches('sup') && parent.childNodes.length === 1) {
+          parent.replaceWith(marker);
+        } else {
+          reference.replaceWith(marker);
+        }
+      }
+
+      const cleanedHtml = cleanDocx(
+        mammothDocument.body.innerHTML,
+        options.rtf ?? ''
+      );
       const element = new DOMParser().parseFromString(
         cleanedHtml,
         'text/html'
@@ -538,9 +635,54 @@ export const DocxIOPlugin = createBasePlugin({
         };
       }
 
+      const referencesByCommentId = new Map<string, Point[]>();
+      const stripCommentMarkers = (
+        node: Descendant,
+        path: Path
+      ): Descendant => {
+        if (!TextApi.isText(node)) {
+          return {
+            ...node,
+            children: node.children.map((child, index) =>
+              stripCommentMarkers(child, [...path, index])
+            ),
+          };
+        }
+
+        let cursor = 0;
+        let strippedText = '';
+
+        for (const match of node.text.matchAll(
+          /\[\[DOCX_COMMENT_REF:([^\]]+)]]/g
+        )) {
+          const matchIndex = match.index;
+          const id = match[1];
+
+          strippedText += node.text.slice(cursor, matchIndex);
+          cursor = matchIndex + match[0].length;
+
+          if (!id) continue;
+
+          const references = referencesByCommentId.get(id) ?? [];
+          references.push({ offset: strippedText.length, path });
+          referencesByCommentId.set(id, references);
+        }
+
+        return cursor > 0
+          ? { ...node, text: strippedText + node.text.slice(cursor) }
+          : node;
+      };
+      const importedNodes = nodes.map((node, index) =>
+        stripCommentMarkers(node, [index])
+      );
+
       return {
-        comments: extractComments(commentById, commentIds),
-        nodes,
+        comments: commentIds.map((id) => ({
+          id,
+          references: referencesByCommentId.get(id) ?? [],
+          text: commentById.get(id) ?? '',
+        })),
+        nodes: importedNodes,
         warnings,
       };
     },
@@ -566,9 +708,3 @@ export const DocxIOPlugin = createBasePlugin({
 });
 
 export type DocxIOConfig = InferConfig<typeof DocxIOPlugin>;
-
-// =============================================================================
-// Re-exports
-// =============================================================================
-
-export { htmlToDocxBlob } from './html-to-docx';

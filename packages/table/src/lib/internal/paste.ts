@@ -3,7 +3,6 @@ import {
   ContentSlice,
   type Descendant,
   DocumentChange,
-  type EditorCoreUpdateTransaction,
   type EditorDocumentValue,
   type Path,
   type Range,
@@ -21,7 +20,6 @@ import { createDetachedTableContext, type TableContext } from './context';
 import { getColSpan, getRowSpan, setSpan } from './codec';
 import type { TableGrid, TableGridAnchor, TableGridProblem } from './grid';
 import {
-  applyTableMutationPlan,
   applyTableMutationPlanToTable,
   planTableMutation,
   type TableCellFactory,
@@ -842,17 +840,6 @@ export const planPreparedTablePaste = (
       focus,
       kind: 'text' as const,
     }),
-  });
-};
-
-export const applyPreparedTablePastePlan = <V extends Value>(
-  tx: Pick<EditorCoreUpdateTransaction<V>, 'nodes' | 'selection'>,
-  plan: PreparedTablePastePlan
-) => {
-  applyTableMutationPlan(tx, {
-    kind: 'plan',
-    operations: plan.operations,
-    selection: plan.selection,
   });
 };
 

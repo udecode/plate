@@ -13,10 +13,10 @@
           "localPath": "../wordgard",
           "branch": "main",
           "upstream": "origin/main",
-          "auditedCommit": "8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e",
-          "auditedAt": "2026-07-25T23:30:38Z",
-          "testHarvestCommit": "8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e",
-          "issueHarvestCheckedAt": "2026-07-25T23:13:33Z",
+          "auditedCommit": "01eb2b5eae509509677345fd603acad001827dff",
+          "auditedAt": "2026-07-27T14:42:25Z",
+          "testHarvestCommit": "01eb2b5eae509509677345fd603acad001827dff",
+          "issueHarvestCheckedAt": "2026-07-27T14:28:47Z",
           "issueLedger": "docs/editor-issue-harvester/wordgard/full/issue-closure-ledger.md"
         },
         {
@@ -269,6 +269,29 @@
           "auditedCommit": "ff1148a339bb7daa9d7b02dff9614b9d7123f552",
           "auditedAt": "2026-07-25T23:30:38Z",
           "testHarvestCommit": "ff1148a339bb7daa9d7b02dff9614b9d7123f552",
+          "issueHarvestCheckedAt": null,
+          "issueLedger": null
+        }
+      ]
+    },
+    {
+      "id": "wordgard-full-strict",
+      "artifactVersion": 1,
+      "target": "wordgard-full-source",
+      "artifact": "docs/plans/artifacts/wordgard-full-strict-editor-audit/audit-report.md",
+      "references": [
+        {
+          "repoKey": "code.haverbeke.berlin/wordgard/wordgard",
+          "source": "https://code.haverbeke.berlin/wordgard/wordgard.git",
+          "localPath": "../wordgard",
+          "branch": "main",
+          "upstream": "origin/main",
+          "auditedCommit": "01eb2b5eae509509677345fd603acad001827dff",
+          "auditedAt": "2026-07-27T19:26:05Z",
+          "conceptManifest": "docs/plans/artifacts/wordgard-full-strict-editor-audit/source-manifest.json",
+          "conceptMatrix": "docs/plans/artifacts/wordgard-full-strict-editor-audit/concept-matrix.md",
+          "conceptMatrixValidatedAt": "2026-07-27T19:26:05Z",
+          "testHarvestCommit": "01eb2b5eae509509677345fd603acad001827dff",
           "issueHarvestCheckedAt": null,
           "issueLedger": null
         }

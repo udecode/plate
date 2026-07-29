@@ -14,7 +14,10 @@ import {
   getExtensionRegistry,
   inheritExtensionRegistry,
 } from './core/extension-registry';
-import { extendEditor } from './core/editor-extension';
+import {
+  createEditorViewExtensionApis,
+  extendEditor,
+} from './core/editor-extension';
 import {
   getCurrentSelection,
   getCurrentSelectionRoot,
@@ -46,7 +49,6 @@ import type {
   EditorStateView,
   EditorStateViewApi,
   EditorTransactionSpecBuilder,
-  EditorMarkToggleOptions,
   EditorUpdateContext,
   EditorUpdateTransaction,
   EditorView,
@@ -88,7 +90,7 @@ type ViewStateTransformInput<V extends Value> = Pick<
 > & {
   children: () => readonly unknown[];
   slice: Pick<EditorStateSliceApi<V>, 'get'> &
-    Partial<Pick<EditorStateSliceApi<V>, 'fit' | 'fitContent'>>;
+    Partial<Pick<EditorStateSliceApi<V>, 'export' | 'fit' | 'fitContent'>>;
   transaction?: EditorStateView<V>['transaction'];
 };
 
@@ -315,6 +317,7 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     );
   const baseSliceFit = state.slice.fit;
   const baseSliceFitContent = state.slice.fitContent;
+  const baseSliceExport = state.slice.export;
   const fitSlice = baseSliceFit
     ? (((slice, options) => {
         const run = () =>
@@ -375,13 +378,16 @@ const withViewState = <V extends Value, T extends ViewStateTransformInput<V>>(
     slice: Object.freeze({
       ...(fitSlice ? { fit: fitSlice } : {}),
       ...(fitSliceContent ? { fitContent: fitSliceContent } : {}),
+      ...(baseSliceExport
+        ? { export: rootMethod(editor, viewState, baseSliceExport) }
+        : {}),
       get: rootMethod(editor, viewState, state.slice.get),
     }) as T['slice'],
     selection: Object.freeze(
       Object.assign(selection, {
         contains: (target: NodeTarget) =>
           doesSelectionContain(scopedState, selection(), target),
-        domRange: () => state.selection.domRange(),
+        primaryRange: () => state.selection.primaryRange(),
         intersects: (target: NodeTarget) =>
           doesSelectionIntersect(scopedState, selection(), target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
@@ -571,14 +577,8 @@ const withViewTransaction = <V extends Value>(
           runSelectionMutation(() => transaction.marks.remove(key)),
         set: (marks: Parameters<typeof transaction.marks.set>[0]) =>
           runSelectionMutation(() => transaction.marks.set(marks)),
-        toggle: (
-          key: string,
-          value?: unknown,
-          options?: EditorMarkToggleOptions
-        ) =>
-          runSelectionMutation(() =>
-            transaction.marks.toggle(key, value, options)
-          ),
+        toggle: (key: string, value?: unknown) =>
+          runSelectionMutation(() => transaction.marks.toggle(key, value)),
       }) satisfies typeof transaction.marks
     ),
     nodes: Object.freeze<EditorUpdateTransaction<V>['nodes']>({
@@ -642,7 +642,7 @@ const withViewTransaction = <V extends Value>(
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),
-        domRange: () => state.selection.domRange(),
+        primaryRange: () => state.selection.primaryRange(),
         intersects: (target: NodeTarget) => state.selection.intersects(target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           state.selection.isAcrossBlocks(options),
@@ -1030,9 +1030,13 @@ export const createEditorView = <
     extension,
     options
   ) => extendEditor(viewEditor!, extension, options);
+  let extensionApis: Pick<Editor<V, TExtensions>, 'api' | 'getApi'> | null =
+    null;
 
   const view = {
-    api: runtime.editor.api,
+    get api() {
+      return extensionApis?.api ?? runtime.editor.api;
+    },
     anchor: createViewAnchor,
     blur: () => {
       viewState.focused = false;
@@ -1048,7 +1052,11 @@ export const createEditorView = <
     focus: () => {
       viewState.focused = true;
     },
-    getApi: runtime.editor.getApi,
+    getApi: ((extension) =>
+      (extensionApis?.getApi ?? runtime.editor.getApi)(extension)) as Editor<
+      V,
+      TExtensions
+    >['getApi'],
     id: runtime.editor.id,
     read: viewRead,
     root: toPublicRoot(viewState.root) as NamedRootKey | undefined,
@@ -1067,5 +1075,9 @@ export const createEditorView = <
     viewState.root
   );
   inheritExtensionRegistry(viewEditor, runtime.editor);
+  extensionApis = createEditorViewExtensionApis(
+    viewEditor,
+    runtime.editor
+  ) as Pick<Editor<V, TExtensions>, 'api' | 'getApi'>;
   return Object.freeze(view);
 };

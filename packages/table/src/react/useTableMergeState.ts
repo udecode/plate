@@ -3,7 +3,6 @@ import { useEditorPlugin, useEditorSelector } from '@platejs/core/react';
 import { RangeApi } from '@platejs/plite';
 import { useEditorReadOnly } from '@platejs/plite-react';
 
-import { readTableSelection } from '../lib/internal/selection';
 import { TablePlugin } from './TablePlugin';
 
 export const useTableMergeState = () => {
@@ -22,14 +21,7 @@ export const useTableMergeState = () => {
   const collapsed = !readOnly && someTable && !selectionExpanded;
 
   const selectionView = useEditorSelector(
-    (editor) => {
-      const table = editor.plugin(TablePlugin);
-
-      return readTableSelection(editor.read, {
-        cellTypes: table.api.getCellTypes(),
-        tableType: editor.getType(KEYS.table),
-      });
-    },
+    (editor) => editor.plugin(TablePlugin).read.getSelection(),
     {
       equalityFn: (next, previous) =>
         next === previous ||

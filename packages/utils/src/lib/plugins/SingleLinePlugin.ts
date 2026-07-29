@@ -8,7 +8,7 @@ const LINE_BREAK = /[\r\n\u2028\u2029]/g;
 /** Forces editor to only have one line. */
 export const SingleLinePlugin = createBasePlugin({
   key: KEYS.singleLine,
-  extension: {
+  extension: () => ({
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) =>
         state.transaction(() => {})
@@ -65,7 +65,7 @@ export const SingleLinePlugin = createBasePlugin({
         },
       },
     ],
-  },
+  }),
   override: {
     plugins: {
       [KEYS.trailingBlock]: {

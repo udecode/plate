@@ -3,7 +3,7 @@ import React from 'react';
 import {
   type UseVirtualFloatingOptions,
   getDOMSelectionBoundingClientRect,
-  getRangeBoundingClientRect,
+  getDefaultBoundingClientRect,
   useVirtualFloating,
 } from '@platejs/floating';
 import {
@@ -12,6 +12,7 @@ import {
   useEditorSelection,
   usePluginStore,
 } from '@platejs/core/react';
+import type { TLinkElement } from '@platejs/utils';
 import { useHotkeys } from '@udecode/react-hotkeys';
 import { useComposedRef, useOnClickOutside } from '@udecode/react-utils';
 
@@ -19,6 +20,188 @@ import { LinkPlugin } from './LinkPlugin';
 
 export type LinkFloatingToolbarState = {
   floatingOptions?: UseVirtualFloatingOptions;
+};
+
+export type FloatingLinkTriggerOptions = {
+  focused?: boolean;
+};
+
+export const useFloatingLinkActions = () => {
+  const { api, editor, store, type, update } = useEditorPlugin(LinkPlugin);
+
+  const submit = React.useCallback(() => {
+    if (!editor.read.selection()) return;
+
+    const {
+      forceSubmit,
+      newTab,
+      text,
+      transformInput,
+      url: inputUrl,
+    } = store.get();
+    const url = transformInput ? (transformInput(inputUrl) ?? '') : inputUrl;
+
+    if (!forceSubmit && !api.validateUrl(url)) return;
+
+    api.hide();
+    update.upsert({
+      skipValidation: true,
+      target: newTab ? '_blank' : undefined,
+      text,
+      url,
+    });
+    setTimeout(() => editor.api.dom.focus(), 0);
+
+    return true;
+  }, [api, editor, store, update]);
+
+  const triggerEdit = React.useCallback(() => {
+    const selection = editor.read.selection();
+
+    if (!selection) return;
+
+    const entry = editor.read.nodes.above<TLinkElement>({
+      at: selection,
+      match: { type },
+    });
+
+    if (!entry) return;
+
+    const [link, path] = entry;
+    const linkText = editor.read.text.string(path);
+
+    store.set({
+      isEditing: true,
+      newTab: link.target === '_blank',
+      text: linkText === link.url ? '' : linkText,
+      url: link.url,
+    });
+
+    return true;
+  }, [editor, store, type]);
+
+  const triggerInsert = React.useCallback(
+    ({ focused }: FloatingLinkTriggerOptions = {}) => {
+      if (store.get().mode || !focused) return;
+      if (editor.read.selection.isAcrossBlocks()) return;
+
+      const selection = editor.read.selection();
+
+      if (!selection) return;
+      if (editor.read.nodes.some({ at: selection, match: { type } })) return;
+
+      store.set({ text: editor.read.text.string() });
+      api.show('insert', editor.id);
+
+      return true;
+    },
+    [api, editor, store, type]
+  );
+
+  const trigger = React.useCallback(
+    (options?: FloatingLinkTriggerOptions) =>
+      store.get().mode === 'edit' ? triggerEdit() : triggerInsert(options),
+    [store, triggerEdit, triggerInsert]
+  );
+
+  return { submit, trigger, triggerEdit, triggerInsert };
+};
+
+export const useFloatingLinkNewTabInputState = () => {
+  const { store } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginStore(LinkPlugin, 'updated');
+  const ref = React.useRef<HTMLInputElement>(null);
+  const [checked, setChecked] = React.useState<boolean>(store.get().newTab);
+
+  React.useEffect(() => {
+    if (ref.current && updated) {
+      setTimeout(() => {
+        ref.current?.focus();
+      }, 0);
+    }
+  }, [updated]);
+
+  return {
+    checked,
+    ref,
+    setChecked,
+  };
+};
+
+export const useFloatingLinkNewTabInput = ({
+  checked,
+  ref,
+  setChecked,
+}: ReturnType<typeof useFloatingLinkNewTabInputState>) => {
+  const { store } = useEditorPlugin(LinkPlugin);
+
+  const onChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback(
+      (e) => {
+        setChecked(e.target.checked);
+        store.set({ newTab: e.target.checked });
+      },
+      [store, setChecked]
+    );
+
+  return {
+    props: {
+      checked,
+      type: 'checkbox',
+      onChange,
+    },
+    ref,
+  };
+};
+
+export const useFloatingLinkUrlInputState = () => {
+  const { api, store } = useEditorPlugin(LinkPlugin);
+  const updated = usePluginStore(LinkPlugin, 'updated');
+  const ref = React.useRef<HTMLInputElement>(null);
+  const focused = React.useRef(false);
+
+  React.useEffect(() => {
+    if (ref.current && updated) {
+      setTimeout(() => {
+        const input = ref.current;
+
+        if (!input || focused.current) return;
+
+        focused.current = true;
+
+        const url = store.get().url;
+        input.focus();
+        input.value = url ? api.decodeUrl(url) : '';
+      }, 0);
+    }
+  }, [api, store, updated]);
+
+  return {
+    ref,
+  };
+};
+
+export const useFloatingLinkUrlInput = (
+  state: ReturnType<typeof useFloatingLinkUrlInputState>
+) => {
+  const { api, store } = useEditorPlugin(LinkPlugin);
+
+  const onChange: React.ChangeEventHandler<HTMLInputElement> =
+    React.useCallback(
+      (e) => {
+        const url = api.encodeUrl(e.target.value);
+        store.set({ url });
+      },
+      [api, store]
+    );
+
+  return {
+    props: {
+      defaultValue: store.get().url,
+      onChange,
+    },
+    ref: state.ref,
+  };
 };
 
 export const useVirtualFloatingLink = ({
@@ -35,13 +218,14 @@ export const useVirtualFloatingLink = ({
 
 export const useFloatingLinkEnter = () => {
   const { editor } = useEditorPlugin(LinkPlugin);
+  const { submit } = useFloatingLinkActions();
   const open = usePluginStore(LinkPlugin, 'isOpen', editor.id);
 
   useHotkeys(
     '*',
     (e) => {
       if (e.key !== 'Enter') return;
-      if (editor.plugin(LinkPlugin).api.submit()) {
+      if (submit()) {
         e.preventDefault();
       }
     },
@@ -110,7 +294,12 @@ export const useFloatingLinkEditState = ({
       const [, path] = entry;
       const range = editor.read.ranges.get(path);
 
-      if (range) return getRangeBoundingClientRect(editor, range);
+      if (range) {
+        return (
+          editor.api.dom.resolveDOMRange(range)?.getBoundingClientRect() ??
+          getDefaultBoundingClientRect()
+        );
+      }
     }
 
     return getDOMSelectionBoundingClientRect();
@@ -152,7 +341,8 @@ export const useFloatingLinkEdit = ({
   triggerFloatingLinkHotkeys,
   versionEditor,
 }: ReturnType<typeof useFloatingLinkEditState>): FloatingLinkEditProps => {
-  const { api, store } = useEditorPlugin(LinkPlugin);
+  const { api, store, type } = useEditorPlugin(LinkPlugin);
+  const { triggerEdit } = useFloatingLinkActions();
 
   React.useEffect(() => {
     const selection = editor.read.selection();
@@ -162,7 +352,7 @@ export const useFloatingLinkEdit = ({
       editor.read.selection.isCollapsed() &&
       editor.read.nodes.some({
         at: selection,
-        match: { type: editor.getType(LinkPlugin.key) },
+        match: { type },
       })
     ) {
       api.show('edit', editor.id);
@@ -179,10 +369,7 @@ export const useFloatingLinkEdit = ({
   useHotkeys(
     triggerFloatingLinkHotkeys ?? 'meta+k, ctrl+k',
     (e) => {
-      if (
-        store.get().mode === 'edit' &&
-        editor.plugin(LinkPlugin).api.triggerEdit()
-      ) {
+      if (store.get().mode === 'edit' && triggerEdit()) {
         e.preventDefault();
       }
     },
@@ -204,7 +391,7 @@ export const useFloatingLinkEdit = ({
   return {
     editButtonProps: {
       onClick: () => {
-        editor.plugin(LinkPlugin).api.triggerEdit();
+        triggerEdit();
       },
     },
     props: {
@@ -274,6 +461,7 @@ export const useFloatingLinkInsert = ({
   triggerFloatingLinkHotkeys,
 }: ReturnType<typeof useFloatingLinkInsertState>): FloatingLinkInsertProps => {
   const { api, editor, store } = useEditorPlugin(LinkPlugin);
+  const { triggerInsert } = useFloatingLinkActions();
 
   const onChange: React.ChangeEventHandler<HTMLInputElement> =
     React.useCallback(
@@ -309,11 +497,7 @@ export const useFloatingLinkInsert = ({
   useHotkeys(
     triggerFloatingLinkHotkeys ?? 'meta+k, ctrl+k',
     (e) => {
-      if (
-        editor
-          .plugin(LinkPlugin)
-          .api.triggerInsert({ focused: editor.read.view.isFocused() })
-      ) {
+      if (triggerInsert({ focused: editor.read.view.isFocused() })) {
         e.preventDefault();
       }
     },

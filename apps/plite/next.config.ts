@@ -40,6 +40,7 @@ const WORKSPACE_ALIAS_SUBPATHS = [
   'internal',
   'playwright',
   'react',
+  'react/internal',
   'static',
 ];
 

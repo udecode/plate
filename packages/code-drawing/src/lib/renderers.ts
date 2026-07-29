@@ -1,4 +1,4 @@
-import type { CodeDrawingType } from './constants';
+import type { CodeDrawingType } from './BaseCodeDrawingPlugin';
 
 /**
  * Convert SVG string to data URL

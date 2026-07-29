@@ -5,6 +5,7 @@ import type React from 'react';
 import {
   createPlateEditor,
   createPlatePlugin,
+  getEditorPlugin,
   type PlateEditor,
 } from '@platejs/core/react';
 import { DebugPlugin } from '@platejs/core';
@@ -310,11 +311,21 @@ const runHandler = (
   key: 'onDragEnd' | 'onDragStart' | 'onDrop' | 'onMouseUp',
   event: React.SyntheticEvent
 ) => {
-  const handler = (editor.getPlugin(TablePlugin) as any).handlers?.[key];
+  const plugin = editor.getPlugin(TablePlugin);
+  const handler = (
+    plugin.handlers as
+      | Partial<
+          Record<'onDragEnd' | 'onDragStart' | 'onDrop' | 'onMouseUp', unknown>
+        >
+      | undefined
+  )?.[key] as ((context: unknown) => unknown) | undefined;
 
   if (!handler) throw new Error(`Expected TablePlugin ${key} handler`);
 
-  return handler({ editor, event });
+  return handler({
+    ...getEditorPlugin(editor, plugin),
+    event,
+  });
 };
 
 const installDOMSelectionApi = (

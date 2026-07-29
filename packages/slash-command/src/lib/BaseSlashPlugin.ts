@@ -6,7 +6,15 @@ import { type InferConfig, createBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-type SlashPluginState = TriggerComboboxPluginState;
+export type SlashPluginState = TriggerComboboxPluginState & {
+  createComboboxInput: NonNullable<
+    TriggerComboboxPluginState['createComboboxInput']
+  >;
+  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
+  triggerPreviousCharPattern: NonNullable<
+    TriggerComboboxPluginState['triggerPreviousCharPattern']
+  >;
+};
 
 export const BaseSlashInputPlugin = createBasePlugin({
   key: KEYS.slashInput,
@@ -39,7 +47,13 @@ export const BaseSlashPlugin = createBasePlugin({
   initialState: slashInitialState,
 
   editOnly: true,
-  extension: (context) => createTriggerComboboxExtension(context),
+  extension: ({ editor, plugin, store, type }) =>
+    createTriggerComboboxExtension({
+      editor,
+      getState: () => store.get(),
+      name: plugin.key,
+      type,
+    }),
 });
 
 export type SlashConfig = InferConfig<typeof BaseSlashPlugin>;

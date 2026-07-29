@@ -154,7 +154,9 @@ describe('cursor geometry', () => {
 
       if (!domNode) throw new TypeError('Expected a mapped DOM node');
 
-      domNode.remove();
+      await act(async () => {
+        domNode.remove();
+      });
 
       expect(
         getSelectionRects(editor, {

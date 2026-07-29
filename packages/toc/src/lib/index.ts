@@ -3,4 +3,3 @@
  */
 
 export * from './BaseTocPlugin';
-export * from './types';

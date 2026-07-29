@@ -259,7 +259,7 @@ describe('commit metadata contract', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          effects: [effect],
+          effectTypes: [effect],
           name: 'metadata-effect-only',
         }),
       ] as const,

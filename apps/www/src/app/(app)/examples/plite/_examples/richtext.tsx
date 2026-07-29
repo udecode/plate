@@ -22,7 +22,11 @@ import {
   type Text as PliteText,
   TextApi,
 } from '@platejs/plite';
-import { isHotkey, parseDOMClipboardHtml } from '@platejs/plite-dom';
+import {
+  clipboardHandler,
+  isHotkey,
+  parseDOMClipboardHtml,
+} from '@platejs/plite-dom';
 import {
   Editable,
   type ReactEditor,
@@ -377,35 +381,39 @@ const normalizeRichTextHtmlFragment = (fragment: unknown): RichTextValue => {
 
 const RichTextExtension = defineEditorExtension({
   name: 'richtext',
-  clipboard: {
-    insertData(data, { next, tx }) {
-      const html = data.getData('text/html');
+  contributions: [
+    clipboardHandler({
+      insertData(data, { next, transaction }) {
+        const html = data.getData('text/html');
 
-      if (!html) {
-        return next();
-      }
+        if (!html) {
+          return next();
+        }
 
-      if (
-        data.getData('application/x-plite-fragment') ||
-        html.includes('data-plite-fragment=')
-      ) {
-        return next();
-      }
+        if (
+          data.getData('application/x-plite-fragment') ||
+          html.includes('data-plite-fragment=')
+        ) {
+          return next();
+        }
 
-      const hasPlainText = Array.from(data.types).includes('text/plain');
-      const text = hasPlainText ? data.getData('text/plain') : '';
+        const hasPlainText = Array.from(data.types).includes('text/plain');
+        const text = hasPlainText ? data.getData('text/plain') : '';
 
-      if (isPlainTextClipboardHtml(html, text)) {
-        return next();
-      }
+        if (isPlainTextClipboardHtml(html, text)) {
+          return next();
+        }
 
-      const parsed = parseDOMClipboardHtml(html);
-      const fragment = normalizeRichTextHtmlFragment(deserialize(parsed.body));
+        const parsed = parseDOMClipboardHtml(html);
+        const fragment = normalizeRichTextHtmlFragment(
+          deserialize(parsed.body)
+        );
 
-      tx.fragment.replace(fragment);
-      return true;
-    },
-  },
+        transaction.fragment.replace(fragment);
+        return true;
+      },
+    }),
+  ],
   commands: ({ around }) => [
     around(editorCommands.insertBreak, ({ state, next }) => {
       const selection = state.selection();

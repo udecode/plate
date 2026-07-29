@@ -60,7 +60,11 @@ export type InferPluginConfig<P> = P extends {
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
 type ExactPluginKey<C extends AnyPluginConfig> =
-  IsAny<C['key']> extends true ? never : C['key'];
+  IsAny<C['key']> extends true
+    ? never
+    : string extends C['key']
+      ? never
+      : C['key'];
 
 type ExplicitPluginKeys<T extends readonly unknown[]> =
   T[number] extends infer P
@@ -98,7 +102,7 @@ type InferHiddenPlugin<
   Seen extends PropertyKey,
 > =
   InferPluginConfig<P> extends infer C extends AnyPluginConfig
-    ? IsAny<C['key']> extends true
+    ? IsBroadPluginConfig<C> extends true
       ? never
       : C['key'] extends ExplicitKeys | Seen
         ? never
@@ -213,7 +217,15 @@ type MergeEditorApiUnion<T> = {
 };
 
 export type IsBroadPluginConfig<P> =
-  IsAny<P> extends true ? true : P extends { key: infer K } ? IsAny<K> : false;
+  IsAny<P> extends true
+    ? true
+    : P extends { key: infer K }
+      ? IsAny<K> extends true
+        ? true
+        : string extends K
+          ? true
+          : false
+      : false;
 
 type KnownPluginConfig<P> = P extends unknown
   ? InferPluginConfig<P> extends infer C

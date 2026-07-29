@@ -1494,6 +1494,41 @@
       }
     },
     {
+      "id": "plite-extension-graph",
+      "question": "Do descriptor-owned required dependencies compile and reconfigure within fixed budgets at 10, 100, and 1,000 descriptors while cleanup retains zero registry records?",
+      "owner": "plite",
+      "family": "core-extension",
+      "kind": "current",
+      "cwd": ".",
+      "command": "PLITE_EXTENSION_GRAPH_STRICT=1 bun --preload ./config/plite-source-aliases.ts benchmarks/editor/benchmarks/plite-extension-graph-benchmark.ts --output=tmp/plite-extension-graph-benchmark.json",
+      "metrics": {
+        "primary": "plite_extension_graph_worst_budget_ratio",
+        "direction": "lower",
+        "unit": "ratio",
+        "printsMetric": true,
+        "upgrade": "Cold transitive compile, dynamic root install, and reverse cleanup must stay below fixed 1,000 ms p95 budgets at 1,000 descriptors. Every cycle must activate and clean each descriptor exactly once and retain zero extension, descriptor, dependency-order, output, state, or transaction registry records after removal."
+      },
+      "correctness": {
+        "command": "bun test --preload ./config/plite-source-test-setup.ts ./packages/plite/test/extension-configuration.test.ts ./packages/plite/test/extension-methods-contract.ts ./benchmarks/editor/benchmarks/plite-extension-graph-benchmark.test.ts",
+        "policy": "Promotion requires descriptor inference, DAG order, cycle/conflict/duplicate rejection, candidate isolation, transitive reference counting, rollback, reverse cleanup, fixed p95 budgets, and zero post-removal registry records."
+      },
+      "artifacts": [
+        {
+          "path": "tmp/plite-extension-graph-benchmark.json",
+          "required": true
+        }
+      ],
+      "docs": {
+        "sources": [
+          "docs/plans/2026-07-25-multi-editor-full-architecture-audit.md",
+          "docs/plans/2026-07-28-execute-editor-architecture-upgrades.md"
+        ]
+      },
+      "thresholds": {
+        "promotion": "plite_extension_graph_worst_budget_ratio<1 and plite_extension_graph_removed_registry_records=0"
+      }
+    },
+    {
       "id": "plite-history-retained-memory",
       "question": "Does one 5,000-block History batch retain one versioned change without duplicating more than 2.25x its input payload?",
       "owner": "plite-history",

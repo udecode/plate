@@ -1,9 +1,7 @@
+import type { Value } from '@platejs/plite';
+
 import type { PlateEditor } from '../editor';
-import type {
-  InferConfig,
-  PlatePlugin,
-  PlatePluginContext,
-} from './PlatePlugin';
+import type { InferConfig, PlatePluginContext } from './PlatePlugin';
 
 import {
   type AnyPluginConfig,
@@ -12,13 +10,17 @@ import {
   getEditorPlugin as getBaseEditorPlugin,
 } from '../../lib';
 
-export function getEditorPlugin<P extends BasePluginInput>(
-  editor: PlateEditor,
+export function getEditorPlugin<
+  V extends Value,
+  E extends AnyPluginConfig,
+  P extends BasePluginInput,
+>(
+  editor: PlateEditor<V, E>,
   plugin: WithRequiredKey<P>
 ): PlatePluginContext<InferConfig<P>>;
 export function getEditorPlugin(
-  editor: PlateEditor,
-  plugin: WithRequiredKey<AnyPluginConfig> | PlatePlugin<AnyPluginConfig>
-): PlatePluginContext<any> {
-  return getBaseEditorPlugin(editor, plugin) as any;
+  editor: object,
+  plugin: Readonly<{ key: string }>
+): unknown {
+  return Reflect.apply(getBaseEditorPlugin, undefined, [editor, plugin]);
 }

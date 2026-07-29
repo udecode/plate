@@ -24,6 +24,24 @@ const createTextEditor = () =>
   });
 
 describe('slice and fragment public APIs', () => {
+  it('reuses immutable root nodes for a complete-root export', () => {
+    const first = paragraph('first');
+    const second = paragraph('second');
+    const editor = createEditor({
+      initialSelection: SelectionApi.text({
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 6, path: [1, 0] },
+      }),
+      initialValue: [first, second],
+    });
+    const children = editor.read.children();
+    const slice = editor.read.slice.export();
+
+    assert.equal(slice.content[0], children[0]);
+    assert.equal(slice.content[1], children[1]);
+    assert.deepEqual(slice.content, children);
+  });
+
   it('applies a fitted spec with direct slice and closed-fragment parity', () => {
     const previewEditor = createTextEditor();
     const sliceEditor = createTextEditor();

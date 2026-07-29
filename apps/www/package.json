@@ -68,6 +68,7 @@
     "@platejs/combobox": "workspace:^",
     "@platejs/comment": "workspace:^",
     "@platejs/csv": "workspace:^",
+    "@platejs/cursor": "workspace:^",
     "@platejs/date": "workspace:^",
     "@platejs/diff": "workspace:^",
     "@platejs/dnd": "workspace:^",

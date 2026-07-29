@@ -1,9 +1,14 @@
 # Wordgard Test Inventory
 
 Source checkout: clean local `../wordgard` tree at
-`8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e` on `main`, tracking
+`01eb2b5eae509509677345fd603acad001827dff` on `main`, tracking
 `origin/main` from `https://code.haverbeke.berlin/wordgard/wordgard.git`.
 License: MIT from `../wordgard/LICENSE` and `../wordgard/package.json`.
+
+Full provenance: every inventory row was discovered, line-counted, and
+classified directly from
+`source_commit=01eb2b5eae509509677345fd603acad001827dff`. No earlier artifact
+or commit diff supplied the file set.
 
 Inventory command:
 
@@ -18,9 +23,9 @@ Accounting: 27 files, 6,039 lines; 27 classified; 15 portable; 6
 portable-mixed; 3 Plate-owned; 3 harness; 0 skip; 0 product-shell; 0
 uncertain.
 
-Refresh accounting: the prior cursorless artifact listed 26 files. This full
-rebuild adds `test/webtest-dom-changes.ts`, removes no files, and reindexes all
-27 files from the verified commit.
+Full rebuild accounting: 27/27 tracked test files are present below, with zero
+uncertain or skipped files. The owning validator checks the exact current file
+set, newline counts, categories, and test-index parity.
 
 | File                            | Lines | Category       | Why                                                                                                                                                                                         |
 | ------------------------------- | ----: | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,0 +1,42 @@
+{
+  "directDriftExpressions": 71,
+  "exportedLiveSymbols": 180,
+  "findings": 120,
+  "packageCount": 58,
+  "packageVerdicts": {
+    "blocked-P0": 1,
+    "blocked-P1": 21,
+    "no-live-plugin-owner": 21,
+    "repair-P2": 5,
+    "repair-P3": 1,
+    "source-clean": 9
+  },
+  "pluginBearingPackages": 37,
+  "primaryExpressions": 195,
+  "severityCounts": {
+    "P0": 3,
+    "P1": 47,
+    "P2": 51,
+    "P3": 19
+  },
+  "sourceFiles": 1377,
+  "testOnlyExpressions": 1090,
+  "duplicateFindingIds": [],
+  "expectedPackageRows": 58,
+  "expectedPluginRows": 195,
+  "manifestExportedLiveSymbols": 180,
+  "packageRows": 58,
+  "pluginRows": 195,
+  "rowsMissingEvidence": [],
+  "unexpectedUnlinkedFindingIds": [],
+  "unlinkedFindingIds": [
+    "CORE-01",
+    "CORE-15",
+    "FOOT-03",
+    "SEL-14",
+    "TABLE-07",
+    "BASIC-03",
+    "STYLE-01",
+    "LISTC-04"
+  ]
+}

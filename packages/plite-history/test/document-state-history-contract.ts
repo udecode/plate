@@ -65,7 +65,7 @@ describe('document meta history contract', () => {
         effect.type === increment ? value + effect.value : value,
     });
     const incrementExtension = defineEditorExtension({
-      effects: [increment],
+      effectTypes: [increment],
       name: 'counter-increment-effect',
     });
     const editor = createEditor({
@@ -106,7 +106,7 @@ describe('document meta history contract', () => {
         history(),
         counter,
         defineEditorExtension({
-          effects: [replace],
+          effectTypes: [replace],
           name: 'nested-counter-effect',
         }),
       ] as const,
@@ -508,7 +508,7 @@ describe('document meta history contract', () => {
           : value,
     });
     const incrementExtension = defineEditorExtension({
-      effects: [increment],
+      effectTypes: [increment],
       name: 'document-large-counter-increment-effect',
     });
     const editor = createEditor({

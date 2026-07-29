@@ -66,7 +66,7 @@ import {
   point as editorPoint,
   void as editorVoid,
   hasPath as editorHasPath,
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   setEditorFocused,
   string as editorString,
 } from './runtime-editor-api';
@@ -1119,7 +1119,7 @@ export const useEditableSelectionReconciler = ({
 
       const projectedSelection =
         selection && !SelectionApi.isNode(selection)
-          ? getSelectionDOMRange(editor, selection)
+          ? getSelectionPrimaryRange(editor, selection)
           : null;
 
       // If the DOM selection is in the editor and the editor selection is already correct, we're done.

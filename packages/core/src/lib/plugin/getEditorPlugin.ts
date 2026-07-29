@@ -1,3 +1,5 @@
+import type { Value } from '@platejs/plite';
+
 import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
@@ -10,10 +12,7 @@ import type {
   BasePluginContext,
   InferConfig,
 } from './BasePlugin';
-import {
-  createDefineEditorExtension,
-  createDefinePluginCodecs,
-} from './pluginAuthoringContext';
+import { createDefinePluginCodecs } from './pluginAuthoringContext';
 import {
   getCompiledPlatePlugin,
   getCompiledPlatePluginApi,
@@ -22,22 +21,36 @@ import {
   isResolvingPlatePlugin,
 } from '../../internal/plugin/compilePlateModel';
 import { getPluginStore } from '../../internal/plugin/pluginStore';
+import { isNominalPluginDescriptor } from '../../internal/utils/mergePlugins';
 
-export function getEditorPlugin<C extends AnyPluginConfig>(
-  editor: BaseEditor,
+const isResolvedBasePluginDescriptor = (
+  value: unknown
+): value is AnyBasePlugin =>
+  isNominalPluginDescriptor(value) && Reflect.get(value, '__resolved') === true;
+
+export function getEditorPlugin<
+  V extends Value,
+  E extends AnyPluginConfig,
+  C extends AnyPluginConfig,
+>(
+  editor: BaseEditor<V, E>,
   p: PluginReference & { readonly __config: C }
 ): BasePluginContext<C>;
-export function getEditorPlugin<P extends AnyPluginConfig>(
-  editor: BaseEditor,
+export function getEditorPlugin<
+  V extends Value,
+  E extends AnyPluginConfig,
+  P extends AnyPluginConfig,
+>(
+  editor: BaseEditor<V, E>,
   p: WithRequiredKey<P>
 ): BasePluginContext<InferConfig<P> extends never ? P : InferConfig<P>>;
 export function getEditorPlugin(
-  editor: BaseEditor,
-  p: WithRequiredKey<AnyPluginConfig> | AnyBasePlugin
-): BasePluginContext<any> {
-  const provided = p as AnyBasePlugin;
+  editor: object,
+  p: Readonly<{ key: string }>
+): unknown {
+  const provided = isResolvedBasePluginDescriptor(p) ? p : undefined;
   const getCandidate = () => {
-    if (!provided.__resolved) return;
+    if (!provided) return;
     if (isResolvingPlatePlugin(editor, provided)) return provided;
     if (!hasCompiledPlatePluginCandidate(editor)) return;
     const compiled = getCompiledPlatePlugin(editor, p.key);
@@ -120,36 +133,42 @@ export function getEditorPlugin(
       (...args: unknown[]) => {
         let result: unknown;
 
-        editor.update((tx) => {
-          const transaction = tx as unknown as Record<PropertyKey, unknown>;
-          const ownGroup = transaction[getPlugin().key];
-          const resolve = (source: unknown) => {
-            let owner: unknown = source;
-            let value: unknown = source;
+        const update = Reflect.get(editor, 'update');
 
-            for (const key of path) {
-              owner = value;
-              value =
-                value &&
-                (typeof value === 'object' || typeof value === 'function')
-                  ? (value as Record<PropertyKey, unknown>)[key]
-                  : undefined;
+        if (typeof update !== 'function') {
+          throw new TypeError('Plate editor update API is not callable.');
+        }
+        Reflect.apply(update, editor, [
+          (transaction: Record<PropertyKey, unknown>) => {
+            const ownGroup = transaction[getPlugin().key];
+            const resolve = (source: unknown) => {
+              let owner: unknown = source;
+              let value: unknown = source;
+
+              for (const key of path) {
+                owner = value;
+                value =
+                  value &&
+                  (typeof value === 'object' || typeof value === 'function')
+                    ? (value as Record<PropertyKey, unknown>)[key]
+                    : undefined;
+              }
+
+              return { owner, value };
+            };
+            const own = resolve(ownGroup);
+            const { owner, value } =
+              typeof own?.value === 'function' ? own : resolve(transaction);
+
+            if (typeof value !== 'function') {
+              throw new TypeError(
+                `Plugin update command "${path.map(String).join('.')}" is not callable.`
+              );
             }
 
-            return { owner, value };
-          };
-          const own = resolve(ownGroup);
-          const { owner, value } =
-            typeof own?.value === 'function' ? own : resolve(transaction);
-
-          if (typeof value !== 'function') {
-            throw new TypeError(
-              `Plugin update command "${path.map(String).join('.')}" is not callable.`
-            );
-          }
-
-          result = Reflect.apply(value, owner, args);
-        });
+            result = Reflect.apply(value, owner, args);
+          },
+        ]);
 
         return result;
       },
@@ -169,9 +188,12 @@ export function getEditorPlugin(
   const createReadFacade = (path: readonly PropertyKey[]): unknown =>
     new Proxy(
       (...args: unknown[]) => {
-        let owner: unknown = (
-          editor.read as unknown as Record<PropertyKey, unknown>
-        )[getPlugin().key];
+        const editorRead = Reflect.get(editor, 'read');
+        let owner: unknown =
+          editorRead &&
+          (typeof editorRead === 'object' || typeof editorRead === 'function')
+            ? Reflect.get(editorRead, getPlugin().key)
+            : undefined;
         let value = owner;
 
         for (const key of path) {
@@ -225,25 +247,29 @@ export function getEditorPlugin(
     }
   );
   const defineCodecs = createDefinePluginCodecs<AnyPluginConfig>();
-  const defineEditorExtension = createDefineEditorExtension<AnyPluginConfig>();
   const store: PluginStore<AnyPluginConfig> = Object.freeze({
     get(key?: PropertyKey, ...args: unknown[]) {
       const runtime = getStore();
 
-      if (runtime) return (runtime.public.get as any)(key, ...args);
+      if (runtime) {
+        return Reflect.apply(runtime.public.get, runtime.public, [
+          key,
+          ...args,
+        ]);
+      }
       const plugin = getPlugin();
 
       if (key === undefined) return plugin.initialState;
-      const selector = (
-        plugin.selectors as Record<
-          PropertyKey,
-          ((state: object, ...args: unknown[]) => unknown) | undefined
-        >
-      )[key] as ((state: object, ...args: unknown[]) => unknown) | undefined;
+      const selector = Reflect.get(plugin.selectors, key);
 
-      if (selector) return selector(plugin.initialState, ...args);
+      if (typeof selector === 'function') {
+        return Reflect.apply(selector, plugin.selectors, [
+          plugin.initialState,
+          ...args,
+        ]);
+      }
       if (Object.hasOwn(plugin.initialState, key)) {
-        return plugin.initialState[key as never];
+        return Reflect.get(plugin.initialState, key);
       }
 
       throw new Error(
@@ -251,15 +277,22 @@ export function getEditorPlugin(
       );
     },
     set(value: unknown) {
-      getStore()?.public.set(value as never);
+      const runtime = getStore();
+
+      if (runtime) {
+        Reflect.apply(runtime.public.set, runtime.public, [value]);
+      }
     },
     subscribe(listener: (state: object, previousState: object) => void) {
-      return getStore()?.public.subscribe(listener) ?? (() => {});
+      const runtime = getStore();
+
+      return runtime
+        ? Reflect.apply(runtime.public.subscribe, runtime.public, [listener])
+        : () => {};
     },
   }) as PluginStore<AnyPluginConfig>;
   const context = {
     defineCodecs,
-    defineEditorExtension,
     editor,
     store,
   } as Record<PropertyKey, unknown>;
@@ -273,5 +306,5 @@ export function getEditorPlugin(
     update: { enumerable: true, value: update },
   });
 
-  return context as BasePluginContext<any>;
+  return context as BasePluginContext<AnyPluginConfig>;
 }

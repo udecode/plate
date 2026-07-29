@@ -2,16 +2,15 @@
 import { jsx } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { deserializeMd } from './deserializeMd';
 
 jsx;
 
-describe('deserializeMd - mention link format', () => {
+describe('editor.api.markdown.deserialize - mention link format', () => {
   it('deserialize [display text](mention:id) format', () => {
     const editor = createTestEditor();
 
     const markdown = 'Hello [John Doe](mention:john_doe), how are you?';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>
@@ -28,7 +27,7 @@ describe('deserializeMd - mention link format', () => {
     const editor = createTestEditor();
 
     const markdown = 'CC: [Jane Smith](mention:jane%20smith)';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>
@@ -45,7 +44,7 @@ describe('deserializeMd - mention link format', () => {
 
     const markdown =
       '@alice mentioned [Bob Johnson](mention:bob_johnson) and @charlie';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>
@@ -69,7 +68,7 @@ describe('deserializeMd - mention link format', () => {
 
     const markdown =
       '[Team Lead](mention:team_lead) assigned this to [QA Team](mention:qa_team)';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>
@@ -89,7 +88,7 @@ describe('deserializeMd - mention link format', () => {
 
     const markdown =
       '[User 123](mention:user-123) and [Dev Team](mention:dev.team)';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>
@@ -108,7 +107,7 @@ describe('deserializeMd - mention link format', () => {
     const editor = createTestEditor();
 
     const markdown = '[@mention](/docs/mention)';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>
@@ -124,7 +123,7 @@ describe('deserializeMd - mention link format', () => {
 
     const markdown =
       'Check [@docs](https://docs.com) and [Alice](mention:alice) plus @bob';
-    const value = deserializeMd(editor, markdown);
+    const value = editor.api.markdown.deserialize(markdown);
 
     expect(value.children).toEqual([
       <hp>

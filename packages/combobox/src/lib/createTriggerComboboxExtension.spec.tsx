@@ -34,7 +34,13 @@ const createExampleComboboxPlugin = <const K extends string>(
   initialState: TriggerComboboxPluginState
 ) =>
   createBasePlugin({
-    extension: (context) => createTriggerComboboxExtension(context),
+    extension: ({ editor, plugin, store, type }) =>
+      createTriggerComboboxExtension({
+        editor,
+        getState: () => store.get(),
+        name: plugin.key,
+        type,
+      }),
     key,
     dependencies: [ExampleComboboxInputPlugin],
     initialState,
@@ -67,7 +73,13 @@ const plugins = [
 ];
 
 const RegexComboboxPlugin = createBasePlugin({
-  extension: (context) => createTriggerComboboxExtension(context),
+  extension: ({ editor, plugin, store, type }) =>
+    createTriggerComboboxExtension({
+      editor,
+      getState: () => store.get(),
+      name: plugin.key,
+      type,
+    }),
   key: 'regexCombobox',
   dependencies: [ExampleComboboxInputPlugin],
   initialState: {

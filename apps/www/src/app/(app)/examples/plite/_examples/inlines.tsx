@@ -9,7 +9,7 @@ import {
   RangeApi,
   schema,
 } from '@platejs/plite';
-import { isHotkey } from '@platejs/plite-dom';
+import { clipboardHandler, isHotkey } from '@platejs/plite-dom';
 import * as PliteReact from '@platejs/plite-react';
 import {
   Editable,
@@ -124,41 +124,45 @@ const InlinesExample = () => {
 
 const inline = () =>
   defineEditorExtension<CustomEditor>()({
-    clipboard: {
-      insertData(data, { next, tx }) {
-        const text = data.getData('text/plain');
+    contributions: [
+      clipboardHandler({
+        insertData(data, { next, transaction }) {
+          const text = data.getData('text/plain');
 
-        if (text && isUrl(text)) {
-          if (
-            tx.nodes.some({
-              match: (node) => NodeApi.isElement(node) && node.type === 'link',
-            })
-          ) {
-            tx.nodes.unwrap({
-              match: (node) => NodeApi.isElement(node) && node.type === 'link',
-            });
+          if (text && isUrl(text)) {
+            if (
+              transaction.nodes.some({
+                match: (node) =>
+                  NodeApi.isElement(node) && node.type === 'link',
+              })
+            ) {
+              transaction.nodes.unwrap({
+                match: (node) =>
+                  NodeApi.isElement(node) && node.type === 'link',
+              });
+            }
+
+            const selection = transaction.selection();
+            const isCollapsed = selection && RangeApi.isCollapsed(selection);
+            const link: LinkElement = {
+              type: 'link',
+              url: text,
+              children: isCollapsed ? [{ text }] : [],
+            };
+
+            if (isCollapsed) {
+              transaction.nodes.insert(link);
+              transaction.selection.move({ unit: 'offset' });
+            } else {
+              transaction.nodes.wrap(link, { split: true });
+            }
+
+            return true;
           }
-
-          const selection = tx.selection();
-          const isCollapsed = selection && RangeApi.isCollapsed(selection);
-          const link: LinkElement = {
-            type: 'link',
-            url: text,
-            children: isCollapsed ? [{ text }] : [],
-          };
-
-          if (isCollapsed) {
-            tx.nodes.insert(link);
-            tx.selection.move({ unit: 'offset' });
-          } else {
-            tx.nodes.wrap(link, { split: true });
-          }
-
-          return true;
-        }
-        return next();
-      },
-    },
+          return next();
+        },
+      }),
+    ],
     name: 'inline',
     commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {

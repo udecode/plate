@@ -21,17 +21,19 @@ const streamPreview = (chunks: string[]) => {
         : [],
   });
 
-  editor.update({ history: 'skip' }, (tx) => {
-    tx.nodes.insert(
-      {
-        children: [{ text: '' }],
-        type: getPluginType(editor, KEYS.aiChat),
-      },
-      {
-        at: PathApi.next(tx.selection()!.focus.path.slice(0, 1)),
-      }
-    );
-  });
+  const insertAt = PathApi.next(
+    editor.read.selection()!.focus.path.slice(0, 1)
+  );
+
+  editor.update({ history: 'skip' }).nodes.insert(
+    {
+      children: [{ text: '' }],
+      type: getPluginType(editor, KEYS.aiChat),
+    },
+    {
+      at: insertAt,
+    }
+  );
 
   editor.plugin(AIChatPlugin).store.set({ streaming: true });
 

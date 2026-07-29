@@ -3,11 +3,17 @@ export type * as unistLib from 'unist';
 import type { StrictExtract } from 'ts-essentials';
 import type { Node as UnistNode } from 'unist';
 
-import type { Descendant, Element, Text } from '@platejs/plite';
+import type {
+  Descendant,
+  EditorDocumentValue,
+  Element,
+  Text,
+} from '@platejs/plite';
 import type { NodeKey, NodeMap, TListElement } from '@platejs/utils';
 import type { Nullable } from '@udecode/utils';
+import type { Options as RemarkStringifyOptions } from 'remark-stringify';
+import type { Pluggable } from 'unified';
 
-import type { DeserializeMdOptions } from './deserializer';
 import type {
   MdBlockquote,
   MdBreak,
@@ -39,10 +45,43 @@ import type {
   MdThematicBreak,
   MdYaml,
 } from './mdast';
-import type { SerializeMdOptions } from './serializer';
 import type { MentionNode } from './plugins/remarkMention';
 
 import 'mdast-util-mdx';
+
+export type AllowNodeConfig = {
+  /** Custom filter function for nodes during deserialization. */
+  deserialize?: (node: UnistNode & { type: PlateType }) => boolean;
+  /** Custom filter function for nodes during serialization. */
+  serialize?: (node: Descendant) => boolean;
+};
+
+export type DeserializeMdOptions = {
+  allowedNodes?: PlateType[] | null;
+  allowNode?: AllowNodeConfig;
+  disallowedNodes?: PlateType[] | null;
+  preserveEmptyParagraphs?: boolean;
+  remarkPlugins?: Pluggable[];
+  rules?: MdRules | null;
+  splitLineBreaks?: boolean;
+  withoutMdx?: boolean;
+  onError?: (error: Error) => void;
+};
+
+export type SerializeMdOptions = {
+  allowedNodes?: PlateType[] | null;
+  allowNode?: AllowNodeConfig;
+  disallowedNodes?: PlateType[] | null;
+  /** Marks to treat as plain text without applying markdown formatting. */
+  plainMarks?: PlateType[] | null;
+  preserveEmptyParagraphs?: boolean;
+  remarkPlugins?: Pluggable[];
+  remarkStringifyOptions?: Readonly<RemarkStringifyOptions> | null;
+  rules?: MdRules;
+  spread?: boolean;
+  value?: EditorDocumentValue;
+  withBlockId?: boolean;
+};
 
 export type MarkdownConversionContext = Readonly<{
   getPluginKey: (type: string) => string | undefined;

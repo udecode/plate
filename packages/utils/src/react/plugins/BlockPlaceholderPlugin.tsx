@@ -1,81 +1,68 @@
-import type { PluginConfig, WithAnyKey } from '@platejs/core';
-import {
-  type PlatePluginContext,
-  createPlatePlugin,
-  usePluginStore,
-} from '@platejs/core/react';
+import type { InferConfig } from '@platejs/core';
+import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 import { type Element, type Path, PathApi } from '@platejs/plite';
 
 import { KEYS } from '../../lib';
-import { useBlockPlaceholder } from './useBlockPlaceholder.internal';
+import {
+  useBlockPlaceholder,
+  useBlockPlaceholderProps,
+} from '../hooks/useBlockPlaceholder';
 
-export type BlockPlaceholderConfig = PluginConfig<
-  'blockPlaceholder',
-  {
-    _target: { path: Path; placeholder: string } | null;
-    className?: string;
-    placeholders: Record<string, string>;
-    query: (
-      context: PlatePluginContext<WithAnyKey<BlockPlaceholderConfig>> & {
-        node: Element;
-        path: Path;
-      }
-    ) => boolean;
+type BlockPlaceholderTarget = {
+  path: Path;
+  placeholder: string;
+};
+
+export type BlockPlaceholderQueryContext = {
+  editor: PlateEditor;
+  node: Element;
+  path: Path;
+  type: string;
+};
+
+export type BlockPlaceholderPluginState = {
+  _target: BlockPlaceholderTarget | null;
+  className: string | undefined;
+  placeholders: Record<string, string>;
+  query: (context: BlockPlaceholderQueryContext) => boolean;
+};
+
+const BlockPlaceholderPluginBase = createPlatePlugin({
+  key: KEYS.blockPlaceholder,
+  initialState: (): BlockPlaceholderPluginState => ({
+    _target: null,
+    className: undefined,
+    placeholders: {
+      [KEYS.p]: 'Type something...',
+    },
+    query: ({ path }) => path.length === 1,
+  }),
+  editOnly: true,
+  inject: {
+    isBlock: true,
   },
-  {},
-  {},
-  {
-    placeholder: (
-      state: Readonly<{
-        _target: { path: Path; placeholder: string } | null;
-      }>,
-      path?: Path
-    ) => string | undefined;
-  }
+  selectors: {
+    placeholder: (state, path?: Path) => {
+      const target = state._target;
+
+      if (target && path && PathApi.equals(target.path, path)) {
+        return target.placeholder;
+      }
+    },
+  },
+});
+
+export type BlockPlaceholderHookConfig = InferConfig<
+  typeof BlockPlaceholderPluginBase
 >;
 
-export const BlockPlaceholderPlugin = createPlatePlugin<BlockPlaceholderConfig>(
-  {
-    key: KEYS.blockPlaceholder,
-    initialState: {
-      _target: null,
-      className: undefined,
-      placeholders: {
-        [KEYS.p]: 'Type something...',
-      },
-      query: ({ path }) => path.length === 1,
+export const BlockPlaceholderPlugin = BlockPlaceholderPluginBase.extend({
+  inject: {
+    nodeProps: {
+      transformProps: useBlockPlaceholderProps,
     },
+  },
+  useHooks: useBlockPlaceholder,
+});
 
-    editOnly: true,
-    useHooks: useBlockPlaceholder,
-    inject: {
-      isBlock: true,
-      nodeProps: {
-        transformProps: (props) => {
-          // eslint-disable-next-line react-hooks/rules-of-hooks
-          const placeholder = usePluginStore(
-            props.plugin,
-            'placeholder',
-            props.path
-          );
-
-          if (props.element && placeholder) {
-            return {
-              className: props.store.get().className,
-              placeholder,
-            };
-          }
-        },
-      },
-    },
-    selectors: {
-      placeholder: (state, path?: Path) => {
-        const target = state._target;
-
-        if (target && path && PathApi.equals(target.path, path)) {
-          return target.placeholder;
-        }
-      },
-    },
-  }
-);
+export type BlockPlaceholderConfig = InferConfig<typeof BlockPlaceholderPlugin>;

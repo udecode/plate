@@ -2,7 +2,7 @@ import { createBaseEditor } from '@platejs/core';
 import { prepareHtmlPluginContext } from '@platejs/core/internal';
 
 import { DocxPlugin } from './DocxPlugin';
-import { cleanDocx } from './docx-cleaner/cleanDocx';
+import { cleanDocx } from './cleanDocx';
 
 describe('DocxPlugin', () => {
   const editor = createBaseEditor({

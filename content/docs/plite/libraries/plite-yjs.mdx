@@ -135,7 +135,7 @@ const incrementCounter = defineEffect<number>({
 });
 
 const counterEffects = defineEditorExtension({
-  effects: [incrementCounter],
+  effectTypes: [incrementCounter],
   name: "counter-effects",
 });
 

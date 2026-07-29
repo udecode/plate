@@ -2,12 +2,7 @@
 
 import React from 'react';
 
-import {
-  defineEditorExtension,
-  property,
-  schema,
-  type Value,
-} from '@platejs/plite';
+import { property, schema, type Value } from '@platejs/plite';
 
 import { render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
@@ -323,7 +318,7 @@ describe('Plate', () => {
       const plugins = [
         createBasePlugin({
           key: 'a',
-          extension: defineEditorExtension({
+          extension: {
             name: 'test:path-normalizer',
             corrections: [
               {
@@ -339,7 +334,7 @@ describe('Plate', () => {
                 },
               },
             ],
-          }),
+          },
         }),
       ];
 

@@ -2,6 +2,9 @@
 "@platejs/list-classic": major
 ---
 
+Export complete `ListPluginState`, `ListItemPluginState`,
+`TaskListPluginState`, and `TodoListPluginState` contracts.
+
 Move classic-list behavior to Plite transactions and scoped plugin updates.
 Preserve compound command targets after earlier edits in the same transaction.
 

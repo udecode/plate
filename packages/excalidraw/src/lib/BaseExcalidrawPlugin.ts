@@ -1,3 +1,5 @@
+import type { ImportedDataState } from '@excalidraw/excalidraw/data/types';
+
 import { createBasePlugin } from '@platejs/core';
 import {
   type Element,
@@ -7,14 +9,14 @@ import {
 } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { ExcalidrawDataState } from './types';
-import { insertExcalidraw } from './transforms';
+export type ExcalidrawDataState = ImportedDataState;
 
 export interface TExcalidrawElement extends Element {
   data?: {
     elements: ExcalidrawDataState['elements'];
     state: ExcalidrawDataState['appState'];
   } | null;
+  width?: string;
 }
 
 type ExcalidrawElementData = Exclude<TExcalidrawElement['data'], undefined>;
@@ -39,14 +41,26 @@ export const BaseExcalidrawPlugin = createBasePlugin({
               value.state !== null),
           validationVersion: 1,
         }),
+        width: property.string(),
       },
       void: 'block',
     },
   },
   update: ({ tx, type }) => ({
     insert: (
-      props?: NodeProps<TExcalidrawElement>,
-      options?: NodeInsertNodesOptions<TExcalidrawElement>
-    ) => insertExcalidraw(tx, type, props, options),
+      props: NodeProps<TExcalidrawElement> = {},
+      options: NodeInsertNodesOptions<TExcalidrawElement> = {}
+    ) => {
+      if (!tx.selection() && options.at === undefined) return;
+
+      tx.blocks.insertAfter<TExcalidrawElement>(
+        {
+          children: [{ text: '' }],
+          type,
+          ...props,
+        },
+        options
+      );
+    },
   }),
 });

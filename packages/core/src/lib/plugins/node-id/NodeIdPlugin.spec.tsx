@@ -20,6 +20,15 @@ const TestLinkPlugin = createBasePlugin({
   },
 });
 
+const TestInlineVoidPlugin = createBasePlugin({
+  key: 'tag',
+  schema: {
+    element: {
+      void: 'inline',
+    },
+  },
+});
+
 const TestBlockquotePlugin = createBasePlugin({
   key: 'blockquote',
   schema: {
@@ -44,7 +53,7 @@ const TestMarkLikePlugin = createBasePlugin({
 const createIdFactory = (start = 1) => {
   let id = start;
 
-  return () => id++;
+  return () => String(id++);
 };
 
 const createStringIdFactory = (prefix = 'generated') => {
@@ -61,7 +70,7 @@ describe('normalizeNodeId', () => {
       idCreator: createIdFactory(),
     }) as any;
 
-    expect(output[0].id).toBe(1);
+    expect(output[0].id).toBe('1');
     expect((input[0] as any).id).toBeUndefined();
     expect(output).not.toBe(input);
   });
@@ -77,7 +86,7 @@ describe('normalizeNodeId', () => {
     }) as any;
 
     expect(output[0].id).toBe(10);
-    expect(output[1].id).toBe(1);
+    expect(output[1].id).toBe('1');
   });
 
   it('returns the original value when every node already has an id', () => {
@@ -110,7 +119,7 @@ describe('normalizeNodeId', () => {
     expect(output[0]).toBe(input[0]);
     expect(output[1]).not.toBe(input[1]);
     expect(output[2]).toBe(input[2]);
-    expect(output[1].id).toBe(1);
+    expect(output[1].id).toBe('1');
   });
 
   it('supports a custom id key', () => {
@@ -121,7 +130,7 @@ describe('normalizeNodeId', () => {
       idKey: 'foo',
     }) as any;
 
-    expect(output[0].foo).toBe(1);
+    expect(output[0].foo).toBe('1');
     expect(output[0].id).toBeUndefined();
   });
 
@@ -136,11 +145,11 @@ describe('normalizeNodeId', () => {
       match: { type: ['p'] },
     }) as any;
 
-    expect(output[0].id).toBe(1);
+    expect(output[0].id).toBe('1');
     expect(output[1].id).toBeUndefined();
   });
 
-  it('skips inline nodes by default and can include them when configured', () => {
+  it('treats every raw element as a candidate without schema semantics', () => {
     const input = [
       {
         children: [
@@ -159,14 +168,8 @@ describe('normalizeNodeId', () => {
     const defaultOutput = normalizeNodeId(input, {
       idCreator: createIdFactory(),
     }) as any;
-    const inlineOutput = normalizeNodeId(input, {
-      filterInline: false,
-      idCreator: createIdFactory(),
-    }) as any;
-
-    expect(defaultOutput[0].id).toBe(1);
-    expect(defaultOutput[0].children[1].id).toBeUndefined();
-    expect(inlineOutput[0].children[1].id).toBe(2);
+    expect(defaultOutput[0].id).toBe('2');
+    expect(defaultOutput[0].children[1].id).toBe('1');
   });
 });
 
@@ -189,7 +192,7 @@ describe('NodeIdPlugin initial value', () => {
     });
     const output = editor.read.children() as any;
 
-    expect(output[0].id).toBe(1);
+    expect(output[0].id).toBe('1');
     expect(output[0].children[1].id).toBeUndefined();
   });
 });
@@ -215,9 +218,9 @@ describe('NodeIdPlugin', () => {
       initialValue: input.children,
     });
 
-    expect(editor.read.children()[0].id).toBe(1);
+    expect(editor.read.children()[0].id).toBe('1');
     expect(editor.read.children()[1].id).toBe(9);
-    expect(editor.read.children()[2].id).toBe(2);
+    expect(editor.read.children()[2].id).toBe('2');
   });
 
   it('does not mutate the provided initial value during normalization', () => {
@@ -237,8 +240,8 @@ describe('NodeIdPlugin', () => {
       initialValue: value,
     });
 
-    expect(editor.read.children()[0].id).toBe(1);
-    expect(editor.read.children()[1].id).toBe(2);
+    expect(editor.read.children()[0].id).toBe('1');
+    expect(editor.read.children()[1].id).toBe('2');
     expect(value[0].id).toBeUndefined();
     expect(value[1].id).toBeUndefined();
   });
@@ -265,8 +268,8 @@ describe('NodeIdPlugin', () => {
       initialValue: input.children,
     });
 
-    expect(editor.read.children()[0].id).toBe(1);
-    expect((editor.read.children()[0] as any).children[1].id).toBe(2);
+    expect(editor.read.children()[0].id).toBe('1');
+    expect((editor.read.children()[0] as any).children[1].id).toBe('2');
   });
 
   it('skips inline nodes during initial normalization by default', () => {
@@ -290,7 +293,7 @@ describe('NodeIdPlugin', () => {
       initialValue: input.children,
     });
 
-    expect(editor.read.children()[0].id).toBe(1);
+    expect(editor.read.children()[0].id).toBe('1');
     expect((editor.read.children()[0] as any).children[1].id).toBeUndefined();
   });
 
@@ -316,7 +319,7 @@ describe('NodeIdPlugin', () => {
     });
 
     expect(editor.read.children()[0].id).toBe(1);
-    expect(editor.read.children()[1].id).toBe(100);
+    expect(editor.read.children()[1].id).toBe('100');
     expect(editor.read.children()[2].id).toBe(3);
   });
 
@@ -607,6 +610,40 @@ describe('NodeIdPlugin', () => {
       markLike: true,
       text: ' marked',
     });
+  });
+
+  it('does not assign ids to inserted inline elements by default', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        NodeIdPlugin.configure({
+          initialState: {
+            idCreator: createStringIdFactory(),
+          },
+        }),
+        TestInlineVoidPlugin,
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 2, path: [0, 0] },
+        focus: { offset: 2, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    editor.update((tx) => {
+      tx.nodes.insert([
+        { children: [{ text: '' }], type: 'tag' },
+        { text: '' },
+      ]);
+    });
+
+    const inserted = editor.read.children()[0].children[1];
+
+    expect(inserted).toMatchObject({
+      children: [{ text: '' }],
+      type: 'tag',
+    });
+    expect(inserted.id).toBeUndefined();
   });
 
   it('generates ids for nested inserted duplicates with one document scan', () => {

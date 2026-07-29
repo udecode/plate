@@ -3,8 +3,6 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from './__tests__/createTestEditor';
-import { deserializeMd } from './deserializer';
-import { serializeMd } from './serializer';
 
 jsxt;
 
@@ -50,13 +48,13 @@ describe('mdx mark package surfaces', () => {
       title: 'round-trips superscript marks through mdx text elements',
     },
   ])('$title', ({ expected, input, output }) => {
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value });
+    const markdown = editor.api.markdown.serialize({ value });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject(value);
+    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
   });
 });

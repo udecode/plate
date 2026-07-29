@@ -15,6 +15,15 @@ export type TDiscussion = {
   documentContent?: string;
 };
 
+export type DiscussionPluginState = {
+  currentUserId: string;
+  discussions: TDiscussion[];
+  users: Record<
+    string,
+    { id: string; avatarUrl: string; name: string; hue?: number }
+  >;
+};
+
 const BLOCK_SUGGESTION_SELECTOR = '[data-block-suggestion="true"]';
 
 const getTargetElement = (target: EventTarget | null) => {
@@ -163,14 +172,16 @@ const usersData: Record<
   },
 };
 
+const initialState: DiscussionPluginState = {
+  currentUserId: 'alice',
+  discussions: discussionsData,
+  users: usersData,
+};
+
 // This plugin is purely UI. It's only used to store the discussions and users data
 export const discussionPlugin = createPlatePlugin({
   key: 'discussion',
-  initialState: {
-    currentUserId: 'alice',
-    discussions: discussionsData,
-    users: usersData,
-  },
+  initialState,
   selectors: {
     currentUser: (state) => state.users[state.currentUserId],
     user: (state, id: string) => state.users[id],

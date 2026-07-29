@@ -102,6 +102,7 @@ export type PliteBrowserHandle = {
   getRuntimeId: (path: Path) => RuntimeId | null;
   getSelection: () => TextSelection | null;
   getText: () => string;
+  getValue: () => JsonEditorValue;
   getViewSelection: () => unknown;
   importDOMSelection: () => Range | null;
   insertBreak: () => void;
@@ -629,6 +630,7 @@ export const attachPliteBrowserHandle = ({
     getDOMPhaseSchedulerDiagnostics: () =>
       domPhaseScheduler?.diagnostics() ?? null,
     getText: () => editorString(editor, []),
+    getValue: () => editor.read((state) => state.value()) as JsonEditorValue,
     getViewSelection: () => readPliteViewSelection(editor),
     importDOMSelection: () => {
       flushPendingNativeTextInput?.();

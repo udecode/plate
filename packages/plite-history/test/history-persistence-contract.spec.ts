@@ -95,7 +95,7 @@ const cellSelectionCodec = defineValueCodec<CellSelection>({
 
 const cellSelectionExtension = defineEditorExtension({
   name: 'cell-selection-persistence',
-  selections: [
+  selectionKinds: [
     {
       codec: cellSelectionCodec,
       kind: 'cell',
@@ -694,7 +694,7 @@ describe('versioned history persistence', () => {
         effect.type === increment ? value + effect.value : value,
     });
     const incrementExtension = defineEditorExtension({
-      effects: [increment],
+      effectTypes: [increment],
       name: 'counter-increment-effect',
     });
     const createCounterEditor = (
@@ -806,7 +806,7 @@ describe('versioned history persistence', () => {
       extensions: [
         history(),
         defineEditorExtension({
-          effects: [incrementV1],
+          effectTypes: [incrementV1],
           name: 'counter-effect-v1',
         }),
       ],
@@ -818,7 +818,7 @@ describe('versioned history persistence', () => {
       extensions: [
         history(),
         defineEditorExtension({
-          effects: [incrementV2],
+          effectTypes: [incrementV2],
           name: 'counter-effect-v2',
         }),
       ],

@@ -37,7 +37,7 @@ describe('@platejs/yjs shared effect compaction', () => {
       key: 'compaction.announce',
     });
     const effects = defineEditorExtension({
-      effects: [announce],
+      effectTypes: [announce],
       name: 'compaction-effects',
     });
     const createPeer = (doc: Y.Doc, authority = false) => {
@@ -45,11 +45,13 @@ describe('@platejs/yjs shared effect compaction', () => {
       let remoteCommits = 0;
       const recorder = defineEditorExtension({
         name: `compaction-recorder-${String(doc.clientID)}`,
-        onCommit({ commit }) {
-          if (commit.tags.includes('remote-yjs-import')) remoteCommits += 1;
-          for (const effect of commit.effects) {
-            if (effect.type === announce) received.push(String(effect.value));
-          }
+        on: {
+          commit({ commit }) {
+            if (commit.tags.includes('remote-yjs-import')) remoteCommits += 1;
+            for (const effect of commit.effects) {
+              if (effect.type === announce) received.push(String(effect.value));
+            }
+          },
         },
       });
       const editor = createEditor({
@@ -195,7 +197,7 @@ describe('@platejs/yjs shared effect compaction', () => {
         effect.type === mirror ? effect.value : value,
     });
     const effects = defineEditorExtension({
-      effects: [mirror],
+      effectTypes: [mirror],
       name: 'custom-latest-effects',
     });
     const createPeer = (doc: Y.Doc, authority = false) => {
@@ -414,17 +416,19 @@ describe('@platejs/yjs shared effect compaction', () => {
       key: 'stable-authority-restart.announce',
     });
     const effects = defineEditorExtension({
-      effects: [announce],
+      effectTypes: [announce],
       name: 'stable-authority-restart-effects',
     });
     const createAuthority = (doc: Y.Doc, threshold: number) => {
       const received: string[] = [];
       const recorder = defineEditorExtension({
         name: `stable-authority-restart-recorder-${String(doc.clientID)}`,
-        onCommit({ commit }) {
-          for (const effect of commit.effects) {
-            if (effect.type === announce) received.push(effect.value);
-          }
+        on: {
+          commit({ commit }) {
+            for (const effect of commit.effects) {
+              if (effect.type === announce) received.push(effect.value);
+            }
+          },
         },
       });
       const editor = createEditor({
@@ -562,7 +566,7 @@ describe('@platejs/yjs shared effect compaction', () => {
       key: 'live-recipient-lifecycle.announce',
     });
     const effects = defineEditorExtension({
-      effects: [announce],
+      effectTypes: [announce],
       name: 'live-recipient-lifecycle-effects',
     });
     const sourceDoc = new Y.Doc();
@@ -585,12 +589,14 @@ describe('@platejs/yjs shared effect compaction', () => {
         effects,
         defineEditorExtension({
           name: 'live-recipient-post-activation-recorder',
-          onCommit({ commit }) {
-            for (const effect of commit.effects) {
-              if (effect.type === announce) {
-                postActivationReceived.push(effect.value);
+          on: {
+            commit({ commit }) {
+              for (const effect of commit.effects) {
+                if (effect.type === announce) {
+                  postActivationReceived.push(effect.value);
+                }
               }
-            }
+            },
           },
         }),
       ] as const,
@@ -613,12 +619,14 @@ describe('@platejs/yjs shared effect compaction', () => {
     const cleanupRecorder = target.extend(
       defineEditorExtension({
         name: 'live-recipient-lifecycle-recorder',
-        onCommit({ commit }) {
-          for (const effect of commit.effects) {
-            if (effect.type.key === announce.key) {
-              received.push(String(effect.value));
+        on: {
+          commit({ commit }) {
+            for (const effect of commit.effects) {
+              if (effect.type.key === announce.key) {
+                received.push(String(effect.value));
+              }
             }
-          }
+          },
         },
       })
     );
@@ -676,17 +684,19 @@ describe('@platejs/yjs shared effect compaction', () => {
       key: 'retired-live-recipient.announce',
     });
     const effects = defineEditorExtension({
-      effects: [announce],
+      effectTypes: [announce],
       name: 'retired-live-recipient-effects',
     });
     const createPeer = (doc: Y.Doc, authority = false) => {
       const received: string[] = [];
       const recorder = defineEditorExtension({
         name: `retired-live-recipient-recorder-${String(doc.clientID)}`,
-        onCommit({ commit }) {
-          for (const effect of commit.effects) {
-            if (effect.type === announce) received.push(effect.value);
-          }
+        on: {
+          commit({ commit }) {
+            for (const effect of commit.effects) {
+              if (effect.type === announce) received.push(effect.value);
+            }
+          },
         },
       });
       const editor = createEditor({
@@ -839,7 +849,7 @@ describe('@platejs/yjs shared effect compaction', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          effects: [announce],
+          effectTypes: [announce],
           name: 'non-contiguous-effect-sequence-effects',
         }),
       ],
@@ -894,12 +904,14 @@ describe('@platejs/yjs shared effect compaction', () => {
     const cleanupRecorder = editor.extend(
       defineEditorExtension({
         name: 'immutable-pending-event-recorder',
-        onCommit({ commit }) {
-          for (const effect of commit.effects) {
-            if (effect.type.key === 'immutable-pending-event.effect') {
-              received.push(effect.value as Payload);
+        on: {
+          commit({ commit }) {
+            for (const effect of commit.effects) {
+              if (effect.type.key === 'immutable-pending-event.effect') {
+                received.push(effect.value as Payload);
+              }
             }
-          }
+          },
         },
       })
     );
@@ -923,7 +935,7 @@ describe('@platejs/yjs shared effect compaction', () => {
     });
     const cleanupEffect = editor.extend(
       defineEditorExtension({
-        effects: [effect],
+        effectTypes: [effect],
         name: 'immutable-pending-event-effect',
       })
     );
@@ -952,7 +964,7 @@ describe('@platejs/yjs shared effect compaction', () => {
       key: 'atomic-checkpoint.announce',
     });
     const effects = defineEditorExtension({
-      effects: [announce],
+      effectTypes: [announce],
       name: 'atomic-checkpoint-effects',
     });
     const createFullPeer = (doc: Y.Doc, authority = false) => {
@@ -1003,12 +1015,14 @@ describe('@platejs/yjs shared effect compaction', () => {
     const cleanupRecorder = late.extend(
       defineEditorExtension({
         name: 'atomic-checkpoint-recorder',
-        onCommit({ commit }) {
-          if (!commit.tags.includes('remote-yjs-import')) return;
+        on: {
+          commit({ commit }) {
+            if (!commit.tags.includes('remote-yjs-import')) return;
 
-          for (const effect of commit.effects) {
-            if (effect.type === announce) received.push(effect.value);
-          }
+            for (const effect of commit.effects) {
+              if (effect.type === announce) received.push(effect.value);
+            }
+          },
         },
       })
     );

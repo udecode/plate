@@ -9,11 +9,22 @@ import { KEYS, NODES } from '@platejs/utils';
 export type InsertMentionOptions = {
   value: string;
   key?: string;
-  search?: string;
 };
 
-type MentionPluginState = {
+export type TMentionItemBase<TKey = unknown> = {
+  text: string;
+  key?: TKey;
+};
+
+export type MentionPluginState = {
+  createComboboxInput: NonNullable<
+    TriggerComboboxPluginState['createComboboxInput']
+  >;
   insertSpaceAfterMention?: boolean;
+  trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
+  triggerPreviousCharPattern: NonNullable<
+    TriggerComboboxPluginState['triggerPreviousCharPattern']
+  >;
 } & TriggerComboboxPluginState;
 
 const initialState: MentionPluginState = {
@@ -55,7 +66,13 @@ export const BaseMentionPlugin = createBasePlugin({
     },
   },
   initialState,
-  extension: (context) => createTriggerComboboxExtension(context),
+  extension: ({ editor, plugin, store, type }) =>
+    createTriggerComboboxExtension({
+      editor,
+      getState: () => store.get(),
+      name: plugin.key,
+      type,
+    }),
   update: ({ store, tx, type }) => ({
     insert: ({ key, value }: InsertMentionOptions) => {
       const blockPath = tx.nodes.block()?.[1];

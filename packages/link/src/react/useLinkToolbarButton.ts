@@ -1,9 +1,11 @@
-import { useEditor, useEditorSelector } from '@platejs/core/react';
+import { useEditorPlugin, useEditorSelector } from '@platejs/core/react';
 import type { TLinkElement } from '@platejs/utils';
 
 import { LinkPlugin } from './LinkPlugin';
+import { useFloatingLinkActions } from './useFloatingLink';
 
 export const useLinkToolbarButtonState = () => {
+  const { type } = useEditorPlugin(LinkPlugin);
   const pressed = useEditorSelector((editor) => {
     const selection = editor.read.selection();
 
@@ -11,7 +13,7 @@ export const useLinkToolbarButtonState = () => {
       !!selection &&
       editor.read.nodes.some({
         at: selection,
-        match: { type: editor.getType(LinkPlugin.key) },
+        match: { type },
       })
     );
   });
@@ -24,7 +26,8 @@ export const useLinkToolbarButtonState = () => {
 export const useLinkToolbarButton = (
   state: ReturnType<typeof useLinkToolbarButtonState>
 ) => {
-  const editor = useEditor();
+  const { editor, type } = useEditorPlugin(LinkPlugin);
+  const { trigger } = useFloatingLinkActions();
 
   return {
     props: {
@@ -37,7 +40,7 @@ export const useLinkToolbarButton = (
 
           const node = editor.read.nodes.find<TLinkElement>({
             at: selection,
-            match: { type: editor.getType(LinkPlugin.key) },
+            match: { type },
           });
 
           if (!node) return;
@@ -49,7 +52,7 @@ export const useLinkToolbarButton = (
           }
         } else {
           editor.api.dom.focus();
-          editor.plugin(LinkPlugin).api.trigger({ focused: true });
+          trigger({ focused: true });
         }
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

@@ -3,6 +3,7 @@ import isUrl from 'is-url';
 import { parseAsStringLiteral, useQueryState } from 'nuqs';
 import type { PointerEvent } from 'react';
 import { defineEditorExtension } from '@platejs/plite';
+import { clipboardHandler } from '@platejs/plite-dom';
 import {
   Editable,
   type RenderElementProps,
@@ -153,34 +154,40 @@ const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
 const image = () =>
   defineEditorExtension<CustomEditor>()({
     name: 'image',
-    clipboard: {
-      insertData(data, { editor, next }) {
-        const text = data.getData('text/plain');
-        const imageFiles = Array.from(data.files ?? []).filter(
-          (file) => file.type.split('/')[0] === 'image'
-        );
-
-        if (imageFiles.length > 0) {
-          imageFiles.forEach((file) => {
-            const reader = new FileReader();
-
-            reader.addEventListener('load', () => {
-              const url = reader.result;
-              insertImage(editor, url as string);
+    contributions: [
+      clipboardHandler({
+        insertData(data, { next, transaction }) {
+          const text = data.getData('text/plain');
+          const imageFiles = Array.from(data.files ?? []).filter(
+            (file) => file.type.split('/')[0] === 'image'
+          );
+          const insert = (url: string) => {
+            transaction.nodes.insert({
+              type: 'image',
+              url,
+              children: [{ text: '' }],
             });
+            transaction.nodes.insert({
+              type: 'paragraph',
+              children: [{ text: '' }],
+            });
+          };
 
-            reader.readAsDataURL(file);
-          });
-          return true;
-        }
+          if (imageFiles.length > 0) {
+            imageFiles.forEach((file) => {
+              insert(URL.createObjectURL(file));
+            });
+            return true;
+          }
 
-        if (isImageUrl(text)) {
-          insertImage(editor, text);
-          return true;
-        }
-        return next();
-      },
-    },
+          if (isImageUrl(text)) {
+            insert(text);
+            return true;
+          }
+          return next();
+        },
+      }),
+    ],
     schema: { elements: { image: { void: 'block' } } },
   });
 

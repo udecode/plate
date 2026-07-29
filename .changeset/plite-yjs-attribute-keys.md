@@ -2,6 +2,9 @@
 "@platejs/yjs": major
 ---
 
+Export `YjsPluginState` as the complete mutable state contract for
+`BaseYjsPlugin`.
+
 Translate canonical Plite document changes and shared effects through Yjs with
 app-owned `YjsProviderLike` adapters. Import remote Yjs events as incremental
 canonical changes and merge set-valued text properties by value.

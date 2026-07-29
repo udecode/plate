@@ -3,11 +3,13 @@ import {
   type EditorCommit,
   type EditorExtension,
   type EditorExtensionConfigurationContext,
+  type EditorExtensionTxGroup,
   type EditorExtensionTypeProvider,
   type EditorTransactionChangeContext,
   LocationApi,
   type Editor as EditorType,
 } from '@platejs/plite';
+import { getEditorExtensionContributions } from '@platejs/plite/internal';
 import {
   type TextDiff,
   transformPendingPoint,
@@ -28,12 +30,15 @@ import {
 } from '../utils/weak-maps';
 import {
   clearDOMClipboardFormatKey,
+  dispatchDOMClipboardHandlers,
+  DOM_CLIPBOARD_HANDLERS,
   getDOMClipboardFormatKey,
   setDOMClipboardFormatKey,
 } from './dom-clipboard-runtime';
 import { destroyEditorDOMPhaseSchedulerFallback } from './dom-phase-scheduler';
 import {
   createDOMEditorCapability,
+  DOMEditor as DOMEditorApi,
   type DOMApi,
   type DOMClipboardApi,
 } from './dom-editor';
@@ -126,7 +131,9 @@ export type DOMExtensionTypes<TClipboard extends boolean = true> = {
   api: { dom: DOMApi } & ([TClipboard] extends [true]
     ? { clipboard: DOMClipboardApi }
     : Record<never, never>);
-};
+} & ([TClipboard] extends [true]
+  ? { tx: { clipboard: Pick<DOMClipboardApi, 'insertData'> } }
+  : Record<never, never>);
 
 type DOMExtensionApi = DOMExtensionTypes<false>['api'] & {
   clipboard?: DOMClipboardApi;
@@ -154,19 +161,21 @@ export function dom(
 ): DOMExtension<true>;
 export function dom(options: DOMEditorOptions): DOMExtension<boolean>;
 export function dom(options: DOMEditorOptions = {}): DOMExtension<boolean> {
-  const apiByEditor = new WeakMap<EditorType, DOMExtensionApi>();
-  const getApi = (editor: EditorType) => {
-    const existing = apiByEditor.get(editor);
+  const getApi = (
+    editor: EditorType,
+    context: EditorExtensionConfigurationContext
+  ) => {
+    const handlers = context.getContributions(DOM_CLIPBOARD_HANDLERS);
 
-    if (existing) return existing;
-
-    const { clipboard, ...domApi } = createDOMEditorCapability(editor);
+    const { clipboard, ...domApi } = createDOMEditorCapability(
+      editor,
+      handlers
+    );
     const api: DOMExtensionApi = {
       dom: Object.freeze(domApi) as DOMApi,
     };
 
     if (options.clipboard !== false) api.clipboard = clipboard;
-    apiByEditor.set(editor, api);
 
     return api;
   };
@@ -212,12 +221,38 @@ export function dom(options: DOMEditorOptions = {}): DOMExtension<boolean> {
     },
     api: getApi,
     name: 'dom',
-    onCommit({ commit, editor }) {
-      handleDOMCommit(editor, commit);
+    on: {
+      commit({ commit, editor }) {
+        handleDOMCommit(editor, commit);
+      },
+      transactionChange(context) {
+        handleDOMTransactionChange(context.editor, context);
+      },
     },
-    onTransactionChange(context) {
-      handleDOMTransactionChange(context.editor, context);
-    },
+    tx:
+      options.clipboard === false
+        ? {}
+        : {
+            clipboard: ((tx, editor) => ({
+              insertData: (data) => {
+                tx.tags.add('paste');
+
+                return dispatchDOMClipboardHandlers(
+                  getEditorExtensionContributions(
+                    editor,
+                    DOM_CLIPBOARD_HANDLERS
+                  ),
+                  data,
+                  tx,
+                  (nextData) =>
+                    DOMEditorApi.clipboard.insertData(editor, nextData)
+                );
+              },
+            })) satisfies EditorExtensionTxGroup<
+              EditorType,
+              Pick<DOMClipboardApi, 'insertData'>
+            >,
+          },
   });
 
   return extension as DOMExtension<boolean>;

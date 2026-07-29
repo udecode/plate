@@ -14,6 +14,7 @@ import {
   type InferConfig,
   type InferPluginDocumentType,
   NodeIdPlugin,
+  normalizeNodeId,
   type NormalizePluginState,
   type PluginConfig,
   type PluginReference,
@@ -63,12 +64,28 @@ const configuredTargetElement =
   configuredTargetEditor.read.schema.createAndFill(ConfiguredTargetPlugin);
 const exactConfiguredTargetType: 'configured-schema-target' =
   configuredTargetElement.type;
+const ConfiguredPlateTargetPlugin = toPlatePlugin(TargetPlugin).configure({
+  type: 'configured-plate-schema-target',
+});
+const configuredPlateTargetType: 'configured-plate-schema-target' =
+  ConfiguredPlateTargetPlugin.type;
+const configuredPlateTargetEditor = createPlateEditor({
+  plugins: [ConfiguredPlateTargetPlugin],
+});
+const configuredPlateTargetElement =
+  configuredPlateTargetEditor.read.schema.createAndFill(
+    ConfiguredPlateTargetPlugin
+  );
+const exactConfiguredPlateTargetType: 'configured-plate-schema-target' =
+  configuredPlateTargetElement.type;
 
 configuredTargetEditor.read.schema.handle(ConfiguredTargetPlugin);
 
 void configuredTargetReference;
 void canonicalTargetReference;
 void exactConfiguredTargetType;
+void configuredPlateTargetType;
+void exactConfiguredPlateTargetType;
 void configuredTargetType;
 void exactExtendedTargetDocumentType;
 
@@ -487,6 +504,27 @@ const handledElementSchemaProperty: EditorSchemaProperty | null =
 const nodeIdEditor = createBaseEditor({
   plugins: [TargetPlugin, NodeIdPlugin],
 });
+NodeIdPlugin.configure({
+  initialState: {
+    idCreator: () => 'node-id',
+  },
+});
+NodeIdPlugin.configure({
+  initialState: {
+    // @ts-expect-error Generated node ids are strings.
+    idCreator: () => 1,
+  },
+});
+type ExactNodeIdValue = [
+  {
+    children: [{ text: string }];
+    custom: number;
+    type: 'paragraph';
+  },
+];
+declare const exactNodeIdValue: ExactNodeIdValue;
+const exactNormalizedNodeIdValue: ExactNodeIdValue =
+  normalizeNodeId(exactNodeIdValue);
 const nodeIdProperty: PropertyJsonValue | undefined =
   nodeIdEditor.read.schema.getElementProperty(targetElement, NodeIdPlugin);
 // @ts-expect-error JSON-valued node ids are not guaranteed to be strings.
@@ -516,6 +554,7 @@ void handledElementSchemaProperty;
 void handledTargetSecondProperty;
 void markSchemaProperty;
 void nodeIdProperty;
+void exactNormalizedNodeIdValue;
 void stringOnlyNodeId;
 // @ts-expect-error Property values come from the composed Plate plugin schema.
 editor.read.schema.createAndFill(TargetPlugin, { 'first-property': 42 });

@@ -1,13 +1,50 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { property, schema, target } from '@platejs/plite';
+import {
+  type Descendant,
+  type EditorNodeChangeContext,
+  type EditorTextChangeContext,
+  property,
+  schema,
+  target,
+  type Value,
+} from '@platejs/plite';
 
 jsxt;
 
-import { createBaseEditor } from '../../lib/editor';
-import { createBasePlugin } from '../../lib/plugin';
-import { subscribePlateChangeCallbacks } from './plateChangeHandlers';
+import { type BaseEditor, createBaseEditor } from '../../lib/editor';
+import { type AnyPluginConfig, createBasePlugin } from '../../lib/plugin';
+import {
+  createPlateChangeHandlersExtension,
+  subscribePlateChangeCallbacks,
+} from './plateChangeHandlers';
+
+const textNode: Descendant = { text: 'node' };
+const createNodeChange = <P extends AnyPluginConfig>(
+  editor: BaseEditor<Value, P>
+): EditorNodeChangeContext<BaseEditor<Value, P>> => ({
+  commit: editor.read.lastCommit()!,
+  editor,
+  kind: 'insert',
+  node: textNode,
+  path: [0],
+  previousPath: null,
+  prevNode: null,
+  root: 'main',
+});
+const createTextChange = <P extends AnyPluginConfig>(
+  editor: BaseEditor<Value, P>
+): EditorTextChangeContext<BaseEditor<Value, P>> => ({
+  commit: editor.read.lastCommit()!,
+  editor,
+  node: textNode,
+  path: [0],
+  previousPath: [0],
+  prevText: 'prev',
+  root: 'main',
+  text: 'next',
+});
 
 describe('plate change handlers', () => {
   it('dispatches node change handlers from Plite node change events', () => {
@@ -139,6 +176,111 @@ describe('plate change handlers', () => {
       },
       prevText: 'hello',
       text: 'hello!',
+    });
+  });
+
+  it('skips plugin handlers while the editor is read-only', () => {
+    const onTextChange = mock(() => true);
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'textObserver',
+          handlers: { onTextChange },
+        }),
+      ],
+      readOnly: true,
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    onTextChange.mockClear();
+
+    createPlateChangeHandlersExtension(editor).on?.textChange?.(
+      createTextChange(editor)
+    );
+    expect(onTextChange).not.toHaveBeenCalled();
+  });
+
+  it('stops dispatch after a plugin handles the change', () => {
+    const first = mock(() => true);
+    const second = mock(() => true);
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'first',
+          handlers: { onTextChange: first },
+        }),
+        createBasePlugin({
+          key: 'second',
+          handlers: { onTextChange: second },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    first.mockClear();
+    second.mockClear();
+    editor.update.text.insert('!', { at: { offset: 5, path: [0, 0] } });
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).not.toHaveBeenCalled();
+    expect(first.mock.calls[0]?.[0]).toMatchObject({
+      prevText: 'hello',
+      root: undefined,
+      text: 'hello!',
+    });
+  });
+
+  it('skips node handlers while the editor is read-only', () => {
+    const onNodeChange = mock(() => true);
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'nodeObserver',
+          handlers: { onNodeChange },
+        }),
+      ],
+      readOnly: true,
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    onNodeChange.mockClear();
+
+    createPlateChangeHandlersExtension(editor).on?.nodeChange?.(
+      createNodeChange(editor)
+    );
+    expect(onNodeChange).not.toHaveBeenCalled();
+  });
+
+  it('stops node dispatch after a plugin handles the change', () => {
+    const first = mock(() => true);
+    const second = mock(() => true);
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          key: 'firstNodeObserver',
+          handlers: { onNodeChange: first },
+        }),
+        createBasePlugin({
+          key: 'secondNodeObserver',
+          handlers: { onNodeChange: second },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    first.mockClear();
+    second.mockClear();
+
+    createPlateChangeHandlersExtension(editor).on?.nodeChange?.(
+      createNodeChange(editor)
+    );
+
+    expect(first).toHaveBeenCalledTimes(1);
+    expect(second).not.toHaveBeenCalled();
+    expect(first.mock.calls[0]?.[0]).toMatchObject({
+      kind: 'insert',
+      node: textNode,
+      root: undefined,
     });
   });
 

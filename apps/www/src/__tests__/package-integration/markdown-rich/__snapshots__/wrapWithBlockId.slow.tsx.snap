@@ -1,25 +1,25 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`wrapWithBlockId integration with serializeMd wrap nodes with IDs in block elements when withBlockId is true 1`] = `
+exports[`wrapWithBlockId integration with editor.api.markdown.serialize wrap nodes with IDs in block elements when withBlockId is true 1`] = `
 "<block id="123">
   Hello world
 </block>
 "
 `;
 
-exports[`wrapWithBlockId integration with serializeMd does not wrap nodes without IDs 1`] = `
+exports[`wrapWithBlockId integration with editor.api.markdown.serialize does not wrap nodes without IDs 1`] = `
 "No ID here
 "
 `;
 
-exports[`wrapWithBlockId integration with serializeMd handle complex nested structures 1`] = `
+exports[`wrapWithBlockId integration with editor.api.markdown.serialize handle complex nested structures 1`] = `
 "<block id="para-with-marks">
   Text with **bold** and _italic_ marks
 </block>
 "
 `;
 
-exports[`wrapWithBlockId integration with serializeMd wrap indent lists with IDs in block elements when withBlockId is true 1`] = `
+exports[`wrapWithBlockId integration with editor.api.markdown.serialize wrap indent lists with IDs in block elements when withBlockId is true 1`] = `
 "<block id="list-item-1">
   * Item 1
 </block>
@@ -34,7 +34,7 @@ exports[`wrapWithBlockId integration with serializeMd wrap indent lists with IDs
 "
 `;
 
-exports[`wrapWithBlockId integration with serializeMd wrap ordered indent lists with IDs when withBlockId is true 1`] = `
+exports[`wrapWithBlockId integration with editor.api.markdown.serialize wrap ordered indent lists with IDs when withBlockId is true 1`] = `
 "<block id="ordered-1">
   1. First
 </block>

@@ -233,7 +233,7 @@ describe('toPlatePlugin type tests', () => {
       key: 'codeBlock',
       type: 'code_block',
       initialState: { syntax: true, syntaxPopularFirst: false },
-    }).extend<{ extension: { api: CodeBlockConfig['api'] } }>(() => ({
+    }).extend(() => ({
       extension: {
         api: {
           plugin: {
@@ -290,10 +290,17 @@ describe('toPlatePlugin type tests', () => {
   });
 
   it('work with function-based extension', () => {
-    const BaseCodeBlockPlugin = createBasePlugin<CodeBlockConfig>({
+    const codeBlockInitialState: {
+      syntax: boolean;
+      syntaxPopularFirst: boolean;
+    } = {
+      syntax: true,
+      syntaxPopularFirst: false,
+    };
+    const BaseCodeBlockPlugin = createBasePlugin({
       key: 'codeBlock',
       type: 'code_block',
-      initialState: { syntax: true, syntaxPopularFirst: false },
+      initialState: codeBlockInitialState,
     });
 
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, ({ store }) => {
@@ -326,9 +333,7 @@ describe('toPlatePlugin type tests', () => {
   });
 
   it('allow partial extension of initialState', () => {
-    type TestConfig = PluginConfig<'test', { bar: number; foo: string }>;
-
-    const PluginBase = createBasePlugin<TestConfig>({
+    const PluginBase = createBasePlugin({
       key: 'test',
       initialState: { bar: 0, foo: 'initial' },
     });
@@ -397,7 +402,7 @@ describe('toPlatePlugin type tests', () => {
       key: 'codeBlock',
       type: 'code_block',
       initialState: { syntax: true, syntaxPopularFirst: false },
-    }).extend<{ extension: { api: CodeBlockConfig['api'] } }>(() => ({
+    }).extend(() => ({
       extension: {
         api: {
           plugin: {
@@ -498,17 +503,9 @@ describe('toPlatePlugin type tests', () => {
 
 describe('toPlatePlugin with direct merge for object configs', () => {
   it('directly merge object configs without pushing to __extensions', () => {
-    type LinkConfig = PluginConfig<
-      'link',
-      {
-        allowedSchemes: string[];
-        isUrl: (text: string) => boolean;
-      }
-    >;
-
     const isUrl = (text: string) => text.startsWith('http');
 
-    const BaseLinkPlugin = createBasePlugin<LinkConfig>({
+    const BaseLinkPlugin = createBasePlugin({
       key: 'link',
       initialState: {
         allowedSchemes: ['http', 'https'],

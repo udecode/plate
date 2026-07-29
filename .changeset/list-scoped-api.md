@@ -2,6 +2,9 @@
 "@platejs/list": major
 ---
 
+Export `BaseListPluginState` as the complete mutable state contract for
+`BaseListPlugin`.
+
 Expose state-bound list queries through `editor.read.list`, pure list services
 through `editor.api.list`, and mutations through
 `editor.update.list`, including sibling traversal, active-state checks,

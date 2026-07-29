@@ -148,15 +148,17 @@ describe('editor.update afterCommit', () => {
         extensions: [
           defineEditorExtension()({
             name: 'nested-on-commit',
-            onCommit({ commit, editor }) {
-              if (
-                commit.changed.has('text') &&
-                editorString(editor, []) === 'one!'
-              ) {
-                editor.update((tx) => {
-                  tx.text.insert('?');
-                });
-              }
+            on: {
+              commit({ commit, editor }) {
+                if (
+                  commit.changed.has('text') &&
+                  editorString(editor, []) === 'one!'
+                ) {
+                  editor.update((tx) => {
+                    tx.text.insert('?');
+                  });
+                }
+              },
             },
           }),
         ] as const,
@@ -185,18 +187,20 @@ describe('editor.update afterCommit', () => {
         extensions: [
           defineEditorExtension({
             name: 'nested-on-commit-snapshot',
-            onCommit({ commit, editor, snapshot }) {
-              if (
-                commit.changed.has('text') &&
-                editorString(editor, []) === 'one!'
-              ) {
-                editor.update((tx) => {
-                  tx.text.insert('?');
-                });
-                versions.push(
-                  `commit:${commit.version}:snapshot:${snapshot.version}:live:${editorGetSnapshot(editor).version}`
-                );
-              }
+            on: {
+              commit({ commit, editor, snapshot }) {
+                if (
+                  commit.changed.has('text') &&
+                  editorString(editor, []) === 'one!'
+                ) {
+                  editor.update((tx) => {
+                    tx.text.insert('?');
+                  });
+                  versions.push(
+                    `commit:${commit.version}:snapshot:${snapshot.version}:live:${editorGetSnapshot(editor).version}`
+                  );
+                }
+              },
             },
           }),
         ] as const,
@@ -224,25 +228,27 @@ describe('editor.update afterCommit', () => {
     headerEditor.extend(
       defineEditorExtension({
         name: 'nested-named-root-on-commit-snapshot',
-        onCommit({ commit, editor, snapshot }) {
-          const [block] = snapshot.children as readonly {
-            readonly children: readonly { readonly text: string }[];
-          }[];
-          const snapshotText = block?.children[0]?.text ?? '';
+        on: {
+          commit({ commit, editor, snapshot }) {
+            const [block] = snapshot.children as readonly {
+              readonly children: readonly { readonly text: string }[];
+            }[];
+            const snapshotText = block?.children[0]?.text ?? '';
 
-          if (
-            !commit.changed.has('text', 'header') ||
-            snapshotText !== 'header!'
-          ) {
-            return;
-          }
+            if (
+              !commit.changed.has('text', 'header') ||
+              snapshotText !== 'header!'
+            ) {
+              return;
+            }
 
-          editor.update((tx) => {
-            tx.text.insert('?', { at: { path: [0, 0], offset: 7 } });
-          });
-          events.push(
-            `commit:${commit.version}:snapshot:${snapshot.version}:${snapshotText}:live:${editorGetSnapshot(editor).version}:${editor.read((state) => state.text.string([]))}`
-          );
+            editor.update((tx) => {
+              tx.text.insert('?', { at: { path: [0, 0], offset: 7 } });
+            });
+            events.push(
+              `commit:${commit.version}:snapshot:${snapshot.version}:${snapshotText}:live:${editorGetSnapshot(editor).version}:${editor.read((state) => state.text.string([]))}`
+            );
+          },
         },
       })
     );
@@ -263,8 +269,10 @@ describe('editor.update afterCommit', () => {
         extensions: [
           defineEditorExtension({
             name: 'commit-order',
-            onCommit() {
-              events.push('onCommit');
+            on: {
+              commit() {
+                events.push('onCommit');
+              },
             },
           }),
         ] as const,

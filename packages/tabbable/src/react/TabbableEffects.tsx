@@ -5,37 +5,19 @@ import {
   useEditor,
   usePluginStore,
 } from '@platejs/core/react';
+import { PathApi } from '@platejs/plite';
 import { tabbable } from 'tabbable';
 
-import type { TabbableEntry } from '../lib/types';
-
-import { BaseTabbablePlugin } from '../lib/BaseTabbablePlugin';
-
-const comparePaths = (a: readonly number[], b: readonly number[]) => {
-  const minLength = Math.min(a.length, b.length);
-
-  for (let index = 0; index < minLength; index++) {
-    if (a[index] !== b[index]) {
-      return a[index] - b[index];
-    }
-  }
-
-  return a.length - b.length;
-};
+import type { TabbableEntry } from '../lib/TabbablePluginTypes';
+import { TabbablePlugin } from './TabbablePlugin';
 
 export function TabbableEffects() {
   const editor = useEditor();
   const readOnly = useEditorReadOnly();
   const globalEventListener = usePluginStore(
-    BaseTabbablePlugin,
+    TabbablePlugin,
     'globalEventListener'
   );
-  const insertTabbableEntries = usePluginStore(
-    BaseTabbablePlugin,
-    'insertTabbableEntries'
-  );
-  const isTabbable = usePluginStore(BaseTabbablePlugin, 'isTabbable');
-  const query = usePluginStore(BaseTabbablePlugin, 'query');
 
   React.useEffect(() => {
     if (readOnly) return;
@@ -45,6 +27,10 @@ export function TabbableEffects() {
     if (!editorDOMNode) return;
 
     const handler = (event: KeyboardEvent) => {
+      const { insertTabbableEntries, isTabbable, query } = editor
+        .plugin(TabbablePlugin)
+        .store.get();
+
       // Check if the keydown is a tab key that should be handled
       if (event.key !== 'Tab' || event.defaultPrevented || !query?.(event)) {
         return;
@@ -106,12 +92,10 @@ export function TabbableEffects() {
       const tabbableEntries = [
         ...insertedTabbableEntries,
         ...defaultTabbableEntries,
-      ].sort((a, b) => comparePaths(a.path, b.path));
-
-      /**
-       * TODO: Refactor everything ABOVE this line into a util function and test
-       * separately
-       */
+      ].sort(
+        (a, b) =>
+          PathApi.compare(a.path, b.path) || a.path.length - b.path.length
+      );
 
       // Check if any tabbable entry is the active element
       const { activeElement } = document;
@@ -122,7 +106,7 @@ export function TabbableEffects() {
 
       // Find the next Slate node or DOM node to focus
       const tabDestination = editor
-        .plugin(BaseTabbablePlugin)
+        .plugin(TabbablePlugin)
         .read.findDestination({
           activeTabbableEntry,
           direction: event.shiftKey ? 'backward' : 'forward',
@@ -180,14 +164,7 @@ export function TabbableEffects() {
 
     return () =>
       eventListenerNode.removeEventListener('keydown', handler, true);
-  }, [
-    editor,
-    globalEventListener,
-    insertTabbableEntries,
-    isTabbable,
-    query,
-    readOnly,
-  ]);
+  }, [editor, globalEventListener, readOnly]);
 
   return null;
 }

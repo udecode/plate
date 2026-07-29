@@ -27,6 +27,7 @@ import type {
   SchemaElementTypes,
   SchemaElementPropertyOptions,
   SchemaKeyPrefix,
+  SchemaPropertyExclusiveGroup,
   SchemaPropertyKey,
   SchemaTarget,
   SchemaTextProperty,
@@ -461,7 +462,9 @@ const defineEnum = <const TValues extends readonly [string, ...string[]]>(
   if (!Array.isArray(values) || values.length === 0) {
     throw new Error('property.enum values cannot be empty.');
   }
-  values.forEach((value) => assertNonEmpty(value, 'property.enum value'));
+  values.forEach((value) => {
+    assertNonEmpty(value, 'property.enum value');
+  });
   if (new Set(values).size !== values.length) {
     throw new Error('property.enum values must be unique.');
   }
@@ -685,6 +688,14 @@ const assertPropertyKey = (key: SchemaPropertyKey) => {
   else assertNonEmpty(key.prefix, 'Schema property key prefix');
 };
 
+const exclusivePropertyGroup = <const TId extends string>(
+  id: TId
+): SchemaPropertyExclusiveGroup<TId> => {
+  assertNonEmpty(id, 'Schema exclusive property group');
+
+  return Object.freeze({ id, kind: 'exclusive' });
+};
+
 type TextPropertyTarget<TOptions extends SchemaTextPropertyOptions> =
   TOptions extends { target: infer TTarget extends SchemaTarget }
     ? TTarget
@@ -702,12 +713,13 @@ const textProperty = <
   assertPropertyKey(key);
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['inclusive', 'split', 'target', 'typeChange'],
+    ['exclusive', 'inclusive', 'split', 'target', 'typeChange'],
     'schema.textProperty options'
   );
 
   return cloneFrozenDeclaration(
     {
+      ...(options.exclusive ? { exclusive: options.exclusive } : {}),
       inclusive: options.inclusive ?? true,
       key,
       placement: 'text' as const,
@@ -905,6 +917,7 @@ export const schema = Object.freeze({
     property: elementPropertyHandle,
   }),
   key: Object.freeze({ prefix: keyPrefix }),
+  property: Object.freeze({ exclusive: exclusivePropertyGroup }),
   textProperty,
 });
 

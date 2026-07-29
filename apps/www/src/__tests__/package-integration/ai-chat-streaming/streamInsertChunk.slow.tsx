@@ -1,6 +1,5 @@
 /** @jsx jsxt */
 
-import { deserializeMd } from '@platejs/markdown';
 import { AIChatPlugin } from '@platejs/ai/react';
 import { jsxt } from '@platejs/test-utils';
 
@@ -20,7 +19,7 @@ const streamChunks = (chunks: string[]) => {
 
 const getStreamedMarkdown = (chunks: string[]) => {
   const editor = streamChunks(chunks);
-  const deserialized = deserializeMd(editor, chunks.join(''));
+  const deserialized = editor.api.markdown.deserialize(chunks.join(''));
   const { editor: expectedEditor } = createTestEditor(deserialized);
 
   return { editor, expected: expectedEditor.read.children() };
@@ -303,7 +302,7 @@ describe('AIChatPlugin update.insertChunk', () => {
           '- [ ] Task list item 1',
         ],
       ],
-    ])('matches deserializeMd for %s', (_label, chunks) => {
+    ])('matches editor.api.markdown.deserialize for %s', (_label, chunks) => {
       const { editor, expected } = getStreamedMarkdown(chunks);
 
       expect(editor.read.children()).toEqual(expected);

@@ -9,6 +9,7 @@ import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
   failInvariant,
   getInternalDocumentChangeRootKeys,
+  getEditorRuntimeOwner,
   runTrustedUpdate,
   toInternalRoot,
 } from '../editable/runtime-editor-api';
@@ -49,6 +50,8 @@ type HistoryAvailability = {
   canRedo: boolean;
   canUndo: boolean;
 };
+
+const PENDING_HISTORY_FOCUS_RESTORES = new WeakMap<object, () => void>();
 
 const historyAvailabilityEquality = (
   a: HistoryAvailability | null,
@@ -189,8 +192,11 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
         direction
       );
       const previousViewSelection = readPliteViewSelection(editor);
+      const runtimeOwner = getEditorRuntimeOwner(editor);
       let applied = false;
 
+      PENDING_HISTORY_FOCUS_RESTORES.get(runtimeOwner)?.();
+      PENDING_HISTORY_FOCUS_RESTORES.delete(runtimeOwner);
       writePliteViewSelection(editor, viewSelectionAfterHistory ?? null);
       try {
         runTrustedUpdate(
@@ -258,7 +264,10 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
             });
           }
 
-          focusPliteEditableAfterEventFrame(focusEditor);
+          PENDING_HISTORY_FOCUS_RESTORES.set(
+            runtimeOwner,
+            focusPliteEditableAfterEventFrame(focusEditor)
+          );
         };
 
         if (!domPhaseScheduler) {
@@ -267,12 +276,14 @@ export function usePliteHistory<const TRoot extends RootKey = RootKey>({
           return;
         }
 
-        domPhaseScheduler.schedule(
+        const cancelRestore = domPhaseScheduler.schedule(
           'model',
           'history-restore-root-focus',
           restoreFocus,
           { key: 'history-restore-root-focus', timing: 'animation-frame' }
         );
+
+        PENDING_HISTORY_FOCUS_RESTORES.set(runtimeOwner, cancelRestore);
       }
     },
     [

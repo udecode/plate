@@ -1,7 +1,7 @@
-import { createBasePlugin, type PluginConfig } from '@platejs/core';
+import { createBasePlugin, type InferConfig } from '@platejs/core';
 import {
+  type Descendant,
   ElementApi,
-  type Node,
   NodeApi,
   type NodeMatch,
   PathApi,
@@ -9,24 +9,23 @@ import {
 
 import { KEYS } from '../plate-keys';
 
-export type TrailingBlockConfig = PluginConfig<
-  'trailingBlock',
-  {
-    /**
-     * Wrap the default insertion without exposing the active editor
-     * transaction.
-     */
-    insert?: (defaultInsert: () => void) => void;
-    /** Level where the trailing node should be, the first level being 0. */
-    level: number;
-    /** Match the last node before inserting the trailing block. */
-    match?: NodeMatch<Node>;
-    /** Type of the trailing block */
-    type: string;
-  }
->;
+export type TrailingBlockPluginState = {
+  /** Wrap the default insertion without exposing the active transaction. */
+  insert?: (defaultInsert: () => void) => void;
+  /** Level where the trailing node should be, the first level being 0. */
+  level: number;
+  /** Match the last node before inserting the trailing block. */
+  match?: NodeMatch<Descendant>;
+  /** Type of the trailing block */
+  type: string;
+};
 
-export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
+export const TrailingBlockPlugin = createBasePlugin({
+  key: KEYS.trailingBlock,
+  initialState: ({ editor }): TrailingBlockPluginState => ({
+    level: 0,
+    type: editor.getType(KEYS.p),
+  }),
   extension: ({ store }) => ({
     corrections: [
       {
@@ -63,9 +62,6 @@ export const TrailingBlockPlugin = createBasePlugin<TrailingBlockConfig>({
       },
     ],
   }),
-  key: KEYS.trailingBlock,
-  initialState: ({ editor }) => ({
-    level: 0,
-    type: editor.getType(KEYS.p),
-  }),
 });
+
+export type TrailingBlockConfig = InferConfig<typeof TrailingBlockPlugin>;

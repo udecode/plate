@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`serializeMd serializes a simple paragraph 1`] = `
+exports[`editor.api.markdown.serialize serializes a simple paragraph 1`] = `
 "# Playground
 
 ## Comments and suggestions
@@ -98,31 +98,31 @@ Superscript: x<sup>2</sup>Subscript: x<sub>2</sub>
 "
 `;
 
-exports[`serializeMd fixtures serializes marks with trailing whitespace 1`] = `
+exports[`editor.api.markdown.serialize fixtures serializes marks with trailing whitespace 1`] = `
 "Make text **bold**, _italic_, <u>underlined</u>, or apply a _**<u>combination</u>**_ of these styles for a visually striking effect.
 "
 `;
 
-exports[`serializeMd fixtures keeps bold and italic formatting at the start of a block 1`] = `
+exports[`editor.api.markdown.serialize fixtures keeps bold and italic formatting at the start of a block 1`] = `
 "_**Italic**_ **in a bold paragraph**
 
 **This is an _Italic_** **in a bold paragraph**
 "
 `;
 
-exports[`serializeMd fixtures serializes inline code 1`] = `
+exports[`editor.api.markdown.serialize fixtures serializes inline code 1`] = `
 "_**\`Inline code\`**_
 
 _\`Inline code\`_
 "
 `;
 
-exports[`serializeMd fixtures serializes a block quote as a single line 1`] = `
+exports[`editor.api.markdown.serialize fixtures serializes a block quote as a single line 1`] = `
 "> Block quote with a new line _**\` Inline code\`**_
 "
 `;
 
-exports[`serializeMd fixtures serializes a code block 1`] = `
+exports[`editor.api.markdown.serialize fixtures serializes a code block 1`] = `
 "\`\`\`
 Code block 1 line 1
 Code block 1 line 2
@@ -132,26 +132,26 @@ Code block 1 line 4
 "
 `;
 
-exports[`serializeMd fixtures serializes a \\n within a block quote as a new line 1`] = `
+exports[`editor.api.markdown.serialize fixtures serializes a \\n within a block quote as a new line 1`] = `
 "> Block quote\\
 > with a new line
 "
 `;
 
-exports[`serializeMd fixtures serializes two \\n within a block quote as two new lines 1`] = `
+exports[`editor.api.markdown.serialize fixtures serializes two \\n within a block quote as two new lines 1`] = `
 "> Block quote\\
 > \\
 > with a new line
 "
 `;
 
-exports[`serializeMd serializes a trailing break in a paragraph as <br /> 1`] = `
+exports[`editor.api.markdown.serialize serializes a trailing break in a paragraph as <br /> 1`] = `
 "Paragaph with a new Line
 <br />
 "
 `;
 
-exports[`serializeMd serializes paragraphs containing only a new line as <br /> 1`] = `
+exports[`editor.api.markdown.serialize serializes paragraphs containing only a new line as <br /> 1`] = `
 "
 <br />
 

@@ -4,15 +4,13 @@ import * as React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
+import type { GridRow } from '@platejs/emoji';
 import {
   type EmojiCategoryList,
-  type EmojiIconList,
-  type GridRow,
-  EmojiSettings,
-} from '@platejs/emoji';
-import {
   type EmojiDropdownMenuOptions,
+  type EmojiIconList,
   type UseEmojiPickerType,
+  EmojiSettings,
   useEmojiDropdownMenuState,
 } from '@platejs/emoji/react';
 import * as Popover from '@radix-ui/react-popover';
@@ -288,8 +286,8 @@ function EmojiPickerContent({
       emojiLibrary
         .getGrid()
         .sections()
-        .map(({ id: categoryId }) => {
-          const section = emojiLibrary.getGrid().section(categoryId);
+        .map((section) => {
+          const categoryId = section.id;
           const { buttonSize } = settings;
 
           return (

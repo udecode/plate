@@ -1,22 +1,100 @@
 ---
 title: 查找
-description: 在文档中搜索并定位特定文本或区块。
+description: 高亮编辑器文本中的搜索结果。
+docs:
+  - route: /docs/components/search-highlight-node
+    title: 搜索高亮叶节点
+  - route: /docs/examples/find-replace
+    title: 查找演示
 ---
 
-<Callout type="info">
-  功能开发中。
-</Callout>
+`FindReplacePlugin` 在区块文本中高亮搜索结果。插件负责可变的搜索状态与
+decorations；应用负责输入框与替换命令。
 
-- 支持全词匹配、部分词匹配或短语匹配（区分大小写）
-
-[//]: # '- 使用搜索输入框进行查找替换操作'
+<ComponentPreview name="find-replace-demo" />
 
 <PackageInfo>
 
-## 安装
+## 功能
 
-```bash
-npm install @platejs/find-replace
-```
+- 不区分大小写的搜索高亮。
+- 同一区块内的多个结果。
+- 跨相邻文本叶节点的结果。
+- 通过插件 state 控制搜索内容。
+- 使用 registry 叶节点显示高亮。
 
 </PackageInfo>
+
+## 快速开始
+
+<Steps>
+
+### 添加插件
+
+```tsx
+import { FindReplacePlugin } from '@platejs/find-replace';
+import { createPlateEditor } from 'platejs/react';
+
+import { SearchHighlightLeaf } from '@/components/ui/search-highlight-node';
+
+export const editor = createPlateEditor({
+  plugins: [
+    FindReplacePlugin.configure({ component: SearchHighlightLeaf }),
+  ],
+});
+```
+
+### 控制搜索
+
+```tsx title="components/find-toolbar.tsx" showLineNumbers
+import { FindReplacePlugin } from '@platejs/find-replace';
+import { useEditorPlugin, usePluginStore } from 'platejs/react';
+
+export function FindToolbar() {
+  const { editor, store } = useEditorPlugin(FindReplacePlugin);
+  const search = usePluginStore(FindReplacePlugin, 'search');
+
+  return (
+    <input
+      type="search"
+      value={search}
+      onChange={(event) => {
+        store.set({ search: event.target.value });
+        editor.api.react.refreshDecorations();
+      }}
+    />
+  );
+}
+```
+
+### 使用 Registry 示例
+
+<ComponentSource name="find-replace-demo" />
+
+</Steps>
+
+## 所有权
+
+| Surface | Owner | 职责 |
+|---------|-------|------|
+| `FindReplacePlugin` | `@platejs/find-replace` | 保存 `search` state、注册叶节点并生成匹配 ranges。 |
+| `SearchHighlightLeaf` | Registry UI | 以黄色背景渲染匹配范围。 |
+| `FindToolbar` | 应用或 registry 示例 | 更新 `search` 并刷新 decorations。 |
+| 替换操作 | 应用代码 | 使用编辑器 transforms 替换文本；本包不修改内容。 |
+
+## 搜索行为
+
+| 行为 | 说明 |
+|------|------|
+| 空 `search` | 不返回 ranges。 |
+| 大小写 | 文本与查询均转为小写后匹配。 |
+| 匹配范围 | 区块文本与直接 inline 子节点中的文本组成同一搜索字符串。 |
+| 多个结果 | 每个结果生成一个或多个 ranges。 |
+| 跨文本叶节点 | 跨叶节点的结果会拆成每个叶节点各自的 range。 |
+
+## API
+
+| API | Package | 用途 |
+|-----|---------|------|
+| `FindReplacePlugin` | `@platejs/find-replace` | 搜索高亮插件。 |
+| `search` | `string` | 可变的查询 state，默认值为 `''`。 |

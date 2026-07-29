@@ -102,9 +102,6 @@ callback to descendants through `ResizeHandleProvider`.
   <APIItem name="minWidth" type="ResizeLength" optional>
     Minimum width. Defaults to `92`.
   </APIItem>
-  <APIItem name="readOnly" type="boolean" optional>
-    Reserved in the options type. `Resizable` itself does not read this value.
-  </APIItem>
 </APIOptions>
 <APIReturns type="ReturnType<typeof useResizableState>">
   <APIItem name="align" type="'center' | 'left' | 'right'">
@@ -119,10 +116,10 @@ callback to descendants through `ResizeHandleProvider`.
   <APIItem name="setNodeWidth" type="(width: number) => void">
     Writes the finished width to the current `TResizableElement`. If the width is unchanged, it selects the node.
   </APIItem>
-  <APIItem name="setWidth" type="(width: React.CSSProperties['width']) => void">
+  <APIItem name="setWidth" type="(width: number | string) => void">
     Updates the transient provider width while dragging.
   </APIItem>
-  <APIItem name="width" type="React.CSSProperties['width']">
+  <APIItem name="width" type="number | string">
     Current provider width. It is synced from `element.width ?? '100%'`.
   </APIItem>
 </APIReturns>
@@ -220,8 +217,8 @@ Resize handles listen on `window` while dragging. Mouse and touch move events em
 
 | API | State | Use |
 | --- | --- | --- |
-| `ResizableProvider` | `{ width: React.CSSProperties['width'] }` | Wrap a resizable node and expose the active width to captions or overlays. |
-| `useResizableValue('width')` | `React.CSSProperties['width']` | Read the current width. |
+| `ResizableProvider` | `{ width: number \| string }` | Wrap a resizable node and expose the active width to captions or overlays. |
+| `useResizableValue('width')` | `number \| string` | Read the current width. |
 | `useResizableSet('width')` | setter | Set the current width. |
 | `useResizableStore` / `resizableStore` | atom store | Advanced access to the resizable store. |
 | `ResizeHandleProvider` | `{ onResize: (event: ResizeEvent) => void }` | Provides the wrapper resize callback to nested handles. |
@@ -234,9 +231,9 @@ Resize handles listen on `window` while dragging. Mouse and touch move events em
 | Type | Value |
 | --- | --- |
 | `ResizeDirection` | `'bottom' \| 'left' \| 'right' \| 'top'` |
-| `ResizeLength` | `number \| string` |
+| `ResizeLength` | `number \| \`${number}%\`` |
 | `ResizeLengthStatic` | `number` |
-| `ResizeLengthRelative` | `string` |
+| `ResizeLengthRelative` | `` `${number}%` `` |
 | `ResizeEvent` | `{ delta: number; direction: ResizeDirection; finished: boolean; initialSize: number }` |
 
 ## Length Utilities
@@ -246,22 +243,19 @@ Resize handles listen on `window` while dragging. Mouse and touch move events em
   <APIItem name="resizeLengthClampStatic" type="(length: number, options: { min?: number; max?: number }) => number">
     Clamps a pixel length to pixel min/max values.
   </APIItem>
-  <APIItem name="resizeLengthClamp" type="<T extends ResizeLength>(length: T, parentLength: number, options: { min?: ResizeLength; max?: ResizeLength }) => T">
+  <APIItem name="resizeLengthClamp" type="(length: number, ...) => number; (length: `${number}%`, ...) => `${number}%`">
     Converts length and constraints to pixels, clamps the value, then returns the same length kind as the input.
   </APIItem>
-  <APIItem name="resizeLengthToRelative" type="(length: ResizeLength, parentLength: number) => string">
+  <APIItem name="resizeLengthToRelative" type="(length: ResizeLength, parentLength: number) => `${number}%`">
     Converts a pixel length to a percent string. Percent strings pass through unchanged.
   </APIItem>
   <APIItem name="resizeLengthToStatic" type="(length: ResizeLength, parentLength: number) => number">
     Converts a percent string to pixels. Numbers pass through unchanged.
   </APIItem>
-  <APIItem name="isTouchEvent" type="(event: MouseEvent | TouchEvent) => event is TouchEvent">
-    Narrows pointer events by checking for `touches`.
-  </APIItem>
 </APIMethods>
 </API>
 
-`resizeLengthToStatic` parses strings as percentages. Use numeric pixel lengths when the source value is not a percentage.
+`resizeLengthToStatic` accepts percentage strings. Use numeric pixel lengths for static values.
 
 ## Related Components
 

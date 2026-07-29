@@ -6,7 +6,7 @@ import { KEYS } from '../plate-keys';
 /** Forces editor to only have one block. */
 export const SingleBlockPlugin = createBasePlugin({
   key: KEYS.singleBlock,
-  extension: {
+  extension: () => ({
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) =>
         state.transaction((tx) => {
@@ -48,7 +48,7 @@ export const SingleBlockPlugin = createBasePlugin({
         },
       },
     ],
-  },
+  }),
   override: {
     plugins: {
       [KEYS.trailingBlock]: {

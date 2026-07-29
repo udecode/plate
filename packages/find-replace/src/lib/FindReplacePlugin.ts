@@ -12,7 +12,11 @@ import { KEYS, NODES } from '@platejs/utils';
 
 export type FindReplacePluginState = {
   /** Searching text to highlight */
-  search?: string;
+  search: string;
+};
+
+const initialState: FindReplacePluginState = {
+  search: '',
 };
 
 export const FindReplacePlugin = createBasePlugin({
@@ -21,7 +25,7 @@ export const FindReplacePlugin = createBasePlugin({
     mark: property.boolean({ default: false, omitDefault: true }),
   },
   type: NODES.searchHighlight,
-  initialState: { search: '' } satisfies FindReplacePluginState,
+  initialState,
   decorate: ({ editor, entry: [node, path], store, type }) => {
     const { search } = store.get();
 

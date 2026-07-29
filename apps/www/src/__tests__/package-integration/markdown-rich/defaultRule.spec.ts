@@ -2,9 +2,7 @@ import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
 import { BaseParagraphPlugin, createBaseEditor } from 'platejs';
 
 import { createTestEditor } from './createTestEditor';
-import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer';
 import { MarkdownPlugin } from '../../../../../../packages/markdown/src/lib/MarkdownPlugin';
-import { serializeMd } from '../../../../../../packages/markdown/src/lib/serializer';
 
 describe('defaultRules', () => {
   it('serialize custom keys', () => {
@@ -31,7 +29,9 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = serializeMd(editor, { value: { children: nodes } });
+    const result = editor.api.markdown.serialize({
+      value: { children: nodes },
+    });
     expect(result).toBe('# Heading 1\n\nParagraph\n');
   });
 
@@ -61,7 +61,9 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = serializeMd(editor, { value: { children: nodes } });
+    const result = editor.api.markdown.serialize({
+      value: { children: nodes },
+    });
     expect(result).toBe('Paragraph**text**\n');
   });
 
@@ -89,7 +91,9 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = deserializeMd(editor, '# Heading 1\nParagraph').children;
+    const result = editor.api.markdown.deserialize(
+      '# Heading 1\nParagraph'
+    ).children;
     expect(result).toEqual(nodes);
   });
 
@@ -123,8 +127,7 @@ describe('defaultRules', () => {
       ],
     });
 
-    const result = deserializeMd(
-      editor,
+    const result = editor.api.markdown.deserialize(
       '# Heading 1\nParagraph**text**'
     ).children;
     expect(result).toEqual(nodes);
@@ -133,8 +136,7 @@ describe('defaultRules', () => {
   it('deserialize table with math formula in cell', () => {
     const editor = createTestEditor();
 
-    const result = deserializeMd(
-      editor,
+    const result = editor.api.markdown.deserialize(
       '| 名称 | 公式 |\n|:-----|:-----|\n| 面积 | $a=b$ |'
     ).children;
 
@@ -163,8 +165,7 @@ describe('defaultRules', () => {
 
   it('converts footnote definitions into dedicated nodes', () => {
     const editor = createTestEditor();
-    const [result] = deserializeMd(
-      editor,
+    const [result] = editor.api.markdown.deserialize(
       '[^1]: First note\n\n    Second note'
     ).children;
 
@@ -186,8 +187,7 @@ describe('defaultRules', () => {
 
   it('prefers image attributes over mdast url and alt fields', () => {
     const editor = createTestEditor();
-    const [result] = deserializeMd(
-      editor,
+    const [result] = editor.api.markdown.deserialize(
       '<img alt="caption alt" src="/from-attr.png" title="Image title" width="320" />'
     ).children;
 
@@ -203,7 +203,7 @@ describe('defaultRules', () => {
 
   it('serializes a trailing blockquote break as html so the newline survives', () => {
     const editor = createTestEditor();
-    const result = serializeMd(editor, {
+    const result = editor.api.markdown.serialize({
       value: {
         children: [
           {
@@ -215,7 +215,7 @@ describe('defaultRules', () => {
     });
 
     expect(result).toContain('<br />');
-    expect(deserializeMd(editor, result).children[0]).toMatchObject({
+    expect(editor.api.markdown.deserialize(result).children[0]).toMatchObject({
       type: 'blockquote',
     });
   });

@@ -1,10 +1,6 @@
-import type {
-  AnyPluginConfig,
-  AuthoringPlateEditorExtensionInput,
-  BaseEditor,
-  DefineEditorExtension,
-} from '@platejs/core';
+import type { BaseEditor } from '@platejs/core';
 import {
+  defineEditorExtension,
   editorCommands,
   type EditorCoreStateView,
   type Element,
@@ -21,25 +17,20 @@ export type TriggerComboboxPluginState = {
   triggerQuery?: (editor: TriggerComboboxEditor) => boolean;
 };
 
-type TriggerComboboxExtensionContext<C extends AnyPluginConfig> = {
-  defineEditorExtension: DefineEditorExtension<C>;
+export type TriggerComboboxExtensionOptions = {
   editor: Pick<BaseEditor, 'runtime'> & TriggerComboboxEditor;
-  store: {
-    get: () => Readonly<TriggerComboboxPluginState>;
-  };
+  getState: () => Readonly<TriggerComboboxPluginState>;
+  name: string;
   type: string;
 };
 
-export function createTriggerComboboxExtension<C extends AnyPluginConfig>(
-  context: TriggerComboboxExtensionContext<C>
-): AuthoringPlateEditorExtensionInput<C>;
-export function createTriggerComboboxExtension<C extends AnyPluginConfig>({
-  defineEditorExtension,
+export const createTriggerComboboxExtension = ({
   editor,
-  store,
+  getState,
+  name,
   type,
-}: TriggerComboboxExtensionContext<C>): object {
-  const extension = defineEditorExtension({
+}: TriggerComboboxExtensionOptions) =>
+  defineEditorExtension({
     commands: ({ handle }) => [
       handle(editorCommands.insertText, ({ input, state }) => {
         const {
@@ -47,7 +38,7 @@ export function createTriggerComboboxExtension<C extends AnyPluginConfig>({
           trigger,
           triggerPreviousCharPattern,
           triggerQuery,
-        } = store.get();
+        } = getState();
 
         if (
           input.options?.at ||
@@ -94,7 +85,5 @@ export function createTriggerComboboxExtension<C extends AnyPluginConfig>({
         return false;
       }),
     ],
+    name,
   });
-
-  return extension satisfies AuthoringPlateEditorExtensionInput<C>;
-}

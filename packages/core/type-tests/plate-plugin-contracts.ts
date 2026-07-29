@@ -40,47 +40,34 @@ const exactExtendDeclarationBoundary: ExtendedPlatePlugin<
 
 void exactExtendDeclarationBoundary;
 
-type ToolbarConfig = PluginConfig<
-  'toolbar',
-  {
-    floating: boolean;
-  },
-  {
-    plugin: {
-      isFloating: () => boolean;
-    };
-    toggleFloating: () => boolean;
-  }
->;
+const toolbarInitialState: { floating: boolean } = {
+  floating: true,
+};
 
-const ToolbarPlugin = createPlatePlugin<ToolbarConfig>({
-  key: 'toolbar',
-  initialState: {
-    floating: true,
-  },
-}).extend(({ store }) => ({
-  extension: {
+const ToolbarPlugin = createPlatePlugin({
+  extension: ({ store }) => ({
     api: {
       plugin: {
         isFloating: () => store.get().floating,
       },
       toggleFloating: () => store.get().floating,
     },
-  },
-}));
+  }),
+  key: 'toolbar',
+  initialState: toolbarInitialState,
+});
 
 const MentionPlugin = createPlatePlugin({
+  extension: ({ store }) => ({
+    api: {
+      getTrigger: () => store.get().trigger,
+    },
+  }),
   key: 'mention',
   initialState: {
     trigger: '@' as const,
   },
-}).extend(({ store }) => ({
-  extension: {
-    api: {
-      getTrigger: () => store.get().trigger,
-    },
-  },
-}));
+});
 
 type ExplicitPluginConfig = PluginConfig<
   'explicitPlugin',
@@ -99,15 +86,14 @@ type ExplicitPluginConfig = PluginConfig<
 >;
 
 const ExplicitPlugin = createPlatePlugin<ExplicitPluginConfig>({
+  api: ({ store }) => ({
+    isEnabled: () => store.get().enabled,
+  }),
   key: 'explicitPlugin',
   initialState: {
     enabled: false,
   },
-}).extend<{ api: ExplicitPluginConfig['pluginApi'] }>(({ store }) => ({
-  api: {
-    isEnabled: () => store.get().enabled,
-  },
-}));
+});
 
 type DeclaredPlateTx = {
   run: (value: 'typed', initialState?: { count?: number }) => number;

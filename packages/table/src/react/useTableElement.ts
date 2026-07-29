@@ -1,4 +1,3 @@
-import { readTableSelection } from '../lib/internal/selection';
 import { useTableValue } from './useTableStore';
 import { TablePlugin } from './TablePlugin';
 import {
@@ -160,11 +159,7 @@ export const useTableSelectionDom = (
   > | null>(null);
   const { caretCellId, selectedCellIds } = useEditorSelector(
     (editor) => {
-      const table = editor.plugin(TablePlugin);
-      const view = readTableSelection(editor.read, {
-        cellTypes: table.api.getCellTypes(),
-        tableType: editor.getType(KEYS.table),
-      });
+      const view = editor.plugin(TablePlugin).read.getSelection();
       const isExpanded = !!view && view.anchors.length > 1;
 
       return {

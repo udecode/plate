@@ -3,12 +3,11 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { serializeMd } from './serializeMd';
 
 jsxt;
 const editor = createTestEditor();
 
-describe('serializeMd list', () => {
+describe('editor.api.markdown.serialize list', () => {
   it('serialize unordered lists', () => {
     const input = (
       <fragment>
@@ -25,7 +24,9 @@ describe('serializeMd list', () => {
 
     const expected = '* List item 1\n* List item 2\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize ordered lists', () => {
@@ -44,7 +45,9 @@ describe('serializeMd list', () => {
 
     const expected = '1. List item 1\n2. List item 2\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize mixed nested lists', () => {
@@ -65,7 +68,9 @@ describe('serializeMd list', () => {
 
     const expected = '* List item 1\n  1. List item 1.1\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize nested indented list items without empty lines', () => {
@@ -88,7 +93,9 @@ describe('serializeMd list', () => {
 
     const expected = '* parent\n  * child\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize nested ordered indented list items without empty lines', () => {
@@ -111,7 +118,9 @@ describe('serializeMd list', () => {
 
     const expected = '1. parent\n   1. child\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize deeply nested indented list items without empty lines', () => {
@@ -141,7 +150,9 @@ describe('serializeMd list', () => {
 
     const expected = '* parent\n  * child\n    * grandchild\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize sibling nested indented lists when style changes at same indent', () => {
@@ -171,7 +182,9 @@ describe('serializeMd list', () => {
 
     const expected = '* parent\n  1. ordered child\n  * bullet child\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize nested indented list followed by sibling item without empty lines', () => {
@@ -201,7 +214,9 @@ describe('serializeMd list', () => {
 
     const expected = '* parent\n  * child\n* sibling\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize lists with formatted text', () => {
@@ -225,7 +240,9 @@ describe('serializeMd list', () => {
     const expected =
       '* Normal text and **bold text**\n* _Italic text_ and normal text\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize restarted ordered lists separated by a paragraph', () => {
@@ -260,7 +277,9 @@ describe('serializeMd list', () => {
     const expected =
       '1. First list item\n\nBreak between lists.\n\n2. Second list item\n3. Third list item\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 
   it('serialize lists with links', () => {
@@ -278,6 +297,8 @@ describe('serializeMd list', () => {
 
     const expected = '* Text with [a link](https://example.com)\n';
 
-    expect(serializeMd(editor, { value: { children: input } })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: { children: input } })).toBe(
+      expected
+    );
   });
 });

@@ -57,7 +57,7 @@ describe('transaction-local facet caching', () => {
       extensions: [
         counter,
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             documentText.compute((state) => state.text.string([]), {
               dependencies: ['document'],
             }),
@@ -150,7 +150,7 @@ describe('transaction-local facet caching', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             text.compute(
               (state) => {
                 computes++;

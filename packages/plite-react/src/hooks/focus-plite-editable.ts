@@ -5,7 +5,7 @@ import { IS_FOCUSED } from '@platejs/plite-dom/internal';
 import { readModelSelectionDOMPreference } from '../editable/model-selection-dom-preference';
 import { getMountedEditableDOMRuntime } from '../editable/editable-dom-runtime';
 import {
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   setEditorFocused,
 } from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
@@ -29,7 +29,7 @@ const syncPreferredModelSelectionToDOM = <
       return false;
     }
 
-    const projectedSelection = getSelectionDOMRange(editor, selection);
+    const projectedSelection = getSelectionPrimaryRange(editor, selection);
 
     if (!projectedSelection) {
       const root = element.getRootNode() as Document | ShadowRoot;
@@ -135,16 +135,23 @@ export const focusPliteEditableAfterEventFrame = <
   const domPhaseScheduler =
     getMountedEditableDOMRuntime(editor)?.domPhaseScheduler;
 
-  domPhaseScheduler?.schedule(
+  if (!domPhaseScheduler) return () => {};
+
+  const cancelFrame = domPhaseScheduler.schedule(
     'dom-write',
     'focus-editable-frame',
     () => focusPliteEditable(editor),
     { timing: 'animation-frame' }
   );
-  domPhaseScheduler?.schedule(
+  const cancelSettle = domPhaseScheduler.schedule(
     'dom-write',
     'focus-editable-settle',
     () => focusPliteEditable(editor),
     { timing: 'timeout' }
   );
+
+  return () => {
+    cancelFrame();
+    cancelSettle();
+  };
 };

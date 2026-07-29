@@ -21,19 +21,11 @@ export type GetCorePluginsOptions = {
   /** Enable mark/element affinity. */
   affinity?: boolean;
   /** Configure the node id plugin. */
-  nodeId?: NodeIdPluginState | boolean;
+  nodeId?: Partial<NodeIdPluginState> | boolean;
 };
 
-export const getCorePlugins = ({ affinity, nodeId }: GetCorePluginsOptions) => {
-  const resolvedNodeId =
-    process.env.NODE_ENV === 'test' && nodeId === undefined
-      ? ({
-          initialValueIds: false,
-          match: () => false,
-        } satisfies NodeIdPluginState)
-      : nodeId;
-
-  return [
+export const getCorePlugins = ({ affinity, nodeId }: GetCorePluginsOptions) =>
+  [
     DebugPlugin,
     ElementStatePlugin,
     DOMPlugin,
@@ -42,17 +34,24 @@ export const getCorePlugins = ({ affinity, nodeId }: GetCorePluginsOptions) => {
     OverridePlugin,
     HtmlPlugin,
     NodeIdPlugin.configure(
-      typeof resolvedNodeId === 'object'
+      process.env.NODE_ENV === 'test' && nodeId === undefined
         ? {
             enabled: true,
-            initialState: resolvedNodeId,
+            initialState: {
+              initialValueIds: false,
+              match: () => false,
+            },
           }
-        : { enabled: resolvedNodeId !== false }
+        : typeof nodeId === 'object'
+          ? {
+              enabled: true,
+              initialState: nodeId,
+            }
+          : { enabled: nodeId !== false }
     ),
     AffinityPlugin.configure({ enabled: affinity }),
     BaseParagraphPlugin,
   ] as const;
-};
 
 type CorePluginDescriptor = ReturnType<typeof getCorePlugins>[number];
 

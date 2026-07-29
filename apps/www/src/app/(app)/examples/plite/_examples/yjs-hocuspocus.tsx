@@ -22,7 +22,6 @@ import {
   type Path,
   type Range,
 } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -42,9 +41,7 @@ import type {
   CustomValue,
 } from './custom-types.d';
 
-type YjsEditor = CustomEditor<
-  readonly [ReturnType<typeof history>, ReturnType<typeof createYjsExtension>]
->;
+type YjsEditor = CustomEditor<readonly [ReturnType<typeof createYjsExtension>]>;
 
 type PeerId = 'a' | 'b' | 'c' | 'd';
 
@@ -1147,10 +1144,9 @@ const ProviderBackedPeer = ({
 }) => {
   const editor = usePliteEditor<
     CustomValue,
-    readonly [ReturnType<typeof history>, ReturnType<typeof createYjsExtension>]
+    readonly [ReturnType<typeof createYjsExtension>]
   >({
     extensions: [
-      history(),
       createYjsExtension({
         clientId: peer.id,
         provider,

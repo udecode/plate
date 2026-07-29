@@ -1,16 +1,10 @@
-import type { createLowlight } from 'lowlight';
+import type { createLowlight, LanguageFn } from 'lowlight';
 
-import {
-  type BaseEditor,
-  createBasePlugin,
-  DebugPlugin,
-  type InferConfig,
-} from '@platejs/core';
+import { createBasePlugin, DebugPlugin, type InferConfig } from '@platejs/core';
 import {
   ContentSlice,
   type DecoratedRange,
   editorCommands,
-  type EditorTransactionChangeContext,
   type Element,
   ElementApi,
   type ElementEntry,
@@ -26,12 +20,41 @@ import {
 } from '@platejs/plite';
 import { KEYS, NODES, type TCodeBlockElement } from '@platejs/utils';
 
-import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
+import { findCodeBlockLanguageChange } from './codeHighlight.internal';
 
 const CODE_LANGUAGE_CLASS_RE = /(?:^|\s)language-([^\s]+)/;
 const NON_WHITESPACE = /\S/;
 const NON_WHITESPACE_OR_END = /\S|$/;
 const WHITESPACE = /\s/;
+const patchedLowlights = new WeakSet<object>();
+
+type Lowlight = ReturnType<typeof createLowlight>;
+type CodeBlockDecoration = DecoratedRange & {
+  className: string;
+  [NODES.codeSyntax]: true;
+};
+type HighlightResult = ReturnType<Lowlight['highlight']>;
+type HighlightNode = HighlightResult['children'][number];
+type HighlightJs = Parameters<LanguageFn>[0];
+type HighlightLanguage = ReturnType<LanguageFn>;
+type HighlightMode = HighlightLanguage['contains'][number];
+type CodeHighlightWarning =
+  | { error: unknown; kind: 'highlight'; language: string }
+  | { kind: 'missing-language'; language: string };
+type CodeHighlightRuntime = {
+  decorateBlock: (
+    entry: NodeEntry<Element>,
+    options: {
+      defaultLanguage: string | null;
+      lowlight: Lowlight;
+    }
+  ) => {
+    decorations: Map<Element, DecoratedRange[]>;
+    warning?: CodeHighlightWarning;
+  };
+  lineDecorations: WeakMap<Element, DecoratedRange[]>;
+};
+const codeHighlightRuntimes = new WeakMap<object, CodeHighlightRuntime>();
 
 export const BaseCodeLinePlugin = createBasePlugin({
   key: KEYS.codeLine,
@@ -202,7 +225,7 @@ export const BaseCodeBlockPlugin = createBasePlugin({
 
     return {
       clipboard: {
-        insertData(data, { next, tx }) {
+        insertData(data, { next, transaction: tx }) {
           const text = data.getData('text/plain');
           const vscodeDataString = data.getData('vscode-editor-data');
           const codeLineType = context.editor.getType(KEYS.codeLine);
@@ -688,263 +711,603 @@ export const BaseCodeBlockPlugin = createBasePlugin({
 
 export type CodeBlockConfig = InferConfig<typeof BaseCodeBlockPlugin>;
 
+export type CodeHighlightPluginState = {
+  defaultLanguage: string | null;
+  lowlight: Lowlight | null;
+};
+
 export const BaseCodeHighlightPlugin = createBasePlugin({
   key: KEYS.codeSyntax,
   dependencies: [BaseCodeBlockPlugin],
-  initialState: {
-    defaultLanguage: null as string | null,
-    lowlight: null as ReturnType<typeof createLowlight> | null,
+  initialState: (): CodeHighlightPluginState => ({
+    defaultLanguage: null,
+    lowlight: null,
+  }),
+  extension: ({ editor, store }) => {
+    const stablePythonAliases = ['py', 'gyp', 'ipython'] as const;
+    const source = (value: RegExp | string | null | undefined) => {
+      if (!value) return null;
+
+      return typeof value === 'string' ? value : value.source;
+    };
+    const concat = (...values: (RegExp | string | null | undefined)[]) =>
+      values.map((value) => source(value)).join('');
+    const lookahead = (value: RegExp | string) => concat('(?=', value, ')');
+
+    // Adapted from the older Highlight.js Python grammar. The current 11.x
+    // grammar uses unicodeRegex + multi-match rules that can generate invalid
+    // regex ranges in browser bundles.
+    // biome-ignore-start lint/performance/useTopLevelRegex: The vendored grammar stays lexical to its single plugin owner.
+    const pythonBrowserSafe = (hljs: HighlightJs): HighlightLanguage => {
+      const reservedWords = [
+        'and',
+        'as',
+        'assert',
+        'async',
+        'await',
+        'break',
+        'case',
+        'class',
+        'continue',
+        'def',
+        'del',
+        'elif',
+        'else',
+        'except',
+        'finally',
+        'for',
+        'from',
+        'global',
+        'if',
+        'import',
+        'in',
+        'is',
+        'lambda',
+        'match',
+        'nonlocal|10',
+        'not',
+        'or',
+        'pass',
+        'raise',
+        'return',
+        'try',
+        'while',
+        'with',
+        'yield',
+      ];
+      const builtIns = [
+        '__import__',
+        'abs',
+        'all',
+        'any',
+        'ascii',
+        'bin',
+        'bool',
+        'breakpoint',
+        'bytearray',
+        'bytes',
+        'callable',
+        'chr',
+        'classmethod',
+        'compile',
+        'complex',
+        'delattr',
+        'dict',
+        'dir',
+        'divmod',
+        'enumerate',
+        'eval',
+        'exec',
+        'filter',
+        'float',
+        'format',
+        'frozenset',
+        'getattr',
+        'globals',
+        'hasattr',
+        'hash',
+        'help',
+        'hex',
+        'id',
+        'input',
+        'int',
+        'isinstance',
+        'issubclass',
+        'iter',
+        'len',
+        'list',
+        'locals',
+        'map',
+        'max',
+        'memoryview',
+        'min',
+        'next',
+        'object',
+        'oct',
+        'open',
+        'ord',
+        'pow',
+        'print',
+        'property',
+        'range',
+        'repr',
+        'reversed',
+        'round',
+        'set',
+        'setattr',
+        'slice',
+        'sorted',
+        'staticmethod',
+        'str',
+        'sum',
+        'super',
+        'tuple',
+        'type',
+        'vars',
+        'zip',
+      ];
+      const literals = [
+        '__debug__',
+        'Ellipsis',
+        'False',
+        'None',
+        'NotImplemented',
+        'True',
+      ];
+      const types = [
+        'Any',
+        'Callable',
+        'Coroutine',
+        'Dict',
+        'List',
+        'Literal',
+        'Generic',
+        'Optional',
+        'Sequence',
+        'Set',
+        'Tuple',
+        'Type',
+        'Union',
+      ];
+      const keywords: NonNullable<HighlightMode['keywords']> = {
+        $pattern: String.raw`[A-Za-z]\w+|__\w+__`,
+        built_in: builtIns,
+        keyword: reservedWords,
+        literal: literals,
+        type: types,
+      };
+      const prompt: HighlightMode = {
+        begin: /^(>>>|\.\.\.) /,
+        className: 'meta',
+      };
+      const subst: HighlightMode = {
+        begin: /\{/,
+        className: 'subst',
+        end: /\}/,
+        illegal: /#/,
+        keywords,
+      };
+      const literalBracket: HighlightMode = {
+        begin: /\{\{/,
+        relevance: 0,
+      };
+      const string: HighlightMode = {
+        className: 'string',
+        contains: [hljs.BACKSLASH_ESCAPE],
+        variants: [
+          {
+            begin: /([uU]|[bB]|[rR]|[bB][rR]|[rR][bB])?'''/,
+            contains: [hljs.BACKSLASH_ESCAPE, prompt],
+            end: /'''/,
+            relevance: 10,
+          },
+          {
+            begin: /([uU]|[bB]|[rR]|[bB][rR]|[rR][bB])?"""/,
+            contains: [hljs.BACKSLASH_ESCAPE, prompt],
+            end: /"""/,
+            relevance: 10,
+          },
+          {
+            begin: /([fF][rR]|[rR][fF]|[fF])'''/,
+            contains: [hljs.BACKSLASH_ESCAPE, prompt, literalBracket, subst],
+            end: /'''/,
+          },
+          {
+            begin: /([fF][rR]|[rR][fF]|[fF])"""/,
+            contains: [hljs.BACKSLASH_ESCAPE, prompt, literalBracket, subst],
+            end: /"""/,
+          },
+          {
+            begin: /([uU]|[rR])'/,
+            end: /'/,
+            relevance: 10,
+          },
+          {
+            begin: /([uU]|[rR])"/,
+            end: /"/,
+            relevance: 10,
+          },
+          {
+            begin: /([bB]|[bB][rR]|[rR][bB])'/,
+            end: /'/,
+          },
+          {
+            begin: /([bB]|[bB][rR]|[rR][bB])"/,
+            end: /"/,
+          },
+          {
+            begin: /([fF][rR]|[rR][fF]|[fF])'/,
+            contains: [hljs.BACKSLASH_ESCAPE, literalBracket, subst],
+            end: /'/,
+          },
+          {
+            begin: /([fF][rR]|[rR][fF]|[fF])"/,
+            contains: [hljs.BACKSLASH_ESCAPE, literalBracket, subst],
+            end: /"/,
+          },
+          hljs.APOS_STRING_MODE,
+          hljs.QUOTE_STRING_MODE,
+        ],
+      };
+      const digitPart = '[0-9](_?[0-9])*';
+      const pointFloat = `(\\b(${digitPart}))?\\.(${digitPart})|\\b(${digitPart})\\.`;
+      const number: HighlightMode = {
+        className: 'number',
+        relevance: 0,
+        variants: [
+          {
+            begin: `(\\b(${digitPart})|(${pointFloat}))[eE][+-]?(${digitPart})[jJ]?\\b`,
+          },
+          {
+            begin: `(${pointFloat})[jJ]?`,
+          },
+          {
+            begin: '\\b([1-9](_?[0-9])*|0+(_?0)*)[lLjJ]?\\b',
+          },
+          {
+            begin: '\\b0[bB](_?[01])+[lL]?\\b',
+          },
+          {
+            begin: '\\b0[oO](_?[0-7])+[lL]?\\b',
+          },
+          {
+            begin: '\\b0[xX](_?[0-9a-fA-F])+[lL]?\\b',
+          },
+          {
+            begin: `\\b(${digitPart})[jJ]\\b`,
+          },
+        ],
+      };
+      const commentType: HighlightMode = {
+        begin: lookahead(/# type:/),
+        className: 'comment',
+        contains: [
+          {
+            begin: /# type:/,
+          },
+          {
+            begin: /#/,
+            end: /\b\B/,
+            endsWithParent: true,
+          },
+        ],
+        end: /$/,
+        keywords,
+      };
+      const params: HighlightMode = {
+        className: 'params',
+        variants: [
+          {
+            begin: /\(\s*\)/,
+            className: '',
+            skip: true,
+          },
+          {
+            begin: /\(/,
+            contains: ['self', prompt, number, string, hljs.HASH_COMMENT_MODE],
+            end: /\)/,
+            excludeBegin: true,
+            excludeEnd: true,
+            keywords,
+          },
+        ],
+      };
+
+      subst.contains = [string, number, prompt];
+
+      return {
+        aliases: [...stablePythonAliases],
+        contains: [
+          prompt,
+          number,
+          {
+            begin: /\bself\b/,
+          },
+          {
+            beginKeywords: 'if',
+            relevance: 0,
+          },
+          string,
+          commentType,
+          hljs.HASH_COMMENT_MODE,
+          {
+            contains: [
+              hljs.UNDERSCORE_TITLE_MODE,
+              params,
+              {
+                begin: /->/,
+                endsWithParent: true,
+                keywords,
+              },
+            ],
+            end: /:/,
+            illegal: /[${=;\n,]/,
+            variants: [
+              {
+                beginKeywords: 'def',
+                className: 'function',
+              },
+              {
+                beginKeywords: 'class',
+                className: 'class',
+              },
+            ],
+          },
+          {
+            begin: /^[\t ]*@/,
+            className: 'meta',
+            contains: [number, params, string],
+            end: /(?=#)|$/,
+          },
+        ],
+        illegal: /(<\/|->|\?)|=>/,
+        keywords,
+        name: 'Python',
+      };
+    };
+    // biome-ignore-end lint/performance/useTopLevelRegex: The vendored grammar stays lexical to its single plugin owner.
+    const ensureStablePythonGrammar = (
+      lowlight: Lowlight,
+      language: string | null | undefined
+    ) => {
+      if (language !== 'python' || patchedLowlights.has(lowlight)) return;
+
+      lowlight.register('python', pythonBrowserSafe);
+      lowlight.registerAlias('python', stablePythonAliases);
+      patchedLowlights.add(lowlight);
+    };
+    const lineDecorations = new WeakMap<Element, DecoratedRange[]>();
+    const parseNodes = (
+      nodes: HighlightNode[],
+      className: string[] = []
+    ): { classes: string[]; text: string }[] =>
+      nodes.flatMap((node) => {
+        if (node.type === 'element') {
+          const nodeClassName = node.properties.className;
+          const classes = [
+            ...className,
+            ...(Array.isArray(nodeClassName)
+              ? nodeClassName.map(String)
+              : typeof nodeClassName === 'string'
+                ? [nodeClassName]
+                : []),
+          ];
+
+          return parseNodes(node.children, classes);
+        }
+
+        return node.type === 'text'
+          ? [{ classes: className, text: node.value }]
+          : [];
+      });
+    const normalizeTokens = (tokens: { classes: string[]; text: string }[]) => {
+      const lines: { classes: string[]; content: string }[][] = [[]];
+      let currentLine = lines[0];
+
+      for (const token of tokens) {
+        const tokenLines = token.text.split('\n');
+
+        tokenLines.forEach((content, index) => {
+          if (content) currentLine.push({ classes: token.classes, content });
+
+          if (index < tokenLines.length - 1) {
+            lines.push([]);
+            currentLine = lines.at(-1)!;
+          }
+        });
+      }
+
+      return lines;
+    };
+    const decorateBlock: CodeHighlightRuntime['decorateBlock'] = (
+      [block, blockPath],
+      { defaultLanguage, lowlight }
+    ) => {
+      const decorations = new Map<Element, DecoratedRange[]>();
+      const text = block.children
+        .map((line) => NodeApi.string(line))
+        .join('\n');
+      const language = typeof block.lang === 'string' ? block.lang : undefined;
+      const effectiveLanguage = language || defaultLanguage;
+
+      ensureStablePythonGrammar(lowlight, effectiveLanguage);
+
+      let highlighted: HighlightResult;
+      let warning: CodeHighlightWarning | undefined;
+
+      try {
+        if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
+          highlighted = { children: [], type: 'root' };
+        } else if (effectiveLanguage === 'auto') {
+          highlighted = lowlight.highlightAuto(text);
+        } else {
+          highlighted = lowlight.highlight(effectiveLanguage, text);
+        }
+      } catch (error) {
+        const languageName = effectiveLanguage ?? 'unknown';
+
+        warning =
+          effectiveLanguage &&
+          lowlight.listLanguages().includes(effectiveLanguage)
+            ? {
+                error,
+                kind: 'highlight',
+                language: languageName,
+              }
+            : {
+                kind: 'missing-language',
+                language: languageName,
+              };
+        highlighted = { children: [], type: 'root' };
+      }
+
+      const normalizedTokens = normalizeTokens(
+        parseNodes(highlighted.children)
+      );
+      const lineCount = Math.min(
+        normalizedTokens.length,
+        block.children.length
+      );
+
+      for (let index = 0; index < lineCount; index++) {
+        const element = block.children[index];
+
+        if (!ElementApi.isElement(element)) continue;
+
+        const values: DecoratedRange[] = [];
+        let start = 0;
+
+        decorations.set(element, values);
+
+        for (const token of normalizedTokens[index]) {
+          const end = start + token.content.length;
+
+          if (end === start) continue;
+
+          const decoration: CodeBlockDecoration = {
+            anchor: {
+              offset: start,
+              path: [...blockPath, index, 0],
+            },
+            className: token.classes.join(' '),
+            focus: {
+              offset: end,
+              path: [...blockPath, index, 0],
+            },
+            [NODES.codeSyntax]: true,
+          };
+
+          values.push(decoration);
+          start = end;
+        }
+      }
+
+      return {
+        decorations,
+        ...(warning ? { warning } : {}),
+      };
+    };
+
+    const runtime = {
+      decorateBlock,
+      lineDecorations,
+    };
+
+    codeHighlightRuntimes.set(editor, runtime);
+
+    return {
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry: [node] }) {
+            if (
+              !ElementApi.isElement(node) ||
+              node.type !== editor.getType(KEYS.codeBlock) ||
+              !store.get().lowlight
+            ) {
+              return;
+            }
+
+            node.children.forEach((line) => {
+              if (ElementApi.isElement(line)) {
+                runtime.lineDecorations.delete(line);
+              }
+            });
+          },
+        },
+      ],
+      on: {
+        transactionChange(context) {
+          if (!store.get().lowlight) return;
+
+          const codeBlock = findCodeBlockLanguageChange(
+            context,
+            editor.getType(KEYS.codeBlock)
+          )?.before;
+
+          if (!codeBlock) return;
+
+          codeBlock.children.forEach((line) => {
+            if (ElementApi.isElement(line)) {
+              runtime.lineDecorations.delete(line);
+            }
+          });
+        },
+      },
+    };
   },
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
   type: NODES.codeSyntax,
-}).extend(({ editor, store }) => {
-  type CodeBlockDecoration = DecoratedRange & {
-    className: string;
-    [NODES.codeSyntax]: true;
-  };
-  type HighlightResult = ReturnType<
-    ReturnType<typeof createLowlight>['highlight']
-  >;
-  type HighlightNode = HighlightResult['children'][number];
-
-  const lineDecorations = new WeakMap<Element, DecoratedRange[]>();
-  const parseNodes = (
-    nodes: HighlightNode[],
-    className: string[] = []
-  ): { classes: string[]; text: string }[] =>
-    nodes.flatMap((node) => {
-      if (node.type === 'element') {
-        const nodeClassName = node.properties.className;
-        const classes = [
-          ...className,
-          ...(Array.isArray(nodeClassName)
-            ? nodeClassName.map(String)
-            : typeof nodeClassName === 'string'
-              ? [nodeClassName]
-              : []),
-        ];
-
-        return parseNodes(node.children, classes);
-      }
-
-      return node.type === 'text'
-        ? [{ classes: className, text: node.value }]
-        : [];
-    });
-  const normalizeTokens = (tokens: { classes: string[]; text: string }[]) => {
-    const lines: { classes: string[]; content: string }[][] = [[]];
-    let currentLine = lines[0];
-
-    for (const token of tokens) {
-      const tokenLines = token.text.split('\n');
-
-      tokenLines.forEach((content, index) => {
-        if (content) currentLine.push({ classes: token.classes, content });
-
-        if (index < tokenLines.length - 1) {
-          lines.push([]);
-          currentLine = lines.at(-1)!;
-        }
-      });
-    }
-
-    return lines;
-  };
-  const decorations = ([block, blockPath]: NodeEntry<Element>) => {
+  decorate: ({ editor, entry: [node, path], store }) => {
     const { defaultLanguage, lowlight } = store.get();
-    const nodeToDecorations = new Map<Element, DecoratedRange[]>();
 
-    if (!lowlight) return nodeToDecorations;
+    if (!lowlight) return [];
 
-    const text = block.children.map((line) => NodeApi.string(line)).join('\n');
-    const language = typeof block.lang === 'string' ? block.lang : undefined;
-    const effectiveLanguage = language || defaultLanguage;
+    const runtime = codeHighlightRuntimes.get(editor);
 
-    ensureStablePythonGrammar(lowlight, effectiveLanguage);
+    if (!runtime) return [];
 
-    let highlighted: HighlightResult;
+    const codeBlockType = editor.getType(KEYS.codeBlock);
+    const codeLineType = editor.getType(KEYS.codeLine);
 
-    try {
-      if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
-        highlighted = { children: [], type: 'root' };
-      } else if (effectiveLanguage === 'auto') {
-        highlighted = lowlight.highlightAuto(text);
-      } else {
-        highlighted = lowlight.highlight(effectiveLanguage, text);
+    if (
+      ElementApi.isElement(node) &&
+      node.type === codeBlockType &&
+      ElementApi.isElement(node.children[0]) &&
+      !runtime.lineDecorations.has(node.children[0])
+    ) {
+      const result = runtime.decorateBlock([node, path], {
+        defaultLanguage,
+        lowlight,
+      });
+
+      for (const [line, values] of result.decorations) {
+        runtime.lineDecorations.set(line, values);
       }
-    } catch (error) {
-      if (
-        effectiveLanguage &&
-        lowlight.listLanguages().includes(effectiveLanguage)
-      ) {
+
+      if (result.warning?.kind === 'highlight') {
         editor
           .plugin(DebugPlugin)
           .api.warn(
-            `Could not highlight with Highlight.js for language "${effectiveLanguage}". Falling back to plaintext`,
+            `Could not highlight with Highlight.js for language "${result.warning.language}". Falling back to plaintext`,
             'CODE_HIGHLIGHT',
-            error
+            result.warning.error
           );
-      } else {
+      } else if (result.warning) {
         editor
           .plugin(DebugPlugin)
           .api.warn(
-            `Language "${effectiveLanguage}" is not registered. Falling back to plaintext`
+            `Language "${result.warning.language}" is not registered. Falling back to plaintext`
           );
       }
-      highlighted = { children: [], type: 'root' };
     }
 
-    const normalizedTokens = normalizeTokens(parseNodes(highlighted.children));
-    const lineCount = Math.min(normalizedTokens.length, block.children.length);
-
-    for (let index = 0; index < lineCount; index++) {
-      const element = block.children[index];
-
-      if (!ElementApi.isElement(element)) continue;
-
-      const values: DecoratedRange[] = [];
-      let start = 0;
-
-      nodeToDecorations.set(element, values);
-
-      for (const token of normalizedTokens[index]) {
-        const end = start + token.content.length;
-
-        if (end === start) continue;
-
-        const decoration: CodeBlockDecoration = {
-          anchor: {
-            offset: start,
-            path: [...blockPath, index, 0],
-          },
-          className: token.classes.join(' '),
-          focus: {
-            offset: end,
-            path: [...blockPath, index, 0],
-          },
-          [NODES.codeSyntax]: true,
-        };
-
-        values.push(decoration);
-        start = end;
-      }
-    }
-
-    return nodeToDecorations;
-  };
-
-  const languageChange = (
-    context: Pick<
-      EditorTransactionChangeContext<BaseEditor>,
-      'after' | 'before' | 'change' | 'changed'
-    >
-  ) => {
-    const roots = new Set<string | undefined>();
-
-    context.change.iterChangedRanges((root) => roots.add(root ?? undefined));
-
-    for (const root of roots) {
-      if (!context.changed.has('properties', root)) continue;
-
-      const beforeChildren =
-        root === undefined
-          ? context.before.children
-          : (context.before.roots?.[root] ?? []);
-      const afterChildren =
-        root === undefined
-          ? context.after.children
-          : (context.after.roots?.[root] ?? []);
-
-      for (const path of context.changed.paths(root)) {
-        const before = NodeApi.getIf(
-          { children: beforeChildren } as Element,
-          path
-        );
-        const after = NodeApi.getIf(
-          { children: afterChildren } as Element,
-          path
-        );
-        const beforeLanguage =
-          ElementApi.isElement(before) &&
-          before.type === editor.getType(KEYS.codeBlock)
-            ? before.lang
-            : undefined;
-        const afterLanguage =
-          ElementApi.isElement(after) &&
-          after.type === editor.getType(KEYS.codeBlock)
-            ? after.lang
-            : undefined;
-
-        if (
-          (beforeLanguage !== undefined || afterLanguage !== undefined) &&
-          beforeLanguage !== afterLanguage
-        ) {
-          return { after, before };
-        }
-      }
-    }
-  };
-  const getLineDecorations = (line: Element) => lineDecorations.get(line) ?? [];
-  const resetDecorations = (codeBlock: Element) => {
-    codeBlock.children.forEach((line) => {
-      if (ElementApi.isElement(line)) lineDecorations.delete(line);
-    });
-  };
-  const setDecorations = (entry: NodeEntry<Element>) => {
-    for (const [node, values] of decorations(entry)) {
-      lineDecorations.set(node, values);
-    }
-  };
-
-  return {
-    decorate: ({ entry: [node, path] }) => {
-      if (!store.get().lowlight) return [];
-
-      const codeBlockType = editor.getType(KEYS.codeBlock);
-      const codeLineType = editor.getType(KEYS.codeLine);
-
-      if (
-        ElementApi.isElement(node) &&
-        node.type === codeBlockType &&
-        ElementApi.isElement(node.children[0]) &&
-        getLineDecorations(node.children[0]).length === 0
-      ) {
-        setDecorations([node, path]);
-      }
-
-      return ElementApi.isElement(node) && node.type === codeLineType
-        ? getLineDecorations(node)
-        : [];
-    },
-    extension: {
-      corrections: [
-        {
-          event: 'content',
-          correct({ entry }) {
-            const [node] = entry;
-
-            if (
-              ElementApi.isElement(node) &&
-              node.type === editor.getType(KEYS.codeBlock) &&
-              store.get().lowlight
-            ) {
-              setDecorations([node, entry[1]]);
-            }
-          },
-        },
-      ],
-      onTransactionChange(context) {
-        const codeBlock =
-          store.get().lowlight && languageChange(context)?.before;
-
-        if (ElementApi.isElement(codeBlock)) {
-          resetDecorations(codeBlock);
-        }
-      },
-    },
-  };
+    return ElementApi.isElement(node) && node.type === codeLineType
+      ? (runtime.lineDecorations.get(node) ?? [])
+      : [];
+  },
 });
 
 export type CodeHighlightConfig = InferConfig<typeof BaseCodeHighlightPlugin>;

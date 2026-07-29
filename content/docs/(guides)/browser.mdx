@@ -110,6 +110,23 @@ device, OS, and capability scope. Proxy browser lanes remain useful evidence,
 but they do not claim native mobile clipboard, human soft-keyboard, glide
 typing, or voice input.
 
+## Mobile Input Lab
+
+The Plite app exposes `/mobile-lab` for LAN-accessible browser capture:
+
+```text
+pnpm --filter plite dev:lan
+```
+
+Open the printed LAN URL on the target browser, append `/mobile-lab`, reproduce
+the input, take a snapshot, and export the replay JSON. The artifact records
+browser events, model and DOM state, model and native selections, commit and
+kernel traces, viewport facts, user agent, language, and touch metadata.
+
+The route is an evidence collector. Its JSON explicitly does not certify a
+raw-device claim. A release proof still needs the real-device runner and its
+device/OS receipt.
+
 ## Commands
 
 ```text

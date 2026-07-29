@@ -177,6 +177,24 @@ Element-owned fields live in the element declaration's `properties` map.
 Cross-cut element fields use `schema.elementProperty(...)` with an explicit
 target. Text marks use `schema.textProperty(...)`.
 
+Use one frozen group when separate text properties cannot coexist:
+
+```ts
+const ScriptPosition = schema.property.exclusive("app:script-position");
+
+const properties = [
+  schema.textProperty("subscript", property.boolean(), {
+    exclusive: [ScriptPosition],
+  }),
+  schema.textProperty("superscript", property.boolean(), {
+    exclusive: [ScriptPosition],
+  }),
+];
+```
+
+Toggling one member removes active conflicting members. Schema validation and
+collaboration projection enforce the same invariant.
+
 Targets are frozen syntax, not callbacks. Compose `target.type`,
 `target.types`, `target.group`, `target.root`, `target.parent`, `target.and`,
 `target.or`, and `target.not`. Use `schema.key.prefix(...)` only for a real

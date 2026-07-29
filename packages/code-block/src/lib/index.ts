@@ -4,4 +4,3 @@
 
 export * from './BaseCodeBlockPlugin';
 export * from './CodeBlockRules';
-export * from './ensureStablePythonGrammar';

@@ -3,10 +3,10 @@ import { inheritEditorExtensionRegistry as inheritEditorExtensionRegistryCore } 
 
 export {
   areEditorJsonValuesEqual,
-  createInternalClipboardApi,
   dispatchCommand,
   editorCommands,
   getEditorCurrentMarks,
+  getEditorExtensionContributions,
   getEditorExtensionRegistry,
   getEditorLiveNode,
   getEditorLiveSelection,
@@ -52,7 +52,7 @@ export {
   getPathByRuntimeId,
   getRuntimeId,
   getSelection,
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   getSnapshot,
   hasPath,
   isBlock,

@@ -4,4 +4,3 @@
 
 export * from './computeDiff';
 export * from './excludeDiffFromFragment';
-export * from './types';

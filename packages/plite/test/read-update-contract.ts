@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createEditor, DocumentChange, type Element } from '@platejs/plite';
+import {
+  createEditor,
+  defineEditorSchema,
+  DocumentChange,
+  type Element,
+  property,
+  schema,
+} from '@platejs/plite';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string): Element => ({
@@ -11,6 +18,25 @@ const paragraph = (text: string): Element => ({
 
 const NESTED_UPDATE_ERROR =
   /editor\.update cannot be started inside editor\.read/;
+
+const ScriptPosition = schema.property.exclusive('plate:script-position');
+const ScriptSchema = defineEditorSchema({
+  elements: {
+    paragraph: { content: schema.content.text() },
+  },
+  id: 'script-schema',
+  properties: [
+    schema.textProperty('subscript', property.boolean(), {
+      exclusive: [ScriptPosition],
+    }),
+    schema.textProperty('superscript', property.boolean(), {
+      exclusive: [ScriptPosition],
+    }),
+  ],
+  root: { content: schema.content.type('paragraph') },
+  unknown: 'reject',
+  version: 1,
+});
 
 describe('read/update contract', () => {
   it('exposes a coherent read boundary and an update boundary with commit tags', () => {
@@ -87,8 +113,8 @@ describe('read/update contract', () => {
     assert.equal(editor.read.lastCommit()?.changed.has('marks'), true);
   });
 
-  it('toggles marks with configured clear options', () => {
-    const editor = createEditor();
+  it('toggles schema-exclusive marks without caller-owned clearing', () => {
+    const editor = createEditor({ extensions: [ScriptSchema] });
 
     replaceEditorValue(editor, {
       children: [paragraph('one')],
@@ -99,17 +125,10 @@ describe('read/update contract', () => {
       },
     });
 
-    editor.update.marks.add('italic', true);
-    editor.update.marks.toggle('bold', true, { clear: 'italic' });
+    editor.update.marks.add('superscript', true);
+    editor.update.marks.toggle('subscript', true);
 
-    assert.deepEqual(editor.read.marks(), { bold: true });
-
-    editor.update.marks.add('code', true);
-    editor.update((tx) => {
-      tx.marks.toggle('bold', true, { clear: ['bold', 'code'] });
-    });
-
-    assert.deepEqual(editor.read.marks(), { code: true });
+    assert.deepEqual(editor.read.marks(), { subscript: true });
   });
 
   it('sets an exact expanded range without retargeting endpoints', () => {

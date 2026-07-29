@@ -20,8 +20,7 @@ Equation adds block and inline void nodes for LaTeX expressions. Both nodes stor
 
 - Block `equation` element.
 - Inline void `inline_equation` element.
-- `equation.insert` and `inlineEquation.insert` transaction commands.
-- Direct `insertEquation` and `insertInlineEquation` helpers.
+- Scoped block and inline equation insertion updates.
 - KaTeX rendering in editable and static UI.
 - `$...$` inline input rule and `$$` block input rule.
 - Markdown round-trip for inline math and block math.
@@ -56,7 +55,8 @@ export const editor = createPlateEditor({
 
 ### Add The Toolbar Button
 
-`equation-toolbar-button` inserts an inline equation with `insertInlineEquation(editor)`.
+`equation-toolbar-button` inserts an inline equation through
+`editor.plugin(BaseInlineEquationPlugin).update.insert()`.
 
 <ComponentSource name="equation-toolbar-button" />
 
@@ -66,7 +66,7 @@ export const editor = createPlateEditor({
 
 | Layer | Owner | What It Does |
 |-------|-------|--------------|
-| `@platejs/math` | Package | Exports base plugins, transforms, `MathRules`, and `getEquationHtml`. |
+| `@platejs/math` | Package | Exports the base equation family, `MathRules`, and `getEquationHtml`. |
 | `@platejs/math/react` | Package | Exports React plugins plus `useEquationElement` and `useEquationInput`. |
 | `math-kit` | Registry | Adds block and inline React plugins with input rules and interactive UI components. |
 | `math-base-kit` | Registry | Adds static equation components for read-only rendering. |
@@ -125,22 +125,19 @@ Use the base kit when rendering read-only output with `platejs/static`.
 
 ### Insert Equations
 
-Use transaction commands when you already have a configured editor.
+Use each plugin's scoped update surface.
 
 ```tsx
-editor.update((tx) => tx.equation.insert({ select: true }));
-editor.update((tx) =>
-  tx.inlineEquation.insert('E = mc^2', { select: true })
-);
-```
+import {
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+} from '@platejs/math';
 
-Use package helpers directly from toolbar, slash-command, or app-local action code.
-
-```tsx
-import { insertEquation, insertInlineEquation } from '@platejs/math';
-
-insertEquation(editor, { select: true });
-insertInlineEquation(editor, 'E = mc^2', { select: true });
+editor.plugin(BaseEquationPlugin).update.insert({ select: true });
+editor.plugin(BaseInlineEquationPlugin).update.insert({
+  select: true,
+  texExpression: 'E = mc^2',
+});
 ```
 
 </Steps>
@@ -233,10 +230,8 @@ Inline math deserializes to `inline_equation`. Block math deserializes to `equat
 | `BaseInlineEquationPlugin` | `@platejs/math` | Headless inline equation plugin. |
 | `EquationPlugin` | `@platejs/math/react` | React block equation plugin. |
 | `InlineEquationPlugin` | `@platejs/math/react` | React inline equation plugin. |
-| `insertEquation(editor, options)` | `@platejs/math` | Inserts a blank block equation. |
-| `insertInlineEquation(editor, texExpression?, options?)` | `@platejs/math` | Inserts an inline equation. Defaults to the selected string when no expression is passed. |
-| `editor.update((tx) => tx.equation.insert(options))` | `BaseEquationPlugin` transaction | Inserts a block equation. |
-| `editor.update((tx) => tx.inlineEquation.insert(texExpression, options))` | `BaseInlineEquationPlugin` transaction | Inserts an inline equation. |
+| `editor.plugin(BaseEquationPlugin).update.insert(options)` | `@platejs/math` | Inserts a blank block equation. |
+| `editor.plugin(BaseInlineEquationPlugin).update.insert(options)` | `@platejs/math` | Inserts an inline equation. `texExpression` defaults to the selected string. |
 | `MathRules.markdown(options)` | `@platejs/math` | Creates inline or block math input rules. |
 | `useEquationElement(options)` | `@platejs/math/react` | Renders an equation into a KaTeX DOM target. |
 | `useEquationInput(options)` | `@platejs/math/react` | Wires the equation textarea and keyboard behavior. |

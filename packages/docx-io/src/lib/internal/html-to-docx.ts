@@ -27,7 +27,7 @@ import {
   wordFolder,
 } from './constants';
 import DocxDocument from './docx-document';
-import renderDocumentFile from './helpers/render-document-file';
+import renderDocumentFile from './render-document-file';
 import relsXML from './schemas/rels';
 import type { DocumentOptions, Margins, PageSize } from './types';
 import {
@@ -39,7 +39,7 @@ import {
   pixelToTWIP,
   pointRegex,
   pointToHIP,
-} from './utils/unit-conversion';
+} from './unit-conversion';
 
 interface VTree {
   children?: VTree[];

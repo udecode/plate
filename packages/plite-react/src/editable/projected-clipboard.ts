@@ -98,14 +98,15 @@ export const getProjectedViewSelectionSlice = (
     return null;
   }
 
+  const runtimeEditor = getCanonicalRuntimeEditor(editor) as ReactRuntimeEditor;
   const ranges = getProjectedViewSelectionClipboardRanges(
-    editor,
+    runtimeEditor,
     viewSelection
   );
 
   if (!ranges) return null;
 
-  return editor.read((state) => {
+  return runtimeEditor.read((state) => {
     const slices = ranges
       .map((range) => state.slice.get({ at: range }))
       .filter((slice) => slice.content.length > 0);

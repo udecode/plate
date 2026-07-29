@@ -3,5 +3,4 @@
  */
 
 export * from './EquationPlugin';
-export * from './InlineEquationPlugin';
-export * from './hooks/index';
+export * from './useEquation';

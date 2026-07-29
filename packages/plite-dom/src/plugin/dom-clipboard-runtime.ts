@@ -3,7 +3,10 @@ import {
   ContentSlice,
   type ContentSlice as ContentSliceValue,
   type Descendant,
+  defineExtensionPoint,
+  type EditorCoreUpdateTransaction,
   editorCommands,
+  type EditorUpdateTransaction,
   NodeApi as PliteNode,
   type Range,
   RangeApi,
@@ -26,6 +29,74 @@ const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
 const PLITE_FRAGMENT_FORMAT_ATTRIBUTE = 'data-plite-fragment-format';
 
 const EDITOR_TO_CLIPBOARD_FORMAT_KEY = new WeakMap<object, string>();
+
+export type ClipboardSliceRead<V extends Value = Value> =
+  | Readonly<{ kind: 'absent' }>
+  | Readonly<{ kind: 'invalid'; source: 'html' | 'mime' }>
+  | Readonly<{ kind: 'slice'; slice: ContentSliceValue<V> }>;
+
+export type ClipboardSliceWrite<V extends Value = Value> = Readonly<{
+  formats?: Readonly<Record<string, string>>;
+  slice: ContentSliceValue<V>;
+}>;
+
+export type DOMClipboardInsertContext<V extends Value = Value> = Readonly<{
+  next: (data?: DataTransfer) => boolean;
+  transaction: Pick<
+    EditorCoreUpdateTransaction<V>,
+    'fragment' | 'nodes' | 'selection' | 'tags' | 'text'
+  >;
+}>;
+
+export type DOMClipboardHandler<V extends Value = Value> = Readonly<{
+  insertData(
+    data: DataTransfer,
+    context: DOMClipboardInsertContext<V>
+  ): boolean;
+}>;
+
+export const DOM_CLIPBOARD_HANDLERS = defineExtensionPoint<
+  DOMClipboardHandler<any>
+>('plite-dom:clipboard-handler');
+
+/** Contribute one DOM clipboard ingress handler from an editor extension. */
+export const clipboardHandler = DOM_CLIPBOARD_HANDLERS.of;
+
+/** @internal Run the DOM-owned clipboard chain inside an existing transaction. */
+export const dispatchDOMClipboardHandlers = <
+  V extends Value,
+  TExtensions extends readonly unknown[],
+>(
+  handlers: readonly DOMClipboardHandler<NoInfer<V>>[],
+  data: DataTransfer,
+  transaction: EditorUpdateTransaction<V, TExtensions>,
+  fallback: (data: DataTransfer) => boolean
+) => {
+  const dispatch = (index: number, nextData: DataTransfer): boolean => {
+    const handler = handlers[index];
+
+    if (!handler) return fallback(nextData);
+    let delegated = false;
+
+    return (
+      handler.insertData(nextData, {
+        next(replacement = nextData) {
+          if (delegated) {
+            throw new Error(
+              'DOM clipboard handler next() can only be called once.'
+            );
+          }
+          delegated = true;
+
+          return dispatch(index - 1, replacement);
+        },
+        transaction,
+      }) === true
+    );
+  };
+
+  return dispatch(handlers.length - 1, data);
+};
 
 const stripRenderOnlyLeafWrappers = (root: ParentNode) => {
   const candidates = Array.from(
@@ -284,10 +355,9 @@ const writeModelBackedRangeData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
   clipboardFormatKey: string,
-  range: Range
+  range: Range,
+  slice = editor.read.slice.export({ at: range })
 ) => {
-  const slice = editor.read.slice.get({ at: range });
-
   writeDOMHostFragmentData(editor, data, {
     clipboardFormatKey,
     html: ({ clipboardFormatKey, encoded, text }) =>
@@ -316,19 +386,28 @@ export const writeDOMSelectionData = <V extends Value>(
 
   if (!selection) return;
 
-  return writeDOMRangeData(editor, data, selection);
+  return writeDOMRangeData(editor, data, selection, {
+    slice: editor.read.slice.export(),
+  });
 };
 
 /** Write clipboard payloads for one model range without changing selection. */
 export const writeDOMRangeData = <V extends Value>(
   editor: DOMEditor<V>,
   data: Pick<DataTransfer, 'getData' | 'setData'>,
-  range: Range
+  range: Range,
+  options: Readonly<{ slice?: ContentSliceValue<V> }> = {}
 ) => {
   const clipboardFormatKey = getDOMClipboardFormatKey(editor);
 
   if (SelectionApi.isNode(range)) {
-    writeModelBackedRangeData(editor, data, clipboardFormatKey, range);
+    writeModelBackedRangeData(
+      editor,
+      data,
+      clipboardFormatKey,
+      range,
+      options.slice
+    );
     return;
   }
 
@@ -373,7 +452,13 @@ export const writeDOMRangeData = <V extends Value>(
   );
 
   if (shouldWriteModelBackedSelection) {
-    writeModelBackedRangeData(editor, data, clipboardFormatKey, range);
+    writeModelBackedRangeData(
+      editor,
+      data,
+      clipboardFormatKey,
+      range,
+      options.slice
+    );
     return;
   }
 
@@ -385,7 +470,13 @@ export const writeDOMRangeData = <V extends Value>(
       return;
     }
 
-    writeModelBackedRangeData(editor, data, clipboardFormatKey, range);
+    writeModelBackedRangeData(
+      editor,
+      data,
+      clipboardFormatKey,
+      range,
+      options.slice
+    );
     return;
   }
   let contents = domRange.cloneContents();
@@ -471,7 +562,7 @@ export const writeDOMRangeData = <V extends Value>(
   contents.ownerDocument.body.appendChild(div);
 
   if (!hasPolicyBoundaries) {
-    const slice = editor.read.slice.get({ at: range });
+    const slice = options.slice ?? editor.read.slice.export({ at: range });
 
     writeDOMHostFragmentData(editor, data, {
       clipboardFormatKey,
@@ -526,6 +617,59 @@ export const readDOMFragmentData = <V extends Value>(
   }
 
   return null;
+};
+
+/** Read an exact Plite clipboard envelope without weakening malformed claims. */
+export const readDOMClipboardSlice = <V extends Value>(
+  editor: DOMEditor<V>,
+  data: Pick<DataTransfer, 'getData' | 'types'>
+): ClipboardSliceRead<V> => {
+  const clipboardFormatKey = getDOMClipboardFormatKey(editor);
+  const mime = `application/${clipboardFormatKey}`;
+  const mimeValue = data.getData(mime);
+  const claimsMime = Array.from(data.types ?? []).includes(mime) || !!mimeValue;
+  let window: Pick<Window, 'atob'> | undefined;
+
+  try {
+    window = DOMEditor.getWindow(editor);
+  } catch {
+    // Headless host adapters use the ambient decoder.
+  }
+
+  if (claimsMime) {
+    const slice = mimeValue ? decodeClipboardSlice<V>(mimeValue, window) : null;
+
+    return slice
+      ? Object.freeze({ kind: 'slice', slice })
+      : Object.freeze({ kind: 'invalid', source: 'mime' });
+  }
+
+  const htmlValue = getPliteFragmentAttribute(data, clipboardFormatKey);
+
+  if (!htmlValue) return Object.freeze({ kind: 'absent' });
+  const slice = decodeClipboardSlice<V>(htmlValue, window);
+
+  return slice
+    ? Object.freeze({ kind: 'slice', slice })
+    : Object.freeze({ kind: 'invalid', source: 'html' });
+};
+
+/** Write one exact Plite slice plus optional host formats. */
+export const writeDOMClipboardSlice = <V extends Value>(
+  editor: DOMEditor<V>,
+  data: Pick<DataTransfer, 'getData' | 'setData'>,
+  { formats = {}, slice }: ClipboardSliceWrite<V>
+) => {
+  const {
+    'text/html': html = '',
+    'text/plain': text,
+    ...extraFormats
+  } = formats;
+
+  writeDOMHostFragmentData(editor, data, { html, slice, text });
+  Object.entries(extraFormats).forEach(([format, value]) => {
+    data.setData(format, value);
+  });
 };
 
 export const insertDOMFragmentData = <V extends Value>(

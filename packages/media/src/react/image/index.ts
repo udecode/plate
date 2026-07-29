@@ -3,3 +3,5 @@
  */
 
 export * from './Image';
+export * from './ImageStore';
+export * from './useImage';

@@ -3,7 +3,6 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { deserializeMd } from './deserializeMd';
 
 jsxt;
 
@@ -95,7 +94,7 @@ describe('when splitLineBreaks is enabled', () => {
     },
   ])('$title', ({ input, output }) => {
     expect(
-      deserializeMd(editor, input, { splitLineBreaks: true }).children
+      editor.api.markdown.deserialize(input, { splitLineBreaks: true }).children
     ).toEqual(output);
   });
 });

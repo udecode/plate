@@ -26,7 +26,6 @@ but the editor type is `BaseEditor`.
 | `store` | Read, update, or subscribe to the current plugin's editor-local state. |
 | `defineCodecs(map)` | Bind a self/product codec map to this plugin's inferred schema. |
 | `defineCodecs(TargetPlugin, map)` | Bind a foreign codec map to an exact descriptor and inject its target. |
-| `defineEditorExtension(extension)` | Preserve this plugin's nested inference for an extracted reusable extension factory. |
 
 ## Plugin Methods
 
@@ -36,11 +35,18 @@ context helpers instead of closing over editor state.
 ```ts title="counter-plugin.ts" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
+export type CounterPluginState = {
+  count: number;
+  enabled: boolean;
+};
+
+const initialState: CounterPluginState = {
+  count: 0,
+  enabled: true,
+};
+
 export const CounterPlugin = createPlatePlugin({
-  initialState: {
-    count: 0,
-    enabled: true,
-  },
+  initialState,
   key: 'counter',
   handlers: {
     onKeyDown: ({ event, store, type }) => {
@@ -67,10 +73,16 @@ callbacks also receive plugin context.
 ```ts title="counter-plugin.ts" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
+export type CounterPluginState = {
+  count: number;
+};
+
+const initialState: CounterPluginState = {
+  count: 0,
+};
+
 export const CounterPlugin = createPlatePlugin({
-  initialState: {
-    count: 0,
-  },
+  initialState,
   key: 'counter',
   api: ({ store }) => ({
     isEmpty: () => store.get('count') === 0,
@@ -85,18 +97,16 @@ Selectors are readable through `store.get` and subscribable through
 `usePluginStore`. They are pure state-first functions and cannot read the
 editor or another plugin.
 
-## Extension Factory Inference
+## Extension Inference
 
-Inline constructor `extension` objects receive contextual typing.
-An extracted reusable factory must return the callback context's identity
-helper: accept `BasePluginContext<C>`, then return
-`context.defineEditorExtension({ ... })`. See the complete extracted-factory
-example in [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
+Return plain extension objects from constructor and `.extend()` callbacks.
+Keep Plate context capture inside those callbacks so nested commands, inputs,
+state, transactions, dependencies, and plugin state stay contextually typed.
+Extract domain inputs instead of the Plate plugin context.
 
-Pass the extracted factory to the constructor's `extension` callback. Do not
-use the helper for an inline extension object. The function named
-`defineEditorExtension` imported from `@platejs/plite` authors standalone
-Plite extensions; it does not carry an extracted Plate plugin's context.
+Use `defineEditorExtension` from `@platejs/plite` only for independently
+reusable standalone Plite descriptors. See
+[Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
 ## Codec Inference
 

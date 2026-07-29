@@ -75,7 +75,7 @@ import {
 ```
 
 State fields with `collab: "shared"` sync automatically. Standalone shared
-effect descriptors belong to an editor extension's `effects` resource. Yjs
+effect descriptors belong to an editor extension's `effectTypes` resource. Yjs
 discovers installed descriptors automatically; each shared descriptor requires
 a versioned codec whose output is JSON-compatible.
 
@@ -95,7 +95,7 @@ const incrementCounter = defineEffect<number>({
 })
 
 const counterEffects = defineEditorExtension({
-  effects: [incrementCounter],
+  effectTypes: [incrementCounter],
   name: 'counter-effects',
 })
 

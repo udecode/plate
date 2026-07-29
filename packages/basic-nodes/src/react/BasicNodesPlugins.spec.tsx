@@ -2,38 +2,38 @@ import { createBaseEditor } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
-import { BaseBlockquotePlugin } from '../lib/BaseBlockquotePlugin';
-import { BaseBoldPlugin } from '../lib/BaseBoldPlugin';
-import { BaseCodePlugin } from '../lib/BaseCodePlugin';
 import {
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
   BaseH1Plugin,
   BaseH2Plugin,
   BaseH3Plugin,
   BaseH4Plugin,
   BaseH5Plugin,
   BaseH6Plugin,
-} from '../lib/BaseHeadingPlugins';
-import { BaseHorizontalRulePlugin } from '../lib/BaseHorizontalRulePlugin';
-import { BaseItalicPlugin } from '../lib/BaseItalicPlugin';
-import { BaseScriptPlugin } from '../lib/BaseScriptPlugin';
-import { BaseStrikethroughPlugin } from '../lib/BaseStrikethroughPlugin';
-import { BaseUnderlinePlugin } from '../lib/BaseUnderlinePlugin';
-import { BlockquotePlugin } from './BlockquotePlugin';
-import { BoldPlugin } from './BoldPlugin';
-import { CodePlugin } from './CodePlugin';
+  BaseHorizontalRulePlugin,
+  BaseItalicPlugin,
+  BaseScriptPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '../lib';
 import {
+  BlockquotePlugin,
+  BoldPlugin,
+  CodePlugin,
   H1Plugin,
   H2Plugin,
   H3Plugin,
   H4Plugin,
   H5Plugin,
   H6Plugin,
-} from './HeadingPlugins';
-import { HorizontalRulePlugin } from './HorizontalRulePlugin';
-import { ItalicPlugin } from './ItalicPlugin';
-import { ScriptPlugin } from './ScriptPlugin';
-import { StrikethroughPlugin } from './StrikethroughPlugin';
-import { UnderlinePlugin } from './UnderlinePlugin';
+  HorizontalRulePlugin,
+  ItalicPlugin,
+  ScriptPlugin,
+  StrikethroughPlugin,
+  UnderlinePlugin,
+} from './BasicNodesPlugins';
 
 describe('basic node plugin composition', () => {
   it('keeps explicit Base plugin composition inference-complete', () => {

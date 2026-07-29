@@ -20,6 +20,7 @@ import {
   isWebKitDOMHost,
   supportsDOMBeforeInput,
   usesAppleDOMHotkeys,
+  selectDOMInputDefaultActionPhase,
 } from '@platejs/plite-dom/internal';
 import type { EditableKeyDownHandler } from '../components/editable';
 import { isSelectAllHotkey } from '../dom-strategy/dom-strategy-commands';
@@ -488,6 +489,7 @@ const isCollapsedSelectionBackedByEditableTextDOM = ({
 
 export const shouldDeferBackspaceToNativeInput = ({
   nativeEvent,
+  runtime,
   isIOS = usesAppleDOMHotkeys(nativeEvent) &&
     hasDOMHostQuirk(nativeEvent, 'compositionend-precedes-final-input'),
   language = getDOMHostLanguage(nativeEvent),
@@ -495,7 +497,21 @@ export const shouldDeferBackspaceToNativeInput = ({
   isIOS?: boolean;
   language?: string;
   nativeEvent: KeyboardEvent;
-}) => isIOS && language === 'ko-KR' && Hotkeys.isDeleteBackward(nativeEvent);
+  runtime?: Readonly<{
+    selectDefaultActionPhase: (
+      input: Parameters<typeof selectDOMInputDefaultActionPhase>[0]
+    ) => ReturnType<typeof selectDOMInputDefaultActionPhase>;
+  }>;
+}) =>
+  Hotkeys.isDeleteBackward(nativeEvent) &&
+  (runtime?.selectDefaultActionPhase({
+    action: 'delete-backward',
+    host: { isIOS, language },
+  }) ??
+    selectDOMInputDefaultActionPhase({
+      action: 'delete-backward',
+      host: { isIOS, language },
+    })) === 'beforeinput';
 
 const applyUserKeyDownHandler = ({
   editor,
@@ -1036,7 +1052,10 @@ export const applyEditableKeyDown = ({
     if (
       keyDownCommand?.kind === 'delete' &&
       keyDownCommand.direction === 'backward' &&
-      shouldDeferBackspaceToNativeInput({ nativeEvent })
+      shouldDeferBackspaceToNativeInput({
+        nativeEvent,
+        runtime: inputController.domInputRuntime,
+      })
     ) {
       return keyDownUnhandled();
     }

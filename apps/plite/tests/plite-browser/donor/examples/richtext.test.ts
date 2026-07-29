@@ -1875,6 +1875,212 @@ test.describe('On richtext example', () => {
     });
   });
 
+  test('runs the Wordgard composition topology matrix through Plite', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof');
+
+    const editor = await openExample(page, 'plite/richtext', {
+      ready: {
+        editor: 'visible',
+      },
+    });
+    const rows = [
+      {
+        blocks: ['a*b'],
+        committedText: '*',
+        name: 'inside existing text',
+        selection: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 1 },
+          kind: 'text' as const,
+        },
+        steps: ['-', '/', '*'],
+        value: [{ children: [{ text: 'ab' }], type: 'paragraph' }],
+      },
+      {
+        blocks: ['.', 'abc'],
+        committedText: 'abc',
+        name: 'empty block',
+        selection: {
+          anchor: { path: [1, 0], offset: 0 },
+          focus: { path: [1, 0], offset: 0 },
+          kind: 'text' as const,
+        },
+        steps: ['a', 'ab', 'abc'],
+        value: [
+          { children: [{ text: '.' }], type: 'paragraph' },
+          { children: [{ text: '' }], type: 'paragraph' },
+        ],
+      },
+      {
+        blocks: ['foo!?'],
+        committedText: '!?',
+        name: 'end of block',
+        selection: {
+          anchor: { path: [0, 0], offset: 3 },
+          focus: { path: [0, 0], offset: 3 },
+          kind: 'text' as const,
+        },
+        steps: ['!', '!?'],
+        value: [{ children: [{ text: 'foo' }], type: 'paragraph' }],
+      },
+      {
+        blocks: ['abc'],
+        committedText: 'ab',
+        name: 'start of block',
+        selection: {
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+          kind: 'text' as const,
+        },
+        steps: ['a', 'ab'],
+        value: [{ children: [{ text: 'c' }], type: 'paragraph' }],
+      },
+      {
+        blocks: ['one zero three'],
+        committedText: 'zero',
+        name: 'word replacement',
+        selection: {
+          anchor: { path: [0, 0], offset: 4 },
+          focus: { path: [0, 0], offset: 7 },
+          kind: 'text' as const,
+        },
+        steps: ['five', 'seven', 'zero'],
+        value: [
+          {
+            children: [{ text: 'one two three' }],
+            type: 'paragraph',
+          },
+        ],
+      },
+      {
+        blocks: ['ab-$c'],
+        committedText: '-$',
+        mark: { selector: 'strong', text: 'b-$c' },
+        name: 'inside wrapping mark',
+        selection: {
+          anchor: { path: [0, 1], offset: 1 },
+          focus: { path: [0, 1], offset: 1 },
+          kind: 'text' as const,
+        },
+        steps: ['-', '-$'],
+        value: [
+          {
+            children: [{ text: 'a' }, { bold: true, text: 'bc' }],
+            type: 'paragraph',
+          },
+        ],
+      },
+      {
+        blocks: ['abc-$d'],
+        committedText: '-$',
+        mark: { selector: 'strong', text: 'bc-$' },
+        name: 'end of wrapping mark',
+        selection: {
+          anchor: { path: [0, 1], offset: 2 },
+          focus: { path: [0, 1], offset: 2 },
+          kind: 'text' as const,
+        },
+        steps: ['-', '-$'],
+        value: [
+          {
+            children: [
+              { text: 'a' },
+              { bold: true, text: 'bc' },
+              { text: 'd' },
+            ],
+            type: 'paragraph',
+          },
+        ],
+      },
+      {
+        blocks: ['a-$bcd'],
+        committedText: '-$',
+        mark: { selector: 'strong', text: 'bc' },
+        name: 'start of wrapping mark',
+        selection: {
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 1 },
+          kind: 'text' as const,
+        },
+        steps: ['-', '-$'],
+        value: [
+          {
+            children: [
+              { text: 'a' },
+              { bold: true, text: 'bc' },
+              { text: 'd' },
+            ],
+            type: 'paragraph',
+          },
+        ],
+      },
+      {
+        blocks: ['one twooow three'],
+        committedText: 'oow',
+        mark: { selector: 'em strong', text: 'three' },
+        name: 'marked wrapper with multiple children',
+        selection: {
+          anchor: { path: [0, 1], offset: 3 },
+          focus: { path: [0, 1], offset: 3 },
+          kind: 'text' as const,
+        },
+        steps: ['o', 'oo', 'oow'],
+        value: [
+          {
+            children: [
+              { text: 'one ' },
+              { italic: true, text: 'two' },
+              { bold: true, italic: true, text: ' three' },
+            ],
+            type: 'paragraph',
+          },
+        ],
+      },
+    ] as const;
+
+    for (const row of rows) {
+      await test.step(row.name, async () => {
+        await editor.root.evaluate((element, value) => {
+          const handle = (element as Record<string, any>).__pliteBrowserHandle;
+
+          if (!handle?.applyValueChange) {
+            throw new Error('Cannot apply composition topology fixture');
+          }
+          handle.applyValueChange({ children: value });
+        }, row.value);
+        await editor.selection.selectDOM(row.selection);
+        await editor.ime.compose({
+          committedText: row.committedText,
+          steps: row.steps,
+          text: row.committedText,
+          transport: 'synthetic',
+        });
+
+        await editor.assert.blockTexts([...row.blocks]);
+        await editor.assert.selection({
+          kind: 'text',
+          anchor: {
+            path: row.selection.anchor.path,
+            offset: row.selection.anchor.offset + row.committedText.length,
+          },
+          focus: {
+            path: row.selection.anchor.path,
+            offset: row.selection.anchor.offset + row.committedText.length,
+          },
+        });
+        if ('mark' in row) {
+          await expect(
+            editor.root.locator(row.mark.selector).filter({
+              hasText: row.mark.text,
+            })
+          ).toHaveCount(1);
+        }
+      });
+    }
+  });
+
   test('commits IME composition in an empty rich text block', async ({
     page,
   }, testInfo) => {

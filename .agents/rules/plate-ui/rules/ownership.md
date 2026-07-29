@@ -19,6 +19,10 @@ Extract to a package when the code owns a durable contract:
 - stable controllers reused across surfaces
 - public React hooks with domain meaning, not component wiring
 
+If package cleanup would paste one of those bodies into registry JSX, stop.
+That is an ownership regression, not colocation. Keep or publish the package
+owner unless the behavior genuinely becomes renderer-specific.
+
 **Good examples in this repo:**
 
 - `packages/media/src/react/media/useMediaState.ts`

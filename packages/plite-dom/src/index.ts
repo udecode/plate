@@ -37,10 +37,15 @@ export { PliteDOMResolutionError } from './plugin/dom-editor';
 export type { DOMEditorOptions } from './plugin/with-dom';
 export { dom } from './plugin/with-dom';
 export type {
+  ClipboardSliceRead,
+  ClipboardSliceWrite,
+  DOMClipboardHandler,
+  DOMClipboardInsertContext,
   DOMFragmentDataHtml,
   DOMFragmentDataPayload,
 } from './plugin/dom-clipboard-runtime';
 export {
+  clipboardHandler,
   getDOMClipboardFormatKey,
   writeDOMFragmentData,
   writeDOMRangeData,

@@ -3,4 +3,3 @@
  */
 
 export * from './BaseMentionPlugin';
-export * from './types';

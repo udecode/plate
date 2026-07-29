@@ -33,6 +33,12 @@ and registry wiring.
 7. **Classic registry surfaces are maintenance-only.** Do not invest in
    `*-classic` variants, including `list-classic`, while they await
    deprecation.
+8. **Examples teach the install shape.** Do not remove an explicit feature
+   plugin, kit, renderer binding, or dependency merely because an aggregate
+   EditorKit also includes it. Deliberate repetition can make copied code and
+   feature ownership transparent. Transparency is source-level, never duplicate
+   runtime membership: filter the feature descriptor out of the aggregate,
+   then explicitly add/configure it once.
 
 ## Critical Rules
 
@@ -49,6 +55,9 @@ and registry wiring.
 - Keep one-off shadcn composition, labels, popover state, and local visual treatment in the app component.
 - Never create a package hook just to hide JSX, avoid typing work, or move logic used by one component only.
 - If extraction makes the component harder to compare with upstream shadcn/open code, keep it local.
+- Package cleanup must not paste a package-owned transform, query, navigation
+  controller, or other semantic algorithm into registry JSX. Keep or publish
+  the durable package owner unless the behavior genuinely becomes UI-specific.
 - Keep each independently installable registry item self-contained. Duplicate
   short presentation JSX, labels, or menu rows across items instead of adding a
   shared registry file/dependency. Extract only for an independently useful
@@ -107,6 +116,12 @@ and registry wiring.
 - Add explicit `registryDependencies` for every shared UI/style dependency.
 - If a component depends on shared CSS vars like highlight tokens, add the style registry dep.
 - Examples should depend on kits plus any extra styles/components they introduce.
+- Treat registry examples as teaching/install surfaces, not optimized host-app
+  presets. Preserve explicit feature configuration when the example metadata
+  names that feature kit or the source intentionally demonstrates its binding,
+  even if EditorKit installs the same descriptor transitively. Filter that
+  descriptor from EditorKit before explicitly adding it so each key installs
+  exactly once.
 - Do not create, modernize, polish, or parity-sync `*-classic` registry
   variants, including `list-classic`. Touch an existing classic surface only
   for a user-facing regression, security/release blocker, or an explicitly

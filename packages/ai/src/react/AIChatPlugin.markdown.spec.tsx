@@ -1,0 +1,293 @@
+/** @jsx jsxt */
+
+import { describe, expect, it } from 'bun:test';
+
+import { jsxt, type TestEditor } from '@platejs/test-utils';
+import {
+  BaseParagraphPlugin,
+  createBasePlugin,
+  NodeIdPlugin,
+  type PlatePluginReadState,
+  type PluginConfig,
+} from '@platejs/core';
+import { MarkdownPlugin } from '@platejs/markdown';
+import { type Element, type ElementEntry, schema } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { createPlateEditor } from '@platejs/core/react';
+
+jsxt;
+
+const getTableGridAbove = (
+  state: PlatePluginReadState<PluginConfig>
+): ElementEntry[] => {
+  const selection = state.selection();
+  if (!selection) return [];
+
+  const start = state.nodes.above<Element>({
+    at: selection.anchor,
+    match: { type: [KEYS.td, KEYS.th] },
+  });
+  const end = state.nodes.above<Element>({
+    at: selection.focus,
+    match: { type: [KEYS.td, KEYS.th] },
+  });
+  if (!start || !end) return [];
+
+  const tablePath = start[1].slice(0, -2);
+  const startRow = Math.min(start[1].at(-2)!, end[1].at(-2)!);
+  const endRow = Math.max(start[1].at(-2)!, end[1].at(-2)!);
+  const startColumn = Math.min(start[1].at(-1)!, end[1].at(-1)!);
+  const endColumn = Math.max(start[1].at(-1)!, end[1].at(-1)!);
+  const entries: ElementEntry[] = [];
+
+  for (let row = startRow; row <= endRow; row++) {
+    for (let column = startColumn; column <= endColumn; column++) {
+      const entry = state.nodes.get<Element>([...tablePath, row, column]);
+      if (entry) entries.push(entry);
+    }
+  }
+
+  return entries;
+};
+
+const TableFixturePlugin = createBasePlugin({
+  key: KEYS.table,
+  read: ({ state }) => ({
+    getGridAbove: () => getTableGridAbove(state),
+  }),
+  schema: ({ plugins }) => ({
+    element: {
+      content: schema.content.type(plugins.elementType(TableRowFixturePlugin)),
+    },
+  }),
+});
+
+const TableRowFixturePlugin = createBasePlugin({
+  key: KEYS.tr,
+  schema: ({ plugins }) => ({
+    element: {
+      content: schema.content.types(
+        plugins.elementTypes([
+          TableCellFixturePlugin,
+          TableHeaderCellFixturePlugin,
+        ])
+      ),
+    },
+  }),
+});
+
+const TableCellFixturePlugin = createBasePlugin({
+  key: KEYS.td,
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent(),
+    },
+  }),
+});
+
+const TableHeaderCellFixturePlugin = createBasePlugin({
+  key: KEYS.th,
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent(),
+    },
+  }),
+});
+
+const createTestEditor = async (
+  input: TestEditor,
+  { tableType = KEYS.table }: { tableType?: string } = {}
+) => {
+  const { AIChatPlugin } = await import('./AIChatPlugin');
+  const editor = createPlateEditor({
+    plugins: [
+      BaseParagraphPlugin,
+      NodeIdPlugin,
+      TableFixturePlugin.configure({ type: tableType }),
+      TableRowFixturePlugin,
+      TableCellFixturePlugin,
+      TableHeaderCellFixturePlugin,
+      MarkdownPlugin,
+      AIChatPlugin,
+    ],
+    selection: input.selection,
+    initialValue: input.children,
+  });
+
+  return editor.plugin(AIChatPlugin);
+};
+
+describe('AIChatPlugin read.markdown', () => {
+  describe('tableCellWithId', () => {
+    it('use CellRef placeholder in table and Cell blocks after', async () => {
+      const input = (
+        <editor>
+          <htable id="t1">
+            <htr id="t1_r1">
+              <htd id="t1_r1_c1">
+                <hp>张三</hp>
+              </htd>
+              <htd id="t1_r1_c2">
+                <hp>28</hp>
+              </htd>
+              <htd id="t1_r1_c3">
+                <hp>北京</hp>
+              </htd>
+              <htd id="t1_r1_c4">
+                <hp>工程师</hp>
+              </htd>
+            </htr>
+            <htr id="t1_r2">
+              <htd id="t1_r2_c1">
+                <hp>李四</hp>
+              </htd>
+              <htd id="t1_r2_c2">
+                <hp>34</hp>
+              </htd>
+              <htd id="t1_r2_c3">
+                <hp>上海</hp>
+              </htd>
+              <htd id="t1_r2_c4">
+                <hp>
+                  <anchor />
+                  产品经理
+                </hp>
+              </htd>
+            </htr>
+            <htr id="t1_r3">
+              <htd id="t1_r3_c1">
+                <hp>王五</hp>
+              </htd>
+              <htd id="t1_r3_c2">
+                <hp>25</hp>
+              </htd>
+              <htd id="t1_r3_c3">
+                <hp>深圳</hp>
+              </htd>
+              <htd id="t1_r3_c4">
+                <hp>
+                  设计师
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+
+      const aiChat = await createTestEditor(input);
+      const result = aiChat.read.markdown({
+        type: 'tableCellWithId',
+      });
+
+      // Table should have CellRef placeholders for selected cells
+      expect(result).toContain('<CellRef id="t1_r2_c4" />');
+      expect(result).toContain('<CellRef id="t1_r3_c4" />');
+
+      // Cell content blocks should appear after the table
+      expect(result).toContain('<Cell id="t1_r2_c4">\n产品经理\n</Cell>');
+      expect(result).toContain('<Cell id="t1_r3_c4">\n设计师\n</Cell>');
+
+      // Non-selected cells should NOT have CellRef
+      expect(result).not.toContain('<CellRef id="t1_r1_c4"');
+      expect(result).toContain('| 工程师 |');
+    });
+
+    it('uses the configured table type', async () => {
+      const input = (
+        <editor>
+          <htable id="t1">
+            <htr id="t1_r1">
+              <htd id="t1_r1_c1">
+                <hp>
+                  <anchor />
+                  Content
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+
+      Reflect.set(input.children[0]!, 'type', 'custom-table');
+
+      const aiChat = await createTestEditor(input, {
+        tableType: 'custom-table',
+      });
+
+      expect(aiChat.read.markdown({ type: 'tableCellWithId' })).toContain(
+        '<CellRef id="t1_r1_c1" />'
+      );
+    });
+
+    it('handle single cell selection', async () => {
+      const input = (
+        <editor>
+          <htable id="t1">
+            <htr id="t1_r1">
+              <htd id="t1_r1_c1">
+                <hp>
+                  <anchor />
+                  内容
+                  <focus />
+                </hp>
+              </htd>
+              <htd id="t1_r1_c2">
+                <hp>其他</hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+
+      const aiChat = await createTestEditor(input);
+      const result = aiChat.read.markdown({
+        type: 'tableCellWithId',
+      });
+
+      // Table should have CellRef placeholder
+      expect(result).toContain('<CellRef id="t1_r1_c1" />');
+
+      // Cell content block should appear after table
+      expect(result).toContain('<Cell id="t1_r1_c1">\n内容\n</Cell>');
+
+      // Non-selected cell should not have CellRef
+      expect(result).not.toContain('<CellRef id="t1_r1_c2"');
+    });
+
+    it('handle cells with multiple paragraphs (multi-block support)', async () => {
+      const input = (
+        <editor>
+          <htable id="t1">
+            <htr id="t1_r1">
+              <htd id="t1_r1_c1">
+                <hp>
+                  <anchor />
+                  第一行
+                </hp>
+                <hp>
+                  第二行
+                  <focus />
+                </hp>
+              </htd>
+            </htr>
+          </htable>
+        </editor>
+      ) as TestEditor;
+
+      const aiChat = await createTestEditor(input);
+      const result = aiChat.read.markdown({
+        type: 'tableCellWithId',
+      });
+
+      // Table should have CellRef placeholder
+      expect(result).toContain('<CellRef id="t1_r1_c1" />');
+
+      // Cell content block should preserve multiple paragraphs
+      expect(result).toContain(
+        '<Cell id="t1_r1_c1">\n第一行\n\n第二行\n</Cell>'
+      );
+    });
+  });
+});

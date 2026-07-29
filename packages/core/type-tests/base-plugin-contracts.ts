@@ -3,6 +3,7 @@ import {
   HistoryPlugin,
   type ExtendConfig,
   type PluginConfig,
+  type RenderStaticNodeWrapper,
   createBaseEditor,
   createBasePlugin,
   getEditorPlugin,
@@ -11,6 +12,7 @@ import { toPlatePlugin } from '../src/react/plugin/toPlatePlugin';
 import {
   ContentSlice,
   defineEditorExtension,
+  editorReads,
   property,
   schema,
   target,
@@ -25,6 +27,17 @@ const baseArrayExtension = defineEditorExtension({
 });
 const baseFactoryExtension = defineEditorExtension({
   name: 'base-factory-extension',
+});
+const baseReadExtension = defineEditorExtension({
+  name: 'base-read-extension',
+  read: ({ around }) => [
+    around(editorReads.slice.export, ({ next }) => next()),
+  ],
+});
+
+createBasePlugin({
+  extension: baseReadExtension,
+  key: 'base-read-extension-owner',
 });
 
 const BoldPlugin = createBasePlugin({
@@ -115,6 +128,30 @@ const HtmlParagraphContractPlugin = createBasePlugin({
         match: [{ tag: 'p' }],
       },
     }),
+});
+
+type StaticWrapperPluginState = {
+  label?: string;
+};
+
+const erasedStaticWrapper: RenderStaticNodeWrapper = ({ element }) =>
+  element ? ({ children }) => children : null;
+
+const StaticWrapperPlugin = createBasePlugin({
+  key: 'staticWrapper',
+  initialState: (): StaticWrapperPluginState => ({}),
+  schema: () => ({
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  }),
+  type: 'static-wrapper',
+});
+
+StaticWrapperPlugin.configure({
+  render: {
+    belowNodes: erasedStaticWrapper,
+  },
 });
 
 void HtmlParagraphContractPlugin;
@@ -508,10 +545,6 @@ type ExtendedFullConfig = ExtendConfig<
   { extraState: 4 }
 >;
 
-type UnifiedListUpdate = {
-  toggle: (initialState: { type: 'bulleted' | 'numbered' }) => string;
-};
-
 const UnifiedListPlugin = createBasePlugin({
   key: 'unifiedList',
   initialState: {
@@ -521,7 +554,7 @@ const UnifiedListPlugin = createBasePlugin({
     getPrevious: (type: 'bulleted' | 'numbered') =>
       `list:${state.children().length}:${type}`,
   }),
-}).extend<{ update: UnifiedListUpdate }>(({ store, read }) => {
+}).extend(({ store, read }) => {
   const readPrevious: string = read.getPrevious('bulleted');
 
   void readPrevious;
@@ -539,14 +572,16 @@ const UnifiedListPlugin = createBasePlugin({
           },
         },
       ],
-      onTransactionChange({ tx }) {
-        const changeRead: string = tx.unifiedList.getPrevious('numbered');
+      on: {
+        transactionChange({ tx }) {
+          const changeRead: string = tx.unifiedList.getPrevious('numbered');
 
-        void changeRead;
+          void changeRead;
+        },
       },
     },
     update: ({ tx }) => ({
-      toggle: (initialState) =>
+      toggle: (initialState: { type: 'bulleted' | 'numbered' }) =>
         `${store.get().prefix}:${tx.unifiedList.getPrevious(initialState.type)}`,
     }),
   };

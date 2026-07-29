@@ -1,5 +1,4 @@
 import {
-  type Editor,
   type EditorSchemaContribution,
   type SchemaContentRootContribution,
   type SchemaElementPropertyOptions,
@@ -85,23 +84,22 @@ const EMPTY_MODEL: CompiledPlateModel = Object.freeze({
   revision: Object.freeze({}),
 });
 
-const PLATE_MODEL_PUBLICATIONS = new WeakMap<Editor, PlateModelPublication>();
+const PLATE_MODEL_PUBLICATIONS = new WeakMap<object, PlateModelPublication>();
 
-const getPlateOwner = (editor: Editor<any, any>) =>
-  getPlateRuntimeOwner(editor) as BaseEditor;
+const getPlateOwner = (editor: object) => getPlateRuntimeOwner(editor);
 
-const candidateModels = new WeakMap<BaseEditor, CompiledPlateModel>();
+const candidateModels = new WeakMap<object, CompiledPlateModel>();
 const candidatePluginApis = new WeakMap<
-  BaseEditor,
+  object,
   Readonly<Record<string, Readonly<Record<string, unknown>> | undefined>>
 >();
-const resolvingPlugins = new WeakMap<BaseEditor, AnyBasePlugin>();
+const resolvingPlugins = new WeakMap<object, AnyBasePlugin>();
 const resolvedTargetBindings = new WeakMap<
-  BaseEditor,
+  object,
   WeakMap<object, ResolvedPluginTargetBinding>
 >();
 const candidatePluginSets = new WeakMap<
-  BaseEditor,
+  object,
   Readonly<{
     byKey: Readonly<Record<string, AnyBasePlugin | undefined>>;
     list: readonly AnyBasePlugin[];
@@ -272,15 +270,28 @@ const resolvePluginKeys = (
     })
   );
 
-const evaluateDeclaration = <C extends AnyPluginConfig>(
+const isPluginSchemaDeclaration = (
+  value: unknown
+): value is PluginSchemaDeclaration =>
+  typeof value === 'object' && value !== null;
+
+const evaluateDeclaration = (
   editor: BaseEditor,
-  plugin: BasePlugin<C>,
+  plugin: AnyBasePlugin,
   references: PendingReference[]
 ): PluginSchemaDeclaration | null => {
   const declaration = plugin.schema;
 
   if (!declaration) return null;
-  if (typeof declaration !== 'function') return declaration;
+  if (typeof declaration !== 'function') {
+    if (!isPluginSchemaDeclaration(declaration)) {
+      throw new Error(
+        `Plate plugin "${plugin.key}" schema must be a declaration or factory.`
+      );
+    }
+
+    return declaration;
+  }
 
   const targetBinding = getResolvedPluginTargetBinding(editor, plugin);
   const plugins: PluginSchemaReferences = Object.freeze({
@@ -317,7 +328,7 @@ const evaluateDeclaration = <C extends AnyPluginConfig>(
     textProperty: (value, options?: SchemaTextPropertyOptions) =>
       schema.textProperty(plugin.type, value, options),
   });
-  const context: PluginSchemaContext<C> = Object.freeze({
+  const context: PluginSchemaContext<AnyPluginConfig> = Object.freeze({
     initialState: plugin.initialState,
     key: plugin.key,
     own,
@@ -326,7 +337,15 @@ const evaluateDeclaration = <C extends AnyPluginConfig>(
     type: plugin.type,
   });
 
-  return freezePluginDescriptorValue(declaration(context));
+  const result = Reflect.apply(declaration, undefined, [context]);
+
+  if (!isPluginSchemaDeclaration(result)) {
+    throw new Error(
+      `Plate plugin "${plugin.key}" schema factory must return a declaration.`
+    );
+  }
+
+  return freezePluginDescriptorValue(result);
 };
 
 const compileMark = (type: string, mark: PluginSchemaMark): SchemaProperty => {
@@ -521,22 +540,22 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
 };
 
 export const attachPlateModelPublication = (
-  editor: BaseEditor,
+  editor: object,
   publication: PlateModelPublication
 ) => {
   PLATE_MODEL_PUBLICATIONS.set(getPlateOwner(editor), publication);
   clearPlateRuntimeCandidate(editor);
 };
 
-export const clearPlateModelPublication = (editor: Editor<any, any>) => {
+export const clearPlateModelPublication = (editor: object) => {
   PLATE_MODEL_PUBLICATIONS.delete(getPlateOwner(editor));
 };
 
-export const getPlateModelPublication = (editor: Editor<any, any>) =>
+export const getPlateModelPublication = (editor: object) =>
   PLATE_MODEL_PUBLICATIONS.get(getPlateOwner(editor));
 
 /** @internal Runtime projection compiled from the installed Plate model. */
-export const getPlateRuntime = (editor: Editor<any, any>): PlateRuntime => {
+export const getPlateRuntime = (editor: object): PlateRuntime => {
   const publication = getPlateModelPublication(editor);
 
   if (publication) return publication;
@@ -547,36 +566,48 @@ export const getPlateRuntime = (editor: Editor<any, any>): PlateRuntime => {
 };
 
 /** @internal Whether the editor owns an installed or compiling Plate runtime. */
-export const hasPlateRuntime = (editor: Editor<any, any>) =>
+export const hasPlateRuntime = (editor: object) =>
   getPlateRuntimeCandidate(editor) !== undefined ||
   getPlateModelPublication(editor) !== undefined;
 
-export const getCompiledPlateModel = (editor: BaseEditor) =>
+export const getCompiledPlateModel = (editor: object) =>
   candidateModels.get(getPlateOwner(editor)) ??
   getPlateModelPublication(editor)?.model ??
   EMPTY_MODEL;
 
 export const getCompiledPlateModelBinding = (
-  editor: BaseEditor,
+  editor: object,
   plugin: AnyBasePlugin | PluginReference
 ) => getCompiledPlateModel(editor).byKey[plugin.key];
 
-export const getCompiledPlatePluginList = (editor: BaseEditor) =>
+export const getCompiledPlatePluginList = (editor: object) =>
   candidatePluginSets.get(getPlateOwner(editor))?.list ??
   getPlateRuntime(editor).pluginList;
 
-export const hasCompiledPlatePluginCandidate = (editor: BaseEditor) =>
+export const hasCompiledPlatePluginCandidate = (editor: object) =>
   candidatePluginSets.has(getPlateOwner(editor));
 
-export const getCompiledPlatePlugin = (editor: BaseEditor, key: string) => {
+export function getCompiledPlatePlugin<C extends AnyPluginConfig>(
+  editor: object,
+  plugin: PluginReference & { readonly __config: C }
+): BasePlugin<C> | undefined;
+export function getCompiledPlatePlugin(
+  editor: object,
+  key: string
+): AnyBasePlugin | undefined;
+export function getCompiledPlatePlugin(
+  editor: object,
+  plugin: string | Readonly<{ key: string }>
+): unknown {
   const owner = getPlateOwner(editor);
+  const key = typeof plugin === 'string' ? plugin : plugin.key;
 
   return candidatePluginSets.has(owner)
     ? candidatePluginSets.get(owner)!.byKey[key]
     : getPlateRuntime(editor).plugins[key];
-};
+}
 
-export const getCompiledPlatePluginApi = (editor: BaseEditor, key: string) => {
+export const getCompiledPlatePluginApi = (editor: object, key: string) => {
   const owner = getPlateOwner(editor);
 
   return candidatePluginApis.has(owner)
@@ -584,16 +615,14 @@ export const getCompiledPlatePluginApi = (editor: BaseEditor, key: string) => {
     : getPlateModelPublication(editor)?.apiByPlugin[key];
 };
 
-export const hasCompiledPlatePluginApiCandidate = (editor: BaseEditor) =>
+export const hasCompiledPlatePluginApiCandidate = (editor: object) =>
   candidatePluginApis.has(getPlateOwner(editor));
 
-export const isResolvingPlatePlugin = (
-  editor: BaseEditor,
-  plugin: AnyBasePlugin
-) => resolvingPlugins.get(getPlateOwner(editor)) === plugin;
+export const isResolvingPlatePlugin = (editor: object, plugin: AnyBasePlugin) =>
+  resolvingPlugins.get(getPlateOwner(editor)) === plugin;
 
 export const setCompiledPlatePluginCandidate = (
-  editor: BaseEditor,
+  editor: object,
   plugin: AnyBasePlugin
 ) => {
   const owner = getPlateOwner(editor);
@@ -621,7 +650,7 @@ export const setCompiledPlatePluginCandidate = (
 };
 
 export const withCompiledPlatePluginCandidate = <T>(
-  editor: BaseEditor,
+  editor: object,
   list: readonly AnyBasePlugin[],
   run: () => T
 ): T => {
@@ -648,7 +677,7 @@ export const withCompiledPlatePluginCandidate = <T>(
 };
 
 export const withCompiledPlateModelCandidate = <T>(
-  editor: BaseEditor,
+  editor: object,
   model: CompiledPlateModel,
   run: () => T
 ): T => {
@@ -665,7 +694,7 @@ export const withCompiledPlateModelCandidate = <T>(
 };
 
 export const withCompiledPlatePluginApiCandidate = <T>(
-  editor: BaseEditor,
+  editor: object,
   apiByPlugin: Readonly<
     Record<string, Readonly<Record<string, unknown>> | undefined>
   >,
@@ -684,7 +713,7 @@ export const withCompiledPlatePluginApiCandidate = <T>(
 };
 
 export const withResolvingPlatePlugin = <T>(
-  editor: BaseEditor,
+  editor: object,
   plugin: AnyBasePlugin,
   run: () => T
 ): T => {

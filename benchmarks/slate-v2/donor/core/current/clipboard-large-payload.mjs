@@ -231,12 +231,10 @@ const createPlateReconfigurationCodecExtension = (label, counters) => {
   ]);
 };
 
-const createPlateBenchmarkCodecPlugin = (counters) =>
+const createPlateBenchmarkCodecPlugin = (counters, format) =>
   createBasePlugin({
-    codecs: ({ defineCodecs, getOptions }) => {
+    codecs: ({ defineCodecs }) => {
       counters.compilation += 1;
-
-      const { format } = getOptions();
 
       return defineCodecs({
         [format]: {
@@ -270,15 +268,7 @@ const createPlateBenchmarkCodecPlugin = (counters) =>
       });
     },
     key: 'benchmarkPlateCodec',
-    options: {
-      format: 'application/x-plate-benchmark-unconfigured',
-    },
-  })
-    .configure({
-      options: {
-        format: benchmarkPlateFormat,
-      },
-    });
+  });
 
 const createBenchmarkEditor = (children, selection, extensions = []) => {
   const editor = createEditor({
@@ -296,7 +286,7 @@ const createPlateBenchmarkEditor = (children, selection, counters) => {
   const editor = createBaseEditor({
     initialValue: children,
     nodeId: false,
-    plugins: [createPlateBenchmarkCodecPlugin(counters)],
+    plugins: [createPlateBenchmarkCodecPlugin(counters, benchmarkPlateFormat)],
     selection,
   });
 

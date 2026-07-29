@@ -3,8 +3,6 @@
 import { jsxt } from '@platejs/test-utils';
 
 import { createTestEditor } from './__tests__/createTestEditor';
-import { deserializeMd } from './deserializer';
-import { serializeMd } from './serializer';
 
 jsxt;
 
@@ -29,8 +27,8 @@ describe('roundTrip', () => {
       </fragment>
     );
 
-    const md = serializeMd(editor, { value: { children: input } });
-    const slate = deserializeMd(editor, md);
+    const md = editor.api.markdown.serialize({ value: { children: input } });
+    const slate = editor.api.markdown.deserialize(md);
     expect(slate.children).toEqual(input);
   });
 
@@ -41,7 +39,7 @@ describe('roundTrip', () => {
       </fragment>
     );
 
-    const md = serializeMd(editor, { value: { children: input } });
+    const md = editor.api.markdown.serialize({ value: { children: input } });
     expect(md).toMatchSnapshot();
   });
 
@@ -52,8 +50,8 @@ describe('roundTrip', () => {
       </fragment>
     );
 
-    const md = serializeMd(editor, { value: { children: input } });
-    const slate = deserializeMd(editor, md);
+    const md = editor.api.markdown.serialize({ value: { children: input } });
+    const slate = editor.api.markdown.deserialize(md);
     expect(slate.children).toEqual(input);
   });
 });

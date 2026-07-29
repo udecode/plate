@@ -1,4 +1,8 @@
-import { createPlateEditor } from '@platejs/core/react';
+import React from 'react';
+
+import { render } from '@testing-library/react';
+
+import { createPlateEditor, Plate, PlateContent } from '@platejs/core/react';
 
 import { CursorOverlayPlugin } from './CursorOverlayPlugin';
 
@@ -30,6 +34,18 @@ const waitForDeferredCursorRefresh = () =>
   new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('CursorOverlayPlugin', () => {
+  it('mounts without BlockSelectionPlugin', () => {
+    const editor = createCursorOverlayEditor();
+
+    expect(() =>
+      render(
+        <Plate editor={editor}>
+          <PlateContent />
+        </Plate>
+      )
+    ).not.toThrow();
+  });
+
   it('refreshes the stored selection cursor after direct selection changes', async () => {
     const editor = createCursorOverlayEditor();
 

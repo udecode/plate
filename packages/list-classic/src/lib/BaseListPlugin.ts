@@ -41,16 +41,36 @@ export type ListPluginState = {
 
 export type ListItemPluginState = {
   /** Element plugins allowed as direct list-item children. */
-  validLiChildren?: readonly PluginReference[];
+  validLiChildren: readonly PluginReference[];
+};
+
+export type TaskListPluginState = {
+  inheritCheckStateOnLineEndBreak: boolean;
+  inheritCheckStateOnLineStartBreak: boolean;
+};
+
+export type TodoListPluginState = {
+  inheritCheckStateOnLineEndBreak: boolean;
+  inheritCheckStateOnLineStartBreak: boolean;
 };
 
 type ListToggleOptions = { type: string; checked?: boolean };
 
-export type ListPluginTransaction = {
-  indent: () => boolean;
-  outdent: () => boolean;
-  toggle: (options: ListToggleOptions) => void;
+const listItemInitialState: ListItemPluginState = {
+  validLiChildren: [],
 };
+
+const taskListInitialState: TaskListPluginState = {
+  inheritCheckStateOnLineEndBreak: false,
+  inheritCheckStateOnLineStartBreak: false,
+};
+
+const todoListInitialState: TodoListPluginState = {
+  inheritCheckStateOnLineEndBreak: false,
+  inheritCheckStateOnLineStartBreak: false,
+};
+
+const listInitialState: ListPluginState = {};
 
 export const BaseListItemContentPlugin = createBasePlugin({
   key: KEYS.lic,
@@ -65,7 +85,7 @@ export const BaseListItemContentPlugin = createBasePlugin({
 
 export const BaseListItemPlugin = createBasePlugin({
   key: KEYS.li,
-  initialState: { validLiChildren: [] } as ListItemPluginState,
+  initialState: listItemInitialState,
   schema: ({ initialState, key, plugins }) => {
     const resolveRequiredElementType = (pluginKey: string) => {
       const [type] = plugins.elementTypesByKey([pluginKey]);
@@ -174,10 +194,7 @@ export const BaseNumberedListPlugin = createBasePlugin({
 
 export const BaseTaskListPlugin = createBasePlugin({
   key: KEYS.taskList,
-  initialState: {
-    inheritCheckStateOnLineEndBreak: false,
-    inheritCheckStateOnLineStartBreak: false,
-  },
+  initialState: taskListInitialState,
   schema: ({ plugins }) => {
     const listItemType = plugins.elementType(BaseListItemPlugin);
 
@@ -272,10 +289,7 @@ export const BaseTodoListPlugin = createBasePlugin({
     },
   },
   type: NODES.listTodoClassic,
-  initialState: {
-    inheritCheckStateOnLineEndBreak: false,
-    inheritCheckStateOnLineStartBreak: false,
-  },
+  initialState: todoListInitialState,
   update: ({ tx, type }) => ({
     toggle: () => tx.nodes.toggle(type),
   }),
@@ -321,7 +335,7 @@ export const BaseListPlugin = createBasePlugin({
     BaseListItemContentPlugin,
   ],
   key: KEYS.listClassic,
-  initialState: {} as ListPluginState,
+  initialState: listInitialState,
   schema: ({ plugins }) => {
     const listItemType = plugins.elementType(BaseListItemPlugin);
     const taskListType = plugins.elementType(BaseTaskListPlugin);
@@ -1318,7 +1332,9 @@ export const BaseListPlugin = createBasePlugin({
       };
     },
   }))
-  .extend(({ api, editor, store }) => {
+  .extend((context) => {
+    const { editor, store } = context;
+
     return {
       extension: [
         {
@@ -1664,7 +1680,7 @@ export const BaseListPlugin = createBasePlugin({
 
                         return true;
                       }
-                      if (api.hasListChild(listItem[0])) {
+                      if (context.api.hasListChild(listItem[0])) {
                         // the next block has children, so we have to move the first item up
                         const sublistRes = tx.listClassic.getListItemEntry({
                           at: [...listItem[1], 1, 0, 0],
@@ -1815,7 +1831,7 @@ export const BaseListPlugin = createBasePlugin({
                   }
 
                   // if it has no children
-                  if (!api.hasListChild(listItem[0])) {
+                  if (!context.api.hasListChild(listItem[0])) {
                     const liType = editor.getType(KEYS.li);
                     const _nodes = tx.nodes.entries({
                       at: listItem[1],
@@ -1962,7 +1978,7 @@ export const BaseListPlugin = createBasePlugin({
           ): Path | undefined => {
             const list = state.nodes.above<Element>({
               at: liPath,
-              match: { type: api.getListTypes() },
+              match: { type: context.api.getListTypes() },
             });
 
             if (!list) return;
@@ -2091,7 +2107,7 @@ export const BaseListPlugin = createBasePlugin({
                     }
                   }
 
-                  const liEndRuntimeId = !api.hasListChild(liEnd[0])
+                  const liEndRuntimeId = !context.api.hasListChild(liEnd[0])
                     ? state.runtime.idAt(liEnd[1])
                     : undefined;
                   const result = next();
@@ -2149,7 +2165,7 @@ export const BaseListPlugin = createBasePlugin({
               if (NodeApi.isText(child)) {
                 return { children: [child], type: listItemContentType };
               }
-              if (api.isListRoot(child)) return prepareListRoot(child);
+              if (context.api.isListRoot(child)) return prepareListRoot(child);
               if (validListItemContentTypes.has(child.type)) return child;
 
               return { children: child.children, type: listItemContentType };
@@ -2159,7 +2175,7 @@ export const BaseListPlugin = createBasePlugin({
           const preparePastedNode = (node: Descendant): Descendant => {
             if (!ElementApi.isElement(node)) return node;
             if (node.type === listItemType) return prepareListItem(node);
-            if (api.isListRoot(node)) return prepareListRoot(node);
+            if (context.api.isListRoot(node)) return prepareListRoot(node);
 
             return node;
           };
@@ -2186,7 +2202,7 @@ export const BaseListPlugin = createBasePlugin({
             let node = first;
 
             while (
-              api.isListRoot(node) ||
+              context.api.isListRoot(node) ||
               (ElementApi.isElement(node) &&
                 node.type === listItemType &&
                 (node.children as Element[])[0].type !== listItemContentType)
@@ -2206,7 +2222,7 @@ export const BaseListPlugin = createBasePlugin({
            *   or li[].
            */
           const trimList = (listRoot: Descendant): Element[] => {
-            if (!api.isListRoot(listRoot)) {
+            if (!context.api.isListRoot(listRoot)) {
               return [listRoot as Element];
             }
 
@@ -2226,7 +2242,9 @@ export const BaseListPlugin = createBasePlugin({
               getFirstAncestorOfType(listRoot, textEntries[0], listItemType)
             );
 
-            const [first, ...rest] = api.isListRoot(commonAncestorEntry[0])
+            const [first, ...rest] = context.api.isListRoot(
+              commonAncestorEntry[0]
+            )
               ? (commonAncestorEntry[0].children as Element[])
               : [commonAncestorEntry[0]];
 
@@ -2244,7 +2262,7 @@ export const BaseListPlugin = createBasePlugin({
             const child =
               NodeApi.isText(node) ||
               (ElementApi.isElement(node) &&
-                !api.isListRoot(node) &&
+                !context.api.isListRoot(node) &&
                 !validListItemContentTypes.has(node.type))
                 ? {
                     children: NodeApi.isText(node) ? [node] : node.children,
@@ -2301,7 +2319,7 @@ export const BaseListPlugin = createBasePlugin({
            */
           const isSingleLic = (fragment: Descendant[]) => {
             const isFragmentOnlyListRoot =
-              fragment.length === 1 && api.isListRoot(fragment[0]);
+              fragment.length === 1 && context.api.isListRoot(fragment[0]);
 
             return (
               isFragmentOnlyListRoot &&
@@ -2322,7 +2340,7 @@ export const BaseListPlugin = createBasePlugin({
             const [first, ...rest] = fragment.flatMap(trimList).map((v) =>
               wrapNodeIntoListItem(
                 v,
-                api.getPropsIfTaskListLiNode({
+                context.api.getPropsIfTaskListLiNode({
                   inherit: true,
                   liNode: liEntry[0],
                 })
@@ -2332,7 +2350,7 @@ export const BaseListPlugin = createBasePlugin({
             let textNodes: Descendant[];
             let listItemNodes: Element[];
 
-            if (api.isListRoot(fragment[0])) {
+            if (context.api.isListRoot(fragment[0])) {
               if (isSingleLic(fragment)) {
                 textNodes = (first.children[0] as Element)
                   .children as Descendant[];
@@ -2376,7 +2394,7 @@ export const BaseListPlugin = createBasePlugin({
                 if (
                   selection &&
                   RangeApi.isExpanded(selection) &&
-                  api.isListRoot(fragment[0])
+                  context.api.isListRoot(fragment[0])
                 ) {
                   const [start, end] = RangeApi.edges(selection);
                   const startLi = state.nodes.above<Element>({
@@ -2487,7 +2505,7 @@ export const BaseListPlugin = createBasePlugin({
                 const delegated =
                   selection &&
                   RangeApi.isExpanded(selection) &&
-                  !api.isListRoot(fragment[0])
+                  !context.api.isListRoot(fragment[0])
                     ? next.after(
                         state.transaction((tx) => {
                           tx.fragment.delete();
@@ -2556,7 +2574,7 @@ export const BaseListPlugin = createBasePlugin({
                     to: [...toList[1], toList[0].children.length],
                   });
                 };
-                const listTypes = api.getListTypes();
+                const listTypes = context.api.getListTypes();
 
                 if (listTypes.includes(node.type)) {
                   const nextPath = PathApi.next(path);

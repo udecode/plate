@@ -3,6 +3,7 @@
 import type { BasePluginOverride, TrailingBlockConfig } from 'platejs';
 
 import { KEYS, TextApi } from 'platejs';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 
 import {
@@ -23,10 +24,18 @@ const INLINE_SUGGESTION_RENDER_TARGETS = [
   KEYS.mention,
 ];
 
+export type SuggestionKitPluginState = {
+  currentUserId: string | null;
+};
+
+const createInitialState = (
+  currentUserId: string | null
+): SuggestionKitPluginState => ({ currentUserId });
+
 export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
-  initialState: {
-    currentUserId: editor.plugin(discussionPlugin).store.get('currentUserId'),
-  },
+  initialState: createInitialState(
+    editor.plugin(discussionPlugin).store.get('currentUserId')
+  ),
   override: {
     plugins: {
       [KEYS.trailingBlock]: {
@@ -74,9 +83,10 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
     nodeProps: {
       nodeKey: '',
       styleKey: 'cssText',
-      transformProps: ({ api, element, props }) => {
+      transformProps: ({ editor, element, props }) => {
         if (!element) return props;
 
+        const { api } = editor.plugin(BaseSuggestionPlugin);
         let suggestionData = api.suggestionData(element);
 
         if (!suggestionData) {

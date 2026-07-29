@@ -2,7 +2,6 @@ import {
   defineEditorExtension,
   type Descendant,
   type Editor,
-  type Value,
 } from '@platejs/plite';
 import {
   getCompiledEditorSchemaFromApi,
@@ -65,30 +64,6 @@ const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
       getController().tx().sendSelection(range, data),
   });
 
-const canonicalizeRootContent = (
-  editor: Editor<Value>,
-  root: string,
-  children: readonly Descendant[]
-) =>
-  editor.read((state) => {
-    const before = state.value();
-    const transaction = state.transaction((tx) => {
-      if (root === 'main') {
-        tx.value.replace({
-          children: children as Value,
-          selection: null,
-        });
-      } else if (Object.hasOwn(before.roots ?? {}, root)) {
-        tx.roots.replace(root, children as Value);
-      } else {
-        tx.roots.create(root, children as Value);
-      }
-    });
-    const value = transaction.changes.apply(before);
-
-    return root === 'main' ? value.children : (value.roots?.[root] ?? []);
-  });
-
 export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
   const activationErrors = new WeakMap<Editor, unknown>();
   const controllers = new WeakMap<Editor, YjsController>();
@@ -141,7 +116,33 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
         try {
           return new YjsController(owner, options, {
             canonicalize: (root, children) =>
-              canonicalizeRootContent(owner, root, children),
+              owner.read((state) => {
+                const before = state.value();
+                const transaction = state.transaction((tx) => {
+                  if (root === 'main') {
+                    tx.value.replace({
+                      children,
+                      selection: null,
+                    });
+
+                    return;
+                  }
+
+                  tx.value.replace({
+                    ...before,
+                    roots: {
+                      ...(before.roots ?? {}),
+                      [root]: children,
+                    },
+                    selection: state.selection(),
+                  });
+                });
+                const value = transaction.changes.apply(before);
+
+                return root === 'main'
+                  ? value.children
+                  : (value.roots?.[root] ?? []);
+              }),
             emptyValueFor,
           });
         } catch (error) {
@@ -198,15 +199,18 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
           }
         }
       });
-      context.onReady(() => controller.seed());
+      context.afterPublish(() => controller.seed());
     },
     name: 'yjs',
-    onCommit({ commit, editor, snapshot }): void {
-      getController(editor).handleCommit(commit, snapshot);
+    on: {
+      commit({ commit, editor, snapshot }): void {
+        getController(editor).handleCommit(commit, snapshot);
+      },
+      transactionChange({ editor, tx }): void {
+        getController(editor).handleTransactionChange(tx);
+      },
     },
-    onTransactionChange({ editor, tx }): void {
-      getController(editor).handleTransactionChange(tx);
-    },
+
     state: {
       yjs(_state, editor) {
         return createDeferredYjsState(() => getController(editor));

@@ -2,8 +2,46 @@
   "schemaVersion": 1,
   "components": {
     "code-drawing-demo": [
+      "2026-07-29-preserve-feature-example-wiring",
       "2026-07-26-fix-code-drawing-demo",
       "2026-01-28-add-code-drawing-node"
+    ],
+    "excalidraw-demo": ["2026-07-29-preserve-feature-example-wiring"],
+    "cursor-overlay": [
+      "2026-07-29-preserve-feature-example-wiring",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
+    "ghost-text": [
+      "2026-07-29-preserve-feature-example-wiring",
+      "2026-07-26-plugin-store-state"
+    ],
+    "media-image-node": [
+      "2026-07-29-preserve-feature-example-wiring",
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "media-video-node": [
+      "2026-07-29-preserve-feature-example-wiring",
+      "2026-07-23-rich-media-caption-children",
+      "2026-04-29-codex-fix-discussion-suggestion-regressions",
+      "2026-03-28-render-url-videos-media-node",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
+    ],
+    "table-node": [
+      "2026-07-29-preserve-feature-example-wiring",
+      "2026-07-26-plugin-store-state",
+      "2026-07-24-configurable-color-controls",
+      "2026-07-22-plugin-portal-wiring",
+      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
+      "2026-01-20-add-docx-file-import-word-export-support",
+      "2025-11-20-biome-ultracite",
+      "2025-10-17-fix-react-decouple"
     ],
     "ai-kit": [
       "2026-07-26-plugin-store-state",
@@ -115,11 +153,6 @@
       "2026-07-26-plugin-store-state",
       "2025-10-17-fix-react-decouple"
     ],
-    "cursor-overlay": [
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
-    ],
     "emoji-node": [
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
@@ -128,7 +161,6 @@
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
     ],
-    "ghost-text": ["2026-07-26-plugin-store-state"],
     "link-toolbar": [
       "2026-07-26-plugin-store-state",
       "2025-11-20-biome-ultracite"
@@ -152,15 +184,6 @@
       "2025-10-17-fix-react-decouple"
     ],
     "suggestion-toolbar-button": ["2026-07-26-plugin-store-state"],
-    "table-node": [
-      "2026-07-26-plugin-store-state",
-      "2026-07-24-configurable-color-controls",
-      "2026-07-22-plugin-portal-wiring",
-      "2026-03-22-table-improve-selection-bug-fixed-insert-issue",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "use-chat": [
       "2026-07-26-plugin-store-state",
       "2026-01-09-support-using-ai-features-tables-improve-prompts",
@@ -308,20 +331,6 @@
     ],
     "single-block-demo": ["2026-07-23-explicit-editor-kit-composition"],
     "caption": ["2026-07-23-rich-media-caption-children"],
-    "media-image-node": [
-      "2026-07-23-rich-media-caption-children",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-01-20-add-docx-file-import-word-export-support",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
-    "media-video-node": [
-      "2026-07-23-rich-media-caption-children",
-      "2026-04-29-codex-fix-discussion-suggestion-regressions",
-      "2026-03-28-render-url-videos-media-node",
-      "2025-11-20-biome-ultracite",
-      "2025-10-17-fix-react-decouple"
-    ],
     "media-audio-node": [
       "2026-07-23-rich-media-caption-children",
       "2026-04-29-codex-fix-discussion-suggestion-regressions",

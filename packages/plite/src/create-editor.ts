@@ -1,12 +1,13 @@
 import { extendEditor, getFragment } from './core';
 import {
   getInstalledEditorExtensionApi,
+  getCandidateEditorExtensionApi,
   prepareInitialEditorExtensionPublication,
   prepareScopedEditorExtensionPublication,
   resolveInstalledEditorExtension,
   setEditorLifecycleErrorSink,
 } from './core/editor-extension';
-import { createEditorQueryRuntime } from './core/editor-query-runtime';
+import { createEditorReadRuntime } from './core/editor-read-runtime';
 import {
   createEditorReadApi,
   createEditorUpdateApi,
@@ -37,7 +38,6 @@ import {
 import { screenReaderAnnouncementEffect } from './core/screen-reader-announcement';
 import {
   getChildren,
-  getActiveEditorTransaction,
   getCurrentSelectionRoot,
   getEditorDocumentValue,
   getLastCommit,
@@ -68,10 +68,9 @@ import type {
   DescendantIn,
   Editor,
   EditorAnchorApi,
-  EditorClipboardApi,
-  EditorClipboardInsertDataCapability,
   EditorCommit,
   EditorExtension,
+  EditorExtensionApiMap,
   EditorExtensionInput,
   EditorSnapshot,
   EditorTransactionSpecBuilder,
@@ -146,55 +145,6 @@ const resolveApiCapability = (capabilities: unknown[]) => {
 
   return capabilities.at(-1);
 };
-
-export const createInternalClipboardApi = (
-  getEditor: () => Editor,
-  getFallback?: () => ((data: DataTransfer) => boolean) | undefined
-): EditorClipboardApi =>
-  Object.freeze({
-    insertData(dataTransfer) {
-      const editor = getEditor();
-      const handlers = (getExtensionRegistry(editor).capabilities.get(
-        'clipboard.insertData'
-      ) ?? []) as EditorClipboardInsertDataCapability[];
-
-      const dispatch = (
-        index: number,
-        data: DataTransfer,
-        tx: EditorUpdateTransaction
-      ): boolean => {
-        const handler = handlers[index];
-
-        if (!handler) return getFallback?.()?.(data) === true;
-
-        return (
-          handler(editor, data, tx, (nextData = data) =>
-            dispatch(index - 1, nextData, tx)
-          ) === true
-        );
-      };
-
-      const activeTx = getActiveEditorTransaction(editor);
-
-      if (activeTx) {
-        activeTx.tags.add('paste');
-
-        return dispatch(handlers.length - 1, dataTransfer, activeTx);
-      }
-
-      let handled = false;
-
-      updateEditor(
-        editor,
-        (tx) => {
-          handled = dispatch(handlers.length - 1, dataTransfer, tx);
-        },
-        { tags: ['paste'] }
-      );
-
-      return handled;
-    },
-  });
 
 const publishInitialEditorExtensions = <TEditor extends Editor>(
   editor: TEditor,
@@ -311,7 +261,7 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
     );
     throw error;
   }
-  publication.ready();
+  publication.afterPublish();
 
   if (getExtensionRegistry(editor).schemaContributions.records.size > 0) {
     PENDING_SCHEMA_BOOTSTRAP.delete(editor);
@@ -470,40 +420,6 @@ const createEditorImplementation = <
       ),
   } satisfies InternalEditorTransactionRuntime<V>;
 
-  const createResolvedClipboardApi = () => {
-    const capabilities =
-      getExtensionRegistry(editor as Editor).capabilities.get('clipboard') ??
-      [];
-    const resolved = resolveApiCapability(capabilities);
-    const capability = isMergeableApiCapability(resolved) ? resolved : {};
-    const insertFragmentData = capability.insertFragmentData;
-    const insertTextData = capability.insertTextData;
-    const fallbackInsertData =
-      typeof capability.insertData === 'function'
-        ? (capability.insertData as (data: DataTransfer) => boolean).bind(
-            capability
-          )
-        : typeof insertFragmentData === 'function' &&
-            typeof insertTextData === 'function'
-          ? (data: DataTransfer) =>
-              (insertFragmentData as (data: DataTransfer) => boolean).call(
-                capability,
-                data
-              ) ||
-              (insertTextData as (data: DataTransfer) => boolean).call(
-                capability,
-                data
-              )
-          : undefined;
-
-    return Object.freeze({
-      ...capability,
-      insertData: createInternalClipboardApi(
-        () => editor as Editor,
-        () => fallbackInsertData
-      ).insertData,
-    });
-  };
   const anchorApi: EditorAnchorApi = (value, anchorOptions) => {
     assertPublicLocationRoot(value);
     assertPublicRootKey(anchorOptions.root);
@@ -515,23 +431,51 @@ const createEditorImplementation = <
       if (typeof property !== 'string') {
         return;
       }
-      if (property === 'clipboard') {
-        return createResolvedClipboardApi();
-      }
+      const apiValues = getExtensionRegistry(editor as Editor).apiGroups.get(
+        property
+      );
 
-      const capabilities = getExtensionRegistry(
-        editor as Editor
-      ).capabilities.get(property);
-
-      if (!capabilities || capabilities.length === 0) {
+      if (!apiValues || apiValues.length === 0) {
         return;
       }
 
-      return resolveApiCapability(capabilities);
+      return resolveApiCapability(apiValues);
     },
   }) as Editor<V, TExtensions>['api'];
 
   const getApi = (extension: EditorExtension<any, any>) => {
+    const resolveValue = (
+      installedName: string,
+      installedApi: EditorExtensionApiMap
+    ) => {
+      const apiNames = Object.keys(installedApi);
+      const capabilityName = apiNames.includes(installedName)
+        ? installedName
+        : (apiNames[0] ?? installedName);
+
+      if (apiNames.length > 1 && !apiNames.includes(installedName)) {
+        throw new Error(
+          `Editor extension "${installedName}" must expose exactly one API group or an API group matching its extension name to be used with editor.getApi().`
+        );
+      }
+      const capability = installedApi[capabilityName];
+
+      if (capability === undefined) {
+        throw new Error(
+          `Editor extension "${installedName}" API group "${capabilityName}" is not installed.`
+        );
+      }
+
+      return Array.isArray(capability)
+        ? resolveApiCapability([...capability])
+        : capability;
+    };
+    const candidateApi = getCandidateEditorExtensionApi(
+      editor as Editor,
+      extension
+    );
+
+    if (candidateApi) return resolveValue(extension.name, candidateApi);
     const installedExtension = resolveInstalledEditorExtension(
       editor as Editor,
       extension
@@ -543,32 +487,11 @@ const createEditorImplementation = <
       );
     }
 
-    const apiNames = Object.keys(
-      getInstalledEditorExtensionApi(
-        editor as Editor,
-        installedExtension.name
-      ) ?? {}
-    );
     const installedName = installedExtension.name;
-    const capabilityName = apiNames.includes(installedName)
-      ? installedName
-      : (apiNames[0] ?? installedName);
+    const installedApi =
+      getInstalledEditorExtensionApi(editor as Editor, installedName) ?? {};
 
-    if (apiNames.length > 1 && !apiNames.includes(installedName)) {
-      throw new Error(
-        `Editor extension "${installedName}" must expose exactly one capability or a capability matching its extension name to be used with editor.getApi().`
-      );
-    }
-
-    const capability = api[capabilityName as keyof typeof api];
-
-    if (capability === undefined) {
-      throw new Error(
-        `Editor extension "${installedName}" capability "${capabilityName}" is not installed.`
-      );
-    }
-
-    return capability;
+    return resolveValue(installedName, installedApi);
   };
 
   const read = createEditorReadApi<V, TExtensions>((fn) =>
@@ -610,11 +533,11 @@ const createEditorImplementation = <
   editor = baseEditor;
   setEditorLifecycleErrorSink(editor, options.lifecycleErrorSink);
 
-  const queryRuntime = createEditorQueryRuntime(editor);
+  const readRuntime = createEditorReadRuntime(editor);
 
   const runtime = {
     ...extensionRuntime,
-    ...queryRuntime,
+    ...readRuntime,
     ...snapshotRuntime,
     ...transactionRuntime,
   } satisfies InternalEditorRuntime<V>;

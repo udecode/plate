@@ -17,6 +17,7 @@ import {
   type EditorExtension,
   type EditorTransactionDraftRef,
   type Point,
+  property,
   SelectionApi,
   schema,
   type TransactionSpec,
@@ -71,6 +72,27 @@ const deleteWordBackward = defineCommand('test.delete-word-backward', {
     state.transaction((tx) => {
       tx.text.delete({ reverse: true, unit: 'word' });
     }),
+});
+
+const CommandScriptPosition = schema.property.exclusive(
+  'plate:script-position'
+);
+const CommandScriptSchema = defineEditorSchema({
+  elements: {
+    paragraph: { content: schema.content.text() },
+  },
+  id: 'command-script-schema',
+  properties: [
+    schema.textProperty('subscript', property.boolean(), {
+      exclusive: [CommandScriptPosition],
+    }),
+    schema.textProperty('superscript', property.boolean(), {
+      exclusive: [CommandScriptPosition],
+    }),
+  ],
+  root: { content: schema.content.type('paragraph') },
+  unknown: 'reject',
+  version: 1,
 });
 
 describe('pure command transaction specs', () => {
@@ -850,8 +872,9 @@ describe('pure command transaction specs', () => {
     ]);
   });
 
-  it('clears configured peer marks and collapses in one semantic command', () => {
+  it('applies schema-exclusive marks and collapses in one semantic command', () => {
     const editor = createEditor({
+      extensions: [CommandScriptSchema],
       initialSelection: SelectionApi.text({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
@@ -859,15 +882,14 @@ describe('pure command transaction specs', () => {
       initialValue: [
         {
           type: 'paragraph',
-          children: [{ italic: true, text: 'ab' }],
+          children: [{ superscript: true, text: 'ab' }],
         },
       ],
     });
 
     dispatchCommand(editor, editorCommands.toggleMark, {
-      key: 'bold',
+      key: 'subscript',
       options: {
-        clear: 'italic',
         collapse: { edge: 'end' },
       },
       value: true,
@@ -876,7 +898,7 @@ describe('pure command transaction specs', () => {
     assert.deepEqual(editor.read.children(), [
       {
         type: 'paragraph',
-        children: [{ bold: true, text: 'ab' }],
+        children: [{ subscript: true, text: 'ab' }],
       },
     ]);
     assert.deepEqual(editor.read.selection(), {
@@ -891,30 +913,6 @@ describe('pure command transaction specs', () => {
         focus: { offset: 2, path: [0, 0] },
       }),
     });
-    dispatchCommand(editor, editorCommands.toggleMark, {
-      key: 'bold',
-      options: { clear: 'italic' },
-      value: true,
-    });
-
-    assert.deepEqual(editor.read.children(), [
-      { type: 'paragraph', children: [{ text: 'ab' }] },
-    ]);
-  });
-
-  it('checks the active collapsed mark before clearing exclusive peers', () => {
-    const editor = createTextEditor();
-
-    editor.update((tx) => {
-      tx.marks.set({ bold: true, italic: true });
-    });
-    dispatchCommand(editor, editorCommands.toggleMark, {
-      key: 'bold',
-      options: { clear: ['bold', 'italic'] },
-      value: true,
-    });
-
-    assert.deepEqual(editor.read.marks(), { italic: true });
   });
 
   it('keeps command specs rooted to the dispatching view', () => {
@@ -1114,10 +1112,10 @@ describe('pure command transaction specs', () => {
           return next({ ...input, text: `${input.text}!` });
         }),
       ],
-      dependencies: [dependency.name],
+      dependencies: [dependency],
       name: 'command-order-dependent',
     });
-    const editor = createTextEditorWithExtensions([dependent, dependency]);
+    const editor = createTextEditorWithExtensions([dependent]);
 
     dispatchCommand(editor, insert, { text: 'z' });
 

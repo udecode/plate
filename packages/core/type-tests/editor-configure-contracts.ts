@@ -1,37 +1,24 @@
-import type { PluginConfig } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
 
-type ChildConfig = PluginConfig<
-  'child',
-  {
-    level: 1 | 2;
-  },
-  {
-    plugin: {
-      getLevel: () => 1 | 2;
-    };
-    setLevel: (level: 1 | 2) => void;
-  }
->;
+const childInitialState: { level: 1 | 2 } = {
+  level: 1,
+};
 
-const ChildPlugin = createBasePlugin<ChildConfig>({
-  key: 'child',
-  initialState: {
-    level: 1,
-  },
-}).extend(({ plugin, store }) => ({
-  extension: {
+const ChildPlugin = createBasePlugin({
+  extension: ({ plugin, store }) => ({
     api: {
       plugin: {
         getLevel: () => plugin.initialState.level,
       },
-      setLevel: (level) => {
+      setLevel: (level: 1 | 2) => {
         store.set({ level });
       },
     },
-  },
-}));
+  }),
+  key: 'child',
+  initialState: childInitialState,
+});
 
 const ParentPlugin = createBasePlugin({
   dependencies: [ChildPlugin],
@@ -47,28 +34,19 @@ const basePlateEditor = createBaseEditor({
   plugins: [ParentPlugin, ConfiguredChildPlugin],
 });
 
-type DisplayConfig = PluginConfig<
-  'display',
-  {
-    label: 'body' | 'title';
-  },
-  {
-    getLabel: () => 'body' | 'title';
-  }
->;
+const displayInitialState: { label: 'body' | 'title' } = {
+  label: 'title',
+};
 
-const DisplayPlugin = createPlatePlugin<DisplayConfig>({
-  key: 'display',
-  initialState: {
-    label: 'title',
-  },
-}).extend(({ store }) => ({
-  extension: {
+const DisplayPlugin = createPlatePlugin({
+  extension: ({ store }) => ({
     api: {
       getLabel: () => store.get().label,
     },
-  },
-}));
+  }),
+  key: 'display',
+  initialState: displayInitialState,
+});
 
 const plateEditor = createPlateEditor({
   plugins: [DisplayPlugin],

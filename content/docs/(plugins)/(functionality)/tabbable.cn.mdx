@@ -84,8 +84,8 @@ const editor = createPlateEditor({
           return !inList && !inCodeBlock;
         },
         globalEventListener: true,
-        isTabbable: (tabbableEntry) => 
-          editor.api.isVoid(tabbableEntry.slateNode),
+        isTabbable: (tabbableEntry) =>
+          editor.read.schema.isVoid(tabbableEntry.slateNode),
       },
     }),
   ],
@@ -124,7 +124,7 @@ query: (event) => {
 
 ```tsx
 query: (event) => !!editor.read.nodes.some({
-  match: (node) => editor.api.isVoid(node),
+  match: (node) => editor.read.schema.isVoid(node),
 }),
 ```
 
@@ -138,7 +138,7 @@ query: (event) => !!editor.read.nodes.some({
 // 启用CUSTOM_ELEMENT内的可聚焦DOM元素
 isTabbable: (tabbableEntry) => (
   tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
-  editor.api.isVoid(tabbableEntry.slateNode)
+  editor.read.schema.isVoid(tabbableEntry.slateNode)
 ),
 ```
 
@@ -197,7 +197,7 @@ insertTabbableEntries: (event) => {
 
 ## 读取 API
 
-### `editor.read.tabbable.findDestination(options)`
+### `editor.plugin(TabbablePlugin).read.findDestination(options)`
 
 从当前快照查找下一个 DOM 或文档目标。
 
@@ -209,8 +209,8 @@ insertTabbableEntries: (event) => {
 
 <API name="TabbableEntry">
 <APIAttributes>
-  <APIItem name="domNode" type="HTMLElement">
-    表示可聚焦entry的HTML元素。
+  <APIItem name="domNode" type="FocusableElement">
+    表示可聚焦 entry 的 HTML 或 SVG 元素。
   </APIItem>
   <APIItem name="slateNode" type="Node">
     对应的Plite节点。

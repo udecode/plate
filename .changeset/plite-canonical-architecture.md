@@ -22,6 +22,27 @@
 - Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
 - Add explicit document repair and mutually exclusive mark toggles
+- Declare mutually exclusive property groups in schema so toggles,
+  canonicalization, history, and collaboration share one invariant
+- Resolve extension dependencies and conflicts by descriptor, install required
+  dependencies transitively with reference-counted cleanup, and expose typed
+  dependency APIs through `editor.getApi(descriptor)`
+- Add descriptor-owned typed extension contributions for package-specific
+  contribution channels
+- Define package-owned contribution channels with `defineExtensionPoint(...)`
+  and collect ordered values through `context.getContributions(...)`
+- Intercept core-owned pure reads through descriptor-based extension `read`
+  middleware, with transaction-draft state, single delegation, and complete
+  generator cleanup
+- Group change callbacks under `on`, use `config` as the immutable extension
+  input, name descriptor collections as `stateFields`, `effectTypes`,
+  `facetProviders`, and `selectionKinds`, and defer published-state work through
+  `afterPublish`
+- Resolve functional extension APIs against each editor view root and preserve
+  the complete root-scoped read surface, including exported selection slices
+- Keep merge, selectability, and exported-slice policy on typed `editorReads`
+  descriptors instead of extension-specific root hooks
+- Name the model selection projection `primaryRange`
 - Initialize editors synchronously through `initialValue` or an editor-context callback and publish non-cancellable commit contexts with the resulting immutable snapshot
 - Derive complete raw-schema identity when `id` and `version` are omitted, and expose a non-null derived or named identity from `editor.read.schema.identity()`
 - Freeze pure descriptor namespaces and infer custom property values from inline `validate` predicates paired with a positive-integer `validationVersion`

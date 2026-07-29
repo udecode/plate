@@ -1,4 +1,8 @@
-import type { EditorExtension, EditorStateSchemaApi } from '@platejs/plite';
+import type {
+  Editor,
+  EditorExtension,
+  EditorStateSchemaApi,
+} from '@platejs/plite';
 import { defineEditorExtension } from '@platejs/plite';
 import { getCompiledEditorSchemaFromApi } from '@platejs/plite/internal';
 import { txRead } from '@platejs/plite/internal';
@@ -9,6 +13,7 @@ import type {
   AnyBasePlugin,
   BaseEditor,
   BasePlugin,
+  BasePluginInput,
   BasePlugins,
   NodeComponents,
   PlatePluginReadGroup,
@@ -105,7 +110,7 @@ const isOpaquePluginHostResource = (
   return path.at(-3) === 'override' && parent === 'components';
 };
 
-type MutableDeep<T> = T extends (...args: any[]) => unknown
+type MutableDeep<T> = T extends (...args: never[]) => unknown
   ? T
   : T extends readonly (infer TItem)[]
     ? MutableDeep<TItem>[]
@@ -250,10 +255,10 @@ const snapshotPluginDescriptorValue = (
 
 /** Capture the immutable descriptor graph used by every Plate projection. */
 export type PlatePluginSourceGroups = Readonly<{
-  baseCore?: readonly AnyBasePlugin[];
-  internalRoot?: AnyBasePlugin;
-  reactCore?: readonly AnyBasePlugin[];
-  user?: readonly AnyBasePlugin[];
+  baseCore?: readonly BasePluginInput[];
+  internalRoot?: BasePluginInput;
+  reactCore?: readonly BasePluginInput[];
+  user?: readonly BasePluginInput[];
 }>;
 
 export const plateReactCorePlugins = Symbol('plate.reactCorePlugins');
@@ -267,26 +272,49 @@ type NormalizedPlatePluginSourceGroups = Readonly<{
 
 type PlatePluginSourceInput =
   | PlatePluginSourceGroups
-  | readonly AnyBasePlugin[];
+  | readonly BasePluginInput[];
+
+const isPlatePluginSourceList = (
+  sources: PlatePluginSourceInput
+): sources is readonly BasePluginInput[] => Array.isArray(sources);
+
+function assertAnyBasePlugin(
+  plugin: BasePluginInput
+): asserts plugin is AnyBasePlugin {
+  if (!isNominalPluginDescriptor(plugin)) {
+    throw new Error(
+      `Plate plugin source "${plugin.key}" must be created by a Plate plugin builder.`
+    );
+  }
+}
+
+const normalizePlatePluginSourceList = (
+  plugins: readonly BasePluginInput[] | undefined
+) =>
+  (plugins ?? []).map((plugin) => {
+    assertAnyBasePlugin(plugin);
+
+    return plugin;
+  });
 
 const normalizePlatePluginSources = (
   sources: PlatePluginSourceInput
 ): NormalizedPlatePluginSourceGroups => {
-  if (Array.isArray(sources)) {
+  if (isPlatePluginSourceList(sources)) {
     return {
       baseCore: [],
       reactCore: [],
-      user: sources as readonly AnyBasePlugin[],
+      user: normalizePlatePluginSourceList(sources),
     };
   }
 
-  const groups = sources as PlatePluginSourceGroups;
-
   return {
-    baseCore: groups.baseCore ?? [],
-    internalRoot: groups.internalRoot,
-    reactCore: groups.reactCore ?? [],
-    user: groups.user ?? [],
+    baseCore: normalizePlatePluginSourceList(sources.baseCore),
+    internalRoot: sources.internalRoot
+      ? normalizePlatePluginSourceList([sources.internalRoot])[0]
+      : undefined,
+    reactCore: normalizePlatePluginSourceList(sources.reactCore),
+    user: normalizePlatePluginSourceList(sources.user),
   };
 };
 
@@ -548,11 +576,11 @@ export const createPlateModelPublication = (
       pluginCache.transformInitialValue.push(plugin.key);
     }
     if (plugin.decorate) pluginCache.decorate.push(plugin.key);
-    if ((plugin as any).useHooks) pluginCache.useHooks.push(plugin.key);
-    if ((plugin as any).handlers?.onNodeChange) {
+    if (plugin.useHooks) pluginCache.useHooks.push(plugin.key);
+    if (plugin.handlers?.onNodeChange) {
       pluginCache.handlers.onNodeChange.push(plugin.key);
     }
-    if ((plugin as any).handlers?.onTextChange) {
+    if (plugin.handlers?.onTextChange) {
       pluginCache.handlers.onTextChange.push(plugin.key);
     }
   });
@@ -632,14 +660,20 @@ const resolvePluginStores = (editor: BaseEditor) => {
 const resolvePluginApi = (
   editor: BaseEditor,
   plugin: AnyBasePlugin,
-  pluginApi: Record<string, any>
+  pluginApi: Record<string, unknown>
 ) => {
-  plugin.__apiExtensions.forEach(({ extension }: any) => {
+  plugin.__apiExtensions.forEach(({ extension }) => {
     const context = {
       ...getEditorPlugin(editor, plugin),
       api: pluginApi,
     };
-    const extensionApi = extension(context);
+    const extensionApi = Reflect.apply(extension, undefined, [context]);
+
+    if (!extensionApi || typeof extensionApi !== 'object') {
+      throw new Error(
+        `Plate plugin "${plugin.key}" API extension must return an object.`
+      );
+    }
 
     merge(pluginApi, extensionApi);
   });
@@ -866,8 +900,10 @@ export const createPlateRuntimeExtension = (
     apiByPlugin,
     () => collectPluginReadGroups(editor, pluginList)
   );
-  const state = Object.create(null) as NonNullable<EditorExtension['state']>;
-  const tx = Object.create(null) as NonNullable<EditorExtension['tx']>;
+  const state = Object.create(null) as NonNullable<
+    EditorExtension<Editor>['state']
+  >;
+  const tx = Object.create(null) as NonNullable<EditorExtension<Editor>['tx']>;
 
   readRuntime.forEach((groupFactories, groupKey) => {
     state[groupKey] = (stateView, runtimeEditor) => {
@@ -908,7 +944,7 @@ export const createPlateRuntimeExtension = (
             groupFactory(
               transaction as never,
               runtimeEditor as BaseEditor,
-              context as any
+              context
             )
           );
         });
@@ -965,7 +1001,7 @@ const createPluginShortcuts = (
             string,
             unknown
           > & {
-            handler?: (...args: any[]) => any;
+            handler?: (...args: never[]) => unknown;
             priority?: number;
           };
 
@@ -1096,7 +1132,7 @@ const createPluginInputRules = (pluginList: readonly AnyBasePlugin[]) => {
 
   pluginList.forEach((plugin, pluginIndex) => {
     const pluginKey = plugin.key;
-    const inputRulesDefinition = (plugin as any).inputRules;
+    const inputRulesDefinition = plugin.inputRules;
     const definitionRules =
       typeof inputRulesDefinition === 'function'
         ? inputRulesDefinition({

@@ -77,11 +77,24 @@ const App = () => {
 `editor.update.marks.toggle('bold')` applies the mark to the selected range.
 When the selection is collapsed, it changes the active mark for text typed next.
 
-Mutually exclusive marks use `clear`:
+Declare mutually exclusive marks in the schema:
 
 ```tsx
-editor.update.marks.toggle("subscript", true, { clear: "superscript" });
+const ScriptPosition = schema.property.exclusive("app:script-position");
+
+const formattingProperties = [
+  schema.textProperty("subscript", property.boolean(), {
+    exclusive: [ScriptPosition],
+  }),
+  schema.textProperty("superscript", property.boolean(), {
+    exclusive: [ScriptPosition],
+  }),
+];
+
+editor.update.marks.toggle("subscript");
 ```
+
+Enabling one group member removes the active peer automatically.
 
 ## Render Marks
 

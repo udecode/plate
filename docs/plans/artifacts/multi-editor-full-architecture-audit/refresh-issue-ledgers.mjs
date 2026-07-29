@@ -3,8 +3,8 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
-const refreshedAt = '2026-07-25T22:59:04Z';
-const hostVerifiedAt = '2026-07-25T23:13:33Z';
+const initialRefreshedAt = '2026-07-25T22:59:04Z';
+const initialHostVerifiedAt = '2026-07-25T23:13:33Z';
 const githubIssueFields =
   'number state title updatedAt url labels(first:100){nodes{name}}';
 const githubCountCommand = (owner, name) =>
@@ -90,10 +90,11 @@ const configs = [
       ],
       openIssueCount: 310,
       provider: 'GitHub GraphQL v4 metadata',
-      verifiedAt: hostVerifiedAt,
+      verifiedAt: initialHostVerifiedAt,
     },
     provider: 'gitcrawl 0.5.0 backed by GitHub REST metadata',
     providerLimit: 10_000,
+    refreshedAt: initialRefreshedAt,
     rawCommand:
       'gitcrawl search issues "" -R facebook/lexical --state all --json number,title,state,url,labels,updatedAt --limit 10000',
     repo: 'lexical',
@@ -130,10 +131,11 @@ const configs = [
       ],
       openIssueCount: 111,
       provider: 'GitHub GraphQL v4 metadata',
-      verifiedAt: hostVerifiedAt,
+      verifiedAt: initialHostVerifiedAt,
     },
     provider: 'gitcrawl 0.5.0 backed by GitHub REST metadata',
     providerLimit: 10_000,
+    refreshedAt: initialRefreshedAt,
     rawCommand:
       'gitcrawl search issues "" -R ProseMirror/prosemirror --state all --json number,title,state,url,labels,updatedAt --limit 10000',
     repo: 'prosemirror',
@@ -149,10 +151,11 @@ const configs = [
       omittedIssues: [],
       openIssueCount: 7,
       provider: 'Forgejo API v1 response headers and repository metadata',
-      verifiedAt: hostVerifiedAt,
+      verifiedAt: '2026-07-27T14:28:47Z',
     },
     provider: 'Forgejo API v1',
     providerLimit: 50,
+    refreshedAt: '2026-07-27T14:28:47Z',
     rawCommand:
       "curl -sS 'https://code.haverbeke.berlin/api/v1/repos/wordgard/wordgard/issues?state=all&page=1&limit=50' | jq '[.[] | {labels,number,state,title,updatedAt:.updated_at,url:.html_url}]'",
     repo: 'wordgard',
@@ -173,6 +176,7 @@ const cleanTsv = (value) =>
     .replace(/\t/g, ' ');
 
 for (const config of configs) {
+  const { refreshedAt } = config;
   const root = path.join('docs/editor-issue-harvester', config.repo, 'full');
   const rawPath = path.join(
     '.tmp/editor-issue-harvester',

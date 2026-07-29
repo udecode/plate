@@ -2,12 +2,17 @@ import { type Node, type Path, ElementApi } from '@platejs/plite';
 
 import type { BaseEditor } from '../editor';
 
-import { type BasePlugin, getPluginKey, getPluginKeys } from '../plugin';
+import {
+  type AnyPluginConfig,
+  type BasePlugin,
+  getPluginKey,
+  getPluginKeys,
+} from '../plugin';
 import { getResolvedPluginTargetBinding } from '../../internal/plugin/compilePlateModel';
 
-export const getInjectMatch = <E extends BaseEditor>(
+export const getInjectMatch = <E extends BaseEditor, C extends AnyPluginConfig>(
   editor: E,
-  plugin: Pick<BasePlugin, 'inject' | 'key' | 'targetPluginKeys'>
+  plugin: Pick<BasePlugin<C>, 'inject' | 'key' | 'targetPluginKeys'>
 ) => {
   return (node: Node, path?: Path) => {
     const {

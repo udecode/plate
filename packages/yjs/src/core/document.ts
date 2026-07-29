@@ -22,10 +22,19 @@ import {
   isYjsSetValueAttribute,
   readYjsSetValueAttributes,
 } from './set-valued-attributes';
-import {
-  getYjsTextDeltaPartText,
-  isNonEmptyYjsTextDeltaPart,
-} from './text-delta';
+
+type YjsTextDeltaPart = {
+  readonly attributes?: Readonly<Record<string, unknown>>;
+  readonly insert?: unknown;
+};
+
+const getYjsTextDeltaPartText = (part: YjsTextDeltaPart): string =>
+  typeof part.insert === 'string' ? part.insert : '';
+
+const isNonEmptyYjsTextDeltaPart = (
+  part: YjsTextDeltaPart
+): part is YjsTextDeltaPart & { readonly insert: string } =>
+  typeof part.insert === 'string' && part.insert.length > 0;
 
 const HIDDEN_ATTRIBUTE = 'plite:yjs-hidden';
 const NODE_ID_ATTRIBUTE = 'plite:yjs-id';

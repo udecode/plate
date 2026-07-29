@@ -1,5 +1,5 @@
 ---
-description: Exhaustively compare one or more local editor architectures with live Plite and Plate, track verified source commits, and rank only materially valuable changes with concrete current and proposed shapes.
+description: Exhaustively compare one or more local editor architectures with live Plite and Plate using a symmetric source inventory, one strict row per atomic concept, verified source commits, and explicit hybrid extraction.
 argument-hint: '[audit [--target <surface|full>] <repo-path-or-owner/repo>...] | [sync [all|audit-id|artifact-path]...]'
 disable-model-invocation: true
 ---
@@ -15,7 +15,10 @@ product code.
 
 ```text
 selected local editor source trees
-  -> exhaustive atomic concept map
+  + relevant live Plite/Plate mechanisms and debt
+  -> symmetric atomic concept map
+  -> strict source-to-contract matrix
+  -> preferred bases + reference/proof adaptations + local debt
   -> material current/proposed change dossiers
   -> best-api and layer-plan routing
 ```
@@ -52,8 +55,11 @@ Reference sophistication, popularity, novelty, and completeness are not value.
 Breaking cost is an adoption cost after a materially better target is found; it
 is neither an automatic veto nor a reason to break by itself.
 
-Do not use aggregate numeric scores. Use evidence-backed classifications,
-priorities, and explicit reasons. Missing evidence is an open gate.
+Judge every concept on the fixed qualitative dimensions in
+`.agents/rules/editor-audit/references/feature-matrix.md`. Do not use aggregate
+numeric scores. Use evidence-backed classifications, priorities, and explicit
+reasons. Missing evidence is an open gate. A stronger base architecture does
+not erase a stronger submechanism inside the losing architecture.
 
 ## Modes
 
@@ -71,10 +77,24 @@ Resolve:
 - local owners: Plite substrate, Plate product layer, or both;
 - output: a narrow answer or exhaustive planning-only artifact.
 
-For `full`, `all`, `exhaustive`, or multiple repositories, load `autogoal` and
-use one `major-task` goal plan as the durable audit artifact. Add a compact
-coverage manifest under `docs/plans/artifacts/<slug>/` only when it materially
-improves accounting. Do not mirror the same decisions across several ledgers.
+For `full`, `all`, `exhaustive`, or multiple repositories, load `autogoal`,
+read `.agents/rules/editor-audit/references/feature-matrix.md`, and use one
+`major-task` goal plan as the durable audit artifact. Write one coverage
+manifest and strict concept matrix per reference under
+`docs/plans/artifacts/<slug>/`. Each matrix is that reference's complete
+comparison ledger; the plan summarizes decisions and links material dossiers.
+Do not mirror the same decisions across several ledgers.
+
+Before matrix work, inventory both sides:
+
+- every atomic reference concept in scope;
+- every relevant Plite/Plate public mechanism, lifecycle rule, proof topology,
+  and material debt even when the reference has no equivalent;
+- every prior P0-P3 candidate touching the target, recorded in the manifest
+  before its current disposition is judged.
+
+The manifest is the union, not a donor-only checklist. An overall Plite/Plate
+win never permits skipping local-only machinery or reference submechanisms.
 
 Before reading a durable reference audit, require a clean reference checkout
 and capture `git rev-parse HEAD`. Verify the same `HEAD` again before recording
@@ -84,7 +104,9 @@ cursor. A commit hash cannot truthfully describe uncommitted reference source.
 For each initial durable audit, run the full `editor-test-harvester` inventory
 and the applicable `issue-harvester --refresh-only` pass, or record that lane as
 `null` and stale with an exact reason. Never initialize an unrun lane as
-current.
+current. Reconcile every portable harvested invariant in `Proof adaptation` as
+`adapt`, `keep-local`, `reject`, `defer`, or `not-applicable`; freshness counts
+alone are not architecture extraction.
 
 For a narrow named mechanism, answer in chat unless the user asks for a durable
 artifact.
@@ -127,7 +149,10 @@ For each reference:
    unchecked queue. Record an exact skip reason for sources without a supported
    issue provider.
 9. Update affected audit rows, rejected decisions, rankings, shapes, routes,
-   coverage counts, and proof.
+   coverage counts, proof dispositions, local-only concepts, and prior-candidate
+   dispositions. Rerun strict matrix validation over every concept, not only
+   the changed rows. Never silently remove or downgrade an earlier P0-P3
+   candidate; `reaffirm`, `supersede`, or `reject` it with current evidence.
 10. Advance each cursor only after its owning proof succeeds. A failed or
     interrupted architecture pass never advances `auditedCommit`; a failed test
     or issue pass remains visibly stale through its independent cursor.
@@ -137,10 +162,15 @@ own `<auditedCommit>..HEAD` range. Never collapse different target audits into
 one cursor. Continue independent audits after one fails and report the failed
 cursor without advancing it.
 
+An audit without a passing current strict matrix is `legacy-incomplete`. Its sync may
+refresh provenance and independent test/issue lanes, but it may not repeat or
+strengthen a global superiority claim until every manifest concept has an exact
+ungrouped matrix row and every prior candidate is reconciled.
+
 Finish with a status table:
 
-| Audit | Repository | Audited commit | Current head | Architecture | Tests | Issues | Overall |
-| --- | --- | --- | --- | --- | --- | --- | --- |
+| Audit | Repository | Audited commit | Current head | Architecture | Matrix | Tests | Issues | Overall |
+| ----- | ---------- | -------------- | ------------ | ------------ | ------ | ----- | ------ | ------- |
 
 `current` means verified against the fetched local head. Without a successful
 fetch, remote freshness is `unknown`, not current.
@@ -170,6 +200,9 @@ Use schema version `1`:
           "upstream": "origin/main",
           "auditedCommit": "full-commit-sha",
           "auditedAt": "ISO-8601",
+          "conceptManifest": "docs/plans/artifacts/.../source-manifest.json",
+          "conceptMatrix": "docs/plans/artifacts/.../concept-matrix.md",
+          "conceptMatrixValidatedAt": "ISO-8601 or null",
           "testHarvestCommit": "full-commit-sha or null",
           "issueHarvestCheckedAt": "ISO-8601 or null",
           "issueLedger": "docs/editor-issue-harvester/... or null"
@@ -185,10 +218,12 @@ reference cursors even when another audit uses the same repository. Derive
 `repoKey` from the normalized remote URL; for a local-only repository, use a
 stable canonical-path key and record `source` as `null`.
 
-The registry is compact resume state, not the concept ledger. The linked
-artifact owns decisions and evidence. Update registry and artifact together at
-the final successful checkpoint; never write a newer commit merely because a
-pull succeeded.
+The registry is compact resume state, not the concept ledger. A reference
+missing `conceptManifest`, `conceptMatrix`, or a validation timestamp is
+`legacy-incomplete`. Its linked matrix owns complete 1:1 evidence; the artifact
+owns conclusions and material dossiers. Update registry and artifacts together
+at the final successful checkpoint; never write a newer commit merely because
+a pull succeeded.
 
 ## Source Authority
 
@@ -203,16 +238,21 @@ Read:
    graph, and relevant docs.
 4. Live Plite and Plate owners, exports, representative callers, tests, docs,
    integrations, and proof surfaces.
-5. Existing local plans only after the live architecture is independently
-   mapped.
+5. Existing local plans, audit dossiers, and P0-P3 candidates only after the
+   live architecture is independently mapped.
 
 Do not substitute web summaries for local source. Use official docs only when
 the local checkout cannot settle a public contract.
 
+Independent mapping prevents an old proposal from dictating the answer. It
+does not permit erasing the proposal. After mapping, search every prior durable
+audit touching the target and reconcile each candidate as `reaffirm`,
+`supersede`, or `reject` with current source evidence.
+
 ## Atomic Concept Inventory
 
-Derive the inventory from source. Do not begin from a generic editor checklist
-or a favored reference API.
+Derive a symmetric inventory from source. Do not begin from a generic editor
+checklist, a favored reference API, or only the reference repository.
 
 An atomic concept is one independently judgeable:
 
@@ -229,11 +269,19 @@ One concept may span many files or repositories. One file may contain many
 concepts. Trivial forwarding helpers, barrels, fixtures, and mechanical wrappers
 must appear in the coverage manifest, but they do not earn independent decision
 rows unless they own semantics, lifecycle, performance, or a public contract.
+If one row would need different preferred bases, reference adaptations, local
+debt dispositions, proof adaptations, or verdicts, split it in the manifest.
+Matrix IDs must be exact and ungrouped.
+
+Use the manifest schema in `references/feature-matrix.md`. Allowed origins are
+`reference`, `Plite`, `Plate`, `Plite/Plate`, and `shared`. `priorCandidates`
+is required and may be empty. Each concept appears exactly once even when
+several source units contribute evidence.
 
 Build a coverage manifest for each repository:
 
 | Source unit | Relevant declarations | Concept IDs | Exclusion |
-| --- | ---: | --- | --- |
+| ----------- | --------------------: | ----------- | --------- |
 
 Map every relevant package, module, file, public export, top-level declaration,
 and meaningful private mechanism to concept IDs or an exact exclusion. Follow
@@ -246,25 +294,40 @@ state the exact gap instead of calling the audit exhaustive.
 ## Comparison
 
 For every atomic concept, record independent evidence from each supplied
-reference and from current Plite/Plate.
+reference and from current Plite/Plate. Follow
+`.agents/rules/editor-audit/references/feature-matrix.md`: one row per exact
+manifest ID, separate `exact`, `partial`, `absent`, or `not-applicable`
+mappings for the reference, Plite, and Plate, and the same six qualitative
+dimensions for every concept.
 
-Use one comparison classification per reference:
+`exact` is a proved contract match, not “a nearby owner exists.” It names
+evidence for the public contract, internal owner, representative consumers,
+lifecycle/failure behavior, and proof. `partial` names what is covered, what is
+missing, and the applicable proof. Every mapping and every qualitative
+dimension includes an exact source symbol or durable evidence link.
 
-- `reference stronger`
-- `local stronger`
-- `equivalent`
-- `different tradeoff`
-- `insufficient evidence`
+Use one comparison classification per reference: `reference stronger`,
+`Plite stronger`, `Plate stronger`, `Plite/Plate stack stronger`,
+`equivalent`, `different tradeoff`, or `insufficient evidence`.
 
-Then give one local verdict:
+Then name the preferred base:
 
-- `keep`
-- `steal`
-- `rearchitect`
-- `hard-cut`
-- `move`
-- `reject`
-- `defer`
+- preferred: `reference`, `Plite`, `Plate`, `Plite/Plate stack`, `tie`,
+  `different tradeoff`, or `insufficient evidence`.
+
+Separately record:
+
+- `Reference adaptation`: `adapt`, `keep-local`, `reject`, `defer`, or
+  `not-applicable`;
+- `Local debt`: `material`, `non-material`, `none`, or
+  `insufficient evidence`;
+- `Proof adaptation`: `adapt`, `keep-local`, `reject`, `defer`, or
+  `not-applicable`;
+- `Prior candidates`: every applicable ID as `reaffirm`, `supersede`, or
+  `reject`, or an evidence-backed `none` search result.
+
+Then give one local verdict: `keep`, `steal`, `rearchitect`, `hard-cut`,
+`move`, `reject`, or `defer`.
 
 Do not infer superiority from cleaner-looking code with a narrower product
 surface. Test whether the mechanism survives applicable local constraints such
@@ -272,25 +335,52 @@ as JSON-native data, structural typing, multi-root documents, Plate
 extensibility, collaboration, React, DOM/input, browser behavior, persistence,
 and transactional reconfiguration.
 
+Do not reuse canned qualitative profiles across distinct concepts. Each of the
+six cells must explain that concept's actual mechanism with source evidence.
+Replacing a concept name inside generic winner prose is not analysis.
+
+Preferred base answers “what architecture should remain underneath?” The
+adaptation and debt fields answer “what should still change inside that base?”
+A local base can win while a reference ownership rule, compiler step, failure
+boundary, or proof invariant is still worth adapting.
+
+Do not make a global superiority claim unless the full matrix validator passes
+and the conclusion enumerates every classification count, concept ID, material
+evidence gap, and exception. Architecture fitness for Plite/Plate's constraints
+does not mean every local feature is individually superior.
+Claiming that every local feature is superior additionally requires every row
+to prefer `Plite`, `Plate`, or `Plite/Plate stack`; one reference win, tie,
+tradeoff, or unknown disproves it.
+
 For each suspicious local shape, answer:
 
-- Is this the correct owner?
-- Does public API expose an internal detail?
-- Can the owner derive information callers currently provide?
-- Are concepts wrongly split or wrongly unified?
+- Is this the correct owner, or does public API expose an internal detail?
+- Can the owner derive caller inputs, and are concepts wrongly split or unified?
 - Is configuration permissive, implicit, order-dependent, or non-transactional?
-- Does the shape optimize implementation convenience over caller DX/AX?
-- Is missing substrate functionality hidden in Plate glue?
+- Does the shape optimize implementation convenience over caller DX/AX or hide
+  missing substrate functionality in Plate glue?
 - Does it remain sound for large documents, collaboration, history,
   serialization, and reconfiguration?
 - What existing API, helper, loop, bridge, or test disappears under the right
   owner?
+- What does the reference do better inside this concept even if Plite/Plate is
+  the preferred base?
+- Which harvested reference tests encode portable behavior or proof topology,
+  and what is each disposition?
+- Which prior candidate already named this pressure, and is it reaffirmed,
+  superseded, or rejected?
 
 ## Material Candidate Gate
 
 Rank every accepted change as `P0`, `P1`, `P2`, or `P3` using `best-api`
 priority meaning. Rows without material present value are `keep`, `reject`, or
 evidence-backed `defer`, not low-scoring work waiting to happen.
+
+Any `adapt` reference mechanism, `material` local debt, or `adapt` proof
+topology is material work even when Plite/Plate remains the preferred base. It
+requires a material verdict and `P0`-`P3`; do not bury it under `keep`. A
+reference win may still be rejected after local constraints are applied, but
+the rejection must name the constraint and evidence.
 
 Every `P0`-`P3` candidate must include:
 
@@ -319,13 +409,16 @@ Lead with:
 3. rejected reference machinery and why;
 4. unresolved evidence gates.
 
-Use one complete concept ledger:
+Use the canonical strict concept matrix from
+`.agents/rules/editor-audit/references/feature-matrix.md`. Keep each reference's
+evidence and classification distinct. Do not group IDs or average conflicting
+architectures into one score. Put material value, shapes, deletion, owners,
+adoption, and proof in dossiers linked from the applicable matrix rows.
 
-| ID | Concept | Reference evidence and comparison | Current Plite | Current Plate | Verdict | Priority | Material value | Current shape | Proposed shape | Delete/hide/move | Primary owner | Dependent owner | Proof |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-
-Keep each reference's evidence and classification distinct. Do not average
-conflicting architectures into one score.
+Lead every matrix conclusion with exact counts and IDs for origins,
+classifications, preferred bases, reference adaptations, local debt, proof
+adaptations, prior-candidate dispositions, verdicts, and priorities. Counts
+without the IDs are not traceable.
 
 Then provide ideal accepted shapes, internal invariants, ownership changes,
 adoption/deletion impact, a dependency-ordered packet list, per-packet skill
@@ -337,6 +430,9 @@ group. Cross-layer work has one primary plan owner and one explicit dependent
 owner; never duplicate the same plan in both.
 
 ## Verification
+
+Use `.agents/rules/editor-audit/scripts/validate-concept-matrix.mjs` for strict
+matrix closure.
 
 For every reference, record and run the equivalent of:
 
@@ -354,6 +450,9 @@ Validate registry syntax and artifact links:
 ```bash
 node -e "JSON.parse(require('node:fs').readFileSync('docs/editor-audits/index.json', 'utf8'))"
 test -f <audit-artifact>
+node .agents/rules/editor-audit/scripts/validate-concept-matrix.mjs \
+  --manifest <coverage-manifest.json> \
+  --ledger <concept-matrix.md>
 node .agents/skills/autogoal/scripts/check-complete.mjs <audit-artifact>
 ```
 
@@ -366,18 +465,30 @@ concepts, exclusions, material candidates, and unresolved rows.
 The audit is complete only when:
 
 - every relevant source unit is mapped or explicitly excluded;
+- the strict matrix has exactly one ungrouped row per manifest concept ID;
+- the manifest is the symmetric union of reference and relevant local concepts,
+  with an origin for each;
 - every atomic concept has evidence from each applicable reference and current
   local owners;
-- every concept has a comparison and local verdict;
+- every row has reference, Plite, and Plate mapping status, all six
+  source-backed qualitative dimensions, and a named preferred base;
+- every concept has reference-adaptation, local-debt, proof-adaptation,
+  comparison, and local-verdict dispositions;
+- every prior P0-P3 candidate is reaffirmed, superseded, or rejected with
+  current evidence;
+- every harvested portable invariant has an explicit proof disposition;
 - every material candidate has concrete current/proposed public and internal
   shapes;
 - every material candidate names deletion, adoption, dependencies, proof, and
   planning owners;
 - repository provenance and full verified commits are recorded;
 - no aggregate score or speculative machinery substitutes for material value;
+- no global superiority claim survives without a passing full matrix, exact
+  classification counts and IDs, named constraints, and explicit exceptions;
 - public proposals pass the `best-api` lens;
 - zero concept, candidate, or routing rows remain unresolved except explicit
   evidence-backed defers;
+- zero canned qualitative profiles are reused across distinct concepts;
 - the goal plan records expected/reviewed/excluded counts and
   `check-complete.mjs` passes.
 

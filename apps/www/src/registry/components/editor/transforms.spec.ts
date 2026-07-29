@@ -1,4 +1,5 @@
 import { CodeBlockPlugin } from '@platejs/code-block/react';
+import { LinkPlugin } from '@platejs/link/react';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { type Selection, type Value, KEYS } from 'platejs';
@@ -7,7 +8,7 @@ import { createPlateEditor } from 'platejs/react';
 import { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';
 import { BaseListKit } from './plugins/list-base-kit';
 import { BaseToggleKit } from './plugins/toggle-base-kit';
-import { insertBlock, setBlockType } from './transforms';
+import { insertBlock, insertInlineElement, setBlockType } from './transforms';
 
 const createEditor = ({
   selection = {
@@ -29,6 +30,7 @@ const createEditor = ({
       ...BaseListKit,
       ...BaseToggleKit,
       CodeBlockPlugin,
+      LinkPlugin,
       BasePlaceholderPlugin,
       SuggestionPlugin,
     ],
@@ -37,6 +39,18 @@ const createEditor = ({
   });
 
 describe('editor block transforms', () => {
+  it('opens the floating link owner without a stale trigger API', () => {
+    const editor = createEditor();
+
+    insertInlineElement(editor, KEYS.link);
+
+    expect(editor.plugin(LinkPlugin).store.get()).toMatchObject({
+      mode: 'insert',
+      openEditorId: editor.id,
+      text: '',
+    });
+  });
+
   it('keeps selection inside the wrapped paragraph when turning a block into a blockquote', () => {
     const editor = createEditor();
 

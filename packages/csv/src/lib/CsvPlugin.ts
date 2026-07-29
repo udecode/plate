@@ -12,14 +12,14 @@ export type CsvPluginState = {
    *
    * @default 0.25
    */
-  errorTolerance?: number;
+  errorTolerance: number;
   /**
    * Options passed to PapaParse.
    *
    * @default { header: true }
    * @see https://www.papaparse.com/docs#config
    */
-  parseOptions?: CsvParseOptions;
+  parseOptions: CsvParseOptions;
 };
 
 export type DeserializeCsvOptions = { data: string } & CsvParseOptions;
@@ -27,10 +27,10 @@ export type DeserializeCsvOptions = { data: string } & CsvParseOptions;
 /** Enables support for deserializing CSV content into Plate nodes. */
 export const CsvPlugin = createBasePlugin({
   key: KEYS.csv,
-  initialState: {
+  initialState: (): CsvPluginState => ({
     errorTolerance: 0.25,
-    parseOptions: { header: true } as CsvParseOptions,
-  } satisfies CsvPluginState,
+    parseOptions: { header: true },
+  }),
   api: ({ editor, store }) => ({
     deserialize: ({
       data,
@@ -138,18 +138,18 @@ export const CsvPlugin = createBasePlugin({
       ];
     },
   }),
-  codecs: ({ api, defineCodecs }) =>
-    defineCodecs({
-      'text/plain': {
-        priority: 20,
-        scope: 'document',
-        decode: ({ data }) => {
-          const content = api.deserialize({ data });
+}).extend(({ api, defineCodecs }) => ({
+  codecs: defineCodecs({
+    'text/plain': {
+      priority: 20,
+      scope: 'document',
+      decode: ({ data }) => {
+        const content = api.deserialize({ data });
 
-          return content ? ContentSlice.closed(content) : null;
-        },
+        return content ? ContentSlice.closed(content) : null;
       },
-    }),
-});
+    },
+  }),
+}));
 
 export type CsvConfig = InferConfig<typeof CsvPlugin>;

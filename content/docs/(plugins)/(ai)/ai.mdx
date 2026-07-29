@@ -16,7 +16,7 @@ docs:
 - **Streaming Markdown/MDX insertion** with table, column, and code block support through `editor.update.aiChat.insertChunk`.
 - **Insert and chat review modes** with localized insert previews plus undo-safe batching through `editor.update.ai`.
 - **Block selection aware transforms** to replace or append entire sections using `editor.update.aiChat.replaceSelection` and `editor.update.aiChat.insertBelow`.
-- **Direct integration with `@ai-sdk/react`** so `editor.api.aiChat.submit` can stream responses from Vercel AI SDK helpers.
+- **Direct integration with `@ai-sdk/react`** so `editor.plugin(AIChatPlugin).api.submit` can stream responses from Vercel AI SDK helpers.
 - **Suggestion and comment utilities** that diff AI edits, accept/reject changes, and map AI feedback back to document ranges.
 
 </PackageInfo>
@@ -194,7 +194,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 });
 ```
 
-- `useChatChunk`: Watches `UseChatHelpers` status and yields incremental chunks.
+- `useChatChunk`: Watches the stored chat adapter and yields incremental chunks.
 - `editor.update.ai.beginPreview`: Captures the rollback slice and selection before the first preview chunk.
 - `update.insertChunk`: Streams Markdown/MDX into the document while reusing the active block.
 - `update.applySuggestions`: Converts edit responses into transient suggestion nodes.
@@ -203,7 +203,7 @@ Provide your own `render` components (toolbar button, floating menu, etc.) when 
 
 ### Build API Route
 
-Handle `editor.api.aiChat.submit` requests on the server. Each request includes the chat `messages` from `@ai-sdk/react` and a `ctx` payload that contains the editor `children`, current `selection`, and last `toolName`.
+Handle `editor.plugin(AIChatPlugin).api.submit` requests on the server. Each request includes the chat `messages` from `@ai-sdk/react` and a `ctx` payload that contains the editor `children`, current `selection`, and last `toolName`.
 [Complete API example](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"
@@ -251,14 +251,14 @@ Bridge the editor and your model endpoint with `@ai-sdk/react`. Store helpers on
 import { useEffect } from 'react';
 
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type UseChatHelpers, useChat } from '@ai-sdk/react';
-import { AIChatPlugin } from '@platejs/ai/react';
+import { useChat } from '@ai-sdk/react';
+import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
 import { useEditorPlugin } from 'platejs/react';
 
 type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
 
 export const useEditorAIChat = () => {
-  const { editor, store } = useEditorPlugin(AIChatPlugin);
+  const { store } = useEditorPlugin(AIChatPlugin);
 
   const chat = useChat<ChatMessage>({
     id: 'editor',
@@ -272,7 +272,7 @@ export const useEditorAIChat = () => {
   });
 
   useEffect(() => {
-    store.set({ chat: chat as UseChatHelpers<ChatMessage> });
+    store.set({ chat: createAIChatAdapter(chat) });
   }, [chat, store]);
 
   return chat;
@@ -294,7 +294,7 @@ useEditorChat({
 Now you can submit prompts programmatically:
 
 ```tsx
-editor.api.aiChat.submit('', {
+editor.plugin(AIChatPlugin).api.submit('', {
   prompt: {
     default: 'Continue the document after {block}',
     selecting: 'Rewrite {selection} with a clearer tone',
@@ -335,7 +335,7 @@ The demo backend in `apps/www/src/app/api/ai/command` reconstructs the editor fr
 - `getChooseToolPrompt` decides whether the request is `generate`, `edit`, or `comment`.
 - `getGeneratePrompt`, `getEditPrompt`, and `getCommentPrompt` transform the current editor state into instructions tailored to each mode.
 - Server prompt helpers serialize explicit editor snapshots through
-  `editor.read.markdown.serialize` and assemble selections, block IDs, and MDX
+  `editor.api.markdown.serialize` and assemble selections, block IDs, and MDX
   tags with `buildStructuredPrompt`.
 
 Augment the payload you send from the client to fine-tune server prompts:
@@ -403,7 +403,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="trigger" type="RegExp | string | string[]" optional>Character(s) that open the command menu. Defaults to `' '`.</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
     <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
-    <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>Store helpers from `useChat` so API calls can access them.</APIItem>
+    <APIItem name="chat" type="AIChatAdapter" optional>Store the adapter returned by `createAIChatAdapter(useChat(...))` so API calls can access chat state and controls.</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>Snapshot of nodes used to diff edit suggestions (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
@@ -413,7 +413,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
   </APIOptions>
 </API>
 
-### `editor.api.aiChat.submit(input, options?)`
+### `editor.plugin(AIChatPlugin).api.submit(input, options?)`
 
 Submits a prompt to your model provider. When `mode` is omitted it defaults to `'insert'` for a collapsed cursor and `'chat'` otherwise.
 
@@ -430,7 +430,7 @@ Submits a prompt to your model provider. When `mode` is omitted it defaults to `
 </APIOptions>
 </API>
 
-### `editor.api.aiChat.reset(options?)`
+### `editor.plugin(AIChatPlugin).api.reset(options?)`
 
 Clears chat state, removes AI nodes, and optionally undoes the last AI batch.
 
@@ -451,19 +451,19 @@ Retrieves the first AI node that matches the specified criteria.
 <APIReturns type="NodeEntry | undefined">Matching node entry, if found.</APIReturns>
 </API>
 
-### `editor.api.aiChat.reload()`
+### `editor.plugin(AIChatPlugin).api.reload()`
 
-Replays the last prompt using the stored `UseChatHelpers`, restoring the original selection or block selection before resubmitting.
+Replays the last prompt using the stored chat adapter, restoring the original selection or block selection before resubmitting.
 
-### `editor.api.aiChat.stop()`
+### `editor.plugin(AIChatPlugin).api.stop()`
 
 Stops streaming and calls `chat.stop`.
 
-### `editor.api.aiChat.show()`
+### `editor.plugin(AIChatPlugin).api.show()`
 
 Opens the AI menu, clears previous chat messages, and resets tool state.
 
-### `editor.api.aiChat.hide(options?)`
+### `editor.plugin(AIChatPlugin).api.hide(options?)`
 
 Closes the AI menu, optionally undoing the last AI batch and refocusing the editor.
 
@@ -594,7 +594,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 
 ### `useEditorChat`
 
-Connects `UseChatHelpers` to editor state so the AI menu knows whether to anchor to cursor, selection, or block selection.
+Observes AI menu state and reports whether an open menu is anchored to the cursor, a text selection, or a block selection.
 
 <API name="useEditorChat">
 <APIParameters>
@@ -629,22 +629,24 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 
 | Namespace | Methods |
 | --- | --- |
+| `ai.api` | `findTextRangeInBlock` |
 | `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
 | `aiChat.store.get` | `lastAssistantMessage` |
 | `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `removeAnchor`, `replaceSelection` |
 
-### `findTextRangeInBlock`
+### `ai.api.findTextRangeInBlock`
 
-Fuzzy-search helper that uses LCS to find the closest match inside a block.
+Find an exact, typo-tolerant, or partial-prefix text match inside a block:
 
-<API name="findTextRangeInBlock">
-<APIParameters>
-  <APIItem name="node" type="Node">Block node to search.</APIItem>
-  <APIItem name="searchText" type="string">Text snippet to locate.</APIItem>
-</APIParameters>
-<APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">Matched range or `null`.</APIReturns>
-</API>
+```tsx
+const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
+  block,
+  findText: 'Text to locate',
+});
+```
+
+It returns a Plite `Range` or `null`.
 
 ## Customization
 
@@ -652,7 +654,7 @@ Fuzzy-search helper that uses LCS to find the closest match inside a block.
 
 <ComponentSource name="ai-menu" />
 
-Extend the `aiChatItems` map to add new commands. Each command receives `{ aiEditor, editor, input }` and can call `editor.api.aiChat.submit` with custom prompts or transforms.
+Extend the `aiChatItems` map to add new commands. Each command receives `{ aiEditor, editor, input }` and can call `editor.plugin(AIChatPlugin).api.submit` with custom prompts or transforms.
 
 #### Simple Custom Command
 
@@ -662,7 +664,7 @@ summarizeInBullets: {
   label: 'Summarize in bullets',
   value: 'summarizeInBullets',
   onSelect: ({ editor }) => {
-    void editor.api.aiChat.submit('', {
+    void editor.plugin(AIChatPlugin).api.submit('', {
       prompt: 'Summarize the current selection using bullet points',
       toolName: 'generate',
     });
@@ -687,7 +689,7 @@ generateTOC: {
         ? 'Create a realistic table of contents for this document'
         : 'Generate a table of contents that reflects the existing headings';
 
-    void editor.api.aiChat.submit('', {
+    void editor.plugin(AIChatPlugin).api.submit('', {
       mode: 'insert',
       prompt,
       toolName: 'generate',

@@ -23,6 +23,7 @@ import {
   EDITOR_TO_PENDING_SELECTION,
   IS_COMPOSING,
 } from '@platejs/plite-dom/internal';
+import { clipboardHandler } from '@platejs/plite-dom';
 import {
   createReactEditor,
   Editable,
@@ -140,7 +141,7 @@ describe('PliteRuntime provider contract', () => {
     const slot = defineExtensionSlot('react-runtime-configuration-mode');
     const extension = (value: string) =>
       defineEditorExtension({
-        facets: [mode.of(value)],
+        facetProviders: [mode.of(value)],
         name: `react-runtime-configuration-mode-${value}`,
       });
     const editor = createReactEditor({
@@ -1563,13 +1564,15 @@ describe('PliteRuntime provider contract', () => {
 
     const clipboardExtension = defineEditorExtension({
       name: 'custom-clipboard',
-      clipboard: {
-        insertData() {
-          insertCount++;
+      contributions: [
+        clipboardHandler({
+          insertData() {
+            insertCount++;
 
-          return true;
-        },
-      },
+            return true;
+          },
+        }),
+      ],
     });
 
     const HeaderProbe = () => {

@@ -70,34 +70,24 @@ Create the comment plugin with extended configuration for state management:
 
 ```tsx
 import { isString } from '@platejs/plite-dom';
-import { TextApi, type ExtendConfig, type Path } from 'platejs';
-import {
-  type BaseCommentConfig,
-  BaseCommentPlugin,
-  getDraftCommentKey,
-} from '@platejs/comment';
+import { TextApi, type Path } from 'platejs';
+import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
 import { toPlatePlugin } from 'platejs/react';
 import { CommentLeaf } from '@/components/ui/comment-node';
 
-type CommentConfig = ExtendConfig<
-  BaseCommentConfig,
-  {
-    activeId: string | null;
-    commentingBlock: Path | null;
-    hoverId: string | null;
-  }
->;
+const initialState: {
+  activeId: string | null;
+  commentingBlock: Path | null;
+  hoverId: string | null;
+} = {
+  activeId: null,
+  commentingBlock: null,
+  hoverId: null,
+};
 
-export const commentPlugin = toPlatePlugin<CommentConfig>(
-  BaseCommentPlugin,
-  ({ editor }) => ({
-    initialState: {
-      activeId: null,
-      commentingBlock: null,
-      hoverId: null,
-    },
-  })
-).configure({ component: CommentLeaf });
+export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
+  initialState,
+}).configure({ component: CommentLeaf });
 ```
 
 - `initialState.activeId`: Currently active comment ID for visual highlighting
@@ -111,9 +101,8 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
 Add click handling to manage active comment state:
 
 ```tsx
-export const commentPlugin = toPlatePlugin<CommentConfig>(
-  BaseCommentPlugin,
-  ({ editor }) => ({
+export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
+    initialState,
     handlers: {
       // Set active comment when clicking on comment marks
       onClick: ({ api, event, store, type }) => {
@@ -148,9 +137,8 @@ export const commentPlugin = toPlatePlugin<CommentConfig>(
         if (!isSet) unsetActiveComment();
       },
     },
-    // ... previous state and render
-  })
-);
+    // ... render
+});
 ```
 
 The click handler tracks which comment is currently active:
@@ -165,12 +153,9 @@ The click handler tracks which comment is currently active:
 Extend the `setDraft` transaction command for enhanced functionality:
 
 ```tsx
-export const commentPlugin = toPlatePlugin<CommentConfig>(
-  BaseCommentPlugin,
-  ({ editor }) => ({
-    // ... previous configuration
-  })
-)
+export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
+  initialState,
+})
   .extend(({ editor, store, type }) => ({
     update: ({ tx }) => ({
         setDraft: (options = {}) => {

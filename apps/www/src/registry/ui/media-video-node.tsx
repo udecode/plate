@@ -33,7 +33,6 @@ export const VideoElement = withHOC(
       isVideo,
       isUpload,
       isYoutube,
-      readOnly,
       selected,
       unsafeUrl,
     } = useMediaState({
@@ -62,7 +61,6 @@ export const VideoElement = withHOC(
                 align,
                 maxWidth: isTweet ? 550 : '100%',
                 minWidth: isTweet ? 300 : 100,
-                readOnly,
               }}
             >
               <div className="group/media">

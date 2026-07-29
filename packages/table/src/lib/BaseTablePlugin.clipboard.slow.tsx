@@ -483,26 +483,29 @@ describe('table clipboard slow contracts', () => {
           </editor>
         ) as TestEditor;
 
-        const plugins = getTestTablePlugins(options, (plugin) =>
-          plugin.extend(() => ({
-            api: {
-              createCell: () => ({
-                background: 'custom',
-                children: [
-                  {
-                    children: [{ text: '' }],
-                    type: 'p',
-                  },
-                ],
-                type: 'td',
-              }),
-            },
-          }))
-        );
-
         const editor = createPlateEditor({
           nodeId: true,
-          plugins,
+          plugins: [
+            BaseTablePlugin.extend(() => ({
+              api: {
+                createCell: () => ({
+                  background: 'custom',
+                  children: [
+                    {
+                      children: [{ text: '' }],
+                      type: 'p',
+                    },
+                  ],
+                  type: 'td',
+                }),
+              },
+            })).configure({
+              initialState: {
+                disableMerge: true,
+                ...options,
+              },
+            }),
+          ],
           selection: input.selection,
           initialValue: input.children,
         });

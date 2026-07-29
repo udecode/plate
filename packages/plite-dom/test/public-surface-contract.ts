@@ -60,6 +60,7 @@ const expectedPliteDOMRuntimeRootExports = [
   'PliteDOMResolutionError',
   'TRIPLE_CLICK',
   'applyStringDiff',
+  'clipboardHandler',
   'closestShadowAware',
   'containsShadowAware',
   'defineHostCodec',
@@ -428,7 +429,9 @@ describe('plite-dom public surface contract', () => {
         'insertData',
         'insertFragmentData',
         'insertTextData',
+        'readSlice',
         'writeSelection',
+        'writeSlice',
       ]);
       return;
     }

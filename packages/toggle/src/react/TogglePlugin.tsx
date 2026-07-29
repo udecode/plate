@@ -1,55 +1,34 @@
-import { useEffect } from 'react';
-
-import type { ExtendConfig } from '@platejs/core';
-import { toPlatePlugin, useEditorSelector } from '@platejs/core/react';
-import { editorCommands, ElementApi, PathApi } from '@platejs/plite';
+import type { InferConfig } from '@platejs/core';
+import { toPlatePlugin } from '@platejs/core/react';
+import {
+  editorCommands,
+  editorReads,
+  ElementApi,
+  PathApi,
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import {
-  type BaseToggleConfig,
-  BaseTogglePlugin,
-} from '../lib/BaseTogglePlugin';
-import { renderToggleAboveNodes } from './renderToggleAboveNodes';
+import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
+import { ToggleVisibility } from './ToggleVisibility';
+import { useToggleIndex } from './useToggle';
 
-export type ToggleConfig = ExtendConfig<
-  BaseToggleConfig,
-  {
-    toggleIndex: Map<string, string[]>;
-  },
-  {},
-  {},
-  {
-    enclosingIds: (
-      state: Readonly<{
-        openIds: Set<string>;
-        toggleIndex: Map<string, string[]>;
-      }>,
-      elementId: string
-    ) => string[];
-    isClosed: (
-      state: Readonly<{
-        openIds: Set<string>;
-        toggleIndex: Map<string, string[]>;
-      }>,
-      elementId: string
-    ) => boolean;
-  }
->;
+export type TogglePluginState = {
+  toggleIndex: Map<string, string[]>;
+};
+
+const initialState: TogglePluginState = {
+  toggleIndex: new Map(),
+};
 
 /** Enables support for toggleable elements in the editor. */
-export const TogglePlugin = toPlatePlugin<ToggleConfig, ToggleConfig>(
-  BaseTogglePlugin,
-  ({ store }) => ({
-    initialState: {
-      toggleIndex: new Map(),
-    },
-    render: {
-      aboveNodes: renderToggleAboveNodes,
-    },
+export const TogglePlugin = toPlatePlugin(BaseTogglePlugin, {
+  initialState,
+})
+  .extend(() => ({
     selectors: {
-      enclosingIds: (state, elementId) =>
+      enclosingIds: (state, elementId: string) =>
         state.toggleIndex.get(elementId) ?? [],
-      isClosed: (state, elementId) => {
+      isClosed: (state, elementId: string) => {
         const { openIds, toggleIndex } = state;
 
         return (toggleIndex.get(elementId) ?? []).some(
@@ -57,62 +36,9 @@ export const TogglePlugin = toPlatePlugin<ToggleConfig, ToggleConfig>(
         );
       },
     },
-    useHooks: ({ store }) => {
-      const toggleIndex = useEditorSelector(
-        (editor) => {
-          const result = new Map<string, string[]>();
-          let enclosingToggles: [string, number][] = [];
-
-          editor.read.children().forEach((element) => {
-            if (!ElementApi.isElement(element)) return;
-
-            const indentValue = element[KEYS.indent];
-            const indent = typeof indentValue === 'number' ? indentValue : 0;
-            const adjustedIndent =
-              element.listStyleType && indent ? indent - 1 : indent;
-
-            enclosingToggles = enclosingToggles.filter(
-              ([, toggleIndent]) => toggleIndent < adjustedIndent
-            );
-
-            if (typeof element.id !== 'string') return;
-
-            result.set(
-              element.id,
-              enclosingToggles.map(([toggleId]) => toggleId)
-            );
-
-            if (element.type === editor.getType(KEYS.toggle)) {
-              enclosingToggles.push([element.id, adjustedIndent]);
-            }
-          });
-
-          return result;
-        },
-        {
-          equalityFn: (left, right) => {
-            if (left === right) return true;
-            if (!left || !right || left.size !== right.size) return false;
-
-            return [...left].every(([id, toggleIds]) => {
-              const previousToggleIds = right.get(id);
-
-              return (
-                previousToggleIds !== undefined &&
-                previousToggleIds.length === toggleIds.length &&
-                toggleIds.every(
-                  (toggleId, index) => previousToggleIds[index] === toggleId
-                )
-              );
-            });
-          },
-        }
-      );
-
-      useEffect(() => {
-        store.set({ toggleIndex });
-      }, [store, toggleIndex]);
-    },
+    useHooks: useToggleIndex,
+  }))
+  .extend(({ plugin, store }) => ({
     extension: {
       commands: ({ around }) => [
         around(editorCommands.insertBreak, ({ state, next }) => {
@@ -120,7 +46,7 @@ export const TogglePlugin = toPlatePlugin<ToggleConfig, ToggleConfig>(
 
           if (
             !currentBlockEntry ||
-            currentBlockEntry[0].type !== KEYS.toggle ||
+            currentBlockEntry[0].type !== plugin.type ||
             typeof currentBlockEntry[0].id !== 'string'
           ) {
             return false;
@@ -137,7 +63,7 @@ export const TogglePlugin = toPlatePlugin<ToggleConfig, ToggleConfig>(
 
           return state.transaction.extend(result, (tx) => {
             if (isOpen) {
-              tx.blocks.toggle(KEYS.toggle);
+              tx.blocks.toggle(plugin.type);
 
               const insertedBlock = tx.nodes.block();
 
@@ -248,16 +174,19 @@ export const TogglePlugin = toPlatePlugin<ToggleConfig, ToggleConfig>(
           return suppressDelete ? prefix : next.after(prefix);
         }),
       ],
-      queries: {
-        nodes: {
-          isSelectable({ element, next }) {
-            return typeof element.id === 'string' &&
-              store.get('isClosed', element.id)
+      read: ({ around }) => [
+        around(
+          editorReads.nodes.isSelectable,
+          ({ input: { element }, next }) =>
+            typeof element.id === 'string' && store.get('isClosed', element.id)
               ? false
-              : next();
-          },
-        },
-      },
+              : next()
+        ),
+      ],
     },
-  })
-);
+    render: {
+      aboveNodes: () => ToggleVisibility,
+    },
+  }));
+
+export type ToggleConfig = InferConfig<typeof TogglePlugin>;

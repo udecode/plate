@@ -21,7 +21,7 @@ Rich **caption**.
       url: 'https://example.com/video.mp4',
     });
     expect(document).not.toHaveProperty('roots');
-    expect(editor.read.markdown.serialize({ value: document })).toBe(
+    expect(editor.api.markdown.serialize({ value: document })).toBe(
       `<video src="https://example.com/video.mp4">
   Rich **caption**.
 </video>
@@ -98,6 +98,6 @@ Rich **caption**.
 
     expect(value).toMatchObject(output);
     expect(document).not.toHaveProperty('roots');
-    expect(editor.read.markdown.serialize({ value: document })).toBe(expected);
+    expect(editor.api.markdown.serialize({ value: document })).toBe(expected);
   });
 });

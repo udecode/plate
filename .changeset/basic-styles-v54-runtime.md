@@ -2,6 +2,9 @@
 "@platejs/basic-styles": major
 ---
 
+Export `TextIndentPluginState` as the complete mutable state contract for
+`BaseTextIndentPlugin`.
+
 - Move style mutations to plugin-owned `editor.update.*.set` commands, with
   typed `clear` updates for foreground and background colors
 - Register validated font, alignment, indentation, and line-height properties in compiled schemas, using the resolved plugin type as their storage key

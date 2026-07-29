@@ -1,6 +1,4 @@
 import { createTestEditor } from './__tests__/createTestEditor';
-import { deserializeMd } from './deserializer';
-import { serializeMd } from './serializer';
 
 describe('gfm package surfaces', () => {
   it.each([
@@ -43,14 +41,14 @@ describe('gfm package surfaces', () => {
   ])('$title', ({ expected, input, output }) => {
     const editor = createTestEditor();
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject(output);
 
-    const markdown = serializeMd(editor, { value });
+    const markdown = editor.api.markdown.serialize({ value });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject(value);
+    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
   });
 
   it('respects resourceLink when serializing bare autolink literals', () => {
@@ -71,7 +69,7 @@ describe('gfm package surfaces', () => {
     };
 
     expect(
-      serializeMd(editor, {
+      editor.api.markdown.serialize({
         remarkStringifyOptions: { resourceLink: true },
         value,
       })
@@ -83,7 +81,7 @@ describe('gfm package surfaces', () => {
     const input = '[^1]\n\n[^1]: Footnote text';
     const expected = '[^1]\n\n[^1]: Footnote text\n';
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -108,9 +106,9 @@ describe('gfm package surfaces', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value });
+    const markdown = editor.api.markdown.serialize({ value });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject(value);
+    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
   });
 });

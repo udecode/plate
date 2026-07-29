@@ -1,13 +1,13 @@
 import type { Descendant } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
 import type { MdxJsxFlowElement, MdxJsxTextElement } from 'mdast-util-mdx';
 import type { Node as UnistNode } from 'unist';
 
 import type { MdRootContent } from '../mdast';
 import type { DeserializeMdContext, MdDecoration } from '../types';
 
+import { serializeUnknownMdxNode } from '../internal/markdownDocument';
 import { mdastToPlate } from '../types';
-import { customMdxDeserialize } from './utils';
-import { getDeserializerByKey } from './utils/getDeserializerByKey';
 
 export const convertNodesDeserialize = (
   nodes: MdRootContent[],
@@ -24,19 +24,49 @@ export const convertNodesDeserialize = (
 };
 
 export const buildSlateNode = (
-  mdastNode: UnistNode,
+  mdastNode: MdRootContent | UnistNode,
   deco: MdDecoration,
   options: DeserializeMdContext
 ): Descendant[] => {
   /** Handle custom mdx nodes */
   if (isMdxJsxNode(mdastNode)) {
-    const result = customMdxDeserialize(mdastNode, deco, options);
-    return Array.isArray(result) ? result : [result];
+    const key = mdastNode.name
+      ? (options.getPluginKey(mdastNode.name) ?? mdastNode.name)
+      : null;
+
+    if (key) {
+      const type = options.getPluginType(mdastToPlate(key));
+      const parserKey = options.getPluginKey(type) ?? type;
+      const nodeParser = options.rules?.[parserKey]?.deserialize;
+
+      if (nodeParser) {
+        const result = nodeParser(mdastNode, deco, options);
+
+        return Array.isArray(result) ? result : [result];
+      }
+    } else {
+      console.warn(
+        'This MDX node does not have a parser for deserialization',
+        mdastNode
+      );
+    }
+
+    if (mdastNode.type === 'mdxJsxTextElement') {
+      return [{ text: serializeUnknownMdxNode(mdastNode) }];
+    }
+
+    return [
+      {
+        children: [{ text: serializeUnknownMdxNode(mdastNode) }],
+        type: options.getPluginType(KEYS.p),
+      },
+    ];
   }
 
   const type = options.getPluginType(mdastToPlate(mdastNode.type));
 
-  const nodeParser = getDeserializerByKey(type, options);
+  const key = options.getPluginKey(type) ?? type;
+  const nodeParser = options.rules?.[key]?.deserialize;
 
   if (nodeParser) {
     const result = nodeParser(mdastNode, deco, options);
@@ -46,7 +76,7 @@ export const buildSlateNode = (
 };
 
 const isMdxJsxNode = (
-  node: UnistNode
+  node: MdRootContent | UnistNode
 ): node is MdxJsxFlowElement | MdxJsxTextElement =>
   node.type === 'mdxJsxTextElement' || node.type === 'mdxJsxFlowElement';
 

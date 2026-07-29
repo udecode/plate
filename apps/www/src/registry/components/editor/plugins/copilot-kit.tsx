@@ -47,7 +47,7 @@ export const CopilotKit = [
 
         if (!contextEntry) return '';
 
-        const prompt = editor.read.markdown.serialize({
+        const prompt = editor.api.markdown.serialize({
           value: { children: [contextEntry[0] as Element] },
         });
 

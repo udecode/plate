@@ -1,6 +1,4 @@
 import { createTestEditor } from './__tests__/createTestEditor';
-import { deserializeMd } from './deserializer';
-import { serializeMd } from './serializer';
 
 describe('markdown task lists', () => {
   it('round-trips checked state through the markdown package surfaces', () => {
@@ -8,7 +6,7 @@ describe('markdown task lists', () => {
     const input = '- [ ] open\n- [x] done\n';
     const expected = '* [ ] open\n* [x] done\n';
 
-    const value = deserializeMd(editor, input);
+    const value = editor.api.markdown.deserialize(input);
 
     expect(value.children).toMatchObject([
       {
@@ -27,9 +25,9 @@ describe('markdown task lists', () => {
       },
     ]);
 
-    const markdown = serializeMd(editor, { value });
+    const markdown = editor.api.markdown.serialize({ value });
 
     expect(markdown).toBe(expected);
-    expect(deserializeMd(editor, markdown)).toMatchObject(value);
+    expect(editor.api.markdown.deserialize(markdown)).toMatchObject(value);
   });
 });

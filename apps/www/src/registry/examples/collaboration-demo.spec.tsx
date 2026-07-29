@@ -64,7 +64,7 @@ mock.module('@platejs/yjs/react', () => ({
   useYjsProviderStatus: (editor: any) => editor.provider.status,
   useYjsProviderSynced: (editor: any) => editor.provider.synced,
   YjsPlugin: {
-    configure: ({ options }: any) => ({ key: 'yjs', options }),
+    configure: ({ initialState }: any) => ({ initialState, key: 'yjs' }),
   },
 }));
 

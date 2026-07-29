@@ -3,5 +3,3 @@
  */
 
 export * from './BaseSuggestionPlugin';
-export * from './diffToSuggestions';
-export * from './types';

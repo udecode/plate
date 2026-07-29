@@ -234,7 +234,7 @@ const createEditorValue = (value?: SelectItem[]) => [
         {
           children: [{ text: '' }],
           type: KEYS.tag,
-          ...item,
+          value: item.value,
         },
         {
           text: '',

@@ -1,7 +1,10 @@
+import type { Value } from '@platejs/plite';
+
 import type { BaseEditor } from '../editor';
 import type {
   AnyPluginConfig,
   PluginConfig,
+  PluginReference,
   WithRequiredKey,
 } from './PluginConfig';
 import type { BasePlugin } from './BasePlugin';
@@ -10,12 +13,25 @@ import {
   getPlateRuntime,
 } from '../../internal/plugin/compilePlateModel';
 
-/** Get editor plugin by key or plugin object. */
-export function getBasePlugin<C extends AnyPluginConfig = PluginConfig>(
-  editor: BaseEditor,
-  p: WithRequiredKey<C>
-): C extends { clone: any } ? C : BasePlugin<C> {
-  const editorPlugin = getCompiledPlatePlugin(editor, p.key) as any;
+/** Get one installed editor plugin by descriptor or key. */
+export function getBasePlugin<
+  V extends Value,
+  P extends AnyPluginConfig,
+  C extends AnyPluginConfig,
+>(
+  editor: BaseEditor<V, P>,
+  plugin: PluginReference & { readonly __config: C }
+): BasePlugin<C>;
+export function getBasePlugin<
+  V extends Value,
+  P extends AnyPluginConfig,
+  C extends AnyPluginConfig = PluginConfig,
+>(editor: BaseEditor<V, P>, p: WithRequiredKey<C>): BasePlugin<C>;
+export function getBasePlugin(
+  editor: object,
+  p: Readonly<{ key: string }>
+): unknown {
+  const editorPlugin = getCompiledPlatePlugin(editor, p.key);
 
   if (!editorPlugin) {
     throw new Error(`Plate plugin "${p.key}" is not installed.`);

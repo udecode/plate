@@ -259,8 +259,8 @@ CopilotPlugin.extend(({ api }) => ({
 
         if (!contextEntry) return '';
 
-        const prompt = editor.read.markdown.serialize({
-          value: [contextEntry[0] as Element],
+        const prompt = editor.api.markdown.serialize({
+          value: { children: [contextEntry[0] as Element] },
         });
 
         return `Continue the text up to the next punctuation mark:

@@ -7,7 +7,7 @@ type NominalPluginReference = Readonly<{ key: string; type: string }>;
 const pluginDescriptors = new WeakSet<object>();
 const pluginSchemaFamilies = new WeakMap<object, object>();
 const htmlCodecSchemaFamilies = new WeakMap<
-  (...args: any[]) => unknown,
+  (...args: never[]) => unknown,
   Readonly<{
     owner: object | null;
     target: object | null;
@@ -125,7 +125,7 @@ export const getPluginSchemaFamily = (value: object): object | null =>
   pluginSchemaFamilies.get(value) ?? null;
 
 export const registerHtmlCodecSchemaFamilies = <
-  T extends (...args: any[]) => unknown,
+  T extends (...args: never[]) => unknown,
 >(
   extension: T,
   owner: object,
@@ -143,7 +143,7 @@ export const registerHtmlCodecSchemaFamilies = <
 };
 
 export const getHtmlCodecSchemaFamilies = (
-  extension: (...args: any[]) => unknown
+  extension: (...args: never[]) => unknown
 ) => htmlCodecSchemaFamilies.get(extension);
 
 const hasStringIdentity = (value: object): value is NominalPluginReference => {
@@ -250,7 +250,7 @@ const mergeDefinedProperties = (
   return merged;
 };
 
-export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: any[]): T {
+export function mergePlugins<T>(basePlugin: T, ...sourcePlugins: unknown[]): T {
   const identitySources = [basePlugin, ...sourcePlugins].filter(
     isNominalPluginDescriptor
   );

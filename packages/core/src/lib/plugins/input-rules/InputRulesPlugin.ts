@@ -36,9 +36,9 @@ export const InputRulesPlugin = createBasePlugin({
       };
     };
     const createSelectionContext = ({
-      state = editor.read,
+      state,
     }: {
-      state?: Pick<
+      state: Pick<
         EditorStateView,
         'nodes' | 'points' | 'schema' | 'selection' | 'text'
       >;
@@ -49,7 +49,7 @@ export const InputRulesPlugin = createBasePlugin({
         selection
           ? state.nodes.above<Element>({
               at: selection.focus,
-              match: (node: unknown) =>
+              match: (node) =>
                 ElementApi.isElement(node) && state.schema.isBlock(node),
             })
           : undefined
@@ -118,7 +118,7 @@ export const InputRulesPlugin = createBasePlugin({
 
     return {
       clipboard: {
-        insertData(data, { next, tx }) {
+        insertData(data, { next, transaction: tx }) {
           const text = data.getData('text/plain') || null;
           const selectionContext = createSelectionContext({ state: tx });
           let handled = false;

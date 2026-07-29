@@ -134,7 +134,14 @@ export type SchemaTarget =
 export type SchemaPropertySplitPolicy = 'drop' | 'preserve';
 export type SchemaPropertyTypeChangePolicy = 'drop' | 'preserve-if-allowed';
 
+export type SchemaPropertyExclusiveGroup<TId extends string = string> =
+  Readonly<{
+    id: TId;
+    kind: 'exclusive';
+  }>;
+
 export type SchemaTextPropertyOptions = Readonly<{
+  exclusive?: readonly SchemaPropertyExclusiveGroup[];
   inclusive?: boolean;
   split?: SchemaPropertySplitPolicy;
   target?: SchemaTarget;
@@ -152,6 +159,7 @@ export type SchemaTextProperty<
   TDescriptor extends PropertyValueDescriptor = PropertyValueDescriptor,
   TTarget extends SchemaTarget | undefined = SchemaTarget | undefined,
 > = Readonly<{
+  exclusive?: readonly SchemaPropertyExclusiveGroup[];
   inclusive: boolean;
   key: TKey;
   placement: 'text';

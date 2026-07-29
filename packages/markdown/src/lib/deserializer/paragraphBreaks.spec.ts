@@ -1,6 +1,4 @@
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { serializeMd } from '../serializer/serializeMd';
-import { deserializeMd } from './deserializeMd';
 
 describe('paragraph breaks preservation', () => {
   const editor = createTestEditor();
@@ -42,7 +40,7 @@ describe('paragraph breaks preservation', () => {
     ];
 
     // Serialize to markdown
-    const serialized = serializeMd(editor, {
+    const serialized = editor.api.markdown.serialize({
       value: { children: originalValue },
     });
 
@@ -51,7 +49,7 @@ describe('paragraph breaks preservation', () => {
     expect(serialized).toMatch(/line 1\n\n\u200B\n\nline 2\n\nline 3/);
 
     // Deserialize back to Plate AST
-    const deserialized = deserializeMd(editor, serialized);
+    const deserialized = editor.api.markdown.deserialize(serialized);
 
     // Check that the empty paragraph is preserved
     expect(deserialized.children).toHaveLength(4);
@@ -84,10 +82,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, {
+    const serialized = editor.api.markdown.serialize({
       value: { children: originalValue },
     });
-    const deserialized = deserializeMd(editor, serialized);
+    const deserialized = editor.api.markdown.deserialize(serialized);
 
     expect(deserialized.children).toHaveLength(4);
     expect(deserialized.children[1].children[0].text).toBe('');
@@ -122,10 +120,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, {
+    const serialized = editor.api.markdown.serialize({
       value: { children: originalValue },
     });
-    const deserialized = deserializeMd(editor, serialized);
+    const deserialized = editor.api.markdown.deserialize(serialized);
 
     expect(deserialized.children).toHaveLength(6);
     expect(deserialized.children[0].children[0].text).toBe('');
@@ -158,10 +156,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, {
+    const serialized = editor.api.markdown.serialize({
       value: { children: originalValue },
     });
-    const deserialized = deserializeMd(editor, serialized);
+    const deserialized = editor.api.markdown.deserialize(serialized);
 
     expect(deserialized.children).toHaveLength(3);
     expect(deserialized.children[0].children).toHaveLength(3);
@@ -183,10 +181,10 @@ describe('paragraph breaks preservation', () => {
       },
     ];
 
-    const serialized = serializeMd(editor, {
+    const serialized = editor.api.markdown.serialize({
       value: { children: originalValue },
     });
-    const deserialized = deserializeMd(editor, serialized);
+    const deserialized = editor.api.markdown.deserialize(serialized);
 
     // The zero-width space in actual text content should be preserved
     expect(deserialized.children[0].children[0].text).toBe(

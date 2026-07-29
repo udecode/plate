@@ -63,18 +63,22 @@ const TagInputPlugin = createBasePlugin({
 import { createBasePlugin } from 'platejs';
 import type { TriggerComboboxPluginState } from '@platejs/combobox';
 
+export type TagPluginState = TriggerComboboxPluginState;
+
+const initialState: TagPluginState = {
+  trigger: '#',
+  triggerPreviousCharPattern: /^\s?$/,
+  createComboboxInput: () => ({
+    children: [{ text: '' }],
+    type: 'tag_input',
+  }),
+};
+
 export const TagPlugin = createBasePlugin({
   dependencies: [TagInputPlugin],
+  initialState,
   key: 'tag',
   schema: { element: { void: 'inline' } },
-  initialState: {
-    trigger: '#',
-    triggerPreviousCharPattern: /^\s?$/,
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: 'tag_input',
-    }),
-  } satisfies TriggerComboboxPluginState,
 });
 ```
 

@@ -3,11 +3,18 @@ import type {
   EditorStateView,
   Element,
   NodeInsertNodesOptions,
+  Path,
 } from '@platejs/plite';
 import { ElementApi, NodeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import type { Heading } from './types';
+export type Heading = {
+  depth: number;
+  id: string;
+  path: Path;
+  title: string;
+  type: string;
+};
 
 export type TocPluginState = {
   isScroll: boolean;
@@ -15,19 +22,17 @@ export type TocPluginState = {
   queryHeading?: (state: EditorStateView) => Heading[];
 };
 
-const initialState: TocPluginState = {
-  isScroll: true,
-  topOffset: 80,
-};
-
 export const BaseTocPlugin = createBasePlugin({
+  initialState: (): TocPluginState => ({
+    isScroll: true,
+    topOffset: 80,
+  }),
   key: KEYS.toc,
   schema: {
     element: {
       void: 'block',
     },
   },
-  initialState,
   read: ({ store, state }) => ({
     headings: () => {
       const { queryHeading } = store.get();

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { createPortal } from 'react-dom';
 
-import { selectBlockById, useDraggable, useDropLine } from '@platejs/dnd';
+import { useDraggable, useDropLine } from '@platejs/dnd';
 import {
   BlockSelectionPlugin,
   useBlockSelected,
@@ -1225,7 +1225,6 @@ export function TableRowElement({
 }: PlateElementProps<TTableRowElement>) {
   const { element } = props;
   const readOnly = useEditorReadOnly();
-  const editor = useEditor();
   const rowIndex = useElementSelector(([, path]) => path.at(-1) as number, {
     key: KEYS.tr,
   });
@@ -1251,12 +1250,24 @@ export function TableRowElement({
         PathApi.parent(dragEntry[1]),
         PathApi.parent(dropEntry[1])
       ),
-    onDropHandler: (_, { dragItem }) => {
+    onDropHandler: (editor, { dragItem }) => {
       if ('id' in dragItem) {
         const id = Array.isArray(dragItem.id) ? dragItem.id[0] : dragItem.id;
 
         if (id) {
-          selectBlockById(editor, id);
+          const path = editor.read.nodes.find({
+            at: [],
+            match: { id },
+          })?.[1];
+
+          if (!path) return;
+
+          const range = editor.read.ranges.get(path);
+
+          if (!range) return;
+
+          editor.update.selection.set(range);
+          editor.api.dom.focus();
         }
       }
     },

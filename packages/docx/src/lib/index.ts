@@ -3,4 +3,4 @@
  */
 
 export * from './DocxPlugin';
-export * from './docx-cleaner/index';
+export * from './cleanDocx';

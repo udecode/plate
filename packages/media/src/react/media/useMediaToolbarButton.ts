@@ -5,7 +5,7 @@ import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseImagePlugin } from '../../lib/image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from '../../lib/media-embed/BaseMediaEmbedPlugin';
-import type { MediaInsertInput } from '../../lib/media/types';
+import type { MediaInsertInput } from '../../lib/BaseMediaPlugin';
 
 export interface InsertMediaUrlOptions
   extends NodeInsertNodesOptions<TImageElement | TMediaEmbedElement> {

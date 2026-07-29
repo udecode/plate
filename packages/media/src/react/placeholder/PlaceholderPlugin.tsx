@@ -18,11 +18,9 @@ import type {
   ImageInsertInput,
   MediaInsertInput,
   ProviderMediaInsertInput,
-} from '../../lib/media/types';
-import {
-  type PlaceholderConfig,
-  BasePlaceholderPlugin,
-} from '../../lib/placeholder/BasePlaceholderPlugin';
+} from '../../lib/BaseMediaPlugin';
+import { BasePlaceholderPlugin } from '../../lib/placeholder/BasePlaceholderPlugin';
+import { AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin } from '../plugins';
 import { lookup } from './internal/mimeTypes';
 
 const fileSizePattern = /^(\d+)(\.\d+)?\s*(B|KB|MB|GB)$/i;
@@ -118,39 +116,15 @@ export type InsertMediaOptions = Omit<
   'at'
 > & { at?: Path };
 
-export type PlaceholderApi = {
-  addUploadingFile: (id: string, file: File) => void;
-  removeUploadingFile: (id: string) => void;
-};
-
-export type PlaceholderSelectors = {
-  uploadingFile: (
-    state: Readonly<{ uploadingFiles: Record<string, File> }>,
-    id: string
-  ) => File | undefined;
-};
-
-export type PlaceholderUpdates = {
-  insertMedia: (files: File[] | FileList, options?: InsertMediaOptions) => void;
-  replaceMedia: (
-    input:
-      | (AlignedMediaInsertInput & { type: string })
-      | (ImageInsertInput & { type: string })
-      | (MediaInsertInput & { type: string })
-      | (ProviderMediaInsertInput & { type: string }),
-    options: Omit<NodeInsertNodesOptions<TMediaElement>, 'at'> & { at: Path }
-  ) => void;
-};
-
-export type PlaceholderPluginState = PlaceholderConfig['initialState'] & {
+export type PlaceholderPluginState = {
   disableEmptyPlaceholder: boolean;
   disableFileDrop: boolean;
+  error: UploadError | null;
+  maxFileCount: number;
+  /** Whether multiple files can be uploaded in one update. */
+  multiple: boolean;
   uploadConfig: UploadConfig;
   uploadingFiles: Record<string, File>;
-  error?: UploadError | null;
-  maxFileCount?: number;
-  /** Whether multiple files can be uploaded in one update. */
-  multiple?: boolean;
 };
 
 type ErrorData<T extends UploadErrorCode> = Extract<
@@ -173,53 +147,56 @@ const isUploadError = (error: unknown): error is UploadError =>
   'files' in error.data &&
   Array.isArray(error.data.files);
 
-export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
-  initialState: {
-    disableEmptyPlaceholder: false,
-    disableFileDrop: false,
-    error: null,
-    maxFileCount: 5,
-    multiple: true,
-    uploadConfig: {
-      audio: {
-        maxFileCount: 1,
-        maxFileSize: '8MB',
-        mediaType: KEYS.audio,
-        minFileCount: 1,
-      },
-      blob: {
-        maxFileCount: 1,
-        maxFileSize: '8MB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      image: {
-        maxFileCount: 3,
-        maxFileSize: '4MB',
-        mediaType: KEYS.img,
-        minFileCount: 1,
-      },
-      pdf: {
-        maxFileCount: 1,
-        maxFileSize: '4MB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      text: {
-        maxFileCount: 1,
-        maxFileSize: '64KB',
-        mediaType: KEYS.file,
-        minFileCount: 1,
-      },
-      video: {
-        maxFileCount: 1,
-        maxFileSize: '16MB',
-        mediaType: KEYS.video,
-        minFileCount: 1,
-      },
+const initialState: PlaceholderPluginState = {
+  disableEmptyPlaceholder: false,
+  disableFileDrop: false,
+  error: null,
+  maxFileCount: 5,
+  multiple: true,
+  uploadConfig: {
+    audio: {
+      maxFileCount: 1,
+      maxFileSize: '8MB',
+      mediaType: KEYS.audio,
+      minFileCount: 1,
     },
-    uploadingFiles: {},
-  } as PlaceholderPluginState,
+    blob: {
+      maxFileCount: 1,
+      maxFileSize: '8MB',
+      mediaType: KEYS.file,
+      minFileCount: 1,
+    },
+    image: {
+      maxFileCount: 3,
+      maxFileSize: '4MB',
+      mediaType: KEYS.img,
+      minFileCount: 1,
+    },
+    pdf: {
+      maxFileCount: 1,
+      maxFileSize: '4MB',
+      mediaType: KEYS.file,
+      minFileCount: 1,
+    },
+    text: {
+      maxFileCount: 1,
+      maxFileSize: '64KB',
+      mediaType: KEYS.file,
+      minFileCount: 1,
+    },
+    video: {
+      maxFileCount: 1,
+      maxFileSize: '16MB',
+      mediaType: KEYS.video,
+      minFileCount: 1,
+    },
+  },
+  uploadingFiles: {},
+};
+
+export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
+  dependencies: [AudioPlugin, FilePlugin, ImagePlugin, VideoPlugin],
+  initialState,
 })
   .extend(({ store }) => ({
     api: {
@@ -469,9 +446,9 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
       },
     }),
   }))
-  .extend(({ store, update }) => ({
+  .extend(({ editor, store, update }) => ({
     handlers: {
-      onDrop: ({ editor, event }) => {
+      onDrop: ({ event }) => {
         // The DnD plugin owns file drops unless explicitly disabled.
         if (!store.get('disableFileDrop')) return;
 
@@ -490,7 +467,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
 
         return true;
       },
-      onPaste: ({ editor, event }) => {
+      onPaste: ({ event }) => {
         const { files, types } = event.clipboardData;
 
         if (files.length === 0 || types.includes('text/html')) return false;
@@ -501,7 +478,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         const ancestor = editor.read.nodes.block();
 
         if (ancestor && NodeApi.string(ancestor[0]).length === 0) {
-          editor.update<{ placeholder: PlaceholderUpdates }>((tx) => {
+          editor.update((tx) => {
             tx.nodes.remove({ at: ancestor[1] });
             tx.placeholder.insertMedia(files, { at: ancestor[1] });
           });

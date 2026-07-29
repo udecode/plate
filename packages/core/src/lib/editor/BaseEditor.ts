@@ -7,7 +7,6 @@ import type {
   WithRequiredKey,
 } from '../plugin/PluginConfig';
 import type {
-  AnyBasePlugin,
   BasePlugin,
   BasePluginContext,
   InjectNodeProps,
@@ -51,7 +50,7 @@ type PlatePluginRuntime = {
 };
 
 type GetBasePlugin = {
-  <P extends AnyBasePlugin>(plugin: P): P;
+  <P extends PluginWithConfig>(plugin: P): BasePlugin<InferConfig<P>>;
   <PInput extends RuntimeBasePluginInput = PluginConfig>(
     plugin: WithRequiredKey<PInput>
   ): RuntimeInferPluginConfig<PInput> extends { clone: unknown }

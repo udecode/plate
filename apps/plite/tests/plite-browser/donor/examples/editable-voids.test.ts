@@ -1275,8 +1275,9 @@ test.describe('editable voids', () => {
       await childRoot.selection.select(childSelection);
       await childEditor.evaluate((element: HTMLElement) => element.focus());
 
-      const copyPayload = await childRoot.clipboard.copyEventPayload();
+      const copyPayload = await childRoot.clipboard.copyNativeEventPayload();
 
+      runtimeErrors.assertNone();
       expect(copyPayload.text).toBe('This is editable rich');
       expect(copyPayload.pliteFragment).toBeTruthy();
       expect(copyPayload.types).toEqual(
@@ -1290,7 +1291,7 @@ test.describe('editable voids', () => {
         .poll(() => childRoot.get.modelText())
         .toContain('This is editable rich text');
 
-      const cutPayload = await childRoot.clipboard.cutEventPayload();
+      const cutPayload = await childRoot.clipboard.cutNativeEventPayload();
 
       expect(cutPayload.text).toBe('This is editable rich');
       expect(cutPayload.pliteFragment).toBeTruthy();

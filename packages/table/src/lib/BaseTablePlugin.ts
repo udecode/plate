@@ -23,6 +23,7 @@ import {
   type Descendant,
   type EditorAboveOptions,
   editorCommands,
+  editorReads,
   type EditorSelectionSpec,
   type EditorStateView,
   type Element,
@@ -43,11 +44,6 @@ import {
   SelectionApi,
   TextApi,
 } from '@platejs/plite';
-import {
-  getDOMClipboardFormatKey,
-  readDOMFragmentData,
-  writeDOMHostFragmentData,
-} from '@platejs/plite-dom/internal';
 import {
   KEYS,
   type TTableCellBorder,
@@ -73,7 +69,6 @@ import {
   type TableIntent,
 } from './internal/mutation';
 import {
-  applyPreparedTablePastePlan,
   createOrdinaryTablePasteElement,
   getTablePasteElement,
   planPreparedTablePaste,
@@ -243,19 +238,19 @@ const getTableAnchorPoint = (
   };
 };
 
-type TablePluginState = {
+export type TablePluginState = {
   /** Disable expanding the table when inserting cells. */
   disableExpandOnInsert?: boolean;
   /** Disable first column left resizer. */
   disableMarginLeft?: boolean;
   /** Disable cell merging functionality. */
-  disableMerge?: boolean;
+  disableMerge: boolean;
   /** Preserve the first column width when the table has one column. */
   enableUnsetSingleColSize?: boolean;
   /** Initial table width used to derive missing column sizes. */
   initialTableWidth?: number;
   /** Minimum column width. */
-  minColumnWidth?: number;
+  minColumnWidth: number;
 };
 
 type InsertTableColumnOptions = {
@@ -443,48 +438,18 @@ export const BaseTableCellHeaderPlugin = createBasePlugin({
   },
 });
 
-const defaultPliteFragmentFormat = 'x-plite-fragment';
 const csvSpecialCharacterPattern = /[",\r\n]/;
-const openingHtmlTagPattern = /<[A-Za-z][^<>]*?>/g;
-const pliteFragmentAttributePattern = /\bdata-plite-fragment\s*=/i;
-const pliteFragmentFormatPattern =
-  /\bdata-plite-fragment-format\s*=\s*(["'])(.*?)\1/i;
 const tablePasteSources = new WeakMap<object, TablePasteSource[]>();
 
-const hasEmbeddedPliteFragment = (html: string, format: string) =>
-  (html.match(openingHtmlTagPattern) ?? []).some((tag) => {
-    if (!pliteFragmentAttributePattern.test(tag)) return false;
-
-    const embeddedFormat = tag.match(pliteFragmentFormatPattern)?.[2];
-
-    return embeddedFormat
-      ? embeddedFormat === format
-      : format === defaultPliteFragmentFormat;
-  });
+const initialState: TablePluginState = {
+  disableMerge: false,
+  minColumnWidth: 48,
+};
 
 const escapeCsvField = (value: string) =>
   csvSpecialCharacterPattern.test(value)
     ? `"${value.replaceAll('"', '""')}"`
     : value;
-
-const withTablePasteSource = <T>(
-  editor: object,
-  source: TablePasteSource,
-  run: () => T
-): T => {
-  const stack = tablePasteSources.get(editor) ?? [];
-
-  stack.push(source);
-  tablePasteSources.set(editor, stack);
-
-  try {
-    return run();
-  } finally {
-    stack.pop();
-
-    if (stack.length === 0) tablePasteSources.delete(editor);
-  }
-};
 
 /** Enables support for tables. */
 export const BaseTablePlugin = createBasePlugin({
@@ -558,10 +523,7 @@ export const BaseTablePlugin = createBasePlugin({
       },
     };
   },
-  initialState: {
-    disableMerge: false,
-    minColumnWidth: 48,
-  } as TablePluginState,
+  initialState,
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -1473,11 +1435,6 @@ export const BaseTablePlugin = createBasePlugin({
 
         if (!tableEntry) return false;
 
-        writeDOMHostFragmentData(editor, data, {
-          html: '',
-          slice: ContentSlice.closed([tableEntry[0]]),
-        });
-
         const rows = tableEntry[0].children as TTableRowElement[];
         const values = rows.map((row) =>
           (row.children as TTableCellElement[]).map((cell) =>
@@ -1489,9 +1446,15 @@ export const BaseTablePlugin = createBasePlugin({
           .join('\n')}\n`;
         const tsv = `${values.map((row) => row.join('\t')).join('\n')}\n`;
 
-        data.setData('text/csv', csv);
-        data.setData('text/tsv', tsv);
-        data.setData('text/plain', tsv);
+        editor.api.clipboard.writeSlice(data, {
+          formats: {
+            'text/csv': csv,
+            'text/plain': tsv,
+            'text/tab-separated-values': tsv,
+            'text/tsv': tsv,
+          },
+          slice: editor.read.slice.export(),
+        });
 
         return true;
       },
@@ -1913,6 +1876,77 @@ export const BaseTablePlugin = createBasePlugin({
   }))
   .extend((context) => {
     const { api, editor, plugin, type } = context;
+    const projectTableSlice = (slice: ContentSlice): ContentSlice => {
+      const content: Descendant[] = [];
+      let projected = false;
+      const tableNodes = slice.content.filter(
+        (node) => ElementApi.isElement(node) && node.type === context.type
+      );
+      const selectedTable =
+        tableNodes.length === 1
+          ? context.read.getGridAbove()[0]?.[0]
+          : undefined;
+
+      slice.content.forEach((node) => {
+        if (!ElementApi.isElement(node) || node.type !== context.type) {
+          content.push(node);
+          return;
+        }
+
+        if (!selectedTable) {
+          content.push(node);
+          return;
+        }
+
+        const rows = node.children as TTableRowElement[];
+        const rowCount = rows.length;
+
+        if (!rowCount) {
+          content.push(node);
+          return;
+        }
+
+        const colCount = rows[0].children.length;
+
+        projected = true;
+
+        if (rowCount <= 1 && colCount <= 1) {
+          const cell = rows[0].children[0] as TTableCellElement;
+
+          content.push(...cell.children);
+          return;
+        }
+
+        content.push({
+          ...selectedTable,
+          ...node,
+          children: selectedTable.children,
+        });
+      });
+
+      return projected
+        ? ContentSlice.fromJSON({
+            ...slice,
+            content,
+            openEnd: 0,
+            openStart: 0,
+          })
+        : slice;
+    };
+    const withPasteSource = <T>(source: TablePasteSource, run: () => T): T => {
+      const stack = tablePasteSources.get(editor) ?? [];
+
+      stack.push(source);
+      tablePasteSources.set(editor, stack);
+
+      try {
+        return run();
+      } finally {
+        stack.pop();
+
+        if (stack.length === 0) tablePasteSources.delete(editor);
+      }
+    };
 
     return {
       update: ({ tx }) => {
@@ -2530,46 +2564,6 @@ export const BaseTablePlugin = createBasePlugin({
           ],
         },
         {
-          queries: {
-            fragment: {
-              get({ next }) {
-                const fragment = next();
-                const nextFragment: Descendant[] = [];
-
-                fragment.forEach((node) => {
-                  if (
-                    !ElementApi.isElement(node) ||
-                    node.type !== context.type
-                  ) {
-                    nextFragment.push(node);
-                    return;
-                  }
-
-                  const rows = node.children as TTableRowElement[];
-                  const rowCount = rows.length;
-
-                  if (!rowCount) return;
-
-                  const colCount = rows[0].children.length;
-
-                  if (rowCount <= 1 && colCount <= 1) {
-                    const cell = rows[0].children[0] as TTableCellElement;
-                    nextFragment.push(...cell.children);
-
-                    return;
-                  }
-
-                  const [subTable] = context.read.getGridAbove();
-
-                  if (subTable) nextFragment.push(subTable[0]);
-                });
-
-                return nextFragment;
-              },
-            },
-          },
-        },
-        {
           clipboard: {
             insertData(data, { next }) {
               const types = Array.from(data.types ?? []);
@@ -2583,15 +2577,8 @@ export const BaseTablePlugin = createBasePlugin({
               const html = read('text/html');
               const text =
                 read('text/plain') || read('text/tsv') || read('text/csv');
-              const clipboardFormat = getDOMClipboardFormatKey(context.editor);
-              const exactMime = `application/${clipboardFormat}`;
-              const hasExactMime =
-                types.includes(exactMime) || read(exactMime).length > 0;
-              const hasEmbeddedExact = hasEmbeddedPliteFragment(
-                html,
-                clipboardFormat
-              );
-              const hasRecognizedExact = hasExactMime || hasEmbeddedExact;
+              const exact = context.editor.api.clipboard.readSlice(data);
+              const hasRecognizedExact = exact.kind !== 'absent';
               const view = context.read.getSelection();
               const hasStructuralTarget =
                 !!view &&
@@ -2606,7 +2593,7 @@ export const BaseTablePlugin = createBasePlugin({
                       text.includes('\t')
                     ? 'tsv'
                     : 'csv';
-              const exactSlice = readDOMFragmentData(context.editor, data);
+              const exactSlice = exact.kind === 'slice' ? exact.slice : null;
               const exactTable =
                 exactSlice &&
                 getTablePasteElement(exactSlice, {
@@ -2615,7 +2602,7 @@ export const BaseTablePlugin = createBasePlugin({
                   tableType: context.type,
                 });
 
-              if (hasStructuralTarget && hasRecognizedExact && !exactSlice) {
+              if (hasStructuralTarget && exact.kind === 'invalid') {
                 context.editor
                   .plugin(DebugPlugin)
                   .api.warn(
@@ -2646,14 +2633,10 @@ export const BaseTablePlugin = createBasePlugin({
                   return true;
                 }
 
-                return withTablePasteSource(context.editor, 'model', () =>
-                  next(data)
-                );
+                return withPasteSource('model', () => next(data));
               }
 
-              return withTablePasteSource(context.editor, source, () =>
-                next(data)
-              );
+              return withPasteSource(source, () => next(data));
             },
           },
         },
@@ -2763,7 +2746,11 @@ export const BaseTablePlugin = createBasePlugin({
               }
 
               return state.transaction((tx) => {
-                applyPreparedTablePastePlan(tx, plan);
+                applyTableMutationPlan(tx, {
+                  kind: 'plan',
+                  operations: plan.operations,
+                  selection: plan.selection,
+                });
               });
             }),
           ],
@@ -2884,7 +2871,16 @@ export const BaseTablePlugin = createBasePlugin({
           ],
         },
         {
-          selections: [
+          read: ({ around }) => [
+            around(editorReads.slice.export, ({ next, state }) => {
+              const slice = next();
+
+              return SelectionApi.isNode(state.selection())
+                ? slice
+                : projectTableSlice(slice);
+            }),
+          ],
+          selectionKinds: [
             {
               codec: defineValueCodec<TableCellSelection>({
                 decode(value) {
@@ -2897,7 +2893,7 @@ export const BaseTablePlugin = createBasePlugin({
                 encode: (selection) => selection,
                 version: 1,
               }),
-              domRange: (selection) =>
+              primaryRange: (selection) =>
                 Object.freeze({
                   anchor: selection.anchor,
                   focus: selection.anchor,
@@ -2936,8 +2932,42 @@ export const BaseTablePlugin = createBasePlugin({
                   ? { ...selection, ...range, cells }
                   : null;
               },
+              marks() {
+                const cells = context.read.getGridAbove({
+                  format: 'cell',
+                });
+                const markCounts: Record<string, number> = {};
+                const marks: Record<string, unknown> = {};
+                let textCount = 0;
+
+                cells.forEach(([, cellPath]) => {
+                  context.editor.read.nodes
+                    .toArray({
+                      at: cellPath,
+                      match: (node) => TextApi.isText(node),
+                    })
+                    .forEach(([text]) => {
+                      textCount++;
+
+                      Object.keys(text).forEach((key) => {
+                        if (key === 'text') return;
+
+                        markCounts[key] = (markCounts[key] ?? 0) + 1;
+                        marks[key] = text[key];
+                      });
+                    });
+                });
+
+                Object.keys(markCounts).forEach((key) => {
+                  if (markCounts[key] !== textCount) delete marks[key];
+                });
+
+                return marks;
+              },
               ranges: (selection) => selection.cells,
               replacementRange: (selection) => selection,
+              slice: (selection, state) =>
+                projectTableSlice(state.slice.get({ at: selection })),
               validate: isTableCellSelection,
             } satisfies EditorSelectionSpec<TableCellSelection>,
           ],
@@ -3041,51 +3071,6 @@ export const BaseTablePlugin = createBasePlugin({
               });
             }),
           ],
-          queries: {
-            marks: {
-              get({ next }) {
-                const selection = context.editor.read.selection();
-
-                if (!selection || context.editor.read.selection.isCollapsed()) {
-                  return next();
-                }
-
-                const cells = context.read.getGridAbove({
-                  format: 'cell',
-                });
-
-                if (cells.length <= 1) return next();
-
-                const markCounts: Record<string, number> = {};
-                const marks: Record<string, unknown> = {};
-                let textCount = 0;
-
-                cells.forEach(([, cellPath]) => {
-                  context.editor.read.nodes
-                    .toArray({
-                      at: cellPath,
-                      match: (node) => TextApi.isText(node),
-                    })
-                    .forEach(([text]) => {
-                      textCount++;
-
-                      Object.keys(text).forEach((key) => {
-                        if (key === 'text') return;
-
-                        markCounts[key] = (markCounts[key] ?? 0) + 1;
-                        marks[key] = text[key];
-                      });
-                    });
-                });
-
-                Object.keys(markCounts).forEach((key) => {
-                  if (markCounts[key] !== textCount) delete marks[key];
-                });
-
-                return marks;
-              },
-            },
-          },
         },
       ],
     };

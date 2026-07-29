@@ -3,6 +3,5 @@
  */
 
 export * from './element/index';
-export * from './event-editor/index';
 export * from './plate/index';
 export * from './plate-controller/index';

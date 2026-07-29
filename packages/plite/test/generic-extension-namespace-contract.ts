@@ -107,7 +107,7 @@ const getRuntimeMode = (editor: Editor) => {
 
 const runtimeExtension = defineEditorExtension({
   activate(editor, context) {
-    let currentMode: 'cell' | 'text' = context.options.initialMode;
+    let currentMode: 'cell' | 'text' = context.config.initialMode;
     const signal: AbortSignal = context.signal;
     const mode: RuntimeMode = {
       get: () => currentMode,
@@ -123,7 +123,7 @@ const runtimeExtension = defineEditorExtension({
     void signal;
   },
   name: 'runtime-generic-namespace',
-  options: {
+  config: {
     initialMode: 'text' as const,
   },
   state: {
@@ -205,28 +205,6 @@ defineEditorExtension<CustomEditor>()({
 
 defineEditorExtension<CustomEditor>()({
   name: 'middleware-context-typing',
-  clipboard: {
-    insertData(_data, context) {
-      context.tx.selection();
-
-      // @ts-expect-error clipboard middleware reads through its transaction
-      context.state;
-
-      return context.next();
-    },
-  },
-  queries: {
-    text: {
-      string(context) {
-        context.state.selection();
-
-        // @ts-expect-error query middleware gets state, not tx
-        context.tx;
-
-        return context.next({ at: context.at, options: context.options });
-      },
-    },
-  },
   commands: ({ around }) => [
     around(editorCommands.insertText, ({ next, ...context }) => {
       context.state.selection();

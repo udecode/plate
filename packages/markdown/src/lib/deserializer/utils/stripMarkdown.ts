@@ -48,14 +48,5 @@ export const stripMarkdown = (text: string) => {
   let result = stripMarkdownBlocks(text);
   result = stripMarkdownInline(result);
 
-  // Remove HTML tags (including <br>)
-  // result = result.replace(/<[^>]*>/g, '');
-
-  // Replace HTML entities
-  // result = result.replace('&nbsp;', ' ');
-  // result = result.replace('&lt;', '<');
-  // result = result.replace('&gt;', '>');
-  // result = result.replace('&amp;', '&');
-
   return result;
 };

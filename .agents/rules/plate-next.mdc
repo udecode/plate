@@ -10,7 +10,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `16`.
+Current doctrine version: `23`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -39,10 +39,11 @@ Version law:
   `latestVersion` by one and appends one immutable `versions` entry with
   concrete `migrationChecks`.
 - The latest version entry stores a doctrine fingerprint over
-  `.agents/rules/plate-next.mdc` and `docs/plans/templates/plate-next.md`.
-  `validate` fails when either source changes without a version bump. Treat any
-  edit to those doctrine surfaces as a bump; generated mirror regeneration is
-  not a bump.
+  `.agents/rules/plate-next.mdc`,
+  `.agents/rules/plate-plugin-creator.mdc`, and
+  `docs/plans/templates/plate-next.md`. `validate` fails when any source
+  changes without a version bump. Treat any edit to those doctrine surfaces as
+  a bump; generated mirror regeneration is not a bump.
 - Never edit or reorder an older version entry. Correct a bad reusable rule by
   adding the next version.
 - A doctrine bump never mass-updates package entries. Packages remain at their
@@ -263,12 +264,15 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   impure selectors/reads, plugin-scoped behavior smuggled into `extension`, and
   any contribution with no honest row.
 - Enforce the creator's state mechanics without restating another model:
-  defaults use `initialState`, descriptor overrides use
-  `.configure({ initialState })`, callbacks use inferred `store`, consumers use
-  `editor.plugin(Plugin).store`, and React uses `usePluginStore` or
-  `useEditorPluginStore`. Reject deleted option accessors and parallel
-  top-level `options` / immutable `config` channels. Plite extensions may keep
-  their unrelated `config` contract; operation parameters may still be named
+  every state-owning production descriptor has a named `*PluginState`, exported
+  with an exported descriptor; owner defaults use a typed constant or explicit
+  factory return type, never inferred object shape, `as`, or `satisfies`;
+  descriptor overrides stay inline and partial in
+  `.configure({ initialState })`; callbacks use inferred `store`; consumers use
+  `editor.plugin(Plugin).store`; and React uses `usePluginStore` or
+  `useEditorPluginStore`. Reject deleted option accessors and parallel top-level
+  `options` / immutable `config` channels. Plite extensions may keep their
+  unrelated `config` contract; operation parameters may still be named
   `options`.
 - Audit current-owner context access before accepting plugin code. In any
   callback whose supplied context includes them, use `store`, `api`, `read`,
@@ -299,6 +303,14 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   optional peer merely to adapt it; route that public composition fork to
   `best-api`, whose weak-peer path preserves adapting-only, target-only, both,
   and explicit-target-configuration behavior.
+- Registry examples are teaching and copied-install surfaces, not optimized
+  app presets. Do not delete an explicit feature plugin, kit, renderer binding,
+  or dependency merely because an aggregate EditorKit already installs the
+  same descriptor. When registry metadata names the feature kit or the example
+  intentionally demonstrates its binding, preserve that declaration and use
+  `plate-ui` as the registry owner. Filter the same descriptor from EditorKit
+  before explicitly adding/configuring it so transparency never creates
+  duplicate runtime membership.
 - There is no line-count ceiling. Do not split a coherent owner because the
   file is large, crosses a readability threshold, or looks tidier as a folder.
   One large owner is cheaper for humans and agents than a graph of one-use
@@ -372,7 +384,8 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
 - Hard-delete `extendApi`, `extendEditorApi`, `extendSelectors`, `extendTx`,
   `extendTxGroup`, `extendExtension`, `extendCodecs`, and `extendHtmlCodec`.
   Do not keep aliases, shims, deprecations, forwarding wrappers, or old
-  documentation.
+  documentation. Classify the receiver first; same-named methods on Zustand
+  stores or other non-plugin builders are not Plate plugin-builder drift.
 - When colocation makes a helper obsolete, delete its file and barrel export.
   Do not preserve a helper export, forwarding wrapper, alias, or old filename
   for compatibility. Route a genuine public API fork through `best-api`, then
@@ -385,6 +398,11 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   call that plugin's scoped API or tx group; they do not justify a parallel raw
   helper. If it has one plugin owner, inline the algorithm and delete the
   helper.
+- Deleting a package helper must not copy its transform, query, navigation
+  controller, or cross-layer algorithm into app or registry JSX. Reuse the
+  owning scoped capability when one exists; otherwise keep or publish a flat
+  standalone package owner when the behavior crosses capability layers and
+  cannot honestly fit one plugin `api`, `read`, or `update` boundary.
 - Tests follow the same owner law as production and React code. Keep one
   colocated `<PluginName>.<family>.spec.tsx` for a plugin behavior family, even
   when that family exercises many API, update, query, transform, normalize, or
@@ -764,9 +782,10 @@ Default suspicion list:
 - imported Plite `defineEditorExtension({ name: plugin.key, ... })` or
   `defineEditorExtension({ name: KEYS.foo, ... })` around an inline plugin
   `extension` contribution. The plugin builder owns inline contextual typing,
-  default names, and raw option normalization. Only an extracted reusable
-  Plate extension factory uses the callback context's
-  `defineEditorExtension`.
+  callback-return typing, default names, and raw option normalization.
+  Independently reusable standalone Plite descriptors may use the imported
+  helper. A Plate context identity helper that only recovers nested inference
+  is leaked compiler machinery: fix the owning generic and delete it.
 - one-line `editor.read((state) => state.*())` or `editor.update((tx) => {
 tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   file below `100` until replaced or justified as grouped transaction/snapshot

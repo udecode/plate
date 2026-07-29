@@ -1,5 +1,4 @@
 import { createBaseEditor } from '../editor';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
 import {
   type PluginConfig,
   createBasePlugin,
@@ -76,16 +75,16 @@ describe('plugin extension merging', () => {
       plugins: [furtherExtendedPlugin],
     });
 
-    expect(
-      getPlateRuntime(editor).plugins.customPlugin.initialState.baseValue
-    ).toBe(5);
+    expect(editor.getPlugin(furtherExtendedPlugin).initialState.baseValue).toBe(
+      5
+    );
     expect(editor.api.multiply(3)).toBe(15);
 
     editor.api.increment(2);
     expect(editor.plugin(furtherExtendedPlugin).store.get('baseValue')).toBe(7);
-    expect(
-      getPlateRuntime(editor).plugins.customPlugin.initialState.baseValue
-    ).toBe(5);
+    expect(editor.getPlugin(furtherExtendedPlugin).initialState.baseValue).toBe(
+      5
+    );
 
     expect(editor.api.getTotal(3)).toBe(28); // (7 * 3) + 7
   });
@@ -429,9 +428,7 @@ describe('plugin extension merging', () => {
 
     context.store.set({ baseValue: 20 });
     expect(editor.api.level1.method1()).toBe(20);
-    expect(
-      getPlateRuntime(editor).plugins.testPlugin.initialState.baseValue
-    ).toBe(10);
+    expect(editor.getPlugin(basePlugin).initialState.baseValue).toBe(10);
   });
 });
 

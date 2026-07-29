@@ -3,25 +3,24 @@ import { createReactEditor } from '@platejs/plite-react';
 
 import type { AnyPlatePlugin } from '../plugin';
 import type { PlateEditor } from './PlateEditor';
-import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback/types';
+import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 import { plateReactCorePlugins } from '../../internal/plugin/resolvePlugins';
 
 import {
   type AnyPluginConfig,
   type BasePluginInput,
   type BaseExtendBaseEditorOptions,
-  type CorePlugin,
   type ExtendBaseEditorOptions,
   type EditorValueInput,
-  type InferConfig,
   type InferPlugins,
   extendBaseEditor,
 } from '../../lib';
-import { getPlateCorePlugins } from './getPlateCorePlugins';
+import {
+  getPlateCorePlugins,
+  type PlateCorePlugin,
+} from './getPlateCorePlugins';
 
-export type PlateCorePlugin =
-  | CorePlugin
-  | InferConfig<ReturnType<typeof getPlateCorePlugins>[number]>;
+export type { PlateCorePlugin } from './getPlateCorePlugins';
 
 type PlatePluginInput = BasePluginInput;
 
@@ -73,9 +72,7 @@ export type ExtendPlateEditorOptions<
      *
      * @default { duration: 1600 }
      */
-    navigationFeedback?:
-      | Partial<NavigationFeedbackConfig['initialState']>
-      | boolean;
+    navigationFeedback?: Partial<NavigationFeedbackPluginState> | boolean;
     // override?: {
     //   /** Enable or disable plugins */
     //   enabled?: Partial<Record<KeyofPlugins<InferPlugins<P[]>>, boolean>>;

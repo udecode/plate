@@ -129,7 +129,7 @@ describe('document state effect contract', () => {
           : value,
     });
     const incrementExtension = defineEditorExtension({
-      effects: [increment],
+      effectTypes: [increment],
       name: 'document-large-counter-increment-effect',
     });
     const createCounterEditor = () =>
@@ -207,7 +207,7 @@ describe('document state effect contract', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          effects: [effect],
+          effectTypes: [effect],
           name: 'nested-effect-values',
         }),
       ] as const,

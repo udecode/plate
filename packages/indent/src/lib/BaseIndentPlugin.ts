@@ -1,5 +1,4 @@
 import {
-  type BaseEditor,
   type InferConfig,
   createBasePlugin,
   getInjectMatch,
@@ -8,7 +7,6 @@ import {
   type EditorNodesOptions,
   type Element,
   type NodeMatchPredicate,
-  type Path,
   ElementApi,
   property,
   target,
@@ -32,51 +30,18 @@ export type IndentPluginState = {
    *
    * @default 40
    */
-  offset?: number;
+  offset: number;
   /**
    * Indentation unit used in `(offset * element.indent) + unit`.
    *
    * @default 'px'
    */
-  unit?: string;
+  unit: string;
 };
 
 const initialState: IndentPluginState = {
   offset: 24,
   unit: 'px',
-};
-const defaultTargetPluginKeys: readonly string[] = [KEYS.p];
-
-const isInsideBlockquote = (editor: BaseEditor, path: Path) =>
-  !!editor.read.nodes.above({
-    at: path,
-    match: (node, nodePath) =>
-      nodePath.length < path.length &&
-      ElementApi.isElement(node) &&
-      node.type === editor.getType(KEYS.blockquote),
-  });
-
-const parseIndent = (
-  element: Readonly<HTMLElement>,
-  offset: number,
-  unit: string
-) => {
-  const dataValue =
-    element.dataset.indent ?? element.getAttribute('aria-level');
-
-  if (dataValue) {
-    const value = Number(dataValue);
-
-    return Number.isFinite(value) && value > 0 ? value : undefined;
-  }
-  const styleValue = element.style.marginLeft;
-
-  if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) return;
-
-  const numericValue = unit ? styleValue.slice(0, -unit.length) : styleValue;
-  const value = Number(numericValue) / offset;
-
-  return Number.isFinite(value) && value > 0 ? value : undefined;
 };
 
 export const BaseIndentPlugin = createBasePlugin({
@@ -90,30 +55,7 @@ export const BaseIndentPlugin = createBasePlugin({
       }),
     ],
   }),
-  targetPluginKeys: defaultTargetPluginKeys,
-  codecs: ({ defineCodecs, store }) =>
-    defineCodecs({
-      'text/html': {
-        decode: ({ element }) => {
-          const { offset = 24, unit = 'px' } = store.get();
-
-          return parseIndent(element, offset, unit);
-        },
-        encode: ({ value }) => {
-          const { offset = 24, unit = 'px' } = store.get();
-
-          return {
-            attributes: { 'data-indent': value },
-            style: { marginLeft: value * offset + unit },
-          };
-        },
-        match: [
-          { attributes: { 'aria-level': true } },
-          { attributes: { 'data-indent': true } },
-          { style: { marginLeft: '*' } },
-        ],
-      },
-    }),
+  targetPluginKeys: [KEYS.p],
   extension: ({ store, type }) => ({
     corrections: [
       {
@@ -216,7 +158,13 @@ export const BaseIndentPlugin = createBasePlugin({
         if (!match(element, path)) return false;
 
         if (!element[type]) {
-          return !isInsideBlockquote(editor, path);
+          return !tx.nodes.above({
+            at: path,
+            match: (node, nodePath) =>
+              nodePath.length < path.length &&
+              ElementApi.isElement(node) &&
+              node.type === editor.getType(KEYS.blockquote),
+          });
         }
 
         decrease();
@@ -225,11 +173,50 @@ export const BaseIndentPlugin = createBasePlugin({
       },
     };
   },
-}).extend({
+}).extend(({ defineCodecs, store }) => ({
+  codecs: defineCodecs({
+    'text/html': {
+      decode: ({ element }) => {
+        const { offset = 24, unit = 'px' } = store.get();
+        const dataValue =
+          element.dataset.indent ?? element.getAttribute('aria-level');
+
+        if (dataValue) {
+          const value = Number(dataValue);
+
+          return Number.isFinite(value) && value > 0 ? value : undefined;
+        }
+        const styleValue = element.style.marginLeft;
+
+        if (!styleValue || !offset || (unit && !styleValue.endsWith(unit))) {
+          return;
+        }
+        const numericValue = unit
+          ? styleValue.slice(0, -unit.length)
+          : styleValue;
+        const value = Number(numericValue) / offset;
+
+        return Number.isFinite(value) && value > 0 ? value : undefined;
+      },
+      encode: ({ value }) => {
+        const { offset = 24, unit = 'px' } = store.get();
+
+        return {
+          attributes: { 'data-indent': value },
+          style: { marginLeft: value * offset + unit },
+        };
+      },
+      match: [
+        { attributes: { 'aria-level': true } },
+        { attributes: { 'data-indent': true } },
+        { style: { marginLeft: '*' } },
+      ],
+    },
+  }),
   shortcuts: {
     tab: { keys: 'tab' },
     untab: { keys: 'shift+tab' },
   },
-});
+}));
 
 export type IndentConfig = InferConfig<typeof BaseIndentPlugin>;

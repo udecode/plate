@@ -29,9 +29,8 @@ contribution:
 | `codecs` | Plugin-owned format decoding and encoding. |
 
 Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
-`editor`, `plugin`, `api`, `read`, `defineCodecs`,
-`defineEditorExtension`, `store`, and the active `tx` inside
-update contributions.
+`editor`, `plugin`, `api`, `read`, `defineCodecs`, `store`, and the active `tx`
+inside update contributions.
 
 ## Use Constructor Context
 
@@ -42,7 +41,7 @@ earlier stage.
 ```tsx title="counter-plugin.tsx" showLineNumbers
 import { createPlatePlugin, usePluginStore } from 'platejs/react';
 
-type CounterState = {
+export type CounterPluginState = {
   value: number;
 };
 
@@ -54,13 +53,15 @@ type CounterUpdate = {
   insertLabel: () => void;
 };
 
+const initialState: CounterPluginState = {
+  value: 0,
+};
+
 export const CounterPlugin = createPlatePlugin({
   api: ({ store }): CounterApi => ({
     isEmpty: () => store.get('value') === 0,
   }),
-  initialState: {
-    value: 0,
-  } as CounterState,
+  initialState,
   key: 'counter',
   selectors: {
     doubled: (state, factor: number) => state.value * factor,
@@ -135,46 +136,34 @@ export const SingleLinePlugin = createBasePlugin({
 });
 ```
 
-Inline extension objects need no helper. If the extension declaration is an
-extracted reusable factory, contextual typing cannot flow backward from the
-`extension` field. Pass the plugin context and return its
-`defineEditorExtension` identity helper:
+Plate context-dependent extension callbacks stay inside the `extension` field,
+where commands, inputs, state, transactions, dependencies, and plugin state are
+contextually typed. Extract domain logic instead of passing the plugin context
+through a typing factory:
 
 ```ts title="trigger-plugin.ts" showLineNumbers
-import {
-  type BasePluginContext,
-  createBasePlugin,
-  editorCommands,
-  type PluginConfig,
-} from 'platejs';
+import { createBasePlugin, editorCommands } from 'platejs';
 
-type TriggerConfig = PluginConfig<
-  'trigger',
-  { enabled: boolean }
->;
+const shouldHandleTrigger = (enabled: boolean) => enabled;
 
-const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
-  context.defineEditorExtension({
+export const TriggerPlugin = createBasePlugin({
+  initialState: { enabled: true },
+  key: 'trigger',
+  extension: ({ store }) => ({
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) => {
-        if (!context.store.get('enabled')) return false;
+        if (!shouldHandleTrigger(store.get('enabled'))) return false;
 
         return state.transaction(() => {});
       }),
     ],
-  });
-
-export const TriggerPlugin = createBasePlugin<TriggerConfig>({
-  extension: (context) => withTriggerExtension(context),
-  initialState: { enabled: true },
-  key: 'trigger',
+  }),
 });
 ```
 
-The constructor context helper preserves nested command, input, state,
-transaction, and dependency inference.
-`defineEditorExtension` imported from `@platejs/plite` is for
-standalone Plite extensions; it does not replace this Plate plugin context.
+For an independently reusable Plite descriptor, import
+`defineEditorExtension` from `@platejs/plite` and pass the descriptor to the
+plugin's `extension` field.
 
 A genuinely unkeyed editor-wide capability also belongs under `extension`.
 Plugin-specific API stays under `api`; do not publish the same implementation
@@ -259,8 +248,16 @@ Configure a required dependency on its own descriptor and place that complete
 descriptor beside the owner in the app or registry plugin array.
 
 ```ts
+type CellPluginState = {
+  padding: number;
+};
+
+const initialState: CellPluginState = {
+  padding: 12,
+};
+
 const CellPlugin = createPlatePlugin({
-  initialState: { padding: 12 },
+  initialState,
   key: 'cell',
 });
 

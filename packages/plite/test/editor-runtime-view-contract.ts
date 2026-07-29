@@ -10,6 +10,7 @@ import {
   type Descendant,
   type Element,
   defineEditorExtension,
+  defineExtensionPoint,
   type EditorUpdateTransaction,
   NodeApi,
   type Path,
@@ -68,6 +69,50 @@ describe('editor runtime/view contract', () => {
       () => createEditorView(runtime, { root: primaryRoot }),
       /Omit root to target the primary document/
     );
+  });
+
+  it('resolves extension API factories against each view root', () => {
+    const rootAware = defineEditorExtension({
+      api(editor, context) {
+        return {
+          rootAware: {
+            append: (text: string) => {
+              editor.update((tx) => {
+                tx.text.insert(text, {
+                  at: { offset: 6, path: [0, 0] },
+                });
+              });
+            },
+            root: () => context.root ?? null,
+            text: () =>
+              editor.read((state) =>
+                state.children().map(NodeApi.string).join('\n')
+              ),
+          },
+        };
+      },
+      name: 'rootAware',
+    });
+    const runtime = createEditorRuntime({
+      extensions: [rootAware],
+      initialValue: {
+        children: [paragraph('body')],
+        roots: { header: [paragraph('header')] },
+      },
+    });
+    const mainEditor = createEditorView(runtime);
+    const headerEditor = createEditorView(runtime, { root: 'header' });
+
+    assert.equal(mainEditor.api.rootAware.root(), null);
+    assert.equal(mainEditor.api.rootAware.text(), 'body');
+    assert.equal(headerEditor.api.rootAware.root(), 'header');
+    assert.equal(headerEditor.api.rootAware.text(), 'header');
+    assert.equal(headerEditor.getApi(rootAware), headerEditor.api.rootAware);
+
+    headerEditor.api.rootAware.append('!');
+
+    assert.equal(mainEditor.api.rootAware.text(), 'body');
+    assert.equal(headerEditor.api.rootAware.text(), 'header!');
   });
 
   it('routes static replace and reset through root-bound view runtime', () => {
@@ -207,15 +252,12 @@ describe('editor runtime/view contract', () => {
   });
 
   it('shares extension capabilities with root-bound views', () => {
+    const output = defineExtensionPoint<boolean>('shared-output');
     const runtime = createEditorRuntime({
       extensions: [
         defineEditorExtension({
           name: 'custom-clipboard',
-          clipboard: {
-            insertData() {
-              return true;
-            },
-          },
+          contributions: [output.of(true)],
         }),
       ] as const,
       initialValue: {
@@ -228,18 +270,17 @@ describe('editor runtime/view contract', () => {
     const viewRegistry = editorGetExtensionRegistry(headerEditor);
 
     assert.equal(viewRegistry, runtimeRegistry);
-    assert.equal(
-      viewRegistry.capabilities.get('clipboard.insertData')?.length,
-      1
-    );
+    assert.equal(viewRegistry.contributions.get(output)?.length, 1);
   });
 
   it('binds dynamically installed extensions to the invoking root view', () => {
     const commitEditors: string[] = [];
     const baseExtension = defineEditorExtension({
       name: 'base-bound-extension',
-      onCommit({ editor }) {
-        commitEditors.push(`base:${editor.read.view.root()}`);
+      on: {
+        commit({ editor }) {
+          commitEditors.push(`base:${editor.read.view.root()}`);
+        },
       },
     });
     const runtime = createEditorRuntime({
@@ -272,18 +313,21 @@ describe('editor runtime/view contract', () => {
         return {};
       },
       name: 'header-bound-extension',
-      onCommit({ editor }) {
-        commitEditors.push(`header:${editor.read.view.root()}`);
+      on: {
+        commit({ editor }) {
+          commitEditors.push(`header:${editor.read.view.root()}`);
+        },
+        nodeChange({ editor }) {
+          nodeChangeEditor = editor;
+        },
+        textChange({ editor }) {
+          textChangeEditor = editor;
+        },
+        transactionChange({ editor }) {
+          transactionChangeEditor = editor;
+        },
       },
-      onNodeChange({ editor }) {
-        nodeChangeEditor = editor;
-      },
-      onTextChange({ editor }) {
-        textChangeEditor = editor;
-      },
-      onTransactionChange({ editor }) {
-        transactionChangeEditor = editor;
-      },
+
       state: {
         hostState(_state, editor) {
           return editor;
@@ -427,16 +471,18 @@ describe('editor runtime/view contract', () => {
       extensions: [
         defineEditorExtension({
           name: 'move-selection-on-commit',
-          onCommit({ commit, editor }) {
-            if (commit.changed.has('text')) {
-              editor.update((tx: EditorUpdateTransaction) => {
-                tx.selection.set({
-                  kind: 'text',
-                  anchor: { path: [0, 0], offset: 0, root: 'header' },
-                  focus: { path: [0, 0], offset: 0, root: 'header' },
+          on: {
+            commit({ commit, editor }) {
+              if (commit.changed.has('text')) {
+                editor.update((tx: EditorUpdateTransaction) => {
+                  tx.selection.set({
+                    kind: 'text',
+                    anchor: { path: [0, 0], offset: 0, root: 'header' },
+                    focus: { path: [0, 0], offset: 0, root: 'header' },
+                  });
                 });
-              });
-            }
+              }
+            },
           },
         }),
       ] as const,
@@ -477,6 +523,13 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
 
+    headerEditor.update((tx) => {
+      tx.selection.set({
+        kind: 'text',
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 'header'.length },
+      });
+    });
     const mainRuntimeId = runtime.read((state) => state.runtime.idAt([0]));
     const viewRead = headerEditor.read((state) => {
       const entry = state.nodes.get([0]);
@@ -486,6 +539,7 @@ describe('editor runtime/view contract', () => {
         children: state.nodes.children(),
         node: entry[0],
         runtimeId: state.runtime.idAt([0]),
+        slice: state.slice.export(),
         snapshot: state.runtime.snapshot(),
         text: state.text.string([]),
         value: state.value(),
@@ -494,6 +548,7 @@ describe('editor runtime/view contract', () => {
 
     assert.deepEqual(viewRead.children, [paragraph('header')]);
     assert.deepEqual(viewRead.node, paragraph('header'));
+    assert.deepEqual(viewRead.slice.content, [paragraph('header')]);
     assert.equal(viewRead.text, 'header');
     assert.notEqual(viewRead.runtimeId, mainRuntimeId);
     assert.deepEqual(viewRead.snapshot.children, [paragraph('header')]);

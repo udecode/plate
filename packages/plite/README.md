@@ -89,14 +89,14 @@ import { defineEditorExtension, defineEffect } from '@platejs/plite'
 const refreshIndex = defineEffect({ key: 'search.refresh-index' })
 
 const searchEffects = defineEditorExtension({
-  effects: [refreshIndex],
+  effectTypes: [refreshIndex],
   name: 'search-effects',
 })
 ```
 
-Advanced library code can install query middleware and transaction, commit,
-node, or text listeners. Diagnostic tooling can configure the debug value
-scrubber.
+Advanced library code can install descriptor-based read middleware and grouped
+transaction, commit, node, or text listeners through `on`. Diagnostic tooling
+can configure the debug value scrubber.
 
 Pure data helpers live on namespaces such as `ElementApi`, `NodeApi`,
 `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, and `TextApi`. Inside a live

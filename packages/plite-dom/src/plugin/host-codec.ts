@@ -11,6 +11,7 @@ import type {
 import {
   ContentSlice as ContentSliceApi,
   defineEditorExtension,
+  defineExtensionPoint,
   editorCommands,
   type EditorExtension,
   NodeApi,
@@ -24,6 +25,7 @@ import {
   getCompiledEditorSchema,
   getCompiledEditorSchemaFromApi,
   getCompiledSchemaPropertyId,
+  getEditorExtensionContributions,
   getEditorStateView,
   getExtensionRegistry,
   type CompiledEditorSchema,
@@ -32,7 +34,9 @@ import {
   toEditorCoreStateView,
 } from '@platejs/plite/internal';
 
-const HOST_CODEC_CAPABILITY = 'host.codecs';
+const HOST_CODECS = defineExtensionPoint<HostCodecRegistration<any>>(
+  'plite-dom:host-codec'
+);
 const NEWLINE_SPLIT_RE = /\r\n|\r|\n/;
 
 export type HostCodecPhase = 'parse' | 'query' | 'serialize';
@@ -545,12 +549,16 @@ export const hostCodecs = <V extends Value = Value>(
   );
 
   return defineEditorExtension<BaseEditor<V, any>>()({
-    api: { [HOST_CODEC_CAPABILITY]: registrations },
     name,
+    contributions: registrations.map((registration) =>
+      HOST_CODECS.of(registration)
+    ),
     validateConfiguration(context) {
       compileHostCodecs(
         withDefaultHostCodec(
-          context.capabilities<HostCodecRegistration<V>>(HOST_CODEC_CAPABILITY)
+          context.getContributions(
+            HOST_CODECS
+          ) as readonly HostCodecRegistration<V>[]
         ),
         getCompiledEditorSchemaFromApi(context.schema)
       );
@@ -570,8 +578,10 @@ const getHostCodecs = <V extends Value>(editor: BaseEditor<V, any>) => {
   if (cached) return cached as readonly HostCodecRegistration<V>[];
 
   const registered = withDefaultHostCodec(
-    (registry.capabilities.get(HOST_CODEC_CAPABILITY) ??
-      []) as HostCodecRegistration<V>[]
+    getEditorExtensionContributions(
+      editor,
+      HOST_CODECS
+    ) as readonly HostCodecRegistration<V>[]
   );
   const compiled = compileHostCodecs(
     registered,

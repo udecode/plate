@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### 安装
 
 ```bash
-npm install @platejs/selection
+npm install @platejs/selection @platejs/cursor
 ```
 
 ### 添加插件
@@ -134,26 +134,26 @@ export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
 
 ## API接口
 
-### `editor.api.cursorOverlay.addCursor(id, cursor)`
+### `editor.plugin(CursorOverlayPlugin).api.addCursor(id, cursor)`
 
 添加指定键和状态的光标覆盖层
 
-<API name="editor.api.cursorOverlay.addCursor">
+<API name="editor.plugin(CursorOverlayPlugin).api.addCursor">
 <APIParameters>
   <APIItem name="id" type="string">
     光标的唯一标识符（如'blur'、'drag'、'custom'）
   </APIItem>
-  <APIItem name="cursor" type="Omit<CursorState<CursorData>, 'id'>">
+  <APIItem name="cursor" type="CursorState<CursorData>">
     包含选中区域和可选样式数据的光标状态
   </APIItem>
 </APIParameters>
 </API>
 
-### `editor.api.cursorOverlay.removeCursor(id)`
+### `editor.plugin(CursorOverlayPlugin).api.removeCursor(id)`
 
 通过键移除光标覆盖层
 
-<API name="editor.api.cursorOverlay.removeCursor">
+<API name="editor.plugin(CursorOverlayPlugin).api.removeCursor">
 <APIParameters>
   <APIItem name="id" type="(string & {}) | 'drag' | 'selection'">
     要移除的光标标识符
@@ -163,11 +163,11 @@ export function EditorContainer(props: React.HTMLAttributes<HTMLDivElement>) {
 
 ## 钩子
 
-### `useCursorOverlay`
+### `useCursorOverlayPositions`
 
-管理光标和选中区域覆盖层状态的钩子，提供实时光标位置和选中区域矩形。
+从 `@platejs/cursor` 导入 `useCursorOverlayPositions`。此 hook 为任意光标状态映射计算光标与选区矩形。
 
-<API name="useCursorOverlay">
+<API name="useCursorOverlayPositions">
 <APIOptions type="object">
   <APIItem name="minSelectionWidth" type="number" optional>
     选中区域矩形的最小宽度（像素）。可用于使光标插入符更明显

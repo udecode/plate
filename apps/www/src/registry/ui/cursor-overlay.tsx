@@ -6,16 +6,22 @@ import { AIChatPlugin } from '@platejs/ai/react';
 import {
   type CursorData,
   type CursorOverlayState,
-  useCursorOverlay,
-} from '@platejs/selection/react';
+  useCursorOverlayPositions,
+} from '@platejs/cursor';
+import { CursorOverlayPlugin } from '@platejs/selection/react';
 import { BaseTablePlugin } from '@platejs/table';
 import { RangeApi } from 'platejs';
-import { useEditor, usePluginStore } from 'platejs/react';
+import { useEditor, usePlateValue, usePluginStore } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
 export function CursorOverlay() {
-  const { cursors } = useCursorOverlay();
+  const containerRef = usePlateValue('containerRef');
+  const cursorStates = usePluginStore(CursorOverlayPlugin, 'cursors');
+  const { cursors } = useCursorOverlayPositions({
+    containerRef,
+    cursors: cursorStates,
+  });
 
   return (
     <>

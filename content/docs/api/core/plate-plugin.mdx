@@ -12,9 +12,17 @@ callbacks receive the current plugin context when their callback contract
 supports it:
 
 ```ts
-const UploadPlugin = createPlatePlugin({
+export type UploadPluginState = {
+  active: boolean;
+};
+
+const uploadInitialState: UploadPluginState = {
+  active: false,
+};
+
+export const UploadPlugin = createPlatePlugin({
   key: 'upload',
-  initialState: { active: false },
+  initialState: uploadInitialState,
   api: ({ store }) => ({
     start: () => store.set({ active: true }),
   }),
@@ -74,9 +82,10 @@ Plugin keys targeted by the plugin's schema contributions and injected behavior.
 
 <APIItem name="initialState" type="Record<string, any>">
 The seed for this plugin's mutable editor-local store. Package authors declare
-defaults with `create*Plugin()`. App consumers override the seed with one final
-`.configure({ initialState: { ... } })`. Runtime code reads and updates the
-installed store through `editor.plugin(MyPlugin).store`.
+an exported `*PluginState` beside an exported plugin and check its defaults
+through a typed constant or explicit factory return type. App consumers override
+the seed with one final `.configure({ initialState: { ... } })`. Runtime code
+reads and updates the installed store through `editor.plugin(MyPlugin).store`.
 </APIItem>
 
 <APIItem name="component" type="NodeComponent" optional>
@@ -480,7 +489,6 @@ type PluginContribution = {
   extendConfig: (
     context: PlatePluginContext<C> & {
       defineCodecs: DefinePluginCodecs<C>;
-      defineEditorExtension: DefineEditorExtension<C>;
     }
   ) => TContract
 ) => PlatePlugin;
@@ -493,15 +501,12 @@ The contribution fields have distinct owners:
 - `selectors`: pure projections of editor-local plugin state
 - `update`: plugin-scoped transaction-bound mutations
 - `extension`: Plite runtime capabilities and true editor-wide groups; inline
-  objects are contextually typed without a helper
+  objects and callback returns are contextually typed
 - `codecs`: the declaration returned by context-bound `defineCodecs`
 
-An extracted reusable editor-extension factory receives the plugin context and
-returns `context.defineEditorExtension({ ... })`. This identity helper preserves
-nested command, input, state, transaction, and dependency inference that cannot
-flow backward from the `extension` return field. It does not add another
-builder stage. The function imported from `@platejs/plite` is for standalone
-Plite extensions.
+Keep Plate context capture inside the `extension` callback and extract domain
+inputs. Independently reusable standalone Plite descriptors use
+`defineEditorExtension` from `@platejs/plite`.
 
 Use `defineCodecs(map)` for self/product codecs and
 `defineCodecs(TargetPlugin, map)` for foreign codecs. The helper injects the
@@ -538,11 +543,6 @@ Returns a merged copy of an unconfigured plugin definition.
       capability. Pass one MIME-keyed map for self/product codecs, or pass a
       target plugin plus the map for a foreign contribution.
 </APIItem>
-<APIItem name="defineEditorExtension" type="DefineEditorExtension<C>">
-      Identity helper for an extracted reusable Plate editor-extension factory.
-      Inline extension objects need no helper. The same-named import from
-      `@platejs/plite` owns standalone Plite extensions.
-</APIItem>
 <APIItem name="store" type="PluginStore<C>">
       Reads, updates, and subscribes to the current plugin's editor-local state.
       Named selectors are pure functions of that state.
@@ -566,15 +566,24 @@ For more detailed information on specific aspects of Plate plugins, refer to the
 Usage example:
 
 ```typescript
-type MyPluginConfig = PluginConfig<
-  "myPlugin",
-  { customOption: boolean },
-  { getData: () => string },
-  { myPlugin: { run: () => void } }
->;
+export type MyPluginState = {
+  customOption: boolean;
+};
 
-const MyPlugin = createPlatePlugin<MyPluginConfig>({
-  key: "myPlugin",
-  // plugin implementation
+const initialState: MyPluginState = {
+  customOption: false,
+};
+
+export const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  initialState,
+  api: ({ store }) => ({
+    getData: () => String(store.get('customOption')),
+  }),
+  update: ({ tx }) => ({
+    run: () => tx.selection.collapse(),
+  }),
 });
+
+type MyPluginConfig = InferConfig<typeof MyPlugin>;
 ```

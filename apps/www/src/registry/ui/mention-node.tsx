@@ -106,7 +106,7 @@ export function MentionInputElement(
                 onClick={() =>
                   editor
                     .plugin(MentionPlugin)
-                    .update.insert({ key: item.key, search, value: item.text })
+                    .update.insert({ key: item.key, value: item.text })
                 }
               >
                 {item.text}

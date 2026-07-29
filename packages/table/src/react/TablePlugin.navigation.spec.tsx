@@ -2,6 +2,7 @@
 
 import { Hotkeys, type BaseEditor } from '@platejs/core';
 import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { pipeHandler } from '@platejs/core/react/internal';
 import type { Value } from '@platejs/plite';
 
 import { jsxt, type TestEditor } from '@platejs/test-utils';
@@ -27,7 +28,7 @@ const moveLineTable = (
     stopPropagation: mock(),
     which: reverse ? 38 : 40,
   } as unknown as KeyboardEvent;
-  const handler = (editor.getPlugin(TablePlugin) as any).handlers?.onKeyDown;
+  const handler = pipeHandler(editor, { handlerKey: 'onKeyDown' });
   const hotkey = spyOn(
     Hotkeys,
     reverse ? 'isMoveLineBackward' : 'isMoveLineForward'
@@ -36,7 +37,7 @@ const moveLineTable = (
   if (!handler) throw new Error('Expected TablePlugin onKeyDown handler');
 
   try {
-    handler({ editor, event });
+    handler(event);
   } finally {
     hotkey.mockRestore();
   }

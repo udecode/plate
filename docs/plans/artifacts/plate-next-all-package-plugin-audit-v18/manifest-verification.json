@@ -1,0 +1,13 @@
+{
+  "adaptationRows": 299,
+  "constructorRows": 986,
+  "duplicateIds": [],
+  "exportedPluginSymbols": 180,
+  "exportedPluginSymbolsCovered": 180,
+  "missingExportedPluginSymbols": [],
+  "packageCount": 58,
+  "productionAdaptationRows": 6,
+  "productionConstructorRows": 189,
+  "sourceFiles": 1377,
+  "unresolvedClosureImports": 0
+}

@@ -9,7 +9,7 @@ import { BaseFootnotePlugin } from '@platejs/footnote';
 import { BaseColumnItemPlugin } from '@platejs/layout';
 import { LinkPlugin } from '@platejs/link/react';
 import { BaseListPlugin } from '@platejs/list-classic';
-import { BaseInlineEquationPlugin, insertEquation } from '@platejs/math';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { insertMediaUrl } from '@platejs/media/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
@@ -66,8 +66,12 @@ const insertInlineMap: Record<
   [ACTION_FOOTNOTE]: runFootnoteAction,
   [KEYS.inlineEquation]: (editor) =>
     editor.plugin(BaseInlineEquationPlugin).update.insert({ select: true }),
-  [KEYS.link]: (editor) =>
-    editor.plugin(LinkPlugin).api.trigger({ focused: true }),
+  [KEYS.link]: (editor) => {
+    const link = editor.plugin(LinkPlugin);
+
+    link.store.set({ text: editor.read.text.string() });
+    link.api.show('insert', editor.id);
+  },
 };
 
 export const insertBlock = (editor: PlateEditor, type: string) => {
@@ -153,21 +157,22 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
 
     return;
   }
-  editor.update((tx) => {
-    const insertByType: Record<string, () => void> = {
-      [KEYS.equation]: () =>
-        insertEquation(tx, editor.getType(KEYS.equation), { select: true }),
-    };
-    const insert = insertByType[type];
+  if (type === KEYS.equation) {
+    editor.plugin(BaseEquationPlugin).update.insert({ select: true });
 
-    if (insert) {
-      insert();
-    } else {
-      tx.nodes.insert(createBlock({ type: nodeType }), {
-        at: PathApi.next(path),
-        select: true,
+    if (currentBlockType !== nodeType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
       });
     }
+
+    return;
+  }
+  editor.update((tx) => {
+    tx.nodes.insert(createBlock({ type: nodeType }), {
+      at: PathApi.next(path),
+      select: true,
+    });
 
     if (currentBlockType !== nodeType && isCurrentBlockEmpty) {
       const source = tx.nodes.get(path);

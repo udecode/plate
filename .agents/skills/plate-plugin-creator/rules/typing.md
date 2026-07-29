@@ -138,28 +138,26 @@ MIME-keyed. Its `'text/html'` value is one schema-aware rule or a non-empty
 ordered tuple. Direct `codecs: { ... }`, casts, and callback annotations bypass
 the owner inference and are invalid.
 
-Inline constructor and justified `.extend()` `extension` objects receive
-contextual typing directly. An extracted reusable editor-extension factory
-does not receive that context backward from its return position. Pass it the
-plugin context and return the context-bound identity helper:
+Plate constructor and justified `.extend()` `extension` fields contextually
+type both plain objects and callback returns:
 
 ```ts
-const withFooExtension = (context: BasePluginContext<FooConfig>) =>
-  context.defineEditorExtension({
+createBasePlugin({
+  extension: ({ store }) => ({
     commands: ({ handle }) => [
-      // nested callbacks remain inferred
+      // store and nested callbacks remain inferred
     ],
-  });
-
-BaseFooPlugin.extend((context) => ({
-  extension: withFooExtension(context),
-}));
+  }),
+  key: 'foo',
+});
 ```
 
-The factory may accept only `context.defineEditorExtension` when it needs
-nothing else. Do not use a helper for an inline extension object, add another
-`.extend()` stage, or import Plite's standalone `defineEditorExtension` to
-simulate the Plate plugin context.
+Keep Plate-context capture inside the authoring callback and extract domain
+inputs. A public identity helper that only recovers this nested type is leaked
+compiler machinery: fix the owning generic instead of adding an annotation,
+cast, `any`, alias, or replacement helper. Independently reusable standalone
+descriptors use Plite's `defineEditorExtension`; their factories receive domain
+inputs, not Plate plugin context.
 
 ## Stage Capabilities, Not Plumbing
 

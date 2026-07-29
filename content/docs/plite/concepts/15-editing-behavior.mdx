@@ -14,7 +14,7 @@ Most editing bugs come from putting behavior in the wrong layer.
 | `Editable` event props           | One React editable needs a local browser shortcut or event hook.                                          | `@platejs/plite-react`                          |
 | `editor.update((tx) => ...)`     | A command should change the document, selection, marks, roots, or state.                                  | `@platejs/plite`                                |
 | Extension `commands`             | A reusable semantic action should compose across browser, programmatic, and test callers.                 | `@platejs/plite`                                |
-| Extension `clipboard.insertData` | Paste or drop ingress needs package-owned policy.                                                         | `@platejs/plite` plus host clipboard data       |
+| `clipboardHandler(...)` contribution | Paste or drop ingress needs package-owned DOM policy.                                                 | `@platejs/plite-dom`                            |
 | DOM coverage boundaries          | Model content exists but its DOM is intentionally hidden or virtualized.                                  | `@platejs/plite-dom` and `@platejs/plite-react` |
 | `@platejs/browser`               | A behavior claim needs model, DOM, native selection, focus, trace, screenshot, or follow-up typing proof. | `@platejs/browser`                              |
 

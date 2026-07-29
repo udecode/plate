@@ -1,0 +1,207 @@
+import { MarkdownPlugin } from '@platejs/markdown';
+import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
+import { SuggestionPlugin } from '@platejs/suggestion/react';
+import { KEYS } from '@platejs/utils';
+import { schema } from '@platejs/plite';
+import { BaseParagraphPlugin } from '@platejs/core';
+import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+
+import { BaseAIPlugin } from '../lib/BaseAIPlugin';
+import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
+
+const TablePlugin = createPlatePlugin({
+  key: KEYS.table,
+  schema: ({ plugins }) => {
+    const rowType = plugins.elementType(TableRowPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(rowType, {
+          default: { type: rowType },
+          min: 1,
+        }),
+      },
+    };
+  },
+  type: KEYS.table,
+});
+const TableRowPlugin = createPlatePlugin({
+  key: KEYS.tr,
+  schema: ({ plugins }) => {
+    const cellType = plugins.elementType(TableCellPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(cellType, {
+          default: { type: cellType },
+          min: 1,
+        }),
+      },
+    };
+  },
+  type: KEYS.tr,
+});
+const TableCellPlugin = createPlatePlugin({
+  key: KEYS.td,
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        min: 1,
+      }),
+    },
+  }),
+  type: KEYS.td,
+});
+
+const createSuggestionEditor = (type: 'insert' | 'remove') => {
+  const suggestionKey = `${KEYS.suggestion}_s1`;
+
+  return createPlateEditor({
+    plugins: [
+      BaseParagraphPlugin,
+      SuggestionPlugin.configure({ initialState: { currentUserId: 'u1' } }),
+      AIChatPlugin,
+    ],
+    initialValue: [
+      {
+        children: [
+          {
+            [suggestionKey]: {
+              createdAt: Date.parse('2024-01-01T00:00:00.000Z'),
+              id: 's1',
+              type,
+              userId: 'u1',
+            },
+            [KEYS.suggestion]: true,
+            [SUGGESTION_TRANSIENT_KEY]: true,
+            text: 'suggested',
+          },
+        ],
+        type: 'p',
+      },
+    ],
+  });
+};
+
+describe('ai chat action utils', () => {
+  it('diffs a table cell update and replaces only its children', () => {
+    const editor = createPlateEditor({
+      plugins: [
+        BaseParagraphPlugin,
+        BaseAIPlugin,
+        MarkdownPlugin,
+        SuggestionPlugin.configure({ initialState: { currentUserId: 'u1' } }),
+        AIChatPlugin,
+        TablePlugin,
+        TableRowPlugin,
+        TableCellPlugin,
+      ],
+      initialValue: [
+        {
+          children: [
+            {
+              children: [
+                {
+                  children: [{ children: [{ text: 'old' }], type: 'p' }],
+                  id: 'cell-1',
+                  type: KEYS.td,
+                },
+              ],
+              type: KEYS.tr,
+            },
+          ],
+          type: KEYS.table,
+        },
+      ],
+    });
+
+    editor
+      .plugin(AIChatPlugin)
+      .update.applyTableCellSuggestion({ content: 'ai', id: 'cell-1' });
+
+    expect(
+      editor.read.nodes.some({
+        at: [],
+        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
+      })
+    ).toBe(true);
+    expect(editor.read.text.string([])).toContain('ai');
+    expect(editor.read.history.undos()).toHaveLength(1);
+  });
+
+  it('accepts transient insert suggestions and clears their metadata', () => {
+    const editor = createSuggestionEditor('insert');
+
+    editor.plugin(AIChatPlugin).update.acceptSuggestions();
+
+    expect(editor.read.text.string([])).toBe('suggested');
+    expect(
+      editor.read.nodes.some({
+        at: [],
+        match: (node) => Boolean(Reflect.get(node, SUGGESTION_TRANSIENT_KEY)),
+      })
+    ).toBe(false);
+  });
+
+  it('rejects transient insert suggestions and clears their content', () => {
+    const editor = createSuggestionEditor('insert');
+
+    editor.plugin(AIChatPlugin).update.rejectSuggestions();
+
+    expect(editor.read.text.string([])).toBe('');
+  });
+
+  it('stops chat, resets options, and undoes the active AI batch', () => {
+    const stop = mock();
+    const clear = mock();
+    const editor = createPlateEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
+    });
+    const chat = {
+      messages: [
+        {
+          id: 'm1',
+          parts: [{ text: 'answer', type: 'text' }],
+          role: 'assistant',
+        },
+      ],
+      clear,
+      stop,
+    } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+    editor.plugin(AIChatPlugin).store.set({
+      _replaceIds: ['block'],
+      chat,
+      chatNodes: [{ children: [{ text: '' }], id: 'block', type: 'p' }],
+      mode: 'chat',
+      toolName: 'edit',
+      open: true,
+    });
+    editor.update({ history: 'merge' }, (tx) => {
+      tx.ai.markBatch();
+      tx.ai.insertNodes([{ text: 'ai' }], { target: [0, 0] });
+    });
+
+    editor.plugin(AIChatPlugin).api.reset();
+
+    expect(stop).toHaveBeenCalled();
+    expect(clear).toHaveBeenCalled();
+    expect(editor.read.text.string([])).toBe('');
+    expect(editor.plugin(AIChatPlugin).store.get('_replaceIds')).toEqual([]);
+    expect(editor.plugin(AIChatPlugin).store.get('chatNodes')).toEqual([]);
+    expect(editor.plugin(AIChatPlugin).store.get('mode')).toBe('insert');
+    expect(editor.plugin(AIChatPlugin).store.get('toolName')).toBeNull();
+  });
+
+  it('discards preview bookkeeping when reset skips undo', () => {
+    const editor = createPlateEditor({
+      plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
+    });
+
+    editor.plugin(BaseAIPlugin).update.beginPreview();
+    editor.plugin(AIChatPlugin).api.reset({ undo: false });
+
+    expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
+  });
+});

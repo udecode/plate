@@ -266,7 +266,7 @@ export const uiComponents: Registry['items'] = [
     type: 'registry:ui',
   },
   {
-    dependencies: ['@platejs/selection'],
+    dependencies: ['@platejs/cursor', '@platejs/selection'],
     description: 'A visual overlay for cursors and selections.',
     files: [{ path: 'ui/cursor-overlay.tsx', type: 'registry:ui' }],
     meta: {

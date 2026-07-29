@@ -458,25 +458,28 @@ class SchemaProbeProvider implements YjsProviderLike {
 const createPeerEditor = (
   provider: DemoProvider,
   schemaVersion = SCHEMA.version
-) =>
-  createPlateEditor({
+) => {
+  const plugins = [
+    ...BasicNodesKit,
+    YjsPlugin.configure({
+      initialState: {
+        clientId: provider.peer.id,
+        provider,
+        rootName: ROOT_NAME,
+      },
+    }),
+  ] as const;
+
+  return createPlateEditor({
     id: `collaboration-demo-${provider.peer.id}-${schemaVersion}`,
     initialValue: cloneInitialValue(),
-    plugins: [
-      ...BasicNodesKit,
-      YjsPlugin.configure({
-        initialState: {
-          clientId: provider.peer.id,
-          provider,
-          rootName: ROOT_NAME,
-        },
-      }),
-    ],
+    plugins,
     schema: {
       id: SCHEMA.id,
       version: schemaVersion,
     },
   });
+};
 
 type DemoEditor = ReturnType<typeof createPeerEditor>;
 
@@ -504,21 +507,22 @@ const createDemoRuntime = (): DemoRuntime => {
 
 const testSchemaJoin = (room: DemoRoom, version: number) => {
   const provider = new SchemaProbeProvider(room.snapshot());
+  const plugins = [
+    ...BasicNodesKit,
+    YjsPlugin.configure({
+      initialState: {
+        clientId: `schema-probe-${version}`,
+        provider,
+        rootName: ROOT_NAME,
+      },
+    }),
+  ] as const;
 
   try {
     const editor = createPlateEditor({
       id: `collaboration-demo-schema-probe-${version}`,
       initialValue: cloneInitialValue(),
-      plugins: [
-        ...BasicNodesKit,
-        YjsPlugin.configure({
-          initialState: {
-            clientId: `schema-probe-${version}`,
-            provider,
-            rootName: ROOT_NAME,
-          },
-        }),
-      ],
+      plugins,
       schema: { id: SCHEMA.id, version },
     });
 

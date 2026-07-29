@@ -2,7 +2,11 @@
 "@platejs/tabbable": major
 ---
 
+Export `TabbablePluginState` as the complete mutable state contract for
+`BaseTabbablePlugin`.
+
 Support HTML and SVG tabbables through the snapshot-aware
-`editor.read.tabbable.findDestination(options)` query. Accept
+`editor.plugin(TabbablePlugin).read.findDestination(options)` query. Accept
 `FocusableElement` in custom `TabbableEntry` values and remove the standalone
-`findTabDestination` helper.
+`findTabDestination` helper. Export the correctly spelled `TabbableConfig`
+type.

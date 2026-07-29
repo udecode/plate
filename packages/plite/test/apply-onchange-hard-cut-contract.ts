@@ -84,8 +84,10 @@ describe('apply/onChange hard cuts', () => {
       extensions: [
         defineEditorExtension({
           name: 'commit-timing-listener',
-          onCommit({ commit }) {
-            events.push(`commit:${commit.changed.has('text')}`);
+          on: {
+            commit({ commit }) {
+              events.push(`commit:${commit.changed.has('text')}`);
+            },
           },
         }),
       ] as const,

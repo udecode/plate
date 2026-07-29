@@ -51,7 +51,7 @@ function ElementContent({
 
   getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((key) => {
     const plugin = editor.getPlugin({ key });
-    const wrapperContext = getEditorPlugin(editor, plugin as any) as any;
+    const wrapperContext = getEditorPlugin(editor, plugin);
     const withHOC = plugin.render.belowNodes!;
 
     // belowNodes can have hooks
@@ -74,7 +74,7 @@ function ElementContent({
 
   getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((key) => {
     const plugin = editor.getPlugin({ key });
-    const wrapperContext = getEditorPlugin(editor, plugin as any) as any;
+    const wrapperContext = getEditorPlugin(editor, plugin);
     const withHOC = plugin.render.aboveNodes!;
 
     // aboveNodes can have hooks
@@ -100,7 +100,7 @@ export function BelowRootNodes({ ...props }: any) {
         if (isEditOnly(readOnly, plugin, 'render')) return null;
 
         const Component = plugin.render.belowRootNodes!;
-        const pluginContext = getEditorPlugin(editor, plugin as any) as any;
+        const pluginContext = getEditorPlugin(editor, plugin);
 
         return <Component key={key} {...props} {...pluginContext} />;
       })}
@@ -117,7 +117,7 @@ export const pluginRenderElement = (
   editor: PlateEditor,
   plugin: AnyEditorPlatePlugin
 ): RenderElement => {
-  const pluginContext = getEditorPlugin(editor, plugin as any) as any;
+  const pluginContext = getEditorPlugin(editor, plugin);
 
   return function render(props) {
     const { element, path } = props;

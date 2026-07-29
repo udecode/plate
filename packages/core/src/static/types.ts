@@ -24,8 +24,17 @@ export type PliteRenderLeafProps<
   C extends AnyPluginConfig = PluginConfig,
 > = PliteRenderNodeProps<C> & RenderLeafProps<N>;
 
+type ErasedBasePluginContext = {
+  api: object;
+  readonly installed: boolean;
+  read: object;
+  store: object;
+  type: string;
+  update: object;
+};
+
 export type PliteRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  BasePluginContext<C> & {
+  (0 extends 1 & C ? ErasedBasePluginContext : BasePluginContext<C>) & {
     attributes?: AnyObject;
     className?: string;
     /** @see {@link NodeProps} */

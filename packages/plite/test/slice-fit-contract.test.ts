@@ -911,6 +911,7 @@ describe('contextual schema slice fitting', () => {
       events.filter((id) => id === 'slice-fit-canonicalize').length,
       1
     );
+    assert.equal(events.filter((id) => id === 'slice-fit-variants').length, 0);
     assert.equal(
       events.filter((id) => id === 'change-set-local-splice').length,
       1
@@ -922,6 +923,10 @@ describe('contextual schema slice fitting', () => {
     );
     assert.equal(
       events.filter((id) => id === 'slice-fit-canonical-change-map').length,
+      0
+    );
+    assert.equal(
+      events.filter((id) => id === 'schema-root-ownership-index-rebase').length,
       0
     );
   });

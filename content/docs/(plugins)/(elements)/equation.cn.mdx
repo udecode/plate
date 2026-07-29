@@ -138,27 +138,25 @@ const editor = createPlateEditor({
 
 ## 转换方法
 
-### `editor.update.equation.insert`
+### `editor.plugin(BaseEquationPlugin).update.insert`
 
-<API name="insert.equation">
+<API name="editor.plugin(BaseEquationPlugin).update.insert">
 <APIOptions type="object">
     插入节点的转换选项
 </APIOptions>
 </API>
 
-### `editor.update.inlineEquation.insert`
+### `editor.plugin(BaseInlineEquationPlugin).update.insert`
 
 插入一个行内公式。
 
-<API name="insert.inlineEquation">
-<APIParameters>
+<API name="editor.plugin(BaseInlineEquationPlugin).update.insert">
+<APIOptions type="object">
   <APIItem name="texExpression" type="string" optional>
-    要插入的LaTeX表达式。如未提供则为空公式。
+    要插入的LaTeX表达式。如未提供则使用当前选中文本。
   </APIItem>
-  <APIItem name="options" type="object" optional>
-    插入节点的转换选项
-  </APIItem>
-</APIParameters>
+  插入节点的其他转换选项
+</APIOptions>
 </API>
 
 ## 类型定义

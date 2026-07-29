@@ -3,4 +3,4 @@
  */
 
 export * from './IndentPlugin';
-export * from './hooks/index';
+export * from './useIndentButton';

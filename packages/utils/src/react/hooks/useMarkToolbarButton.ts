@@ -6,18 +6,15 @@ type PreventDefaultMouseEvent = Pick<
 >;
 
 export const useMarkToolbarButtonState = ({
-  clear,
   nodeType,
 }: {
   nodeType: string;
-  clear?: string[] | string;
 }) => {
   const pressed = useEditorSelector(
     (editor) => !!editor.read.marks()?.[nodeType]
   );
 
   return {
-    clear,
     nodeType,
     pressed,
   };
@@ -32,9 +29,7 @@ export const useMarkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
-        editor.update.marks.toggle(state.nodeType, true, {
-          clear: state.clear,
-        });
+        editor.update.marks.toggle(state.nodeType);
         editor.api.dom.focus();
       },
       onMouseDown: (e: PreventDefaultMouseEvent) => {

@@ -12,8 +12,8 @@ const fixture = (
 ) as TestEditor;
 ```
 
-The package also exports `createEditorFromFixture`, `createDataTransfer`, and
-`getHtmlDocument` for editor, clipboard, and HTML tests.
+The package also exports `createEditorFromFixture` and `createDataTransfer` for
+editor and clipboard tests.
 
 ## License
 

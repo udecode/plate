@@ -139,6 +139,67 @@ Boundaries:
   commits, pushes, PRs, layer-plan execution, candidate-repository discovery,
   and draining issue closure queues.
 
+2026-07-27 Wordgard sync contract:
+
+- Latest request: run `editor-audit sync` against latest Wordgard.
+- Scope: update only the registered Wordgard reference and every directly
+  affected concept, dependency, Plite/Plate comparison, proof row, provenance
+  cursor, and final recommendation. Lexical and ProseMirror remote freshness is
+  outside this sync.
+- Source boundary: clean `../wordgard` on registered `main` /
+  `origin/main`; fast-forward only. Do not edit Wordgard or implement product
+  code.
+- Completion threshold: account for every file and declaration changed since
+  `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`; update the stable Wordgard
+  audit/report/manifest and registry to the verified new full HEAD; advance the
+  independent test and issue cursors only after their owning refresh succeeds;
+  leave zero unresolved delta concepts or stale Wordgard claims; pass the
+  registered audit validator and `check-complete.mjs`.
+- Verification surface: immutable git provenance, bounded source and dependent
+  owner reads, incremental test-harvest proof, issue refresh-only proof,
+  manifest/report/registry validation, final clean-reference recheck.
+- Final handoff: strongest local mechanisms still worth keeping, any changed
+  material candidates, rejected donor machinery, unresolved evidence gates,
+  independent architecture/test/issue status, and an explicit request for
+  acceptance. No implementation, commit, push, PR, or layer plan.
+- Blocked condition: stop only for dirty/mismatched/rewritten Wordgard
+  provenance or an unavailable test/issue provider whose stale cursor prevents
+  truthful completion; provider failure is recorded rather than hidden.
+
+2026-07-29 Lexical sync contract:
+
+- Latest request: run the registered full `editor-audit` against `../lexical`,
+  pulling latest first.
+- Scope: update only the registered Lexical reference and every directly
+  affected concept, dependency, Plite/Plate comparison, proof row, provenance
+  cursor, prior candidate, and final recommendation. Wordgard and ProseMirror
+  remote freshness is outside this sync.
+- Source boundary: clean `../lexical` on registered `main` / `origin/main`;
+  fast-forward only. Do not edit Lexical, switch branches, transplant product
+  code, or implement accepted architecture work.
+- Completion threshold: account for every file and meaningful declaration
+  changed since `d52f66e250e031a6c6fd8836d160373b0df557c7`; reconcile all affected
+  concepts and prior candidates; backfill and pass the strict canonical
+  one-row-per-concept Lexical matrix required by the current skill; update the
+  stable Lexical audit/report/manifest and registry to one verified new full
+  HEAD; advance test and issue cursors only after their owning refresh proof;
+  leave zero unresolved delta concepts or stale Lexical claims; pass the audit
+  validators and `check-complete.mjs`.
+- Verification surface: immutable git provenance and ancestry; bounded commit,
+  file, declaration, owner, dependent, and consumer reads; incremental
+  test-harvest proof; issue refresh-only proof; symmetric concept-manifest
+  union; strict matrix validation; registry and artifact-link validation; final
+  clean-reference recheck at the same HEAD.
+- Final handoff: strongest Plite/Plate mechanisms still worth keeping, every
+  changed material candidate with P0-P3 priority, rejected Lexical machinery,
+  unresolved evidence gates, and independent architecture/matrix/test/issue
+  status. Request acceptance; do not implement, commit, push, open a PR, or
+  start a layer plan.
+- Blocked condition: stop only for dirty/mismatched/rewritten Lexical
+  provenance or an unavailable owner proof whose stale cursor prevents a
+  truthful current claim. Provider failure is recorded without advancing its
+  cursor.
+
 Output budget strategy:
 
 - Count and enumerate first; save large inventories and declaration maps to
@@ -163,18 +224,21 @@ Major state:
 
 - task_type: major
 - task_complexity: major
-- current_phase: closeout
+- current_phase: Wordgard delta sync
 - current_phase_status: completed
-- next_phase: final verified handoff
-- goal_status: active
+- next_phase: user acceptance
+- goal_status: complete
 
 Current verdict:
 
 - verdict: six material architecture packets survive the source audit and
   independent pressure pass; every other donor mechanism is kept, rejected,
   moved, or deferred behind a concrete evidence gate
+- sync verdict: latest Wordgard adds no material architecture packet; its one
+  mobile phase-selection change is proof pressure on the existing Plite input
+  owner
 - confidence: high; source coverage, provenance, dossiers, harvest cursors,
-  formatting, and 582 closure checks are mechanically closed
+  syntax/whitespace, and 585 closure checks are mechanically closed
 - next owner: user acceptance, then the exact `best-api`, `plite-plan`, or
   `plate-plan` route named by each accepted packet
 - reason: five zero-unmapped live-source ledgers, immutable reference cursors,
@@ -276,10 +340,68 @@ Audit Requirements:
       reference machinery, evidence-backed defers, dependency-ordered packets,
       and closure counts in the final handoff.
 
+2026-07-27 Wordgard Sync Checklist:
+
+- [x] Resolve the registered audit, prior architecture/test/issue cursors,
+      branch, upstream, and artifact paths before pulling.
+- [x] Prove `../wordgard` is clean and registered on `main` /
+      `origin/main`, then fast-forward only to the remote head.
+- [x] Account for every changed file/declaration and re-audit the affected
+      concept plus dependencies, consumers, public contracts, proof,
+      performance, ownership, adoption, and deletion consequences.
+- [x] Run the incremental Wordgard test harvest from the independent
+      `testHarvestCommit`; update its stable artifacts or record an exact
+      blocker without advancing the cursor.
+- [x] Run Wordgard issue refresh-only against the supported provider; preserve
+      prior decisions, add/change compact rows only, and record provider,
+      coverage, counts, and freshness.
+- [x] Update the Wordgard architecture report, source manifest, master audit,
+      registry, and any directly stale Wordgard-specific provenance statement
+      together at one verified commit.
+- [x] Recheck clean HEAD/branch/upstream/ancestry, validate registry JSON and
+      artifact links, run the audit validator and autogoal checker, and record
+      exact source-unit/concept/exclusion/material-candidate/unresolved counts.
+- [x] Deliver the planning-only sync status and request acceptance without
+      implementing, committing, pushing, opening a PR, or starting a layer
+      plan.
+
+2026-07-29 Lexical Sync Checklist:
+
+- [ ] Resolve the registered Lexical architecture, test, issue, manifest,
+      matrix, branch, upstream, and artifact cursors before pulling.
+- [ ] Prove `../lexical` is clean and registered on `main` / `origin/main`,
+      then fast-forward only to the remote head.
+- [ ] Account for every changed file and meaningful declaration since the
+      registered architecture cursor; re-audit affected concepts, dependencies,
+      consumers, public contracts, proof, performance, ownership, adoption, and
+      deletion consequences.
+- [ ] Backfill a symmetric canonical Lexical concept manifest and exactly one
+      strict matrix row per concept, including local-only mechanisms and prior
+      candidates; pass `validate-concept-matrix.mjs` before making any global
+      superiority claim.
+- [ ] Run the incremental Lexical test harvest from the independent
+      `testHarvestCommit`; update stable artifacts or record an exact blocker
+      without advancing the cursor.
+- [ ] Run Lexical issue refresh-only against the supported provider; preserve
+      prior decisions, update compact rows only, and record provider, coverage,
+      counts, and freshness.
+- [ ] Reconcile every prior Lexical material candidate as still valid, changed,
+      rejected, or reopened; update the master audit and strongest-local-law
+      claims only where current source supports them.
+- [ ] Update the Lexical architecture report, source manifest, canonical
+      matrix, master audit, registry, and directly stale Lexical provenance
+      statements together at one verified commit.
+- [ ] Recheck clean HEAD/branch/upstream/ancestry, validate registry JSON and
+      artifact links, run all audit validators and the autogoal checker, and
+      record exact source-unit, concept, exclusion, candidate, and unresolved
+      counts.
+- [ ] Deliver the planning-only sync status and request acceptance without
+      implementation or git/public mutation.
+
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Close zero-unmapped concepts, full candidate dossiers, cursors, registry, citation/count validation, review, and checker | 582 audit checks pass; autogoal checker remains |
+| Named verification threshold | yes | Close zero-unmapped concepts, full candidate dossiers, cursors, registry, citation/count validation, review, and checker | 585 audit checks pass; autogoal checker passes |
 | Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Five exhaustive source manifests and ledgers |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Six accepted dossiers; complete keep/reject/move/defer ledger |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Dossiers, donor dispositions, and evidence-backed reopen gates |
@@ -288,10 +410,10 @@ Completion Gates:
 | External-source audit | yes | Cite official/local clone/external sources when used, or record N/A | 22 clean pinned local reference repos; website evidence limit recorded |
 | Implementation gates | no | N/A: planning-only; no product code, runtime, tests, or package APIs may change | N/A: implementation explicitly excluded |
 | Final handoff contract | yes | Record recommendation, evidence, caveats, residual risk, and next owner | Final recommendation, issue caveat, and per-packet routing recorded |
-| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent when files changed | Scoped Prettier write/check over authored plan and audit artifacts |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent when files changed | Scoped Node syntax, JSON parse, artifact validators, and `git diff --check`; generated and exhaustive-ledger formatting preserved |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Five accidental broad outputs recorded; all later reads artifacted/bounded |
 | Timed checkpoint | no | N/A: no duration requested | N/A: no timebox |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-25-multi-editor-full-architecture-audit.md` | passed |
+| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-25-multi-editor-full-architecture-audit.md` | passed after Wordgard sync closure |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -305,8 +427,10 @@ Phase / pass table:
 | Options and recommendation | completed | keep/reject/move/defer ledger plus ranked six-packet recommendation | done |
 | Review / pressure pass | completed | independent pressure review reduced ten draft rows to six material packets | done |
 | Implementation or plan artifact | completed | planning artifact only; no product implementation authorized | done |
-| Verification | completed | 582 closure checks, source freshness, ledger validators, 42 TypeScript-fence parses, scoped formatting, and final autogoal rerun | done |
-| Closeout | completed | Decision-ready audit, caveats, owner routing, and final handoff recorded | final response |
+| Wordgard delta sync | completed | one source statement, zero test-tree changes, zero issue metadata changes, no material packet | done |
+| Lexical delta sync | in progress | registered cursor resolved; strict-matrix backfill and latest-source pull pending | pull and audit |
+| Verification | pending | prior 585-check closure is historical; rerun current strict matrix, audit, registry, source, and autogoal gates | after Lexical reconciliation |
+| Closeout | pending | prior decision-ready audit is reopened only for the registered Lexical delta | final response |
 
 Findings:
 
@@ -314,7 +438,7 @@ Findings:
   require fresh live-source verification and comparison against two additional
   editors.
 - Reference preflight is clean: Wordgard
-  `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e` on `main` / `origin/main`,
+  `01eb2b5eae509509677345fd603acad001827dff` on `main` / `origin/main`,
   Lexical `d52f66e250e031a6c6fd8836d160373b0df557c7` on `main` / `origin/main`,
   and the ProseMirror launcher repo
   `c7f2f1d7bde70728dfedaa68ca8f5fc3dffa17cc` on `master` /
@@ -379,34 +503,48 @@ Error attempts:
 | `gitcrawl sync` streamed per-thread progress for both repositories despite output caps | 2 | Redirect archive/search output and logs to `.tmp`, then inspect only counts and hashes | Recovered; subsequent issue-cursor work used quiet raw artifacts and bounded summaries |
 | Broad cross-package pressure searches and concatenated ledger reads exceeded the response cap | 2 | Query one owner or one dossier at a time and consume generated manifests for totals | Recovered; the truncated tails were not used as evidence |
 | Printing the nested ProseMirror repository manifest emitted a very large payload | 1 | Read only the compact provenance table and named summary fields | Recovered; the generated manifest remained the authority and no conclusion came from the truncated payload |
+| A zsh variable containing newline-separated Wordgard test paths was passed as one argument | 1 | Use NUL-safe or `xargs` path expansion for independent line/call counts | Recovered; exact counts are 27 files, 6,039 lines, and 644 `it()` calls |
 
 Verification evidence:
 
 - Skill analysis and prompt extraction completed before broad source
   exploration.
-- Read-only closure validation passes 582 checks covering provenance, clean
+- Read-only closure validation passes 585 checks covering provenance, clean
   reference heads, registry links, zero-unmapped manifests, concept
   accounting, six full dossiers, harvest cursors, issue totals, and artifact
-  links. All 42 TypeScript fences parse and scoped formatting passes.
+  links. All 42 TypeScript fences parse and scoped syntax/whitespace checks
+  pass without reformatting generated or exhaustive ledger artifacts.
+- Wordgard closes at 120 tracked files, 3,275 declarations, 73 concepts, six
+  excluded files, 12 excluded declarations, and zero unmapped files or
+  declarations.
+- The source delta is one statement in `src/editor/input.ts`; the test tree is
+  byte-identical at both cursors. The incremental inventory remains 27 test
+  files, 24 runnable files, 6,039 lines, 644 cases, and 33 families.
+- The live Forgejo projection remains byte-identical to the stored refresh
+  payload at
+  `d8e4da78b690c81790ede2d6f62b1bdad4a1f502c2806df76e07b1ca3c953bf3`:
+  27 issues, 7 open, 20 closed, zero additions, and zero metadata changes.
+- Focused Plite input-policy proof passes three files and 63 tests. This proves
+  current routing policy, not raw-device virtual-keyboard behavior.
 
 Final handoff contract:
 
-- Recommendation: strongest keep mechanisms first, followed by the complete
-  material-value-ranked change set
-- Confidence: high after exhaustive source coverage and independent pressure
-  review; issue metadata additions remain intentionally unclassified
+- Recommendation: keep the existing Plite input architecture; reject
+  Wordgard's blanket mobile keymap bypass; use its narrow default-action phase
+  choice only as a raw-device proof target
+- Confidence: high on architecture and cursor freshness; deliberately
+  unclaimed for real iOS/Android virtual-keyboard behavior
 - Evidence: exact live-source citations, manifests, concept counts, reference
   commits, and per-reference comparison classifications
 - Tests / commands: harvester/cursor checks, manifest/count/citation validators,
   registry parse/link checks, and final checker
-- Browser proof: N/A for planning; every browser-sensitive proposal must specify
-  its future browser proof
+- Browser proof: N/A for planning; raw iOS Safari and Android Chrome receipts
+  are the explicit evidence gate, and mobile viewport emulation is insufficient
 - PR / tracker: N/A: no mutation authorized
-- Caveats: 27 Wordgard and 41 Lexical issue rows are refreshed but unchecked;
-  ProseMirror website source was inaccessible, so runtime evidence comes from
-  all 20 package repositories and their official package documentation
-- Next owner: user acceptance, then the named `best-api`, `plite-plan`, or
-  `plate-plan` owner per packet
+- Caveats: all 27 Wordgard issue rows remain unchecked by issue-harvester; issue
+  #23 is open and Wordgard itself has no raw-device regression receipt
+- Next owner: user acceptance; no new layer plan unless raw-device proof
+  reproduces a Plite defect
 
 Timeline:
 
@@ -422,20 +560,31 @@ Timeline:
   validators pass; all 42 proposed TypeScript fences parse.
 - 2026-07-26: Scoped formatting and the final autogoal completeness checker
   pass. Planning-only audit closed without product implementation.
+- 2026-07-27: Wordgard sync opened from registered cursor
+  `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`; clean `main` /
+  `origin/main` fast-forwarded to
+  `01eb2b5eae509509677345fd603acad001827dff`. One source file and one
+  declaration changed.
+- 2026-07-27: Delta review classified the change as a different tradeoff, not a
+  new packet. Test-tree and issue payloads are unchanged; architecture, test,
+  issue, registry, and duplicate dossier cursors are current. Focused Plite
+  policy proof passes 63/63 and the registered audit passes 585 checks.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Verification and closeout |
-| Where am I going? | Final six-dossier rewrite, verification, and closeout |
-| What is the goal? | Produce one exhaustive, decision-ready, planning-only audit of three reference editors against live Plite and Plate |
-| What have I learned? | Plite wins most substrate lanes; six current public-owner defects justify change, while ordered grammar and proof-only packets do not yet clear material value |
-| What have I done? | Closed five exhaustive ledgers, 22 reference cursors, three test harvests, three issue refreshes, six proposal dossiers, and an independent pressure pass |
+| Where am I? | Completed Wordgard delta sync |
+| Where am I going? | User acceptance; raw-device proof only if requested or a Plite defect reproduces |
+| What is the goal? | Keep the registered Wordgard portion of this planning-only audit current at the latest verified source commit |
+| What have I learned? | Latest Wordgard adds one mobile keydown bypass for Enter/Backspace so native beforeinput owns autocapitalization-sensitive actions |
+| What have I done? | Closed architecture, test, issue, registry, duplicate artifact, local policy-test, and validator proof at the new commit |
 
 Open risks:
 
-- No architecture blocker remains. Final artifact formatting and mechanical
-  checker closure are still required before handoff.
+- No audit blocker remains. Real iOS/Android behavior is an explicit
+  evidence-backed defer: neither Wordgard's desktop Chromium suite nor Plite's
+  focused policy tests prove virtual-keyboard autocapitalization,
+  autocorrection, or semantic deletion.
 
 ## Decision-ready full audit
 
@@ -467,11 +616,28 @@ score is averaged across editors.
 
 | Source            | Immutable/local authority                       |       Included units | Declarations | Concepts |                 Exact exclusions | Unmapped |
 | ----------------- | ----------------------------------------------- | -------------------: | -----------: | -------: | -------------------------------: | -------: |
-| Wordgard          | `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`      |     114 mapped files |        3,275 |       73 |        6 files / 12 declarations |        0 |
+| Wordgard          | `01eb2b5eae509509677345fd603acad001827dff`      |     114 mapped files |        3,275 |       73 |        6 files / 12 declarations |        0 |
 | Lexical           | `d52f66e250e031a6c6fd8836d160373b0df557c7`      | 1,424 relevant units |        5,132 |       48 |     219 units / 862 declarations |        0 |
 | ProseMirror       | meta plus 19 commits in the provenance artifact |     214 mapped files |        2,180 |       64 |                        116 files |        0 |
 | Live Plite family | generated current-source manifest               |          2,318 files |        6,004 |       32 | generated/build/cache paths only |        0 |
 | Live Plate family | generated current-source manifest               |          2,253 files |        7,660 |       45 |                        135 files |        0 |
+
+#### Wordgard incremental delta ledger
+
+The range
+`8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e..01eb2b5eae509509677345fd603acad001827dff`
+changes one statement in one private declaration and no test. Counts remain
+120 tracked files, 3,275 declarations, 73 concepts, and zero unmapped units.
+
+| ID             | Concept                                           | Reference evidence and comparison                                                                                                                                                                                                                                        | Current Plite                                                                                                                                                                                                                                 | Current Plate                                     | Verdict                                    | Priority | Material value                                                  | Current shape                                                              | Proposed shape                                                                                                                            | Delete/hide/move                                             | Primary owner                       | Dependent owner                                   | Proof                                                                                                                                                                       |
+| -------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------ | -------- | --------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WG-VIEW-009`  | Native `beforeinput` and DOM-delta reconciliation | Different tradeoff. Wordgard routes mobile Enter/Backspace through its existing beforeinput owner at `../wordgard/src/editor/input.ts:710-714`; structural commands remain model-owned and eligible inline edits reconcile at `../wordgard/src/editor/input.ts:812-858`. | `PL-22` already owns typed beforeinput commands, exact-once epochs, Android target ranges, and bounded repair.                                                                                                                                | Delegates to Plite React; no Plate runtime owner. | `keep`; mine donor proof                   | —        | No current architecture defect proven.                          | Canonical commands plus native DOM repair in Plite React.                  | Unchanged unless raw-device failure reproduces.                                                                                           | Nothing.                                                     | `plite-plan` only if the gate fails | Plate adoption only if a product behavior changes | Focused 63-test policy proof plus raw-device gate below.                                                                                                                    |
+| `WG-VIEW-010`  | Mobile Enter/Backspace phase choice               | Wordgard is stronger for default virtual-keyboard phase selection, including semantic `deleteWordBackward`; local behavior remains insufficiently evidenced. Issue 23 is open and issue 24 is closed as “should be addressed,” without automated or device proof.        | Ordinary Enter/Backspace is model-owned at keydown; only iOS Korean Backspace is deferred (`packages/plite-react/src/editable/keyboard-input-strategy.ts:489-498`, `packages/plite-react/src/editable/keyboard-input-strategy.ts:1031-1064`). | No independent behavior.                          | `defer`                                    | —        | A real correctness fix only if Plite reproduces the mobile bug. | Keydown owns default command outside the narrow exception.                 | If proven: default unmodified virtual-keyboard Enter/Backspace reaches beforeinput while explicit app/hardware shortcuts retain priority. | Replace the narrow phase predicate, not the input subsystem. | `plite-plan`                        | `plate-plan` only for affected product handlers   | Real iOS Safari swipe/autocap and Android Chrome traces; viewport emulation is insufficient.                                                                                |
+| `WG-VIEW-012`  | Keymap and user-handler precedence                | Local stronger overall. Wordgard's key-name/platform guard skips every mobile `KeyBinding`, including modifiers and hardware keyboards.                                                                                                                                  | Typed user handlers, command ownership, and root-scoped host facts remain explicit.                                                                                                                                                           | Plate retains product shortcut policy.            | `reject` blanket guard; `keep` local owner | —        | Copying it would regress extension behavior.                    | Explicit handler/command routing.                                          | Preserve explicit app bindings around any future default-action predicate.                                                                | Import no platform-wide keymap bypass.                       | `plite-plan`                        | `plate-plan` for shortcut adoption                | Raw-device traces plus custom binding and exactly-once command cases.                                                                                                       |
+| `WG-PROOF-004` | Browser/mobile input proof                        | Reference proof is insufficient: zero changed tests, desktop Chromium runner, Android Enter FIXME.                                                                                                                                                                       | Strong desktop/synthetic proof, but no current raw-device receipt for this scenario.                                                                                                                                                          | N/A: substrate behavior.                          | `defer` proof only                         | —        | Closes claim width; creates no API or architecture packet.      | Mobile viewport and synthetic input do not prove virtual-keyboard context. | Add raw-device receipts when the device lane is available.                                                                                | Nothing.                                                     | `testing` under Plite proof owner   | None                                              | Enter then swipe capitalization, first Backspace deletes the swiped word once, marks/blocks/composition/autocorrect, caret/model/history agreement, follow-up typing, undo. |
+
+No A1-A6 priority, proposed public/internal shape, dependency order, deletion
+ledger, or planning owner changes.
 
 Complete evidence:
 
@@ -2343,43 +2509,43 @@ The per-reference ledgers contain one independent judgment for every atomic
 concept: Wordgard 73, Lexical 48, and ProseMirror 64. This family ledger closes
 the final target without hiding a donor mechanism behind grouped praise.
 
-| Donor mechanism family                                              | Final verdict                     | Reason                                                                                                                                                        |
-| ------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Immutable change algebra, changed ranges, open fitted slices        | `keep` Plite; mine laws           | `DocumentChange` and `ContentSlice` are JSON-native, root-aware, serialized, and already shared across transactions, history, Yjs, mapping, and invalidation. |
-| Ordered content automata and schema-aware fill/wrap                 | evidence-backed `defer`           | Semantically stronger, but retained Plate structures do not yet fund the public AST, compiler, fitter/cache rewrite, and ecosystem adoption.                  |
-| Mark-set exclusions                                                 | `rearchitect` as `A3`             | The invariant belongs to schema; Plite needs one structural exclusive relation, not donor strings or nominal marks.                                           |
-| Typed extension descriptors and required dependencies               | `steal` as `A6`                   | Lexical's inference is stronger; Plite's detached atomic candidate and structural identity remain stronger.                                                   |
-| Optional dependency/service lookup                                  | `reject`                          | Plate composition explicitly selects product capabilities; a service locator makes absence implicit and configuration order harder to inspect.                |
-| Compartments and atomic reconfiguration                             | `keep` Plite                      | Plite already compiles, validates, migrates, publishes, rolls back, and cleans detached candidates atomically.                                                |
-| Automatic facet dependency tracking                                 | `reject`                          | Explicit dependencies remain deterministic, serializable, inspectable, and agent-readable.                                                                    |
-| Reactive extension signals and mutable builder phases               | `reject`                          | They add a second runtime and weaken atomic configuration truth.                                                                                              |
-| Mutable plugin option/state bag                                     | `hard-cut` as `A1`                | Immutable compiler inputs and editor-local process/UI state are different concepts.                                                                           |
-| General plugin props, read interception, append transactions        | `hard-cut` through `A4` or reject | Broad continuation machinery hides semantic ownership; each demonstrated job gets one narrow owner.                                                           |
-| Global priority, rank, or precedence bands                          | `hard-cut` as `A2`                | One scalar cannot truthfully order dependencies, commands, codecs, components, listeners, APIs, and lifecycle.                                                |
-| Capability-local parse/input/shortcut priority                      | `keep`                            | Competing rules inside one compiler are the valid home for local precedence.                                                                                  |
-| Declarative schema-linked HTML/Markdown codecs                      | `keep` Plite/Plate                | The current host compiler is more typed, JSON-native, multi-root-aware, and atomically published.                                                             |
-| Clipboard transport and browser `DataTransfer` in core              | `move` through `A5`               | DOM transport, exact envelopes, host codecs, fallbacks, and browser failures belong to `plite-dom`.                                                           |
-| Native DOM reconciliation, composition, observer repair             | `keep`; mine donor proof          | Plite's explicit strategy and bounded scheduler are stronger; donor scenarios increase confidence without replacing the runtime.                              |
-| Imperative tile/ViewDesc renderer                                   | evidence-backed `defer`           | No non-React consumer or benchmark justifies a second renderer and parity burden.                                                                             |
-| Decoration, annotation, and widget mapping                          | `keep` Plite                      | Separate public concepts over one private invalidation/lifecycle kernel are cleaner than a public tree or mega-layer.                                         |
-| Extensible selections, affinity, goal column, bidi/Unicode movement | `keep`; extend through `A4`       | Tagged structural selections and anchors beat class registries and raw integer positions.                                                                     |
-| Model callback named `domRange`                                     | `hard-cut` inside `A4`            | It returns a model range; DOM conversion already has a distinct host owner.                                                                                   |
-| History grouping, rebasing, compression, persistence                | `keep`; mine laws                 | Versioned canonical changes/effects beat live steps or descriptor identity.                                                                                   |
-| Central-version OT or donor collaboration protocol                  | `reject`                          | Yjs remains transport/CRDT; canonical change laws and donor schedules remain useful proof.                                                                    |
-| Table maps, cell selections, grid paste                             | `keep` Plate; adopt `A4`/`A5`     | Product geometry belongs to the table plugin, with substrate selection and transport contracts only.                                                          |
-| Class nodes, class marks, live schema/type identity                 | `reject`                          | They weaken JSON portability, structural typing, duplicate-package safety, multi-root documents, persistence, and Yjs.                                        |
-| Raw public integer positions and one privileged root                | `reject`                          | Paths, anchors, root keys, and snapshot indexes are the stronger local model.                                                                                 |
-| Global step/selection/plugin registries                             | `reject`                          | Versioned structural codecs and editor-local compiled registries are safer.                                                                                   |
-| Node-local state/property bags                                      | evidence-backed `defer`           | Typed schema properties, fields, facets, effects, annotations, and projections already cover the valid jobs.                                                  |
-| Snapshot cursor or public offset view                               | evidence-backed `defer`           | Reopen only on a measured traversal/input bottleneck that indexes cannot solve.                                                                               |
-| Public changed-root iteration/root transaction view                 | evidence-backed `defer`           | One private scoped-update consumer does not fund an ambient public root context.                                                                              |
-| Bulk anchor registry rewrite                                        | evidence-backed `defer`           | Shared indexes already exist; require a current anchor-mapping benchmark failure.                                                                             |
-| Compiled plugin portals                                             | evidence-backed `defer`           | Require measured construction/lookup cost and a lifecycle-safe cache.                                                                                         |
-| One internal descriptor kernel                                      | `move` to `architecture-cleanup`  | It is code-shape work until compile-time, inference, defect, or runtime value is demonstrated.                                                                |
-| Product nodes, menus, dialogs, CSS, i18n, devtools                  | `move` or `reject` as substrate   | Plate, registry, or application owners fit these jobs; Plite should not absorb donor product surface.                                                         |
-| Dragon/UA folklore                                                  | evidence-backed `defer`           | Require a reproducible browser failure; copy behavior, not folklore.                                                                                          |
-| ProseMirror search/track-change display models                      | `move/defer`                      | Plate may lower from `DocumentChange` when a real product consumer exists.                                                                                    |
-| ProseMirror website source                                          | exact evidence limit              | Its configured remote was inaccessible; all 20 package repos, package docs, source, and tests remain fully audited.                                           |
+| Donor mechanism family                                                       | Final verdict                                | Reason                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Immutable change algebra, changed ranges, open fitted slices                 | `keep` Plite; mine laws                      | `DocumentChange` and `ContentSlice` are JSON-native, root-aware, serialized, and already shared across transactions, history, Yjs, mapping, and invalidation.                                                                                       |
+| Ordered content automata and schema-aware fill/wrap                          | evidence-backed `defer`                      | Semantically stronger, but retained Plate structures do not yet fund the public AST, compiler, fitter/cache rewrite, and ecosystem adoption.                                                                                                        |
+| Mark-set exclusions                                                          | `rearchitect` as `A3`                        | The invariant belongs to schema; Plite needs one structural exclusive relation, not donor strings or nominal marks.                                                                                                                                 |
+| Typed extension descriptors and required dependencies                        | `steal` as `A6`                              | Lexical's inference is stronger; Plite's detached atomic candidate and structural identity remain stronger.                                                                                                                                         |
+| Optional dependency/service lookup                                           | `reject`                                     | Plate composition explicitly selects product capabilities; a service locator makes absence implicit and configuration order harder to inspect.                                                                                                      |
+| Compartments and atomic reconfiguration                                      | `keep` Plite                                 | Plite already compiles, validates, migrates, publishes, rolls back, and cleans detached candidates atomically.                                                                                                                                      |
+| Automatic facet dependency tracking                                          | `reject`                                     | Explicit dependencies remain deterministic, serializable, inspectable, and agent-readable.                                                                                                                                                          |
+| Reactive extension signals and mutable builder phases                        | `reject`                                     | They add a second runtime and weaken atomic configuration truth.                                                                                                                                                                                    |
+| Mutable plugin option/state bag                                              | `hard-cut` as `A1`                           | Immutable compiler inputs and editor-local process/UI state are different concepts.                                                                                                                                                                 |
+| General plugin props, read interception, append transactions                 | `hard-cut` through `A4` or reject            | Broad continuation machinery hides semantic ownership; each demonstrated job gets one narrow owner.                                                                                                                                                 |
+| Global priority, rank, or precedence bands                                   | `hard-cut` as `A2`                           | One scalar cannot truthfully order dependencies, commands, codecs, components, listeners, APIs, and lifecycle.                                                                                                                                      |
+| Capability-local parse/input/shortcut priority                               | `keep`                                       | Competing rules inside one compiler are the valid home for local precedence.                                                                                                                                                                        |
+| Declarative schema-linked HTML/Markdown codecs                               | `keep` Plite/Plate                           | The current host compiler is more typed, JSON-native, multi-root-aware, and atomically published.                                                                                                                                                   |
+| Clipboard transport and browser `DataTransfer` in core                       | `move` through `A5`                          | DOM transport, exact envelopes, host codecs, fallbacks, and browser failures belong to `plite-dom`.                                                                                                                                                 |
+| Native DOM reconciliation, composition, mobile phase choice, observer repair | `keep`; mine donor proof; defer device claim | Plite's explicit strategy and bounded scheduler are stronger overall. Wordgard's new default mobile Enter/Backspace phase choice is useful pressure, but its blanket keymap bypass is rejected and local routing changes wait for raw-device proof. |
+| Imperative tile/ViewDesc renderer                                            | evidence-backed `defer`                      | No non-React consumer or benchmark justifies a second renderer and parity burden.                                                                                                                                                                   |
+| Decoration, annotation, and widget mapping                                   | `keep` Plite                                 | Separate public concepts over one private invalidation/lifecycle kernel are cleaner than a public tree or mega-layer.                                                                                                                               |
+| Extensible selections, affinity, goal column, bidi/Unicode movement          | `keep`; extend through `A4`                  | Tagged structural selections and anchors beat class registries and raw integer positions.                                                                                                                                                           |
+| Model callback named `domRange`                                              | `hard-cut` inside `A4`                       | It returns a model range; DOM conversion already has a distinct host owner.                                                                                                                                                                         |
+| History grouping, rebasing, compression, persistence                         | `keep`; mine laws                            | Versioned canonical changes/effects beat live steps or descriptor identity.                                                                                                                                                                         |
+| Central-version OT or donor collaboration protocol                           | `reject`                                     | Yjs remains transport/CRDT; canonical change laws and donor schedules remain useful proof.                                                                                                                                                          |
+| Table maps, cell selections, grid paste                                      | `keep` Plate; adopt `A4`/`A5`                | Product geometry belongs to the table plugin, with substrate selection and transport contracts only.                                                                                                                                                |
+| Class nodes, class marks, live schema/type identity                          | `reject`                                     | They weaken JSON portability, structural typing, duplicate-package safety, multi-root documents, persistence, and Yjs.                                                                                                                              |
+| Raw public integer positions and one privileged root                         | `reject`                                     | Paths, anchors, root keys, and snapshot indexes are the stronger local model.                                                                                                                                                                       |
+| Global step/selection/plugin registries                                      | `reject`                                     | Versioned structural codecs and editor-local compiled registries are safer.                                                                                                                                                                         |
+| Node-local state/property bags                                               | evidence-backed `defer`                      | Typed schema properties, fields, facets, effects, annotations, and projections already cover the valid jobs.                                                                                                                                        |
+| Snapshot cursor or public offset view                                        | evidence-backed `defer`                      | Reopen only on a measured traversal/input bottleneck that indexes cannot solve.                                                                                                                                                                     |
+| Public changed-root iteration/root transaction view                          | evidence-backed `defer`                      | One private scoped-update consumer does not fund an ambient public root context.                                                                                                                                                                    |
+| Bulk anchor registry rewrite                                                 | evidence-backed `defer`                      | Shared indexes already exist; require a current anchor-mapping benchmark failure.                                                                                                                                                                   |
+| Compiled plugin portals                                                      | evidence-backed `defer`                      | Require measured construction/lookup cost and a lifecycle-safe cache.                                                                                                                                                                               |
+| One internal descriptor kernel                                               | `move` to `architecture-cleanup`             | It is code-shape work until compile-time, inference, defect, or runtime value is demonstrated.                                                                                                                                                      |
+| Product nodes, menus, dialogs, CSS, i18n, devtools                           | `move` or `reject` as substrate              | Plate, registry, or application owners fit these jobs; Plite should not absorb donor product surface.                                                                                                                                               |
+| Dragon/UA folklore                                                           | evidence-backed `defer`                      | Require a reproducible browser failure; copy behavior, not folklore.                                                                                                                                                                                |
+| ProseMirror search/track-change display models                               | `move/defer`                                 | Plate may lower from `DocumentChange` when a real product consumer exists.                                                                                                                                                                          |
+| ProseMirror website source                                                   | exact evidence limit                         | Its configured remote was inaccessible; all 20 package repos, package docs, source, and tests remain fully audited.                                                                                                                                 |
 
 ## Evidence-backed defers
 
@@ -2440,9 +2606,18 @@ Required harvest:
 - mark-boundary mutation;
 - selection-only `MutationObserver` batches;
 - native enter/backspace/type-over recognition;
+- real iOS Safari swipe input at a line start after Enter/Backspace, including
+  next-letter autocapitalization and autocorrect/spellcheck context;
+- first Backspace after a swiped word preserves `deleteWordBackward` and
+  deletes the word exactly once, followed by normal subsequent deletion;
+- real Android Chrome virtual-keyboard equivalents, custom app key bindings,
+  modified/hardware keys, structural split/join, history, caret/model
+  agreement, follow-up typing, and undo;
 - clipboard during composition;
 - shadow-root ownership and geometry;
-- Chromium, Firefox, WebKit, and mobile viewport with zero retries.
+- Chromium, Firefox, WebKit, and mobile viewport with zero retries for semantic
+  coverage, plus raw iOS and Android device receipts for the virtual-keyboard
+  claims. Mobile viewport emulation is insufficient for those claims.
 
 A failure repairs the existing owner and adds a named regression. It does not
 add a compatibility flag, second scheduler, or new public packet.
@@ -2476,7 +2651,7 @@ change an architecture verdict.
 
 | Reference   | Cursor                                                                              | Inventory                                                                          | Result                                                                            |
 | ----------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Wordgard    | `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`                                          | 27 files, 24 runnable, 644 cases, 33 families                                      | zero uncertain; DOM/collaboration rows attached to retained proof owners          |
+| Wordgard    | `01eb2b5eae509509677345fd603acad001827dff`                                          | 27 files, 24 runnable, 644 cases, 33 families; test tree unchanged                 | zero uncertain; source-only mobile key phase is an explicit raw-device proof gate |
 | Lexical     | `d52f66e250e031a6c6fd8836d160373b0df557c7`                                          | 271 artifacts, 196 runnable, 137 portable/mixed runnable, 2,095 indexed call sites | zero uncertain; descriptor inference supports `A6`; browser rows remain proof     |
 | ProseMirror | composite `sha256:8a8158142c4d7f27635ad76eb698113183f6da1a9b453e81f2d275b8a5a86c84` | 47 test/support files, 1,369 named rows, 23 behavior families                      | zero uncertain; fitter/clipboard/browser/history laws routed to their real owners |
 
@@ -2484,7 +2659,7 @@ change an architecture verdict.
 
 | Reference   | Verified at            | Host total | Open / closed | Added unchecked | Metadata re-read | Verified provider omissions |
 | ----------- | ---------------------- | ---------: | ------------: | --------------: | ---------------: | --------------------------: |
-| Wordgard    | `2026-07-25T23:13:33Z` |         27 |        7 / 20 |              27 |                0 |                           0 |
+| Wordgard    | `2026-07-27T14:28:47Z` |         27 |        7 / 20 |               0 |                0 |                           0 |
 | Lexical     | `2026-07-25T23:13:33Z` |      2,782 |   310 / 2,472 |              41 |              132 |                           7 |
 | ProseMirror | `2026-07-25T23:13:33Z` |      1,420 |   111 / 1,309 |               0 |    11 label-only |                           2 |
 
@@ -2492,6 +2667,16 @@ The commit-aware registry is
 [`docs/editor-audits/index.json`](../editor-audits/index.json). Raw issue
 metadata remains outside durable docs; the checked-in ledgers retain compact
 counts, cursors, omission receipts, and prior classifications.
+
+### 2026-07-27 sync status
+
+| Audit                               | Repository                                | Audited commit                             | Current head                               | Architecture | Tests   | Issues  | Overall |
+| ----------------------------------- | ----------------------------------------- | ------------------------------------------ | ------------------------------------------ | ------------ | ------- | ------- | ------- |
+| `wordgard-lexical-prosemirror-full` | `code.haverbeke.berlin/wordgard/wordgard` | `01eb2b5eae509509677345fd603acad001827dff` | `01eb2b5eae509509677345fd603acad001827dff` | current      | current | current | current |
+
+Lexical and ProseMirror were outside this Wordgard-only sync. Their recorded
+cursors remain valid local audit state, but remote freshness was not fetched
+and is therefore unknown for this request.
 
 ## Execution handoff
 
@@ -2518,7 +2703,8 @@ counts, cursors, omission receipts, and prior classifications.
 - Unresolved material candidates: 0 after the independent pressure pass.
 - Standalone proof packets: zero.
 - Merged naming cut: `domRange` → `primaryRange` inside `A4`.
-- Evidence-backed defers: ordered grammar and public root scoping.
+- Evidence-backed defers: ordered grammar, public root scoping, and raw-device
+  mobile input behavior.
 - Donor mechanisms copied wholesale: none.
 - Product implementation performed: none.
 - Compatibility aliases, dual signatures, permanent bridges, donor runtime
@@ -2532,3 +2718,8 @@ named `plate-plan` and `plite-plan` owners. Do not start a generic donor
 rewrite: Plite already wins most architecture lanes, and copying the donors'
 classes, integer positions, global registries, precedence systems, or product
 surface would make it worse.
+
+The latest Wordgard sync does not change that recommendation. Do not copy its
+platform-wide keymap bypass. If raw-device proof reproduces the swipe-input or
+autocapitalization bug in Plite, repair the existing default-action phase
+predicate while preserving explicit app, modifier, and hardware-key bindings.

@@ -1,7 +1,10 @@
 'use client';
 
+import type { TabbablePluginState } from '@platejs/tabbable';
 import { TabbablePlugin } from '@platejs/tabbable/react';
 import { ElementApi, getPluginTypes, KEYS } from 'platejs';
+
+export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
 
 export const TabbableKit = [
   TabbablePlugin.extend({
@@ -15,7 +18,7 @@ export const TabbableKit = [
         },
       },
     },
-  }).extend(({ editor }) => ({
+  }).extend(({ editor }): { initialState: TabbableKitPluginState } => ({
     initialState: {
       query: () => {
         if (

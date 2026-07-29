@@ -17,6 +17,12 @@ export type UseCursorOverlayPositionsOptions<
 > = {
   containerRef?: React.RefObject<HTMLElement | null>;
   cursors?: Record<string, CursorState<TCursorData>>;
+  /**
+   * Minimum width of a selection rectangle.
+   *
+   * @default 1
+   */
+  minSelectionWidth?: number;
   refreshOnResize?: boolean;
 };
 
@@ -98,12 +104,14 @@ export const useRefreshOnResize = ({
 export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
   containerRef,
   cursors,
+  minSelectionWidth = 1,
   refreshOnResize = true,
 }: UseCursorOverlayPositionsOptions<TCursorData> = {}) => {
   const editor = useEditor();
   const selectionRectCache = React.useRef<
     WeakMap<Range, readonly SelectionRect[]>
   >(new WeakMap());
+  const cachedMinSelectionWidth = React.useRef(minSelectionWidth);
   const [selectionRects, setSelectionRects] = React.useState<
     Record<string, readonly SelectionRect[]>
   >({});
@@ -136,7 +144,19 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
 
         if (cached) return [id, cached];
 
-        const rects = getSelectionRects(editor, { range, xOffset, yOffset });
+        const rects = getSelectionRects(editor, {
+          range,
+          xOffset,
+          yOffset,
+        }).map((rect) =>
+          rect.width < minSelectionWidth
+            ? {
+                ...rect,
+                left: rect.left - (minSelectionWidth - rect.width) / 2,
+                width: minSelectionWidth,
+              }
+            : rect
+        );
         changed = true;
         selectionRectCache.current.set(range, rects);
 
@@ -145,9 +165,14 @@ export const useCursorOverlayPositions = <TCursorData extends UnknownObject>({
     );
 
     if (changed) setSelectionRects(updated);
-  }, [containerRef, cursors, editor, selectionRects]);
+  }, [containerRef, cursors, editor, minSelectionWidth, selectionRects]);
 
   useIsomorphicLayoutEffect(() => {
+    if (cachedMinSelectionWidth.current !== minSelectionWidth) {
+      selectionRectCache.current = new WeakMap();
+      cachedMinSelectionWidth.current = minSelectionWidth;
+    }
+
     updateSelectionRects();
   });
 

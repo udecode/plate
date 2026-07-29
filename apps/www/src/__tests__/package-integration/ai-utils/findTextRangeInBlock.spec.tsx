@@ -1,5 +1,5 @@
+import { BaseAIPlugin } from '@platejs/ai';
 import { BaseCommentPlugin } from '@platejs/comment';
-import { findTextRangeInBlock } from '@platejs/ai';
 import { BaseLinkPlugin } from '@platejs/link';
 import {
   BaseBoldPlugin,
@@ -21,6 +21,7 @@ const plugins = [
   BaseStrikethroughPlugin,
   BaseCommentPlugin,
   BaseKbdPlugin,
+  BaseAIPlugin,
 ];
 
 const createTestEditor = (value: Value) =>
@@ -49,7 +50,7 @@ describe('findTextRangeInBlock', () => {
       },
     ]);
 
-    const range = findTextRangeInBlock({
+    const range = editor.plugin(BaseAIPlugin).api.findTextRangeInBlock({
       block: getFirstBlock(editor),
       findText: 'test',
     });
@@ -75,7 +76,7 @@ describe('findTextRangeInBlock', () => {
       },
     ]);
 
-    const range = findTextRangeInBlock({
+    const range = editor.plugin(BaseAIPlugin).api.findTextRangeInBlock({
       block: getFirstBlock(editor),
       findText: 'test',
     });
@@ -96,7 +97,7 @@ describe('findTextRangeInBlock', () => {
       },
     ]);
 
-    const range = findTextRangeInBlock({
+    const range = editor.plugin(BaseAIPlugin).api.findTextRangeInBlock({
       block: getFirstBlock(editor),
       findText: 'test',
     });
@@ -117,7 +118,7 @@ describe('findTextRangeInBlock', () => {
       },
     ]);
 
-    const range = findTextRangeInBlock({
+    const range = editor.plugin(BaseAIPlugin).api.findTextRangeInBlock({
       block: getFirstBlock(editor),
       findText: 'xyz',
     });
@@ -178,7 +179,7 @@ describe('findTextRangeInBlock', () => {
       },
     ]);
 
-    const range = findTextRangeInBlock({
+    const range = editor.plugin(BaseAIPlugin).api.findTextRangeInBlock({
       block: getFirstBlock(editor),
       findText:
         'Structure your content with headings, lists, and quotes. Apply marks like bold, italic, underline, strikethrough, and code. Use autoformatting for Markdown-like shortcuts (e.g., * for lists, # for H1).',
@@ -243,7 +244,7 @@ describe('findTextRangeInBlock', () => {
       },
     ]);
 
-    const range = findTextRangeInBlock({
+    const range = editor.plugin(BaseAIPlugin).api.findTextRangeInBlock({
       block: getFirstBlock(editor),
       findText:
         'Structure your content with headings, lixxxxxxxxxxxxxsts, and quotes. Apply marks like bold, italic, underline, strikethrough, and code. Use autoformatting for Markdown-like shortcuts (e.g., * for lists, # for H1).',

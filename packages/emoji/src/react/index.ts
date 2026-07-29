@@ -3,6 +3,4 @@
  */
 
 export * from './EmojiPlugin';
-export * from './hooks/index';
-export * from './storage/index';
-export * from './utils/index';
+export * from './useEmojiPicker';

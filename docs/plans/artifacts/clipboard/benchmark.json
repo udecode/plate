@@ -1,0 +1,3338 @@
+{
+  "artifactVersion": 2,
+  "benchmark": "plite-clipboard-large-payload",
+  "config": {
+    "authorityArtifact": true,
+    "hugeCutBlocks": 50000,
+    "hugeCutIterations": 3,
+    "iterations": 3,
+    "issueTargetIterations": 3,
+    "issueTargetStressLines": 10000,
+    "issueTargetsEnabled": true,
+    "processIsolation": "support-cut-issue",
+    "stressLineCount": 2000,
+    "stressIterations": 1,
+    "workerPids": {
+      "cut": 14787,
+      "issue": 14762,
+      "support": 14843
+    }
+  },
+  "cohorts": {
+    "small": {
+      "lineCount": 10,
+      "sampleCount": 3,
+      "fragmentDecodeMs": {
+        "samples": [0.14, 0.06, 0.06],
+        "mean": 0.09,
+        "p50": 0.06,
+        "p95": 0.14,
+        "min": 0.06,
+        "max": 0.14,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.02, 0, 0],
+          "mean": 0.01,
+          "p50": 0,
+          "p95": 0.02,
+          "min": 0,
+          "max": 0.02
+        },
+        "metadata": {
+          "applicationBytes": 2276,
+          "fragmentNodes": 10
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10
+          },
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10
+          },
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [5.51, 0.57, 0.44],
+          "mean": 2.18,
+          "p50": 0.57,
+          "p95": 5.51,
+          "min": 0.44,
+          "max": 5.51
+        }
+      },
+      "fragmentEncodeMs": {
+        "samples": [0.07, 0.03, 0.03],
+        "mean": 0.04,
+        "p50": 0.03,
+        "p95": 0.07,
+        "min": 0.03,
+        "max": 0.07,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "metadata": {
+          "applicationBytes": 2276,
+          "fragmentNodes": 10,
+          "textHtmlBytes": 2907,
+          "textPlainBytes": 549
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "textHtmlBytes": 2907,
+            "textPlainBytes": 549
+          },
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "textHtmlBytes": 2907,
+            "textPlainBytes": 549
+          },
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "textHtmlBytes": 2907,
+            "textPlainBytes": 549
+          }
+        ],
+        "retainedHeapDeltaBytes": null
+      },
+      "domFragmentInsertMs": {
+        "samples": [9.25, 1.59, 1.24],
+        "mean": 4.03,
+        "p50": 1.59,
+        "p95": 9.25,
+        "min": 1.24,
+        "max": 9.25,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.24, 0.05, 0.04],
+          "mean": 0.11,
+          "p50": 0.05,
+          "p95": 0.24,
+          "min": 0.04,
+          "max": 0.24
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 580,
+          "maximumChangedTopLevelSpan": 9,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9]],
+          "applicationBytes": 2276,
+          "fragmentNodes": 10,
+          "insertedBlocks": 10
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "insertedBlocks": 10
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "insertedBlocks": 10
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "insertedBlocks": 10
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.76, 0.53, 0.47],
+          "mean": 0.59,
+          "p50": 0.53,
+          "p95": 0.76,
+          "min": 0.47,
+          "max": 0.76
+        }
+      },
+      "fullSelectionCopyMs": {
+        "samples": [1.18, 0.24, 0.19],
+        "mean": 0.54,
+        "p50": 0.24,
+        "p95": 1.18,
+        "min": 0.19,
+        "max": 1.18,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.02, 0, 0],
+          "mean": 0.01,
+          "p50": 0,
+          "p95": 0.02,
+          "min": 0,
+          "max": 0.02
+        },
+        "metadata": {
+          "applicationBytes": 2276,
+          "fragmentNodes": 10,
+          "textHtmlBytes": 2907,
+          "textPlainBytes": 549
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "textHtmlBytes": 2907,
+            "textPlainBytes": 549
+          },
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "textHtmlBytes": 2907,
+            "textPlainBytes": 549
+          },
+          {
+            "applicationBytes": 2276,
+            "fragmentNodes": 10,
+            "textHtmlBytes": 2907,
+            "textPlainBytes": 549
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.72, 0.66, 0.61],
+          "mean": 0.67,
+          "p50": 0.66,
+          "p95": 0.72,
+          "min": 0.61,
+          "max": 0.72
+        }
+      },
+      "hostCodecInsertMs": {
+        "samples": [1.35, 1.04, 1.05],
+        "mean": 1.15,
+        "p50": 1.05,
+        "p95": 1.35,
+        "min": 1.04,
+        "max": 1.35,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.07, 0.03, 0.05],
+          "mean": 0.05,
+          "p50": 0.05,
+          "p95": 0.07,
+          "min": 0.03,
+          "max": 0.07
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 580,
+          "maximumChangedTopLevelSpan": 9,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9]],
+          "fragmentNodes": 10,
+          "hostParseMs": 0.03,
+          "hostPayloadBytes": 1001,
+          "insertedBlocks": 10
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "fragmentNodes": 10,
+            "hostParseMs": 0.03,
+            "hostPayloadBytes": 1001,
+            "insertedBlocks": 10
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "fragmentNodes": 10,
+            "hostParseMs": 0.03,
+            "hostPayloadBytes": 1001,
+            "insertedBlocks": 10
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "fragmentNodes": 10,
+            "hostParseMs": 0.03,
+            "hostPayloadBytes": 1001,
+            "insertedBlocks": 10
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.49, 0.41, 0.4],
+          "mean": 0.43,
+          "p50": 0.41,
+          "p95": 0.49,
+          "min": 0.4,
+          "max": 0.49
+        }
+      },
+      "hostCodecSerializeMs": {
+        "samples": [0.09, 0.05, 0.04],
+        "mean": 0.06,
+        "p50": 0.05,
+        "p95": 0.09,
+        "min": 0.04,
+        "max": 0.09,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.02, 0, 0],
+          "mean": 0.01,
+          "p50": 0,
+          "p95": 0.02,
+          "min": 0,
+          "max": 0.02
+        },
+        "metadata": {
+          "fragmentNodes": 10,
+          "hostSerializeMs": 0,
+          "hostPayloadBytes": 1001
+        },
+        "metadataSamples": [
+          {
+            "fragmentNodes": 10,
+            "hostSerializeMs": 0.01,
+            "hostPayloadBytes": 1001
+          },
+          {
+            "fragmentNodes": 10,
+            "hostSerializeMs": 0,
+            "hostPayloadBytes": 1001
+          },
+          {
+            "fragmentNodes": 10,
+            "hostSerializeMs": 0,
+            "hostPayloadBytes": 1001
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.56, 0.53, 0.54],
+          "mean": 0.54,
+          "p50": 0.54,
+          "p95": 0.56,
+          "min": 0.53,
+          "max": 0.56
+        }
+      },
+      "plainTextInsertMs": {
+        "samples": [1.74, 0.63, 0.61],
+        "mean": 0.99,
+        "p50": 0.63,
+        "p95": 1.74,
+        "min": 0.61,
+        "max": 1.74,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.06, 0.04, 0.03],
+          "mean": 0.04,
+          "p50": 0.04,
+          "p95": 0.06,
+          "min": 0.03,
+          "max": 0.06
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 576,
+          "maximumChangedTopLevelSpan": 9,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9]],
+          "insertedBlocks": 10,
+          "lineCount": 10,
+          "textPlainBytes": 549
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 576,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "insertedBlocks": 10,
+            "lineCount": 10,
+            "textPlainBytes": 549
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 576,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "insertedBlocks": 10,
+            "lineCount": 10,
+            "textPlainBytes": 549
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 576,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "insertedBlocks": 10,
+            "lineCount": 10,
+            "textPlainBytes": 549
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0]
+        },
+        "setupMs": {
+          "samples": [0.36, 0.37, 0.34],
+          "mean": 0.35,
+          "p50": 0.36,
+          "p95": 0.37,
+          "min": 0.34,
+          "max": 0.37
+        }
+      },
+      "sliceCommitMs": {
+        "samples": [1.28, 1.23, 1.02],
+        "mean": 1.18,
+        "p50": 1.23,
+        "p95": 1.28,
+        "min": 1.02,
+        "max": 1.28,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.05, 0.04, 0.04],
+          "mean": 0.04,
+          "p50": 0.04,
+          "p95": 0.05,
+          "min": 0.04,
+          "max": 0.05
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 580,
+          "maximumChangedTopLevelSpan": 9,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9]],
+          "fragmentNodes": 10,
+          "insertedBlocks": 10
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "fragmentNodes": 10,
+            "insertedBlocks": 10
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "fragmentNodes": 10,
+            "insertedBlocks": 10
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 580,
+            "maximumChangedTopLevelSpan": 9,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 9]],
+            "fragmentNodes": 10,
+            "insertedBlocks": 10
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0]
+        },
+        "setupMs": {
+          "samples": [0.51, 0.32, 0.33],
+          "mean": 0.39,
+          "p50": 0.33,
+          "p95": 0.51,
+          "min": 0.32,
+          "max": 0.51
+        }
+      },
+      "sliceFitMs": {
+        "samples": [0.77, 0.66, 0.62],
+        "mean": 0.68,
+        "p50": 0.66,
+        "p95": 0.77,
+        "min": 0.62,
+        "max": 0.77,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.04, 0.01, 0.01],
+          "mean": 0.02,
+          "p50": 0.01,
+          "p95": 0.04,
+          "min": 0.01,
+          "max": 0.04
+        },
+        "metadata": {
+          "fitted": true,
+          "fragmentNodes": 10,
+          "publishedCommits": 0
+        },
+        "metadataSamples": [
+          {
+            "fitted": true,
+            "fragmentNodes": 10,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 10,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 10,
+            "publishedCommits": 0
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.39, 0.31, 0.29],
+          "mean": 0.33,
+          "p50": 0.31,
+          "p95": 0.39,
+          "min": 0.29,
+          "max": 0.39
+        }
+      }
+    },
+    "normal": {
+      "lineCount": 100,
+      "sampleCount": 3,
+      "fragmentDecodeMs": {
+        "samples": [0.18, 0.18, 0.16],
+        "mean": 0.17,
+        "p50": 0.18,
+        "p95": 0.18,
+        "min": 0.16,
+        "max": 0.18,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0, 0, 0],
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "metadata": {
+          "applicationBytes": 21596,
+          "fragmentNodes": 100
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100
+          },
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100
+          },
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.29, 0.29, 0.26],
+          "mean": 0.28,
+          "p50": 0.29,
+          "p95": 0.29,
+          "min": 0.26,
+          "max": 0.29
+        }
+      },
+      "fragmentEncodeMs": {
+        "samples": [0.15, 0.12, 0.12],
+        "mean": 0.13,
+        "p50": 0.12,
+        "p95": 0.15,
+        "min": 0.12,
+        "max": 0.15,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "metadata": {
+          "applicationBytes": 21596,
+          "fragmentNodes": 100,
+          "textHtmlBytes": 27267,
+          "textPlainBytes": 5589
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "textHtmlBytes": 27267,
+            "textPlainBytes": 5589
+          },
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "textHtmlBytes": 27267,
+            "textPlainBytes": 5589
+          },
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "textHtmlBytes": 27267,
+            "textPlainBytes": 5589
+          }
+        ],
+        "retainedHeapDeltaBytes": null
+      },
+      "domFragmentInsertMs": {
+        "samples": [3.74, 4.55, 3.28],
+        "mean": 3.86,
+        "p50": 3.74,
+        "p95": 4.55,
+        "min": 3.28,
+        "max": 4.55,
+        "heapDeltaBytes": {
+          "max": 11390802,
+          "mean": 3796934,
+          "samples": [0, 11390802, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.05, 0.05, 0.05],
+          "mean": 0.05,
+          "p50": 0.05,
+          "p95": 0.05,
+          "min": 0.05,
+          "max": 0.05
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 5890,
+          "maximumChangedTopLevelSpan": 99,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 99]],
+          "applicationBytes": 21596,
+          "fragmentNodes": 100,
+          "insertedBlocks": 100
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "insertedBlocks": 100
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "insertedBlocks": 100
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "insertedBlocks": 100
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.34, 0.33, 0.36],
+          "mean": 0.35,
+          "p50": 0.34,
+          "p95": 0.36,
+          "min": 0.33,
+          "max": 0.36
+        }
+      },
+      "fullSelectionCopyMs": {
+        "samples": [0.35, 0.28, 0.32],
+        "mean": 0.32,
+        "p50": 0.32,
+        "p95": 0.35,
+        "min": 0.28,
+        "max": 0.35,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0, 0, 0],
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "metadata": {
+          "applicationBytes": 21596,
+          "fragmentNodes": 100,
+          "textHtmlBytes": 27267,
+          "textPlainBytes": 5589
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "textHtmlBytes": 27267,
+            "textPlainBytes": 5589
+          },
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "textHtmlBytes": 27267,
+            "textPlainBytes": 5589
+          },
+          {
+            "applicationBytes": 21596,
+            "fragmentNodes": 100,
+            "textHtmlBytes": 27267,
+            "textPlainBytes": 5589
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [1.97, 1.93, 1.9],
+          "mean": 1.93,
+          "p50": 1.93,
+          "p95": 1.97,
+          "min": 1.9,
+          "max": 1.97
+        }
+      },
+      "hostCodecInsertMs": {
+        "samples": [4.89, 3.24, 3.13],
+        "mean": 3.75,
+        "p50": 3.24,
+        "p95": 4.89,
+        "min": 3.13,
+        "max": 4.89,
+        "heapDeltaBytes": {
+          "max": 859041,
+          "mean": 286347,
+          "samples": [859041, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.07, 0.05, 0.05],
+          "mean": 0.06,
+          "p50": 0.05,
+          "p95": 0.07,
+          "min": 0.05,
+          "max": 0.07
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 5890,
+          "maximumChangedTopLevelSpan": 99,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 99]],
+          "fragmentNodes": 100,
+          "hostParseMs": 0.14,
+          "hostPayloadBytes": 10091,
+          "insertedBlocks": 100
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "fragmentNodes": 100,
+            "hostParseMs": 0.15,
+            "hostPayloadBytes": 10091,
+            "insertedBlocks": 100
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "fragmentNodes": 100,
+            "hostParseMs": 0.16,
+            "hostPayloadBytes": 10091,
+            "insertedBlocks": 100
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "fragmentNodes": 100,
+            "hostParseMs": 0.14,
+            "hostPayloadBytes": 10091,
+            "insertedBlocks": 100
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.46, 0.42, 0.38],
+          "mean": 0.42,
+          "p50": 0.42,
+          "p95": 0.46,
+          "min": 0.38,
+          "max": 0.46
+        }
+      },
+      "hostCodecSerializeMs": {
+        "samples": [0.18, 0.18, 0.18],
+        "mean": 0.18,
+        "p50": 0.18,
+        "p95": 0.18,
+        "min": 0.18,
+        "max": 0.18,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0, 0, 0],
+          "mean": 0,
+          "p50": 0,
+          "p95": 0,
+          "min": 0,
+          "max": 0
+        },
+        "metadata": {
+          "fragmentNodes": 100,
+          "hostSerializeMs": 0.03,
+          "hostPayloadBytes": 10091
+        },
+        "metadataSamples": [
+          {
+            "fragmentNodes": 100,
+            "hostSerializeMs": 0.03,
+            "hostPayloadBytes": 10091
+          },
+          {
+            "fragmentNodes": 100,
+            "hostSerializeMs": 0.03,
+            "hostPayloadBytes": 10091
+          },
+          {
+            "fragmentNodes": 100,
+            "hostSerializeMs": 0.03,
+            "hostPayloadBytes": 10091
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [1.86, 3.13, 1.74],
+          "mean": 2.25,
+          "p50": 1.86,
+          "p95": 3.13,
+          "min": 1.74,
+          "max": 3.13
+        }
+      },
+      "plainTextInsertMs": {
+        "samples": [1.03, 0.85, 0.8],
+        "mean": 0.89,
+        "p50": 0.85,
+        "p95": 1.03,
+        "min": 0.8,
+        "max": 1.03,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.05, 0.04, 0.04],
+          "mean": 0.04,
+          "p50": 0.04,
+          "p95": 0.05,
+          "min": 0.04,
+          "max": 0.05
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 5886,
+          "maximumChangedTopLevelSpan": 99,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 99]],
+          "insertedBlocks": 100,
+          "lineCount": 100,
+          "textPlainBytes": 5589
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5886,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "insertedBlocks": 100,
+            "lineCount": 100,
+            "textPlainBytes": 5589
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5886,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "insertedBlocks": 100,
+            "lineCount": 100,
+            "textPlainBytes": 5589
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5886,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "insertedBlocks": 100,
+            "lineCount": 100,
+            "textPlainBytes": 5589
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0]
+        },
+        "setupMs": {
+          "samples": [0.28, 0.26, 0.25],
+          "mean": 0.26,
+          "p50": 0.26,
+          "p95": 0.28,
+          "min": 0.25,
+          "max": 0.28
+        }
+      },
+      "sliceCommitMs": {
+        "samples": [2.96, 3.25, 3.15],
+        "mean": 3.12,
+        "p50": 3.15,
+        "p95": 3.25,
+        "min": 2.96,
+        "max": 3.25,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.04, 0.04, 0.04],
+          "mean": 0.04,
+          "p50": 0.04,
+          "p95": 0.04,
+          "min": 0.04,
+          "max": 0.04
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 5890,
+          "maximumChangedTopLevelSpan": 99,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 99]],
+          "fragmentNodes": 100,
+          "insertedBlocks": 100
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "fragmentNodes": 100,
+            "insertedBlocks": 100
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "fragmentNodes": 100,
+            "insertedBlocks": 100
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 5890,
+            "maximumChangedTopLevelSpan": 99,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 99]],
+            "fragmentNodes": 100,
+            "insertedBlocks": 100
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0]
+        },
+        "setupMs": {
+          "samples": [0.37, 0.26, 0.25],
+          "mean": 0.29,
+          "p50": 0.26,
+          "p95": 0.37,
+          "min": 0.25,
+          "max": 0.37
+        }
+      },
+      "sliceFitMs": {
+        "samples": [2.41, 2.51, 2.56],
+        "mean": 2.49,
+        "p50": 2.51,
+        "p95": 2.56,
+        "min": 2.41,
+        "max": 2.56,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.01, 0.01, 0.01],
+          "mean": 0.01,
+          "p50": 0.01,
+          "p95": 0.01,
+          "min": 0.01,
+          "max": 0.01
+        },
+        "metadata": {
+          "fitted": true,
+          "fragmentNodes": 100,
+          "publishedCommits": 0
+        },
+        "metadataSamples": [
+          {
+            "fitted": true,
+            "fragmentNodes": 100,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 100,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 100,
+            "publishedCommits": 0
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.33, 0.27, 0.25],
+          "mean": 0.28,
+          "p50": 0.27,
+          "p95": 0.33,
+          "min": 0.25,
+          "max": 0.33
+        }
+      }
+    },
+    "large": {
+      "lineCount": 1000,
+      "sampleCount": 3,
+      "fragmentDecodeMs": {
+        "samples": [2.58, 1.38, 1.33],
+        "mean": 1.77,
+        "p50": 1.38,
+        "p95": 2.58,
+        "min": 1.33,
+        "max": 2.58,
+        "heapDeltaBytes": {
+          "max": 1227484,
+          "mean": 409161.33,
+          "samples": [1227484, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.01, 0.01, 0],
+          "mean": 0.01,
+          "p50": 0.01,
+          "p95": 0.01,
+          "min": 0,
+          "max": 0.01
+        },
+        "metadata": {
+          "applicationBytes": 215996,
+          "fragmentNodes": 1000
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000
+          },
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000
+          },
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.26, 0.38, 0.26],
+          "mean": 0.3,
+          "p50": 0.26,
+          "p95": 0.38,
+          "min": 0.26,
+          "max": 0.38
+        }
+      },
+      "fragmentEncodeMs": {
+        "samples": [1.19, 1.08, 1.05],
+        "mean": 1.11,
+        "p50": 1.08,
+        "p95": 1.19,
+        "min": 1.05,
+        "max": 1.19,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "metadata": {
+          "applicationBytes": 215996,
+          "fragmentNodes": 1000,
+          "textHtmlBytes": 272967,
+          "textPlainBytes": 56889
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "textHtmlBytes": 272967,
+            "textPlainBytes": 56889
+          },
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "textHtmlBytes": 272967,
+            "textPlainBytes": 56889
+          },
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "textHtmlBytes": 272967,
+            "textPlainBytes": 56889
+          }
+        ],
+        "retainedHeapDeltaBytes": null
+      },
+      "domFragmentInsertMs": {
+        "samples": [31.71, 29.39, 29.45],
+        "mean": 30.18,
+        "p50": 29.45,
+        "p95": 31.71,
+        "min": 29.39,
+        "max": 31.71,
+        "heapDeltaBytes": {
+          "max": 9565402,
+          "mean": 7423581.67,
+          "samples": [9565402, 6127872, 6577471]
+        },
+        "inspectionMs": {
+          "samples": [0.14, 0.13, 0.14],
+          "mean": 0.14,
+          "p50": 0.14,
+          "p95": 0.14,
+          "min": 0.13,
+          "max": 0.14
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 59890,
+          "maximumChangedTopLevelSpan": 999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 999]],
+          "applicationBytes": 215996,
+          "fragmentNodes": 1000,
+          "insertedBlocks": 1000
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "insertedBlocks": 1000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "insertedBlocks": 1000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "insertedBlocks": 1000
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.4, 0.38, 0.36],
+          "mean": 0.38,
+          "p50": 0.38,
+          "p95": 0.4,
+          "min": 0.36,
+          "max": 0.4
+        }
+      },
+      "fullSelectionCopyMs": {
+        "samples": [1.4, 1.42, 1.42],
+        "mean": 1.41,
+        "p50": 1.42,
+        "p95": 1.42,
+        "min": 1.4,
+        "max": 1.42,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.01, 0.01, 0.01],
+          "mean": 0.01,
+          "p50": 0.01,
+          "p95": 0.01,
+          "min": 0.01,
+          "max": 0.01
+        },
+        "metadata": {
+          "applicationBytes": 215996,
+          "fragmentNodes": 1000,
+          "textHtmlBytes": 272967,
+          "textPlainBytes": 56889
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "textHtmlBytes": 272967,
+            "textPlainBytes": 56889
+          },
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "textHtmlBytes": 272967,
+            "textPlainBytes": 56889
+          },
+          {
+            "applicationBytes": 215996,
+            "fragmentNodes": 1000,
+            "textHtmlBytes": 272967,
+            "textPlainBytes": 56889
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [17.97, 19.98, 19.9],
+          "mean": 19.28,
+          "p50": 19.9,
+          "p95": 19.98,
+          "min": 17.97,
+          "max": 19.98
+        }
+      },
+      "hostCodecInsertMs": {
+        "samples": [27.5, 26.5, 30.55],
+        "mean": 28.18,
+        "p50": 27.5,
+        "p95": 30.55,
+        "min": 26.5,
+        "max": 30.55,
+        "heapDeltaBytes": {
+          "max": 10090510,
+          "mean": -1955319,
+          "samples": [-20464920, 4508453, 10090510]
+        },
+        "inspectionMs": {
+          "samples": [0.14, 0.14, 0.14],
+          "mean": 0.14,
+          "p50": 0.14,
+          "p95": 0.14,
+          "min": 0.14,
+          "max": 0.14
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 59890,
+          "maximumChangedTopLevelSpan": 999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 999]],
+          "fragmentNodes": 1000,
+          "hostParseMs": 1.07,
+          "hostPayloadBytes": 101891,
+          "insertedBlocks": 1000
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "fragmentNodes": 1000,
+            "hostParseMs": 1.09,
+            "hostPayloadBytes": 101891,
+            "insertedBlocks": 1000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "fragmentNodes": 1000,
+            "hostParseMs": 1.11,
+            "hostPayloadBytes": 101891,
+            "insertedBlocks": 1000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "fragmentNodes": 1000,
+            "hostParseMs": 1.07,
+            "hostPayloadBytes": 101891,
+            "insertedBlocks": 1000
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.39, 0.39, 0.36],
+          "mean": 0.38,
+          "p50": 0.39,
+          "p95": 0.39,
+          "min": 0.36,
+          "max": 0.39
+        }
+      },
+      "hostCodecSerializeMs": {
+        "samples": [1.27, 1.23, 1.22],
+        "mean": 1.24,
+        "p50": 1.23,
+        "p95": 1.27,
+        "min": 1.22,
+        "max": 1.27,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.01, 0.01, 0.01],
+          "mean": 0.01,
+          "p50": 0.01,
+          "p95": 0.01,
+          "min": 0.01,
+          "max": 0.01
+        },
+        "metadata": {
+          "fragmentNodes": 1000,
+          "hostSerializeMs": 0.24,
+          "hostPayloadBytes": 101891
+        },
+        "metadataSamples": [
+          {
+            "fragmentNodes": 1000,
+            "hostSerializeMs": 0.23,
+            "hostPayloadBytes": 101891
+          },
+          {
+            "fragmentNodes": 1000,
+            "hostSerializeMs": 0.24,
+            "hostPayloadBytes": 101891
+          },
+          {
+            "fragmentNodes": 1000,
+            "hostSerializeMs": 0.24,
+            "hostPayloadBytes": 101891
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [14.25, 16.24, 19.18],
+          "mean": 16.56,
+          "p50": 16.24,
+          "p95": 19.18,
+          "min": 14.25,
+          "max": 19.18
+        }
+      },
+      "plainTextInsertMs": {
+        "samples": [4.02, 8.13, 4.02],
+        "mean": 5.39,
+        "p50": 4.02,
+        "p95": 8.13,
+        "min": 4.02,
+        "max": 8.13,
+        "heapDeltaBytes": {
+          "max": 3284113,
+          "mean": 1094704.33,
+          "samples": [0, 3284113, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.12, 0.14, 0.12],
+          "mean": 0.12,
+          "p50": 0.12,
+          "p95": 0.14,
+          "min": 0.12,
+          "max": 0.14
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 59886,
+          "maximumChangedTopLevelSpan": 999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 999]],
+          "insertedBlocks": 1000,
+          "lineCount": 1000,
+          "textPlainBytes": 56889
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59886,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "insertedBlocks": 1000,
+            "lineCount": 1000,
+            "textPlainBytes": 56889
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59886,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "insertedBlocks": 1000,
+            "lineCount": 1000,
+            "textPlainBytes": 56889
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59886,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "insertedBlocks": 1000,
+            "lineCount": 1000,
+            "textPlainBytes": 56889
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0]
+        },
+        "setupMs": {
+          "samples": [0.3, 0.29, 0.32],
+          "mean": 0.3,
+          "p50": 0.3,
+          "p95": 0.32,
+          "min": 0.29,
+          "max": 0.32
+        }
+      },
+      "sliceCommitMs": {
+        "samples": [22.83, 27.44, 28.39],
+        "mean": 26.22,
+        "p50": 27.44,
+        "p95": 28.39,
+        "min": 22.83,
+        "max": 28.39,
+        "heapDeltaBytes": {
+          "max": 11634790,
+          "mean": -4755301.67,
+          "samples": [-32057763, 6157068, 11634790]
+        },
+        "inspectionMs": {
+          "samples": [0.15, 0.13, 0.15],
+          "mean": 0.14,
+          "p50": 0.15,
+          "p95": 0.15,
+          "min": 0.13,
+          "max": 0.15
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 59890,
+          "maximumChangedTopLevelSpan": 999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 999]],
+          "fragmentNodes": 1000,
+          "insertedBlocks": 1000
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "fragmentNodes": 1000,
+            "insertedBlocks": 1000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "fragmentNodes": 1000,
+            "insertedBlocks": 1000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 59890,
+            "maximumChangedTopLevelSpan": 999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 999]],
+            "fragmentNodes": 1000,
+            "insertedBlocks": 1000
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": -17041413,
+          "mean": -17041413,
+          "samples": [-17041413]
+        },
+        "setupMs": {
+          "samples": [0.32, 0.28, 0.34],
+          "mean": 0.31,
+          "p50": 0.32,
+          "p95": 0.34,
+          "min": 0.28,
+          "max": 0.34
+        }
+      },
+      "sliceFitMs": {
+        "samples": [21.95, 23.72, 23.39],
+        "mean": 23.02,
+        "p50": 23.39,
+        "p95": 23.72,
+        "min": 21.95,
+        "max": 23.72,
+        "heapDeltaBytes": {
+          "max": 7037296,
+          "mean": 5036485,
+          "samples": [7037296, 4676808, 3395351]
+        },
+        "inspectionMs": {
+          "samples": [0.02, 0.02, 0.02],
+          "mean": 0.02,
+          "p50": 0.02,
+          "p95": 0.02,
+          "min": 0.02,
+          "max": 0.02
+        },
+        "metadata": {
+          "fitted": true,
+          "fragmentNodes": 1000,
+          "publishedCommits": 0
+        },
+        "metadataSamples": [
+          {
+            "fitted": true,
+            "fragmentNodes": 1000,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 1000,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 1000,
+            "publishedCommits": 0
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.38, 0.32, 0.35],
+          "mean": 0.35,
+          "p50": 0.35,
+          "p95": 0.38,
+          "min": 0.32,
+          "max": 0.38
+        }
+      }
+    },
+    "stress": {
+      "lineCount": 2000,
+      "sampleCount": 3,
+      "fragmentDecodeMs": {
+        "samples": [2.46, 2.33, 4.23],
+        "mean": 3.01,
+        "p50": 2.46,
+        "p95": 4.23,
+        "min": 2.33,
+        "max": 4.23,
+        "heapDeltaBytes": {
+          "max": 4228827,
+          "mean": 1409609,
+          "samples": [0, 0, 4228827]
+        },
+        "inspectionMs": {
+          "samples": [0.01, 0.02, 0.01],
+          "mean": 0.01,
+          "p50": 0.01,
+          "p95": 0.02,
+          "min": 0.01,
+          "max": 0.02
+        },
+        "metadata": {
+          "applicationBytes": 433332,
+          "fragmentNodes": 2000
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000
+          },
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000
+          },
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.32, 0.25, 0.23],
+          "mean": 0.27,
+          "p50": 0.25,
+          "p95": 0.32,
+          "min": 0.23,
+          "max": 0.32
+        }
+      },
+      "fragmentEncodeMs": {
+        "samples": [2.11, 1.97, 2.07],
+        "mean": 2.05,
+        "p50": 2.07,
+        "p95": 2.11,
+        "min": 1.97,
+        "max": 2.11,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "metadata": {
+          "applicationBytes": 433332,
+          "fragmentNodes": 2000,
+          "textHtmlBytes": 548303,
+          "textPlainBytes": 114889
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "textHtmlBytes": 548303,
+            "textPlainBytes": 114889
+          },
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "textHtmlBytes": 548303,
+            "textPlainBytes": 114889
+          },
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "textHtmlBytes": 548303,
+            "textPlainBytes": 114889
+          }
+        ],
+        "retainedHeapDeltaBytes": null
+      },
+      "domFragmentInsertMs": {
+        "samples": [56.44, 55.93, 59.16],
+        "mean": 57.18,
+        "p50": 56.44,
+        "p95": 59.16,
+        "min": 55.93,
+        "max": 59.16,
+        "heapDeltaBytes": {
+          "max": 12697062,
+          "mean": 11096677.67,
+          "samples": [12697062, 9715003, 10877968]
+        },
+        "inspectionMs": {
+          "samples": [0.27, 0.25, 0.25],
+          "mean": 0.26,
+          "p50": 0.25,
+          "p95": 0.27,
+          "min": 0.25,
+          "max": 0.27
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 120890,
+          "maximumChangedTopLevelSpan": 1999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 1999]],
+          "applicationBytes": 433332,
+          "fragmentNodes": 2000,
+          "insertedBlocks": 2000
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "insertedBlocks": 2000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "insertedBlocks": 2000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "insertedBlocks": 2000
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.37, 0.47, 0.38],
+          "mean": 0.41,
+          "p50": 0.38,
+          "p95": 0.47,
+          "min": 0.37,
+          "max": 0.47
+        }
+      },
+      "fullSelectionCopyMs": {
+        "samples": [2.57, 2.53, 2.44],
+        "mean": 2.51,
+        "p50": 2.53,
+        "p95": 2.57,
+        "min": 2.44,
+        "max": 2.57,
+        "heapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0, 0, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.02, 0.02, 0.02],
+          "mean": 0.02,
+          "p50": 0.02,
+          "p95": 0.02,
+          "min": 0.02,
+          "max": 0.02
+        },
+        "metadata": {
+          "applicationBytes": 433332,
+          "fragmentNodes": 2000,
+          "textHtmlBytes": 548303,
+          "textPlainBytes": 114889
+        },
+        "metadataSamples": [
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "textHtmlBytes": 548303,
+            "textPlainBytes": 114889
+          },
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "textHtmlBytes": 548303,
+            "textPlainBytes": 114889
+          },
+          {
+            "applicationBytes": 433332,
+            "fragmentNodes": 2000,
+            "textHtmlBytes": 548303,
+            "textPlainBytes": 114889
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [33.16, 33.28, 35.7],
+          "mean": 34.05,
+          "p50": 33.28,
+          "p95": 35.7,
+          "min": 33.16,
+          "max": 35.7
+        }
+      },
+      "hostCodecInsertMs": {
+        "samples": [59.13, 59.13, 61.2],
+        "mean": 59.82,
+        "p50": 59.13,
+        "p95": 61.2,
+        "min": 59.13,
+        "max": 61.2,
+        "heapDeltaBytes": {
+          "max": 17340370,
+          "mean": 14904111.67,
+          "samples": [14825810, 12546155, 17340370]
+        },
+        "inspectionMs": {
+          "samples": [0.25, 0.26, 0.26],
+          "mean": 0.26,
+          "p50": 0.26,
+          "p95": 0.26,
+          "min": 0.25,
+          "max": 0.26
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 120890,
+          "maximumChangedTopLevelSpan": 1999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 1999]],
+          "fragmentNodes": 2000,
+          "hostParseMs": 2.29,
+          "hostPayloadBytes": 204891,
+          "insertedBlocks": 2000
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "fragmentNodes": 2000,
+            "hostParseMs": 8.43,
+            "hostPayloadBytes": 204891,
+            "insertedBlocks": 2000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "fragmentNodes": 2000,
+            "hostParseMs": 2.32,
+            "hostPayloadBytes": 204891,
+            "insertedBlocks": 2000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "fragmentNodes": 2000,
+            "hostParseMs": 2.29,
+            "hostPayloadBytes": 204891,
+            "insertedBlocks": 2000
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.34, 0.39, 0.45],
+          "mean": 0.39,
+          "p50": 0.39,
+          "p95": 0.45,
+          "min": 0.34,
+          "max": 0.45
+        }
+      },
+      "hostCodecSerializeMs": {
+        "samples": [2.53, 5.4, 2.65],
+        "mean": 3.53,
+        "p50": 2.65,
+        "p95": 5.4,
+        "min": 2.53,
+        "max": 5.4,
+        "heapDeltaBytes": {
+          "max": 6052283,
+          "mean": 2017427.67,
+          "samples": [0, 6052283, 0]
+        },
+        "inspectionMs": {
+          "samples": [0.01, 0.01, 0.01],
+          "mean": 0.01,
+          "p50": 0.01,
+          "p95": 0.01,
+          "min": 0.01,
+          "max": 0.01
+        },
+        "metadata": {
+          "fragmentNodes": 2000,
+          "hostSerializeMs": 0.5,
+          "hostPayloadBytes": 204891
+        },
+        "metadataSamples": [
+          {
+            "fragmentNodes": 2000,
+            "hostSerializeMs": 0.48,
+            "hostPayloadBytes": 204891
+          },
+          {
+            "fragmentNodes": 2000,
+            "hostSerializeMs": 0.51,
+            "hostPayloadBytes": 204891
+          },
+          {
+            "fragmentNodes": 2000,
+            "hostSerializeMs": 0.5,
+            "hostPayloadBytes": 204891
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [38.43, 32.13, 34.13],
+          "mean": 34.9,
+          "p50": 34.13,
+          "p95": 38.43,
+          "min": 32.13,
+          "max": 38.43
+        }
+      },
+      "plainTextInsertMs": {
+        "samples": [8.41, 8.1, 11.51],
+        "mean": 9.34,
+        "p50": 8.41,
+        "p95": 11.51,
+        "min": 8.1,
+        "max": 11.51,
+        "heapDeltaBytes": {
+          "max": 1722721,
+          "mean": 574240.33,
+          "samples": [0, 0, 1722721]
+        },
+        "inspectionMs": {
+          "samples": [0.25, 0.25, 0.25],
+          "mean": 0.25,
+          "p50": 0.25,
+          "p95": 0.25,
+          "min": 0.25,
+          "max": 0.25
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 120886,
+          "maximumChangedTopLevelSpan": 1999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 1999]],
+          "insertedBlocks": 2000,
+          "lineCount": 2000,
+          "textPlainBytes": 114889
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120886,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "insertedBlocks": 2000,
+            "lineCount": 2000,
+            "textPlainBytes": 114889
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120886,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "insertedBlocks": 2000,
+            "lineCount": 2000,
+            "textPlainBytes": 114889
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120886,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "insertedBlocks": 2000,
+            "lineCount": 2000,
+            "textPlainBytes": 114889
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": 0,
+          "mean": 0,
+          "samples": [0]
+        },
+        "setupMs": {
+          "samples": [0.36, 0.29, 0.32],
+          "mean": 0.32,
+          "p50": 0.32,
+          "p95": 0.36,
+          "min": 0.29,
+          "max": 0.36
+        }
+      },
+      "sliceCommitMs": {
+        "samples": [46.56, 55.85, 57.79],
+        "mean": 53.4,
+        "p50": 55.85,
+        "p95": 57.79,
+        "min": 46.56,
+        "max": 57.79,
+        "heapDeltaBytes": {
+          "max": 15160356,
+          "mean": 1756194,
+          "samples": [-20144961, 10253187, 15160356]
+        },
+        "inspectionMs": {
+          "samples": [0.24, 0.26, 0.25],
+          "mean": 0.25,
+          "p50": 0.25,
+          "p95": 0.26,
+          "min": 0.24,
+          "max": 0.26
+        },
+        "metadata": {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 120890,
+          "maximumChangedTopLevelSpan": 1999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 1999]],
+          "fragmentNodes": 2000,
+          "insertedBlocks": 2000
+        },
+        "metadataSamples": [
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "fragmentNodes": 2000,
+            "insertedBlocks": 2000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "fragmentNodes": 2000,
+            "insertedBlocks": 2000
+          },
+          {
+            "changedRangeCount": 1,
+            "commitCount": 1,
+            "maximumChangedTokenSpan": 120890,
+            "maximumChangedTopLevelSpan": 1999,
+            "retainedExistingBlockRatio": 0,
+            "retainedExistingBlocks": 0,
+            "topLevelRanges": [[0, 1999]],
+            "fragmentNodes": 2000,
+            "insertedBlocks": 2000
+          }
+        ],
+        "retainedHeapDeltaBytes": {
+          "max": -23598390,
+          "mean": -23598390,
+          "samples": [-23598390]
+        },
+        "setupMs": {
+          "samples": [0.35, 0.31, 0.37],
+          "mean": 0.35,
+          "p50": 0.35,
+          "p95": 0.37,
+          "min": 0.31,
+          "max": 0.37
+        }
+      },
+      "sliceFitMs": {
+        "samples": [42.82, 48.84, 48.27],
+        "mean": 46.64,
+        "p50": 48.27,
+        "p95": 48.84,
+        "min": 42.82,
+        "max": 48.84,
+        "heapDeltaBytes": {
+          "max": 10787092,
+          "mean": 8996947.67,
+          "samples": [7130576, 10787092, 9073175]
+        },
+        "inspectionMs": {
+          "samples": [0.03, 0.02, 0.03],
+          "mean": 0.03,
+          "p50": 0.03,
+          "p95": 0.03,
+          "min": 0.02,
+          "max": 0.03
+        },
+        "metadata": {
+          "fitted": true,
+          "fragmentNodes": 2000,
+          "publishedCommits": 0
+        },
+        "metadataSamples": [
+          {
+            "fitted": true,
+            "fragmentNodes": 2000,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 2000,
+            "publishedCommits": 0
+          },
+          {
+            "fitted": true,
+            "fragmentNodes": 2000,
+            "publishedCommits": 0
+          }
+        ],
+        "retainedHeapDeltaBytes": null,
+        "setupMs": {
+          "samples": [0.41, 0.36, 0.34],
+          "mean": 0.37,
+          "p50": 0.36,
+          "p95": 0.41,
+          "min": 0.34,
+          "max": 0.41
+        }
+      }
+    }
+  },
+  "correctnessFailures": [],
+  "invariants": {
+    "currentContentSliceBoundary": true,
+    "currentDOMClipboardBoundary": true,
+    "currentHostCodecBoundary": true,
+    "currentPlateCodecBoundary": true,
+    "oneCommitPerMutation": true
+  },
+  "issueBudgetFailures": [],
+  "issueTargets": {
+    "largePlainTextPaste10000": {
+      "samples": [58.44, 51.63, 50.65],
+      "mean": 53.57,
+      "p50": 51.63,
+      "p95": 58.44,
+      "min": 50.65,
+      "max": 58.44,
+      "heapDeltaBytes": {
+        "max": 39657438,
+        "mean": 13895684.33,
+        "samples": [2029615, 0, 39657438]
+      },
+      "inspectionMs": {
+        "samples": [1.83, 1.38, 1.39],
+        "mean": 1.53,
+        "p50": 1.39,
+        "p95": 1.83,
+        "min": 1.38,
+        "max": 1.83
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608886,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0,
+        "retainedExistingBlocks": 0,
+        "topLevelRanges": [[0, 9999]],
+        "insertedBlocks": 10000,
+        "lineCount": 10000,
+        "textPlainBytes": 578889
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9999]],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9999]],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9999]],
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "textPlainBytes": 578889
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": -47133706,
+        "mean": -47133706,
+        "samples": [-47133706]
+      },
+      "setupMs": {
+        "samples": [0.8, 0.7, 0.57],
+        "mean": 0.69,
+        "p50": 0.7,
+        "p95": 0.8,
+        "min": 0.57,
+        "max": 0.8
+      }
+    },
+    "populatedFullSelectionCopy10000": {
+      "samples": [16.54, 14.48, 14.44],
+      "mean": 15.15,
+      "p50": 14.48,
+      "p95": 16.54,
+      "min": 14.44,
+      "max": 16.54,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "inspectionMs": {
+        "samples": [0.12, 0.1, 0.11],
+        "mean": 0.11,
+        "p50": 0.11,
+        "p95": 0.12,
+        "min": 0.1,
+        "max": 0.12
+      },
+      "metadata": {
+        "applicationBytes": 2171996,
+        "fragmentNodes": 10000,
+        "textHtmlBytes": 2750967,
+        "textPlainBytes": 578889
+      },
+      "metadataSamples": [
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        },
+        {
+          "applicationBytes": 2171996,
+          "fragmentNodes": 10000,
+          "textHtmlBytes": 2750967,
+          "textPlainBytes": 578889
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [192.6, 184.52, 179.33],
+        "mean": 185.49,
+        "p50": 184.52,
+        "p95": 192.6,
+        "min": 179.33,
+        "max": 192.6
+      }
+    },
+    "populatedMiddlePlainTextPaste10000Into10000": {
+      "samples": [90.19, 79.84, 82.61],
+      "mean": 84.21,
+      "p50": 82.61,
+      "p95": 90.19,
+      "min": 79.84,
+      "max": 90.19,
+      "heapDeltaBytes": {
+        "max": 39842695,
+        "mean": 25643972.33,
+        "samples": [37089222, 0, 39842695]
+      },
+      "inspectionMs": {
+        "samples": [4.36, 4.7, 3.82],
+        "mean": 4.29,
+        "p50": 4.36,
+        "p95": 4.7,
+        "min": 3.82,
+        "max": 4.7
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608886,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0.9999,
+        "retainedExistingBlocks": 9999,
+        "topLevelRanges": [[5000, 14999]],
+        "existingBlockCount": 10000,
+        "insertedBlocks": 10000,
+        "nextBlockCount": 19999,
+        "textPlainBytes": 578889
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [[5000, 14999]],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [[5000, 14999]],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608886,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0.9999,
+          "retainedExistingBlocks": 9999,
+          "topLevelRanges": [[5000, 14999]],
+          "existingBlockCount": 10000,
+          "insertedBlocks": 10000,
+          "nextBlockCount": 19999,
+          "textPlainBytes": 578889
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0]
+      },
+      "setupMs": {
+        "samples": [192.56, 205, 208.56],
+        "mean": 202.04,
+        "p50": 205,
+        "p95": 208.56,
+        "min": 192.56,
+        "max": 208.56
+      }
+    }
+  },
+  "issueTargetThresholds": {
+    "commitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "cutTwoBlocksEditMsP50": {
+      "actualMs": 108.6,
+      "limitMs": 150,
+      "passed": true
+    },
+    "cutTwoBlocksMaximumChangedTokenSpan": {
+      "actual": 36,
+      "limit": 64,
+      "passed": true
+    },
+    "cutTwoBlocksMaximumChangedTopLevelSpan": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "cutTwoBlocksMsP50": {
+      "actualMs": 116.38,
+      "limitMs": 250,
+      "passed": true
+    },
+    "largePlainTextPaste10000CommitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "largePlainTextPaste10000P50": {
+      "actualMs": 51.63,
+      "baselineMs": 38.57,
+      "limitMs": 60,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    },
+    "populatedFullSelectionCopy10000P50": {
+      "actualMs": 14.48,
+      "baselineMs": 12.16,
+      "limitMs": 20,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    },
+    "populatedMiddlePlainTextPaste10000Into10000CommitCount": {
+      "actual": 1,
+      "limit": 1,
+      "passed": true
+    },
+    "populatedMiddlePlainTextPaste10000Into10000P50": {
+      "actualMs": 82.61,
+      "baselineMs": 185.49,
+      "limitMs": 280,
+      "source": "docs/solutions/performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md",
+      "passed": true
+    }
+  },
+  "issuePressure": {
+    "4056": "large text paste/copy into populated editor",
+    "5945": "10,000-line plaintext paste",
+    "5992": "50,000-block two-node cut"
+  },
+  "memoryMethodology": {
+    "allocationProxy": "heapUsed immediately after timed work minus the pre-work baseline",
+    "gcAvailable": true,
+    "retained": "selected prepared lanes run one separate untimed sample; heapUsed after exposed GC minus its post-setup, post-GC baseline; null on other lanes",
+    "setupIsolation": "the authority run measures support, 50,000-block cut, and 10,000-line issue lanes in distinct bounded child processes; prepared lanes run one unreported warmup and exposed GC after each untimed setup before measured work"
+  },
+  "metrics": {
+    "plite_clipboard_correctness_failures": 0,
+    "plite_clipboard_cut_edit_inspection_p95_ms": 15.24,
+    "plite_clipboard_cut_edit_setup_p95_ms": 1155.73,
+    "plite_clipboard_cut_changed_token_span_max": 36,
+    "plite_clipboard_cut_changed_top_level_span_max": 1,
+    "plite_clipboard_cut_retained_existing_block_ratio": 0.99996,
+    "plite_clipboard_decode_p95_ms": 4.23,
+    "plite_clipboard_encode_p95_ms": 2.11,
+    "plite_clipboard_fit_p95_ms": 48.84,
+    "plite_clipboard_gc_available": 1,
+    "plite_clipboard_host_parse_p95_ms": 8.43,
+    "plite_clipboard_host_serialize_p95_ms": 0.51,
+    "plite_clipboard_issue_budget_failures": 0,
+    "plite_clipboard_plain_text_paste_10000_p50_ms": 51.63,
+    "plite_clipboard_plate_codec_compile_p95_ms": 13.09,
+    "plite_clipboard_plate_codec_decode_10000_p95_ms": 14.34,
+    "plite_clipboard_plate_codec_parse_insert_10000_p95_ms": 554.8,
+    "plite_clipboard_plate_codec_reconfigure_p95_ms": 0.88,
+    "plite_clipboard_plate_codec_serialize_10000_p95_ms": 18.28,
+    "plite_clipboard_populated_full_selection_copy_10000_p50_ms": 14.48,
+    "plite_clipboard_populated_plain_text_paste_10000_p50_ms": 82.61,
+    "plite_clipboard_max_changed_token_span": 608890,
+    "plite_clipboard_max_changed_top_level_span": 9999,
+    "plite_clipboard_peak_heap_delta_bytes": 259808193,
+    "plite_clipboard_peak_retained_heap_delta_bytes": 0,
+    "plite_clipboard_populated_paste_inspection_p95_ms": 4.7,
+    "plite_clipboard_populated_paste_setup_p95_ms": 208.56,
+    "plite_clipboard_slice_commit_p95_ms": 57.79,
+    "plite_clipboard_worst_issue_p95_ms": 122.28
+  },
+  "pathological": {
+    "cutTwoBlocksColdEditMs": {
+      "samples": [142.13, 149.76, 138.77],
+      "mean": 143.56,
+      "p50": 142.13,
+      "p95": 149.76,
+      "min": 138.77,
+      "max": 149.76,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "inspectionMs": {
+        "samples": [16.75, 14.97, 14.01],
+        "mean": 15.24,
+        "p50": 14.97,
+        "p95": 16.75,
+        "min": 14.01,
+        "max": 16.75
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 36,
+        "maximumChangedTopLevelSpan": 1,
+        "retainedExistingBlockRatio": 0.99996,
+        "retainedExistingBlocks": 49998,
+        "topLevelRanges": [[25000, 25001]],
+        "blockCount": 50000,
+        "includeCopy": false,
+        "nextBlockCount": 49998,
+        "snapshot": "cold",
+        "textPlainBytes": 0
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": false,
+          "nextBlockCount": 49998,
+          "snapshot": "cold",
+          "textPlainBytes": 0
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": false,
+          "nextBlockCount": 49998,
+          "snapshot": "cold",
+          "textPlainBytes": 0
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": false,
+          "nextBlockCount": 49998,
+          "snapshot": "cold",
+          "textPlainBytes": 0
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [1017.7, 1111.5, 1106.3],
+        "mean": 1078.5,
+        "p50": 1106.3,
+        "p95": 1111.5,
+        "min": 1017.7,
+        "max": 1111.5
+      }
+    },
+    "cutTwoBlocksColdSetupMs": {
+      "samples": [1270.85, 1354.02, 1516.01],
+      "mean": 1380.3,
+      "p50": 1354.02,
+      "p95": 1516.01,
+      "min": 1270.85,
+      "max": 1516.01,
+      "heapDeltaBytes": {
+        "max": 259808193,
+        "mean": 128532807.33,
+        "samples": [-9042672, 259808193, 134832901]
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 36,
+        "maximumChangedTopLevelSpan": 1,
+        "retainedExistingBlockRatio": 0.99996,
+        "retainedExistingBlocks": 49998,
+        "topLevelRanges": [[25000, 25001]],
+        "blockCount": 50000,
+        "nextBlockCount": 49998,
+        "textPlainBytes": 29
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "nextBlockCount": 49998,
+          "textPlainBytes": 29
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "nextBlockCount": 49998,
+          "textPlainBytes": 29
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "nextBlockCount": 49998,
+          "textPlainBytes": 29
+        }
+      ],
+      "retainedHeapDeltaBytes": null
+    },
+    "cutTwoBlocksEditMs": {
+      "samples": [106.69, 122.28, 108.6],
+      "mean": 112.52,
+      "p50": 108.6,
+      "p95": 122.28,
+      "min": 106.69,
+      "max": 122.28,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "inspectionMs": {
+        "samples": [15.24, 14.74, 14.29],
+        "mean": 14.76,
+        "p50": 14.74,
+        "p95": 15.24,
+        "min": 14.29,
+        "max": 15.24
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 36,
+        "maximumChangedTopLevelSpan": 1,
+        "retainedExistingBlockRatio": 0.99996,
+        "retainedExistingBlocks": 49998,
+        "topLevelRanges": [[25000, 25001]],
+        "blockCount": 50000,
+        "includeCopy": false,
+        "nextBlockCount": 49998,
+        "snapshot": "warm",
+        "textPlainBytes": 0
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": false,
+          "nextBlockCount": 49998,
+          "snapshot": "warm",
+          "textPlainBytes": 0
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": false,
+          "nextBlockCount": 49998,
+          "snapshot": "warm",
+          "textPlainBytes": 0
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": false,
+          "nextBlockCount": 49998,
+          "snapshot": "warm",
+          "textPlainBytes": 0
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0]
+      },
+      "setupMs": {
+        "samples": [1088.07, 1121.48, 1155.73],
+        "mean": 1121.76,
+        "p50": 1121.48,
+        "p95": 1155.73,
+        "min": 1088.07,
+        "max": 1155.73
+      }
+    },
+    "cutTwoBlocksMs": {
+      "samples": [112.76, 116.38, 121.42],
+      "mean": 116.85,
+      "p50": 116.38,
+      "p95": 121.42,
+      "min": 112.76,
+      "max": 121.42,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "inspectionMs": {
+        "samples": [14.9, 14.33, 14.86],
+        "mean": 14.7,
+        "p50": 14.86,
+        "p95": 14.9,
+        "min": 14.33,
+        "max": 14.9
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 36,
+        "maximumChangedTopLevelSpan": 1,
+        "retainedExistingBlockRatio": 0.99996,
+        "retainedExistingBlocks": 49998,
+        "topLevelRanges": [[25000, 25001]],
+        "blockCount": 50000,
+        "includeCopy": true,
+        "nextBlockCount": 49998,
+        "snapshot": "warm",
+        "textPlainBytes": 29
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": true,
+          "nextBlockCount": 49998,
+          "snapshot": "warm",
+          "textPlainBytes": 29
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": true,
+          "nextBlockCount": 49998,
+          "snapshot": "warm",
+          "textPlainBytes": 29
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 36,
+          "maximumChangedTopLevelSpan": 1,
+          "retainedExistingBlockRatio": 0.99996,
+          "retainedExistingBlocks": 49998,
+          "topLevelRanges": [[25000, 25001]],
+          "blockCount": 50000,
+          "includeCopy": true,
+          "nextBlockCount": 49998,
+          "snapshot": "warm",
+          "textPlainBytes": 29
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [1107.51, 1165.56, 1216.19],
+        "mean": 1163.09,
+        "p50": 1165.56,
+        "p95": 1216.19,
+        "min": 1107.51,
+        "max": 1216.19
+      }
+    }
+  },
+  "plateCodecs": {
+    "compilationMs": {
+      "samples": [13.09, 3.82, 3.27],
+      "mean": 6.73,
+      "p50": 3.82,
+      "p95": 13.09,
+      "min": 3.27,
+      "max": 13.09,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "metadata": {
+        "compilationCallbacks": 1,
+        "decodeCallbacks": 0,
+        "decodeMs": 0,
+        "encodeCallbacks": 0,
+        "encodeMs": 0,
+        "queryCallbacks": 0
+      },
+      "metadataSamples": [
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 0
+        }
+      ],
+      "retainedHeapDeltaBytes": null
+    },
+    "parseInsert10000Ms": {
+      "samples": [554.8, 516.13, 515.3],
+      "mean": 528.74,
+      "p50": 516.13,
+      "p95": 554.8,
+      "min": 515.3,
+      "max": 554.8,
+      "heapDeltaBytes": {
+        "max": 120116889,
+        "mean": 86046580.33,
+        "samples": [48521663, 89501189, 120116889]
+      },
+      "inspectionMs": {
+        "samples": [1.82, 1.63, 1.79],
+        "mean": 1.75,
+        "p50": 1.79,
+        "p95": 1.82,
+        "min": 1.63,
+        "max": 1.82
+      },
+      "metadata": {
+        "changedRangeCount": 1,
+        "commitCount": 1,
+        "maximumChangedTokenSpan": 608890,
+        "maximumChangedTopLevelSpan": 9999,
+        "retainedExistingBlockRatio": 0,
+        "retainedExistingBlocks": 0,
+        "topLevelRanges": [[0, 9999]],
+        "compilationCallbacks": 1,
+        "decodeCallbacks": 1,
+        "decodeMs": 14.34,
+        "encodeCallbacks": 0,
+        "encodeMs": 0,
+        "queryCallbacks": 1,
+        "insertedBlocks": 10000,
+        "lineCount": 10000,
+        "payloadBytes": 948929
+      },
+      "metadataSamples": [
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9999]],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 12.88,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 948929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9999]],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 13.78,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 948929
+        },
+        {
+          "changedRangeCount": 1,
+          "commitCount": 1,
+          "maximumChangedTokenSpan": 608890,
+          "maximumChangedTopLevelSpan": 9999,
+          "retainedExistingBlockRatio": 0,
+          "retainedExistingBlocks": 0,
+          "topLevelRanges": [[0, 9999]],
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 1,
+          "decodeMs": 14.34,
+          "encodeCallbacks": 0,
+          "encodeMs": 0,
+          "queryCallbacks": 1,
+          "insertedBlocks": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 948929
+        }
+      ],
+      "retainedHeapDeltaBytes": {
+        "max": -270606113,
+        "mean": -270606113,
+        "samples": [-270606113]
+      },
+      "setupMs": {
+        "samples": [3.66, 3.89, 3.82],
+        "mean": 3.79,
+        "p50": 3.82,
+        "p95": 3.89,
+        "min": 3.66,
+        "max": 3.89
+      }
+    },
+    "reconfigurationMs": {
+      "samples": [0.88, 0.35, 0.29],
+      "mean": 0.51,
+      "p50": 0.35,
+      "p95": 0.88,
+      "min": 0.29,
+      "max": 0.88,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "inspectionMs": {
+        "samples": [1.19, 0.6, 0.51],
+        "mean": 0.76,
+        "p50": 0.6,
+        "p95": 1.19,
+        "min": 0.51,
+        "max": 1.19
+      },
+      "metadata": {
+        "configurationCommitCount": 1,
+        "configurationDirtyCommits": 1,
+        "configurationRevisionDelta": 1,
+        "initialCompilationCallbacks": 1,
+        "initialDecodeCallbacks": 0,
+        "initialEncodeCallbacks": 0,
+        "initialQueryCallbacks": 0,
+        "replacementCompilationCallbacks": 1,
+        "replacementDecodeCallbacks": 1,
+        "replacementEncodeCallbacks": 1,
+        "replacementQueryCallbacks": 1
+      },
+      "metadataSamples": [
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        },
+        {
+          "configurationCommitCount": 1,
+          "configurationDirtyCommits": 1,
+          "configurationRevisionDelta": 1,
+          "initialCompilationCallbacks": 1,
+          "initialDecodeCallbacks": 0,
+          "initialEncodeCallbacks": 0,
+          "initialQueryCallbacks": 0,
+          "replacementCompilationCallbacks": 1,
+          "replacementDecodeCallbacks": 1,
+          "replacementEncodeCallbacks": 1,
+          "replacementQueryCallbacks": 1
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [0.81, 0.43, 0.36],
+        "mean": 0.53,
+        "p50": 0.43,
+        "p95": 0.81,
+        "min": 0.36,
+        "max": 0.81
+      }
+    },
+    "serialize10000Ms": {
+      "samples": [18.28, 14.23, 14.54],
+      "mean": 15.68,
+      "p50": 14.54,
+      "p95": 18.28,
+      "min": 14.23,
+      "max": 18.28,
+      "heapDeltaBytes": {
+        "max": 0,
+        "mean": 0,
+        "samples": [0, 0, 0]
+      },
+      "inspectionMs": {
+        "samples": [0.07, 0.03, 0.03],
+        "mean": 0.04,
+        "p50": 0.03,
+        "p95": 0.07,
+        "min": 0.03,
+        "max": 0.07
+      },
+      "metadata": {
+        "compilationCallbacks": 1,
+        "decodeCallbacks": 0,
+        "decodeMs": 0,
+        "encodeCallbacks": 1,
+        "encodeMs": 2.35,
+        "queryCallbacks": 0,
+        "fragmentNodes": 10000,
+        "lineCount": 10000,
+        "payloadBytes": 948929
+      },
+      "metadataSamples": [
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 3.77,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 948929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 2.52,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 948929
+        },
+        {
+          "compilationCallbacks": 1,
+          "decodeCallbacks": 0,
+          "decodeMs": 0,
+          "encodeCallbacks": 1,
+          "encodeMs": 2.35,
+          "queryCallbacks": 0,
+          "fragmentNodes": 10000,
+          "lineCount": 10000,
+          "payloadBytes": 948929
+        }
+      ],
+      "retainedHeapDeltaBytes": null,
+      "setupMs": {
+        "samples": [3.11, 2.9, 2.54],
+        "mean": 2.85,
+        "p50": 2.9,
+        "p95": 3.11,
+        "min": 2.54,
+        "max": 3.11
+      }
+    }
+  },
+  "thresholdPolicy": {
+    "releaseGate": true,
+    "source": "Slate issues #4056, #5945, and #5992"
+  }
+}

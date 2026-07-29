@@ -1,6 +1,12 @@
 # Wordgard Test-Name Index
 
-Source checkout: `../wordgard` at `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`.
+Source checkout: `../wordgard` at
+`01eb2b5eae509509677345fd603acad001827dff`.
+
+Full provenance: all 27 files and all 644 indexed `it(...)` call sites were
+parsed directly from
+`source_commit=01eb2b5eae509509677345fd603acad001827dff`. No earlier index or
+commit diff supplied the file or call-site set.
 
 This is the complete source-declared `it(...)` call-site index for the test tree. Dynamic factories keep their source expression and line; the behavior matrix expands those families. Harness-only files are recorded explicitly.
 

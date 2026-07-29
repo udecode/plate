@@ -117,6 +117,11 @@ Colocation controls source ownership, not public composition identity. A real
 independently substitutable capability may remain colocated; route its public
 identity to `best-api`.
 
+Same-key descriptors across independently optional app or registry kits are a
+composition-identity decision, not mechanical deduplication. Do not make one
+optional kit install another merely to adapt it. Stop and route membership
+ownership to `best-api`; `plate-next` owns the package/kit adoption audit.
+
 ## Inference Law
 
 Let builders and initializers own contextual typing.
@@ -213,7 +218,7 @@ of defining another model.
 | `api`          | stable plugin services not bound to a supplied document snapshot or active transaction | immutable publication does not make its methods pure; never mutate the document |
 | `read`         | pure queries over the supplied document snapshot/state              | replayable for the same state and arguments; no mutation, I/O, or store writes |
 | `update`       | document mutation and transaction-local reads through the active `tx` | no nested one-shot update and no unrelated I/O                                 |
-| `extension`    | genuine editor-wide Plite substrate: lifecycle, fields, commands, corrections, root API/state/tx, or query middleware | not an escape hatch for plugin-scoped state, reads, services, or updates       |
+| `extension`    | genuine editor-wide Plite substrate: activation, state fields, effect types, commands, corrections, root API/state/tx, or descriptor-owned read middleware | not an escape hatch for plugin-scoped state, reads, services, or updates       |
 | `codecs`       | format encode/decode declarations                                   | not runtime service or mutation ownership                                      |
 
 Choose in this order:
@@ -240,10 +245,25 @@ Context access alone never justifies `.extend()`. Merge independent
 contributions into the constructor. Repeat `.extend()` only when the later
 stage consumes a capability type introduced earlier.
 
+Deleted builder shortcuts are forbidden. Hard-delete `extendApi`,
+`extendEditorApi`, `extendSelectors`, `extendTx`, `extendTxGroup`,
+`extendExtension`, `extendCodecs`, and `extendHtmlCodec`. Do not author,
+restore, alias, document, or preserve them; use the constructor or an honest
+staged `.extend()` contribution. Classify the receiver before editing:
+same-named methods on Zustand stores or other non-plugin builders are not
+plugin-authoring targets.
+
 State and extension mechanics:
 
-- Put defaults in `initialState` and override descriptor defaults with
-  `.configure({ initialState })`.
+- Give every state-owning production plugin a named `*PluginState`. Export the
+  state type when the descriptor is exported.
+- Check owner defaults with `const initialState: FooPluginState = { ... }` or
+  an explicit factory return type. Do not derive the public state contract from
+  the v1 default object, and do not replace contextual checking with `as` or
+  `satisfies`.
+- Put the typed defaults in `initialState`. Override descriptor defaults with
+  an inline partial `.configure({ initialState })`; consumers do not redeclare
+  the complete state contract.
 - Read or mutate live values with builder `store` or
   `editor.plugin(FooPlugin).store.get/set/subscribe`.
 - React subscriptions use `usePluginStore` or `useEditorPluginStore`.
@@ -255,19 +275,17 @@ State and extension mechanics:
   schema-affecting initial state before editor construction.
 - Plite editor extensions may retain their own unrelated `config` contract.
 - The constructor's `extension` field accepts a built extension or raw
-  extension options. A justified `.extend({ extension })` stage accepts the
+  extension declaration. A justified `.extend({ extension })` stage accepts the
   same shape when it adapts an existing descriptor or consumes an earlier
-  capability. Inline raw options are contextually typed and need no helper.
+  capability. Plain declarations and callback returns are contextually typed.
   Raw options without `name` default to the plugin key.
-- Contextual typing does not flow backward into an extracted reusable
-  editor-extension factory. Pass that factory the plugin context (or its
-  `defineEditorExtension` member) and return
-  `context.defineEditorExtension({ ... })` so nested commands, inputs, state,
-  transactions, and dependency groups stay inferred. This helper is not a
-  builder stage and does not justify another `.extend()` call.
-- The context-bound helper is distinct from `defineEditorExtension` imported
-  from `@platejs/plite`, which authors standalone Plite extensions. Do not wrap
-  an inline plugin extension object in the imported helper.
+- Keep Plate-context capture inside the `extension` authoring callback and
+  extract domain inputs. A public context identity helper is leaked compiler
+  machinery; fix the owning generic rather than adding a callback annotation,
+  cast, `any`, alias, or replacement helper.
+- `defineEditorExtension` imported from `@platejs/plite` authors independently
+  reusable standalone Plite descriptors. Do not pass Plate plugin context into
+  those factories or wrap inline Plate contributions in the imported helper.
 - Use an explicit extension name only for an independently identified secondary
   or standalone extension.
 

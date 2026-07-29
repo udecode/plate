@@ -128,11 +128,11 @@ export default function MySelectEditor() {
 
 ## API
 
-### `editor.update.tag.insert`
+### `editor.plugin(MultiSelectPlugin).update.insert`
 
 在当前选择处插入新的多选元素。
 
-<API name="editor.update.tag.insert">
+<API name="editor.plugin(MultiSelectPlugin).update.insert">
 <APIParameters>
   <APIItem name="props" type="TTagProps">
     多选元素的属性。
@@ -146,21 +146,21 @@ export default function MySelectEditor() {
 </APIOptions>
 </API>
 
-### `editor.read.tag.getSelectedItems()`
+### `editor.plugin(MultiSelectPlugin).read.getSelectedItems()`
 
 获取编辑器中的所有标签项目。
 
-<API name="editor.read.tag.getSelectedItems">
+<API name="editor.plugin(MultiSelectPlugin).read.getSelectedItems">
 <APIReturns type="TTagProps[]">
   编辑器中的标签项目数组。
 </APIReturns>
 </API>
 
-### `editor.read.tag.isEqual(tags)`
+### `editor.plugin(MultiSelectPlugin).read.isEqual(tags)`
 
 比较两组标签是否相等的工具函数，忽略顺序。
 
-<API name="editor.read.tag.isEqual">
+<API name="editor.plugin(MultiSelectPlugin).read.isEqual">
 <APIParameters>
   <APIItem name="tags" type="TTagProps[]" optional>
     要与当前编辑器标签比较的新标签。
@@ -239,7 +239,6 @@ export default function MySelectEditor() {
 ```ts
 type TTagElement = Element & {
   value: string;
-  [key: string]: unknown;
 };
 ```
 
@@ -248,6 +247,5 @@ type TTagElement = Element & {
 ```ts
 type TTagProps = {
   value: string;
-  [key: string]: unknown;
 };
 ```

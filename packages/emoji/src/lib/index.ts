@@ -3,6 +3,5 @@
  */
 
 export * from './BaseEmojiPlugin';
-export * from './constants';
-export * from './types';
-export * from './utils/index';
+export * from './EmojiGrid';
+export * from './EmojiLibrary';

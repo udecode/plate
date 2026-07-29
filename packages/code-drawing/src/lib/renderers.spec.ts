@@ -1,4 +1,7 @@
-import { type CodeDrawingType, CODE_DRAWING_TYPE } from './constants';
+import {
+  type CodeDrawingType,
+  CODE_DRAWING_TYPE,
+} from './BaseCodeDrawingPlugin';
 
 const mermaidInitialize = mock();
 const mermaidRender = mock(async (id: string, content: string) => ({

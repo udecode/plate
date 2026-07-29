@@ -3,16 +3,16 @@
 import React from 'react';
 
 import {
-  type NavigationFeedbackConfig,
-  type PlateEditor,
+  NavigationFeedbackPlugin,
   useEditor,
   useEditorPlugin,
   useEditorScrollElement,
   useEditorSelector,
+  usePluginStore,
 } from '@platejs/core/react';
-import type { Path, Value } from '@platejs/plite';
+import type { Path } from '@platejs/plite';
 
-import type { Heading } from '../lib/types';
+import type { Heading } from '../lib';
 
 import { TocPlugin } from './TocPlugin';
 
@@ -109,7 +109,8 @@ export const useContentController = ({
   scroll = true,
   topOffset,
 }: UseContentController) => {
-  const editor = useEditor<PlateEditor<Value, NavigationFeedbackConfig>>();
+  const editor = useEditor();
+  const navigation = useEditorPlugin(NavigationFeedbackPlugin);
   const isScrollable =
     (container?.scrollHeight || 0) > (container?.clientHeight || 0);
   const scrollContainer =
@@ -166,7 +167,7 @@ export const useContentController = ({
       }
 
       if (path) {
-        editor.update.navigation.flashTarget({
+        navigation.update.flashTarget({
           target: {
             path,
             type: 'node',
@@ -174,7 +175,15 @@ export const useContentController = ({
         });
       }
     },
-    [activeId, container, editor, isScrollable, scroll, topOffset]
+    [
+      activeId,
+      container,
+      editor,
+      isScrollable,
+      navigation.update,
+      scroll,
+      topOffset,
+    ]
   );
 
   React.useEffect(() => {
@@ -273,8 +282,9 @@ export const useTocController = ({
 };
 
 export const useTocElementState = () => {
-  const { editor, store } = useEditorPlugin(TocPlugin);
-  const { isScroll, topOffset } = store.get();
+  const { editor } = useEditorPlugin(TocPlugin);
+  const isScroll = usePluginStore(TocPlugin, 'isScroll');
+  const topOffset = usePluginStore(TocPlugin, 'topOffset');
   const headingList = useEditorSelector((editor) =>
     editor.plugin(TocPlugin).read.headings()
   );

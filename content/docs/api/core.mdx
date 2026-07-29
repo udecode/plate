@@ -60,7 +60,7 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
         Filter Text nodes from receiving IDs.
         - **Default:** `true`
       </APISubListItem>
-      <APISubListItem parent="nodeId" name="idCreator" type="() => any" optional>
+      <APISubListItem parent="nodeId" name="idCreator" type="() => string" optional>
         Function to generate unique IDs.
         - **Default:** `() => nanoid(10)`
       </APISubListItem>
@@ -733,31 +733,6 @@ Provides paragraph formatting functionality.
 
 ### `EventEditorPlugin`
 Manages editor events such as focus and blur.
-
-## Utils
-
-### `isType`
-
-Checks whether a node matches the provided type.
-
-<API name="isType">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor<V>">
-    The editor in which the node is present.
-  </APIItem>
-  <APIItem name="node" type="any">
-    The node to be checked.
-  </APIItem>
-  <APIItem name="key" type="string | string[]" optional>
-    The type or types to match the node against. Can be a string or an array of
-    strings.
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  A boolean indicating whether the node's type matches the provided type or
-  types.
-</APIReturns>
-</API>
 
 ## Components
 

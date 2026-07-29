@@ -23,7 +23,7 @@ import {
 export const ImageElement = withHOC(
   ResizableProvider,
   function ImageElement(props: PlateElementProps<TImageElement>) {
-    const { align = 'center', focused, readOnly, selected } = useMediaState();
+    const { align = 'center', focused, selected } = useMediaState();
     const captionFocused = useCaptionFocused(props.path);
     const { isDragging, handleRef } = useDraggable({
       element: props.element,
@@ -38,7 +38,6 @@ export const ImageElement = withHOC(
                 align={align}
                 options={{
                   align,
-                  readOnly,
                 }}
               >
                 <ResizeHandle

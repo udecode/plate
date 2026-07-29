@@ -13,7 +13,7 @@ const harvesterDirectory = join(
   plateRepository,
   'docs/editor-test-harvester/wordgard'
 );
-const expectedHead = '8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e';
+const expectedHead = '01eb2b5eae509509677345fd603acad001827dff';
 const failures = [];
 const fail = (message) => failures.push(message);
 const runGitBuffer = (...args) =>
@@ -42,6 +42,8 @@ const report = readFileSync(reportPath, 'utf8');
 if (head !== expectedHead)
   fail(`Wordgard HEAD ${head} does not match ${expectedHead}`);
 if (!clean) fail('Wordgard checkout is dirty');
+if (!report.includes(expectedHead))
+  fail(`Architecture report lacks exact commit ${expectedHead}`);
 if (manifest.authority.commit !== expectedHead)
   fail(`Manifest commit is ${manifest.authority.commit}`);
 if (!manifest.authority.clean)
@@ -134,7 +136,7 @@ for (const required of [
   '## Closure statement',
 ])
   if (!report.includes(required)) fail(`Report lacks ${required}`);
-if (report.includes('8fd8880d1a16bc6306b1e59f8649b1d9021e3d1`'))
+if (report.includes('`01eb2b5eae509509677345fd603acad001827df`'))
   fail('Report contains truncated Wordgard commit');
 
 const testPaths = trackedPaths.filter(
@@ -165,7 +167,7 @@ for (const file of ['report.md', 'inventory.md', 'test-index.md']) {
   const text = readFileSync(path, 'utf8');
   if (!text.includes(expectedHead))
     fail(`Test-harvester ${file} lacks exact commit`);
-  if (text.includes('`8fd8880d1a16bc6306b1e59f8649b1d9021e3d1`'))
+  if (text.includes('`01eb2b5eae509509677345fd603acad001827df`'))
     fail(`Test-harvester ${file} contains truncated commit`);
 }
 

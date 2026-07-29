@@ -15,7 +15,7 @@ type PlateGetPlugin<V extends Value, P extends AnyPluginConfig> = BaseEditor<
 >['getPlugin'] &
   (<C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
-  ) => C extends { clone: any } ? C : PlatePlugin<C>);
+  ) => C extends { clone: unknown } ? C : PlatePlugin<C>);
 
 export type PlateEditor<
   V extends Value = any,

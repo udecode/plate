@@ -1,4 +1,6 @@
 export {
+  DOM_CLIPBOARD_HANDLERS,
+  dispatchDOMClipboardHandlers,
   getDOMClipboardFormatKey,
   readDOMFragmentData,
   setDOMClipboardFormatKey,
@@ -57,6 +59,11 @@ export {
   type DOMIntegrityObserverOptions,
   type DOMIntegrityRepairEvidence,
 } from '../plugin/dom-integrity-observer';
+export {
+  selectDOMInputDefaultActionPhase,
+  type DOMInputDefaultActionPhase,
+  type DOMInputDefaultActionPhaseInput,
+} from '../plugin/dom-input-runtime';
 export {
   DOMRootRuntime,
   type DOMRootRuntimeOptions,

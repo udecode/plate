@@ -2,6 +2,32 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-29-preserve-feature-example-wiring",
+      "href": "/registry/changelog/2026-07-29-preserve-feature-example-wiring.json",
+      "status": "draft",
+      "kind": "fix",
+      "summary": "Keep feature wiring explicit and package-owned",
+      "change": {
+        "type": "source",
+        "date": "2026-07-29",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": [
+        "code-drawing-demo",
+        "excalidraw-demo",
+        "cursor-overlay",
+        "ghost-text",
+        "media-image-node",
+        "media-video-node",
+        "table-node"
+      ],
+      "entries": 4,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-26-fix-code-drawing-demo",
       "href": "/registry/changelog/2026-07-26-fix-code-drawing-demo.json",
       "status": "draft",

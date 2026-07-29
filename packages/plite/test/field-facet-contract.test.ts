@@ -36,7 +36,7 @@ describe('field-aware explicit facets', () => {
         counter,
         unrelated,
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             doubled.compute(
               (state) => {
                 computes++;
@@ -85,7 +85,7 @@ describe('field-aware explicit facets', () => {
       extensions: [
         counter,
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             parity.compute(
               (state) => {
                 computes++;
@@ -118,7 +118,7 @@ describe('field-aware explicit facets', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             derived.compute(
               (state) => {
                 computes++;
@@ -216,7 +216,7 @@ describe('field-aware explicit facets', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             mainLength.compute(
               (state) => {
                 mainComputes++;

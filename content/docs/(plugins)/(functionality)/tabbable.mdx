@@ -85,7 +85,7 @@ const editor = createPlateEditor({
         },
         globalEventListener: true,
         isTabbable: (tabbableEntry) =>
-          editor.read((state) => state.schema.isVoid(tabbableEntry.slateNode)),
+          editor.read.schema.isVoid(tabbableEntry.slateNode),
       },
     }),
   ],
@@ -124,7 +124,7 @@ Alternatively, if you're using the Indent plugin, you can enable the Tabbable pl
 
 ```tsx
 query: (event) => !!editor.read.nodes.some({
-  match: (node) => editor.read((state) => state.schema.isVoid(node)),
+  match: (node) => editor.read.schema.isVoid(node),
 }),
 ```
 
@@ -138,7 +138,7 @@ By default, `isTabbable` only returns true for entries inside void Plite nodes. 
 // Enable tabbable DOM elements inside CUSTOM_ELEMENT
 isTabbable: (tabbableEntry) => (
   tabbableEntry.slateNode.type === CUSTOM_ELEMENT ||
-  editor.read((state) => state.schema.isVoid(tabbableEntry.slateNode))
+  editor.read.schema.isVoid(tabbableEntry.slateNode)
 ),
 ```
 
@@ -190,14 +190,14 @@ Plugin for managing tab order between tabbable elements.
   </APIItem>
   <APIItem name="isTabbable" type="(tabbableEntry: TabbableEntry) => boolean" optional>
     Determine if element should be tabbable.
-    - **Default:** `(tabbableEntry) => editor.read((state) => state.schema.isVoid(tabbableEntry.slateNode))`
+    - **Default:** `(tabbableEntry) => editor.read.schema.isVoid(tabbableEntry.slateNode)`
   </APIItem>
 </APIOptions>
 </API>
 
 ## Read API
 
-### `editor.read.tabbable.findDestination(options)`
+### `editor.plugin(TabbablePlugin).read.findDestination(options)`
 
 Finds the next DOM or document destination from the active snapshot.
 
@@ -209,8 +209,8 @@ Defines the properties of a tabbable entry.
 
 <API name="TabbableEntry">
 <APIAttributes>
-  <APIItem name="domNode" type="HTMLElement">
-    HTML element representing tabbable entry.
+  <APIItem name="domNode" type="FocusableElement">
+    Focusable HTML or SVG element representing the tabbable entry.
   </APIItem>
   <APIItem name="slateNode" type="Node">
     Corresponding Plite node.

@@ -31,15 +31,17 @@ describe('extension change events', () => {
       extensions: [
         defineEditorExtension({
           name: 'node-observer',
-          onNodeChange(context) {
-            events.push({
-              kind: context.kind,
-              node: context.node,
-              path: context.path,
-              previousPath: context.previousPath,
-              prevNode: context.prevNode,
-              root: context.root,
-            });
+          on: {
+            nodeChange(context) {
+              events.push({
+                kind: context.kind,
+                node: context.node,
+                path: context.path,
+                previousPath: context.previousPath,
+                prevNode: context.prevNode,
+                root: context.root,
+              });
+            },
           },
         }),
       ],
@@ -73,15 +75,17 @@ describe('extension change events', () => {
       extensions: [
         defineEditorExtension({
           name: 'text-observer',
-          onTextChange(context) {
-            events.push({
-              node: context.node,
-              path: context.path,
-              previousPath: context.previousPath,
-              prevText: context.prevText,
-              root: context.root,
-              text: context.text,
-            });
+          on: {
+            textChange(context) {
+              events.push({
+                node: context.node,
+                path: context.path,
+                previousPath: context.previousPath,
+                prevText: context.prevText,
+                root: context.root,
+                text: context.text,
+              });
+            },
           },
         }),
       ],
@@ -116,8 +120,10 @@ describe('extension change events', () => {
       extensions: [
         defineEditorExtension({
           name: 'node-observer',
-          onNodeChange({ kind, path, root }) {
-            events.push({ kind, path, root });
+          on: {
+            nodeChange({ kind, path, root }) {
+              events.push({ kind, path, root });
+            },
           },
         }),
       ],
@@ -153,8 +159,10 @@ describe('extension change events', () => {
       extensions: [
         defineEditorExtension({
           name: 'node-observer',
-          onNodeChange({ kind, path, previousPath }) {
-            events.push({ kind, path, previousPath });
+          on: {
+            nodeChange({ kind, path, previousPath }) {
+              events.push({ kind, path, previousPath });
+            },
           },
         }),
       ],
@@ -176,8 +184,10 @@ describe('extension change events', () => {
       extensions: [
         defineEditorExtension({
           name: 'node-observer',
-          onNodeChange({ kind, path, previousPath }) {
-            events.push({ kind, path, previousPath });
+          on: {
+            nodeChange({ kind, path, previousPath }) {
+              events.push({ kind, path, previousPath });
+            },
           },
         }),
       ],
@@ -197,8 +207,10 @@ describe('extension change events', () => {
           extensions: [
             defineEditorExtension({
               name: `insert-observer-${size}-${index}`,
-              onNodeChange({ kind, node, path, previousPath }) {
-                events.push({ kind, node, path, previousPath });
+              on: {
+                nodeChange({ kind, node, path, previousPath }) {
+                  events.push({ kind, node, path, previousPath });
+                },
               },
             }),
           ],
@@ -225,8 +237,10 @@ describe('extension change events', () => {
           extensions: [
             defineEditorExtension({
               name: `remove-observer-${size}-${index}`,
-              onNodeChange({ kind, node, path, previousPath, prevNode }) {
-                events.push({ kind, node, path, previousPath, prevNode });
+              on: {
+                nodeChange({ kind, node, path, previousPath, prevNode }) {
+                  events.push({ kind, node, path, previousPath, prevNode });
+                },
               },
             }),
           ],
@@ -257,8 +271,10 @@ describe('extension change events', () => {
             extensions: [
               defineEditorExtension({
                 name: `move-observer-${size}-${source}-${target}`,
-                onNodeChange({ kind, node, path, previousPath }) {
-                  events.push({ kind, node, path, previousPath });
+                on: {
+                  nodeChange({ kind, node, path, previousPath }) {
+                    events.push({ kind, node, path, previousPath });
+                  },
                 },
               }),
             ],
@@ -306,8 +322,10 @@ describe('extension change events', () => {
         documentSchema,
         defineEditorExtension({
           name: 'cross-parent-observer',
-          onNodeChange({ kind, node, path, previousPath }) {
-            events.push({ kind, node, path, previousPath });
+          on: {
+            nodeChange({ kind, node, path, previousPath }) {
+              events.push({ kind, node, path, previousPath });
+            },
           },
         }),
       ],

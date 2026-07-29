@@ -199,11 +199,19 @@ export const createEditorReadApi = <
           }
 
           return (...args: unknown[]) =>
-            read((state) =>
-              (state[groupName] as Record<string, (...args: unknown[]) => any>)[
-                key
-              ]!(...args)
-            );
+            read((state) => {
+              const method = (
+                state[groupName] as Record<string, unknown> | undefined
+              )?.[key];
+
+              if (typeof method !== 'function') {
+                throw new Error(
+                  `Editor read group "${groupName}" has no method "${key}".`
+                );
+              }
+
+              return method(...args);
+            });
         },
       }
     ) as EditorReadMethods<V>[TGroup];
@@ -232,11 +240,19 @@ export const createEditorReadApi = <
         }
 
         return (...args: unknown[]) =>
-          read((state) =>
-            (state[groupName] as Record<string, (...args: unknown[]) => any>)[
-              key
-            ]!(...args)
-          );
+          read((state) => {
+            const method = (
+              state[groupName] as Record<string, unknown> | undefined
+            )?.[key];
+
+            if (typeof method !== 'function') {
+              throw new Error(
+                `Editor read group "${groupName}" has no method "${key}".`
+              );
+            }
+
+            return method(...args);
+          });
       },
     }) as EditorReadMethods<V>[TGroup];
 

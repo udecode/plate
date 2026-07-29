@@ -28,7 +28,7 @@ score is averaged across editors.
 
 | Source            | Immutable/local authority                       |       Included units | Declarations | Concepts |                 Exact exclusions | Unmapped |
 | ----------------- | ----------------------------------------------- | -------------------: | -----------: | -------: | -------------------------------: | -------: |
-| Wordgard          | `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`      |     114 mapped files |        3,275 |       73 |        6 files / 12 declarations |        0 |
+| Wordgard          | `01eb2b5eae509509677345fd603acad001827dff`      |     114 mapped files |        3,275 |       73 |        6 files / 12 declarations |        0 |
 | Lexical           | `d52f66e250e031a6c6fd8836d160373b0df557c7`      | 1,424 relevant units |        5,132 |       48 |     219 units / 862 declarations |        0 |
 | ProseMirror       | meta plus 19 commits in the provenance artifact |     214 mapped files |        2,180 |       64 |                        116 files |        0 |
 | Live Plite family | generated current-source manifest               |          2,318 files |        6,004 |       32 | generated/build/cache paths only |        0 |
@@ -1920,7 +1920,7 @@ the final target without hiding a donor mechanism behind grouped praise.
 | Capability-local parse/input/shortcut priority                      | `keep`                            | Competing rules inside one compiler are the valid home for local precedence.                                                                                  |
 | Declarative schema-linked HTML/Markdown codecs                      | `keep` Plite/Plate                | The current host compiler is more typed, JSON-native, multi-root-aware, and atomically published.                                                             |
 | Clipboard transport and browser `DataTransfer` in core              | `move` through `A5`               | DOM transport, exact envelopes, host codecs, fallbacks, and browser failures belong to `plite-dom`.                                                           |
-| Native DOM reconciliation, composition, observer repair             | `keep`; mine donor proof          | Plite's explicit strategy and bounded scheduler are stronger; donor scenarios increase confidence without replacing the runtime.                              |
+| Native DOM reconciliation, composition, mobile phase choice, observer repair | `keep`; mine donor proof; defer device claim | Plite's explicit strategy and bounded scheduler are stronger overall. Wordgard's default mobile Enter/Backspace phase choice is useful pressure, but its blanket keymap bypass is rejected and local routing changes wait for raw-device proof. |
 | Imperative tile/ViewDesc renderer                                   | evidence-backed `defer`           | No non-React consumer or benchmark justifies a second renderer and parity burden.                                                                             |
 | Decoration, annotation, and widget mapping                          | `keep` Plite                      | Separate public concepts over one private invalidation/lifecycle kernel are cleaner than a public tree or mega-layer.                                         |
 | Extensible selections, affinity, goal column, bidi/Unicode movement | `keep`; extend through `A4`       | Tagged structural selections and anchors beat class registries and raw integer positions.                                                                     |
@@ -2001,9 +2001,16 @@ Required harvest:
 - mark-boundary mutation;
 - selection-only `MutationObserver` batches;
 - native enter/backspace/type-over recognition;
+- real iOS Safari swipe input after Enter/Backspace, including
+  autocapitalization, autocorrect, and first-Backspace `deleteWordBackward`;
+- real Android Chrome virtual-keyboard equivalents, custom app bindings,
+  modified/hardware keys, structural split/join, history, caret/model
+  agreement, follow-up typing, and undo;
 - clipboard during composition;
 - shadow-root ownership and geometry;
-- Chromium, Firefox, WebKit, and mobile viewport with zero retries.
+- Chromium, Firefox, WebKit, and mobile viewport with zero retries, plus raw
+  iOS and Android device receipts for virtual-keyboard claims. Mobile viewport
+  emulation is insufficient for those claims.
 
 A failure repairs the existing owner and adds a named regression. It does not
 add a compatibility flag, second scheduler, or new public packet.
@@ -2037,7 +2044,7 @@ change an architecture verdict.
 
 | Reference   | Cursor                                                                              | Inventory                                                                          | Result                                                                            |
 | ----------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Wordgard    | `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`                                          | 27 files, 24 runnable, 644 cases, 33 families                                      | zero uncertain; DOM/collaboration rows attached to retained proof owners          |
+| Wordgard    | `01eb2b5eae509509677345fd603acad001827dff`                                          | 27 files, 24 runnable, 644 cases, 33 families; test tree unchanged                  | zero uncertain; source-only mobile key phase is an explicit raw-device proof gate |
 | Lexical     | `d52f66e250e031a6c6fd8836d160373b0df557c7`                                          | 271 artifacts, 196 runnable, 137 portable/mixed runnable, 2,095 indexed call sites | zero uncertain; descriptor inference supports `A6`; browser rows remain proof     |
 | ProseMirror | composite `sha256:8a8158142c4d7f27635ad76eb698113183f6da1a9b453e81f2d275b8a5a86c84` | 47 test/support files, 1,369 named rows, 23 behavior families                      | zero uncertain; fitter/clipboard/browser/history laws routed to their real owners |
 
@@ -2045,7 +2052,7 @@ change an architecture verdict.
 
 | Reference   | Verified at            | Host total | Open / closed | Added unchecked | Metadata re-read | Verified provider omissions |
 | ----------- | ---------------------- | ---------: | ------------: | --------------: | ---------------: | --------------------------: |
-| Wordgard    | `2026-07-25T23:13:33Z` |         27 |        7 / 20 |              27 |                0 |                           0 |
+| Wordgard    | `2026-07-27T14:28:47Z` |         27 |        7 / 20 |               0 |                0 |                           0 |
 | Lexical     | `2026-07-25T23:13:33Z` |      2,782 |   310 / 2,472 |              41 |              132 |                           7 |
 | ProseMirror | `2026-07-25T23:13:33Z` |      1,420 |   111 / 1,309 |               0 |    11 label-only |                           2 |
 

@@ -613,7 +613,7 @@ describe('@platejs/yjs collaborative history contract', () => {
         effect.type === increment ? value + effect.value : value,
     });
     const effects = defineEditorExtension({
-      effects: [increment],
+      effectTypes: [increment],
       name: 'c14-counter-effects',
     });
     const trace: CollaborativeHistoryTrace = {

@@ -304,6 +304,30 @@ type DOMInputRuntimeOptions = {
   getRoot: () => RootKey;
 };
 
+export type DOMInputDefaultActionPhase = 'beforeinput' | 'keydown';
+
+export type DOMInputDefaultActionPhaseInput = Readonly<{
+  action: 'delete-backward' | 'insert-break';
+  host: Readonly<{
+    isIOS: boolean;
+    language: string;
+  }>;
+}>;
+
+/**
+ * Choose the event phase that owns a default editing action.
+ *
+ * The narrow Korean iOS Backspace exception preserves current behavior.
+ * Broader mobile routing requires raw-device evidence.
+ */
+export const selectDOMInputDefaultActionPhase = ({
+  action,
+  host,
+}: DOMInputDefaultActionPhaseInput): DOMInputDefaultActionPhase =>
+  action === 'delete-backward' && host.isIOS && host.language === 'ko-KR'
+    ? 'beforeinput'
+    : 'keydown';
+
 type PendingNativeDOMInput = {
   data: string | null;
   handled: boolean;
@@ -618,6 +642,10 @@ export class DOMInputRuntime {
 
   constructor(options: DOMInputRuntimeOptions) {
     this.options = options;
+  }
+
+  selectDefaultActionPhase(input: DOMInputDefaultActionPhaseInput) {
+    return selectDOMInputDefaultActionPhase(input);
   }
 
   prepareKeyDownDecision<TCommand, TIntent extends string, TSelection>({

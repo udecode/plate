@@ -52,7 +52,9 @@ export const createPluginStore = <C extends AnyPluginConfig>(
       if (key === undefined) return current;
       const selector = selectors[key as keyof InferSelectors<C>];
 
-      if (selector) return selector(current, ...args);
+      if (typeof selector === 'function') {
+        return selector(current, ...args);
+      }
       if (Object.hasOwn(current, key)) {
         return current[key as keyof InferPluginStoreState<C>];
       }
@@ -182,7 +184,7 @@ export const createPluginStateSnapshot = () => {
   return <T>(value: T): T => snapshotPluginStateValue(value, context) as T;
 };
 
-const PLUGIN_STORES = new WeakMap<object, Map<string, InternalPluginStore>>();
+const PLUGIN_STORES = new WeakMap<object, Map<string, unknown>>();
 
 export const clearPluginStores = (editor: object) => {
   PLUGIN_STORES.delete(getPlateRuntimeOwner(editor));
@@ -208,5 +210,5 @@ export const setPluginStore = <C extends AnyPluginConfig>(
     stores = new Map();
     PLUGIN_STORES.set(owner, stores);
   }
-  stores.set(pluginKey, store as InternalPluginStore);
+  stores.set(pluginKey, store);
 };

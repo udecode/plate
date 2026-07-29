@@ -3,5 +3,5 @@
  */
 
 export * from './TogglePlugin';
-export * from './renderToggleAboveNodes';
+export * from './ToggleVisibility';
 export * from './useToggle';

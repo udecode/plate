@@ -257,26 +257,50 @@ describe('NavigationFeedbackPlugin', () => {
     ).toBe(true);
   });
 
-  it('keeps the active target path synced when the target node moves', () => {
+  it('keeps the active target and rendered highlight synced when the target node moves', async () => {
     const editor = createPlateEditor({
       initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
+    const { getByText } = render(
+      <Plate editor={editor}>
+        <PlateContent />
+      </Plate>
+    );
+    const getElement = (text: string) =>
+      getByText(text).closest('[data-plite-node="element"]') as HTMLElement;
 
-    editor.update((tx) => {
-      tx.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
-        },
+    await act(async () => {
+      await flushMicrotasks();
+    });
+    act(() => {
+      editor.update((tx) => {
+        tx.navigation.flashTarget({
+          target: {
+            path: [0],
+            type: 'node',
+          },
+        });
       });
     });
+    await act(async () => {
+      await flushMicrotasks();
+    });
 
-    editor.update.nodes.insert(
-      { children: [{ text: 'zero' }], type: 'p' },
-      {
-        at: [0],
-      }
+    expect(getElement('one').getAttribute('data-nav-highlight')).toBe(
+      'navigated'
     );
+
+    act(() => {
+      editor.update.nodes.insert(
+        { children: [{ text: 'zero' }], type: 'p' },
+        {
+          at: [0],
+        }
+      );
+    });
+    await act(async () => {
+      await flushMicrotasks();
+    });
 
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
@@ -297,18 +321,27 @@ describe('NavigationFeedbackPlugin', () => {
       type: 'node',
       variant: 'navigated',
     });
-    expect(
-      editor
-        .plugin(NavigationFeedbackPlugin)
-        .store.get('storedTarget')
-        ?.pathAnchor.resolve()
-    ).toEqual([1]);
+    expect(editor.plugin(NavigationFeedbackPlugin).store.get()).toEqual({
+      duration: 1600,
+      target: {
+        cycle: 1,
+        duration: 1600,
+        path: [1],
+        pulse: 1,
+        type: 'node',
+        variant: 'navigated',
+      },
+    });
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [1])
     ).toBe(true);
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [0])
     ).toBe(false);
+    expect(getElement('zero').getAttribute('data-nav-highlight')).toBeNull();
+    expect(getElement('one').getAttribute('data-nav-highlight')).toBe(
+      'navigated'
+    );
   });
 
   it('clears the active target when the target node is removed', () => {
@@ -331,7 +364,7 @@ describe('NavigationFeedbackPlugin', () => {
       editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
     ).toBeNull();
     expect(
-      editor.plugin(NavigationFeedbackPlugin).store.get('storedTarget')
+      editor.plugin(NavigationFeedbackPlugin).store.get('target')
     ).toBeNull();
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('isTarget', [0])

@@ -109,7 +109,9 @@ type CompiledHtmlSerializerIndex = Readonly<{
 const HTML_FORMAT = 'text/html';
 const HTML_HOST_KEY = 'plate:html';
 const HTML_PLUGIN_KEY = 'html';
-const HTML_CONTENT_TOKEN = Object.freeze({}) as HtmlContentToken;
+const HTML_CONTENT_TOKEN: HtmlContentToken = Object.freeze({
+  __htmlContentToken: true,
+});
 const HTML_RULE_FIELDS = new Set([
   'createsElement',
   'decode',
@@ -410,12 +412,12 @@ const preparePlugin = <C extends AnyPluginConfig>(
   plugin: PluginReference & { readonly __config: C },
   registry: HtmlPluginRegistry
 ): PreparedHtmlPluginEntry<WithAnyKey<C>> => {
-  const installed = getCompiledPlatePlugin(editor, plugin.key);
-  const parser = (plugin as AnyBasePlugin).parsers.html;
+  const installed = getCompiledPlatePlugin(editor, plugin);
 
   if (!installed) {
     throw new Error(`Parser plugin "${plugin.key}" is not installed.`);
   }
+  const parser = installed.parsers.html;
 
   return Object.freeze({
     context: Object.freeze({
@@ -870,8 +872,64 @@ const compileRule = (
   pluginsByKey: ReadonlyMap<string, AnyBasePlugin>,
   ownerPlugin: AnyBasePlugin,
   targetKey: string | null,
-  extension: (context: any) => unknown
+  extension: AnyBasePlugin['__htmlCodecExtensions'][number]['extension']
 ): CompiledHtmlRule => {
+  function assertDeclaration(
+    value: unknown
+  ): asserts value is HtmlRuleDeclaration {
+    if (!isRecord(value)) {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" callback must return an object.`
+      );
+    }
+    Object.keys(value).forEach((field) => {
+      if (!HTML_RULE_FIELDS.has(field)) {
+        throw new Error(
+          `Plate HTML codec "${ownerPlugin.key}" has unknown field "${field}".`
+        );
+      }
+    });
+    if (!Array.isArray(value.match) || value.match.length === 0) {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" match must be a non-empty array.`
+      );
+    }
+    if (typeof value.decode !== 'function') {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" decode must be a function.`
+      );
+    }
+    if (
+      value.priority !== undefined &&
+      (typeof value.priority !== 'number' || !Number.isFinite(value.priority))
+    ) {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" priority must be finite.`
+      );
+    }
+    if (value.createsElement !== undefined && value.createsElement !== true) {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" createsElement must be true when present.`
+      );
+    }
+    if (value.decodeOnly !== undefined && value.decodeOnly !== true) {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" decodeOnly must be true when present.`
+      );
+    }
+    if (value.decodeOnly === true) {
+      if (value.encode !== undefined) {
+        throw new Error(
+          `Plate HTML codec "${ownerPlugin.key}" cannot define encode with decodeOnly.`
+        );
+      }
+    } else if (typeof value.encode !== 'function') {
+      throw new Error(
+        `Plate HTML codec "${ownerPlugin.key}" must define encode or decodeOnly: true.`
+      );
+    }
+  }
+
   if (targetKey === ownerPlugin.key) {
     throw new Error(
       `Plate HTML codec "${ownerPlugin.key}" must use the self overload for its own schema.`
@@ -902,56 +960,9 @@ const compileRule = (
       `Plate HTML codec "${ownerPlugin.key}" target "${targetPlugin.key}" has no compiled model binding.`
     );
   }
-  const value = extension(getEditorPlugin(editor, ownerPlugin as never));
+  const declaration = extension(getEditorPlugin(editor, ownerPlugin));
 
-  if (!isRecord(value)) {
-    throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" callback must return an object.`
-    );
-  }
-  Object.keys(value).forEach((field) => {
-    if (!HTML_RULE_FIELDS.has(field)) {
-      throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" has unknown field "${field}".`
-      );
-    }
-  });
-  const declaration = value as unknown as HtmlRuleDeclaration;
-
-  if (!Array.isArray(declaration.match) || declaration.match.length === 0) {
-    throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" match must be a non-empty array.`
-    );
-  }
-  if (typeof declaration.decode !== 'function') {
-    throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" decode must be a function.`
-    );
-  }
-  if (
-    declaration.priority !== undefined &&
-    !Number.isFinite(declaration.priority)
-  ) {
-    throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" priority must be finite.`
-    );
-  }
-  if (declaration.createsElement !== undefined && !declaration.createsElement) {
-    throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" createsElement must be true when present.`
-    );
-  }
-  if (declaration.decodeOnly === true) {
-    if (declaration.encode !== undefined) {
-      throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" cannot define encode with decodeOnly.`
-      );
-    }
-  } else if (typeof declaration.encode !== 'function') {
-    throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" must define encode or decodeOnly: true.`
-    );
-  }
+  assertDeclaration(declaration);
   if (targetKey && declaration.createsElement) {
     throw new Error(
       `Plate HTML codec "${ownerPlugin.key}" cannot use createsElement for foreign target "${targetKey}".`
@@ -1387,9 +1398,7 @@ const invokeDecode = <T>(
 ): T | undefined => {
   try {
     const before = element.outerHTML;
-    const result = rule.declaration.decode(
-      Object.freeze({ element, state }) as never
-    );
+    const result = rule.declaration.decode(Object.freeze({ element, state }));
 
     if (element.outerHTML !== before) {
       throw new Error(

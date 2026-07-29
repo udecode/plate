@@ -4,7 +4,6 @@ import type {
   Descendant,
   Element,
   EditorCommit,
-  EditorClipboardMiddlewareMap,
   EditorDocumentValue,
   EditorExtension,
   EditorExtensionApiFactory,
@@ -14,6 +13,7 @@ import type {
   EditorNodeChangeKind,
   EditorCoreStateView,
   EditorUpdateContext,
+  EditorUpdateTransaction,
   NamedRootKey,
   NodeEntry,
   Path,
@@ -26,6 +26,7 @@ import type {
   Value,
 } from '@platejs/plite';
 import type { TxReadMethod } from '@platejs/plite/internal';
+import type { HotkeysEvent } from '@udecode/react-hotkeys';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type {
@@ -83,14 +84,52 @@ import type {
 import { pluginCodecMapDeclaration } from './pluginAuthoringContext';
 import type { HandlerReturnType } from './HandlerReturnType';
 
-type ErasedBasePlugin = BasePlugin<any>;
+type ErasedBasePlugin = BasePlugin<AnyPluginConfig>;
+type ErasedInjectNodeProps = BaseInjectProps & {
+  query?: ErasedPluginCallable<boolean>;
+  transformClassName?: ErasedPluginCallable<unknown>;
+  transformNodeValue?: ErasedPluginCallable<unknown>;
+  transformProps?: ErasedPluginCallable<AnyObject | undefined>;
+  transformStyle?: ErasedPluginCallable<unknown>;
+};
 type ErasedPluginInject = Omit<ErasedBasePlugin['inject'], 'nodeProps'> & {
-  nodeProps?: any;
+  nodeProps?: ErasedInjectNodeProps | null;
 };
+type ErasedPluginCallable<TResult = unknown> = (...args: never[]) => TResult;
 type ErasedPluginHandlers = {
-  onNodeChange?: ((ctx: any) => HandlerReturnType) | null;
-  onTextChange?: ((ctx: any) => HandlerReturnType) | null;
+  onNodeChange?: ErasedPluginCallable<HandlerReturnType> | null;
+  onTextChange?: ErasedPluginCallable<HandlerReturnType> | null;
 };
+type ErasedPluginRender = {
+  aboveEditable?: ErasedBasePlugin['render']['aboveEditable'];
+  aboveNodes?: unknown;
+  abovePlite?: ErasedBasePlugin['render']['abovePlite'];
+  afterContainer?: unknown;
+  afterEditable?: unknown;
+  as?: keyof HTMLElementTagNameMap | null;
+  beforeContainer?: unknown;
+  beforeEditable?: unknown;
+  belowNodes?: unknown;
+  belowRootNodes?: unknown;
+  isDecoration?: boolean | null;
+  leaf?: NodeComponent | null;
+  leafProps?: unknown;
+  node?: NodeComponent | null;
+  nodeProps?: unknown;
+  textProps?: unknown;
+};
+type ErasedPluginRules = Omit<ErasedBasePlugin['rules'], 'match'> & {
+  match?: ErasedPluginCallable<boolean> | null;
+};
+type ErasedPluginConfigurationLayer =
+  | Readonly<{
+      kind: 'context';
+      value: ErasedPluginCallable<object>;
+    }>
+  | Readonly<{
+      kind: 'object';
+      value: object;
+    }>;
 type ErasedPluginInvariantKey =
   | '__apiExtensions'
   | '__codecExtensions'
@@ -112,44 +151,46 @@ type ErasedPluginInvariantKey =
   | 'render'
   | 'rules'
   | 'schema'
-  | 'transformInitialValue';
+  | 'transformInitialValue'
+  | 'useHooks';
 
 /** Type-erased boundary for heterogeneous plugin collections. */
 export type AnyBasePlugin = Omit<ErasedBasePlugin, ErasedPluginInvariantKey> & {
   __apiExtensions: ErasedBasePlugin['__apiExtensions'];
   __codecExtensions: ErasedBasePlugin['__codecExtensions'];
   __htmlCodecExtensions: ErasedBasePlugin['__htmlCodecExtensions'];
-  __configurationLayers: readonly any[];
+  __configurationLayers: readonly ErasedPluginConfigurationLayer[];
   __editorExtensions: ErasedBasePlugin['__editorExtensions'];
-  __extensions: ErasedBasePlugin['__extensions'];
+  __extensions: readonly ErasedPluginCallable[];
   __readExtensions: ErasedBasePlugin['__readExtensions'];
   __resolved?: boolean;
   __txExtensions: ErasedBasePlugin['__txExtensions'];
-  clone: any;
-  configure: any;
-  decorate?: any;
-  extend: any;
+  clone: ErasedPluginCallable;
+  configure: ErasedPluginCallable;
+  decorate?: ErasedPluginCallable<DecoratedRange[] | undefined> | null;
+  extend: ErasedPluginCallable;
   handlers: ErasedPluginHandlers;
   inject: ErasedPluginInject;
-  initialState: any;
-  parsers: any;
-  render: any;
-  rules: any;
-  readonly schema: any;
-  transformInitialValue?: any;
+  initialState: object;
+  parsers: Record<PropertyKey, unknown>;
+  render: ErasedPluginRender;
+  rules: ErasedPluginRules;
+  readonly schema: unknown;
+  transformInitialValue?: ErasedPluginCallable | null;
+  useHooks?: ErasedPluginCallable | null;
 };
 export type AnyResolvedBasePlugin = Omit<
   ResolvedBasePlugin<AnyPluginConfig>,
   ErasedPluginInvariantKey
 > & {
-  decorate?: any;
+  decorate?: ErasedPluginCallable<DecoratedRange[] | undefined> | null;
   handlers: ErasedPluginHandlers;
   inject: ErasedPluginInject;
-  initialState: any;
-  parsers: any;
-  render: any;
-  rules: any;
-  transformInitialValue?: any;
+  initialState: object;
+  parsers: Record<PropertyKey, unknown>;
+  render: ErasedPluginRender;
+  rules: ErasedPluginRules;
+  transformInitialValue?: ErasedPluginCallable | null;
 };
 
 /**
@@ -168,9 +209,20 @@ export type ResolvedBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   keyof BasePluginMethods | 'override'
 >;
 
+export type PlateClipboardHandler<TTransaction = EditorUpdateTransaction> =
+  Readonly<{
+    insertData: (
+      data: DataTransfer,
+      context: Readonly<{
+        next: (data?: DataTransfer) => boolean;
+        transaction: TTransaction;
+      }>
+    ) => boolean;
+  }>;
+
 export type PlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
   Omit<EditorExtension<any, any>, 'clipboard' | 'name'> & {
-    clipboard?: EditorClipboardMiddlewareMap<BaseEditor<Value, C>>;
+    clipboard?: PlateClipboardHandler<PlatePluginTransaction<C>>;
     key?: string;
     name?: string;
   };
@@ -188,7 +240,7 @@ type ContextualPlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
       | (Record<string, unknown | readonly unknown[]> &
           Deep2Partial<InferApi<C>>)
       | EditorExtensionApiFactory<PlatePluginExtensionEditor<C>>;
-    clipboard?: EditorClipboardMiddlewareMap<BaseEditor<Value, C>>;
+    clipboard?: PlateClipboardHandler<PlatePluginTransaction<C>>;
     key?: string;
     name?: string;
   };
@@ -207,19 +259,12 @@ type UnifiedEditorExtensionInput<
   C extends AnyPluginConfig,
   TExtension extends object | readonly object[],
 > = TExtension &
-  (TExtension extends { api: (...args: any[]) => any }
+  (TExtension extends { api: (...args: never[]) => unknown }
     ? {}
     : NoInfer<AuthoringPlateEditorExtensionInput<C>>);
 
-/** Context-bound identity helper for extracted editor-extension declarations. */
-export type DefineEditorExtension<C extends AnyPluginConfig> = <
-  const TExtension extends object | readonly object[],
->(
-  extension: UnifiedEditorExtensionInput<C, TExtension>
-) => TExtension;
-
 type ExtensionInputFromArgument<TExtension> = TExtension extends (
-  ...args: any[]
+  ...args: never[]
 ) => infer TResult
   ? NonNullable<TResult>
   : TExtension;
@@ -265,13 +310,19 @@ type NormalizeExtensionContribution<TContribution> = [TContribution] extends [
       ? {}
       : TContribution;
 
-type ExtensionApiContribution<TExtension> = [keyof TExtension] extends [never]
+export type ExtensionApiContribution<TExtension> = [keyof TExtension] extends [
+  never,
+]
   ? {}
   : NormalizeExtensionContribution<ExtensionApiFromArgument<TExtension>>;
-type ExtensionStateContribution<TExtension> = [keyof TExtension] extends [never]
+export type ExtensionStateContribution<TExtension> = [
+  keyof TExtension,
+] extends [never]
   ? {}
   : NormalizeExtensionContribution<ExtensionStateFromArgument<TExtension>>;
-type ExtensionTxContribution<TExtension> = [keyof TExtension] extends [never]
+export type ExtensionTxContribution<TExtension> = [keyof TExtension] extends [
+  never,
+]
   ? {}
   : NormalizeExtensionContribution<ExtensionTxFromArgument<TExtension>>;
 
@@ -291,8 +342,8 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
       options: NonNullable<NonNullable<InjectNodeProps>> &
         BasePluginContext<C> & { nodeProps: GetInjectNodePropsOptions }
     ) => boolean;
-    transformClassName?: (options: TransformOptions<C>) => any;
-    transformNodeValue?: (options: TransformOptions<C>) => any;
+    transformClassName?: (options: TransformOptions<C>) => string | undefined;
+    transformNodeValue?: (options: TransformOptions<C>) => unknown;
     transformProps?: (
       options: TransformOptions<C> & { props: GetInjectNodePropsReturnType }
     ) => AnyObject | undefined;
@@ -792,21 +843,21 @@ export type PartialBasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
  * public generic below recursively expand itself.
  */
 type ErasedBasePluginOverride = Partial<{
-  decorate: any;
-  editOnly: any;
+  decorate: unknown;
+  editOnly: unknown;
   enabled: boolean;
-  handlers: any;
-  inject: any;
-  inputRules: any;
-  initialState: any;
-  parsers: any;
-  render: any;
-  rules: any;
-  selectors: any;
-  shortcuts: any;
+  handlers: object;
+  inject: object;
+  inputRules: unknown;
+  initialState: object;
+  parsers: object;
+  render: object;
+  rules: object;
+  selectors: object;
+  shortcuts: object;
   targetPluginKeys: readonly string[];
-  transformInitialValue: any;
-  tx: any;
+  transformInitialValue: unknown;
+  tx: object;
   type: string;
 }>;
 
@@ -816,26 +867,27 @@ type ErasedBasePluginOverride = Partial<{
  * The target key cannot provide target-specific inference. Pass the target
  * config type explicitly when exact initial-state checking is required.
  */
-export type BasePluginOverride<C extends AnyPluginConfig = any> = Omit<
-  PartialBasePlugin<C>,
-  | '__apiExtensions'
-  | '__codecExtensions'
-  | '__htmlCodecExtensions'
-  | '__config'
-  | '__configurationLayers'
-  | '__editorExtensions'
-  | '__extensions'
-  | '__readExtensions'
-  | '__pluginReference'
-  | '__txExtensions'
-  | 'clone'
-  | 'configure'
-  | 'dependencies'
-  | 'extend'
-  | 'key'
-  | 'override'
-  | 'schema'
->;
+export type BasePluginOverride<C extends AnyPluginConfig = AnyPluginConfig> =
+  Omit<
+    PartialBasePlugin<C>,
+    | '__apiExtensions'
+    | '__codecExtensions'
+    | '__htmlCodecExtensions'
+    | '__config'
+    | '__configurationLayers'
+    | '__editorExtensions'
+    | '__extensions'
+    | '__readExtensions'
+    | '__pluginReference'
+    | '__txExtensions'
+    | 'clone'
+    | 'configure'
+    | 'dependencies'
+    | 'extend'
+    | 'key'
+    | 'override'
+    | 'schema'
+  >;
 
 export type RenderStaticNodeWrapper<C extends AnyPluginConfig = any> = (
   props: RenderStaticNodeWrapperProps<C>
@@ -846,10 +898,10 @@ export type RenderStaticNodeWrapperFunction<C extends AnyPluginConfig = any> =
   | null
   | undefined;
 
-export interface RenderStaticNodeWrapperProps<C extends AnyPluginConfig = any>
-  extends PliteRenderElementProps<Element, C> {
-  key: string;
-}
+export type RenderStaticNodeWrapperProps<C extends AnyPluginConfig = any> =
+  PliteRenderElementProps<Element, C> & {
+    key: string;
+  };
 
 export type PlatePluginTxGroup<
   TGroup extends object = object,
@@ -890,7 +942,7 @@ export type PlatePluginReadExtension = (
 ) => PlatePluginReadGroups;
 
 export type PlatePluginApiExtension = Readonly<{
-  extension: (ctx: BasePluginContext<AnyPluginConfig>) => any;
+  extension: (ctx: BasePluginContext<AnyPluginConfig>) => object;
   isPluginSpecific: boolean;
 }>;
 
@@ -1049,18 +1101,18 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
   };
 
 export type BasePluginConfig<
-  K extends string = any,
-  StoreState = {},
-  A = {},
+  K extends string = string,
+  StoreState extends object = {},
+  A extends object = {},
   Tx extends AnyPluginTx = {},
-  S = {},
-  State = {},
+  S extends object = {},
+  State extends object = {},
   D extends readonly PluginReference[] = readonly [],
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   SchemaModel = never,
-  PluginApi = {},
+  PluginApi extends object = {},
   Enabled extends boolean = boolean,
 > = Partial<
   Omit<
@@ -1127,9 +1179,9 @@ export type BasePluginConfig<
 
 type RuntimeBasePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
 > = Omit<
   BasePluginConfig<
     C['key'],
@@ -1195,7 +1247,7 @@ type ExtensionContractExtension<
   : {};
 
 type TransactionReadGroup<TGroup extends object> = {
-  [TKey in keyof TGroup]: TGroup[TKey] extends (...args: any[]) => any
+  [TKey in keyof TGroup]: TGroup[TKey] extends (...args: never[]) => unknown
     ? TxReadMethod<TGroup[TKey]>
     : TGroup[TKey];
 };
@@ -1356,9 +1408,9 @@ type EffectiveInferredExtensionContract<
 
 type StaticBasePluginConfigBase<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   Enabled extends boolean = InferEnabled<C>,
 > = Omit<
   BasePluginConfig<
@@ -1381,9 +1433,9 @@ type StaticBasePluginConfigBase<
 
 type StaticBasePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   Enabled extends boolean = InferEnabled<C>,
 > = Omit<
   StaticBasePluginConfigBase<C, EStoreState, EA, ES, Enabled>,
@@ -1398,9 +1450,9 @@ type RequireAtLeastOne<T extends object> = {
 
 type TerminalBasePluginConfig<
   C extends AnyPluginConfig,
-  EStoreState = {},
-  EA = {},
-  ES = {},
+  EStoreState extends object = {},
+  EA extends object = {},
+  ES extends object = {},
   Enabled extends boolean = InferEnabled<C>,
 > = Omit<StaticBasePluginConfig<C, EStoreState, EA, ES, Enabled>, 'schema'> & {
   /** Binds this Base descriptor to a renderer component for static consumers. */
@@ -1542,6 +1594,35 @@ export type UnifiedStageExtendedBasePlugin<
   TSelectors extends object,
   TUpdate extends object,
   TExtension extends object | readonly object[],
+> = UnifiedInferredBasePlugin<
+  C,
+  TContract,
+  TStoreState,
+  TApi,
+  TRead,
+  TSelectors,
+  TUpdate,
+  ExtensionApiContribution<
+    EffectiveExtensionContract<C, TContract, TExtension>
+  >,
+  ExtensionTxContribution<EffectiveExtensionContract<C, TContract, TExtension>>,
+  ExtensionStateContribution<
+    EffectiveExtensionContract<C, TContract, TExtension>
+  >
+>;
+
+/** @internal Nameable constructor boundary that omits raw extension shapes. */
+export type UnifiedInferredBasePlugin<
+  C extends AnyPluginConfig,
+  TContract extends BasePluginExtensionContract,
+  TStoreState extends object,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends object,
+  TUpdate extends object,
+  TExtensionApi = {},
+  TExtensionTx = {},
+  TExtensionState = {},
 > = UnifiedExtendedBasePlugin<
   C,
   EffectiveInferredExtensionContract<
@@ -1552,13 +1633,9 @@ export type UnifiedStageExtendedBasePlugin<
     TSelectors,
     TUpdate
   >,
-  ExtensionApiContribution<
-    EffectiveExtensionContract<C, TContract, TExtension>
-  >,
-  ExtensionTxContribution<EffectiveExtensionContract<C, TContract, TExtension>>,
-  ExtensionStateContribution<
-    EffectiveExtensionContract<C, TContract, TExtension>
-  >
+  TExtensionApi,
+  TExtensionTx,
+  TExtensionState
 >;
 
 type AuthoringBasePluginContextConfig<
@@ -1673,7 +1750,6 @@ type ConfiguredBasePluginEnabled<
 export type BasePluginContext<C extends AnyPluginConfig = PluginConfig> =
   PluginBaseContext<C> & {
     defineCodecs: DefinePluginCodecs<C>;
-    defineEditorExtension: DefineEditorExtension<C>;
     editor: BasePluginContextEditor<C>;
     plugin: BasePlugin<C>;
   };
@@ -1691,9 +1767,9 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   }>[];
   __configurationLayers: readonly PluginConfigurationLayer<C>[];
   __editorExtensions: ((
-    ctx: BasePluginContext<InferPluginBehaviorConfig<AnyPluginConfig>>
+    ctx: BasePluginContext<AnyPluginConfig>
   ) => PlateEditorExtensionInput | undefined)[];
-  __extensions: ((ctx: BasePluginContext<AnyPluginConfig>) => any)[];
+  __extensions: ((ctx: BasePluginContext<AnyPluginConfig>) => object)[];
   __readExtensions: PlatePluginReadExtension[];
   __txExtensions: PlatePluginTxExtension[];
   clone(): BasePlugin<C>;
@@ -1722,7 +1798,10 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      TerminalBasePluginConfig<C, {}, {}, {}, Enabled> & {
+      Omit<
+        TerminalBasePluginConfig<C, {}, {}, {}, Enabled>,
+        'enabled' | 'type'
+      > & {
         enabled: Enabled;
         type: TType;
       },
@@ -1735,7 +1814,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      TerminalBasePluginConfig<C> & { type: TType },
+      Omit<TerminalBasePluginConfig<C>, 'type'> & { type: TType },
       TShortcuts
     >
   ): ConfiguredBasePluginType<C, TType>;
@@ -1745,7 +1824,7 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   >(
     config: WithValidatedBaseShortcuts<
       C,
-      TerminalBasePluginConfig<C, {}, {}, {}, Enabled> & {
+      Omit<TerminalBasePluginConfig<C, {}, {}, {}, Enabled>, 'enabled'> & {
         enabled: Enabled;
       },
       TShortcuts
@@ -1859,9 +1938,9 @@ export type BasePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     TExtension
   >;
   extend<
-    EStoreState = {},
-    EA = {},
-    ES = {},
+    EStoreState extends object = {},
+    EA extends object = {},
+    ES extends object = {},
     const TExtension extends object | readonly object[] = {},
     const TShortcuts extends BaseShortcutRecord = {},
     const Enabled extends boolean = InferEnabled<C>,
@@ -1932,7 +2011,7 @@ export type EditorShortcut = EditorShortcutOptions &
         handler: (ctx: {
           editor: BaseEditor<any, any>;
           event: KeyboardEvent;
-          eventDetails: any;
+          eventDetails: HotkeysEvent;
         }) => boolean | void;
         target?: never;
       }
@@ -1944,7 +2023,7 @@ export type EditorShortcut = EditorShortcutOptions &
   );
 
 type ShortcutFunctionKey<T> = {
-  [K in keyof T]-?: T[K] extends (...args: any[]) => any ? K : never;
+  [K in keyof T]-?: T[K] extends (...args: never[]) => unknown ? K : never;
 }[keyof T] &
   string;
 
@@ -1969,7 +2048,7 @@ type PluginShortcutApiScopeCollisionKey<C extends AnyPluginConfig> = Extract<
 
 type ShortcutWithHandler<TShortcut> = Extract<
   TShortcut,
-  { handler: (...args: any[]) => any }
+  { handler: (...args: never[]) => unknown }
 >;
 
 type ShortcutWithoutHandler<TShortcut> = Exclude<
@@ -2030,5 +2109,5 @@ export type PluginShortcutInput<
 };
 
 type Trigger =
-  | ((keyboardEvent: KeyboardEvent, hotkeysEvent: any) => boolean)
+  | ((keyboardEvent: KeyboardEvent, hotkeysEvent: HotkeysEvent) => boolean)
   | boolean;

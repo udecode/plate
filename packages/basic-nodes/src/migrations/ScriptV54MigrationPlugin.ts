@@ -1,101 +1,13 @@
 import { createBasePlugin } from '@platejs/core';
 import {
   type Descendant,
+  type Element,
   ElementApi,
   TextApi,
   type Value,
 } from '@platejs/plite';
 
-import { BaseScriptPlugin } from '../lib/BaseScriptPlugin';
-
-const migrateScriptText = (
-  text: Descendant,
-  location: string,
-  type: string
-): Descendant => {
-  if (!TextApi.isText(text)) return text;
-
-  const hasSubscript = Object.hasOwn(text, 'subscript');
-  const hasSuperscript = Object.hasOwn(text, 'superscript');
-
-  if (!hasSubscript && !hasSuperscript) return text;
-
-  const subscript = Reflect.get(text, 'subscript');
-  const superscript = Reflect.get(text, 'superscript');
-
-  if (subscript !== undefined && typeof subscript !== 'boolean') {
-    throw new Error(
-      `Legacy script mark at ${location}.subscript must be a boolean.`
-    );
-  }
-  if (superscript !== undefined && typeof superscript !== 'boolean') {
-    throw new Error(
-      `Legacy script mark at ${location}.superscript must be a boolean.`
-    );
-  }
-  if (subscript === true && superscript === true) {
-    throw new Error(
-      `Legacy script mark at ${location} cannot be both subscript and superscript.`
-    );
-  }
-
-  const value =
-    subscript === true ? 'sub' : superscript === true ? 'sup' : undefined;
-  const current = Reflect.get(text, type);
-
-  if (value !== undefined && current !== undefined && current !== value) {
-    throw new Error(
-      `Legacy script mark at ${location} conflicts with ${type} "${String(current)}".`
-    );
-  }
-
-  const { subscript: _subscript, superscript: _superscript, ...next } = text;
-
-  return value === undefined ? next : { ...next, [type]: value };
-};
-
-const migrateScriptDescendant = (
-  descendant: Descendant,
-  location: string,
-  type: string
-): Descendant => {
-  if (TextApi.isText(descendant)) {
-    return migrateScriptText(descendant, location, type);
-  }
-  if (!ElementApi.isElement(descendant)) return descendant;
-
-  let changed = false;
-  const children = descendant.children.map((child, index) => {
-    const next = migrateScriptDescendant(child, `${location}.${index}`, type);
-
-    if (next !== child) changed = true;
-
-    return next;
-  });
-
-  return changed ? { ...descendant, children } : descendant;
-};
-
-const migrateScriptChildren = (
-  children: Value,
-  location: string,
-  type: string
-): Value => {
-  let changed = false;
-  const next = children.map((child, index) => {
-    const migrated = migrateScriptDescendant(
-      child,
-      `${location}.${index}`,
-      type
-    );
-
-    if (migrated !== child) changed = true;
-
-    return migrated;
-  }) as Value;
-
-  return changed ? next : children;
-};
+import { BaseScriptPlugin } from '../lib/BaseMarkPlugins';
 
 /**
  * Converts pre-v54 subscript and superscript boolean marks into the v54
@@ -113,18 +25,100 @@ export const ScriptV54MigrationPlugin = createBasePlugin({
       );
     }
 
-    const children = migrateScriptChildren(value.children, 'main', script.type);
+    const migrateText = (text: Descendant, location: string): Descendant => {
+      if (!TextApi.isText(text)) return text;
+
+      const hasSubscript = Object.hasOwn(text, 'subscript');
+      const hasSuperscript = Object.hasOwn(text, 'superscript');
+
+      if (!hasSubscript && !hasSuperscript) return text;
+
+      const subscript = Reflect.get(text, 'subscript');
+      const superscript = Reflect.get(text, 'superscript');
+
+      if (subscript !== undefined && typeof subscript !== 'boolean') {
+        throw new Error(
+          `Legacy script mark at ${location}.subscript must be a boolean.`
+        );
+      }
+      if (superscript !== undefined && typeof superscript !== 'boolean') {
+        throw new Error(
+          `Legacy script mark at ${location}.superscript must be a boolean.`
+        );
+      }
+      if (subscript === true && superscript === true) {
+        throw new Error(
+          `Legacy script mark at ${location} cannot be both subscript and superscript.`
+        );
+      }
+
+      const migrated =
+        subscript === true ? 'sub' : superscript === true ? 'sup' : undefined;
+      const current = Reflect.get(text, script.type);
+
+      if (
+        migrated !== undefined &&
+        current !== undefined &&
+        current !== migrated
+      ) {
+        throw new Error(
+          `Legacy script mark at ${location} conflicts with ${script.type} "${String(current)}".`
+        );
+      }
+
+      const {
+        subscript: _subscript,
+        superscript: _superscript,
+        ...next
+      } = text;
+
+      return migrated === undefined
+        ? next
+        : { ...next, [script.type]: migrated };
+    };
+    function migrateDescendant(
+      descendant: Descendant,
+      location: string
+    ): Descendant {
+      if (TextApi.isText(descendant)) {
+        return migrateText(descendant, location);
+      }
+      if (!ElementApi.isElement(descendant)) return descendant;
+
+      return migrateElement(descendant, location);
+    }
+    function migrateElement(element: Element, location: string): Element {
+      let changed = false;
+      const children = element.children.map((child, index) => {
+        const next = migrateDescendant(child, `${location}.${index}`);
+
+        if (next !== child) changed = true;
+
+        return next;
+      });
+
+      return changed ? { ...element, children } : element;
+    }
+    const migrateChildren = (children: Value, location: string): Value => {
+      let changed = false;
+      const next = children.map((child, index) => {
+        const migrated = migrateElement(child, `${location}.${index}`);
+
+        if (migrated !== child) changed = true;
+
+        return migrated;
+      });
+
+      return changed ? next : children;
+    };
+    const children = migrateChildren(value.children, 'main');
     let roots = value.roots;
 
     if (roots) {
       let rootsChanged = false;
       const nextRoots = Object.fromEntries(
         Object.entries(roots).map(([root, rootChildren]) => {
-          const next = migrateScriptChildren(
-            rootChildren,
-            `roots.${root}`,
-            script.type
-          );
+          const next = migrateChildren(rootChildren, `roots.${root}`);
 
           if (next !== rootChildren) rootsChanged = true;
 

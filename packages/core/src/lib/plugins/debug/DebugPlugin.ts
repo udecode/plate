@@ -1,4 +1,4 @@
-import type { PluginConfig } from '../../plugin/PluginConfig';
+import type { InferConfig } from '../../plugin/BasePlugin';
 
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 
@@ -13,37 +13,35 @@ export type DebugErrorType =
 
 export type LogLevel = 'error' | 'info' | 'log' | 'warn';
 
-export type DebugConfig = PluginConfig<
-  'debug',
-  {
-    isProduction: boolean;
-    logger: Partial<Record<LogLevel, LogFunction>>;
-    logLevel: LogLevel;
-    throwErrors: boolean;
-  },
-  {},
-  {},
-  {},
-  {},
-  readonly [],
-  never,
-  {
-    error: (
-      message: string | unknown,
-      type?: DebugErrorType,
-      details?: any
-    ) => void;
-    info: (message: string, type?: DebugErrorType, details?: any) => void;
-    log: (message: string, type?: DebugErrorType, details?: any) => void;
-    warn: (message: string, type?: DebugErrorType, details?: any) => void;
-  }
->;
-
 type LogFunction = (
   message: string,
   type?: DebugErrorType,
-  details?: any
+  details?: unknown
 ) => void;
+
+export type DebugPluginState = {
+  isProduction: boolean;
+  logger: Partial<Record<LogLevel, LogFunction>>;
+  logLevel: LogLevel;
+  throwErrors: boolean;
+};
+
+const initialState: DebugPluginState = {
+  isProduction: process.env.NODE_ENV === 'production',
+  logger: {
+    error: (message, type, details) =>
+      console.error(`${type ? `[${type}] ` : ''}${message}`, details),
+    info: (message, type, details) =>
+      console.info(`${type ? `[${type}] ` : ''}${message}`, details),
+    log: (message, type, details) =>
+      // biome-ignore lint/suspicious/noConsole: lib
+      console.log(`${type ? `[${type}] ` : ''}${message}`, details),
+    warn: (message, type, details) =>
+      console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
+  },
+  logLevel: process.env.NODE_ENV === 'production' ? 'error' : 'log',
+  throwErrors: true,
+};
 
 export class PlateError extends Error {
   type: DebugErrorType;
@@ -55,15 +53,15 @@ export class PlateError extends Error {
   }
 }
 
-export const DebugPlugin = createBasePlugin<DebugConfig>({
+export const DebugPlugin = createBasePlugin({
   api: ({ store }) => {
     const logLevels: LogLevel[] = ['error', 'warn', 'info', 'log'];
 
     const log = (
       level: LogLevel,
-      message: any,
+      message: string,
       type?: DebugErrorType,
-      details?: any
+      details?: unknown
     ) => {
       if (process.env.NODE_ENV === 'production') return;
 
@@ -79,28 +77,18 @@ export const DebugPlugin = createBasePlugin<DebugConfig>({
     };
 
     return {
-      error: (message, type, details) => log('error', message, type, details),
-      info: (message, type, details) => log('info', message, type, details),
-      log: (message, type, details) => log('log', message, type, details),
-      warn: (message, type, details) => log('warn', message, type, details),
+      error: (message: unknown, type?: DebugErrorType, details?: unknown) =>
+        log('error', String(message), type, details),
+      info: (message: string, type?: DebugErrorType, details?: unknown) =>
+        log('info', message, type, details),
+      log: (message: string, type?: DebugErrorType, details?: unknown) =>
+        log('log', message, type, details),
+      warn: (message: string, type?: DebugErrorType, details?: unknown) =>
+        log('warn', message, type, details),
     };
   },
   key: 'debug',
-  initialState: {
-    isProduction: process.env.NODE_ENV === 'production',
-    logger: {
-      error: (message, type, details) =>
-        console.error(`${type ? `[${type}] ` : ''}${message}`, details),
-      info: (message, type, details) =>
-        console.info(`${type ? `[${type}] ` : ''}${message}`, details),
-      log: (message, type, details) =>
-        // biome-ignore lint/suspicious/noConsole: lib
-        console.log(`${type ? `[${type}] ` : ''}${message}`, details),
-      warn: (message, type, details) =>
-        console.warn(`${type ? `[${type}] ` : ''}${message}`, details),
-    },
-    logLevel:
-      process.env.NODE_ENV === 'production' ? 'error' : ('log' as LogLevel),
-    throwErrors: true,
-  },
+  initialState,
 });
+
+export type DebugConfig = InferConfig<typeof DebugPlugin>;

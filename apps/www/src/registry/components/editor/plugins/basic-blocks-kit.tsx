@@ -91,4 +91,4 @@ export const BasicBlocksKit = [
       HorizontalRuleRules.markdown({ variant: '_' }),
     ],
   }),
-];
+] as const;

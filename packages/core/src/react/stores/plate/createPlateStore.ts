@@ -112,7 +112,12 @@ const PlateStoreProvider = BasePlateStoreProvider as unknown as <
   props: PlateStoreProviderProps<E>
 ) => React.ReactElement | null;
 
-export { plateStore, PlateStoreProvider, usePlateLocalStore };
+export {
+  plateStore,
+  PlateStoreProvider,
+  usePlateLocalStore,
+  usePlateLocalValue,
+};
 
 export const usePlateStore = (id?: string) => {
   // Try to fetch the store from a Plate provider

@@ -2,7 +2,7 @@ import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { schema, target } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import { BaseScriptPlugin } from '../lib/BaseScriptPlugin';
+import { BaseScriptPlugin } from '../lib/BaseMarkPlugins';
 import { ScriptV54MigrationPlugin } from './ScriptV54MigrationPlugin';
 
 const TestRootPlugin = createBasePlugin({

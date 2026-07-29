@@ -55,7 +55,7 @@ const editor = createPlateEditor({
 ### Installation
 
 ```bash
-npm install @platejs/selection
+npm install @platejs/selection @platejs/cursor
 ```
 
 ### Add Plugin
@@ -134,26 +134,26 @@ Plugin that manages cursor and selection overlays for visual feedback.
 
 ## API
 
-### `editor.api.cursorOverlay.addCursor(id, cursor)`
+### `editor.plugin(CursorOverlayPlugin).api.addCursor(id, cursor)`
 
 Adds a cursor overlay with the specified key and state.
 
-<API name="editor.api.cursorOverlay.addCursor">
+<API name="editor.plugin(CursorOverlayPlugin).api.addCursor">
 <APIParameters>
   <APIItem name="id" type="string">
     Unique identifier for the cursor (e.g., 'blur', 'drag', 'custom').
   </APIItem>
-  <APIItem name="cursor" type="Omit<CursorState<CursorData>, 'id'>">
+  <APIItem name="cursor" type="CursorState<CursorData>">
     The cursor state including selection and optional styling data.
   </APIItem>
 </APIParameters>
 </API>
 
-### `editor.api.cursorOverlay.removeCursor(id)`
+### `editor.plugin(CursorOverlayPlugin).api.removeCursor(id)`
 
 Removes a cursor overlay by its key.
 
-<API name="editor.api.cursorOverlay.removeCursor">
+<API name="editor.plugin(CursorOverlayPlugin).api.removeCursor">
 <APIParameters>
   <APIItem name="id" type="(string & {}) | 'drag' | 'selection'">
     The cursor identifier to remove.
@@ -163,11 +163,12 @@ Removes a cursor overlay by its key.
 
 ## Hooks
 
-### `useCursorOverlay`
+### `useCursorOverlayPositions`
 
-A hook that manages cursor and selection overlay states, providing real-time cursor positions and selection rectangles.
+Import `useCursorOverlayPositions` from `@platejs/cursor`. The hook calculates
+cursor and selection rectangles for any cursor-state map.
 
-<API name="useCursorOverlay">
+<API name="useCursorOverlayPositions">
 <APIOptions type="object">
   <APIItem name="minSelectionWidth" type="number" optional>
     Minimum width in pixels for a selection rectangle. Useful for making cursor carets more visible.

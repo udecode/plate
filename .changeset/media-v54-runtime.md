@@ -2,6 +2,9 @@
 "@platejs/media": major
 ---
 
+Export complete `*PluginState` contracts for audio, file, video, image, media
+embed, media placeholder, and React placeholder descriptors.
+
 - Insert images with
   `editor.plugin(BaseImagePlugin).update.insert({ url }, options)`
 - Insert embeds with
@@ -27,7 +30,7 @@
 - Publish pending upload state only after its placeholder transaction commits
 - Expose `MediaPluginConfig` for floating-media URL controls
 - Rename `MediaPluginOptions` to `MediaPluginState` and
-  `MediaPlaceholderOptions` to `MediaPlaceholderState`
+  `MediaPlaceholderOptions` to `MediaPlaceholderPluginState`
 - Register media properties and required direct inline caption children in
   compiled schemas.
 - Export `MediaV54MigrationPlugin` from `@platejs/media/migrations` to convert

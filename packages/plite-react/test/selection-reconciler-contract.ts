@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 
-import { createEditor, defineEditorExtension } from '@platejs/plite';
+import { createEditor } from '@platejs/plite';
 import {
   getSelection as editorGetSelection,
   replace as editorReplace,
@@ -34,22 +34,9 @@ const createTextEditor = () => {
 };
 
 describe('selection reconciler', () => {
-  it('does not scan the whole document for a valid model-owned text insertion', () => {
+  it('keeps a valid model-owned text insertion on the current selection', () => {
     const editor = createTextEditor();
     const selection = editorGetSelection(editor);
-
-    editor.extend(
-      defineEditorExtension({
-        name: 'reject-root-string-scan',
-        queries: {
-          text: {
-            string() {
-              throw new Error('unexpected root string scan');
-            },
-          },
-        },
-      })
-    );
 
     const result = syncSelectionForBeforeInput({
       allowDOMSelectionImport: false,

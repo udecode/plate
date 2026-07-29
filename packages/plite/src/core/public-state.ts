@@ -204,10 +204,9 @@ import {
   usesImplicitSelectionLocation,
 } from './public-root';
 import {
-  executeQueryMiddleware,
   isEditorNodeSelectable,
-  isExecutingQueryMiddleware,
-} from './query-middleware';
+  projectEditorExportSlice,
+} from './editor-read-execution';
 import {
   getSelectionStateRoot,
   getSelectionStateSelection,
@@ -216,9 +215,11 @@ import {
 } from './selection-state';
 import {
   assertSelectionSupported,
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   getSelectionRanges,
   getSelectionReplacementRange,
+  getSelectionSpecMarks,
+  getSelectionSpecSlice,
   mapSelectionThroughChange,
 } from './selection-protocol';
 import { EditorSchemaValidationError } from './schema-validation';
@@ -1854,44 +1855,38 @@ const createNodesToArray = (editor: Editor): EditorStateNodesApi['toArray'] => {
 
     if (resolvedOptions === null) return [];
 
-    return executeQueryMiddleware(
-      editor,
-      'nodes',
-      'toArray',
-      {
-        map: map as ((entry: NodeEntry<PliteNode>) => unknown) | undefined,
-        options: resolvedOptions as EditorNodesOptions<PliteNode>,
-      },
-      ({ map, options = {} }) =>
-        withOptionsRootRead(
-          editor,
-          options,
-          () => {
-            if (!hasReadableNodeCollection(editor, options)) {
-              return [];
-            }
+    return (({ map, options = {} }) =>
+      withOptionsRootRead(
+        editor,
+        options,
+        () => {
+          if (!hasReadableNodeCollection(editor, options)) {
+            return [];
+          }
 
-            if (map) {
-              const mapped: unknown[] = [];
-
-              for (const entry of getNodes(editor, options)) {
-                mapped.push(map(entry));
-              }
-
-              return mapped;
-            }
-
-            const entries: NodeEntry<PliteNode>[] = [];
+          if (map) {
+            const mapped: unknown[] = [];
 
             for (const entry of getNodes(editor, options)) {
-              entries.push(entry);
+              mapped.push(map(entry));
             }
 
-            return entries;
-          },
-          { selectionFallback: usesImplicitSelectionLocation(options) }
-        )
-    ) as NodeEntry<T>[] | R[];
+            return mapped;
+          }
+
+          const entries: NodeEntry<PliteNode>[] = [];
+
+          for (const entry of getNodes(editor, options)) {
+            entries.push(entry);
+          }
+
+          return entries;
+        },
+        { selectionFallback: usesImplicitSelectionLocation(options) }
+      ))({
+      map: map as ((entry: NodeEntry<PliteNode>) => unknown) | undefined,
+      options: resolvedOptions as EditorNodesOptions<PliteNode>,
+    }) as NodeEntry<T>[] | R[];
   }
 
   return toArray;
@@ -2345,34 +2340,65 @@ const getStateView = <
 >(
   editor: Editor<V, TExtensions>
 ): EditorStateView<V, TExtensions> => {
+  let state!: EditorStateView<V, TExtensions>;
   const fragmentApi = Object.freeze(((options = {}) =>
-    executeQueryMiddleware(
+    (({ options }) => {
+      const readOptions = options ?? {};
+
+      return withOptionsRootRead(
+        editor,
+        readOptions,
+        () => {
+          if (readOptions.at && !hasLocationPath(editor, readOptions.at)) {
+            return [];
+          }
+
+          return getFragment(editor, readOptions) as DescendantIn<V>[];
+        },
+        { selectionFallback: usesImplicitSelectionLocation(readOptions) }
+      );
+    })({ options })) satisfies EditorStateFragmentApi<V>);
+  const marksApi = Object.freeze((() => {
+    const projected = getSelectionSpecMarks(
       editor,
-      'fragment',
-      'get',
-      { options },
-      ({ options }) => {
-        const readOptions = options ?? {};
+      getCurrentSelection(editor),
+      state
+    );
 
-        return withOptionsRootRead(
+    return projected === undefined ? getSelectionMarks(editor) : projected;
+  }) satisfies EditorStateMarksApi<V>);
+  const getSlice: EditorStateSliceApi<V>['get'] = (options = {}) => {
+    const selection = getCurrentSelection(editor);
+    const range = options.at ?? selection;
+
+    return withOptionsRootRead(
+      editor,
+      options,
+      () => {
+        if (options.at === undefined) {
+          const projected = getSelectionSpecSlice(editor, selection, state);
+
+          if (projected) return ContentSlice.fromJSON<V>(projected);
+        }
+        if (
+          range &&
+          RangeApi.isRange(range) &&
+          !hasLocationPath(editor, range)
+        ) {
+          return ContentSlice.empty;
+        }
+
+        return getContentSlice(
           editor,
-          readOptions,
-          () => {
-            if (readOptions.at && !hasLocationPath(editor, readOptions.at)) {
-              return [];
-            }
-
-            return getFragment(editor, readOptions) as DescendantIn<V>[];
-          },
-          { selectionFallback: usesImplicitSelectionLocation(readOptions) }
+          range && RangeApi.isRange(range) ? range : null
         );
-      }
-    )) satisfies EditorStateFragmentApi<V>);
-  const marksApi = Object.freeze((() =>
-    executeQueryMiddleware(editor, 'marks', 'get', {}, () =>
-      getSelectionMarks(editor)
-    )) satisfies EditorStateMarksApi<V>);
+      },
+      { selectionFallback: options.at === undefined }
+    );
+  };
   const sliceApi = Object.freeze({
+    export: (options = {}) =>
+      projectEditorExportSlice(editor, getSlice(options)),
     fit: (
       slice: import('../interfaces/editor').ContentSlice<V>,
       options?: Parameters<EditorStateSliceApi<V>['fit']>[1]
@@ -2399,36 +2425,12 @@ const getStateView = <
         }
       ) as readonly DescendantIn<V>[] | null;
     },
-    get: (options = {}) => {
-      const range = options.at ?? getCurrentSelection(editor);
-
-      return withOptionsRootRead(
-        editor,
-        options,
-        () => {
-          if (
-            range &&
-            RangeApi.isRange(range) &&
-            !hasLocationPath(editor, range)
-          ) {
-            return ContentSlice.empty;
-          }
-
-          return getContentSlice(
-            editor,
-            range && RangeApi.isRange(range) ? range : null
-          );
-        },
-        { selectionFallback: options.at === undefined }
-      );
-    },
+    get: getSlice,
   }) satisfies EditorStateSliceApi<V>;
-  let state!: EditorCoreStateView<V>;
   const selectionApi = Object.freeze(
     Object.assign(() => getCurrentSelection(editor), {
       contains: (target: NodeTarget) =>
         doesSelectionContain(state, getCurrentSelection(editor), target),
-      domRange: () => getSelectionDOMRange(editor, getCurrentSelection(editor)),
       intersects: (target: NodeTarget) =>
         doesSelectionIntersect(state, getCurrentSelection(editor), target),
       isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
@@ -2451,12 +2453,32 @@ const getStateView = <
         isSelectionWithinBlock(state, getCurrentSelection(editor), options),
       isWithinText: (options?: EditorSelectionTargetOptions) =>
         isSelectionWithinText(state, getCurrentSelection(editor), options),
+      primaryRange: () =>
+        getSelectionPrimaryRange(editor, getCurrentSelection(editor)),
       ranges: () => getSelectionRanges(editor, getCurrentSelection(editor)),
       replacementRange: () =>
         getSelectionReplacementRange(editor, getCurrentSelection(editor)),
     }) satisfies EditorStateSelectionApi
   );
-  state = {
+  const readBlock: EditorStateNodesApi<V>['block'] = (options = {}) => {
+    const resolvedOptions = resolveNodeTargetOptions(editor, options);
+
+    if (resolvedOptions === null) return;
+    const nextOptions = resolvedOptions ?? {};
+    const match = normalizeNodeMatch(nextOptions.match);
+    const entry = getEditorRuntime(editor).above({
+      ...nextOptions,
+      match: (node, path) =>
+        NodeApi.isElement(node) &&
+        getEditorSchema(editor).isBlock(node) &&
+        (match?.(node, path) ?? true),
+    });
+
+    return entry && NodeApi.isElement(entry[0])
+      ? (entry as NodeEntry<any>)
+      : undefined;
+  };
+  const coreState = {
     children: () =>
       (getEditorDocumentRoots(editor)[MAIN_ROOT_KEY] ??
         []) as unknown as readonly [...V],
@@ -2483,43 +2505,12 @@ const getStateView = <
 
         if (resolvedOptions === null) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'above',
-          { options: resolvedOptions },
-          ({ options }) =>
-            getEditorRuntime(editor).above(options) as
-              | NodeEntry<Ancestor>
-              | undefined
-        ) as [T, Path] | undefined;
+        return (({ options }) =>
+          getEditorRuntime(editor).above(options) as
+            | NodeEntry<Ancestor>
+            | undefined)({ options: resolvedOptions }) as [T, Path] | undefined;
       },
-      block: <T extends Element = Element>(options = {}) => {
-        const resolvedOptions = resolveNodeTargetOptions(editor, options);
-
-        if (resolvedOptions === null) return;
-
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'block',
-          { options: resolvedOptions },
-          ({ options = {} }) => {
-            const match = normalizeNodeMatch(options.match);
-            const entry = getEditorRuntime(editor).above({
-              ...options,
-              match: (node, path) =>
-                NodeApi.isElement(node) &&
-                getEditorSchema(editor).isBlock(node) &&
-                (match?.(node, path) ?? true),
-            });
-
-            return entry && NodeApi.isElement(entry[0])
-              ? (entry as NodeEntry<Element>)
-              : undefined;
-          }
-        ) as NodeEntry<T> | undefined;
-      },
+      block: readBlock,
       children(
         target: NodeTarget = []
       ): ReturnType<EditorStateNodesApi<V>['children']> {
@@ -2527,13 +2518,9 @@ const getStateView = <
 
         if (!at) return [];
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'children',
-          { at },
-          ({ at = [] }) =>
-            withLocationRootRead(editor, at, () => readNodeChildren(editor, at))
+        return (({ at = [] }) =>
+          withLocationRootRead(editor, at, () => readNodeChildren(editor, at)))(
+          { at }
         ) as ReturnType<EditorStateNodesApi<V>['children']>;
       },
       elementReadOnly: (options = {}) => {
@@ -2541,120 +2528,72 @@ const getStateView = <
 
         if (resolvedOptions === null) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'elementReadOnly',
-          { options: resolvedOptions },
-          ({ options }) => getEditorRuntime(editor).elementReadOnly(options)
-        );
+        return (({ options }) =>
+          getEditorRuntime(editor).elementReadOnly(options))({
+          options: resolvedOptions,
+        });
       },
       first: (target: NodeTarget) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'first',
-          { at },
-          ({ at }) =>
-            withLocationRootRead(editor, at, () => readNodeFirst(editor, at))
-        );
+        return (({ at }) =>
+          withLocationRootRead(editor, at, () => readNodeFirst(editor, at)))({
+          at,
+        });
       },
       get: <T extends PliteNode>(target: NodeTarget) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'get',
-          { at },
-          ({ at }) =>
-            withLocationRootRead(editor, at, () => readNodeEntry<T>(editor, at))
+        return (({ at }) =>
+          withLocationRootRead(editor, at, () => readNodeEntry<T>(editor, at)))(
+          { at }
         ) as NodeEntry<T> | undefined;
       },
       hasBlocks: (element: import('../interfaces/element').Element) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'hasBlocks',
-          { element },
-          ({ element }) => getEditorRuntime(editor).hasBlocks(element)
-        ),
+        (({ element }) => getEditorRuntime(editor).hasBlocks(element))({
+          element,
+        }),
       hasInlines: (element: import('../interfaces/element').Element) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'hasInlines',
-          { element },
-          ({ element }) => getEditorRuntime(editor).hasInlines(element)
-        ),
+        (({ element }) => getEditorRuntime(editor).hasInlines(element))({
+          element,
+        }),
       hasPath: (path: Path) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'hasPath',
-          { path },
-          ({ path }) => getEditorRuntime(editor).hasPath(path)
-        ),
+        (({ path }) => getEditorRuntime(editor).hasPath(path))({ path }),
       hasTexts: (element: import('../interfaces/element').Element) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'hasTexts',
-          { element },
-          ({ element }) => getEditorRuntime(editor).hasTexts(element)
-        ),
+        (({ element }) => getEditorRuntime(editor).hasTexts(element))({
+          element,
+        }),
       isBlock: (element: import('../interfaces/node').Node) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'isBlock',
-          { element },
-          ({ element }) => getEditorRuntime(editor).isBlock(element)
-        ),
+        (({ element }) => getEditorRuntime(editor).isBlock(element))({
+          element,
+        }),
       isSelectable: (element: import('../interfaces/node').Node) =>
         isEditorNodeSelectable(editor, element),
       isEmpty: (element: import('../interfaces/element').Element) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'isEmpty',
-          { element },
-          ({ element }) => getEditorRuntime(editor).isEmpty(element)
-        ),
+        (({ element }) => getEditorRuntime(editor).isEmpty(element))({
+          element,
+        }),
       last: (target: NodeTarget, options = {}) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'last',
-          { at, options },
-          ({ at, options }) => getEditorRuntime(editor).last(at, options)
-        );
+        return (({ at, options }) =>
+          getEditorRuntime(editor).last(at, options))({ at, options });
       },
       leaf: (target: NodeTarget, options: EditorLeafOptions = {}) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'leaf',
-          { at, options },
-          ({ at, options }) =>
-            withLocationRootRead(editor, at, () =>
-              readNodeLeaf(editor, at, options)
-            )
-        ) as ReturnType<EditorStateNodesApi<V>['leaf']>;
+        return (({ at, options }) =>
+          withLocationRootRead(editor, at, () =>
+            readNodeLeaf(editor, at, options)
+          ))({ at, options }) as ReturnType<EditorStateNodesApi<V>['leaf']>;
       },
       levels: <T extends PliteNode>(options = {}) => {
         const resolvedOptions = resolveNodeTargetOptions(editor, options);
@@ -2667,36 +2606,26 @@ const getStateView = <
           >;
         }
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'levels',
-          { options: resolvedOptions },
-          ({ options }) =>
-            hasReadableNodeCollection(editor, options)
-              ? (getEditorRuntime(editor).levels(options) as Generator<
-                  NodeEntry<PliteNode>,
-                  void,
-                  undefined
-                >)
-              : (function* emptyLevels() {})()
-        ) as Generator<[T, Path], void, undefined>;
+        return (({ options }) =>
+          hasReadableNodeCollection(editor, options)
+            ? (getEditorRuntime(editor).levels(options) as Generator<
+                NodeEntry<PliteNode>,
+                void,
+                undefined
+              >)
+            : (function* emptyLevels() {})())({
+          options: resolvedOptions,
+        }) as Generator<[T, Path], void, undefined>;
       },
       path: (target: NodeTarget, options: EditorPathOptions = {}) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'path',
-          { at, options },
-          ({ at, options }) =>
-            withLocationRootRead(editor, at, () =>
-              readNodePath(editor, at, options)
-            )
-        );
+        return (({ at, options }) =>
+          withLocationRootRead(editor, at, () =>
+            readNodePath(editor, at, options)
+          ))({ at, options });
       },
       entries: <T extends PliteNode>(options = {}) => {
         const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
@@ -2709,85 +2638,71 @@ const getStateView = <
           >;
         }
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'entries',
-          { options: resolvedOptions },
-          ({ options }) =>
-            withOptionsRootGenerator(
-              editor,
-              options,
-              () => {
-                if (!hasReadableNodeCollection(editor, options)) {
-                  return [];
-                }
+        return (({ options }) =>
+          withOptionsRootGenerator(
+            editor,
+            options,
+            () => {
+              if (!hasReadableNodeCollection(editor, options)) {
+                return [];
+              }
 
-                return getNodes(editor, options) as Generator<
-                  NodeEntry<PliteNode>,
-                  void,
-                  undefined
-                >;
-              },
-              { selectionFallback: usesImplicitSelectionLocation(options) }
-            )
-        ) as Generator<[T, Path], void, undefined>;
+              return getNodes(editor, options) as Generator<
+                NodeEntry<PliteNode>,
+                void,
+                undefined
+              >;
+            },
+            { selectionFallback: usesImplicitSelectionLocation(options) }
+          ))({ options: resolvedOptions }) as Generator<
+          [T, Path],
+          void,
+          undefined
+        >;
       },
       find: <T extends PliteNode>(options = {}) => {
         const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
 
         if (resolvedOptions === null) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'find',
-          { options: resolvedOptions },
-          ({ options }) =>
-            withOptionsRootRead(
-              editor,
-              options,
-              () => {
-                if (!hasReadableNodeCollection(editor, options)) {
-                  return;
-                }
+        return (({ options }) =>
+          withOptionsRootRead(
+            editor,
+            options,
+            () => {
+              if (!hasReadableNodeCollection(editor, options)) {
+                return;
+              }
 
-                for (const entry of getNodes(editor, options)) {
-                  return entry;
-                }
-              },
-              { selectionFallback: usesImplicitSelectionLocation(options) }
-            )
-        ) as [T, Path] | undefined;
+              for (const entry of getNodes(editor, options)) {
+                return entry;
+              }
+            },
+            { selectionFallback: usesImplicitSelectionLocation(options) }
+          ))({ options: resolvedOptions }) as [T, Path] | undefined;
       },
       some: (options = {}) => {
         const resolvedOptions = resolveNodeTargetOrSpanOptions(editor, options);
 
         if (resolvedOptions === null) return false;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'some',
-          { options: resolvedOptions },
-          ({ options }) =>
-            withOptionsRootRead(
-              editor,
-              options,
-              () => {
-                if (!hasReadableNodeCollection(editor, options)) {
-                  return false;
-                }
-
-                for (const _entry of getNodes(editor, options)) {
-                  return true;
-                }
-
+        return (({ options }) =>
+          withOptionsRootRead(
+            editor,
+            options,
+            () => {
+              if (!hasReadableNodeCollection(editor, options)) {
                 return false;
-              },
-              { selectionFallback: usesImplicitSelectionLocation(options) }
-            )
-        );
+              }
+
+              for (const _entry of getNodes(editor, options)) {
+                return true;
+              }
+
+              return false;
+            },
+            { selectionFallback: usesImplicitSelectionLocation(options) }
+          ))({ options: resolvedOptions });
       },
       toArray: createNodesToArray(editor),
       next: <T extends PliteNode>(options = {}) => {
@@ -2795,52 +2710,34 @@ const getStateView = <
 
         if (resolvedOptions === null) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'next',
-          { options: resolvedOptions },
-          ({ options }) =>
-            hasReadableNodeCollection(editor, options)
-              ? (getEditorRuntime(editor).next(options) as
-                  | NodeEntry<Descendant>
-                  | undefined)
-              : undefined
-        ) as [T, Path] | undefined;
+        return (({ options }) =>
+          hasReadableNodeCollection(editor, options)
+            ? (getEditorRuntime(editor).next(options) as
+                | NodeEntry<Descendant>
+                | undefined)
+            : undefined)({ options: resolvedOptions }) as [T, Path] | undefined;
       },
       previous: <T extends PliteNode>(options = {}) => {
         const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
         if (resolvedOptions === null) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'previous',
-          { options: resolvedOptions },
-          ({ options }) =>
-            hasReadableNodeCollection(editor, options)
-              ? (getEditorRuntime(editor).previous(options) as
-                  | NodeEntry<PliteNode>
-                  | undefined)
-              : undefined
-        ) as [T, Path] | undefined;
+        return (({ options }) =>
+          hasReadableNodeCollection(editor, options)
+            ? (getEditorRuntime(editor).previous(options) as
+                | NodeEntry<PliteNode>
+                | undefined)
+            : undefined)({ options: resolvedOptions }) as [T, Path] | undefined;
       },
       shouldMergeNodesRemovePrevNode: (
         previous: NodeEntry,
         current: NodeEntry
       ) =>
-        executeQueryMiddleware(
-          editor,
-          'nodes',
-          'shouldMergeNodesRemovePrevNode',
-          { current, previous },
-          ({ current, previous }) =>
-            getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(
-              previous,
-              current
-            )
-        ),
+        (({ current, previous }) =>
+          getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(
+            previous,
+            current
+          ))({ current, previous }),
       parent: <T extends Ancestor = Ancestor>(
         target: NodeTarget,
         options: EditorParentOptions = {}
@@ -2849,29 +2746,19 @@ const getStateView = <
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'parent',
-          { at, options },
-          ({ at, options }) =>
-            withLocationRootRead(editor, at, () =>
-              readNodeParent(editor, at, options)
-            )
-        ) as NodeEntry<T> | undefined;
+        return (({ at, options }) =>
+          withLocationRootRead(editor, at, () =>
+            readNodeParent(editor, at, options)
+          ))({ at, options }) as NodeEntry<T> | undefined;
       },
       void: (options = {}) => {
         const resolvedOptions = resolveNodeTargetOptions(editor, options);
 
         if (resolvedOptions === null) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'nodes',
-          'void',
-          { options: resolvedOptions },
-          ({ options }) => getEditorRuntime(editor).void(options)
-        );
+        return (({ options }) => getEditorRuntime(editor).void(options))({
+          options: resolvedOptions,
+        });
       },
     }),
     points: Object.freeze({
@@ -2880,97 +2767,60 @@ const getStateView = <
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'after',
-          { at, options },
-          ({ at, options }) => readAdjacentPoint(editor, at, 'after', options)
-        );
+        return (({ at, options }) =>
+          readAdjacentPoint(editor, at, 'after', options))({ at, options });
       },
       before: (target: NodeTarget, options = {}) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'before',
-          { at, options },
-          ({ at, options }) => readAdjacentPoint(editor, at, 'before', options)
-        );
+        return (({ at, options }) =>
+          readAdjacentPoint(editor, at, 'before', options))({ at, options });
       },
       end: (target: NodeTarget) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'end',
-          { at },
-          ({ at }) => readPointEdge(editor, at, 'end')
-        );
+        return (({ at }) => readPointEdge(editor, at, 'end'))({ at });
       },
       get: (target: NodeTarget, options: EditorPointOptions = {}) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'get',
-          { at, options },
-          ({ at, options }) => readPoint(editor, at, options)
-        );
+        return (({ at, options }) => readPoint(editor, at, options))({
+          at,
+          options,
+        });
       },
       isEdge: (point, target) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return false;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'isEdge',
-          { at, point },
-          ({ at, point }) =>
-            hasLocationPath(editor, at) &&
-            getEditorRuntime(editor).isEdge(point, at)
-        );
+        return (({ at, point }) =>
+          hasLocationPath(editor, at) &&
+          getEditorRuntime(editor).isEdge(point, at))({ at, point });
       },
       isEnd: (point, target) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return false;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'isEnd',
-          { at, point },
-          ({ at, point }) =>
-            hasLocationPath(editor, at) &&
-            getEditorRuntime(editor).isEnd(point, at)
-        );
+        return (({ at, point }) =>
+          hasLocationPath(editor, at) &&
+          getEditorRuntime(editor).isEnd(point, at))({ at, point });
       },
       isStart: (point, target) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return false;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'isStart',
-          { at, point },
-          ({ at, point }) =>
-            hasLocationPath(editor, at) &&
-            getEditorRuntime(editor).isStart(point, at)
-        );
+        return (({ at, point }) =>
+          hasLocationPath(editor, at) &&
+          getEditorRuntime(editor).isStart(point, at))({ at, point });
       },
       isWordEnd: (point) => {
         const after = state.points.after(point);
@@ -2990,29 +2840,17 @@ const getStateView = <
           return (function* emptyPositions() {})();
         }
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'positions',
-          { options: resolvedOptions },
-          ({ options }) =>
-            hasReadableNodeCollection(editor, options)
-              ? getEditorRuntime(editor).positions(options)
-              : (function* emptyPositions() {})()
-        );
+        return (({ options }) =>
+          hasReadableNodeCollection(editor, options)
+            ? getEditorRuntime(editor).positions(options)
+            : (function* emptyPositions() {})())({ options: resolvedOptions });
       },
       start: (target: NodeTarget) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'points',
-          'start',
-          { at },
-          ({ at }) => readPointEdge(editor, at, 'start')
-        );
+        return (({ at }) => readPointEdge(editor, at, 'start'))({ at });
       },
     }),
     ranges: Object.freeze({
@@ -3021,52 +2859,27 @@ const getStateView = <
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'ranges',
-          'edges',
-          { at },
-          ({ at }) => readRangeEdges(editor, at)
-        );
+        return (({ at }) => readRangeEdges(editor, at))({ at });
       },
       fromEntries: (entries) =>
-        executeQueryMiddleware(
-          editor,
-          'ranges',
-          'fromEntries',
-          { entries },
-          ({ entries }) => readRangeFromEntries(editor, entries)
-        ),
+        (({ entries }) => readRangeFromEntries(editor, entries))({ entries }),
       get: (target: NodeTarget, to?: Location) => {
         const at = resolveReadableNodeTarget(editor, target);
 
         if (!at) return;
 
-        return executeQueryMiddleware(
-          editor,
-          'ranges',
-          'get',
-          { at, to },
-          ({ at, to }) => readRange(editor, at, to)
-        );
+        return (({ at, to }) => readRange(editor, at, to))({ at, to });
       },
       project: (range) =>
-        executeQueryMiddleware(
-          editor,
-          'ranges',
-          'project',
-          { range },
-          ({ range }) => getEditorRuntime(editor).projectRange(range)
-        ),
+        (({ range }) => getEditorRuntime(editor).projectRange(range))({
+          range,
+        }),
       unhang: (range, options = {}) =>
-        executeQueryMiddleware(
-          editor,
-          'ranges',
-          'unhang',
-          { options, range },
-          ({ options, range }) =>
-            getEditorRuntime(editor).unhangRange(range, options)
-        ),
+        (({ options, range }) =>
+          getEditorRuntime(editor).unhangRange(range, options))({
+          options,
+          range,
+        }),
     }),
     root: (root: RootKey) => {
       if (root === MAIN_ROOT_KEY) {
@@ -3114,7 +2927,7 @@ const getStateView = <
     }),
   } satisfies EditorCoreStateView<V>;
 
-  const stateRecord = state as unknown as Record<string, unknown>;
+  const stateRecord = coreState as unknown as Record<string, unknown>;
 
   stateRecord.transaction = Object.assign(
     (fn: (transaction: EditorTransactionSpecBuilder<V, TExtensions>) => void) =>
@@ -3135,7 +2948,9 @@ const getStateView = <
     );
   }
 
-  return Object.freeze(stateRecord) as EditorStateView<V, TExtensions>;
+  state = Object.freeze(stateRecord) as EditorStateView<V, TExtensions>;
+
+  return state;
 };
 
 /** @internal Read the full state view without suspending an active draft. */
@@ -3780,15 +3595,13 @@ const getUpdateView = <
         toggle: defineSemanticUpdateMethod<
           EditorTransactionMarksApi<V>['toggle']
         >(
-          (key, value, options) => {
+          (key, value) => {
             const nextValue = value === undefined ? true : value;
 
-            runSelectionMutation(() =>
-              applyToggleMark(editor, key, nextValue, options)
-            );
+            runSelectionMutation(() => applyToggleMark(editor, key, nextValue));
           },
-          (command, [key, value = true, options]) => {
-            command(editorCommands.toggleMark, { key, options, value });
+          (command, [key, value = true]) => {
+            command(editorCommands.toggleMark, { key, value });
           }
         ),
       })
@@ -3977,7 +3790,7 @@ const getUpdateView = <
     selection: Object.freeze(
       Object.assign(() => state.selection(), {
         contains: (target: NodeTarget) => state.selection.contains(target),
-        domRange: () => state.selection.domRange(),
+        primaryRange: () => state.selection.primaryRange(),
         intersects: (target: NodeTarget) => state.selection.intersects(target),
         isAcrossBlocks: (options?: EditorSelectionBlockOptions) =>
           state.selection.isAcrossBlocks(options),
@@ -4774,10 +4587,6 @@ export const updateEditor = <
   ) => void,
   options: InternalEditorUpdateOptions = {}
 ) => {
-  if (isExecutingQueryMiddleware(editor)) {
-    throw new Error('editor.update cannot be started inside query middleware');
-  }
-
   if (isInTransaction(editor)) {
     throw new Error('editor.update cannot be nested inside another update');
   }
@@ -7033,7 +6842,7 @@ export const runEditorTransaction = (
               flushPostCommitNotificationQueue(editor)
             );
           } finally {
-            extensionPublication?.ready();
+            extensionPublication?.afterPublish();
           }
         }
       }

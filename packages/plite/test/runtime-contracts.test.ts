@@ -25,7 +25,6 @@ import './node-match-contract';
 import './primitive-method-runtime-contract';
 import './public-surface-contract';
 import './query-contract';
-import './query-extension-contract';
 import './read-update-contract';
 import './release-scripts-contract';
 import './root-location-contract';

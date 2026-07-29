@@ -1972,10 +1972,16 @@ function createFanoutParagraph(index: number): Descendant {
 const getBenchmarkDOMStrategy = (config: BenchmarkConfig) =>
   config.chunking ? ('auto' as const) : ('full' as const);
 
+type BenchmarkStorePluginState = {
+  enabled: boolean;
+};
+
+const benchmarkStoreInitialState: BenchmarkStorePluginState = {
+  enabled: false,
+};
+
 const BenchmarkStorePlugin = createPlatePlugin({
-  initialState: {
-    enabled: false,
-  },
+  initialState: benchmarkStoreInitialState,
   key: 'benchmarkStore',
 });
 

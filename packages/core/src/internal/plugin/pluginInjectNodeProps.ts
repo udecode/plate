@@ -3,11 +3,10 @@ import type { Element, Path, Text } from '@platejs/plite';
 import { isDefined } from '@udecode/utils';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { TransformOptions } from '../../lib/plugin/BasePlugin';
+import type { BasePlugin, TransformOptions } from '../../lib/plugin/BasePlugin';
 import type { AnyPluginConfig } from '../../lib/plugin/PluginConfig';
 
 import {
-  type AnyBasePlugin,
   type GetInjectNodePropsOptions,
   type GetInjectNodePropsReturnType,
   getEditorPlugin,
@@ -30,9 +29,9 @@ const getNodePropClassValue = (value: unknown) =>
  * override `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */
-export const pluginInjectNodeProps = (
+export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
   editor: BaseEditor,
-  plugin: AnyBasePlugin,
+  plugin: BasePlugin<C>,
   nodeProps: GetInjectNodePropsOptions,
   getElementPath: (node: Element | Text) => Path | undefined
 ): GetInjectNodePropsReturnType | undefined => {
@@ -65,9 +64,7 @@ export const pluginInjectNodeProps = (
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
   const nodeValue = getNodeProp(node, nodeKey);
   const editorPluginContext = getEditorPlugin(editor, plugin);
-  const getTransformOptions = (
-    value?: unknown
-  ): TransformOptions<AnyPluginConfig> => ({
+  const getTransformOptions = (value?: unknown): TransformOptions<C> => ({
     ...nodeProps,
     ...editorPluginContext,
     nodeValue,

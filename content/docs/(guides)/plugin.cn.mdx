@@ -207,11 +207,19 @@ const TextAlignPlugin = createPlatePlugin({
 直接接收 plugin context。
 
 ```ts
+type CustomPluginState = {
+  allowDelete: boolean;
+};
+
+const initialState: CustomPluginState = {
+  allowDelete: true,
+};
+
 const CustomPlugin = createPlatePlugin({
   api: ({ store }) => ({
     canDelete: () => store.get('allowDelete'),
   }),
-  initialState: { allowDelete: true },
+  initialState,
   key: 'custom',
   update: ({ store, tx }) => ({
     deleteBackward() {
@@ -254,9 +262,9 @@ const CustomStatePlugin = createPlatePlugin({
   或前一阶段类型才使用 `.extend()`。
 </Callout>
 
-Inline extension object 不需要 helper。抽取后可复用的 Plate factory 使用
-callback context 中的 `defineEditorExtension`；standalone Plite extension 从
-`@platejs/plite` import `defineEditorExtension`。详见
+Plate constructor 和 `.extend()` callback 直接返回 extension object。Plate
+context 保持在 callback 内，只抽取 domain input。独立复用的 standalone Plite
+descriptor 使用从 `@platejs/plite` import 的 `defineEditorExtension`。详见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。
 
 ## 高级插件配置
@@ -266,10 +274,16 @@ callback context 中的 `defineEditorExtension`；standalone Plite extension 从
 每个插件都有自己的存储，可用于管理插件特定状态。
 
 ```ts
+type MyPluginState = {
+  count: number;
+};
+
+const initialState: MyPluginState = {
+  count: 0,
+};
+
 const MyPlugin = createPlatePlugin({
-  initialState: {
-    count: 0,
-  },
+  initialState,
   key: 'myPlugin',
   handlers: {
     onClick: ({ store }) => {
@@ -387,34 +401,27 @@ const HtmlCleanupPlugin = createPlatePlugin({
 `createPlatePlugin`函数允许创建类型化插件：
 
 ```ts
-type CodeBlockState = {
+export type CodeBlockPluginState = {
   language: string;
   syntax: boolean;
   syntaxPopularFirst: boolean;
 };
 
-type CodeBlockApi = {
-  getLanguage: () => string;
-  getSyntaxState: () => boolean;
+const initialState: CodeBlockPluginState = {
+  language: 'typescript',
+  syntax: true,
+  syntaxPopularFirst: false,
 };
 
-type CodeBlockUpdate = {
-  insertCodeBlock: () => void;
-};
-
-const CodeBlockPlugin = createPlatePlugin({
-  api: ({ store }): CodeBlockApi => ({
+export const CodeBlockPlugin = createPlatePlugin({
+  api: ({ store }) => ({
     getLanguage: () => store.get('language'),
     getSyntaxState: () => store.get('syntax'),
   }),
-  initialState: {
-    language: 'typescript',
-    syntax: true,
-    syntaxPopularFirst: false,
-  } as CodeBlockState,
+  initialState,
   key: 'codeBlock',
   type: 'code_block',
-  update: ({ store, tx }): CodeBlockUpdate => ({
+  update: ({ store, tx }) => ({
     insertCodeBlock: () => {
       tx.nodes.insert({
         type: 'code_block',

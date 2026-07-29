@@ -1,6 +1,6 @@
 import { createEditor, property, schema, target } from '@platejs/plite';
 
-import type { PluginConfig, PluginReference } from '../../lib/plugin';
+import type { PluginReference } from '../../lib/plugin';
 
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
@@ -473,23 +473,19 @@ describe('compilePlateModel', () => {
   });
 
   it('configures schema inputs through plugin initialState', () => {
-    type Config = PluginConfig<
-      'configuredModel',
-      {
-        label: string;
-        nested: { value: number };
-        targets: readonly [ReturnType<typeof createElementPlugin>];
-      }
-    >;
-
     const TargetPlugin = createElementPlugin('configuredTarget');
-    const plugin = createBasePlugin<Config>({
+    const initialState: {
+      label: string;
+      nested: { value: number };
+      targets: readonly [typeof TargetPlugin];
+    } = {
+      label: 'initial',
+      nested: { value: 1 },
+      targets: [TargetPlugin],
+    };
+    const plugin = createBasePlugin({
       key: 'configuredModel',
-      initialState: {
-        label: 'initial',
-        nested: { value: 1 },
-        targets: [TargetPlugin],
-      },
+      initialState,
       schema: ({ initialState, own, plugins }) => ({
         properties: [
           own.elementProperty(property.string(), {

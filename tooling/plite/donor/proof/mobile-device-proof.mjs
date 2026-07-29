@@ -4,9 +4,9 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
+const repoRoot = fileURLToPath(new URL('../../../..', import.meta.url));
 const artifactPath = resolve(
   repoRoot,
   process.env.PLITE_BROWSER_MOBILE_PROOF_ARTIFACTS ??
@@ -19,7 +19,7 @@ const {
   createBrowserMobileReleaseProofArtifact,
   validatePliteBrowserReleaseProof,
 } = await import(
-  new URL('../../packages/browser/src/core/release-proof.ts', import.meta.url)
+  pathToFileURL(resolve(repoRoot, 'packages/browser/src/core/release-proof.ts'))
     .href
 );
 

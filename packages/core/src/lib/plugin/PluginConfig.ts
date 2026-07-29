@@ -27,17 +27,23 @@ import type { Draft } from 'mutative';
 
 export type AnyPluginTx = Record<string, unknown>;
 
+/**
+ * Honest erased boundary for heterogeneous plugin configuration.
+ *
+ * Concrete plugin configs remain fully inferred. Runtime collections may only
+ * inspect the stable key/dependency shape until they narrow another field.
+ */
 export type AnyPluginConfig = {
-  key: any;
-  initialState: any;
-  api: any;
-  enabled?: any;
-  pluginApi?: any;
-  dependencies?: any;
-  state?: any;
-  tx: any;
-  selectors: any;
-  schemaModel?: any;
+  key: string;
+  initialState: object;
+  api: object;
+  enabled?: boolean;
+  pluginApi: object;
+  dependencies?: readonly PluginReference[];
+  state?: object;
+  tx: AnyPluginTx;
+  selectors: object;
+  schemaModel?: unknown;
 };
 
 /** Optional plugin-key allowlist shared by schema and render targeting. */
@@ -76,7 +82,7 @@ export type InferPluginSchema<C extends AnyPluginConfig> = [
   : InferPluginSchemaModel<C>['schema'] & (PluginSchema<C> | null);
 
 type ResolvePluginSchemaDeclaration<TSchema> = TSchema extends (
-  ...args: any[]
+  ...args: never[]
 ) => infer TDeclaration
   ? Extract<TDeclaration, PluginSchemaDeclaration>
   : Extract<TSchema, PluginSchemaDeclaration>;
@@ -168,7 +174,7 @@ export type BaseInjectProps = {
    * Default node value. The node key would be unset if the node value =
    * defaultNodeValue.
    */
-  defaultNodeValue?: any;
+  defaultNodeValue?: unknown;
   /** Node key to map to the styles. */
   nodeKey?: string;
   /**
@@ -178,7 +184,7 @@ export type BaseInjectProps = {
    */
   styleKey?: string;
   /** List of supported node values. */
-  validNodeValues?: any[];
+  validNodeValues?: readonly unknown[];
 };
 
 export type PluginBase<C extends AnyPluginConfig = PluginConfig> =
@@ -456,8 +462,8 @@ export type PluginBaseContext<C extends AnyPluginConfig = PluginConfig> = {
 };
 
 export type BaseTransformOptions = GetInjectNodePropsOptions & {
-  nodeValue?: any;
-  value?: any;
+  nodeValue?: unknown;
+  value?: unknown;
 };
 
 // -----------------------------------------------------------------------------
@@ -707,7 +713,11 @@ type InferDependencyConfig<P> = P extends {
 
 type NextSeenPluginKey<C extends AnyPluginConfig, Seen extends PropertyKey> =
   | Seen
-  | (IsAny<C['key']> extends true ? never : C['key']);
+  | (IsAny<C['key']> extends true
+      ? never
+      : string extends C['key']
+        ? never
+        : C['key']);
 
 export type InferDependencyConfigs<
   C extends AnyPluginConfig,
@@ -739,7 +749,7 @@ export type NormalizePluginState<T> =
     ? T
     : T extends PluginReference<infer TKey, infer TDocumentType>
       ? PluginReference<TKey, TDocumentType>
-      : T extends (...args: any[]) => any
+      : T extends (...args: never[]) => unknown
         ? T
         : T extends readonly unknown[]
           ? { readonly [TIndex in keyof T]: NormalizePluginState<T[TIndex]> }
@@ -780,35 +790,49 @@ export type PluginSelector<
 
 export type PluginSelectors<TState extends object = object> = Record<
   string,
-  PluginSelector<TState, any[], any>
+  PluginSelector<TState, never[], unknown>
 >;
 
 export type PluginSelectorArgs<T> = T extends (
-  state: any,
+  state: infer _TState,
   ...args: infer TArgs
-) => any
+) => unknown
   ? TArgs
   : never;
 
 export type PluginSelectorReturn<T> = T extends (
-  state: any,
-  ...args: any[]
+  state: infer _TState,
+  ...args: never[]
 ) => infer TResult
   ? TResult
   : never;
 
+type IsBroadPluginConfig<C extends AnyPluginConfig> =
+  IsAny<C> extends true
+    ? true
+    : [keyof InferPluginStoreState<C>] extends [never]
+      ? [keyof InferSelectors<C>] extends [never]
+        ? true
+        : false
+      : false;
+
 type PluginStoreKey<C extends AnyPluginConfig> =
-  | keyof InferPluginStoreState<C>
-  | keyof InferSelectors<C>;
+  IsBroadPluginConfig<C> extends true
+    ? PropertyKey
+    : keyof InferPluginStoreState<C> | keyof InferSelectors<C>;
 
 type PluginStoreValue<
   C extends AnyPluginConfig,
   K extends PluginStoreKey<C>,
 > = K extends keyof InferSelectors<C>
-  ? PluginSelectorReturn<InferSelectors<C>[K]>
-  : K extends keyof InferPluginStoreState<C>
-    ? InferPluginStoreState<C>[K]
-    : never;
+  ? IsBroadPluginConfig<C> extends true
+    ? unknown
+    : PluginSelectorReturn<InferSelectors<C>[K]>
+  : IsBroadPluginConfig<C> extends true
+    ? unknown
+    : K extends keyof InferPluginStoreState<C>
+      ? InferPluginStoreState<C>[K]
+      : never;
 
 export type PluginStore<C extends AnyPluginConfig = AnyPluginConfig> = {
   /** Read the complete current plugin state. */
@@ -816,9 +840,11 @@ export type PluginStore<C extends AnyPluginConfig = AnyPluginConfig> = {
   /** Read one state field or evaluate one named selector. */
   get<K extends PluginStoreKey<C>>(
     key: K,
-    ...args: K extends keyof InferSelectors<C>
-      ? PluginSelectorArgs<InferSelectors<C>[K]>
-      : []
+    ...args: IsBroadPluginConfig<C> extends true
+      ? unknown[]
+      : K extends keyof InferSelectors<C>
+        ? PluginSelectorArgs<InferSelectors<C>[K]>
+        : []
   ): PluginStoreValue<C, K>;
   /** Replace fields or update the current plugin state through a draft. */
   set(
@@ -840,24 +866,26 @@ export type InferState<P> = P extends { state?: infer State } ? State : {};
 export type InferTx<P> = P extends { tx: infer Tx } ? Tx : never;
 
 type OmitTxReadMethods<T> = {
-  [K in keyof T as T[K] extends TxReadMethod<(...args: any[]) => any>
+  [K in keyof T as T[K] extends TxReadMethod<(...args: never[]) => unknown>
     ? never
     : K]: T[K];
 };
 
 export type InferPluginTx<P extends AnyPluginConfig> =
-  InferTx<P> extends Record<P['key'], infer TTx> ? OmitTxReadMethods<TTx> : {};
+  InferTx<P> extends Record<P['key'], infer TTx extends object>
+    ? OmitTxReadMethods<TTx>
+    : {};
 
 export type InferOwnTx<P extends AnyPluginConfig> =
   IsAny<InferTx<P>> extends true
-    ? any
+    ? AnyPluginTx
     : Omit<InferTx<P>, P['key']> & InferPluginTx<P>;
 
 export type InferPluginState<P extends AnyPluginConfig> =
   InferState<P> extends Record<P['key'], infer TState> ? TState : {};
 
 export type InferOwnState<P extends AnyPluginConfig> =
-  IsAny<InferState<P>> extends true ? any : InferPluginState<P>;
+  IsAny<InferState<P>> extends true ? object : InferPluginState<P>;
 
 /**
  * Renders a component for Plite nodes declared by `schema.element` or
@@ -903,15 +931,15 @@ export type HtmlPluginContext<C extends AnyPluginConfig = PluginConfig> =
   }>;
 
 export type PluginConfig<
-  K extends string = any,
-  StoreState = {},
-  A = {},
+  K extends string = string,
+  StoreState extends object = {},
+  A extends object = {},
   Tx extends AnyPluginTx = {},
-  S = {},
-  State = {},
+  S extends object = {},
+  State extends object = {},
   D extends readonly PluginReference[] = readonly [],
   SchemaModel = never,
-  PluginApi = {},
+  PluginApi extends object = {},
   Enabled extends boolean = boolean,
 > = {
   key: K;
@@ -930,18 +958,9 @@ export type PluginConfig<
 export type WithAnyKey<C extends AnyPluginConfig = PluginConfig> =
   IsAny<C['key']> extends true
     ? C
-    : PluginConfig<
-        any,
-        InferPluginStoreState<C>,
-        InferApi<C>,
-        InferTx<C>,
-        InferSelectors<C>,
-        InferState<C>,
-        InferDependencies<C>,
-        InferPluginSchemaModel<C>,
-        InferPluginApi<C>,
-        InferEnabled<C>
-      >;
+    : string extends C['key']
+      ? C
+      : Omit<C, 'key'> & { key: string };
 
 export type WithRequiredKey<P = {}> =
   | (P extends { key: string } ? P : never)

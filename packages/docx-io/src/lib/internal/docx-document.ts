@@ -23,7 +23,7 @@ import {
   portraitMargins,
   themeType as themeFileType,
 } from './constants';
-import { convertVTreeToXML } from './helpers/render-document-file';
+import { convertVTreeToXML } from './render-document-file';
 import namespaces from './namespaces';
 import generateCoreXML from './schemas/core';
 import contentTypesXMLString from './schemas/content-types';
@@ -37,11 +37,32 @@ import generateStylesXML from './schemas/styles';
 import generateThemeXML from './schemas/theme';
 import webSettingsXMLString from './schemas/web-settings';
 import type { DocumentMargins } from './schemas/document.template';
-import { fontFamilyToTableObject } from './utils/font-family-conversion';
 import ListStyleBuilder, {
   type ListStyleDefaults,
   type ListStyleType,
-} from './utils/list';
+} from './list';
+
+const QUOTED_FONT_PATTERN = /(["'])(.*?)\1/;
+
+const fontFamilyToTableObject = (
+  fontFamily: string | null | undefined,
+  fallbackFont: string
+): FontTableObject => {
+  const fonts = fontFamily
+    ? fontFamily.split(',').map((font) => {
+        const trimmed = font.trim();
+
+        if (!QUOTED_FONT_PATTERN.test(trimmed)) return trimmed;
+
+        return trimmed.match(QUOTED_FONT_PATTERN)?.[2] ?? trimmed;
+      })
+    : [fallbackFont];
+
+  return {
+    fontName: fonts[0],
+    genericFontName: fonts.at(-1) ?? fonts[0],
+  };
+};
 
 /**
  * Get bullet character for unordered list based on level.

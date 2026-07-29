@@ -87,13 +87,21 @@ const usersData = {
   },
 };
 
+export type DiscussionPluginState = {
+  currentUserId: string;
+  discussions: TDiscussion[];
+  users: Record<string, { avatarUrl: string; id: string; name: string }>;
+};
+
+const initialState: DiscussionPluginState = {
+  currentUserId: 'alice',
+  discussions: [],
+  users: usersData,
+};
+
 export const discussionPlugin = createPlatePlugin({
+  initialState,
   key: 'discussion',
-  initialState: {
-    currentUserId: 'alice',
-    discussions: [],
-    users: usersData,
-  },
   selectors: {
     currentUser: (state) => state.users[state.currentUserId],
     user: (state, id: string) => state.users[id],

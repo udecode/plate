@@ -11,19 +11,22 @@ import { writeHostFragmentData } from '@platejs/plite-dom';
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
 import { prepareHtmlPluginContext } from '../plugins/html/HtmlPlugin';
 import {
-  type AnyBasePlugin,
+  type AnyPluginConfig,
+  type PluginReference,
   type PluginConfig,
   createBaseEditor,
   createBasePlugin,
 } from '../index';
 import { getEditorPlugin } from './getEditorPlugin';
 
-const resolveEditorExtensions = (plugin: AnyBasePlugin) => {
+const resolveEditorExtensions = <C extends AnyPluginConfig>(
+  plugin: PluginReference & { readonly __config: C }
+) => {
   const editor = createBaseEditor({
     plugins: [plugin],
   });
   const resolvedPlugin = editor.getPlugin(plugin);
-  const context = getEditorPlugin(editor, resolvedPlugin);
+  const context = getEditorPlugin(editor, { key: resolvedPlugin.key });
 
   return resolvedPlugin.__editorExtensions.flatMap((extension) => {
     const input = extension(context);
@@ -240,9 +243,7 @@ describe('createBasePlugin', () => {
   });
 
   it('contextually types schema factories over initialState', () => {
-    type Config = PluginConfig<'typed-node-schema', { targetTypes: string[] }>;
-
-    const plugin = createBasePlugin<Config>({
+    const plugin = createBasePlugin({
       key: 'typed-node-schema',
       initialState: { targetTypes: ['p'] },
       schema: ({ key, initialState, type }) => ({
@@ -779,9 +780,7 @@ describe('createBasePlugin', () => {
 
     it('resolves contextual configuration per editor before extensions', () => {
       const configuredEditors: string[] = [];
-      const plugin = createBasePlugin<
-        PluginConfig<'contextual', { editorId: string; value: string }>
-      >({
+      const plugin = createBasePlugin({
         key: 'contextual',
         initialState: { editorId: '', value: 'initial' },
       })

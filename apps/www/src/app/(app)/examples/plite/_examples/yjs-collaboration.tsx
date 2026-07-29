@@ -20,7 +20,6 @@ import {
   type TextIn,
   TextApi,
 } from '@platejs/plite';
-import { history } from '@platejs/plite-history';
 import {
   Editable,
   type RenderElementProps,
@@ -144,7 +143,7 @@ type CollaborationElement = ElementIn<CollaborationValue>;
 type CollaborationText = TextIn<CollaborationValue>;
 type YjsEditor = ReactEditor<
   CollaborationValue,
-  readonly [ReturnType<typeof history>, ReturnType<typeof createYjsExtension>]
+  readonly [ReturnType<typeof createYjsExtension>]
 >;
 
 const syncPeerHistoryDepths = (peer: ExamplePeer, editor: YjsEditor) => {
@@ -1359,7 +1358,6 @@ const PeerPanel = ({
 }) => {
   const editor = usePliteEditor({
     extensions: [
-      history(),
       schemaSlot.of(createCollaborationSchema(1)),
       createYjsExtension({
         awareness: peer.awareness,

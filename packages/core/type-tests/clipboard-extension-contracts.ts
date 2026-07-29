@@ -10,7 +10,7 @@ const ImagePlugin = createBasePlugin({
 }).extend(() => ({
   extension: {
     clipboard: {
-      insertData(_data, { tx }) {
+      insertData(_data, { transaction: tx }) {
         tx.img.insert({ url: 'https://example.com/image.png' });
 
         // @ts-expect-error The installed image transaction keeps its input type.

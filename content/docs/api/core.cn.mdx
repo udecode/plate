@@ -50,7 +50,7 @@ description: \@platejs/core 的 API 参考文档。
         过滤 Text 节点不接收 ID。
         - **默认值:** `true`
       </APISubListItem>
-      <APISubListItem parent="nodeId" name="idCreator" type="() => any" optional>
+      <APISubListItem parent="nodeId" name="idCreator" type="() => string" optional>
         生成唯一 ID 的函数。
         - **默认值:** `() => nanoid(10)`
       </APISubListItem>
@@ -669,29 +669,6 @@ const CustomMetadataPlugin = createBasePlugin({
 
 ### `EventEditorPlugin`
 管理编辑器事件，如焦点和失焦。
-
-## 工具函数
-
-### `isType`
-
-检查节点是否匹配提供的类型。
-
-<API name="isType">
-<APIParameters>
-  <APIItem name="editor" type="PlateEditor<V>">
-    节点所在的编辑器。
-  </APIItem>
-  <APIItem name="node" type="any">
-    要检查的节点。
-  </APIItem>
-  <APIItem name="key" type="string | string[]" optional>
-    要与节点匹配的类型或类型数组。可以是字符串或字符串数组。
-  </APIItem>
-</APIParameters>
-<APIReturns>
-  表示节点的类型是否匹配提供的类型或类型的布尔值。
-</APIReturns>
-</API>
 
 ## 组件
 

@@ -150,9 +150,7 @@ test.describe('images example', () => {
     });
 
     await expect(editor.root.locator('img')).toHaveCount(3);
-    await expect(
-      editor.root.locator('img[src^="data:image/png;base64,"]')
-    ).toHaveCount(1);
+    await expect(editor.root.locator('img[src^="blob:"]')).toHaveCount(1);
   });
 
   test('deletes selected image', async ({ page }) => {

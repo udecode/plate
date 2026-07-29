@@ -84,6 +84,12 @@ type RuntimeSchemaElementPropertyHandle = Readonly<{
 /** @internal Schema implementation used only by the slice transaction owner. */
 export type InternalEditorSchemaApi<V extends Value = Value> =
   EditorStateSchemaApi<V> & {
+    canonicalizeTextPropertiesAt: (
+      properties: Readonly<Record<string, unknown>>,
+      path: Path,
+      root?: RootKey,
+      preferredKey?: string
+    ) => Readonly<Record<string, unknown>>;
     canonicalizeChildren: (
       children: readonly Descendant[],
       root: RootKey,
@@ -267,6 +273,62 @@ const contentProgramsEqual = (
       right.allowedElementTypes.has(type)
     ) &&
     structurallyEqual(left.defaultPlan, right.defaultPlan));
+
+const canonicalizeCompiledExclusiveTextProperties = (
+  schema: CompiledEditorSchema,
+  source: Readonly<Record<string, unknown>>,
+  context: CompiledSchemaTargetContext,
+  preferredKey?: string
+) => {
+  const entries = Object.entries(source).map(([key, value]) => ({
+    key,
+    property: resolveCompiledSchemaProperty(schema, 'text', key, context),
+    value,
+  }));
+  const preferredId = preferredKey
+    ? resolveCompiledSchemaProperty(schema, 'text', preferredKey, context)?.id
+    : undefined;
+  const acceptedIds = new Set<string>();
+  const acceptedKeys = new Set<string>();
+
+  for (const entry of [...entries].sort((left, right) => {
+    const leftPreferred = left.property?.id === preferredId ? 0 : 1;
+    const rightPreferred = right.property?.id === preferredId ? 0 : 1;
+
+    return (
+      leftPreferred - rightPreferred ||
+      (left.property?.id ?? left.key).localeCompare(
+        right.property?.id ?? right.key
+      ) ||
+      left.key.localeCompare(right.key)
+    );
+  })) {
+    const property = entry.property;
+
+    if (
+      property &&
+      [...acceptedIds].some((acceptedId) =>
+        schema.properties.conflictsByPropertyId
+          .get(acceptedId)
+          ?.has(property.id)
+      )
+    ) {
+      continue;
+    }
+    acceptedKeys.add(entry.key);
+    if (property) acceptedIds.add(property.id);
+  }
+
+  if (acceptedKeys.size === entries.length) return source;
+
+  return Object.freeze(
+    Object.fromEntries(
+      entries.flatMap(({ key, value }) =>
+        acceptedKeys.has(key) ? [[key, value]] : []
+      )
+    )
+  );
+};
 
 const getElementType = (element: { type?: unknown }) =>
   typeof element.type === 'string' && element.type.length > 0
@@ -857,7 +919,7 @@ export const createEditorSchema = <V extends Value = Value>(
     ({ after, before, change, root }) => {
       const schema = getDeclarativeSchema();
 
-      if (schema) {
+      if (schema && hasContentRoots()) {
         rebaseElementOwnedRootIndex(schema, root, change, before, after);
       }
     };
@@ -1471,16 +1533,20 @@ export const createEditorSchema = <V extends Value = Value>(
     }
 
     const sourceKeys = Object.keys(source);
-    const outputKeys = Object.keys(output);
+    const canonicalOutput =
+      placement === 'text'
+        ? canonicalizeCompiledExclusiveTextProperties(schema, output, context)
+        : output;
+    const outputKeys = Object.keys(canonicalOutput);
 
     return sourceKeys.length === outputKeys.length &&
       sourceKeys.every(
         (key) =>
-          Object.hasOwn(output, key) &&
-          structurallyEqual(source[key], output[key])
+          Object.hasOwn(canonicalOutput, key) &&
+          structurallyEqual(source[key], canonicalOutput[key])
       )
       ? source
-      : output;
+      : canonicalOutput;
   };
 
   const canonicalizeDeclarativeChildren = (
@@ -1755,6 +1821,28 @@ export const createEditorSchema = <V extends Value = Value>(
     return schema
       ? getTextProperty(schema, key, getTextTargetOptionsAt(path, root))
       : null;
+  };
+
+  const canonicalizeTextPropertiesAt = (
+    properties: Readonly<Record<string, unknown>>,
+    path: Path,
+    root: RootKey = 'main',
+    preferredKey?: string
+  ) => {
+    const schema = getDeclarativeSchema();
+    const options = getTextTargetOptionsAt(path, root);
+    const parentType = options.parent
+      ? (getElementType(options.parent) ?? '')
+      : '';
+
+    return schema && parentType
+      ? canonicalizeCompiledExclusiveTextProperties(
+          schema,
+          properties,
+          toCompiledTargetContext(parentType, options),
+          preferredKey
+        )
+      : properties;
   };
 
   const isSetValuedProperty = (
@@ -2086,6 +2174,25 @@ export const createEditorSchema = <V extends Value = Value>(
             cause,
             property: { candidates: [property], key, placement: 'text' },
           }
+        );
+      }
+    }
+    const context = parent
+      ? toCompiledTargetContext(getElementType(parent) ?? '', options)
+      : null;
+
+    if (context) {
+      const canonical = canonicalizeCompiledExclusiveTextProperties(
+        schema,
+        properties,
+        context
+      );
+
+      if (Object.keys(canonical).length !== Object.keys(properties).length) {
+        throw createEditorSchemaValidationError(
+          'exclusive-property-conflict',
+          'Editor text properties contain mutually exclusive schema properties.',
+          location
         );
       }
     }
@@ -3254,6 +3361,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
   const api: InternalEditorSchemaApi<V> = Object.freeze({
     allowsElementType,
+    canonicalizeTextPropertiesAt,
     canonicalizeChildren,
     elementPropertiesForSplitAt,
     elementPropertiesForTypeChangeAt,

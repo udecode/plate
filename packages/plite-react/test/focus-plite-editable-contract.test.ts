@@ -20,7 +20,10 @@ import {
   writeCollapsedModelSelectionDOMPreference,
 } from '../src/editable/model-selection-dom-preference';
 import { EditableDOMRuntime } from '../src/editable/editable-dom-runtime';
-import { focusPliteEditable } from '../src/hooks/focus-plite-editable';
+import {
+  focusPliteEditable,
+  focusPliteEditableAfterEventFrame,
+} from '../src/hooks/focus-plite-editable';
 import { ReactEditor } from '../src/plugin/react-editor';
 import { createReactEditor } from '../src/plugin/with-react';
 import { createPliteProjectionGraph } from '../src/projection-graph';
@@ -50,7 +53,7 @@ const isFocusProjectionSelection = (
 
 const FocusProjectionExtension = defineEditorExtension({
   name: 'focus-projection-selection',
-  selections: [
+  selectionKinds: [
     {
       codec: defineValueCodec<FocusProjectionSelection>({
         decode(value) {
@@ -63,7 +66,7 @@ const FocusProjectionExtension = defineEditorExtension({
         encode: (selection) => selection,
         version: 1,
       }),
-      domRange: (selection) =>
+      primaryRange: (selection) =>
         selection.modelOnly
           ? null
           : Object.freeze({
@@ -161,6 +164,28 @@ afterEach(() => {
 });
 
 describe('focusPliteEditable', () => {
+  it('cancels superseded frame and settle focus work', () => {
+    const { editor, element } = createFocusableEditor();
+    const runtime = new EditableDOMRuntime({ editor });
+    const nextElement = document.createElement('button');
+
+    document.body.appendChild(nextElement);
+    runtime.setRoot(element);
+    runtime.connect();
+
+    try {
+      const cancel = focusPliteEditableAfterEventFrame(editor);
+
+      cancel();
+      nextElement.focus();
+      runtime.domPhaseScheduler.flush();
+
+      expect(document.activeElement).toBe(nextElement);
+    } finally {
+      runtime.destroy();
+    }
+  });
+
   it('uses the DOM editor focus path for normal model selections', () => {
     const { editor, element, focus } = createFocusableEditor();
 

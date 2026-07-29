@@ -14,7 +14,7 @@ import {
   getSelection as editorGetSelection,
   string as editorString,
 } from '@platejs/plite/internal';
-import { dom } from '@platejs/plite-dom';
+import { clipboardHandler, dom } from '@platejs/plite-dom';
 import { setDOMClipboardFormatKey } from '@platejs/plite-dom/internal';
 import { history } from '@platejs/plite-history';
 import { describe, expect, it } from 'vitest';
@@ -394,13 +394,15 @@ describe('projected editable commands', () => {
   it('declining clipboard handlers preserve unsupported projected paste payloads', () => {
     let insertCount = 0;
     const clipboardExtension = defineEditorExtension({
-      clipboard: {
-        insertData() {
-          insertCount++;
+      contributions: [
+        clipboardHandler({
+          insertData() {
+            insertCount++;
 
-          return false;
-        },
-      },
+            return false;
+          },
+        }),
+      ],
       name: 'projected-command-declining-clipboard',
     });
     const { editor, graph } = createFixture([clipboardExtension]);
@@ -515,14 +517,16 @@ describe('projected editable commands', () => {
   it('lets clipboard insertData handlers own projected Plite fragment pastes', () => {
     let insertCount = 0;
     const clipboardExtension = defineEditorExtension({
-      clipboard: {
-        insertData(_data, { tx }) {
-          insertCount++;
-          tx.text.insert('H');
+      contributions: [
+        clipboardHandler({
+          insertData(_data, { transaction }) {
+            insertCount++;
+            transaction.text.insert('H');
 
-          return true;
-        },
-      },
+            return true;
+          },
+        }),
+      ],
       name: 'projected-command-custom-clipboard',
     });
     const { editor, graph } = createFixture([clipboardExtension]);
@@ -552,14 +556,16 @@ describe('projected editable commands', () => {
   it('offers unsupported projected paste payloads to clipboard handlers', () => {
     let insertCount = 0;
     const clipboardExtension = defineEditorExtension({
-      clipboard: {
-        insertData(_data, { tx }) {
-          insertCount++;
-          tx.text.insert('H');
+      contributions: [
+        clipboardHandler({
+          insertData(_data, { transaction }) {
+            insertCount++;
+            transaction.text.insert('H');
 
-          return true;
-        },
-      },
+            return true;
+          },
+        }),
+      ],
       name: 'projected-command-custom-payload-clipboard',
     });
     const { editor, graph } = createFixture([clipboardExtension]);
@@ -586,11 +592,13 @@ describe('projected editable commands', () => {
   it('preserves projected selection when clipboard insertData handlers throw', () => {
     const pasteError = new Error('custom paste failed');
     const clipboardExtension = defineEditorExtension({
-      clipboard: {
-        insertData() {
-          throw pasteError;
-        },
-      },
+      contributions: [
+        clipboardHandler({
+          insertData() {
+            throw pasteError;
+          },
+        }),
+      ],
       name: 'projected-command-throwing-clipboard',
     });
     const { editor, graph } = createFixture([clipboardExtension]);

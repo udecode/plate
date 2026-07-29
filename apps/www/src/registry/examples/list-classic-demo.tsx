@@ -18,6 +18,7 @@ import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export default function ListClassicDemo() {
   const editor = usePlateEditor({
+    initialValue: listValue,
     plugins: [
       ...EditorKit.filter(
         (plugin) =>
@@ -31,7 +32,6 @@ export default function ListClassicDemo() {
       ...FloatingToolbarKit,
       ...AutoformatKit,
     ],
-    initialValue: listValue,
   });
 
   return (

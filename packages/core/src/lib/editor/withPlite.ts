@@ -39,7 +39,10 @@ import {
 } from '../../internal/plugin/compilePlateModel';
 import { clearPlateRuntimeCandidate } from '../../internal/plugin/plateRuntime';
 import { clearPluginStores } from '../../internal/plugin/pluginStore';
-import { isNominalPluginReference } from '../../internal/utils/mergePlugins';
+import {
+  isNominalPluginDescriptor,
+  isNominalPluginReference,
+} from '../../internal/utils/mergePlugins';
 import { snapshotApiValue } from '../../internal/utils/snapshotApiValue';
 import { createPlateChangeHandlersExtension } from '../../internal/plugin/plateChangeHandlers';
 import type {
@@ -93,6 +96,12 @@ const hasPlateSchemaDescriptorShape = (
   value !== null &&
   'key' in value &&
   'type' in value;
+
+const isBasePluginDescriptor = (value: unknown): value is AnyBasePlugin =>
+  isNominalPluginDescriptor(value) &&
+  ['clone', 'configure', 'extend'].every(
+    (method) => typeof Reflect.get(value, method) === 'function'
+  );
 
 export type EditorValueInput<V extends Value> =
   | EditorDocumentValue<V>
@@ -314,7 +323,9 @@ const resolvePlateEditorExtensions = (
     (plugin.__editorExtensions ?? []).flatMap(
       (extensionFactory) =>
         normalizePlateEditorExtensions(
-          extensionFactory(getEditorPlugin(editor, plugin as any) as never)
+          Reflect.apply(extensionFactory, undefined, [
+            getEditorPlugin(editor, plugin),
+          ])
         ) as EditorExtension[]
     )
   );
@@ -711,7 +722,7 @@ export type BaseExtendBaseEditorOptions<
    *
    * @default { idKey: 'id', filterInline: true, filterText: true, idCreator: () => nanoid(10) }
    */
-  nodeId?: NodeIdPluginState | boolean;
+  nodeId?: Partial<NodeIdPluginState> | boolean;
   /**
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
@@ -859,23 +870,32 @@ export const extendBaseEditor = <
     nodeId,
   });
 
-  const internalRootDescriptor: AnyBasePlugin = createBasePlugin({
-    key: 'root',
-    ...pluginConfig,
-    override: {
-      ...pluginConfig.override,
-      components: {
-        ...pluginConfig.components,
-        ...pluginConfig.override?.components,
+  const internalRootCandidate = Reflect.apply(createBasePlugin, undefined, [
+    {
+      key: 'root',
+      ...pluginConfig,
+      override: {
+        ...pluginConfig.override,
+        components: {
+          ...pluginConfig.components,
+          ...pluginConfig.override?.components,
+        },
       },
     },
-  });
+  ]);
+
+  if (!isBasePluginDescriptor(internalRootCandidate)) {
+    throw new Error(
+      'Plate root plugin construction returned an invalid descriptor.'
+    );
+  }
+  const internalRootDescriptor = internalRootCandidate;
 
   const sourcePlugins = snapshotPlatePluginSources({
-    baseCore: baseCorePlugins as unknown as readonly AnyBasePlugin[],
+    baseCore: baseCorePlugins,
     internalRoot: internalRootDescriptor,
     reactCore: reactCorePlugins,
-    user: plugins as unknown as readonly AnyBasePlugin[],
+    user: plugins,
   });
   const schemaIdentitySnapshot = schemaIdentity
     ? Object.freeze({
@@ -938,7 +958,10 @@ export const extendBaseEditor = <
             })
     );
 
-    return editor as any;
+    return editor as unknown as BaseEditor<
+      V,
+      CorePluginConfig | InferPlugins<P[]>
+    >;
   } catch (error) {
     restoreSnapshotInputTransform?.();
     if (!publicationBeforeExtension) clearPlateModelPublication(editor);

@@ -52,7 +52,7 @@ type RuntimeMethods<TKey extends keyof EditorStaticApi> = {
   [Key in TKey]: BindEditorMethod<EditorStaticApi[Key]>;
 };
 
-export type InternalEditorQueryRuntime = RuntimeMethods<
+export type InternalEditorReadRuntime = RuntimeMethods<
   | 'after'
   | 'before'
   | 'edges'
@@ -137,7 +137,7 @@ export type InternalEditorExtensionRuntime<V extends Value = Value> = {
     configurationChanged: boolean;
     documentChange: DocumentChange;
     finalize: () => void;
-    ready: () => void;
+    afterPublish: () => void;
     rollback: () => void;
     stage: () => void;
     validateDocument: (value: EditorDocumentValue) => void;
@@ -152,7 +152,7 @@ export type InternalEditorExtensionPublicationEntry = Readonly<{
 
 export type InternalEditorRuntime<V extends Value = Value> =
   InternalEditorExtensionRuntime<V> &
-    InternalEditorQueryRuntime &
+    InternalEditorReadRuntime &
     InternalEditorSnapshotRuntime<V> &
     InternalEditorTransactionRuntime<V>;
 

@@ -9,7 +9,10 @@ These answers describe the Plite package set.
 
 Plite does not know your product schema. It cannot safely turn arbitrary HTML into your nodes without an app-owned policy.
 
-By default, pasted content becomes text. Add a `clipboard.insertData` extension handler when the app wants to consume `DataTransfer` HTML, files, or custom MIME data. Return `true` after the handler owns the paste.
+By default, pasted content becomes text. Add a `clipboardHandler(...)` extension
+contribution from `@platejs/plite-dom` when the app wants to consume `DataTransfer`
+HTML, files, or custom MIME data. Return `true` after the handler owns the
+paste.
 
 Use [Plite DOM](../libraries/plite-dom), [Event Handling](../libraries/plite-react/event-handling), and the [Paste HTML example](/examples/plite/paste-html) as the starting points.
 

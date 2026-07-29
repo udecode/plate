@@ -14,12 +14,25 @@ import {
   useMarkToolbarButtonState,
 } from './useMarkToolbarButton';
 
+const Emphasis = schema.property.exclusive('test:emphasis');
+const Literal = schema.property.exclusive('test:literal');
 const MarksPlugin = createBasePlugin({
   key: 'testMarks',
   schema: {
-    properties: ['bold', 'code', 'highlight', 'italic'].map((key) =>
-      schema.textProperty(key, property.boolean())
-    ),
+    properties: [
+      schema.textProperty('bold', property.boolean(), {
+        exclusive: [Emphasis],
+      }),
+      schema.textProperty('italic', property.boolean(), {
+        exclusive: [Emphasis],
+      }),
+      schema.textProperty('code', property.boolean(), {
+        exclusive: [Literal],
+      }),
+      schema.textProperty('highlight', property.boolean(), {
+        exclusive: [Literal],
+      }),
+    ],
   },
 });
 
@@ -47,14 +60,13 @@ describe('useMarkToolbarButton', () => {
     editor.update.marks.add('bold', true);
 
     const { result } = renderHook(
-      () => useMarkToolbarButtonState({ clear: 'italic', nodeType: 'bold' }),
+      () => useMarkToolbarButtonState({ nodeType: 'bold' }),
       {
         wrapper: createWrapper(editor),
       }
     );
 
     expect(result.current).toEqual({
-      clear: 'italic',
       nodeType: 'bold',
       pressed: true,
     });
@@ -87,7 +99,6 @@ describe('useMarkToolbarButton', () => {
     const { result } = renderHook(
       () =>
         useMarkToolbarButton({
-          clear: ['italic'],
           nodeType: 'bold',
           pressed: true,
         }),
@@ -119,12 +130,11 @@ describe('useMarkToolbarButton', () => {
     });
 
     editor.update.marks.add('bold', true);
-    editor.update.marks.add('italic', true);
+    editor.update.marks.add('code', true);
 
     const { result } = renderHook(
       () =>
         useMarkToolbarButton({
-          clear: ['bold', 'italic'],
           nodeType: 'bold',
           pressed: true,
         }),
@@ -136,11 +146,11 @@ describe('useMarkToolbarButton', () => {
     result.current.props.onClick();
 
     const marks = editor.read.marks() as
-      | { bold?: boolean; italic?: boolean }
+      | { bold?: boolean; code?: boolean }
       | undefined;
 
     expect(marks?.bold).toBeUndefined();
-    expect(marks?.italic).toBe(true);
+    expect(marks?.code).toBe(true);
   });
 
   it('clears a configured peer mark when enabling a mark', () => {
@@ -159,7 +169,6 @@ describe('useMarkToolbarButton', () => {
     const { result } = renderHook(
       () =>
         useMarkToolbarButton({
-          clear: 'highlight',
           nodeType: 'code',
           pressed: false,
         }),
@@ -188,7 +197,6 @@ describe('useMarkToolbarButton', () => {
     const { result } = renderHook(
       () =>
         useMarkToolbarButton({
-          clear: undefined,
           nodeType: 'bold',
           pressed: false,
         }),

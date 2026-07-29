@@ -1,23 +1,10 @@
 import type {
-  DefineEditorExtension,
   DefinePluginCodecs,
   PluginCodecMapDeclaration,
 } from './BasePlugin';
 import type { AnyPluginConfig, PluginReference } from './PluginConfig';
 
 export const pluginCodecMapDeclaration = Symbol('plate.pluginCodecMap');
-
-export function createDefineEditorExtension<
-  C extends AnyPluginConfig,
->(): DefineEditorExtension<C> {
-  const defineEditorExtension = <
-    const TExtension extends object | readonly object[],
-  >(
-    extension: TExtension
-  ) => extension;
-
-  return defineEditorExtension;
-}
 
 export function createDefinePluginCodecs<
   C extends AnyPluginConfig,

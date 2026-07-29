@@ -1,26 +1,17 @@
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import {
-  type PropertyValueOf,
-  SelectionApi,
-  property,
-  schema,
-} from '@platejs/plite';
+import { type PropertyValueOf, SelectionApi, schema } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
-import { BaseAudioPlugin } from './BaseAudioPlugin';
-import { BaseFilePlugin } from './BaseFilePlugin';
-import { BaseVideoPlugin } from './BaseVideoPlugin';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseVideoPlugin,
+} from './BaseMediaPlugin';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
-import { mediaElementProperties } from './media/types';
+import { mediaElementProperties } from './BaseMediaPlugin';
 import { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
 
-const TestBoldPlugin = createBasePlugin({
-  key: 'bold',
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-  },
-});
 const TestInlinePlugin = createBasePlugin({
   key: 'testInline',
   schema: {
@@ -223,6 +214,37 @@ describe('Base media plugin contracts', () => {
         url: 'https://platejs.org/report.pdf',
       },
       { type: KEYS.video, url: 'https://platejs.org/video.mp4' },
+      { type: KEYS.p },
+    ]);
+  });
+
+  it('applies the shared URL policy to media insertion', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseAudioPlugin.configure({
+          initialState: {
+            isUrl: (url) => url.startsWith('safe:'),
+            transformUrl: (url) => `safe:${url}`,
+          },
+        }),
+        BaseFilePlugin.configure({
+          initialState: {
+            isUrl: () => false,
+          },
+        }),
+      ],
+      initialValue: [{ children: [{ text: 'after' }], type: KEYS.p }],
+    });
+
+    editor
+      .plugin(BaseAudioPlugin)
+      .update.insert({ url: 'track.mp3' }, { at: [0] });
+    editor
+      .plugin(BaseFilePlugin)
+      .update.insert({ url: 'unsafe.pdf' }, { at: [1] });
+
+    expect(editor.read.children()).toMatchObject([
+      { type: KEYS.audio, url: 'safe:track.mp3' },
       { type: KEYS.p },
     ]);
   });

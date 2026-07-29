@@ -27,8 +27,7 @@ description: 编写和配置 Plate 插件。
 | `codecs` | 插件拥有的格式解码和编码。 |
 
 回调接收推断后的[插件上下文](/docs/plugin-context)，包括 `editor`、`plugin`、
-`api`、`read`、`defineCodecs`、`defineEditorExtension`、`store`，以及 update
-贡献中的活动 `tx`。
+`api`、`read`、`defineCodecs`、`store`，以及 update 贡献中的活动 `tx`。
 
 ## 使用 Constructor Context
 
@@ -38,7 +37,7 @@ declaration 或前一阶段新增的类型才使用 `.extend()`。
 ```tsx title="counter-plugin.tsx" showLineNumbers
 import { createPlatePlugin, usePluginStore } from 'platejs/react';
 
-type CounterState = {
+export type CounterPluginState = {
   value: number;
 };
 
@@ -50,13 +49,15 @@ type CounterUpdate = {
   insertLabel: () => void;
 };
 
+const initialState: CounterPluginState = {
+  value: 0,
+};
+
 export const CounterPlugin = createPlatePlugin({
   api: ({ store }): CounterApi => ({
     isEmpty: () => store.get('value') === 0,
   }),
-  initialState: {
-    value: 0,
-  } as CounterState,
+  initialState,
   key: 'counter',
   selectors: {
     doubled: (state, factor: number) => state.value * factor,
@@ -128,45 +129,32 @@ export const SingleLinePlugin = createBasePlugin({
 });
 ```
 
-Inline extension object 不需要 helper。若 extension declaration 是抽取后可复用的
-factory，contextual typing 无法从 `extension` 字段反向流入 factory。传入 plugin
-context，并返回其中的 `defineEditorExtension` identity helper：
+依赖 Plate context 的 extension callback 保持在 `extension` 字段中。这样
+command、input、state、transaction、dependency 和 plugin state 都能获得
+contextual typing。抽取 domain logic，不要为了类型把 plugin context 传入 factory：
 
 ```ts title="trigger-plugin.ts" showLineNumbers
-import {
-  type BasePluginContext,
-  createBasePlugin,
-  editorCommands,
-  type PluginConfig,
-} from 'platejs';
+import { createBasePlugin, editorCommands } from 'platejs';
 
-type TriggerConfig = PluginConfig<
-  'trigger',
-  { enabled: boolean }
->;
+const shouldHandleTrigger = (enabled: boolean) => enabled;
 
-const withTriggerExtension = (context: BasePluginContext<TriggerConfig>) =>
-  context.defineEditorExtension({
+export const TriggerPlugin = createBasePlugin({
+  initialState: { enabled: true },
+  key: 'trigger',
+  extension: ({ store }) => ({
     commands: ({ handle }) => [
       handle(editorCommands.insertBreak, ({ state }) => {
-        if (!context.store.get('enabled')) return false;
+        if (!shouldHandleTrigger(store.get('enabled'))) return false;
 
         return state.transaction(() => {});
       }),
     ],
-  });
-
-export const TriggerPlugin = createBasePlugin<TriggerConfig>({
-  extension: (context) => withTriggerExtension(context),
-  initialState: { enabled: true },
-  key: 'trigger',
+  }),
 });
 ```
 
-constructor 的 context helper 保留嵌套 command、input、state、transaction 和
-dependency inference。从
-`@platejs/plite` import 的 `defineEditorExtension` 用于 standalone Plite
-extension，不能替代这里的 Plate plugin context。
+独立复用的 Plite descriptor 使用从 `@platejs/plite` import 的
+`defineEditorExtension`，然后把 descriptor 传给 plugin 的 `extension` 字段。
 
 真正无 key 的编辑器级能力也属于 `extension`。插件专用 API 保持在 `api`，
 不要发布两份实现。
@@ -244,8 +232,16 @@ export const AppH1Plugin = H1Plugin.configure({
 直接配置必需依赖的描述符，并把完整描述符放在同一个应用或 registry 插件数组中。
 
 ```ts
+type CellPluginState = {
+  padding: number;
+};
+
+const initialState: CellPluginState = {
+  padding: 12,
+};
+
 const CellPlugin = createPlatePlugin({
-  initialState: { padding: 12 },
+  initialState,
   key: 'cell',
 });
 

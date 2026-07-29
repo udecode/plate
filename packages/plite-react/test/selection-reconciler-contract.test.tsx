@@ -55,7 +55,7 @@ const isProjectedTableCellSelection = (
 
 const ProjectedTableCellSelectionExtension = defineEditorExtension({
   name: 'projected-table-cell-selection',
-  selections: [
+  selectionKinds: [
     {
       codec: defineValueCodec<ProjectedTableCellSelection>({
         decode(value) {
@@ -68,7 +68,7 @@ const ProjectedTableCellSelectionExtension = defineEditorExtension({
         encode: (selection) => selection,
         version: 1,
       }),
-      domRange: (selection) =>
+      primaryRange: (selection) =>
         selection.cells.length > 0
           ? Object.freeze({
               anchor: selection.anchor,
@@ -1218,7 +1218,7 @@ test('selection reconciler collapses an endpoint-equal expanded DOM range to the
     });
 
     expect(editorGetSelection(editor)?.kind).toBe('projected-table-cell');
-    expect(editor.read.selection.domRange()).toEqual({
+    expect(editor.read.selection.primaryRange()).toEqual({
       anchor: selection.anchor,
       focus: selection.anchor,
     });
@@ -1296,7 +1296,7 @@ test('selection reconciler clears native selection for a model-only projection',
     });
 
     expect(editorGetSelection(editor)).toEqual(selection);
-    expect(editor.read.selection.domRange()).toBeNull();
+    expect(editor.read.selection.primaryRange()).toBeNull();
     expect(domSelection.rangeCount).toBe(0);
   } finally {
     vi.useRealTimers();

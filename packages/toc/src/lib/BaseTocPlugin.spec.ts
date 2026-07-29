@@ -13,6 +13,33 @@ const TestParagraphPlugin = createBasePlugin({
   },
 });
 
+const TestHeadingPlugins = [
+  createBasePlugin({
+    key: 'h1',
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+  }),
+  createBasePlugin({
+    key: 'h2',
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+  }),
+  createBasePlugin({
+    key: 'h3',
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
+  }),
+];
+
 describe('BaseTocPlugin', () => {
   it('configures toc as a void element with the shipped defaults', () => {
     const editor = createBaseEditor({
@@ -175,6 +202,137 @@ describe('BaseTocPlugin', () => {
       kind: 'text',
       anchor: { offset: 0, path: [1, 0] },
       focus: { offset: 0, path: [1, 0] },
+    });
+  });
+});
+
+describe('BaseTocPlugin.read.headings', () => {
+  it('returns titled headings with depth, path, and id', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseTocPlugin, ...TestHeadingPlugins],
+      initialValue: [
+        {
+          children: [{ text: 'Title' }],
+          id: 'a',
+          type: 'h1',
+        },
+        {
+          children: [{ text: '' }],
+          id: 'skip-empty',
+          type: 'h2',
+        },
+        {
+          children: [{ text: 'Body' }],
+          id: 'skip-paragraph',
+          type: 'p',
+        },
+        {
+          children: [{ text: 'Section' }],
+          id: 'b',
+          type: 'h3',
+        },
+      ],
+    });
+
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+      {
+        depth: 1,
+        id: 'a',
+        path: [0],
+        title: 'Title',
+        type: 'h1',
+      },
+      {
+        depth: 3,
+        id: 'b',
+        path: [3],
+        title: 'Section',
+        type: 'h3',
+      },
+    ]);
+  });
+
+  it('uses the configured queryHeading override when present', () => {
+    const queryHeading = mock(() => [
+      {
+        depth: 9,
+        id: 'custom',
+        path: [42],
+        title: 'Custom',
+        type: 'custom-heading',
+      },
+    ]);
+    const editor = createBaseEditor({
+      plugins: [
+        BaseTocPlugin.configure({ initialState: { queryHeading } }),
+        ...TestHeadingPlugins,
+      ],
+      initialValue: [
+        {
+          children: [{ text: 'Ignored' }],
+          id: 'a',
+          type: 'h1',
+        },
+      ],
+    });
+
+    expect(editor.plugin(BaseTocPlugin).read.headings()).toEqual([
+      {
+        depth: 9,
+        id: 'custom',
+        path: [42],
+        title: 'Custom',
+        type: 'custom-heading',
+      },
+    ]);
+    expect(queryHeading).toHaveBeenCalledWith(
+      expect.objectContaining({ nodes: expect.any(Object) })
+    );
+  });
+});
+
+describe('BaseTocPlugin.update.insert', () => {
+  it('inserts the default toc node shape', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseTocPlugin],
+      initialValue: [
+        {
+          children: [{ text: 'a' }],
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.plugin(BaseTocPlugin).update.insert({ at: [1] });
+
+    expect(editor.read.children()).toMatchObject([
+      {
+        children: [{ text: 'a' }],
+        type: KEYS.p,
+      },
+      {
+        children: [{ text: '' }],
+        type: KEYS.toc,
+      },
+    ]);
+  });
+
+  it('respects the configured node type', () => {
+    const editor = createBaseEditor({
+      plugins: [BaseTocPlugin.configure({ type: 'custom-toc' })],
+      initialValue: [
+        {
+          children: [{ text: 'a' }],
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.plugin(BaseTocPlugin).update.insert({ at: [1] });
+
+    expect(editor.read.children()[1]).toMatchObject({
+      children: [{ text: '' }],
+      type: 'custom-toc',
     });
   });
 });

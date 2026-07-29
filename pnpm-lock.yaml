@@ -360,6 +360,9 @@ importers:
       '@platejs/csv':
         specifier: workspace:^
         version: link:../../packages/csv
+      '@platejs/cursor':
+        specifier: workspace:^
+        version: link:../../packages/cursor
       '@platejs/date':
         specifier: workspace:^
         version: link:../../packages/date
@@ -902,6 +905,9 @@ importers:
       ai:
         specifier: ^6.0.0
         version: 6.0.116(zod@4.4.3)
+      remark-math:
+        specifier: 6.0.0
+        version: 6.0.0
 
   packages/basic-nodes:
     dependencies:
@@ -949,6 +955,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
 
   packages/browser:
     devDependencies:
@@ -1321,9 +1330,6 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
-      '@platejs/utils':
-        specifier: workspace:^
-        version: link:../utils
       color-name:
         specifier: ^2.0.0
         version: 2.1.0
@@ -1370,6 +1376,9 @@ importers:
       '@platejs/test-utils':
         specifier: workspace:^
         version: link:../test-utils
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
 
   packages/emoji:
     dependencies:
@@ -1520,6 +1529,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
 
   packages/juice:
     dependencies:
@@ -1620,6 +1632,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
       '@platejs/test-utils':
         specifier: workspace:^
         version: link:../test-utils
@@ -1696,9 +1711,6 @@ importers:
       mdast-util-mdx:
         specifier: 3.0.0
         version: 3.0.0
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
       remark-mdx:
         specifier: ^3.1.0
         version: 3.1.1
@@ -2040,6 +2052,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
+      '@platejs/cursor':
+        specifier: workspace:^
+        version: link:../cursor
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
@@ -2049,12 +2064,6 @@ importers:
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
-      '@udecode/react-utils':
-        specifier: workspace:*
-        version: link:../udecode/react-utils
-      '@udecode/utils':
-        specifier: workspace:*
-        version: link:../udecode/utils
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3

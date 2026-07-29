@@ -120,7 +120,6 @@ Call the installed mention update from your combobox item renderer. It inserts t
   value={item.text}
   onClick={() =>
     editor.plugin(MentionPlugin).update.insert({
-      search,
       value: item.text,
     })
   }

@@ -15,7 +15,26 @@ import { DiffMatchPatch } from 'diff-match-patch-ts';
 import baseIsEqual from 'lodash/isEqual.js';
 import isPlainObject from 'lodash/isPlainObject.js';
 
-import type { DiffProps } from './types';
+export type DiffDeletion = {
+  type: 'delete';
+};
+
+export type DiffInsertion = {
+  type: 'insert';
+};
+
+export type DiffIntent = DiffDeletion | DiffInsertion | DiffUpdate;
+
+export type DiffProps = {
+  diff: true;
+  diffIntent: DiffIntent;
+};
+
+export type DiffUpdate = {
+  newProperties: Record<string, unknown>;
+  properties: Record<string, unknown>;
+  type: 'update';
+};
 
 export type DiffProperties = Record<string, unknown>;
 

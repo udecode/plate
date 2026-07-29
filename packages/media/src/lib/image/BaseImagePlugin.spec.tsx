@@ -165,6 +165,33 @@ describe('BaseImagePlugin clipboard behavior', () => {
     });
   });
 
+  it('leaves image URLs rejected by the configured policy to text insertion', () => {
+    const editor = createBaseEditor({
+      plugins: [
+        BaseImagePlugin.configure({
+          initialState: { isUrl: () => false },
+        }),
+      ],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 4, path: [0, 0] },
+        focus: { offset: 4, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: 'test' }], type: KEYS.p }],
+    });
+    const text = 'https://example.com/rejected.png';
+    const data = {
+      files: [],
+      getData: () => text,
+    };
+
+    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+
+    expect(editor.read.children()).toEqual([
+      { children: [{ text: `test${text}` }], type: KEYS.p },
+    ]);
+  });
+
   it.each([
     '//google.com',
     'hello',

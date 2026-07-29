@@ -30,21 +30,18 @@ describe('createPlatePlugin', () => {
   });
 
   it('publishes root API through extension', () => {
-    type CodeBlockConfig = PluginConfig<
-      'codeBlock',
-      { syntax: boolean; syntaxPopularFirst: boolean },
-      {
-        plugin: {
-          getSyntaxState: () => boolean;
-        };
-        toggleSyntax: () => void;
-      }
-    >;
+    const codeBlockInitialState: {
+      syntax: boolean;
+      syntaxPopularFirst: boolean;
+    } = {
+      syntax: true,
+      syntaxPopularFirst: false,
+    };
 
-    createPlatePlugin<CodeBlockConfig>({
+    createPlatePlugin({
       key: 'codeBlock',
       type: 'code_block',
-      initialState: { syntax: true, syntaxPopularFirst: false },
+      initialState: codeBlockInitialState,
       extension: {
         api: {
           plugin: {
@@ -218,16 +215,10 @@ describe('createPlatePlugin', () => {
   });
 
   it('exposes plugin context as a Plate editor method', () => {
-    type MethodConfig = PluginConfig<
-      'methodPlugin',
-      { enabled: boolean },
-      { method: { isEnabled: () => boolean } }
-    >;
-
-    const MethodPlugin = createPlatePlugin<MethodConfig>({
+    const MethodPlugin = createPlatePlugin({
       key: 'methodPlugin',
       initialState: { enabled: true },
-    }).extend<{ extension: { api: MethodConfig['api'] } }>(({ store }) => ({
+    }).extend(({ store }) => ({
       extension: {
         api: {
           method: {

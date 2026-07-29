@@ -201,6 +201,29 @@ semantics.
 An API is not scalable because it exposes every possible mechanism. It scales
 when future capability can be added without making every caller learn it.
 
+### Extension Shape Gate
+
+Keep editor-extension descriptors flat by default. Add a namespace only when
+several fields form one obvious, same-prefix family; lifecycle change handlers
+belong under `on.*`, while `schema`, `state`, `tx`, `read`, `commands`, `api`,
+and `activate` remain distinct root jobs.
+
+- Pure editor-read customization uses typed, descriptor-owned `read`
+  middleware. Do not promote one consumer policy into a special root hook.
+- Ordered cross-extension values are `contributions` to a typed extension
+  point. Do not call them outputs when the registry collects declarations.
+- Immutable declarative input has one `config` channel available to schema,
+  API, validation, and activation. Opaque controllers, functions, and host
+  resources stay in factory closures.
+- Low-level registration slots name the descriptors they contain:
+  `stateFields`, `effectTypes`, `facetProviders`, and `selectionKinds`.
+- Publication-dependent activation work is `afterPublish`; cleanup remains
+  activation-owned. Do not hide activation behind a vague lifecycle bucket.
+
+Reject compatibility aliases that leave two extension grammars after a hard
+cut. Type inference, ordering, rollback, transaction-local reads, generator
+safety, and one-shot delegation are required proof for the surviving shape.
+
 A plugin schema is creation-owned. Declare it in the plugin constructor, using
 the schema factory over typed `initialState` when authored variability is
 intentional;
@@ -281,7 +304,7 @@ blocks, or files. First classify the behavior:
 | Class                    | Test                                                                     | Default shape                                        |
 | ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
 | invariant                | omission makes the owner invalid, unsafe, or semantically incomplete     | keep inline in the owning plugin or runtime          |
-| parameter                | callers want the same capability with different data or thresholds       | use inferred `initialState` and scoped store on that owner |
+| parameter                | callers want the same capability with different data or thresholds       | declare a named `*PluginState`, type its defaults, and use the scoped store |
 | substitutable capability | omission or replacement leaves a complete editor with a defined fallback | promote to an ordinary plugin or extension candidate |
 | product policy           | the choice belongs to one app or kit rather than the framework default   | keep it app-owned and inline unless reused           |
 
@@ -289,6 +312,12 @@ Non-universal behavior is not automatically a plugin. Universal behavior may
 still deserve a replaceable owner when legitimate products implement it
 differently. The deciding property is independent substitution, not how common
 the behavior is.
+
+For plugin parameters, require one named `*PluginState` contract per production
+owner and export it with an exported descriptor. Check owner defaults with a
+typed constant or explicit factory return type; never make the first default
+object the public contract through inference, `as`, or `satisfies`. Consumer
+`.configure({ initialState })` overrides stay partial and inline.
 
 For Plate plugin relationships, classify ownership before choosing a field:
 
@@ -469,15 +498,15 @@ calls an earlier mutation through that same transaction's plugin group,
 `tx[plugin.key].method(...)`; calling a portal one-shot update would open a
 nested transaction.
 
-Inline constructor and justified `.extend()` `extension` objects receive contextual
-typing and need no helper. That inference does not flow backward into an
-extracted reusable editor-extension factory. Such a factory must receive the
-plugin context (or its `defineEditorExtension` member) and return
-`context.defineEditorExtension({ ... })`. The context-bound identity helper
-preserves nested command, input, state, transaction, and dependency inference;
-it is not another builder stage. Imported Plite `defineEditorExtension` owns
-standalone Plite extensions, not extracted Plate plugin factories. Do not wrap
-inline plugin extension objects merely to use the helper.
+Plate constructor and justified `.extend()` `extension` fields contextually
+type both plain objects and callback returns. A public identity helper whose
+only job is to reapply that field's nested type is leaked compiler machinery:
+repair the owning generic and hard-cut the helper instead of preserving it,
+renaming it, or hiding the loss with an annotation, cast, or `any`. Keep
+Plate-context capture inside the authoring callback and extract domain inputs.
+Independently reusable standalone descriptors use Plite
+`defineEditorExtension`; do not pass Plate plugin context into their factories
+or wrap inline Plate contributions in the imported helper.
 
 Author codecs through the constructor callback that supplies their inference
 context:

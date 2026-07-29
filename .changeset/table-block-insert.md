@@ -2,6 +2,9 @@
 "@platejs/table": major
 ---
 
+Export `TablePluginState` as the complete mutable state contract for
+`BaseTablePlugin`.
+
 Consolidate pure table factories and schema services into `editor.api.table`,
 snapshot queries into `editor.read.table`, and mutations into
 `editor.update.table`. Register validated table structure and properties in the
@@ -37,3 +40,8 @@ attributes.
 
 Install table row, cell, and header descriptors through required plugin
 dependencies.
+
+Use exact clipboard slices through `readSlice` and `writeSlice`, preserve
+projected row and cell children when exporting table selections through
+`exportSlice`, and declare table selection DOM projection through
+`primaryRange`.

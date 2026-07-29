@@ -26,7 +26,7 @@ const loadModule = async () => import('./DocxIOPlugin');
 
 describe('DocxIOPlugin import', () => {
   afterEach(() => {
-    cleanDocxMock.mockReset();
+    cleanDocxMock.mockClear();
     convertToHtmlMock.mockReset();
   });
 
@@ -42,13 +42,14 @@ describe('DocxIOPlugin import', () => {
       messages: [{ message: 'warn-1' }],
       value: '<p>Hello</p>',
     }));
+    const arrayBuffer = new ArrayBuffer(8);
 
     const result = await editor
       .plugin(DocxIOPlugin)
-      .api.import(new ArrayBuffer(8), { rtf: '{\\\\rtf1}' });
+      .api.import(arrayBuffer, { rtf: '{\\\\rtf1}' });
 
     expect(convertToHtmlMock).toHaveBeenCalledWith(
-      { arrayBuffer: expect.any(ArrayBuffer) },
+      { arrayBuffer, buffer: arrayBuffer },
       { styleMap: ['comment-reference => sup'] }
     );
     expect(cleanDocxMock).toHaveBeenCalledWith('<p>Hello</p>', '{\\\\rtf1}');
@@ -57,6 +58,42 @@ describe('DocxIOPlugin import', () => {
       nodes: [{ type: 'p', children: [{ text: 'Hello' }] }],
       warnings: ['warn-1'],
     });
+  });
+
+  it('returns comment references without leaking import markers into nodes', async () => {
+    const { DocxIOPlugin } = await loadModule();
+    const editor = createBaseEditor({ plugins: [DocxIOPlugin] });
+
+    convertToHtmlMock.mockImplementation(async () => ({
+      messages: [],
+      value: [
+        '<p>Alpha<a id="comment-ref-1" href="#comment-1">[1]</a>',
+        'Beta<a id="comment-ref-1" href="#comment-1">[1]</a></p>',
+        '<dl><dt id="comment-1">Comment 1</dt>',
+        '<dd><p>First note</p><p>more detail ',
+        '<a href="#comment-ref-1">↑</a></p></dd></dl>',
+      ].join(''),
+    }));
+
+    const result = await editor
+      .plugin(DocxIOPlugin)
+      .api.import(new ArrayBuffer(8));
+
+    expect(result).toEqual({
+      comments: [
+        {
+          id: '1',
+          references: [
+            { offset: 5, path: [0, 0] },
+            { offset: 9, path: [0, 0] },
+          ],
+          text: 'First note more detail',
+        },
+      ],
+      nodes: [{ type: 'p', children: [{ text: 'AlphaBeta' }] }],
+      warnings: [],
+    });
+    expect(JSON.stringify(result.nodes)).not.toContain('DOCX_COMMENT_REF');
   });
 
   it('reports HTML decode rejection instead of silently succeeding', async () => {

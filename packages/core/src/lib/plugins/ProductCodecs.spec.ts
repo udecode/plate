@@ -1,7 +1,6 @@
 import { describe, expect, it, spyOn } from 'bun:test';
 
 import { ContentSlice, property, schema } from '@platejs/plite';
-import { getExtensionRegistry } from '@platejs/plite/internal';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 
 import { createBaseEditor } from '../editor';
@@ -836,28 +835,6 @@ describe('product codecs', () => {
     expect(editor.api.clipboard.insertData(transfer)).toBe(true);
     expect(decodedSlice).toEqual(slice);
     expect(calls).toEqual({ decode: 1, encode: 1 });
-
-    const registrations = (getExtensionRegistry(editor).capabilities.get(
-      'host.codecs'
-    ) ?? []) as readonly {
-      codec: {
-        format: string;
-        key: string;
-        parse?: unknown;
-        serialize?: unknown;
-      };
-    }[];
-    const recordRegistrations = registrations.filter(
-      ({ codec }) => codec.format === 'application/x-records'
-    );
-
-    expect(recordRegistrations).toHaveLength(1);
-    expect(recordRegistrations[0]?.codec).toMatchObject({
-      format: 'application/x-records',
-      key: 'plate:application/x-records',
-      parse: expect.any(Function),
-      serialize: expect.any(Function),
-    });
   });
 
   it('round-trips a seeded corpus of exact rooted and open slices', () => {

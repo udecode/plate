@@ -117,11 +117,10 @@ export const defineStateField = <TValue>(
         `state field "${normalizedDescriptor.key}"`
       );
     },
-    effects: Object.freeze([effect]),
+    effectTypes: Object.freeze([effect]),
     effect,
-    fields: [] as readonly EditorStateField<TValue>[],
+    stateFields: [] as readonly EditorStateField<TValue>[],
     name: `state-field:${normalizedDescriptor.key}`,
-    options: normalizedDescriptor,
     reduce(value, nextEffect) {
       if (nextEffect.type === effect) return nextEffect.value.value;
 
@@ -143,7 +142,7 @@ export const defineStateField = <TValue>(
   } satisfies EditorStateField<TValue>;
 
   field = definition;
-  definition.fields = Object.freeze([field]);
+  definition.stateFields = Object.freeze([field]);
 
   return Object.freeze(field);
 };

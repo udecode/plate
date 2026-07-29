@@ -28,6 +28,7 @@ import {
 } from '@platejs/plite';
 import {
   createDOMEditorCapability,
+  DOM_CLIPBOARD_HANDLERS,
   EDITOR_TO_ROOT_VIEW_EDITORS,
 } from '@platejs/plite-dom/internal';
 
@@ -37,7 +38,7 @@ import {
   getEditorRuntime,
   getEditorRuntimeOwner,
   inheritEditorExtensionRegistry,
-  createInternalClipboardApi,
+  getEditorExtensionContributions,
   setEditorRuntime,
   getLastCommit as editorGetLastCommit,
   getSnapshot as editorGetSnapshot,
@@ -303,16 +304,10 @@ export const createReactRuntimeViewEditor = <
   setEditorRuntime(editor as any, runtime, runtimeOwner);
   inheritEditorExtensionRegistry(editor as any, view as any);
 
-  const { clipboard: domClipboard, ...domApi } = createDOMEditorCapability(
-    toReactRuntimeEditor(editor)
+  const { clipboard, ...domApi } = createDOMEditorCapability(
+    toReactRuntimeEditor(editor),
+    getEditorExtensionContributions(editor as any, DOM_CLIPBOARD_HANDLERS)
   );
-  const clipboard = Object.freeze({
-    ...domClipboard,
-    insertData: createInternalClipboardApi(
-      () => editor as any,
-      () => domClipboard.insertData
-    ).insertData,
-  });
   const reactApi = createReactApi(editor, domApi);
   const baseApi = view.api as Record<PropertyKey, unknown>;
   const viewApi = new Proxy(baseApi, {

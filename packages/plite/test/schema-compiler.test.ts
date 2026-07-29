@@ -1239,6 +1239,60 @@ describe('schema compiler', () => {
     );
   });
 
+  it('compiles exclusive text-property groups into symmetric conflict maps', () => {
+    const ScriptPosition = schema.property.exclusive('plate:script-position');
+    const Article = defineEditorSchema({
+      elements: {
+        paragraph: { content: schema.content.text() },
+      },
+      id: 'article',
+      properties: [
+        schema.textProperty('subscript', property.boolean(), {
+          exclusive: [ScriptPosition],
+        }),
+        schema.textProperty('superscript', property.boolean(), {
+          exclusive: [ScriptPosition],
+        }),
+      ],
+      root: { content: schema.content.type('paragraph') },
+      unknown: 'reject',
+      version: 1,
+    });
+    const compiled = compileEditorSchemaContributions([
+      record(Article.name, Article.schema),
+    ]);
+    const subscript = resolveCompiledSchemaProperty(
+      compiled,
+      'text',
+      'subscript',
+      { root: null, type: 'paragraph' }
+    )!;
+    const superscript = resolveCompiledSchemaProperty(
+      compiled,
+      'text',
+      'superscript',
+      { root: null, type: 'paragraph' }
+    )!;
+
+    assert.deepEqual(subscript.exclusiveGroupIds, ['plate:script-position']);
+    assert.deepEqual(
+      [
+        ...compiled.properties.membersByExclusiveGroup.get(
+          'plate:script-position'
+        )!,
+      ],
+      [subscript.id, superscript.id]
+    );
+    assert.deepEqual(
+      [...compiled.properties.conflictsByPropertyId.get(subscript.id)!],
+      [superscript.id]
+    );
+    assert.deepEqual(
+      [...compiled.properties.conflictsByPropertyId.get(superscript.id)!],
+      [subscript.id]
+    );
+  });
+
   it('canonicalizes and validates raw set defaults at the compiler boundary', () => {
     const raw = (values: readonly unknown[]) =>
       ({

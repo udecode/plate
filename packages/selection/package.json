@@ -41,11 +41,10 @@
   },
   "dependencies": {
     "@platejs/core": "workspace:^",
+    "@platejs/cursor": "workspace:^",
     "@platejs/plite": "workspace:^",
     "@platejs/plite-dom": "workspace:^",
     "@platejs/utils": "workspace:^",
-    "@udecode/react-utils": "workspace:*",
-    "@udecode/utils": "workspace:*",
     "copy-to-clipboard": "^3.3.3",
     "react-compiler-runtime": "^1.0.0"
   },

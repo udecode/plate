@@ -82,7 +82,7 @@ describe('extension method hard cut', () => {
             name: 'commit-slot',
           })
         ),
-      /Editor extension "commit-slot" cannot use commitListeners\. Add onCommit instead\./
+      /Editor extension "commit-slot" cannot use commitListeners\. Add on\.commit instead\./
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
   });
@@ -106,36 +106,40 @@ describe('extension method hard cut', () => {
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
   });
 
-  it('keeps dependency validation on namespace extensions before mutating the editor', () => {
+  it('rejects descriptor dependency cycles before mutating the editor', () => {
     const editor = createEditor();
-    const missingDependency = defineEditorExtension({
-      name: 'dependent',
-      dependencies: ['missing'],
-      state: {
-        dependent() {
-          return {};
-        },
-      },
+    type CyclicExtension = {
+      dependencies?: readonly CyclicExtension[];
+      name: string;
+    };
+    const a: CyclicExtension = { name: 'a' };
+    const b = { dependencies: [a], name: 'b' };
+
+    a.dependencies = [b];
+
+    assert.throws(
+      () => editor.extend(asExtensionInput(a)),
+      /cyclic dependency/
+    );
+    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
+  });
+
+  it('rejects one stable name with different descriptor identities', () => {
+    const editor = createEditor();
+    const first = defineEditorExtension({
+      api: { duplicateIdentity: 'first' },
+      name: 'duplicate-descriptor-name',
     });
-    const a = defineEditorExtension({
-      name: 'a',
-      dependencies: ['b'],
-    });
-    const b = defineEditorExtension({
-      name: 'b',
-      dependencies: ['a'],
+    const second = defineEditorExtension({
+      api: { duplicateIdentity: 'second' },
+      name: 'duplicate-descriptor-name',
     });
 
     assert.throws(
-      () => editor.extend(missingDependency),
-      /missing dependency "missing"/
+      () => editor.extend([first, second]),
+      /"duplicate-descriptor-name" has multiple descriptor identities/
     );
-    assert.throws(() => editor.extend([a, b]), /cyclic dependency/);
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-    assert.equal(
-      editor.read((state) => 'dependent' in state),
-      false
-    );
   });
 
   it('discards earlier namespace groups when a later extension fails', () => {
@@ -181,10 +185,10 @@ describe('extension method hard cut', () => {
       defineEditorExtension({
         activate(_editor, context) {
           assert.equal(context.name, 'runtime-table');
-          assert.equal(context.options.initialMode, 'text');
+          assert.equal(context.config.initialMode, 'text');
 
           let active = true;
-          let current: 'cell' | 'text' = context.options.initialMode;
+          let current: 'cell' | 'text' = context.config.initialMode;
           const mode = {
             cleanup() {
               active = false;
@@ -209,7 +213,7 @@ describe('extension method hard cut', () => {
           });
         },
         name: 'runtime-table',
-        options: { initialMode: 'text' as const },
+        config: { initialMode: 'text' as const },
         state: {
           table() {
             return {
@@ -348,39 +352,6 @@ describe('extension method hard cut', () => {
     assert.deepEqual(editorGetSnapshot(editor).version, 2);
   });
 
-  it('extension clipboard middleware receives the owned transaction', () => {
-    const editor = createEditor();
-    const seenOffsets: number[] = [];
-    let hasTx = false;
-
-    editorReplace(editor, {
-      children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
-      selection: {
-        kind: 'text' as const,
-        anchor: { path: [0, 0], offset: 2 },
-        focus: { path: [0, 0], offset: 2 },
-      },
-    });
-
-    editor.extend(
-      defineEditorExtension({
-        name: 'clipboard-state',
-        clipboard: {
-          insertData(_data, context) {
-            hasTx = 'tx' in context;
-            seenOffsets.push(context.tx.selection()?.anchor.offset ?? -1);
-
-            return context.next();
-          },
-        },
-      })
-    );
-
-    assert.equal(editor.api.clipboard.insertData({} as DataTransfer), false);
-    assert.deepEqual(seenOffsets, [2]);
-    assert.equal(hasTx, true);
-  });
-
   it('detects registered semantic command handlers by token', () => {
     const editor = createEditor({
       extensions: [
@@ -469,62 +440,30 @@ describe('extension method hard cut', () => {
     assert.deepEqual(calls, ['low', 'high']);
   });
 
-  it('validates peer dependencies and conflicts before mutating the editor', () => {
+  it('validates descriptor conflicts before mutating the editor', () => {
     const editor = createEditor();
-    const missingPeer = defineEditorExtension({
-      name: 'needs-peer',
-      peerDependencies: ['peer-host'],
-      state: {
-        needsPeer() {
-          return {};
-        },
-      },
+    const conflictB = defineEditorExtension({ name: 'conflict-b' });
+    const conflictA = defineEditorExtension({
+      conflicts: [conflictB],
+      name: 'conflict-a',
     });
 
     assert.throws(
-      () => editor.extend(missingPeer),
-      /missing peer dependency "peer-host"/
-    );
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-    assert.equal(
-      editor.read((state) => 'needsPeer' in state),
-      false
-    );
-
-    const peerHost = defineEditorExtension({ name: 'peer-host' });
-    const cleanupHost = editor.extend(peerHost);
-    const cleanupPeer = editor.extend(missingPeer);
-
-    assert.equal(
-      editorGetExtensionRegistry(editor).extensions.has('needs-peer'),
-      true
-    );
-
-    cleanupPeer();
-    cleanupHost();
-
-    assert.throws(
-      () =>
-        editor.extend([
-          defineEditorExtension({
-            conflicts: ['conflict-b'],
-            name: 'conflict-a',
-          }),
-          defineEditorExtension({ name: 'conflict-b' }),
-        ]),
+      () => editor.extend([conflictA, conflictB]),
       /Editor extension "conflict-a" conflicts with "conflict-b"/
     );
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
 
+    const lateConflict = defineEditorExtension({ name: 'late-conflict' });
     const cleanupInstalled = editor.extend(
       defineEditorExtension({
-        conflicts: ['late-conflict'],
+        conflicts: [lateConflict],
         name: 'installed-conflict',
       })
     );
 
     assert.throws(
-      () => editor.extend(defineEditorExtension({ name: 'late-conflict' })),
+      () => editor.extend(lateConflict),
       /Editor extension "late-conflict" conflicts with "installed-conflict"/
     );
     assert.equal(
@@ -535,7 +474,7 @@ describe('extension method hard cut', () => {
     cleanupInstalled();
   });
 
-  it('uses latest same-name extensions and enabled false tombstones', () => {
+  it('rejects active same-name descriptors and accepts disabled tombstones', () => {
     const editor = createEditor();
     const first = defineEditorExtension({
       api: {
@@ -564,24 +503,13 @@ describe('extension method hard cut', () => {
       },
     });
 
-    editor.extend([first, second]);
-
-    assert.equal(
-      (editor.api as { duplicate?: { value: string } }).duplicate?.value,
-      'second'
-    );
-    assert.equal(
-      editor.read((state) =>
-        (
-          state as unknown as { duplicate: { value: () => string } }
-        ).duplicate.value()
-      ),
-      'second'
-    );
     assert.throws(
-      () => editor.getApi(first as never),
-      /Editor extension "duplicate" is not installed on this editor\./
+      () => editor.extend([first, second]),
+      /Editor extension "duplicate" has multiple descriptor identities/
     );
+    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
+
+    editor.extend(first);
 
     editor.extend(
       defineEditorExtension({
@@ -694,13 +622,15 @@ describe('extension method hard cut', () => {
       },
     });
     const replacement = defineEditorExtension({
-      dependencies: ['missing'],
       api: {
         duplicate: {
           value: 'replacement',
         },
       },
       name: 'duplicate',
+      validateConfiguration() {
+        throw new Error('invalid replacement');
+      },
       state: {
         duplicate() {
           return { value: () => 'replacement' };
@@ -710,10 +640,7 @@ describe('extension method hard cut', () => {
 
     editor.extend(installed);
 
-    assert.throws(
-      () => editor.extend(replacement),
-      /missing dependency "missing"/
-    );
+    assert.throws(() => editor.extend(replacement), /invalid replacement/);
     assert.equal(
       (editor.api as { duplicate?: { value: string } }).duplicate?.value,
       'installed'

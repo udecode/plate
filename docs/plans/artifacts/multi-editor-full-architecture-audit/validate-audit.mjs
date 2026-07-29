@@ -788,6 +788,11 @@ if (registry) {
         `${expected.issue} registry issue timestamp`
       );
       check(
+        reference.issueHarvestCheckedAt ===
+          issueRefreshes[expected.issue]?.hostVerification?.verifiedAt,
+        `${expected.issue} registry issue cursor matches refresh receipt`
+      );
+      check(
         typeof reference.repoKey === 'string' && reference.repoKey.length > 0,
         `${expected.issue} registry repo key`
       );

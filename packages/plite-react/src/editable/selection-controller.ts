@@ -57,7 +57,7 @@ import { isEditableOutsideFocusBoundarySettling } from './input-state';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
 import {
   getSelection as editorGetSelection,
-  getSelectionDOMRange,
+  getSelectionPrimaryRange,
   setEditorFocused,
   toInternalRoot,
 } from './runtime-editor-api';
@@ -1386,7 +1386,7 @@ export const syncEditableDOMSelectionToEditor = ({
     const preserveScroll =
       options?.preserveScroll || shouldSkipSelectionScroll(editor);
     const viewSelection = readPliteViewSelection(editor);
-    const projectedSelection = getSelectionDOMRange(editor, selection);
+    const projectedSelection = getSelectionPrimaryRange(editor, selection);
 
     if (viewSelection || !projectedSelection) {
       state.isUpdatingSelection = true;

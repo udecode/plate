@@ -7,7 +7,6 @@ import {
   schema,
   target,
 } from '@platejs/plite';
-import { getExtensionRegistry } from '@platejs/plite/internal';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import fc from 'fast-check';
 
@@ -15,31 +14,20 @@ import { createBaseEditor } from '../../editor';
 import { createBasePlugin } from '../../plugin';
 import { BaseParagraphPlugin } from '../paragraph';
 
-const getHtmlRegistrations = (editor: ReturnType<typeof createBaseEditor>) =>
-  (getExtensionRegistry(editor).capabilities.get('host.codecs') ?? []).filter(
-    (registration: any) => registration.codec.format === 'text/html'
-  ) as readonly {
-    codec: {
-      format: string;
-      key: string;
-      owns?: readonly unknown[];
-      parse?: unknown;
-      serialize?: unknown;
-    };
-  }[];
-
 describe('compilePlateHtmlCodec', () => {
-  it('publishes one schema-owning plate:html host codec', () => {
+  it('publishes HTML through the host codec boundary', () => {
     const editor = createBaseEditor();
-    const registrations = getHtmlRegistrations(editor);
+    const output = new DataTransfer();
+    const formats = writeHostFragmentData(
+      editor,
+      output,
+      ContentSlice.closed(editor.read.children())
+    );
 
-    expect(registrations).toHaveLength(1);
-    expect(registrations[0]?.codec).toMatchObject({
-      format: 'text/html',
-      key: 'plate:html',
-      owns: [{ kind: 'schema' }],
-      parse: expect.any(Function),
-    });
+    expect(formats.filter((format) => format === 'text/html')).toEqual([
+      'text/html',
+    ]);
+    expect(output.getData('text/html')).toBe('<p></p>');
   });
 
   it('decodes and encodes one inferred element rule', () => {

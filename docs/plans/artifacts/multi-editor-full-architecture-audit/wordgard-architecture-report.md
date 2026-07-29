@@ -10,7 +10,7 @@ Lexical, and ProseMirror before assigning P0-P3.
 | Field              | Verified value                                                                                       |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |
 | Checkout           | clean local `../wordgard`                                                                            |
-| Commit             | `8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e`                                                           |
+| Commit             | `01eb2b5eae509509677345fd603acad001827dff`                                                           |
 | Branch             | `main`                                                                                               |
 | Upstream           | `origin/main`                                                                                        |
 | Origin             | `https://code.haverbeke.berlin/wordgard/wordgard.git`                                                |
@@ -22,6 +22,46 @@ The exact commit, clean state, hashes, tracked-file list, declarations, and
 semantic mappings are machine-recorded in
 `wordgard-source-manifest.json`. The generator refuses a different or dirty
 Wordgard checkout.
+
+### 2026-07-27 incremental sync
+
+The registered cursor advanced from
+`8fd8880d1a16bc6306b1e59f8649b1d9021e3d1e` to
+`01eb2b5eae509509677345fd603acad001827dff`. The complete delta is one
+private statement in `src/editor/input.ts`: on iOS or Android, every `Enter`
+and `Backspace` skips keymap dispatch at `keydown` and reaches the existing
+`beforeinput` command/reconciliation path
+(`../wordgard/src/editor/input.ts:710-714`,
+`../wordgard/src/editor/input.ts:812-858`).
+
+This changes no public type, representation, owner, package export, test,
+declaration count, or semantic concept. It directly affects `WG-VIEW-010` and
+`WG-VIEW-012`, depends on `WG-VIEW-009`, and exposes a `WG-PROOF-004` gap:
+the commit adds no test, Wordgard's browser runner is desktop Chromium, and its
+Android Enter scenario remains a FIXME. Issue 23 remains open, and the author
+describes the patch as reducing autocapitalization disruption rather than
+eliminating every stale virtual-keyboard-context case. Issue 24 is closed with
+the narrower claim that the same commit should preserve iOS swipe Backspace's
+word-level `beforeinput` unit; neither issue adds automated or raw-device proof.
+
+Comparison and verdict:
+
+- `WG-VIEW-009`: local stronger; keep Plite's canonical model command and
+  native DOM reconciliation owners, and mine the donor scenario as proof
+  pressure.
+- `WG-VIEW-010`: Wordgard has the stronger default mobile phase choice, but
+  local correctness is still insufficiently evidenced. Defer a Plite routing
+  change until raw-device iOS swipe and Android input traces prove the current
+  policy wrong.
+- `WG-VIEW-012`: local stronger overall; reject Wordgard's blanket
+  platform/key-name bypass because it also suppresses custom mobile
+  `KeyBinding` behavior.
+- `WG-PROOF-004`: add a raw-device gate for line-start
+  swipe/autocapitalization after Enter/Backspace plus exactly-once structural
+  commands. A mobile viewport cannot close it.
+
+No material P0-P3 candidate, public/internal proposed shape, packet order, or
+six-packet parent recommendation changes.
 
 ## Coverage closure
 
@@ -105,8 +145,8 @@ the JSON artifact.
 | `WG-VIEW-004`         | A custom tile tree incrementally maps changed ranges, reuses tile/DOM identity, renders wrappers/widgets, and preserves live composition DOM.                                                                                                    | `../wordgard/src/editor/tile.ts:13-545`; `../wordgard/src/editor/tile.ts:670-1153`; `../wordgard/src/editor/tile.ts:1196-1220`                                                                                      | Sophisticated and locally coherent, but Wordgard avoids React/Plate/multi-root constraints. Defer a second Plite renderer until a consumer and benchmark prove durable value.                                                   |
 | `WG-VIEW-005`         | Separate Widget, Point, and Range concepts use sorted immutable sets, map through changes, derive invalidation ranges, and share a heap iterator at render time.                                                                                 | `../wordgard/src/editor/decoration.ts:10-393`; `../wordgard/src/editor/decoration.ts:580-1098`; `../wordgard/src/editor/decoration.ts:1099-1429`                                                                    | Strong private substrate pressure. Wordgard still duplicates point/range storage classes; a shared private kernel with separate public concepts is cleaner.                                                                     |
 | `WG-VIEW-006..008`    | DOM/model mapping, geometry, selection, MutationObserver, resize, scroll, and theme observation are imperative-view owners.                                                                                                                      | `../wordgard/src/editor/dom.ts:3-310`; `../wordgard/src/editor/coords.ts:7-64`; `../wordgard/src/editor/selection.ts:1-123`; `../wordgard/src/editor/domobserver.ts:16-258`                                         | Mine browser invariants, not global integer APIs. Shadow DOM and platform workarounds require browser proof.                                                                                                                    |
-| `WG-VIEW-009`         | `beforeinput` can let native DOM mutation happen while dispatching a model command; `input` records the actual DOM delta. A lazy mapping reconciles pending model transactions with native changes and cancels duplicate effects.                | `../wordgard/src/editor/input.ts:41-224`; `../wordgard/src/editor/input.ts:649-899`; `../wordgard/test/webtest-dom-changes.ts:51-147`                                                                               | One of the strongest current donor mechanisms. Compare local native-input routing and dirty-host mapping exhaustively before changing it. Do not expose Wordgard’s integer ledger.                                              |
-| `WG-VIEW-010..012`    | Composition, mouse, drag/drop, paste, keymaps, input rules, and event observers/handlers compile from precedence-ordered facets. Clipboard carries slice context and browser-specific HTML wrappers.                                             | `../wordgard/src/editor/input.ts:326-899`; `../wordgard/src/editor/clipboard.ts:5-167`; `../wordgard/src/editor/keymap.ts:1-170`; `../wordgard/src/editor/inputrule.ts:1-139`                                       | Behavior/test source is valuable. Public event precedence and one package owning product behavior are not automatically transferable.                                                                                           |
+| `WG-VIEW-009`         | `beforeinput` can let native DOM mutation happen while dispatching a model command; `input` records the actual DOM delta. A lazy mapping reconciles pending model transactions with native changes and cancels duplicate effects. Mobile Enter/Backspace now enters this phase after bypassing keydown bindings. | `../wordgard/src/editor/input.ts:41-224`; `../wordgard/src/editor/input.ts:649-900`; `../wordgard/src/editor/input.ts:710-714`; `../wordgard/test/webtest-dom-changes.ts:51-147`                                                  | One of the strongest donor mechanisms, but the new mobile path has no direct test. Keep the stronger local owner, mine the scenario, and do not expose Wordgard's integer ledger.                                               |
+| `WG-VIEW-010..012`    | Composition, mouse, drag/drop, paste, keymaps, input rules, and event handlers compile from precedence-ordered facets. On iOS/Android, every Enter/Backspace bypasses keymaps at keydown and falls through to beforeinput command routing. Clipboard carries slice context and browser-specific HTML wrappers.   | `../wordgard/src/editor/input.ts:326-900`; `../wordgard/src/editor/input.ts:710-714`; `../wordgard/src/editor/clipboard.ts:5-167`; `../wordgard/src/editor/keymap.ts:1-170`; `../wordgard/src/editor/inputrule.ts:1-139`          | The default virtual-keyboard phase choice is useful proof pressure. Reject the blanket key-name guard as an implementation transplant because it weakens custom mobile bindings and lacks real-device proof.                    |
 | `WG-VIEW-013..015`    | Themes, editor attributes, panels, dialogs, menus, tooltips, placeholders, drawn cursor, and drop cursor ship in the editor package.                                                                                                             | `../wordgard/src/editor/theme.ts:1-189`; `../wordgard/src/editor/panel.ts:14-206`; `../wordgard/src/editor/dialog.ts:8-172`; `../wordgard/src/editor/menubar.ts:18-563`                                             | Useful proof of extension composition; wrong ownership for Plite core. Plate/app code owns product UI.                                                                                                                          |
 | `WG-CMD-001`          | A command is its function identity and default implementation. Handlers register in a facet and first truthy result wins. Calling the function directly bypasses handlers.                                                                       | `../wordgard/src/command/command.ts:4-97`                                                                                                                                                                           | Blunt verdict: concise but too magical. Reject function identity, bypassable dispatch, and mixed boolean/spec/side-effect truth.                                                                                                |
 | `WG-CMD-002..003`     | Most editing commands are pure `{state} -> false \| Transaction.Spec`; DOM geometry commands accept `Wordgard`. Helpers construct structural `ChangeSet.Spec` values.                                                                            | `../wordgard/src/command/commands.ts:20-580`; `../wordgard/src/command/helper.ts:7-625`                                                                                                                             | Pure command specs are strong. Keep imperative effects at host/product boundaries and use descriptor-owned typed IDs/interception.                                                                                              |
@@ -117,7 +157,7 @@ the JSON artifact.
 | `WG-TABLE-001..003`   | Table schema is a product bundle. A weak-map table-relative grid cache diagnoses collisions/missing cells/overlong spans; corrections rectangularize affected tables.                                                                            | `../wordgard/src/table/table.ts:9-94`; `../wordgard/src/table/tablemap.ts:15-234`; `../wordgard/src/table/correct.ts:10-45`                                                                                         | Strong product algorithm and cache locality. Keep in Plate table, not Plite substrate.                                                                                                                                          |
 | `WG-TABLE-004..005`   | `CellSelection` is a registered custom selection with multiple ranges and rectangular navigation. Pure commands add/remove rows/columns, toggle headers, merge, and split cells.                                                                 | `../wordgard/src/table/cellselection.ts:93-240`; `../wordgard/src/table/tablecommands.ts:9-290`                                                                                                                     | Excellent cross-check for extensible selection protocol and table command law. Product geometry remains Plate-owned.                                                                                                            |
 | `WG-TABLE-006..007`   | Table paste fits open slices into cells, normalizes rectangular input, grows/clips grids, isolates crossing spans, composes changes, and selects the result. A menu dimension picker inserts tables.                                             | `../wordgard/src/table/tablepaste.ts:10-266`; `../wordgard/src/table/menu.ts:12-153`                                                                                                                                | High-value table behavior and tests; do not promote table policy into Plite merely because generic fitting participates.                                                                                                        |
-| `WG-PROOF-001..004`   | 27 source files, 6,039 lines, 24 runnable files, 644 `it(...)` call sites, 33 behavior families. Includes generated change laws and current dirty-DOM mutation stress.                                                                           | `../wordgard/test/test-change.ts:23-574`; `../wordgard/test/test-facet.ts:15-227`; `../wordgard/test/test-history.ts:41-581`; `../wordgard/test/webtest-dom-changes.ts:51-147`                                      | Initial harvest is complete under `docs/editor-test-harvester/wordgard/`. It maps portable laws separately from representation and Plate-owned policy.                                                                          |
+| `WG-PROOF-001..004`   | 27 source files, 6,039 lines, 24 runnable files, 644 `it(...)` call sites, 33 behavior families. Includes generated change laws and dirty-DOM mutation stress, but no iOS/Android keydown-autocapitalization proof.                                                                                              | `../wordgard/test/test-change.ts:23-574`; `../wordgard/test/test-facet.ts:15-227`; `../wordgard/test/test-history.ts:41-581`; `../wordgard/test/webtest-dom-changes.ts:51-147`; `../wordgard/test/webtest-composition.ts:184-186` | The incremental harvest is delta-complete under `docs/editor-test-harvester/wordgard/`. The source-only mobile invariant remains a raw-device proof gate, not a covered test family.                                            |
 
 ## Ranked Wordgard pressure for the parent comparison
 
@@ -312,7 +352,15 @@ The router lets selected native edits reach the DOM, derives the actual delta,
 maps intervening model commits, recognizes when the pending model change
 already matches the DOM result, and prevents duplicate application
 (`../wordgard/src/editor/input.ts:83-224`,
-`../wordgard/src/editor/input.ts:649-899`).
+`../wordgard/src/editor/input.ts:649-900`). Mobile Enter/Backspace now reaches
+this owner by skipping keymap dispatch at keydown. Structural commands remain
+model-owned at `beforeinput`; only eligible inline native edits reach the DOM.
+The phase change preserves semantic input units such as
+`deleteWordBackward`, but it is a real-device proof case, not a proposal to
+hand all mobile editing to the browser
+(`../wordgard/src/editor/input.ts:682-707`,
+`../wordgard/src/editor/input.ts:710-714`,
+`../wordgard/src/editor/input.ts:812-858`).
 
 Local comparison question: is Plite React equivalent under stacked native
 mutations, cross-host offsets, model/native interleaving, command
@@ -529,6 +577,8 @@ equivalent local mechanism is complete.
 - One bounded DOM phase scheduler with restart diagnostics.
 - Optional plugin/provider fault isolation.
 - Native DOM/model delta reconciliation and its new randomized test family.
+- Mobile Enter/Backspace phase selection as a raw-device behavior invariant;
+  mine the case, not the blanket key-name guard.
 - Incremental invalidation, stable DOM identity, and mapped point/range
   behavior.
 - Lazy history mapping and invertible effect integration.
@@ -556,6 +606,8 @@ equivalent local mechanism is complete.
 - Decoration-driven editability or atom semantics.
 - A public mega-layer that merges widgets, points, ranges, annotations, and
   product rendering.
+- A blanket iOS/Android Enter/Backspace keydown bypass that suppresses every
+  custom binding regardless of modifier or physical versus virtual keyboard.
 
 ### Defer
 
@@ -563,6 +615,9 @@ equivalent local mechanism is complete.
 - Wordgard’s custom bidi implementation as an implementation transplant.
 - Strong global position caches without retention benchmarks.
 - Central OT server helpers without a real non-Yjs consumer.
+- Any local mobile key-routing change before raw-device iOS swipe/
+  autocapitalization and Android Enter/Backspace traces prove a correctness
+  failure and exactly-once command semantics.
 
 ## Test-harvester closure
 
@@ -573,14 +628,18 @@ The independent MIT-licensed harvest is current at the audited commit:
 - `docs/editor-test-harvester/wordgard/test-index.md`
 
 Counts: 27/27 files classified, 24/24 runnable files indexed, 644/644 declared
-`it(...)` call sites, 33 behavior families, zero uncertain. The newly added
-`test/webtest-dom-changes.ts` family covers stacked native mutations,
-cross-host offset correction, model/native interleaving, command
-reinterpretation, new text hosts, and randomized dirty-DOM schedules.
+`it(...)` call sites, 33 behavior families, zero uncertain. The incremental
+range contains no test, fixture, or harness changes; the test tree is identical
+at both commits. The existing `test/webtest-dom-changes.ts` family covers
+stacked native mutations, cross-host offset correction, model/native
+interleaving, command reinterpretation, new text hosts, and randomized
+dirty-DOM schedules.
 
-This was a report-only harvest. It found current Plite/Plate owners but did not
-rerun those suites, so “covered” is source evidence rather than fresh runtime
-proof.
+The source-only mobile keydown change is not covered by those tests. Focused
+Plite policy proof passed 63 unit tests, but raw-device iOS/Android behavior
+remains unproved. The cursor advances because the unchanged test corpus and
+new proof gap are both fully accounted for, not because the behavior is
+claimed fixed.
 
 ## Closure statement
 

@@ -21,9 +21,10 @@ export const BaseSuggestionKit = [
       nodeProps: {
         nodeKey: '',
         styleKey: 'cssText',
-        transformProps: ({ api, element, props }) => {
+        transformProps: ({ editor, element, props }) => {
           if (!element) return props;
 
+          const { api } = editor.plugin(BaseSuggestionPlugin);
           let suggestionData = api.suggestionData(element);
 
           if (!suggestionData) {

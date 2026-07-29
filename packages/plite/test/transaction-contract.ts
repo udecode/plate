@@ -446,8 +446,10 @@ describe('plite transaction contract', () => {
     const seenChanges: DocumentChange[] = [];
     const unextend = editor.extend({
       name: 'transaction-change-spy',
-      onTransactionChange({ change }) {
-        seenChanges.push(change);
+      on: {
+        transactionChange({ change }) {
+          seenChanges.push(change);
+        },
       },
     });
 
@@ -493,14 +495,16 @@ describe('plite transaction contract', () => {
     }> = [];
     const unextend = editor.extend({
       name: 'lazy-transaction-change-spy',
-      onTransactionChange({ changed }) {
-        observations.push({
-          paths: changed.paths(),
-          properties: changed.has('properties'),
-          ranges: changed.topLevelRanges(),
-          structure: changed.has('structure'),
-          text: changed.has('text'),
-        });
+      on: {
+        transactionChange({ changed }) {
+          observations.push({
+            paths: changed.paths(),
+            properties: changed.has('properties'),
+            ranges: changed.topLevelRanges(),
+            structure: changed.has('structure'),
+            text: changed.has('text'),
+          });
+        },
       },
     });
     const classified = DocumentChange.between(
@@ -548,9 +552,11 @@ describe('plite transaction contract', () => {
     }> = [];
     const unextend = editor.extend({
       name: 'bounded-transaction-change-paths',
-      onTransactionChange({ changed }) {
-        paths.push(...changed.paths());
-        ranges.push(...changed.topLevelRanges());
+      on: {
+        transactionChange({ changed }) {
+          paths.push(...changed.paths());
+          ranges.push(...changed.topLevelRanges());
+        },
       },
     });
 
@@ -1463,12 +1469,14 @@ describe('plite transaction contract', () => {
         api: { inline: capability },
         corrections: [correction],
         name: 'registry-slots',
-        onCommit: commitListener,
+        on: {
+          commit: commitListener,
+        },
       })
     );
     const registry = editorGetExtensionRegistry(editor);
 
-    assert.deepEqual(registry.capabilities.get('inline'), [capability]);
+    assert.equal((editor.api as { inline?: unknown }).inline, capability);
     assert.equal(
       registry.corrections.get('registry-slots:corrections.0'),
       correction
@@ -1479,7 +1487,7 @@ describe('plite transaction contract', () => {
 
     const clearedRegistry = editorGetExtensionRegistry(editor);
 
-    assert.equal(clearedRegistry.capabilities.has('inline'), false);
+    assert.equal('inline' in editor.api, false);
     assert.equal(
       clearedRegistry.corrections.has('registry-slots:corrections.0'),
       false
@@ -1507,8 +1515,10 @@ describe('plite transaction contract', () => {
         });
       },
       name: 'lifecycle-extension',
-      onCommit({ commit }) {
-        commits.push(commit);
+      on: {
+        commit({ commit }) {
+          commits.push(commit);
+        },
       },
     });
 
@@ -1731,8 +1741,10 @@ describe('plite transaction contract', () => {
 
     const unextendCommitListener = editor.extend({
       name: 'command-commit-listener',
-      onCommit({ commit }) {
-        extensionCommits.push(commit);
+      on: {
+        commit({ commit }) {
+          extensionCommits.push(commit);
+        },
       },
     });
     extensionCommits.length = 0;

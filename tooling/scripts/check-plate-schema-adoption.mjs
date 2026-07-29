@@ -64,6 +64,9 @@ const plateEditorConstructionOptionIndexes = new Map([
   ['usePlateEditor', 0],
   ['usePlateViewEditor', 0],
 ]);
+const defaultPlateEditorConstructorNames = new Map(
+  [...plateEditorConstructionOptionIndexes.keys()].map((name) => [name, name])
+);
 const skippedDirectoryNames = new Set([
   '.next',
   '.contentlayer',
@@ -132,6 +135,7 @@ const packageTestSourcePattern =
 const baseOrStaticSourcePattern =
   /(?:^|\/)(?:[^/]*-base-kit|[^/]*-static)\.[cm]?[jt]sx?$|(?:^|\/)static(?:\/|$)/;
 const reactPluginEntrypointPattern = /^(?:platejs|@platejs\/[^/]+)\/react$/;
+const plateModulePattern = /^(?:platejs|@platejs\/)/;
 const liveRegistryNodeModulePattern = /^@\/registry\/ui\/.*-node$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
@@ -140,27 +144,44 @@ const intentionalProductionExtendStageChains = new Map([
     'packages/core/src/lib/plugins/affinity/AffinityPlugin.ts',
     [[['extension']]],
   ],
+  ['packages/core/src/lib/plugins/dom/DOMPlugin.ts', [[['extension']]]],
   [
     'packages/core/src/lib/plugins/override/OverridePlugin.ts',
     [[['extension']]],
   ],
-  ['packages/basic-nodes/src/lib/BaseBlockquotePlugin.ts', [[['shortcuts']]]],
-  [
-    'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
-    [[['shortcuts']], [['decorate', 'extension']]],
-  ],
+  ['packages/basic-nodes/src/lib/BaseBlockPlugins.ts', [[['shortcuts']]]],
+  ['packages/code-block/src/lib/BaseCodeBlockPlugin.ts', [[['shortcuts']]]],
   ['packages/comment/src/lib/BaseCommentPlugin.ts', [[['update']]]],
-  ['packages/indent/src/lib/BaseIndentPlugin.ts', [[['shortcuts']]]],
-  ['packages/layout/src/lib/BaseColumnPlugin.ts', [[['shortcuts']]]],
   [
-    'packages/list/src/lib/BaseListPlugin.tsx',
+    'packages/list/src/lib/BaseListPlugin.ts',
     [[['override', 'update'], ['extension']]],
   ],
   [
     'packages/list-classic/src/lib/BaseListPlugin.ts',
     [[['read'], ['update'], ['extension']]],
   ],
-  ['packages/link/src/lib/BaseLinkPlugin.ts', [[['extension', 'update']]]],
+  ['packages/link/src/lib/BaseLinkPlugin.ts', [[['update'], ['extension']]]],
+  [
+    'packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts',
+    [[['inject']]],
+  ],
+  ['packages/csv/src/lib/CsvPlugin.ts', [[['codecs']]]],
+  ['packages/indent/src/lib/BaseIndentPlugin.ts', [[['codecs', 'shortcuts']]]],
+  ['packages/layout/src/lib/BaseColumnPlugin.ts', [[['shortcuts']]]],
+  ['packages/selection/src/react/BlockMenuPlugin.tsx', [[['handlers']]]],
+  [
+    'packages/selection/src/react/BlockSelectionPlugin.tsx',
+    [[['api', 'extension'], ['inject', 'shortcuts', 'update'], ['render']]],
+  ],
+  [
+    'packages/selection/src/react/CursorOverlayPlugin.tsx',
+    [[['extension', 'handlers', 'useHooks']]],
+  ],
+  ['packages/tag/src/lib/BaseTagPlugin.ts', [[['read']]]],
+  [
+    'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx',
+    [[['inject', 'useHooks']]],
+  ],
   [
     'packages/table/src/lib/BaseTablePlugin.ts',
     [
@@ -176,17 +197,24 @@ const intentionalProductionExtendStageChains = new Map([
     ],
   ],
   [
-    'packages/ai/src/react/copilot/CopilotPlugin.tsx',
+    'packages/ai/src/react/CopilotPlugin.tsx',
     [[['api'], ['extension', 'handlers', 'render', 'selectors', 'shortcuts']]],
   ],
   [
-    'packages/ai/src/react/ai-chat/AIChatPlugin.ts',
+    'packages/ai/src/react/AIChatPlugin.ts',
     [[['api', 'read', 'selectors', 'update'], ['extension']]],
   ],
   [
     'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
     [[['read'], ['update'], ['extension']]],
   ],
+  [
+    'packages/footnote/src/lib/BaseFootnotePlugin.ts',
+    [[['update'], ['update'], ['update'], ['update']]],
+  ],
+  ['packages/media/src/lib/BaseMediaPlugin.ts', [[[]], [[]], [[]]]],
+  ['packages/media/src/lib/image/BaseImagePlugin.ts', [[[], ['extension']]]],
+  ['packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts', [[[]]]],
 ]);
 const allowedSchemaFactoryBindings = new Set([
   'initialState',
@@ -199,10 +227,8 @@ const allowedSchemaFactoryBindings = new Set([
 // Raw queries are reserved for runtime discovery and contextual contract laws.
 // Every owning file has an exact reviewed count so tests cannot hide new drift.
 const intentionalRawSchemaQueryCounts = new Map([
-  ['packages/ai/src/lib/BaseAIPlugin.preview.spec.ts', 6],
-  ['packages/basic-styles/src/lib/BaseLineHeightPlugin.spec.ts', 2],
-  ['packages/basic-styles/src/lib/BaseTextAlignPlugin.spec.ts', 2],
-  ['packages/basic-styles/src/lib/BaseTextIndentPlugin.spec.ts', 2],
+  ['packages/ai/src/lib/BaseAIPlugin.spec.tsx', 6],
+  ['packages/basic-styles/src/lib/BaseStylePlugins.spec.ts', 6],
   ['packages/comment/src/lib/BaseCommentPlugin.spec.ts', 5],
   ['packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/core/src/lib/plugins/html/HtmlPlugin.ts', 5],
@@ -210,27 +236,12 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/plite/test/schema-contract.ts', 5],
   ['packages/plite/test/schema-inference-contract.ts', 2],
   ['packages/plite/test/schema-validation-diagnostics.test.ts', 4],
-  ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.ts', 12],
+  ['packages/excalidraw/src/lib/BaseExcalidrawPlugin.spec.ts', 1],
+  ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.tsx', 12],
   ['packages/table/src/lib/BaseTablePlugin.schema.spec.ts', 5],
 ]);
-const intentionalExplicitSchemaFactoryCounts = new Map([
-  ['packages/core/src/internal/plugin/compilePlateModel.spec.ts', 1],
-  ['packages/core/src/lib/plugin/createBasePlugin.spec.ts', 1],
-  ['packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts', 1],
-]);
+const intentionalExplicitSchemaFactoryCounts = new Map();
 const intentionalNamedSchemaLineages = new Map([
-  [
-    'packages/core/src/react/editor/TPlateEditorCore.spec.ts',
-    new Map([['persisted-document@7', 1]]),
-  ],
-  [
-    'packages/core/src/lib/editor/withPlite.slow.ts',
-    new Map([['plate-core-test@4', 1]]),
-  ],
-  [
-    'packages/core/src/internal/plugin/plateModelPublication.spec.ts',
-    new Map([['plate-test:core:internal-plugin-identity-snapshot@1', 1]]),
-  ],
   ['content/docs/(guides)/editor.cn.mdx', new Map([['acme-document@3', 1]])],
   ['content/docs/(guides)/editor.mdx', new Map([['acme-document@3', 1]])],
   [
@@ -252,9 +263,6 @@ const requiredNamedSchemaLineageFiles = new Set([
   'content/docs/(guides)/editor.mdx',
   'content/docs/(plugins)/(collaboration)/yjs.cn.mdx',
   'content/docs/(plugins)/(collaboration)/yjs.mdx',
-  'packages/core/src/internal/plugin/plateModelPublication.spec.ts',
-  'packages/core/src/lib/editor/withPlite.slow.ts',
-  'packages/core/src/react/editor/TPlateEditorCore.spec.ts',
   'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
   'packages/yjs/README.md',
 ]);
@@ -263,9 +271,9 @@ if (
   [...intentionalRawSchemaQueryCounts.values()].reduce(
     (total, count) => total + count,
     0
-  ) !== 53
+  ) !== 54
 ) {
-  throw new Error('Plate raw schema query allowlist must contain 53 calls.');
+  throw new Error('Plate raw schema query allowlist must contain 54 calls.');
 }
 
 const toPosixPath = (path) => path.split(sep).join('/');
@@ -273,12 +281,14 @@ const toPosixPath = (path) => path.split(sep).join('/');
 const getPropertyName = (node) => {
   if (node?.type === 'Identifier') return node.name;
   if (node?.type === 'StringLiteral') return node.value;
+  if (node?.type === 'NumericLiteral') return String(node.value);
 
   return;
 };
 
 const getStaticString = (node) => {
   if (node?.type === 'StringLiteral') return node.value;
+  if (node?.type === 'NumericLiteral') return String(node.value);
   if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
     return node.quasis[0]?.value.cooked;
   }
@@ -292,6 +302,43 @@ const getObjectProperty = (node, name) =>
         (property) =>
           property.type !== 'SpreadElement' &&
           getPropertyName(property.key) === name
+      )
+    : undefined;
+
+const getResolvedObjectPropertyName = (
+  property,
+  staticStringBindings = new Map()
+) => {
+  if (
+    property?.type !== 'ObjectProperty' &&
+    property?.type !== 'ObjectMethod'
+  ) {
+    return;
+  }
+  if (!property.computed) return getPropertyName(property.key);
+
+  const key = unwrapTypedExpression(property.key);
+
+  return (
+    getStaticString(key) ??
+    (key?.type === 'Identifier'
+      ? typeof staticStringBindings.getAt === 'function'
+        ? staticStringBindings.getAt(key.name, property.start, property)
+        : staticStringBindings.get(key.name)
+      : undefined)
+  );
+};
+
+const getResolvedObjectProperty = (
+  node,
+  name,
+  staticStringBindings = new Map()
+) =>
+  node?.type === 'ObjectExpression'
+    ? node.properties.find(
+        (property) =>
+          property.type !== 'SpreadElement' &&
+          getResolvedObjectPropertyName(property, staticStringBindings) === name
       )
     : undefined;
 
@@ -310,61 +357,814 @@ const unwrapTypedExpression = (node) => {
   return node;
 };
 
-const readNamedSchemaLineage = (node) => {
-  const value = unwrapTypedExpression(node);
+const collectStaticStringBindings = (ast) => {
+  const rootScope = {
+    bindings: new Map(),
+    functionOwner: undefined,
+    parent: undefined,
+  };
 
-  if (value?.type !== 'ObjectExpression') return;
+  rootScope.functionOwner = rootScope;
 
-  const id = unwrapTypedExpression(getObjectProperty(value, 'id')?.value);
-  const version = unwrapTypedExpression(
-    getObjectProperty(value, 'version')?.value
-  );
+  const childScopeByNode = new WeakMap();
+  const parentByNode = new WeakMap();
+  const scopeByNode = new WeakMap();
+  const isFunctionNode = (node) =>
+    [
+      'ArrowFunctionExpression',
+      'FunctionDeclaration',
+      'FunctionExpression',
+      'ObjectMethod',
+    ].includes(node?.type);
+  const visitScopes = (node, scope, parent) => {
+    if (!node || typeof node !== 'object') return;
 
-  if (id?.type !== 'StringLiteral' || version?.type !== 'NumericLiteral') {
-    return;
-  }
+    parentByNode.set(node, parent);
+    scopeByNode.set(node, scope);
 
-  return { id: id.value, version: version.value };
+    let childScope = scope;
+
+    if (isFunctionNode(node)) {
+      childScope = {
+        bindings: new Map(),
+        functionOwner: undefined,
+        parent: scope,
+        parentFunction: scope.functionOwner,
+      };
+      childScope.functionOwner = childScope;
+      childScopeByNode.set(node, childScope);
+    } else if (node.type === 'BlockStatement' || node.type === 'CatchClause') {
+      childScope = {
+        bindings: new Map(),
+        functionOwner: scope.functionOwner,
+        parent: scope,
+      };
+      childScopeByNode.set(node, childScope);
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+      if (
+        ['comments', 'errors', 'extra', 'loc', 'tokens'].includes(key) ||
+        key === 'start' ||
+        key === 'end'
+      ) {
+        continue;
+      }
+      if (Array.isArray(value)) {
+        for (const child of value) visitScopes(child, childScope, node);
+      } else if (value && typeof value === 'object' && value.type) {
+        visitScopes(value, childScope, node);
+      }
+    }
+  };
+
+  visitScopes(ast, rootScope);
+
+  const findBinding = (scope, name) => {
+    let current = scope;
+
+    while (current) {
+      const binding = current.bindings.get(name);
+
+      if (binding) return binding;
+
+      current = current.parent;
+    }
+  };
+  const isApplicableFunctionOwner = (eventOwner, useOwner) => {
+    let current = useOwner;
+
+    while (current) {
+      if (current === eventOwner) return true;
+
+      current = current.parentFunction;
+    }
+
+    return false;
+  };
+  const readBinding = (binding, position, useScope) =>
+    binding?.stringEvents.findLast(
+      (event) =>
+        (event.position ?? 0) < position &&
+        isApplicableFunctionOwner(event.functionOwner, useScope.functionOwner)
+    )?.value;
+  const readName = (name, position, node) => {
+    const useScope = scopeByNode.get(node) ?? rootScope;
+
+    return readBinding(findBinding(useScope, name), position, useScope);
+  };
+  const declare = (scope, name) => {
+    const existing = scope.bindings.get(name);
+
+    if (existing) return existing;
+
+    const binding = {
+      objectIdentityEvents: [],
+      stringEvents: [],
+      valueEvents: new Map(),
+    };
+
+    scope.bindings.set(name, binding);
+
+    return binding;
+  };
+  const assign = (binding, value, position, scope, node) => {
+    const resolved = unwrapTypedExpression(value);
+    const staticString =
+      getStaticString(resolved) ??
+      (resolved?.type === 'Identifier'
+        ? readName(resolved.name, position, node)
+        : undefined);
+
+    binding.stringEvents.push({
+      functionOwner: scope.functionOwner,
+      position,
+      value: staticString,
+    });
+  };
+  const declarePattern = (pattern, scope, position) => {
+    if (!pattern) return;
+    if (pattern.type === 'Identifier') {
+      const binding = declare(scope, pattern.name);
+
+      binding.stringEvents.push({
+        functionOwner: scope.functionOwner,
+        position,
+        value: undefined,
+      });
+
+      return;
+    }
+    if (
+      pattern.type === 'AssignmentPattern' ||
+      pattern.type === 'RestElement'
+    ) {
+      declarePattern(pattern.left ?? pattern.argument, scope, position);
+
+      return;
+    }
+    if (pattern.type === 'ObjectPattern') {
+      for (const property of pattern.properties) {
+        declarePattern(
+          property.type === 'RestElement' ? property.argument : property.value,
+          scope,
+          position
+        );
+      }
+
+      return;
+    }
+    if (pattern.type === 'ArrayPattern') {
+      for (const element of pattern.elements) {
+        declarePattern(element, scope, position);
+      }
+    }
+  };
+
+  walkAst(ast, (node) => {
+    if (isFunctionNode(node)) {
+      if (node.type === 'FunctionDeclaration' && node.id) {
+        declarePattern(node.id, scopeByNode.get(node) ?? rootScope, node.start);
+      }
+
+      const functionScope = childScopeByNode.get(node);
+
+      for (const parameter of node.params ?? []) {
+        declarePattern(parameter, functionScope, node.start);
+      }
+
+      return;
+    }
+    if (
+      (node.type === 'ClassDeclaration' ||
+        node.type === 'ImportDefaultSpecifier' ||
+        node.type === 'ImportNamespaceSpecifier' ||
+        node.type === 'ImportSpecifier') &&
+      (node.id ?? node.local)
+    ) {
+      declarePattern(
+        node.id ?? node.local,
+        scopeByNode.get(node) ?? rootScope,
+        node.start
+      );
+
+      return;
+    }
+    if (node.type === 'CatchClause') {
+      declarePattern(
+        node.param,
+        childScopeByNode.get(node),
+        node.param?.start ?? node.start
+      );
+
+      return;
+    }
+    if (node.type === 'VariableDeclarator') {
+      const declaration = parentByNode.get(node);
+      let declarationScope = scopeByNode.get(node) ?? rootScope;
+
+      if (declaration?.kind === 'var') {
+        declarationScope = declarationScope.functionOwner;
+      }
+
+      declarePattern(node.id, declarationScope, node.start);
+
+      if (node.id?.type === 'Identifier') {
+        assign(
+          declare(declarationScope, node.id.name),
+          node.init,
+          node.start,
+          declarationScope,
+          node
+        );
+      }
+
+      return;
+    }
+    if (
+      node.type === 'AssignmentExpression' &&
+      ['=', '&&=', '??=', '||='].includes(node.operator) &&
+      node.left?.type === 'Identifier'
+    ) {
+      const scope = scopeByNode.get(node) ?? rootScope;
+      const binding =
+        findBinding(scope, node.left.name) ??
+        declare(rootScope, node.left.name);
+
+      assign(binding, node.right, node.start, scope, node);
+    }
+  });
+
+  return {
+    bindingContext: {
+      declare,
+      findBinding,
+      isApplicableFunctionOwner,
+      rootScope,
+      scopeByNode,
+    },
+    getAt: (name, position = Number.POSITIVE_INFINITY, node = ast) =>
+      readName(name, position, node),
+  };
 };
 
-const getPlateEditorConstructionOptions = (node) => {
-  if (node?.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
-    return;
-  }
+const collectStaticValueBindings = (ast, staticStringBindings) => {
+  const {
+    declare,
+    findBinding,
+    isApplicableFunctionOwner,
+    rootScope,
+    scopeByNode,
+  } = staticStringBindings.bindingContext;
+  const objectPropertyEvents = new Map();
+  const splitPath = (path) => {
+    const [name, ...segments] = path?.split('.') ?? [];
 
-  const optionsIndex = plateEditorConstructionOptionIndexes.get(
-    node.callee.name
-  );
+    return { name, suffix: segments.join('.') };
+  };
+  const getAssignmentPath = (node) => {
+    const path = getResolvedStaticExpressionPath(
+      node,
+      staticStringBindings,
+      node?.start,
+      node
+    );
+
+    if (
+      path ||
+      (node?.type !== 'MemberExpression' &&
+        node?.type !== 'OptionalMemberExpression')
+    ) {
+      return path;
+    }
+
+    const objectPath = getResolvedStaticExpressionPath(
+      node.object,
+      staticStringBindings,
+      node.start,
+      node
+    );
+
+    if (!objectPath) return;
+
+    const property = unwrapTypedExpression(node.property);
+    const key = node.computed
+      ? (getStaticString(property) ??
+        (property?.type === 'Identifier'
+          ? staticStringBindings.getAt(property.name, node.start, node)
+          : undefined))
+      : getPropertyName(property);
+
+    return `${objectPath}.${key ?? 'schema'}`;
+  };
+  const getIdentityAt = (binding, position, useScope, inclusive = false) =>
+    binding?.objectIdentityEvents.findLast(
+      (event) =>
+        (inclusive ? event.position <= position : event.position < position) &&
+        isApplicableFunctionOwner(event.functionOwner, useScope.functionOwner)
+    )?.identity;
+  const addBinding = (path, value, position, node) => {
+    if (!path) return;
+
+    const { name, suffix } = splitPath(path);
+    const scope = scopeByNode.get(node) ?? rootScope;
+    const binding = findBinding(scope, name) ?? declare(rootScope, name);
+    const events = binding.valueEvents.get(suffix) ?? [];
+
+    events.push({
+      functionOwner: scope.functionOwner,
+      node,
+      position,
+      value,
+    });
+    binding.valueEvents.set(suffix, events);
+
+    if (!suffix) {
+      const sourcePath = getResolvedStaticExpressionPath(
+        value,
+        staticStringBindings,
+        position,
+        node
+      );
+      const { name: sourceName, suffix: sourceSuffix } = splitPath(sourcePath);
+      const sourceBinding =
+        sourceName && !sourceSuffix
+          ? findBinding(scope, sourceName)
+          : undefined;
+      const identity =
+        getIdentityAt(sourceBinding, position, scope, true) ?? {};
+
+      binding.objectIdentityEvents.push({
+        functionOwner: scope.functionOwner,
+        identity,
+        position,
+      });
+
+      return;
+    }
+
+    const identity = getIdentityAt(binding, position, scope, true);
+
+    if (identity) {
+      const properties = objectPropertyEvents.get(identity) ?? new Map();
+      const propertyEvents = properties.get(suffix) ?? [];
+
+      propertyEvents.push({
+        functionOwner: scope.functionOwner,
+        node,
+        position,
+        value,
+      });
+      properties.set(suffix, propertyEvents);
+      objectPropertyEvents.set(identity, properties);
+    }
+  };
+  const getEventAt = (path, position, node) => {
+    const { name, suffix } = splitPath(path);
+    const useScope = scopeByNode.get(node) ?? rootScope;
+    const binding = findBinding(useScope, name);
+    const directEvent = binding?.valueEvents
+      .get(suffix)
+      ?.findLast(
+        (event) =>
+          (event.position ?? 0) < position &&
+          isApplicableFunctionOwner(event.functionOwner, useScope.functionOwner)
+      );
+    const identity = suffix
+      ? getIdentityAt(binding, position, useScope)
+      : undefined;
+    const identityEvent = identity
+      ? objectPropertyEvents
+          .get(identity)
+          ?.get(suffix)
+          ?.findLast(
+            (event) =>
+              (event.position ?? 0) < position &&
+              isApplicableFunctionOwner(
+                event.functionOwner,
+                useScope.functionOwner
+              )
+          )
+      : undefined;
+
+    return !directEvent ||
+      (identityEvent?.position ?? Number.NEGATIVE_INFINITY) >
+        directEvent.position
+      ? identityEvent
+      : directEvent;
+  };
+  const addContainerBindings = (
+    basePath,
+    value,
+    position,
+    node,
+    seen = new Set(),
+    followAliases = false
+  ) => {
+    const current = unwrapTypedExpression(value);
+
+    if (current?.type === 'ConditionalExpression') {
+      addContainerBindings(
+        basePath,
+        current.consequent,
+        position,
+        node,
+        seen,
+        followAliases
+      );
+      addContainerBindings(
+        basePath,
+        current.alternate,
+        position,
+        node,
+        seen,
+        followAliases
+      );
+
+      return;
+    }
+    if (current?.type === 'LogicalExpression') {
+      addContainerBindings(
+        basePath,
+        current.left,
+        position,
+        node,
+        seen,
+        followAliases
+      );
+      addContainerBindings(
+        basePath,
+        current.right,
+        position,
+        node,
+        seen,
+        followAliases
+      );
+
+      return;
+    }
+    if (
+      current?.type !== 'ArrayExpression' &&
+      current?.type !== 'ObjectExpression'
+    ) {
+      if (!followAliases) return;
+
+      const sourcePath = getResolvedStaticExpressionPath(
+        current,
+        staticStringBindings,
+        position,
+        node
+      );
+
+      if (!sourcePath || seen.has(sourcePath)) return;
+
+      const event = getEventAt(sourcePath, position, node);
+
+      if (!event) return;
+
+      const nextSeen = new Set(seen);
+
+      nextSeen.add(sourcePath);
+      addContainerBindings(
+        basePath,
+        event.value,
+        position,
+        node,
+        nextSeen,
+        true
+      );
+
+      return;
+    }
+    if (current?.type === 'ArrayExpression') {
+      for (const [index, element] of current.elements.entries()) {
+        if (!element || element.type === 'SpreadElement') continue;
+
+        const path = `${basePath}.${index}`;
+
+        addBinding(path, element, position, node);
+        addContainerBindings(
+          path,
+          element,
+          position,
+          node,
+          seen,
+          followAliases
+        );
+      }
+
+      return;
+    }
+    if (current?.type !== 'ObjectExpression') return;
+
+    for (const property of current.properties) {
+      if (property.type === 'SpreadElement') {
+        addContainerBindings(
+          basePath,
+          property.argument,
+          position,
+          node,
+          seen,
+          true
+        );
+
+        continue;
+      }
+      if (property.type !== 'ObjectProperty') continue;
+
+      const key =
+        getResolvedObjectPropertyName(property, staticStringBindings) ??
+        (property.computed ? 'schema' : undefined);
+
+      if (!key) continue;
+
+      const path = `${basePath}.${key}`;
+
+      addBinding(path, property.value, position, node);
+      addContainerBindings(
+        path,
+        property.value,
+        position,
+        node,
+        seen,
+        followAliases
+      );
+    }
+  };
+
+  walkAst(ast, (node) => {
+    if (
+      isCallExpressionNode(node) &&
+      (node.callee.type === 'MemberExpression' ||
+        node.callee.type === 'OptionalMemberExpression') &&
+      getStaticMemberName(node.callee) === 'assign' &&
+      getStaticExpressionPath(node.callee.object) === 'Object'
+    ) {
+      const targetPath = getResolvedStaticExpressionPath(
+        node.arguments[0],
+        staticStringBindings,
+        node.start,
+        node
+      );
+
+      if (targetPath) {
+        for (const source of node.arguments.slice(1)) {
+          addContainerBindings(
+            targetPath,
+            source,
+            node.start,
+            node,
+            new Set(),
+            true
+          );
+        }
+      }
+
+      return;
+    }
+    if (node.type === 'VariableDeclarator' && node.id?.type === 'Identifier') {
+      addBinding(node.id.name, node.init, node.start, node);
+      addContainerBindings(node.id.name, node.init, node.start, node);
+
+      return;
+    }
+    if (
+      node.type === 'AssignmentExpression' &&
+      ['=', '&&=', '??=', '||='].includes(node.operator) &&
+      (node.left?.type === 'Identifier' ||
+        node.left?.type === 'MemberExpression' ||
+        node.left?.type === 'OptionalMemberExpression')
+    ) {
+      const path = getAssignmentPath(node.left);
+
+      addBinding(path, node.right, node.start, node);
+      addContainerBindings(path, node.right, node.start, node);
+    }
+  });
+
+  return { getEventAt };
+};
+
+const getPlateEditorConstructionOptions = (
+  node,
+  constructorNames = defaultPlateEditorConstructorNames
+) => {
+  if (!isCallExpressionNode(node)) return;
+
+  const callee = unwrapTypedExpression(node.callee);
+  const constructorName =
+    callee?.type === 'Identifier'
+      ? constructorNames.get(callee.name, callee)
+      : callee?.type === 'MemberExpression' ||
+          callee?.type === 'OptionalMemberExpression'
+        ? typeof constructorNames.getMember === 'function'
+          ? constructorNames.getMember(callee)
+          : getStaticMemberName(callee)
+        : undefined;
+  const optionsIndex =
+    plateEditorConstructionOptionIndexes.get(constructorName);
 
   if (optionsIndex === undefined) return;
 
   const options = node.arguments[optionsIndex];
 
-  return options?.type === 'ObjectExpression' ? options : undefined;
+  return options?.type === 'SpreadElement' ||
+    options?.type === 'ArgumentPlaceholder'
+    ? undefined
+    : options;
 };
 
-const getNamedSchemaLineage = (node, bindings) => {
-  const options = getPlateEditorConstructionOptions(node);
-  const property = getObjectProperty(options, 'schema');
+const getNamedSchemaLineage = (
+  node,
+  bindings,
+  constructorNames,
+  staticStringBindings,
+  staticValueBindings
+) => {
+  const options = unwrapTypedExpression(
+    getPlateEditorConstructionOptions(node, constructorNames)
+  );
+  const resolvedHoistedSchema = resolveStaticObjectProperty(
+    options,
+    'schema',
+    staticValueBindings,
+    staticStringBindings
+  );
+  const optionsPath = getResolvedStaticExpressionPath(
+    options,
+    staticStringBindings,
+    node.start,
+    node
+  );
+  const hoistedLineage = resolvedHoistedSchema.present
+    ? resolveNamedSchemaLineage(
+        resolvedHoistedSchema.value,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        resolvedHoistedSchema.position ?? node.start,
+        resolvedHoistedSchema.useNode ?? node
+      )
+    : optionsPath && !resolvedHoistedSchema.resolved
+      ? bindings.getAt(`${optionsPath}.schema`, node.start, node)
+      : undefined;
 
-  if (property?.type !== 'ObjectProperty') return;
+  if (hoistedLineage) {
+    return {
+      id: hoistedLineage.id,
+      node: options,
+      version: hoistedLineage.version,
+    };
+  }
 
-  const value = unwrapTypedExpression(property.value);
-  const lineage =
-    readNamedSchemaLineage(value) ??
-    (value?.type === 'Identifier' ? bindings.get(value.name) : undefined);
+  const resolveOptionsObject = (object) => {
+    let result = { hasSchema: false };
 
-  if (!lineage) return;
+    for (const property of object.properties) {
+      if (property.type === 'SpreadElement') {
+        const spread = unwrapTypedExpression(property.argument);
+        const resolvedSpreadSchema = resolveStaticObjectProperty(
+          spread,
+          'schema',
+          staticValueBindings,
+          staticStringBindings
+        );
+        const spreadLineage = resolvedSpreadSchema.present
+          ? resolveNamedSchemaLineage(
+              resolvedSpreadSchema.value,
+              bindings,
+              staticStringBindings,
+              staticValueBindings,
+              resolvedSpreadSchema.position ?? node.start,
+              resolvedSpreadSchema.useNode ?? node
+            )
+          : undefined;
+        const spreadResult =
+          spread?.type === 'ObjectExpression'
+            ? resolveOptionsObject(spread)
+            : spread?.type === 'ConditionalExpression' ||
+                spread?.type === 'LogicalExpression'
+              ? resolveOptionsValue(spread)
+              : resolvedSpreadSchema.present
+                ? { hasSchema: true, lineage: spreadLineage, node: property }
+                : { hasSchema: false };
+
+        if (spreadResult.hasSchema) result = spreadResult;
+
+        continue;
+      }
+      if (property.type !== 'ObjectProperty') continue;
+
+      const key = getResolvedObjectPropertyName(property, staticStringBindings);
+      const lineage = resolveNamedSchemaLineage(
+        property.value,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        node.start,
+        node
+      );
+      const isUnresolvedComputedNamedSchema =
+        property.computed && !key && Boolean(lineage);
+
+      if (key === 'schema' || isUnresolvedComputedNamedSchema) {
+        result = { hasSchema: true, lineage, node: property };
+      }
+    }
+
+    return result;
+  };
+  const resolveOptionsValue = (value) => {
+    const resolved = unwrapTypedExpression(value);
+
+    if (resolved?.type === 'ObjectExpression') {
+      return resolveOptionsObject(resolved);
+    }
+    if (resolved?.type === 'ConditionalExpression') {
+      const consequent = resolveOptionsValue(resolved.consequent);
+
+      return consequent.lineage
+        ? consequent
+        : resolveOptionsValue(resolved.alternate);
+    }
+    if (resolved?.type === 'LogicalExpression') {
+      const left = resolveOptionsValue(resolved.left);
+
+      return left.lineage ? left : resolveOptionsValue(resolved.right);
+    }
+    if (
+      isCallExpressionNode(resolved) &&
+      (resolved.callee.type === 'MemberExpression' ||
+        resolved.callee.type === 'OptionalMemberExpression') &&
+      getStaticMemberName(resolved.callee) === 'assign' &&
+      getStaticExpressionPath(resolved.callee.object) === 'Object'
+    ) {
+      let result = { hasSchema: false };
+
+      for (const argument of resolved.arguments) {
+        if (
+          argument.type === 'ArgumentPlaceholder' ||
+          argument.type === 'SpreadElement'
+        ) {
+          continue;
+        }
+
+        const resolvedSchema = resolveStaticObjectProperty(
+          argument,
+          'schema',
+          staticValueBindings,
+          staticStringBindings
+        );
+        const argumentResult = resolvedSchema.present
+          ? {
+              hasSchema: true,
+              lineage: resolveNamedSchemaLineage(
+                resolvedSchema.value,
+                bindings,
+                staticStringBindings,
+                staticValueBindings,
+                resolvedSchema.position ?? node.start,
+                resolvedSchema.useNode ?? node
+              ),
+              node: argument,
+            }
+          : resolveOptionsValue(argument);
+
+        if (argumentResult.hasSchema) result = argumentResult;
+      }
+
+      return result;
+    }
+
+    return { hasSchema: false };
+  };
+  const result = resolveOptionsValue(options);
+
+  if (!result.lineage) return;
 
   return {
-    id: lineage.id,
-    node: property,
-    version: lineage.version,
+    id: result.lineage.id,
+    node: result.node,
+    version: result.lineage.version,
   };
 };
 
-const recordNamedSchemaLineage = (node, file, bindings, counts) => {
-  const lineage = getNamedSchemaLineage(node, bindings);
+const recordNamedSchemaLineage = (
+  node,
+  file,
+  bindings,
+  counts,
+  constructorNames,
+  staticStringBindings,
+  staticValueBindings
+) => {
+  const lineage = getNamedSchemaLineage(
+    node,
+    bindings,
+    constructorNames,
+    staticStringBindings,
+    staticValueBindings
+  );
 
   if (!lineage) return;
 
@@ -409,22 +1209,497 @@ const walkAst = (node, callback) => {
   }
 };
 
-const collectNamedSchemaLineageBindings = (ast) => {
+const collectNamedSchemaLineageBindings = (
+  ast,
+  staticStringBindings = new Map()
+) => {
+  const { findBinding, isApplicableFunctionOwner, rootScope, scopeByNode } =
+    staticStringBindings.bindingContext;
   const bindings = new Map();
+  const candidates = new Map();
+  const pathAliases = new Map();
+  const objectSpreadAliases = [];
+  const objectRestAliases = [];
+  const arrayRestAliases = [];
+  const getPathBinding = (path, node) =>
+    findBinding(scopeByNode.get(node) ?? rootScope, path?.split('.')[0]);
+  const getLineage = (
+    path,
+    node,
+    position = node?.start ?? Number.POSITIVE_INFINITY
+  ) => {
+    const binding = getPathBinding(path, node);
+    const useScope = scopeByNode.get(node) ?? rootScope;
+
+    return binding
+      ? bindings
+          .get(path)
+          ?.get(binding)
+          ?.findLast(
+            (event) =>
+              (event.position ?? 0) < position &&
+              isApplicableFunctionOwner(
+                event.functionOwner,
+                useScope.functionOwner
+              )
+          )?.lineage
+      : undefined;
+  };
+  const setLineage = (path, node, lineage) => {
+    const binding = getPathBinding(path, node);
+
+    if (!path || !binding || !lineage) return false;
+
+    const lineages = bindings.get(path) ?? new Map();
+    const events = lineages.get(binding) ?? [];
+    const scope = scopeByNode.get(node) ?? rootScope;
+    const current = events.find(
+      (event) =>
+        event.position === node.start &&
+        event.functionOwner === scope.functionOwner
+    );
+
+    if (
+      current?.lineage.id === lineage.id &&
+      current?.lineage.version === lineage.version
+    ) {
+      return false;
+    }
+
+    if (current) {
+      current.lineage = lineage;
+    } else {
+      events.push({
+        functionOwner: scope.functionOwner,
+        lineage,
+        position: node.start,
+      });
+    }
+    lineages.set(binding, events);
+    bindings.set(path, lineages);
+
+    return true;
+  };
+  const reader = {
+    getAt: (path, position, node) => getLineage(path, node, position),
+  };
+  const getAssignmentPath = (node) => {
+    const path = getResolvedStaticExpressionPath(
+      node,
+      staticStringBindings,
+      node?.start,
+      node
+    );
+
+    if (
+      path ||
+      (node?.type !== 'MemberExpression' &&
+        node?.type !== 'OptionalMemberExpression')
+    ) {
+      return path;
+    }
+
+    const objectPath = getResolvedStaticExpressionPath(
+      node.object,
+      staticStringBindings,
+      node.start,
+      node
+    );
+
+    if (!objectPath) return;
+
+    const property = unwrapTypedExpression(node.property);
+    const key = node.computed
+      ? (getStaticString(property) ??
+        (property?.type === 'Identifier'
+          ? staticStringBindings.getAt(property.name, node.start, node)
+          : undefined))
+      : getPropertyName(property);
+
+    return `${objectPath}.${key ?? 'schema'}`;
+  };
+  const addCandidate = (path, value, node) => {
+    const values = candidates.get(path) ?? [];
+
+    values.push({ node, value });
+    candidates.set(path, values);
+  };
+  const addPathAlias = (aliasPath, sourcePath, node) => {
+    if (
+      !aliasPath ||
+      !sourcePath ||
+      aliasPath === sourcePath ||
+      aliasPath.startsWith(`${sourcePath}.`) ||
+      sourcePath.startsWith(`${aliasPath}.`)
+    ) {
+      return;
+    }
+
+    const paths = pathAliases.get(aliasPath) ?? [];
+
+    paths.push({ node, sourcePath });
+    pathAliases.set(aliasPath, paths);
+  };
+  const addContainerCandidates = (basePath, value, node) => {
+    const current = unwrapTypedExpression(value);
+
+    if (current?.type === 'ConditionalExpression') {
+      addContainerCandidates(basePath, current.consequent, node);
+      addContainerCandidates(basePath, current.alternate, node);
+
+      return;
+    }
+    if (current?.type === 'LogicalExpression') {
+      addContainerCandidates(basePath, current.left, node);
+      addContainerCandidates(basePath, current.right, node);
+
+      return;
+    }
+    if (current?.type === 'ArrayExpression') {
+      for (const [index, element] of current.elements.entries()) {
+        if (!element || element.type === 'SpreadElement') continue;
+
+        const path = `${basePath}.${index}`;
+
+        addCandidate(path, element, node);
+        addContainerCandidates(path, element, node);
+      }
+
+      return;
+    }
+    if (current?.type !== 'ObjectExpression') return;
+
+    for (const [index, property] of current.properties.entries()) {
+      if (property.type === 'SpreadElement') {
+        const overrides = new Map(
+          current.properties
+            .slice(index + 1)
+            .filter((candidate) => candidate.type === 'ObjectProperty')
+            .map((candidate) => [
+              getResolvedObjectPropertyName(candidate, staticStringBindings),
+              candidate.value,
+            ])
+            .filter(([key]) => Boolean(key))
+        );
+
+        objectSpreadAliases.push({
+          aliasPath: basePath,
+          excludedKeys: new Set(overrides.keys()),
+          node,
+          overrides,
+          sourcePath: getStaticExpressionPath(property.argument),
+        });
+
+        continue;
+      }
+      if (property.type !== 'ObjectProperty') continue;
+
+      const key = getResolvedObjectPropertyName(property, staticStringBindings);
+
+      if (property.computed && !key) {
+        addCandidate(`${basePath}.schema`, property.value, node);
+      }
+      if (!key) continue;
+
+      const path = `${basePath}.${key}`;
+
+      addCandidate(path, property.value, node);
+      addContainerCandidates(path, property.value, node);
+    }
+  };
+  const addPatternPathAliases = (pattern, basePath, node = pattern) => {
+    if (!pattern || !basePath) return;
+
+    if (pattern.type === 'Identifier') {
+      addPathAlias(pattern.name, basePath, node);
+
+      return;
+    }
+    if (pattern.type === 'AssignmentPattern') {
+      addPatternPathAliases(pattern.left, basePath, node);
+
+      return;
+    }
+    if (pattern.type === 'ObjectPattern') {
+      const excludedKeys = new Set(
+        pattern.properties
+          .filter((property) => property.type === 'ObjectProperty')
+          .map((property) =>
+            getResolvedObjectPropertyName(property, staticStringBindings)
+          )
+          .filter(Boolean)
+      );
+
+      for (const property of pattern.properties) {
+        if (property.type === 'RestElement') {
+          if (property.argument.type === 'Identifier') {
+            objectRestAliases.push({
+              aliasPath: property.argument.name,
+              excludedKeys,
+              node: property.argument,
+              sourcePath: basePath,
+            });
+          }
+
+          continue;
+        }
+        if (property.type !== 'ObjectProperty') continue;
+
+        const key = getResolvedObjectPropertyName(
+          property,
+          staticStringBindings
+        );
+
+        if (key) {
+          addPatternPathAliases(
+            property.value,
+            `${basePath}.${key}`,
+            property.value
+          );
+        }
+      }
+
+      return;
+    }
+    if (pattern.type !== 'ArrayPattern') return;
+
+    for (const [index, element] of pattern.elements.entries()) {
+      if (!element) continue;
+      if (
+        element.type === 'RestElement' &&
+        element.argument.type === 'Identifier'
+      ) {
+        arrayRestAliases.push({
+          aliasPath: element.argument.name,
+          node: element.argument,
+          offset: index,
+          sourcePath: basePath,
+        });
+
+        continue;
+      }
+
+      addPatternPathAliases(element, `${basePath}.${index}`, element);
+    }
+  };
 
   walkAst(ast, (node) => {
-    if (node.type !== 'VariableDeclaration' || node.kind !== 'const') return;
+    if (
+      isCallExpressionNode(node) &&
+      (node.callee.type === 'MemberExpression' ||
+        node.callee.type === 'OptionalMemberExpression') &&
+      getStaticMemberName(node.callee) === 'assign' &&
+      getStaticExpressionPath(node.callee.object) === 'Object'
+    ) {
+      const targetPath = getResolvedStaticExpressionPath(
+        node.arguments[0],
+        staticStringBindings,
+        node.start,
+        node
+      );
 
-    for (const declaration of node.declarations) {
-      if (declaration.id?.type !== 'Identifier') continue;
+      if (targetPath) {
+        for (const source of node.arguments.slice(1)) {
+          addContainerCandidates(targetPath, source, node);
+        }
+      }
 
-      const lineage = readNamedSchemaLineage(declaration.init);
+      return;
+    }
+    if (node.type === 'VariableDeclarator') {
+      if (node.id?.type === 'Identifier') {
+        addCandidate(node.id.name, node.init, node);
+        addPathAlias(node.id.name, getStaticExpressionPath(node.init), node);
+        addContainerCandidates(node.id.name, node.init, node);
+      } else {
+        addPatternPathAliases(node.id, getStaticExpressionPath(node.init));
+      }
 
-      if (lineage) bindings.set(declaration.id.name, lineage);
+      return;
+    }
+    if (
+      node.type === 'AssignmentExpression' &&
+      ['=', '&&=', '??=', '||='].includes(node.operator) &&
+      node.left
+    ) {
+      if (
+        node.left.type === 'Identifier' ||
+        node.left.type === 'MemberExpression' ||
+        node.left.type === 'OptionalMemberExpression'
+      ) {
+        const path = getAssignmentPath(node.left);
+
+        if (!path) return;
+
+        addCandidate(path, node.right, node);
+        addPathAlias(path, getStaticExpressionPath(node.right), node);
+        addContainerCandidates(path, node.right, node);
+      } else {
+        addPatternPathAliases(node.left, getStaticExpressionPath(node.right));
+      }
     }
   });
 
-  return bindings;
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const [path, values] of candidates) {
+      for (const { node, value } of values) {
+        const lineage = resolveNamedSchemaLineage(
+          unwrapTypedExpression(value),
+          reader,
+          staticStringBindings,
+          undefined,
+          node.start,
+          node
+        );
+
+        if (setLineage(path, node, lineage)) changed = true;
+      }
+    }
+
+    for (const [aliasPath, sources] of pathAliases) {
+      for (const { node, sourcePath } of sources) {
+        for (const bindingPath of [...bindings.keys()]) {
+          if (
+            bindingPath !== sourcePath &&
+            !bindingPath.startsWith(`${sourcePath}.`)
+          ) {
+            continue;
+          }
+
+          const lineage = getLineage(bindingPath, node);
+
+          if (!lineage) continue;
+
+          const aliasBinding = `${aliasPath}${bindingPath.slice(
+            sourcePath.length
+          )}`;
+
+          if (setLineage(aliasBinding, node, lineage)) changed = true;
+        }
+      }
+    }
+
+    for (const {
+      aliasPath,
+      excludedKeys,
+      node,
+      overrides,
+      sourcePath,
+    } of objectSpreadAliases) {
+      if (!sourcePath) continue;
+
+      for (const bindingPath of [...bindings.keys()]) {
+        const lineage = getLineage(bindingPath, node);
+
+        if (!lineage) continue;
+
+        if (bindingPath === sourcePath) {
+          const idOverride = unwrapTypedExpression(overrides.get('id'));
+          const versionOverride = unwrapTypedExpression(
+            overrides.get('version')
+          );
+
+          if (
+            (idOverride && idOverride.type !== 'StringLiteral') ||
+            (versionOverride && versionOverride.type !== 'NumericLiteral')
+          ) {
+            continue;
+          }
+
+          const spreadLineage = {
+            id:
+              idOverride?.type === 'StringLiteral'
+                ? idOverride.value
+                : lineage.id,
+            version:
+              versionOverride?.type === 'NumericLiteral'
+                ? versionOverride.value
+                : lineage.version,
+          };
+
+          if (setLineage(aliasPath, node, spreadLineage)) changed = true;
+
+          continue;
+        }
+        if (!bindingPath.startsWith(`${sourcePath}.`)) continue;
+
+        const suffix = bindingPath.slice(sourcePath.length + 1);
+        const [key] = suffix.split('.');
+
+        if (excludedKeys.has(key)) continue;
+
+        const aliasBinding = `${aliasPath}.${suffix}`;
+
+        if (setLineage(aliasBinding, node, lineage)) changed = true;
+      }
+    }
+
+    for (const {
+      aliasPath,
+      excludedKeys,
+      node,
+      sourcePath,
+    } of objectRestAliases) {
+      for (const bindingPath of [...bindings.keys()]) {
+        const lineage = getLineage(bindingPath, node);
+
+        if (!lineage) continue;
+
+        if (bindingPath === sourcePath) {
+          if (
+            !excludedKeys.has('id') &&
+            !excludedKeys.has('version') &&
+            setLineage(aliasPath, node, lineage)
+          ) {
+            changed = true;
+          }
+
+          continue;
+        }
+        if (!bindingPath.startsWith(`${sourcePath}.`)) continue;
+
+        const suffix = bindingPath.slice(sourcePath.length + 1);
+        const [key] = suffix.split('.');
+
+        if (excludedKeys.has(key)) continue;
+
+        const aliasBinding = `${aliasPath}.${suffix}`;
+
+        if (setLineage(aliasBinding, node, lineage)) changed = true;
+      }
+    }
+
+    for (const { aliasPath, node, offset, sourcePath } of arrayRestAliases) {
+      for (const bindingPath of [...bindings.keys()]) {
+        if (!bindingPath.startsWith(`${sourcePath}.`)) continue;
+
+        const lineage = getLineage(bindingPath, node);
+
+        if (!lineage) continue;
+
+        const [index, ...suffix] = bindingPath
+          .slice(sourcePath.length + 1)
+          .split('.');
+        const numericIndex = Number(index);
+
+        if (!Number.isInteger(numericIndex) || numericIndex < offset) continue;
+
+        const aliasBinding = [
+          aliasPath,
+          String(numericIndex - offset),
+          ...suffix,
+        ].join('.');
+
+        if (setLineage(aliasBinding, node, lineage)) changed = true;
+      }
+    }
+  }
+
+  return reader;
 };
 
 const parsePlateSource = (source, file, { errorRecovery = false } = {}) => {
@@ -508,24 +1783,1025 @@ const getStaticExtensionProperties = (contribution) => {
   return [];
 };
 
-const isDirectCreatorExtendChain = (node) => {
+const defaultPluginCreatorNames = new Set([
+  'createBasePlugin',
+  'createPlatePlugin',
+]);
+const isCallExpressionNode = (node) =>
+  node?.type === 'CallExpression' || node?.type === 'OptionalCallExpression';
+
+const getPluginCreatorCallKind = (node, pluginCreatorNames) => {
+  if (!isCallExpressionNode(node)) return;
+
+  const callee = unwrapTypedExpression(node.callee);
+
+  if (callee?.type === 'Identifier') {
+    return (
+      pluginCreatorNames.get?.(callee.name) ??
+      (pluginCreatorNames.has(callee.name) ? callee.name : undefined)
+    );
+  }
+  if (
+    callee?.type === 'MemberExpression' ||
+    callee?.type === 'OptionalMemberExpression'
+  ) {
+    const name = getStaticMemberName(callee);
+
+    return defaultPluginCreatorNames.has(name) ? name : undefined;
+  }
+};
+
+const isDirectCreatorExtendChain = (
+  node,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
   let current = unwrapTypedExpression(node);
 
-  while (current?.type === 'CallExpression') {
+  while (isCallExpressionNode(current)) {
+    if (getPluginCreatorCallKind(current, pluginCreatorNames)) return true;
+
     const callee = unwrapTypedExpression(current.callee);
 
-    if (
-      callee?.type === 'Identifier' &&
-      ['createBasePlugin', 'createPlatePlugin'].includes(callee.name)
-    ) {
-      return true;
-    }
     if (callee?.type !== 'MemberExpression') return false;
 
     current = unwrapTypedExpression(callee.object);
   }
 
   return false;
+};
+
+const getStaticExpressionPath = (node) => {
+  const current = unwrapTypedExpression(node);
+
+  if (current?.type === 'Identifier') return current.name;
+  if (
+    current?.type !== 'MemberExpression' &&
+    current?.type !== 'OptionalMemberExpression'
+  ) {
+    return;
+  }
+
+  const objectPath = getStaticExpressionPath(current.object);
+  const property = getStaticMemberName(current);
+
+  return objectPath && property ? `${objectPath}.${property}` : undefined;
+};
+
+const getResolvedStaticExpressionPath = (
+  node,
+  staticStringBindings,
+  position = node?.start ?? Number.POSITIVE_INFINITY,
+  useNode = node
+) => {
+  const current = unwrapTypedExpression(node);
+
+  if (current?.type === 'Identifier') return current.name;
+  if (
+    current?.type !== 'MemberExpression' &&
+    current?.type !== 'OptionalMemberExpression'
+  ) {
+    return;
+  }
+
+  const objectPath = getResolvedStaticExpressionPath(
+    current.object,
+    staticStringBindings,
+    position,
+    useNode
+  );
+  const property = unwrapTypedExpression(current.property);
+  const key = current.computed
+    ? (getStaticString(property) ??
+      (property?.type === 'Identifier'
+        ? staticStringBindings.getAt(property.name, position, useNode)
+        : undefined))
+    : getPropertyName(property);
+
+  return objectPath && key ? `${objectPath}.${key}` : undefined;
+};
+
+const resolveStaticObjectProperty = (
+  node,
+  propertyName,
+  valueBindings,
+  staticStringBindings,
+  seen = new Set(),
+  position = node?.start ?? Number.POSITIVE_INFINITY,
+  useNode = node
+) => {
+  const value = unwrapTypedExpression(node);
+
+  if (value?.type !== 'ObjectExpression') {
+    const path = getResolvedStaticExpressionPath(
+      value,
+      staticStringBindings,
+      position,
+      useNode
+    );
+
+    if (!path || seen.has(path)) return { present: false, resolved: false };
+
+    const propertyCandidate = valueBindings.getEventAt(
+      `${path}.${propertyName}`,
+      position,
+      useNode
+    );
+    const candidate = valueBindings.getEventAt(path, position, useNode);
+    const propertyFollowsCandidate =
+      propertyCandidate &&
+      (!candidate || propertyCandidate.position > candidate.position);
+
+    if (propertyFollowsCandidate) {
+      return {
+        node: propertyCandidate.node,
+        position: propertyCandidate.position,
+        present: true,
+        resolved: true,
+        useNode: propertyCandidate.node,
+        value: propertyCandidate.value,
+      };
+    }
+    if (!candidate) {
+      return propertyCandidate
+        ? {
+            node: propertyCandidate.node,
+            position: propertyCandidate.position,
+            present: true,
+            resolved: true,
+            useNode: propertyCandidate.node,
+            value: propertyCandidate.value,
+          }
+        : { present: false, resolved: false };
+    }
+
+    const nextSeen = new Set(seen);
+
+    nextSeen.add(path);
+
+    const result = resolveStaticObjectProperty(
+      candidate.value,
+      propertyName,
+      valueBindings,
+      staticStringBindings,
+      nextSeen,
+      candidate.position,
+      candidate.node
+    );
+
+    return { ...result, resolved: true };
+  }
+
+  let result = { present: false, resolved: true };
+
+  for (const property of value.properties) {
+    if (property.type === 'SpreadElement') {
+      const spreadResult = resolveStaticObjectProperty(
+        property.argument,
+        propertyName,
+        valueBindings,
+        staticStringBindings,
+        seen,
+        position,
+        useNode
+      );
+
+      if (spreadResult.present) result = spreadResult;
+
+      continue;
+    }
+    if (
+      property.type === 'ObjectProperty' &&
+      (getResolvedObjectPropertyName(property, staticStringBindings) ===
+        propertyName ||
+        (propertyName === 'schema' &&
+          property.computed &&
+          !getResolvedObjectPropertyName(property, staticStringBindings)))
+    ) {
+      result = {
+        node: property,
+        position,
+        present: true,
+        resolved: true,
+        useNode,
+        value: property.value,
+      };
+    }
+  }
+
+  return result;
+};
+
+const resolveNamedSchemaLineage = (
+  node,
+  bindings,
+  staticStringBindings,
+  staticValueBindings,
+  position = node?.start ?? Number.POSITIVE_INFINITY,
+  useNode = node,
+  seen = new Set()
+) => {
+  const value = unwrapTypedExpression(node);
+
+  if (value?.type === 'ConditionalExpression') {
+    return (
+      resolveNamedSchemaLineage(
+        value.consequent,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        position,
+        useNode,
+        seen
+      ) ??
+      resolveNamedSchemaLineage(
+        value.alternate,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        position,
+        useNode,
+        seen
+      )
+    );
+  }
+  if (value?.type === 'LogicalExpression') {
+    return (
+      resolveNamedSchemaLineage(
+        value.left,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        position,
+        useNode,
+        seen
+      ) ??
+      resolveNamedSchemaLineage(
+        value.right,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        position,
+        useNode,
+        seen
+      )
+    );
+  }
+  if (value?.type !== 'ObjectExpression') {
+    const path = getResolvedStaticExpressionPath(
+      value,
+      staticStringBindings,
+      position,
+      useNode
+    );
+
+    if (path && staticValueBindings?.getEventAt && !seen.has(path)) {
+      const event = staticValueBindings.getEventAt(path, position, useNode);
+
+      if (event) {
+        const nextSeen = new Set(seen);
+
+        nextSeen.add(path);
+
+        return resolveNamedSchemaLineage(
+          event.value,
+          bindings,
+          staticStringBindings,
+          staticValueBindings,
+          event.position,
+          event.node,
+          nextSeen
+        );
+      }
+    }
+
+    return typeof bindings.getAt === 'function'
+      ? bindings.getAt(path, position, useNode)
+      : bindings.get(path);
+  }
+
+  let id;
+  let version;
+
+  for (const property of value.properties) {
+    if (property.type === 'SpreadElement') {
+      const spreadLineage = resolveNamedSchemaLineage(
+        property.argument,
+        bindings,
+        staticStringBindings,
+        staticValueBindings,
+        position,
+        useNode,
+        seen
+      );
+
+      if (spreadLineage) {
+        id = spreadLineage.id;
+        version = spreadLineage.version;
+      }
+
+      continue;
+    }
+    if (property.type !== 'ObjectProperty') continue;
+
+    const key = getResolvedObjectPropertyName(property, staticStringBindings);
+    const propertyValue = unwrapTypedExpression(property.value);
+
+    if (key === 'id') {
+      id =
+        propertyValue?.type === 'StringLiteral'
+          ? propertyValue.value
+          : undefined;
+    }
+    if (key === 'version') {
+      version =
+        propertyValue?.type === 'NumericLiteral'
+          ? propertyValue.value
+          : undefined;
+    }
+  }
+
+  return typeof id === 'string' && typeof version === 'number'
+    ? { id, version }
+    : undefined;
+};
+
+const getPluginBuilderRootPath = (node) => {
+  let current = unwrapTypedExpression(node);
+
+  while (isCallExpressionNode(current)) {
+    const callee = unwrapTypedExpression(current.callee);
+
+    if (
+      callee?.type !== 'MemberExpression' &&
+      callee?.type !== 'OptionalMemberExpression'
+    ) {
+      return;
+    }
+
+    current = unwrapTypedExpression(callee.object);
+  }
+
+  return getStaticExpressionPath(current);
+};
+
+const collectLocalPluginCreatorNames = (ast) => {
+  const names = new Map(
+    [...defaultPluginCreatorNames].map((name) => [name, name])
+  );
+  const candidates = new Map();
+  const addCandidate = (name, value) => {
+    const values = candidates.get(name) ?? [];
+
+    values.push(value);
+    candidates.set(name, values);
+  };
+  const collectDestructuredCreatorAliases = (pattern) => {
+    if (pattern?.type !== 'ObjectPattern') return;
+
+    for (const property of pattern.properties) {
+      if (
+        property.type !== 'ObjectProperty' ||
+        !defaultPluginCreatorNames.has(getPropertyName(property.key))
+      ) {
+        continue;
+      }
+
+      const value = unwrapTypedExpression(property.value);
+      const kind = getPropertyName(property.key);
+
+      if (value?.type === 'Identifier') names.set(value.name, kind);
+      if (
+        value?.type === 'AssignmentPattern' &&
+        value.left?.type === 'Identifier'
+      ) {
+        names.set(value.left.name, kind);
+      }
+    }
+  };
+
+  walkAst(ast, (node) => {
+    if (node.type === 'ImportSpecifier') {
+      const importedName = getPropertyName(node.imported);
+
+      if (
+        importedName &&
+        defaultPluginCreatorNames.has(importedName) &&
+        node.local?.type === 'Identifier'
+      ) {
+        names.set(node.local.name, importedName);
+      }
+
+      return;
+    }
+    if (node.type === 'VariableDeclarator') {
+      if (node.id?.type === 'Identifier') {
+        addCandidate(node.id.name, node.init);
+      } else {
+        collectDestructuredCreatorAliases(node.id);
+      }
+
+      return;
+    }
+    if (node.type === 'AssignmentExpression' && node.operator === '=') {
+      if (node.left?.type === 'Identifier') {
+        addCandidate(node.left.name, node.right);
+      } else {
+        collectDestructuredCreatorAliases(node.left);
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const [name, values] of candidates) {
+      if (names.has(name)) continue;
+
+      let creatorKind;
+
+      for (const value of values) {
+        const resolved = unwrapTypedExpression(value);
+        const kind =
+          resolved?.type === 'Identifier'
+            ? names.get(resolved.name)
+            : resolved?.type === 'MemberExpression' ||
+                resolved?.type === 'OptionalMemberExpression'
+              ? getStaticMemberName(resolved)
+              : undefined;
+
+        if (kind && defaultPluginCreatorNames.has(kind)) {
+          creatorKind = kind;
+          break;
+        }
+      }
+
+      if (!creatorKind) continue;
+
+      names.set(name, creatorKind);
+      changed = true;
+    }
+  }
+
+  return names;
+};
+
+const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
+  const { findBinding, isApplicableFunctionOwner, rootScope, scopeByNode } =
+    staticStringBindings.bindingContext;
+  const constructorEvents = new Map();
+  const namespaceEvents = new Map();
+  const candidates = [];
+  const destructuredCandidates = [];
+  const getScope = (node) => scopeByNode.get(node) ?? rootScope;
+  const getBinding = (name, node) => findBinding(getScope(node), name);
+  const addEvent = (events, binding, node, value) => {
+    if (!binding) return;
+
+    const bindingEvents = events.get(binding) ?? [];
+    const event = {
+      functionOwner: getScope(node).functionOwner,
+      position: node.start,
+      value,
+    };
+
+    bindingEvents.push(event);
+    events.set(binding, bindingEvents);
+
+    return event;
+  };
+  const readEvent = (events, binding, position, node) => {
+    const useScope = getScope(node);
+
+    return events
+      .get(binding)
+      ?.findLast(
+        (event) =>
+          (event.position ?? 0) < position &&
+          isApplicableFunctionOwner(event.functionOwner, useScope.functionOwner)
+      )?.value;
+  };
+  const get = (
+    name,
+    node,
+    position = node?.start ?? Number.POSITIVE_INFINITY
+  ) => {
+    const binding = getBinding(name, node);
+
+    return binding
+      ? readEvent(constructorEvents, binding, position, node)
+      : defaultPlateEditorConstructorNames.get(name);
+  };
+  const isNamespace = (
+    value,
+    node,
+    position = node?.start ?? Number.POSITIVE_INFINITY
+  ) => {
+    const resolved = unwrapTypedExpression(value);
+
+    if (resolved?.type !== 'Identifier') return false;
+
+    const binding = getBinding(resolved.name, node);
+
+    return binding
+      ? Boolean(readEvent(namespaceEvents, binding, position, node))
+      : resolved.name === 'Plate';
+  };
+  const getMember = (
+    member,
+    node = member,
+    position = node?.start ?? Number.POSITIVE_INFINITY
+  ) => {
+    const constructorName = getStaticMemberName(member);
+
+    return constructorName &&
+      defaultPlateEditorConstructorNames.has(constructorName) &&
+      isNamespace(member.object, node, position)
+      ? constructorName
+      : undefined;
+  };
+  const resolveCandidate = (value, node) => {
+    const resolved = unwrapTypedExpression(value);
+
+    return resolved?.type === 'Identifier'
+      ? get(resolved.name, node)
+      : resolved?.type === 'MemberExpression' ||
+          resolved?.type === 'OptionalMemberExpression'
+        ? getMember(resolved, node)
+        : undefined;
+  };
+  const addCandidate = (name, value, node) => {
+    const binding = getBinding(name, node);
+
+    candidates.push({
+      event: addEvent(constructorEvents, binding, node, undefined),
+      namespaceEvent: addEvent(namespaceEvents, binding, node, undefined),
+      node,
+      value,
+    });
+  };
+  const addDestructuredCandidates = (pattern, source, node) => {
+    if (pattern?.type !== 'ObjectPattern') return;
+
+    for (const property of pattern.properties) {
+      if (property.type !== 'ObjectProperty') continue;
+
+      const constructorName = getPropertyName(property.key);
+      const value = unwrapTypedExpression(property.value);
+      const identifier =
+        value?.type === 'Identifier'
+          ? value
+          : value?.type === 'AssignmentPattern' &&
+              value.left?.type === 'Identifier'
+            ? value.left
+            : undefined;
+
+      if (
+        identifier &&
+        constructorName &&
+        defaultPlateEditorConstructorNames.has(constructorName)
+      ) {
+        destructuredCandidates.push({
+          constructorName,
+          event: addEvent(
+            constructorEvents,
+            getBinding(identifier.name, identifier),
+            identifier,
+            undefined
+          ),
+          node,
+          source,
+        });
+      }
+    }
+  };
+
+  walkAst(ast, (node) => {
+    if (node.type === 'ImportDeclaration') {
+      const isPlateModule = plateModulePattern.test(node.source.value);
+
+      for (const specifier of node.specifiers) {
+        const binding = getBinding(specifier.local?.name, specifier);
+
+        if (specifier.type === 'ImportNamespaceSpecifier' && isPlateModule) {
+          addEvent(namespaceEvents, binding, specifier, true);
+        } else if (specifier.type === 'ImportSpecifier' && isPlateModule) {
+          const constructorName = getPropertyName(specifier.imported);
+
+          if (
+            constructorName &&
+            defaultPlateEditorConstructorNames.has(constructorName)
+          ) {
+            addEvent(constructorEvents, binding, specifier, constructorName);
+          }
+        }
+      }
+
+      return;
+    }
+    if (node.type === 'VariableDeclarator') {
+      if (node.id?.type === 'Identifier') {
+        addCandidate(node.id.name, node.init, node);
+      } else {
+        addDestructuredCandidates(node.id, node.init, node);
+      }
+
+      return;
+    }
+    if (node.type === 'AssignmentExpression' && node.operator === '=') {
+      if (node.left?.type === 'Identifier') {
+        addCandidate(node.left.name, node.right, node);
+      } else {
+        addDestructuredCandidates(node.left, node.right, node);
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const candidate of candidates) {
+      const constructorName = resolveCandidate(candidate.value, candidate.node);
+
+      if (candidate.event?.value !== constructorName) {
+        candidate.event.value = constructorName;
+        changed = true;
+      }
+
+      const namespace = isNamespace(candidate.value, candidate.node);
+
+      if (candidate.namespaceEvent?.value !== namespace) {
+        candidate.namespaceEvent.value = namespace;
+        changed = true;
+      }
+    }
+
+    for (const candidate of destructuredCandidates) {
+      const constructorName = isNamespace(candidate.source, candidate.node)
+        ? candidate.constructorName
+        : undefined;
+
+      if (candidate.event?.value !== constructorName) {
+        candidate.event.value = constructorName;
+        changed = true;
+      }
+    }
+  }
+
+  return { get, getMember };
+};
+
+const collectLocalPluginDescriptorBindings = (
+  ast,
+  pluginCreatorNames,
+  staticStringBindings = new Map()
+) => {
+  const { findBinding, rootScope, scopeByNode } =
+    staticStringBindings.bindingContext;
+  const declarations = new Map();
+  const pathAliases = new Map();
+  const objectSpreadAliases = [];
+  const objectRestAliases = [];
+  const arrayRestAliases = [];
+  const descriptorBindings = new Map();
+  const getPathBinding = (path, node) =>
+    findBinding(scopeByNode.get(node) ?? rootScope, path?.split('.')[0]);
+  const hasDescriptorBinding = (path, node) => {
+    const binding = getPathBinding(path, node);
+
+    return binding && descriptorBindings.get(path)?.has(binding);
+  };
+  const markDescriptorBinding = (path, node) => {
+    const binding = getPathBinding(path, node);
+
+    if (!path || !binding) return false;
+
+    const bindings = descriptorBindings.get(path) ?? new Set();
+    const size = bindings.size;
+
+    bindings.add(binding);
+    descriptorBindings.set(path, bindings);
+
+    return bindings.size !== size;
+  };
+  const addDeclaration = (name, init, node) => {
+    const candidates = declarations.get(name) ?? [];
+
+    candidates.push({ init, node });
+    declarations.set(name, candidates);
+  };
+  const addPathAlias = (name, sourcePath, node) => {
+    if (
+      !name ||
+      !sourcePath ||
+      name === sourcePath ||
+      name.startsWith(`${sourcePath}.`) ||
+      sourcePath.startsWith(`${name}.`)
+    ) {
+      return;
+    }
+
+    const paths = pathAliases.get(name) ?? [];
+
+    paths.push({ node, sourcePath });
+    pathAliases.set(name, paths);
+  };
+  const addContainerDeclarations = (basePath, value, node) => {
+    const current = unwrapTypedExpression(value);
+
+    if (current?.type === 'ConditionalExpression') {
+      addContainerDeclarations(basePath, current.consequent, node);
+      addContainerDeclarations(basePath, current.alternate, node);
+
+      return;
+    }
+    if (current?.type === 'LogicalExpression') {
+      addContainerDeclarations(basePath, current.left, node);
+      addContainerDeclarations(basePath, current.right, node);
+
+      return;
+    }
+    if (current?.type === 'ArrayExpression') {
+      for (const [index, element] of current.elements.entries()) {
+        if (!element || element.type === 'SpreadElement') continue;
+
+        const path = `${basePath}.${index}`;
+
+        addDeclaration(path, element, node);
+        addContainerDeclarations(path, element, node);
+      }
+
+      return;
+    }
+    if (current?.type !== 'ObjectExpression') return;
+
+    for (const [index, property] of current.properties.entries()) {
+      if (property.type === 'SpreadElement') {
+        objectSpreadAliases.push({
+          aliasPath: basePath,
+          excludedKeys: new Set(
+            current.properties
+              .slice(index + 1)
+              .filter((candidate) => candidate.type === 'ObjectProperty')
+              .map((candidate) =>
+                getResolvedObjectPropertyName(candidate, staticStringBindings)
+              )
+              .filter(Boolean)
+          ),
+          node,
+          sourcePath: getStaticExpressionPath(property.argument),
+        });
+
+        continue;
+      }
+      if (property.type !== 'ObjectProperty') continue;
+
+      const key = getResolvedObjectPropertyName(property, staticStringBindings);
+
+      if (!key) continue;
+
+      const path = `${basePath}.${key}`;
+
+      addDeclaration(path, property.value, node);
+      addContainerDeclarations(path, property.value, node);
+    }
+  };
+  const addPatternPathAliases = (pattern, basePath, node = pattern) => {
+    if (!pattern || !basePath) return;
+
+    if (pattern.type === 'Identifier') {
+      addPathAlias(pattern.name, basePath, node);
+
+      return;
+    }
+    if (pattern.type === 'AssignmentPattern') {
+      addPatternPathAliases(pattern.left, basePath, node);
+
+      return;
+    }
+    if (pattern.type === 'ObjectPattern') {
+      const excludedKeys = new Set(
+        pattern.properties
+          .filter((property) => property.type === 'ObjectProperty')
+          .map((property) =>
+            getResolvedObjectPropertyName(property, staticStringBindings)
+          )
+          .filter(Boolean)
+      );
+
+      for (const property of pattern.properties) {
+        if (property.type === 'RestElement') {
+          if (property.argument.type === 'Identifier') {
+            objectRestAliases.push({
+              aliasPath: property.argument.name,
+              excludedKeys,
+              node: property.argument,
+              sourcePath: basePath,
+            });
+          }
+
+          continue;
+        }
+        if (property.type !== 'ObjectProperty') continue;
+
+        const key = getResolvedObjectPropertyName(
+          property,
+          staticStringBindings
+        );
+
+        if (key) {
+          addPatternPathAliases(
+            property.value,
+            `${basePath}.${key}`,
+            property.value
+          );
+        }
+      }
+
+      return;
+    }
+    if (pattern.type !== 'ArrayPattern') return;
+
+    for (const [index, element] of pattern.elements.entries()) {
+      if (!element) continue;
+      if (
+        element.type === 'RestElement' &&
+        element.argument.type === 'Identifier'
+      ) {
+        arrayRestAliases.push({
+          aliasPath: element.argument.name,
+          node: element.argument,
+          offset: index,
+          sourcePath: basePath,
+        });
+
+        continue;
+      }
+
+      addPatternPathAliases(element, `${basePath}.${index}`, element);
+    }
+  };
+  const addDestructuredPathAliases = (pattern, value) => {
+    addPatternPathAliases(pattern, getStaticExpressionPath(value), pattern);
+  };
+
+  walkAst(ast, (node) => {
+    if (node.type === 'VariableDeclarator') {
+      if (node.id?.type === 'Identifier') {
+        addDeclaration(node.id.name, node.init, node);
+        addPathAlias(node.id.name, getStaticExpressionPath(node.init), node);
+        addContainerDeclarations(node.id.name, node.init, node);
+      } else {
+        addDestructuredPathAliases(node.id, node.init);
+      }
+
+      return;
+    }
+
+    if (
+      node.type === 'AssignmentExpression' &&
+      node.operator === '=' &&
+      node.left
+    ) {
+      if (
+        node.left.type === 'Identifier' ||
+        node.left.type === 'MemberExpression' ||
+        node.left.type === 'OptionalMemberExpression'
+      ) {
+        const path = getResolvedStaticExpressionPath(
+          node.left,
+          staticStringBindings,
+          node.start,
+          node
+        );
+
+        if (!path) return;
+
+        addDeclaration(path, node.right, node);
+        addPathAlias(path, getStaticExpressionPath(node.right), node);
+        addContainerDeclarations(path, node.right, node);
+      } else {
+        addDestructuredPathAliases(node.left, node.right);
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const [path, candidates] of declarations) {
+      for (const { init, node } of candidates) {
+        if (
+          (isDirectCreatorExtendChain(init, pluginCreatorNames) ||
+            hasDescriptorBinding(getPluginBuilderRootPath(init), node)) &&
+          markDescriptorBinding(path, node)
+        ) {
+          changed = true;
+        }
+      }
+    }
+
+    for (const [aliasPath, sources] of pathAliases) {
+      for (const { node, sourcePath } of sources) {
+        for (const descriptorPath of [...descriptorBindings.keys()]) {
+          if (
+            descriptorPath !== sourcePath &&
+            !descriptorPath.startsWith(`${sourcePath}.`)
+          ) {
+            continue;
+          }
+          if (!hasDescriptorBinding(descriptorPath, node)) continue;
+
+          const aliasBinding = `${aliasPath}${descriptorPath.slice(
+            sourcePath.length
+          )}`;
+
+          if (markDescriptorBinding(aliasBinding, node)) {
+            changed = true;
+          }
+        }
+      }
+    }
+
+    for (const {
+      aliasPath,
+      excludedKeys,
+      node,
+      sourcePath,
+    } of objectSpreadAliases) {
+      if (!sourcePath) continue;
+
+      for (const descriptorPath of [...descriptorBindings.keys()]) {
+        if (!descriptorPath.startsWith(`${sourcePath}.`)) continue;
+        if (!hasDescriptorBinding(descriptorPath, node)) continue;
+
+        const suffix = descriptorPath.slice(sourcePath.length + 1);
+        const [key] = suffix.split('.');
+
+        if (excludedKeys.has(key)) continue;
+
+        const aliasBinding = `${aliasPath}.${suffix}`;
+
+        if (markDescriptorBinding(aliasBinding, node)) {
+          changed = true;
+        }
+      }
+    }
+
+    for (const {
+      aliasPath,
+      excludedKeys,
+      node,
+      sourcePath,
+    } of objectRestAliases) {
+      for (const descriptorPath of [...descriptorBindings.keys()]) {
+        if (!descriptorPath.startsWith(`${sourcePath}.`)) continue;
+        if (!hasDescriptorBinding(descriptorPath, node)) continue;
+
+        const suffix = descriptorPath.slice(sourcePath.length + 1);
+        const [key] = suffix.split('.');
+
+        if (excludedKeys.has(key)) continue;
+
+        const aliasBinding = `${aliasPath}.${suffix}`;
+
+        if (markDescriptorBinding(aliasBinding, node)) {
+          changed = true;
+        }
+      }
+    }
+
+    for (const { aliasPath, node, offset, sourcePath } of arrayRestAliases) {
+      for (const descriptorPath of [...descriptorBindings.keys()]) {
+        if (!descriptorPath.startsWith(`${sourcePath}.`)) continue;
+        if (!hasDescriptorBinding(descriptorPath, node)) continue;
+
+        const [index, ...suffix] = descriptorPath
+          .slice(sourcePath.length + 1)
+          .split('.');
+        const numericIndex = Number(index);
+
+        if (!Number.isInteger(numericIndex) || numericIndex < offset) continue;
+
+        const aliasBinding = [
+          aliasPath,
+          String(numericIndex - offset),
+          ...suffix,
+        ].join('.');
+
+        if (markDescriptorBinding(aliasBinding, node)) {
+          changed = true;
+        }
+      }
+    }
+  }
+
+  return { has: hasDescriptorBinding };
 };
 
 const isPluginDescriptorBuilderChain = (node) => {
@@ -579,16 +2855,16 @@ const isDefineCodecsCall = (property) => {
   );
 };
 
-const getExtensionStageFields = (contribution) =>
+const getExtensionStageFields = (contribution, staticStringBindings) =>
   getStaticExtensionProperties(contribution)
     .map((property) =>
       property.type === 'SpreadElement'
         ? '...'
-        : (getPropertyName(property.key) ?? '?')
+        : (getResolvedObjectPropertyName(property, staticStringBindings) ?? '?')
     )
     .sort();
 
-const getExtendChainStages = (node) => {
+const getExtendChainStages = (node, staticStringBindings) => {
   const stages = [];
   let current = unwrapTypedExpression(node);
 
@@ -596,7 +2872,9 @@ const getExtendChainStages = (node) => {
     current?.type === 'CallExpression' &&
     readMemberCallName(current) === 'extend'
   ) {
-    stages.unshift(getExtensionStageFields(current.arguments[0]));
+    stages.unshift(
+      getExtensionStageFields(current.arguments[0], staticStringBindings)
+    );
     current = unwrapTypedExpression(current.callee.object);
   }
 
@@ -654,8 +2932,12 @@ const isSchemaApiCall = (node, method) =>
   node.callee.object.type === 'MemberExpression' &&
   getPropertyName(node.callee.object.property) === 'schema';
 
-const isPluginFactoryCall = (node) => {
-  if (node?.type !== 'CallExpression') return false;
+const isPluginFactoryCall = (
+  node,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
+  if (!isCallExpressionNode(node)) return false;
+  if (getPluginCreatorCallKind(node, pluginCreatorNames)) return true;
 
   if (node.callee.type === 'Identifier') {
     return pluginFactoryNamePattern.test(node.callee.name);
@@ -668,8 +2950,12 @@ const isPluginFactoryCall = (node) => {
   return pluginConfigurationMethods.has(getPropertyName(node.callee.property));
 };
 
-const isPlatePluginFactoryCall = (node) => {
-  if (node?.type !== 'CallExpression') return false;
+const isPlatePluginFactoryCall = (
+  node,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
+  if (!isCallExpressionNode(node)) return false;
+  if (getPluginCreatorCallKind(node, pluginCreatorNames)) return true;
 
   if (node.callee.type === 'Identifier') {
     return platePluginFactoryNamePattern.test(node.callee.name);
@@ -682,7 +2968,10 @@ const isPlatePluginFactoryCall = (node) => {
   return pluginConfigurationMethods.has(getPropertyName(node.callee.property));
 };
 
-const isDirectPluginDeclarationObject = (ancestors) => {
+const isDirectPluginDeclarationObject = (
+  ancestors,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
   const objectIndex = ancestors.length - 1;
 
   if (ancestors[objectIndex]?.type !== 'ObjectExpression') return false;
@@ -690,9 +2979,9 @@ const isDirectPluginDeclarationObject = (ancestors) => {
   for (let index = objectIndex - 1; index >= 0; index--) {
     const ancestor = ancestors[index];
 
-    if (ancestor.type === 'CallExpression') {
+    if (isCallExpressionNode(ancestor)) {
       return (
-        isPluginFactoryCall(ancestor) &&
+        isPluginFactoryCall(ancestor, pluginCreatorNames) &&
         !ancestors
           .slice(index + 1, objectIndex)
           .some(
@@ -706,7 +2995,10 @@ const isDirectPluginDeclarationObject = (ancestors) => {
   return false;
 };
 
-const isDirectPlatePluginDeclarationObject = (ancestors) => {
+const isDirectPlatePluginDeclarationObject = (
+  ancestors,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
   const objectIndex = ancestors.length - 1;
 
   if (ancestors[objectIndex]?.type !== 'ObjectExpression') return false;
@@ -714,9 +3006,9 @@ const isDirectPlatePluginDeclarationObject = (ancestors) => {
   for (let index = objectIndex - 1; index >= 0; index--) {
     const ancestor = ancestors[index];
 
-    if (ancestor.type === 'CallExpression') {
+    if (isCallExpressionNode(ancestor)) {
       return (
-        isPlatePluginFactoryCall(ancestor) &&
+        isPlatePluginFactoryCall(ancestor, pluginCreatorNames) &&
         !ancestors
           .slice(index + 1, objectIndex)
           .some(
@@ -730,24 +3022,37 @@ const isDirectPlatePluginDeclarationObject = (ancestors) => {
   return false;
 };
 
-const isInsidePluginSchema = (ancestors) => {
+const isInsidePluginSchema = (
+  ancestors,
+  pluginCreatorNames = defaultPluginCreatorNames,
+  staticStringBindings = new Map()
+) => {
   const schemaIndex = ancestors.findLastIndex(
     (ancestor) =>
       ancestor.type === 'ObjectProperty' &&
-      getPropertyName(ancestor.key) === 'schema'
+      getResolvedObjectPropertyName(ancestor, staticStringBindings) === 'schema'
   );
 
   return (
     schemaIndex >= 0 &&
-    isDirectPluginDeclarationObject(ancestors.slice(0, schemaIndex))
+    isDirectPluginDeclarationObject(
+      ancestors.slice(0, schemaIndex),
+      pluginCreatorNames
+    )
   );
 };
 
-const isInsidePluginFactoryDeclaration = (ancestors) => {
+const isInsidePluginFactoryDeclaration = (
+  ancestors,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
   for (let index = ancestors.length - 1; index >= 0; index--) {
     const ancestor = ancestors[index];
 
-    if (ancestor.type !== 'CallExpression' || !isPluginFactoryCall(ancestor)) {
+    if (
+      !isCallExpressionNode(ancestor) ||
+      !isPluginFactoryCall(ancestor, pluginCreatorNames)
+    ) {
       continue;
     }
 
@@ -757,7 +3062,10 @@ const isInsidePluginFactoryDeclaration = (ancestors) => {
   return false;
 };
 
-const isInsidePluginInitialState = (ancestors) => {
+const isInsidePluginInitialState = (
+  ancestors,
+  pluginCreatorNames = defaultPluginCreatorNames
+) => {
   const initialStateIndex = ancestors.findLastIndex(
     (ancestor) =>
       ancestor.type === 'ObjectProperty' &&
@@ -766,7 +3074,10 @@ const isInsidePluginInitialState = (ancestors) => {
 
   return (
     initialStateIndex >= 0 &&
-    isDirectPluginDeclarationObject(ancestors.slice(0, initialStateIndex))
+    isDirectPluginDeclarationObject(
+      ancestors.slice(0, initialStateIndex),
+      pluginCreatorNames
+    )
   );
 };
 
@@ -824,11 +3135,24 @@ const readSchemaContentCallName = (callee) => {
   return getPropertyName(callee.property);
 };
 
+const getStaticMemberName = (member) => {
+  if (
+    member?.type !== 'MemberExpression' &&
+    member?.type !== 'OptionalMemberExpression'
+  ) {
+    return;
+  }
+
+  return member.computed
+    ? getStaticString(member.property)
+    : getPropertyName(member.property);
+};
+
 const readMemberCallName = (node) =>
-  node?.type === 'CallExpression' &&
-  node.callee.type === 'MemberExpression' &&
-  !node.callee.computed
-    ? getPropertyName(node.callee.property)
+  isCallExpressionNode(node) &&
+  (node.callee.type === 'MemberExpression' ||
+    node.callee.type === 'OptionalMemberExpression')
+    ? getStaticMemberName(node.callee)
     : undefined;
 
 const readCallChainRootName = (node) => {
@@ -876,7 +3200,7 @@ const createIssue = (file, node, reason) => ({
   reason,
 });
 
-const getStaticPliteElementMap = (node) => {
+const getStaticPliteElementMap = (node, staticStringBindings) => {
   if (
     node?.type !== 'CallExpression' ||
     node.callee.type !== 'Identifier' ||
@@ -893,18 +3217,39 @@ const getStaticPliteElementMap = (node) => {
   const schema =
     node.callee.name === 'defineEditorSchema'
       ? declaration
-      : getObjectProperty(declaration, 'schema')?.value;
+      : getResolvedObjectProperty(declaration, 'schema', staticStringBindings)
+          ?.value;
 
   if (schema?.type !== 'ObjectExpression') return;
 
-  const elements = getObjectProperty(schema, 'elements')?.value;
+  const elements = getResolvedObjectProperty(
+    schema,
+    'elements',
+    staticStringBindings
+  )?.value;
 
   return elements?.type === 'ObjectExpression' ? elements : undefined;
 };
 
 export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const ast = parsePlateSource(source, file);
-  const namedSchemaLineageBindings = collectNamedSchemaLineageBindings(ast);
+  const localPluginCreatorNames = collectLocalPluginCreatorNames(ast);
+  const staticStringBindings = collectStaticStringBindings(ast);
+  const localPlateEditorConstructorNames =
+    collectLocalPlateEditorConstructorNames(ast, staticStringBindings);
+  const staticValueBindings = collectStaticValueBindings(
+    ast,
+    staticStringBindings
+  );
+  const localPluginDescriptorBindings = collectLocalPluginDescriptorBindings(
+    ast,
+    localPluginCreatorNames,
+    staticStringBindings
+  );
+  const namedSchemaLineageBindings = collectNamedSchemaLineageBindings(
+    ast,
+    staticStringBindings
+  );
   const issues = [];
   const allowedExplicitSchemaFactoryCount =
     intentionalExplicitSchemaFactoryCounts.get(file) ?? 0;
@@ -920,6 +3265,21 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   let rawSchemaQueryCount = 0;
 
   const report = (node, reason) => issues.push(createIssue(file, node, reason));
+  const isLocallyCreatedPluginDescriptorExpression = (expression) =>
+    isDirectCreatorExtendChain(expression, localPluginCreatorNames) ||
+    localPluginDescriptorBindings.has(
+      getPluginBuilderRootPath(expression),
+      expression
+    );
+  const hasNonExtractablePluginAuthoringBinding = (pattern) =>
+    pattern?.type === 'ObjectPattern' &&
+    pattern.properties.some(
+      (property) =>
+        property.type === 'RestElement' ||
+        (property.type === 'ObjectProperty' &&
+          (property.computed ||
+            pluginAuthoringMethods.has(getPropertyName(property.key))))
+    );
 
   const visit = (node, ancestors = []) => {
     if (!node || typeof node !== 'object') return;
@@ -972,6 +3332,67 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       );
     }
 
+    if (
+      ((node.type === 'VariableDeclarator' &&
+        hasNonExtractablePluginAuthoringBinding(node.id) &&
+        isLocallyCreatedPluginDescriptorExpression(node.init)) ||
+        (node.type === 'AssignmentExpression' &&
+          node.operator === '=' &&
+          hasNonExtractablePluginAuthoringBinding(node.left) &&
+          isLocallyCreatedPluginDescriptorExpression(node.right))) &&
+      isProductionPluginAuthoringFile(file) &&
+      (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+    ) {
+      report(
+        node,
+        'plugin authoring methods cannot be extracted from a locally created descriptor; keep the exact builder chain visible'
+      );
+    }
+
+    if (
+      (node.type === 'MemberExpression' ||
+        node.type === 'OptionalMemberExpression') &&
+      pluginAuthoringMethods.has(getStaticMemberName(node)) &&
+      isLocallyCreatedPluginDescriptorExpression(node.object)
+    ) {
+      const parent = ancestors.at(-1);
+      const isDirectCall =
+        (parent?.type === 'CallExpression' ||
+          parent?.type === 'OptionalCallExpression') &&
+        parent.callee === node;
+
+      if (
+        !isDirectCall &&
+        isProductionPluginAuthoringFile(file) &&
+        (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+      ) {
+        report(
+          node,
+          'plugin authoring methods cannot be extracted from a locally created descriptor; keep the exact builder chain visible'
+        );
+      }
+    }
+
+    if (
+      node.type === 'OptionalCallExpression' &&
+      (node.callee.type === 'MemberExpression' ||
+        node.callee.type === 'OptionalMemberExpression')
+    ) {
+      const callsLocallyCreatedPluginDescriptor =
+        isLocallyCreatedPluginDescriptorExpression(node.callee.object);
+
+      if (
+        callsLocallyCreatedPluginDescriptor &&
+        isProductionPluginAuthoringFile(file) &&
+        (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+      ) {
+        report(
+          node,
+          'optional plugin-authoring calls on locally created descriptors cannot bypass the exact stage audit'
+        );
+      }
+    }
+
     if (node.type === 'Identifier' && deletedSymbols.has(node.name)) {
       report(node, `deleted Plate schema symbol ${node.name}`);
     }
@@ -1011,7 +3432,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     }
 
     if (node.type === 'ObjectProperty') {
-      const key = getPropertyName(node.key);
+      const key = getResolvedObjectPropertyName(node, staticStringBindings);
       const nodeComponent =
         key === 'render' && node.value?.type === 'ObjectExpression'
           ? getObjectProperty(node.value, 'node')
@@ -1040,7 +3461,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
       if (key === 'node' && node.value?.type === 'ObjectExpression') {
         const keys = node.value.properties
-          .map((property) => getPropertyName(property.key))
+          .map((property) =>
+            getResolvedObjectPropertyName(property, staticStringBindings)
+          )
           .filter((property) => deletedNodeBagKeys.has(property));
         const hasDistinctiveNodeBagKey = keys.some(
           (property) => property !== 'type'
@@ -1049,7 +3472,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         if (
           keys.length > 0 &&
           (hasDistinctiveNodeBagKey ||
-            isDirectPluginDeclarationObject(ancestors))
+            isDirectPluginDeclarationObject(ancestors, localPluginCreatorNames))
         ) {
           report(node, `deleted Plate node bag (${keys.join(', ')})`);
         }
@@ -1059,7 +3482,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         key === 'mark' &&
         node.value?.type === 'BooleanLiteral' &&
         node.value.value &&
-        isInsidePluginSchema(ancestors)
+        isInsidePluginSchema(
+          ancestors,
+          localPluginCreatorNames,
+          staticStringBindings
+        )
       ) {
         report(node, 'schema.mark must use a property descriptor');
       }
@@ -1072,7 +3499,11 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             element?.type === 'StringLiteral' &&
             (element.value === 'block' || element.value === 'inline')
         ) &&
-        isInsidePluginSchema(ancestors)
+        isInsidePluginSchema(
+          ancestors,
+          localPluginCreatorNames,
+          staticStringBindings
+        )
       ) {
         report(node, 'Plate plugins must not repeat derived structural groups');
       }
@@ -1080,40 +3511,53 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       if (
         key === 'element' &&
         node.value?.type === 'ObjectExpression' &&
-        isInsidePluginSchema(ancestors) &&
-        isInsidePluginFactoryDeclaration(ancestors) &&
+        isInsidePluginSchema(
+          ancestors,
+          localPluginCreatorNames,
+          staticStringBindings
+        ) &&
+        isInsidePluginFactoryDeclaration(ancestors, localPluginCreatorNames) &&
         !node.value.properties.some(
           (property) => property.type === 'SpreadElement'
         ) &&
         !node.value.properties.some((property) =>
-          ['content', 'void'].includes(getPropertyName(property.key))
+          ['content', 'void'].includes(
+            getResolvedObjectPropertyName(property, staticStringBindings)
+          )
         ) &&
         !hasExpectError(source, node) &&
         !ancestors.some(
           (ancestor) =>
             ancestor.type === 'ObjectProperty' &&
-            getPropertyName(ancestor.key) === 'schema' &&
+            getResolvedObjectPropertyName(ancestor, staticStringBindings) ===
+              'schema' &&
             hasExpectError(source, ancestor)
         )
       ) {
         report(node, 'non-void element schema requires explicit content');
       }
 
-      if (key === 'targetPluginKeys' && isInsidePluginInitialState(ancestors)) {
+      if (
+        key === 'targetPluginKeys' &&
+        isInsidePluginInitialState(ancestors, localPluginCreatorNames)
+      ) {
         report(
           node,
           'schema target descriptors belong in top-level targetPluginKeys'
         );
       }
 
-      if (key === 'config' && isDirectPlatePluginDeclarationObject(ancestors)) {
+      if (
+        key === 'config' &&
+        isDirectPlatePluginDeclarationObject(ancestors, localPluginCreatorNames)
+      ) {
         report(node, 'Plate plugin values belong in initialState');
       }
 
       if (
         key === 'schema' &&
         isFunction(node.value) &&
-        isDirectPlatePluginDeclarationObject(ancestors)
+        isDirectPlatePluginDeclarationObject(ancestors, localPluginCreatorNames)
       ) {
         const parameter = node.value.params?.[0];
 
@@ -1138,12 +3582,42 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
     }
 
-    if (node.type === 'CallExpression') {
+    if (isCallExpressionNode(node)) {
       const memberCallName = readMemberCallName(node);
+      const pluginCreatorKind = getPluginCreatorCallKind(
+        node,
+        localPluginCreatorNames
+      );
+      const isIntentionalRuntimeNegativeConstructor =
+        packageTestSourcePattern.test(file) &&
+        node.callee.type === 'TSAsExpression' &&
+        node.callee.typeAnnotation?.type === 'TSAnyKeyword';
       const memberCallOwner =
-        node.callee.type === 'MemberExpression'
+        node.callee.type === 'MemberExpression' ||
+        node.callee.type === 'OptionalMemberExpression'
           ? unwrapTypedExpression(node.callee.object)
           : undefined;
+      const hasDynamicComputedMember =
+        (node.callee.type === 'MemberExpression' ||
+          node.callee.type === 'OptionalMemberExpression') &&
+        node.callee.computed &&
+        getStaticMemberName(node.callee) === undefined;
+      const callsLocallyCreatedPluginDescriptor =
+        (node.callee.type === 'MemberExpression' ||
+          node.callee.type === 'OptionalMemberExpression') &&
+        isLocallyCreatedPluginDescriptorExpression(node.callee.object);
+
+      if (
+        hasDynamicComputedMember &&
+        callsLocallyCreatedPluginDescriptor &&
+        isProductionPluginAuthoringFile(file) &&
+        (packagePluginSourcePattern.test(file) || file.startsWith('apps/'))
+      ) {
+        report(
+          node,
+          'computed plugin-authoring calls on locally created descriptors cannot bypass the exact stage audit'
+        );
+      }
 
       if (
         baseOrStaticSourcePattern.test(file) &&
@@ -1169,11 +3643,16 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         );
       }
 
-      if (memberCallName === 'extend') {
+      if (memberCallName === 'extend' && isCallExpressionNode(node)) {
         for (const property of getStaticExtensionProperties(
           node.arguments[0]
         )) {
-          if (getPropertyName(property.key) !== 'codecs') continue;
+          if (
+            getResolvedObjectPropertyName(property, staticStringBindings) !==
+            'codecs'
+          ) {
+            continue;
+          }
 
           if (!isDefineCodecsCall(property)) {
             const isIntentionalNegativeContract =
@@ -1197,7 +3676,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
 
           if (
             packagePluginSourcePattern.test(file) &&
-            isProductionPluginAuthoringFile(file)
+            isProductionPluginAuthoringFile(file) &&
+            !(intentionalProductionExtendStageChains.get(file) ?? []).some(
+              (chain) => chain.some((fields) => fields.includes('codecs'))
+            )
           ) {
             report(
               property,
@@ -1210,9 +3692,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           !isNestedInLaterExtend(node, ancestors) &&
           isProductionPluginAuthoringFile(file) &&
           (packagePluginSourcePattern.test(file) || file.startsWith('apps/')) &&
-          isDirectCreatorExtendChain(node.callee.object)
+          isLocallyCreatedPluginDescriptorExpression(node.callee.object)
         ) {
-          const stages = getExtendChainStages(node);
+          const stages = getExtendChainStages(node, staticStringBindings);
 
           productionExtendChainCount++;
           productionExtendChains.push(stages);
@@ -1233,19 +3715,19 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (
-        node.callee.type === 'Identifier' &&
-        ['createBasePlugin', 'createPlatePlugin'].includes(node.callee.name) &&
+        pluginCreatorKind &&
+        !isIntentionalRuntimeNegativeConstructor &&
         node.arguments[0]?.type === 'ObjectExpression'
       ) {
         for (const property of node.arguments[0].properties) {
           const key =
             property.type === 'ObjectProperty' ||
             property.type === 'ObjectMethod'
-              ? getPropertyName(property.key)
+              ? getResolvedObjectPropertyName(property, staticStringBindings)
               : undefined;
 
           if (
-            node.callee.name === 'createBasePlugin' &&
+            pluginCreatorKind === 'createBasePlugin' &&
             key === 'component' &&
             !hasExpectError(source, property)
           ) {
@@ -1278,12 +3760,15 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (
-        memberCallName === 'configure' &&
+        memberCallName &&
+        ['clone', 'configure', 'configurePlugin', 'extendPlugin'].includes(
+          memberCallName
+        ) &&
         isPackagePluginDefinitionSource(file)
       ) {
         report(
           node,
-          'package plugin definitions must use constructor fields or a justified imported/prebuilt or staged extend; reserve configure for consumer installation'
+          'package plugin definitions must use constructor fields or a justified imported/prebuilt or staged extend; reserve configure and nested plugin configuration for consumer installation'
         );
       }
 
@@ -1299,7 +3784,10 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         node,
         file,
         namedSchemaLineageBindings,
-        namedSchemaLineageCounts
+        namedSchemaLineageCounts,
+        localPlateEditorConstructorNames,
+        staticStringBindings,
+        staticValueBindings
       );
 
       if (namedLineageIssue) {
@@ -1324,11 +3812,15 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (
-        node.callee.type === 'Identifier' &&
-        ['createBasePlugin', 'createPlatePlugin'].includes(node.callee.name) &&
+        pluginCreatorKind &&
+        !isIntentionalRuntimeNegativeConstructor &&
         (node.typeParameters?.params.length > 0 ||
           node.typeArguments?.params.length > 0) &&
-        getObjectProperty(node.arguments[0], 'schema')
+        getResolvedObjectProperty(
+          node.arguments[0],
+          'schema',
+          staticStringBindings
+        )
       ) {
         explicitSchemaFactoryCount++;
 
@@ -1340,7 +3832,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         }
       }
 
-      const elements = getStaticPliteElementMap(node);
+      const elements = getStaticPliteElementMap(node, staticStringBindings);
 
       for (const elementProperty of elements?.properties ?? []) {
         if (
@@ -1350,7 +3842,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
             (property) => property.type === 'SpreadElement'
           ) ||
           elementProperty.value.properties.some((property) =>
-            ['content', 'void'].includes(getPropertyName(property.key))
+            ['content', 'void'].includes(
+              getResolvedObjectPropertyName(property, staticStringBindings)
+            )
           ) ||
           hasExpectError(source, elementProperty)
         ) {
@@ -1364,9 +3858,9 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (
-        node.callee?.type === 'MemberExpression' &&
-        !node.callee.computed &&
-        getPropertyName(node.callee.property) === 'configure' &&
+        (node.callee?.type === 'MemberExpression' ||
+          node.callee?.type === 'OptionalMemberExpression') &&
+        getStaticMemberName(node.callee) === 'configure' &&
         isFunction(node.arguments[0])
       ) {
         const inspection = inspectContextualConfigure(node.arguments[0]);
@@ -1510,12 +4004,32 @@ export function auditNamedSchemaLineageDocument(
       continue;
     }
 
-    const bindings = collectNamedSchemaLineageBindings(ast);
+    const staticStringBindings = collectStaticStringBindings(ast);
+    const staticValueBindings = collectStaticValueBindings(
+      ast,
+      staticStringBindings
+    );
+    const bindings = collectNamedSchemaLineageBindings(
+      ast,
+      staticStringBindings
+    );
+    const constructorNames = collectLocalPlateEditorConstructorNames(
+      ast,
+      staticStringBindings
+    );
 
     walkAst(ast, (node) => {
-      if (node.type !== 'CallExpression') return;
+      if (!isCallExpressionNode(node)) return;
 
-      const issue = recordNamedSchemaLineage(node, file, bindings, counts);
+      const issue = recordNamedSchemaLineage(
+        node,
+        file,
+        bindings,
+        counts,
+        constructorNames,
+        staticStringBindings,
+        staticValueBindings
+      );
 
       if (!issue) return;
 

@@ -1,35 +1,27 @@
 'use client';
 
-import type { ExtendConfig, Path } from 'platejs';
+import type { InferConfig, Path } from 'platejs';
 
 import { TextApi } from 'platejs';
-import {
-  type BaseCommentConfig,
-  BaseCommentPlugin,
-  getDraftCommentKey,
-} from '@platejs/comment';
+import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
 import { toPlatePlugin } from 'platejs/react';
 
 import { CommentLeaf } from '@/registry/ui/comment-node';
 import { getDiscussionClickTarget } from './discussion-kit';
 
-export type CommentConfig = ExtendConfig<
-  BaseCommentConfig,
-  {
-    activeId: string | null;
-    commentingBlock: Path | null;
-    hoverId: string | null;
-  }
->;
+export type CommentPluginState = {
+  activeId: string | null;
+  commentingBlock: Path | null;
+  hoverId: string | null;
+};
 
-export const commentPlugin = toPlatePlugin<
-  BaseCommentConfig,
-  {
-    activeId: string | null;
-    commentingBlock: Path | null;
-    hoverId: string | null;
-  }
->(BaseCommentPlugin, {
+const initialState: CommentPluginState = {
+  activeId: null,
+  commentingBlock: null,
+  hoverId: null,
+};
+
+export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
   handlers: {
     onClick: ({ api, event, read, store, type }) => {
       const activeTarget = getDiscussionClickTarget({
@@ -49,11 +41,7 @@ export const commentPlugin = toPlatePlugin<
       });
     },
   },
-  initialState: {
-    activeId: null,
-    commentingBlock: null,
-    hoverId: null,
-  },
+  initialState,
 })
   .extend(({ store, type }) => ({
     update: ({ tx }) => ({
@@ -88,5 +76,7 @@ export const commentPlugin = toPlatePlugin<
       setDraft: { keys: 'mod+shift+m' },
     },
   });
+
+export type CommentConfig = InferConfig<typeof commentPlugin>;
 
 export const CommentKit = [commentPlugin];

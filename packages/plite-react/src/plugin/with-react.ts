@@ -5,6 +5,7 @@ import {
   type Editor,
   type EditorExtensionsFromOptions,
   type EditorExtension,
+  type EditorExtensionConfigurationEditor,
   type EditorExtensionConfigurationContext,
   type EditorExtensionTypeProvider,
   type EditorValueFromOptions,
@@ -14,6 +15,7 @@ import type {
   DOMApi,
   DOMClipboardApi,
   DOMEditorOptions,
+  DOMExtension,
 } from '@platejs/plite-dom';
 import { dom } from '@platejs/plite-dom';
 import {
@@ -46,14 +48,14 @@ export type ReactExtensionTypes = {
 /** Editor extension installed by `react()`. */
 export type ReactExtension = Omit<
   EditorExtension<Editor>,
-  'api' | 'conflicts' | 'name' | 'state' | 'tx'
+  'api' | 'dependencies' | 'name' | 'state' | 'tx'
 > &
   EditorExtensionTypeProvider<(editor: Editor) => ReactExtensionTypes> & {
     api: (
-      editor: Editor,
+      editor: EditorExtensionConfigurationEditor<Editor>,
       context: EditorExtensionConfigurationContext
     ) => ReactExtensionTypes['api'];
-    conflicts: readonly ['dom'];
+    dependencies: readonly [DOMExtension<true>];
     name: 'react';
   };
 type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
@@ -106,7 +108,6 @@ export const react = (options: ReactEditorOptions = {}): ReactExtension => {
   const domExtension = dom(domOptions);
 
   const extension = defineEditorExtension<Editor>()({
-    activate: domExtension.activate,
     api(editor, context) {
       const api = domExtension.api(editor, context);
 
@@ -120,19 +121,18 @@ export const react = (options: ReactEditorOptions = {}): ReactExtension => {
         react: createReactApi(editor, api.dom),
       };
     },
-    conflicts: ['dom'],
+    dependencies: [domExtension],
     name: 'react',
-    onCommit(context) {
-      domExtension.onCommit?.(context);
-
-      if (
-        context.commit.changed.hasAny('text') &&
-        findEditorDOMRootRuntime(context.editor)?.isAndroidHost
-      ) {
-        EDITOR_TO_PENDING_SELECTION.delete(context.editor);
-      }
+    on: {
+      commit(context) {
+        if (
+          context.commit.changed.hasAny('text') &&
+          findEditorDOMRootRuntime(context.editor)?.isAndroidHost
+        ) {
+          EDITOR_TO_PENDING_SELECTION.delete(context.editor);
+        }
+      },
     },
-    onTransactionChange: domExtension.onTransactionChange,
   });
 
   return extension as ReactExtension;

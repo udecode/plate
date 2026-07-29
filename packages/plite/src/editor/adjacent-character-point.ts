@@ -1,4 +1,4 @@
-import { isEditorNodeSelectable } from '../core/query-middleware';
+import { isEditorNodeSelectable } from '../core/editor-read-execution';
 import { getLiveNode, getLiveText } from '../core/public-state';
 import {
   above as editorAbove,

@@ -313,7 +313,9 @@ export const compilePlateCodecs = (
 ) => {
   const declarations = plugins.flatMap((plugin) =>
     (plugin.__codecExtensions ?? []).flatMap((extension) => {
-      const codecs = extension(getEditorPlugin(editor, plugin as never));
+      const codecs = Reflect.apply(extension, undefined, [
+        getEditorPlugin(editor, plugin),
+      ]);
 
       if (!isRecord(codecs)) {
         throw new Error(

@@ -148,21 +148,23 @@ const createFakeCollabAdapterExtension = () => {
       });
     },
     name: 'fake-collab-adapter',
-    onCommit({ commit, editor }) {
-      listenerEvents.push(`commit:${commit.tags.join(',')}`);
+    on: {
+      commit({ commit, editor }) {
+        listenerEvents.push(`commit:${commit.tags.join(',')}`);
 
-      const adapterState = runtimeStates.get(editor);
-      assert(adapterState);
-      const state = adapterState.get();
+        const adapterState = runtimeStates.get(editor);
+        assert(adapterState);
+        const state = adapterState.get();
 
-      if (!state.connected || state.paused) return;
-      if (commit.tags.includes('skip-collab')) return;
-      if (commit.tags.includes('collaboration')) return;
-      if (commit.changes.empty) return;
-      adapterState.set({
-        ...state,
-        exports: [...state.exports, clone(commit.changes.toJSON())],
-      });
+        if (!state.connected || state.paused) return;
+        if (commit.tags.includes('skip-collab')) return;
+        if (commit.tags.includes('collaboration')) return;
+        if (commit.changes.empty) return;
+        adapterState.set({
+          ...state,
+          exports: [...state.exports, clone(commit.changes.toJSON())],
+        });
+      },
     },
   });
 

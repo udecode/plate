@@ -39,7 +39,7 @@ describe('excludeDiffFromFragment', () => {
     expect(original[0].children[0].diffIntent).toBe('insert');
   });
 
-  it('removes diff metadata through the fragment query extension', () => {
+  it('removes diff metadata from exported slices', () => {
     const editor = createEditor<Value>({
       initialSelection: {
         kind: 'text',
@@ -62,7 +62,7 @@ describe('excludeDiffFromFragment', () => {
 
     editor.extend(createExcludeDiffFragmentExtension());
 
-    expect(editor.read.fragment()).toEqual([
+    expect(editor.read.slice.export().content).toEqual([
       {
         children: [
           {

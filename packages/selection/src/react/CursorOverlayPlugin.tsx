@@ -1,56 +1,27 @@
-import { useEffect } from 'react';
+import type { InferConfig, PluginConfig } from '@platejs/core';
 
-import type { PluginConfig } from '@platejs/core';
-import { getPlateRuntime } from '@platejs/core/internal';
-
-import {
-  type DOMHandler,
-  createPlatePlugin,
-  usePluginStore,
-} from '@platejs/core/react';
+import type { CursorData, CursorState } from '@platejs/cursor';
+import { createPlatePlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
-import type { CursorData, CursorState } from './types';
+import { useCursorOverlayPlugin } from './useCursorOverlay';
 
-import { BlockSelectionPlugin } from './BlockSelectionPlugin';
+export type CursorOverlayPluginState = {
+  cursors: Record<string, CursorState<CursorData>>;
+};
 
-export type CursorOverlayConfig = PluginConfig<
-  'cursorOverlay',
-  {
-    cursors: Record<string, CursorState<CursorData>>;
-  },
-  {},
-  {},
-  {},
-  {},
-  readonly [],
-  never,
-  {
-    addCursor: (
-      id: string,
-      cursor: Omit<CursorState<CursorData>, 'id'>
-    ) => void;
-    removeCursor: (id: (string & {}) | 'drag' | 'selection') => void;
-  }
->;
+const initialState: CursorOverlayPluginState = { cursors: {} };
 
-const getRemoveCursorHandler =
-  (id: string): DOMHandler<CursorOverlayConfig> =>
-  ({ api }) => {
-    api.removeCursor(id);
-  };
+type DndConfig = PluginConfig<typeof KEYS.dnd, { isDragging: boolean }>;
 
-export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
+export const CursorOverlayPlugin = createPlatePlugin({
   api: ({ store }) => ({
-    addCursor: (id, cursor) => {
+    addCursor: (id: string, cursor: CursorState<CursorData>) => {
       const newCursors = { ...store.get().cursors };
-      newCursors[id] = {
-        id,
-        ...cursor,
-      };
+      newCursors[id] = cursor;
       store.set({ cursors: newCursors });
     },
-    removeCursor: (id) => {
+    removeCursor: (id: (string & {}) | 'drag' | 'selection') => {
       const newCursors = { ...store.get().cursors };
 
       if (!newCursors[id]) return;
@@ -59,29 +30,32 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
       store.set({ cursors: newCursors });
     },
   }),
-  extension: ({ api, editor, store }) => {
-    const refreshSelectionCursor = () => {
-      if (!store.get().cursors?.selection) return;
-
-      setTimeout(() => {
-        api.addCursor('selection', {
-          selection: editor.read.selection(),
-        });
-      }, 0);
-    };
-
-    return {
-      onCommit({ commit }) {
-        if (commit.selectionChanged) refreshSelectionCursor();
+  editOnly: {
+    render: false,
+  },
+  key: KEYS.cursorOverlay,
+  initialState,
+}).extend(({ api, editor, store }) => ({
+  extension: {
+    on: {
+      commit({ commit }) {
+        if (commit.selectionChanged && store.get().cursors?.selection) {
+          setTimeout(() => {
+            api.addCursor('selection', {
+              selection: editor.read.selection(),
+            });
+          }, 0);
+        }
       },
-    };
+    },
   },
   handlers: {
     onBlur: ({ api, editor, event }) => {
       if (!editor.read.selection()) return;
 
-      const relatedTarget = event.relatedTarget as HTMLElement;
-      const enabled = relatedTarget?.dataset?.plateFocus === 'true';
+      const enabled =
+        event.relatedTarget instanceof HTMLElement &&
+        event.relatedTarget.dataset.plateFocus === 'true';
 
       if (!enabled) return;
 
@@ -89,13 +63,16 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
         selection: editor.read.selection(),
       });
     },
-    onDragEnd: getRemoveCursorHandler('drag') as any,
-    onDragLeave: getRemoveCursorHandler('drag') as any,
+    onDragEnd: () => {
+      api.removeCursor('drag');
+    },
+    onDragLeave: () => {
+      api.removeCursor('drag');
+    },
     onDragOver: ({ api, editor, event }) => {
-      if (
-        !getPlateRuntime(editor).plugins.dnd ||
-        editor.plugin({ key: KEYS.dnd }).store.get().isDragging
-      ) {
+      const dnd = editor.plugin<DndConfig>({ key: KEYS.dnd });
+
+      if (!dnd.installed || dnd.store.get('isDragging')) {
         return;
       }
 
@@ -111,24 +88,15 @@ export const CursorOverlayPlugin = createPlatePlugin<CursorOverlayConfig>({
         selection: range,
       });
     },
-    onDrop: getRemoveCursorHandler('drag') as any,
-    onFocus: getRemoveCursorHandler('selection') as any,
+    onDrop: () => {
+      api.removeCursor('drag');
+    },
+    onFocus: () => {
+      api.removeCursor('selection');
+    },
   },
-  key: KEYS.cursorOverlay,
-  initialState: { cursors: {} },
 
-  editOnly: {
-    render: false,
-  },
-  useHooks: ({ api, store }) => {
-    const isSelecting = usePluginStore(BlockSelectionPlugin, 'isSelecting');
+  useHooks: useCursorOverlayPlugin,
+}));
 
-    useEffect(() => {
-      if (isSelecting) {
-        setTimeout(() => {
-          api.removeCursor('selection');
-        }, 0);
-      }
-    }, [isSelecting, store, api]);
-  },
-});
+export type CursorOverlayConfig = InferConfig<typeof CursorOverlayPlugin>;

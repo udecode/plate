@@ -4,7 +4,7 @@ import { property, schema } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
-import { DEFAULT_EMOJI_LIBRARY } from './constants';
+import { DEFAULT_EMOJI_LIBRARY } from './EmojiLibrary';
 import { EmojiInputPlugin, EmojiPlugin } from '../react/EmojiPlugin';
 
 describe('BaseEmojiPlugin', () => {

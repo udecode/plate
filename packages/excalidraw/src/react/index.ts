@@ -3,5 +3,4 @@
  */
 
 export * from './ExcalidrawPlugin';
-export * from './types';
-export * from './hooks/index';
+export * from './useExcalidrawElement';

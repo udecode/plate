@@ -259,8 +259,8 @@ CopilotPlugin.extend(({ api }) => ({
 
         if (!contextEntry) return '';
 
-        const prompt = editor.read.markdown.serialize({
-          value: [contextEntry[0] as Element],
+        const prompt = editor.api.markdown.serialize({
+          value: { children: [contextEntry[0] as Element] },
         });
 
         return `继续文本直到下一个标点符号：

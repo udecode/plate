@@ -9,6 +9,7 @@ const scriptPath = fileURLToPath(import.meta.url);
 const defaultRoot = resolve(dirname(scriptPath), '../../../..');
 const doctrinePaths = [
   '.agents/rules/plate-next.mdc',
+  '.agents/rules/plate-plugin-creator.mdc',
   'docs/plans/templates/plate-next.md',
 ];
 const ignoredDirectories = new Set([
@@ -59,7 +60,7 @@ export const readDeclaredDoctrineVersion = (source) => {
 export const computeDoctrineFingerprint = (root) => {
   const hash = createHash('sha256');
 
-  hash.update('plate-next-doctrine-fingerprint:v1\0');
+  hash.update('plate-next-doctrine-fingerprint:v2\0');
 
   for (const path of doctrinePaths) {
     hash.update(path);

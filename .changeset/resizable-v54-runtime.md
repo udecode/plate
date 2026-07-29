@@ -4,4 +4,4 @@
 
 Move resize components to the current editor hooks and mutation APIs, and restrict relative resize lengths to percentage strings
 
-**Migration:** Remove the unused `readOnly` resizable option and use percentage strings for relative lengths.
+**Migration:** Remove the unused `readOnly` resizable option and `isTouchEvent` helper, and use percentage strings for relative lengths. `resizeLengthClamp` returns the widened `number` or percentage-string kind instead of the input literal.

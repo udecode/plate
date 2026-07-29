@@ -3,6 +3,5 @@
  */
 
 export * from './BaseCodeDrawingPlugin';
-export * from './constants';
 export * from './download';
 export * from './renderers';

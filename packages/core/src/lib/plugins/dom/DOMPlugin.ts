@@ -6,7 +6,7 @@ import {
 } from '@platejs/plite';
 import {
   type DOMApi,
-  type DOMClipboardApi,
+  type DOMExtensionTypes,
   type ScrollIntoViewOptions,
   dom as pliteDom,
 } from '@platejs/plite-dom';
@@ -38,25 +38,26 @@ export type PlateDomApi = {
   isAutoScrolling: () => boolean;
 };
 
+export type DomPluginState = {
+  /** Choose the first or last matching change as the scroll target. */
+  scrollMode: ScrollMode;
+  /** Change map; true enables scrolling for that canonical change kind. */
+  scrollChanges: AutoScrollChangesMap;
+  /** Options passed to scrollIntoView. */
+  scrollOptions: ScrollIntoViewOptions;
+};
+
 export type AutoScrollUpdate<TTx extends object = {}> = (
   tx: EditorUpdateTransaction & TTx
 ) => void;
 
 export type DomConfig = PluginConfig<
   'dom',
-  {
-    /** Choose the first or last matching change as the scroll target. */
-    scrollMode?: ScrollMode;
-    /** Change map; true enables scrolling for that canonical change kind. */
-    scrollChanges?: AutoScrollChangesMap;
-    /** Options passed to scrollIntoView */
-    scrollOptions?: ScrollIntoViewOptions;
-  },
-  {
-    clipboard: DOMClipboardApi;
+  DomPluginState,
+  DOMExtensionTypes['api'] & {
     dom: DOMApi & PlateDomApi;
   },
-  {
+  DOMExtensionTypes['tx'] & {
     dom: {
       autoScroll: (fn: AutoScrollUpdate, options?: AutoScrollOptions) => void;
     };
@@ -67,6 +68,17 @@ export type DomConfig = PluginConfig<
 /** Mode for picking a target when multiple enabled changes are present. */
 export type ScrollMode = 'first' | 'last';
 
+const initialState: DomPluginState = {
+  scrollMode: 'last',
+  scrollChanges: {
+    structure: true,
+    text: true,
+  },
+  scrollOptions: {
+    scrollMode: 'if-needed',
+  },
+};
+
 export const DOMPluginBase = createBasePlugin<DomConfig>({
   extension: ({ editor, store }) => ({
     api: {
@@ -75,91 +87,90 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
       },
     },
     key: 'autoScroll',
-    onTransactionChange({ changed, selectionAfterRoot, tx }) {
-      if (AUTO_SCROLL.get(editor) !== true) return;
+    on: {
+      transactionChange({ changed, selectionAfterRoot, tx }) {
+        if (AUTO_SCROLL.get(editor) !== true) return;
 
-      const { scrollMode, scrollChanges = {}, scrollOptions } = store.get();
-      const propertiesChanged = changed.has('properties', selectionAfterRoot);
-      const structureChanged = changed.has('structure', selectionAfterRoot);
-      const textChanged = changed.has('text', selectionAfterRoot);
+        const { scrollMode, scrollChanges = {}, scrollOptions } = store.get();
+        const propertiesChanged = changed.has('properties', selectionAfterRoot);
+        const structureChanged = changed.has('structure', selectionAfterRoot);
+        const textChanged = changed.has('text', selectionAfterRoot);
 
-      if (
-        !(
+        if (
+          !(
+            (structureChanged && scrollChanges.structure) ||
+            (textChanged && scrollChanges.text) ||
+            (propertiesChanged && scrollChanges.properties)
+          )
+        ) {
+          return;
+        }
+
+        const shouldScrollNode =
           (structureChanged && scrollChanges.structure) ||
-          (textChanged && scrollChanges.text) ||
-          (propertiesChanged && scrollChanges.properties)
-        )
-      ) {
-        return;
-      }
+          (propertiesChanged && scrollChanges.properties);
+        const changedPaths = changed.paths(selectionAfterRoot);
+        const shallowPaths = shouldScrollNode
+          ? changedPaths.filter(
+              (path, index, paths) =>
+                !paths.some(
+                  (candidate, candidateIndex) =>
+                    candidateIndex !== index &&
+                    candidate.length < path.length &&
+                    candidate.every(
+                      (part, partIndex) => part === path[partIndex]
+                    )
+                )
+            )
+          : [];
+        const changedPath =
+          scrollMode === 'first' ? shallowPaths[0] : shallowPaths.at(-1);
+        const selectionTarget = tx.selection()?.focus;
+        const selectionTouchesChange =
+          selectionTarget &&
+          changedPaths.some((path) =>
+            PathApi.equals(path, selectionTarget.path)
+          );
+        const deepestPaths = textChanged
+          ? changedPaths.filter(
+              (path, index, paths) =>
+                !paths.some(
+                  (candidate, candidateIndex) =>
+                    candidateIndex !== index &&
+                    candidate.length > path.length &&
+                    path.every(
+                      (part, partIndex) => part === candidate[partIndex]
+                    )
+                )
+            )
+          : [];
+        const changedTextPath =
+          scrollMode === 'first' ? deepestPaths[0] : deepestPaths.at(-1);
+        const changeTarget: ScrollIntoViewTarget | undefined = changedPath
+          ? [...changedPath]
+          : selectionTouchesChange
+            ? selectionTarget
+            : changedTextPath
+              ? [...changedTextPath]
+              : selectionTarget;
 
-      const shouldScrollNode =
-        (structureChanged && scrollChanges.structure) ||
-        (propertiesChanged && scrollChanges.properties);
-      const changedPaths = changed.paths(selectionAfterRoot);
-      const shallowPaths = shouldScrollNode
-        ? changedPaths.filter(
-            (path, index, paths) =>
-              !paths.some(
-                (candidate, candidateIndex) =>
-                  candidateIndex !== index &&
-                  candidate.length < path.length &&
-                  candidate.every((part, partIndex) => part === path[partIndex])
-              )
-          )
-        : [];
-      const changedPath =
-        scrollMode === 'first' ? shallowPaths[0] : shallowPaths.at(-1);
-      const selectionTarget = tx.selection()?.focus;
-      const selectionTouchesChange =
-        selectionTarget &&
-        changedPaths.some((path) => PathApi.equals(path, selectionTarget.path));
-      const deepestPaths = textChanged
-        ? changedPaths.filter(
-            (path, index, paths) =>
-              !paths.some(
-                (candidate, candidateIndex) =>
-                  candidateIndex !== index &&
-                  candidate.length > path.length &&
-                  path.every((part, partIndex) => part === candidate[partIndex])
-              )
-          )
-        : [];
-      const changedTextPath =
-        scrollMode === 'first' ? deepestPaths[0] : deepestPaths.at(-1);
-      const changeTarget: ScrollIntoViewTarget | undefined = changedPath
-        ? [...changedPath]
-        : selectionTouchesChange
-          ? selectionTarget
-          : changedTextPath
-            ? [...changedTextPath]
-            : selectionTarget;
+        if (!changeTarget) return;
 
-      if (!changeTarget) return;
+        const target =
+          scrollMode === 'first'
+            ? (AUTO_SCROLL_FIRST_TARGET.get(editor) ?? changeTarget)
+            : changeTarget;
 
-      const target =
-        scrollMode === 'first'
-          ? (AUTO_SCROLL_FIRST_TARGET.get(editor) ?? changeTarget)
-          : changeTarget;
+        if (scrollMode === 'first' && !AUTO_SCROLL_FIRST_TARGET.has(editor)) {
+          AUTO_SCROLL_FIRST_TARGET.set(editor, target);
+        }
 
-      if (scrollMode === 'first' && !AUTO_SCROLL_FIRST_TARGET.has(editor)) {
-        AUTO_SCROLL_FIRST_TARGET.set(editor, target);
-      }
-
-      editor.api.dom.scrollIntoView(target, scrollOptions);
+        editor.api.dom.scrollIntoView(target, scrollOptions);
+      },
     },
   }),
   key: 'dom',
-  initialState: {
-    scrollMode: 'last',
-    scrollChanges: {
-      structure: true,
-      text: true,
-    },
-    scrollOptions: {
-      scrollMode: 'if-needed',
-    },
-  },
+  initialState,
   update: ({ editor, store, tx }) => ({
     autoScroll: (fn, options) => {
       const previousState = store.get();
@@ -214,6 +225,6 @@ export const DOMPluginBase = createBasePlugin<DomConfig>({
  * Plate DOM installs the Plite DOM bridge for base editors, then adds
  * Plate-owned auto-scroll state and transaction ergonomics.
  */
-export const DOMPlugin = DOMPluginBase.extend(() => ({
+export const DOMPlugin = DOMPluginBase.extend({
   extension: pliteDom(),
-}));
+});

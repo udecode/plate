@@ -1,6 +1,8 @@
 import {
   editorCommands,
+  editorReads,
   ElementApi,
+  NodeApi,
   PathApi,
   type Path,
   type Element,
@@ -14,29 +16,6 @@ import { createBasePlugin } from '../../plugin/createBasePlugin';
 import { getPluginByType } from '../../plugin/getBasePlugin';
 import { getEditorPlugin } from '../../plugin/getEditorPlugin';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
-
-const isRuntimeTextNode = (node: unknown): node is { text: string } =>
-  node !== null &&
-  typeof node === 'object' &&
-  'text' in node &&
-  typeof (node as { text?: unknown }).text === 'string';
-
-const getRuntimeNodeText = (node: unknown): string => {
-  if (isRuntimeTextNode(node)) return node.text;
-
-  const children = Array.isArray(node)
-    ? node
-    : node &&
-        typeof node === 'object' &&
-        'children' in node &&
-        Array.isArray((node as { children?: unknown }).children)
-      ? (node as { children: unknown[] }).children
-      : null;
-
-  if (!children) return '';
-
-  return children.map(getRuntimeNodeText).join('');
-};
 
 /** Override the editor based on resolved Plate plugin node behavior. */
 export const OverridePlugin = createBasePlugin({
@@ -370,7 +349,7 @@ export const OverridePlugin = createBasePlugin({
                 ElementApi.isElement(previous[0]) &&
                 !state.schema.isVoid(previous[0]) &&
                 previous[0].children.length > 0 &&
-                getRuntimeNodeText(previous[0]).length === 0 &&
+                NodeApi.string(previous[0]).length === 0 &&
                 !shouldRemoveEmptyMergeTarget(previous[0], previous[1])
               ) {
                 return state.transaction((tx) => {
@@ -428,14 +407,15 @@ export const OverridePlugin = createBasePlugin({
           return false;
         }),
       ],
-      queries: {
-        nodes: {
-          shouldMergeNodesRemovePrevNode({ current, next, previous }) {
+      read: ({ around }) => [
+        around(
+          editorReads.nodes.shouldMergeNodesRemovePrevNode,
+          ({ input: { current, previous }, next }) => {
             const [previousNode, previousPath] = previous;
             const [, currentPath] = current;
 
             if (
-              isRuntimeTextNode(previousNode) &&
+              NodeApi.isText(previousNode) &&
               previousNode.text === '' &&
               previousPath.at(-1) !== 0
             ) {
@@ -444,16 +424,16 @@ export const OverridePlugin = createBasePlugin({
 
             if (
               ElementApi.isElement(previousNode) &&
-              getRuntimeNodeText(previousNode).length === 0 &&
+              NodeApi.string(previousNode).length === 0 &&
               PathApi.isSibling(previousPath, currentPath)
             ) {
               return shouldRemoveEmptyMergeTarget(previousNode, previousPath);
             }
 
-            return next({ current, previous });
-          },
-        },
-      },
+            return next();
+          }
+        ),
+      ],
       corrections: [
         {
           event: 'content',
@@ -474,7 +454,7 @@ export const OverridePlugin = createBasePlugin({
             );
             const effectiveNormalizeRules =
               overridePlugin?.rules.normalize ?? normalizeRules;
-            const text = getRuntimeNodeText(node);
+            const text = NodeApi.string(node);
 
             if (effectiveNormalizeRules?.removeEmpty && text.length === 0) {
               tx.nodes.remove({ at: path });

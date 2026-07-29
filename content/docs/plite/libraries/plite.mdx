@@ -79,14 +79,13 @@ Extension and schema types include `EditorExtension`, `EditorExtensionInput`,
 `StateFieldDescriptor`, `StateFieldValueInput`, `EditorStateField`,
 `EditorValueCodec`, `SerializedEditorValue`, and `SerializedEditorEffect`.
 
-Command, query, and debug APIs include `EditorCommand`,
+Command, read-policy, and debug APIs include `EditorCommand`,
 `EditorCommandHandler`, `EditorCommandAroundHandler`,
 `EditorCommandContinuation`, `EditorCommandDispatch`,
 `EditorCommandResult`, `TransactionSpec`,
-`EditorQueryGroup`, `EditorQueryMiddlewareArgs`,
-`EditorQueryMiddlewareContext`, `EditorQueryMiddlewareMap`,
-`EditorQueryMiddlewareResult`, `setDebugValueScrubber`, and
-`DebugValueScrubber`.
+`EditorMergeTargetDecision`, `EditorMergeTargetPolicy`,
+`EditorSelectabilityGuard`, `EditorExportSliceProjection`,
+`setDebugValueScrubber`, and `DebugValueScrubber`.
 
 Define persisted field and shared-effect values with `defineValueCodec` or the
 strict primitive `valueCodecs`. Adapter authors serialize keyed shared effects
@@ -111,13 +110,19 @@ optional `migrate` callback; Plite publishes the candidate document and
 configuration together or publishes nothing.
 
 Every API factory resolves against the same detached declarative candidate.
-Its context exposes the candidate schema and statically declared capabilities;
-outputs from other API factories become visible only after every factory has
+Its context exposes the candidate schema and descriptor-resolved dependency APIs;
+results from other API factories become visible only after every factory has
 resolved. `validateConfiguration` receives that final candidate while the live
 editor keeps its previous configuration. `activate(editor, context)` runs only
 after the validated candidate is published.
+
+`createEditorView(runtime, { root })` resolves functional API factories against
+that view. `context.root` identifies the named root, and API reads, writes, and
+exported selection slices stay scoped to it. The primary document view receives
+`undefined`.
+
 Register reversible resources with `context.onCleanup`. Register work that may
-update the editor with `context.onReady`; ready work runs after commit observers.
+update the editor with `context.afterPublish`; it runs after commit observers.
 Activation, validation, API factories, and cleanup are synchronous.
 
 ```ts
@@ -128,7 +133,7 @@ const extension = defineEditorExtension({
     const unsubscribe = subscribeToHostState(refreshHostCache);
 
     context.onCleanup(() => unsubscribe());
-    context.onReady(() => {
+    context.afterPublish(() => {
       editor.update((tx) => {
         tx.marks.set(null);
       });

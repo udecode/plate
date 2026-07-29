@@ -3,5 +3,4 @@
  */
 
 export * from './createDataTransfer';
-export * from './getHtmlDocument';
 export * from './jsx';

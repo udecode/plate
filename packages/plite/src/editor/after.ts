@@ -1,4 +1,4 @@
-import { isEditorNodeSelectable } from '../core/query-middleware';
+import { isEditorNodeSelectable } from '../core/editor-read-execution';
 import {
   above as editorAbove,
   point as editorPoint,

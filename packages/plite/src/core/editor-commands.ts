@@ -711,14 +711,10 @@ export const editorCommands: EditorCommands = Object.freeze({
   }),
   toggleMark: defineCommand<ToggleMarkCommand>('mark.toggle', {
     build: ({ input, state }) => {
-      const { clear, collapse } = input.options ?? {};
+      const { collapse } = input.options ?? {};
 
       return state.transaction((tx) => {
-        tx.marks.toggle(
-          input.key,
-          input.value,
-          clear === undefined ? undefined : { clear }
-        );
+        tx.marks.toggle(input.key, input.value);
 
         if (collapse) {
           tx.selection.collapse(collapse === true ? undefined : collapse);

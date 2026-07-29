@@ -6,11 +6,11 @@
   "stateCoverage": "all",
   "providerLimit": 50,
   "providerLimitReached": false,
-  "refreshedAt": "2026-07-25T22:59:04Z",
+  "refreshedAt": "2026-07-27T14:28:47Z",
   "rawPath": ".tmp/editor-issue-harvester/wordgard/raw/issues-refresh-2026-07-26.json",
   "rawSha256": "d8e4da78b690c81790ede2d6f62b1bdad4a1f502c2806df76e07b1ca3c953bf3",
   "cursorDeltaSemantics": "Counts include only rows whose lastMetadataRefreshAt matches refreshedAt.",
-  "previousLedgerCount": 0,
+  "previousLedgerCount": 27,
   "providerIssueCount": 27,
   "hostVerification": {
     "closedIssueCount": 20,
@@ -20,14 +20,11 @@
     "omittedIssues": [],
     "openIssueCount": 7,
     "provider": "Forgejo API v1 response headers and repository metadata",
-    "verifiedAt": "2026-07-25T23:13:33Z"
+    "verifiedAt": "2026-07-27T14:28:47Z"
   },
   "resultingLedgerCount": 27,
-  "addedUncheckedCount": 27,
-  "addedUncheckedIssues": [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-    22, 23, 24, 25, 26, 27
-  ],
+  "addedUncheckedCount": 0,
+  "addedUncheckedIssues": [],
   "metadataChangedNeedsRereadCount": 0,
   "metadataChangedNeedsReread": [],
   "providerMissingLiveVerifiedCount": 0,

@@ -11,9 +11,17 @@ Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#p
 callback 在其契约支持时会接收当前插件的 context：
 
 ```ts
-const UploadPlugin = createPlatePlugin({
+export type UploadPluginState = {
+  active: boolean;
+};
+
+const uploadInitialState: UploadPluginState = {
+  active: false,
+};
+
+export const UploadPlugin = createPlatePlugin({
   key: 'upload',
-  initialState: { active: false },
+  initialState: uploadInitialState,
   api: ({ store }) => ({
     start: () => store.set({ active: true }),
   }),
@@ -69,9 +77,10 @@ Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符�
 </APIItem>
 
 <APIItem name="initialState" type="Record<string, any>">
-当前插件可变 editor-local store 的初始值。包作者通过 `create*Plugin()` 声明默认值；
-应用用户通过一次最终 `.configure({ initialState: { ... } })` 覆盖初始值。
-运行时代码通过 `editor.plugin(MyPlugin).store` 读取和更新已安装的 store。
+当前插件可变 editor-local store 的初始值。导出的插件应同时导出命名的
+`*PluginState`，并通过带类型的常量或显式 factory 返回类型检查默认值。应用用户通过
+一次最终 `.configure({ initialState: { ... } })` 覆盖初始值。运行时代码通过
+`editor.plugin(MyPlugin).store` 读取和更新已安装的 store。
 </APIItem>
 
 <APIItem name="component" type="NodeComponent" optional>
@@ -463,7 +472,6 @@ type PluginContribution = {
   extendConfig: (
     context: PlatePluginContext<C> & {
       defineCodecs: DefinePluginCodecs<C>;
-      defineEditorExtension: DefineEditorExtension<C>;
     }
   ) => TContract
 ) => PlatePlugin;
@@ -476,14 +484,12 @@ type PluginContribution = {
 - `selectors`：派生 option 值
 - `update`：插件作用域内、绑定事务的变更
 - `extension`：Plite 运行时能力和真正的编辑器级分组；inline object 无需
-  helper 即可获得 contextual typing
+  helper 即可获得 contextual typing，callback 也直接返回 object
 - `codecs`：context-bound `defineCodecs` 返回的 declaration
 
-抽取后可复用的 editor-extension factory 接收 plugin context，并返回
-`context.defineEditorExtension({ ... })`。这个 identity helper 保留无法从
-`extension` return field 反向流入的嵌套 command、input、state、transaction 和
-dependency inference。它不会增加另一个 builder stage。从 `@platejs/plite`
-import 的同名函数用于 standalone Plite extension。
+Plate context 保持在 `extension` callback 内，只抽取 domain input。独立复用的
+standalone Plite descriptor 使用从 `@platejs/plite` import 的
+`defineEditorExtension`。
 
 Self/product codec 使用 `defineCodecs(map)`；foreign codec 使用
 `defineCodecs(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
@@ -514,11 +520,6 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
       Self/product codec 传入一个 MIME-keyed map；foreign contribution 传入
       target plugin 和 map。
 </APIItem>
-<APIItem name="defineEditorExtension" type="DefineEditorExtension<C>">
-      抽取后可复用 Plate editor-extension factory 的 identity helper。
-      Inline extension object 不需要 helper；从 `@platejs/plite` import 的同名
-      函数用于 standalone Plite extension。
-</APIItem>
 <APIItem name="store" type="PluginStore<C>">
       读取、更新和订阅当前插件的 editor-local state。命名 selector 是该 state
       的纯函数。
@@ -542,15 +543,24 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 使用示例：
 
 ```typescript
-type MyPluginConfig = PluginConfig<
-  "myPlugin",
-  { customOption: boolean },
-  { getData: () => string },
-  { myPlugin: { run: () => void } }
->;
+export type MyPluginState = {
+  customOption: boolean;
+};
 
-const MyPlugin = createPlatePlugin<MyPluginConfig>({
-  key: "myPlugin",
-  // 插件实现
+const initialState: MyPluginState = {
+  customOption: false,
+};
+
+export const MyPlugin = createPlatePlugin({
+  key: 'myPlugin',
+  initialState,
+  api: ({ store }) => ({
+    getData: () => String(store.get('customOption')),
+  }),
+  update: ({ tx }) => ({
+    run: () => tx.selection.collapse(),
+  }),
 });
+
+type MyPluginConfig = InferConfig<typeof MyPlugin>;
 ```

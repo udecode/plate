@@ -5,6 +5,5 @@
 export * from './convertChildrenDeserialize';
 export * from './convertNodesDeserialize';
 export * from './convertTextsDeserialize';
-export * from './deserializeMd';
 export * from './mdastToSlate';
 export * from './utils/index';

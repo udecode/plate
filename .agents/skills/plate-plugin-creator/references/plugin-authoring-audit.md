@@ -43,7 +43,7 @@ Copy:
 ## Direct React Plugin
 
 - [EventEditorPlugin.ts](../../../../packages/core/src/react/plugins/event-editor/EventEditorPlugin.ts)
-- [CopilotPlugin.tsx](../../../../packages/ai/src/react/copilot/CopilotPlugin.tsx)
+- [CopilotPlugin.tsx](../../../../packages/ai/src/react/CopilotPlugin.tsx)
 - [BlockSelectionPlugin.tsx](../../../../packages/selection/src/react/BlockSelectionPlugin.tsx)
 
 Copy direct `createPlatePlugin` only when the behavior is genuinely hook,
@@ -104,8 +104,9 @@ Copy:
 - codec owners destructure `defineCodecs` inline, use
   `defineCodecs(map)` for self/product maps, and use
   `defineCodecs(TargetPlugin, map)` for foreign maps without manual targets;
-- inline extension objects stay plain, while extracted reusable extension
-  factories return the callback context's `defineEditorExtension(...)`;
+- Plate extension objects and callback returns stay plain; context capture
+  stays inline, extracted helpers receive domain inputs, and independently
+  reusable standalone descriptors use Plite `defineEditorExtension`;
 - concrete editors expose `editor.api.<pluginKey>`;
 - generic package code can use `editor.plugin(Plugin).api`, `.read`, `.update`,
   and `.store`;

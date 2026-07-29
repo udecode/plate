@@ -35,24 +35,19 @@ const materializeConstructs = (
     ? constructs
     : [...constructs];
 
-const materializeUnsafe = ({
-  _compiled,
-  inConstruct,
-  notInConstruct,
-  ...unsafe
-}: MaterializableUnsafe) => ({
-  ...unsafe,
-  inConstruct: materializeConstructs(inConstruct),
-  notInConstruct: materializeConstructs(notInConstruct),
-});
-
 export const materializeMarkdownSettings = (
   settings: MaterializableSettings
 ): Settings => ({
   ...settings,
   join: settings.join ? [...settings.join] : settings.join,
   unsafe: settings.unsafe
-    ? settings.unsafe.map(materializeUnsafe)
+    ? settings.unsafe.map(
+        ({ _compiled, inConstruct, notInConstruct, ...unsafe }) => ({
+          ...unsafe,
+          inConstruct: materializeConstructs(inConstruct),
+          notInConstruct: materializeConstructs(notInConstruct),
+        })
+      )
     : settings.unsafe,
 });
 

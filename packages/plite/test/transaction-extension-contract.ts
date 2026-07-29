@@ -30,7 +30,7 @@ describe('transaction extension values', () => {
         effect.type === increment ? value + effect.value : value,
     });
     const incrementExtension = defineEditorExtension({
-      effects: [increment],
+      effectTypes: [increment],
       name: 'counter-increment-effect',
     });
     const editor = createEditor({
@@ -84,7 +84,7 @@ describe('transaction extension values', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             labels.of('static'),
             labels.compute(() => {
               computeCount++;
@@ -117,7 +117,7 @@ describe('transaction extension values', () => {
       extensions: [
         counter,
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             documentLength.compute(
               (state) => {
                 documentComputes++;
@@ -178,7 +178,7 @@ describe('transaction extension values', () => {
     let schemaComputes = 0;
     const sourceMode = (value: string) =>
       defineEditorExtension({
-        facets: [source.of(value)],
+        facetProviders: [source.of(value)],
         name: `facet-source-${value}`,
       });
     const schemaMode = (voidKind?: 'block') =>
@@ -196,7 +196,7 @@ describe('transaction extension values', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             derived.compute(
               (state) => {
                 derivedComputes++;
@@ -249,7 +249,7 @@ describe('transaction extension values', () => {
     const editor = createEditor({
       extensions: [
         defineEditorExtension({
-          facets: [
+          facetProviders: [
             left.compute(() => 'left', { dependencies: [right] }),
             right.compute(() => 'right', { dependencies: [left] }),
           ],
@@ -281,7 +281,7 @@ describe('transaction extension values', () => {
     const errors: Array<{ extension: string; phase: string }> = [];
     const mode = (value: string) =>
       defineEditorExtension({
-        facets: [label.of(value)],
+        facetProviders: [label.of(value)],
         name: 'mode-value',
       });
     const editor = createEditor({
@@ -302,8 +302,8 @@ describe('transaction extension values', () => {
       tx.extensions.reconfigure(
         slot,
         defineEditorExtension({
-          facets: [label.of('broken')],
-          fields: [persisted],
+          facetProviders: [label.of('broken')],
+          stateFields: [persisted],
           name: 'broken-mode',
           activate() {
             throw new Error('broken mode');

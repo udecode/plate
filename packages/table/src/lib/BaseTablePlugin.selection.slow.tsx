@@ -56,12 +56,21 @@ describe('table selection slow contracts', () => {
     const createTableEditor = (
       input: TestEditor,
       options?: Partial<TableConfig['initialState']>
-    ) =>
-      createPlateEditor({
+    ) => {
+      const editor = createPlateEditor({
         plugins: getTestTablePlugins(options),
         selection: input.selection,
         initialValue: input.children,
       });
+      const selection = editor.read.selection();
+      const tableSelection =
+        selection &&
+        editor.plugin(BaseTablePlugin).read.createCellSelection(selection);
+
+      if (tableSelection) editor.update.selection.set(tableSelection);
+
+      return editor;
+    };
 
     describe('BaseTablePlugin cell selection', () => {
       describe('marks()', () => {

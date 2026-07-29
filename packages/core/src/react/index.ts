@@ -16,14 +16,16 @@ export * from './plugins/paragraph/index';
 export * from './stores/element/useElement';
 export * from './stores/element/useElementSelector';
 export * from './stores/element/usePath';
-export * from './stores/event-editor/useEventPlateId';
 export * from './stores/plate/useEditorPlugin';
 export * from './stores/plate/useEditorSelector';
 export * from './stores/plate/usePluginStore';
 
 export { EventEditorPlugin } from './plugins/event-editor/EventEditorPlugin';
-export { useEventEditorValue } from './plugins/event-editor/EventEditorStore';
-export { useFocusedLast } from './plugins/event-editor/useEventEditor';
+export {
+  useEventEditorValue,
+  useEventPlateId,
+  useFocusedLast,
+} from './plugins/event-editor/useEventEditor';
 export {
   PlateController,
   usePlateControllerExists,

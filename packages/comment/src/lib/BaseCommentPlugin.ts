@@ -123,16 +123,10 @@ export const BaseCommentPlugin = createBasePlugin({
     ],
   },
   rules: { selection: { affinity: 'outward' } },
-}).extend<{
-  update: {
-    removeMark: () => void;
-    setDraft: (options?: NodeSetNodesOptions<TCommentText>) => void;
-    unsetMark: (options: { id?: string; transient?: boolean }) => void;
-  };
-}>(({ api, read, type }) => ({
+}).extend(({ api, plugin, type }) => ({
   update: ({ tx }) => ({
     removeMark: () => {
-      const nodeEntry = read.node();
+      const nodeEntry = tx[plugin.key].node();
 
       if (!nodeEntry) return;
 
@@ -142,7 +136,7 @@ export const BaseCommentPlugin = createBasePlugin({
 
       tx.marks.remove(KEYS.comment);
     },
-    setDraft: (options = {}) => {
+    setDraft: (options: NodeSetNodesOptions<TCommentText> = {}) => {
       tx.nodes.set(
         {
           [getDraftCommentKey()]: true,
@@ -151,8 +145,8 @@ export const BaseCommentPlugin = createBasePlugin({
         { match: TextApi.isText, split: true, ...options }
       );
     },
-    unsetMark: ({ id, transient }) => {
-      for (const [node] of read.nodes({ id, at: [], transient })) {
+    unsetMark: ({ id, transient }: { id?: string; transient?: boolean }) => {
+      for (const [node] of tx[plugin.key].nodes({ id, at: [], transient })) {
         const removedId = id ?? api.nodeId(node);
         const unsetKeys = [
           getDraftCommentKey(),

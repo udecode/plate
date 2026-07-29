@@ -3,5 +3,7 @@
  */
 
 export * from './FloatingMedia';
+export * from './FloatingMediaStore';
+export * from './useFloatingMedia';
 export * from './useMediaState';
 export * from './useMediaToolbarButton';

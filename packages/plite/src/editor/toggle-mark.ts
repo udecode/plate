@@ -2,23 +2,15 @@ import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import { getEditorSchema } from '../core/editor-runtime';
 import { runEditorTransaction } from '../core/public-state';
-import type {
-  Editor,
-  EditorMarkToggleOptions,
-  EditorStaticApi,
-} from '../interfaces/editor';
+import type { Editor, EditorStaticApi } from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
 import { applyAddMark } from './add-mark';
 import { applyRemoveMark } from './remove-mark';
 
-const getClearMarks = (clear: EditorMarkToggleOptions['clear']) =>
-  clear ? (Array.isArray(clear) ? clear : [clear]) : [];
-
 export const applyToggleMark = (
   editor: Editor,
   key: string,
-  value?: unknown,
-  options?: EditorMarkToggleOptions
+  value?: unknown
 ) => {
   const nextValue = value === undefined ? true : value;
 
@@ -47,8 +39,15 @@ export const applyToggleMark = (
     if (isActive) {
       applyRemoveMark(editor, key);
     } else {
-      getClearMarks(options?.clear).forEach((mark) => {
-        applyRemoveMark(editor, mark);
+      const canonical = getEditorSchema(editor).canonicalizeTextPropertiesAt(
+        { ...marks, [key]: nextValue },
+        selection.focus.path,
+        selection.focus.root ?? selection.anchor.root ?? 'main',
+        key
+      );
+
+      Object.keys(marks ?? {}).forEach((mark) => {
+        if (!Object.hasOwn(canonical, mark)) applyRemoveMark(editor, mark);
       });
       applyAddMark(editor, key, nextValue);
     }

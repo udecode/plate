@@ -3,9 +3,6 @@ import type { Text } from '@platejs/plite';
 import type { MdMark, SerializeMdContext } from '../types';
 import type { MdRootContent } from '../mdast';
 
-import { getCustomMark } from './utils';
-import { getSerializerByKey } from './utils/getSerializerByKey';
-
 // inlineCode should be last because of the spec in mdast
 // https://github.com/inokawa/remark-slate-transformer/issues/145
 export const basicMarkdownMarks = ['italic', 'bold', 'strikethrough', 'code'];
@@ -15,7 +12,11 @@ export const convertTextsSerialize = (
   options: SerializeMdContext,
   _key?: string
 ): MdMark[] => {
-  const customLeaf: string[] = getCustomMark(options);
+  const customLeaf = options.rules
+    ? Object.entries(options.rules)
+        .filter(([, parser]) => parser?.mark)
+        .map(([key]) => key)
+    : [];
 
   const mdastTexts: MdMark[] = [];
 
@@ -95,7 +96,7 @@ export const convertTextsSerialize = (
         .slice()
         .reverse()
         .forEach((k) => {
-          const nodeParser = getSerializerByKey(k, options);
+          const nodeParser = options.rules?.[k]?.serialize;
 
           if (nodeParser) {
             const node = nodeParser(cur, options);

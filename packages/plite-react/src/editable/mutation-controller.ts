@@ -17,6 +17,10 @@ import {
 } from '../view-selection';
 import { applyContentRootSelectionMoveCommand } from './content-root-navigation';
 import type { DOMPhaseScheduler } from '@platejs/plite-dom/internal';
+import {
+  dispatchDOMClipboardHandlers,
+  DOM_CLIPBOARD_HANDLERS,
+} from '@platejs/plite-dom/internal';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import {
   type EditableCommand,
@@ -40,7 +44,7 @@ import { resolveProjectedSelectionTarget } from './projected-selection-target';
 import {
   type Editor,
   failInvariant,
-  getEditorExtensionRegistry,
+  getEditorExtensionContributions,
   type Editor as RuntimeEditor,
   before as editorBefore,
   after as editorAfter,
@@ -65,12 +69,6 @@ export {
   consumeModelOwnedHistoryFocusRoot,
   shouldForceRenderAfterModelOwnedHistory,
 } from './mutation-history';
-
-type ClipboardInsertDataHandler = (
-  editor: RuntimeEditor,
-  data: DataTransfer,
-  tx: EditorUpdateTransaction
-) => boolean;
 
 export const applyModelOwnedDeleteIntent = ({
   direction,
@@ -172,23 +170,19 @@ const getCanonicalRuntimeEditor = (editor: RuntimeEditor): RuntimeEditor =>
     editor) as RuntimeEditor;
 
 const getProjectedClipboardInsertDataHandlers = (editor: RuntimeEditor) =>
-  (getEditorExtensionRegistry(editor).capabilities.get(
-    'clipboard.insertData'
-  ) as ClipboardInsertDataHandler[] | undefined) ?? [];
+  getEditorExtensionContributions(editor, DOM_CLIPBOARD_HANDLERS);
 
 const applyProjectedClipboardInsertDataHandlers = (
   editor: RuntimeEditor,
   data: DataTransfer,
   tx: EditorUpdateTransaction
-) => {
-  for (const handler of getProjectedClipboardInsertDataHandlers(editor)) {
-    if (handler(editor, data, tx)) {
-      return true;
-    }
-  }
-
-  return false;
-};
+) =>
+  dispatchDOMClipboardHandlers(
+    getProjectedClipboardInsertDataHandlers(editor),
+    data,
+    tx,
+    () => false
+  );
 
 const deleteProjectedRanges = (
   editor: RuntimeEditor,

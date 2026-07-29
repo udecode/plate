@@ -17,3 +17,13 @@ const imported = await docx.api.import(arrayBuffer);
 Use `Margins` and `DocumentOptions` for HTML-to-DOCX options. Remove the
 `DocumentMargins`, `HtmlToDocxOptions`, `DocxExportPlugin`,
 `exportEditorToDocx`, and root `docxExport` API.
+
+Keep DOCX comment types with `DocxIOPlugin`. Each imported comment exposes
+`references` as points in `result.nodes`; private import markers never appear
+in the returned node snapshot.
+
+Use `DocxIOPlugin.api.import` as the DOCX import surface. Remove direct imports
+of `preprocessMammothHtml`, `extractComments`, `buildCommentToken`,
+`getCommentTokenPrefix`, `getCommentTokenSuffix`, and
+`PreprocessMammothHtmlResult`. Remove the renderer's circular module
+dependency.

@@ -4,7 +4,24 @@ import type { Text } from '@platejs/plite';
 import type { MdMdxJsxTextElement } from '../mdast';
 import type { DeserializeMdContext, MdDecoration, MdRules } from '../types';
 
-import { convertChildrenDeserialize, getStyleValue } from '../deserializer';
+import { convertChildrenDeserialize } from '../deserializer';
+
+const getStyleValue = (mdastNode: MdMdxJsxTextElement, styleName: string) => {
+  const styleAttribute = mdastNode.attributes.find(
+    (attribute) =>
+      attribute.type === 'mdxJsxAttribute' &&
+      attribute.name === 'style' &&
+      typeof attribute.value === 'string'
+  );
+
+  if (typeof styleAttribute?.value !== 'string') return;
+
+  for (const style of styleAttribute.value.split(';')) {
+    const [name, value] = style.split(':').map((part) => part.trim());
+
+    if (name === styleName) return value;
+  }
+};
 
 function createFontRule(propName: string) {
   const styleName = kebabCase(propName);

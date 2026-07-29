@@ -52,6 +52,16 @@ donor checkout as proof after the transplant.
   transaction-local state.
 - Extension namespaces add named groups to `state`, `tx`, and the direct update
   surface. Use `txOnly(...)` for controls that require an active transaction.
+- `EditorExtension` stays flat except for the coherent `on.*` change-handler
+  family. Pure core-read policy composes through descriptor-owned `read`
+  middleware over `editorReads`; app policy does not earn a special root hook.
+- Typed ordered values are extension-point `contributions`, not outputs.
+  Extension declarations use explicit low-level nouns: `stateFields`,
+  `effectTypes`, `facetProviders`, and `selectionKinds`.
+- Immutable extension declaration input has one `config` channel across
+  schema, API, validation, and activation. Opaque runtime resources stay in
+  extension factory closures. Activation schedules publication-dependent work
+  with `afterPublish`.
 - Public update policy is semantic and narrow: history behavior plus ordered
   tags. Raw provenance and normalization authority stay internal to runtime and
   adapter owners.

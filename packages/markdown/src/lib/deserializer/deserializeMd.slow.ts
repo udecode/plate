@@ -1,14 +1,16 @@
 import { createTestEditor } from '../__tests__/createTestEditor';
-import { markdownToAstProcessorWithRuntime } from '../internal/markdownDeserializer';
-import { withMarkdownRuntime } from '../internal/markdownRuntime';
-import { deserializeMd } from './deserializeMd';
+import { MarkdownPlugin } from '../MarkdownPlugin';
+import {
+  markdownToAstProcessorWithRuntime,
+  withMarkdownRuntime,
+} from '../internal/markdownConversion';
 
-describe('deserializeMd', () => {
+describe('editor.api.markdown.deserialize', () => {
   it('falls back to the safe markdown path for incomplete mdx tails', () => {
     const editor = createTestEditor();
     const onError = mock();
 
-    expect(deserializeMd(editor, '<u>', { onError })).toEqual({
+    expect(editor.api.markdown.deserialize('<u>', { onError })).toEqual({
       children: [
         {
           children: [{ text: '<u>' }],
@@ -24,7 +26,7 @@ describe('deserializeMd', () => {
     const onError = mock();
 
     expect(
-      deserializeMd(editor, String.raw`</ph\><`, {
+      editor.api.markdown.deserialize(String.raw`</ph\><`, {
         onError,
       })
     ).toEqual({
@@ -42,7 +44,7 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
 
     expect(
-      deserializeMd(editor, 'plain', {
+      editor.api.markdown.deserialize('plain', {
         rules: {
           p: {
             deserialize: () => ({ text: 'wrapped' }),
@@ -67,7 +69,7 @@ describe('deserializeMd', () => {
     };
 
     expect(
-      deserializeMd(editor, '**bold**', {
+      editor.api.markdown.deserialize('**bold**', {
         onError,
         remarkPlugins: [brokenRemarkPlugin],
         withoutMdx: true,
@@ -82,8 +84,7 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
 
     expect(
-      deserializeMd(
-        editor,
+      editor.api.markdown.deserialize(
         `Hello!
 > some thing is reference
 > - aaa
@@ -124,8 +125,7 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
 
     expect(
-      deserializeMd(
-        editor,
+      editor.api.markdown.deserialize(
         `> outer
 > > inner
 > > tail`
@@ -158,7 +158,9 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
 
     expect(
-      deserializeMd(editor, '```ts\nconst x = 1;\nconsole.log(x)\n```')
+      editor.api.markdown.deserialize(
+        '```ts\nconst x = 1;\nconsole.log(x)\n```'
+      )
     ).toEqual({
       children: [
         {
@@ -183,8 +185,7 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
 
     expect(
-      deserializeMd(
-        editor,
+      editor.api.markdown.deserialize(
         '# Title\n\n#### Deep title\n\n###### Deepest title'
       )
     ).toEqual({
@@ -209,8 +210,7 @@ describe('deserializeMd', () => {
     const editor = createTestEditor();
 
     expect(
-      deserializeMd(
-        editor,
+      editor.api.markdown.deserialize(
         '<figure class="hero"><img src="/image.png"></figure>'
       )
     ).toEqual({
@@ -231,8 +231,10 @@ describe('deserializeMd', () => {
 describe('markdownToAstProcessor', () => {
   it('returns the parsed mdast root', () => {
     const editor = createTestEditor();
-    const ast = withMarkdownRuntime(editor, (runtime) =>
-      markdownToAstProcessorWithRuntime(runtime, '# Title')
+    const ast = withMarkdownRuntime(
+      editor,
+      editor.plugin(MarkdownPlugin).store.get(),
+      (runtime) => markdownToAstProcessorWithRuntime(runtime, '# Title')
     );
 
     expect(ast.type).toBe('root');

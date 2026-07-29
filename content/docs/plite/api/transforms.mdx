@@ -390,13 +390,11 @@ Replace the pending insertion marks. Use `{}` to force plain inserted text at a
 collapsed selection, or `null` to let inserted text inherit from the selected
 text position.
 
-#### `tx.marks.toggle(key: string, value?, options?)`
+#### `tx.marks.toggle(key: string, value?)`
 
 Toggle a mark for the current selection or pending marks.
-
-- `options.clear?: string | string[]`: Remove mutually exclusive marks before
-  enabling the target mark. If the target mark is active, only the target mark
-  is removed.
+Mutual exclusion belongs to the text-property declarations in the editor
+schema.
 
 ## Value and root methods
 

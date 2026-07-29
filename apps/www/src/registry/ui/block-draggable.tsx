@@ -8,7 +8,7 @@ import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { ListPlugin } from '@platejs/list/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { ElementApi, getContainerTypes, isType, KEYS } from 'platejs';
+import { ElementApi, getContainerTypes, KEYS } from 'platejs';
 import {
   type PlateEditor,
   type PlateElementProps,
@@ -38,10 +38,14 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
   const enabled = React.useMemo(() => {
     if (editor.read.view.isReadOnly()) return false;
 
-    if (path.length === 1 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
+    const isUndraggable = UNDRAGGABLE_KEYS.some(
+      (key) => editor.getType(key) === element.type
+    );
+
+    if (path.length === 1 && !isUndraggable) {
       return true;
     }
-    if (path.length === 3 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
+    if (path.length === 3 && !isUndraggable) {
       const block = editor.read.nodes.some({
         at: path,
         match: { type: editor.getType(KEYS.column) },
@@ -51,7 +55,7 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
         return true;
       }
     }
-    if (path.length === 4 && !isType(editor, element, UNDRAGGABLE_KEYS)) {
+    if (path.length === 4 && !isUndraggable) {
       const block = editor.read.nodes.some({
         at: path,
         match: { type: editor.getType(KEYS.table) },

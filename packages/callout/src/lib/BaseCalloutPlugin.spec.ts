@@ -2,16 +2,10 @@ import { createBaseEditor } from '@platejs/core';
 import { schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import { BaseCalloutPlugin, CALLOUT_STORAGE_KEY } from './BaseCalloutPlugin';
+import { BaseCalloutPlugin } from './BaseCalloutPlugin';
 
 describe('BaseCalloutPlugin', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
   it('exposes callout break/delete rules and inserts bound callout nodes', () => {
-    localStorage.setItem(CALLOUT_STORAGE_KEY, '🔥');
-
     const editor = createBaseEditor({
       plugins: [BaseCalloutPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
@@ -39,7 +33,7 @@ describe('BaseCalloutPlugin', () => {
 
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],
-      icon: '🔥',
+      icon: '💡',
       type: editor.getType('callout'),
       variant: 'info',
     });
@@ -67,7 +61,7 @@ describe('BaseCalloutPlugin', () => {
     });
   });
 
-  it('falls back to local storage and then the default bulb icon', () => {
+  it('uses the default bulb icon when no icon is provided', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseCalloutPlugin.configure({
@@ -77,19 +71,14 @@ describe('BaseCalloutPlugin', () => {
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
-    localStorage.setItem(CALLOUT_STORAGE_KEY, '📌');
     editor.update.callout.insert();
     editor.update.callout.insert({ icon: undefined });
-    localStorage.removeItem(CALLOUT_STORAGE_KEY);
-    editor.update.callout.insert();
 
-    expect(editor.read.children().at(1)).toMatchObject({
-      icon: '📌',
-      type: 'custom-callout',
-    });
-    expect(editor.read.children().at(3)).toMatchObject({
-      icon: '💡',
-      type: 'custom-callout',
-    });
+    expect(
+      editor.read.children().filter((node) => node.type === 'custom-callout')
+    ).toMatchObject([
+      { icon: '💡', type: 'custom-callout' },
+      { icon: '💡', type: 'custom-callout' },
+    ]);
   });
 });

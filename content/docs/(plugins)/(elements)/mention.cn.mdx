@@ -139,21 +139,18 @@ const editor = createPlateEditor({
 
 ## API接口
 
-### editor.update.mention.insert
+### editor.plugin(MentionPlugin).update.insert
 
 在当前选区插入提及元素。
 
-<API name="editor.update.mention.insert">
+<API name="editor.plugin(MentionPlugin).update.insert">
 <APIParameters>
   <APIItem name="options" type="object">
     <APISubList>
-      <APISubListItem parent="options" name="search" type="string">
-        触发提及的搜索文本。
-      </APISubListItem>
-      <APISubListItem parent="options" name="value" type="any">
+      <APISubListItem parent="options" name="value" type="string">
         存储在提及元素中的值。
       </APISubListItem>
-      <APISubListItem parent="options" name="key" type="any" optional>
+      <APISubListItem parent="options" name="key" type="string" optional>
         提及元素的可选键值。
       </APISubListItem>
     </APISubList>

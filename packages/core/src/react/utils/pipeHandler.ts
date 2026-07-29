@@ -108,7 +108,7 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       if (!pluginHandler) return false;
 
       const shouldTreatEventAsHandled = pluginHandler({
-        ...(getEditorPlugin(editor, plugin) as any),
+        ...getEditorPlugin(editor, plugin),
         event: handledEvent,
       });
 

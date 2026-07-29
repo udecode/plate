@@ -5,8 +5,7 @@ import type {
 import { defineEditorExtension } from '@platejs/plite';
 
 import type { BaseEditor } from '../../lib/editor';
-import { pipeOnNodeChange } from '../../lib/utils/pipeOnNodeChange';
-import { pipeOnTextChange } from '../../lib/utils/pipeOnTextChange';
+import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
 import { getPlateRuntime } from './compilePlateModel';
 
 type PlateNodeChangeCallback<E extends BaseEditor = BaseEditor> = (
@@ -60,46 +59,86 @@ const getPlateChangeCallbacks = (editor: BaseEditor) =>
 export const createPlateChangeHandlersExtension = (editor: BaseEditor) =>
   defineEditorExtension({
     name: 'plate:change-handlers',
-    onNodeChange(context) {
-      const callbacks = getPlateChangeCallbacks(editor);
+    on: {
+      nodeChange(context) {
+        const callbacks = getPlateChangeCallbacks(editor);
 
-      if (
-        getPlateRuntime(editor).pluginCache.handlers.onNodeChange.length ===
-          0 &&
-        !callbacks?.size
-      ) {
-        return;
-      }
+        if (
+          getPlateRuntime(editor).pluginCache.handlers.onNodeChange.length ===
+            0 &&
+          !callbacks?.size
+        ) {
+          return;
+        }
 
-      const change = {
-        ...context,
-        editor,
-      } as EditorNodeChangeContext<BaseEditor>;
-      pipeOnNodeChange(editor, change);
+        const change = {
+          ...context,
+          editor,
+        } as EditorNodeChangeContext<BaseEditor>;
+        getPlateRuntime(editor).pluginCache.handlers.onNodeChange.some(
+          (key) => {
+            const plugin = editor.getPlugin({ key });
 
-      for (const callback of callbacks ?? []) {
-        callback.onNodeChange?.(change);
-      }
-    },
-    onTextChange(context) {
-      const callbacks = getPlateChangeCallbacks(editor);
+            if (!plugin || editor.read.view.isReadOnly()) return false;
 
-      if (
-        getPlateRuntime(editor).pluginCache.handlers.onTextChange.length ===
-          0 &&
-        !callbacks?.size
-      ) {
-        return;
-      }
+            const handler = plugin.handlers?.onNodeChange;
+            if (!handler) return false;
 
-      const change = {
-        ...context,
-        editor,
-      } as EditorTextChangeContext<BaseEditor>;
-      pipeOnTextChange(editor, change);
+            return (
+              handler({
+                ...getEditorPlugin(editor, plugin),
+                ...change,
+                editor,
+                plugin,
+                root: change.root === 'main' ? undefined : change.root,
+              }) ?? false
+            );
+          }
+        );
 
-      for (const callback of callbacks ?? []) {
-        callback.onTextChange?.(change);
-      }
+        for (const callback of callbacks ?? []) {
+          callback.onNodeChange?.(change);
+        }
+      },
+      textChange(context) {
+        const callbacks = getPlateChangeCallbacks(editor);
+
+        if (
+          getPlateRuntime(editor).pluginCache.handlers.onTextChange.length ===
+            0 &&
+          !callbacks?.size
+        ) {
+          return;
+        }
+
+        const change = {
+          ...context,
+          editor,
+        } as EditorTextChangeContext<BaseEditor>;
+        getPlateRuntime(editor).pluginCache.handlers.onTextChange.some(
+          (key) => {
+            const plugin = editor.getPlugin({ key });
+
+            if (!plugin || editor.read.view.isReadOnly()) return false;
+
+            const handler = plugin.handlers?.onTextChange;
+            if (!handler) return false;
+
+            return (
+              handler({
+                ...getEditorPlugin(editor, plugin),
+                ...change,
+                editor,
+                plugin,
+                root: change.root === 'main' ? undefined : change.root,
+              }) ?? false
+            );
+          }
+        );
+
+        for (const callback of callbacks ?? []) {
+          callback.onTextChange?.(change);
+        }
+      },
     },
   });

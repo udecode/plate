@@ -4,8 +4,6 @@ import {
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
-  type InferConfig,
-  type RenderStaticNodeWrapperProps,
 } from '@platejs/core';
 import {
   getPlateRuntime,
@@ -19,9 +17,8 @@ import {
   type Element,
   type NodeEntry,
 } from '@platejs/plite';
-import { getExtensionRegistry } from '@platejs/plite/internal';
+import { writeHostFragmentData } from '@platejs/plite-dom';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
-import ReactDOMServer from 'react-dom/server';
 
 import { KEYS } from '@platejs/utils';
 import {
@@ -459,62 +456,10 @@ describe('BaseListPlugin', () => {
     expect(item.dataset.listStyleType).toBe('square');
   });
 
-  it('parses list metadata and renders list wrappers for list items', () => {
+  it('parses list metadata for list items', () => {
     const editor = createBaseEditor({
       plugins: [BaseListPlugin],
     });
-    const plugin = editor.getPlugin(BaseListPlugin);
-    const renderBelow = plugin.render.belowNodes;
-
-    if (!renderBelow) throw new Error('Missing list wrapper renderer');
-
-    const context = editor.plugin(BaseListPlugin);
-    const props = (element: Element, children: string) =>
-      ({
-        ...context,
-        attributes: { 'data-plite-node': 'element' as const },
-        children,
-        element,
-        key: KEYS.list,
-        slots: {
-          children: () => null,
-          contentBoundary: ({ children }) => children,
-          contentRoot: () => null,
-        },
-      }) satisfies RenderStaticNodeWrapperProps<
-        InferConfig<typeof BaseListPlugin>
-      >;
-    const orderedProps = props(
-      {
-        children: [{ text: 'Item' }],
-        listStart: 4,
-        listStyleType: 'decimal',
-        type: KEYS.p,
-      },
-      'Item'
-    );
-    const orderedWrapper = renderBelow(orderedProps);
-
-    if (!orderedWrapper) throw new Error('Missing ordered list wrapper');
-
-    const markup = ReactDOMServer.renderToStaticMarkup(
-      orderedWrapper(orderedProps)
-    );
-    const unorderedProps = props(
-      {
-        children: [{ text: 'Bullet' }],
-        listStyleType: 'disc',
-        type: KEYS.p,
-      },
-      'Bullet'
-    );
-    const unorderedWrapper = renderBelow(unorderedProps);
-
-    if (!unorderedWrapper) throw new Error('Missing unordered list wrapper');
-
-    const unorderedMarkup = ReactDOMServer.renderToStaticMarkup(
-      unorderedWrapper(unorderedProps)
-    );
 
     expect(
       editor.api.html.deserialize({
@@ -529,22 +474,6 @@ describe('BaseListPlugin', () => {
         type: editor.getType(KEYS.p),
       },
     ]);
-    expect(markup).toContain('<ol');
-    expect(markup).toContain('start="4"');
-    expect(markup).toContain('<li>Item</li>');
-    expect(unorderedMarkup).toContain('<ul');
-    expect(unorderedMarkup).toContain('<li>Bullet</li>');
-    expect(
-      renderBelow(
-        props(
-          {
-            children: [{ text: 'Plain' }],
-            type: KEYS.p,
-          },
-          'Plain'
-        )
-      )
-    ).toBeUndefined();
   });
 
   it('increments an ordered parent start across its list items', () => {
@@ -588,32 +517,18 @@ describe('BaseListPlugin', () => {
         },
       ],
     });
-    type Registration = {
-      codec: {
-        format: string;
-        serialize?: (context: {
-          format: string;
-          slice: ContentSlice;
-          state: typeof editor.read;
-        }) => null | string;
-      };
-    };
-    const registrations = (getExtensionRegistry(editor).capabilities.get(
-      'host.codecs'
-    ) ?? []) as readonly Registration[];
-    const codec = registrations.find(
-      (registration) => registration.codec.format === 'text/html'
-    )?.codec;
+    const serialized = new Map<string, string>();
 
-    if (!codec?.serialize) throw new Error('Missing HTML codec serializer');
+    writeHostFragmentData(
+      editor,
+      {
+        setData: (format, value) => serialized.set(format, value),
+      },
+      ContentSlice.closed(editor.read.children())
+    );
+    const html = serialized.get('text/html');
 
-    const html = codec.serialize({
-      format: 'text/html',
-      slice: ContentSlice.closed(editor.read.children()),
-      state: editor.read,
-    });
-
-    if (html === null) throw new Error('HTML codec did not serialize the list');
+    if (!html) throw new Error('HTML codec did not serialize the list');
 
     const body = new DOMParser().parseFromString(html, 'text/html').body;
     const list = body.querySelector('ol') as HTMLOListElement;

@@ -2,13 +2,14 @@ import {
   createTestEditor,
   getTestDeserializeOptions,
 } from './__tests__/createTestEditor';
-import { buildRules } from './rules/defaultRules';
+import { defaultRules } from './rules/defaultRules';
+import type { MdRules } from './types';
 
 describe('defaultRules', () => {
-  const getImageDeserializer = (
-    editor: ReturnType<typeof createTestEditor>
-  ) => {
-    const deserialize = buildRules(editor).img?.deserialize;
+  const getImageDeserializer = (): NonNullable<
+    NonNullable<MdRules['img']>['deserialize']
+  > => {
+    const deserialize = defaultRules.img?.deserialize;
 
     if (!deserialize) throw new Error('Expected the image deserializer.');
 
@@ -18,7 +19,7 @@ describe('defaultRules', () => {
   it('prefers image attributes over mdast url and alt fields', () => {
     const editor = createTestEditor();
 
-    const result = getImageDeserializer(editor)(
+    const result = getImageDeserializer()(
       {
         alt: 'fallback alt',
         attributes: [
@@ -47,7 +48,7 @@ describe('defaultRules', () => {
   it('keeps mdast image fields when mdx attributes are absent', () => {
     const editor = createTestEditor();
 
-    const result = getImageDeserializer(editor)(
+    const result = getImageDeserializer()(
       {
         alt: 'fallback alt',
         title: 'Image title',
@@ -70,7 +71,7 @@ describe('defaultRules', () => {
   it('parses numeric width and height image attributes', () => {
     const editor = createTestEditor();
 
-    const result = getImageDeserializer(editor)(
+    const result = getImageDeserializer()(
       {
         attributes: [
           { name: 'alt', type: 'mdxJsxAttribute', value: 'caption alt' },

@@ -9,33 +9,20 @@ import { KEYS } from '@platejs/utils';
 
 export const BaseTagPlugin = createBasePlugin({
   key: KEYS.tag,
-  schema: {
-    element: {
-      properties: { value: property.string() },
-      void: 'inline',
-    },
-  },
-  read: ({ state, type }) => {
-    const getSelectedItems = () =>
+  read: ({ state, type }) => ({
+    getSelectedItems: () =>
       Array.from(
         state.nodes.entries<TTagElement>({
           at: [],
           match: { type },
         })
-      ).map(([{ children: _children, type: _type, ...item }]) => item);
-
-    return {
-      getSelectedItems,
-      isEqual: (tags: readonly TTagProps[] = []) => {
-        const current = new Set(getSelectedItems().map((item) => item.value));
-        const next = new Set(tags.map((item) => item.value));
-
-        return (
-          current.size === next.size &&
-          [...current].every((value) => next.has(value))
-        );
-      },
-    };
+      ).map(([node]) => ({ value: node.value })),
+  }),
+  schema: {
+    element: {
+      properties: { value: property.string() },
+      void: 'inline',
+    },
   },
   update: ({ tx, type }) => ({
     insert: (
@@ -47,7 +34,7 @@ export const BaseTagPlugin = createBasePlugin({
           {
             children: [{ text: '' }],
             type,
-            ...props,
+            value: props.value,
           },
           { text: '' },
         ],
@@ -55,4 +42,18 @@ export const BaseTagPlugin = createBasePlugin({
       );
     },
   }),
-});
+}).extend(({ plugin }) => ({
+  read: ({ state }) => ({
+    isEqual: (tags: readonly TTagProps[] = []) => {
+      const current = new Set(
+        state[plugin.key].getSelectedItems().map((item) => item.value)
+      );
+      const next = new Set(tags.map((item) => item.value));
+
+      return (
+        current.size === next.size &&
+        [...current].every((value) => next.has(value))
+      );
+    },
+  }),
+}));

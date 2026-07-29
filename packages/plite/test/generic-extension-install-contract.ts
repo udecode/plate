@@ -91,6 +91,39 @@ const OtherRuntimeHostExtension = defineEditorExtension({
   },
 });
 
+const TransitiveRuntimeHostExtension = defineEditorExtension({
+  api: {
+    transitiveRuntimeHost: {
+      status: () => 'transitive' as const,
+    },
+  },
+  name: 'transitive-runtime-host',
+});
+
+const TransitiveConsumerExtension = defineEditorExtension({
+  api(runtimeEditor) {
+    const host = runtimeEditor.getApi(TransitiveRuntimeHostExtension);
+
+    return {
+      transitiveConsumer: {
+        status: host.status,
+      },
+    };
+  },
+  dependencies: [TransitiveRuntimeHostExtension],
+  name: 'transitive-consumer',
+});
+
+const transitiveEditor = createEditor({
+  extensions: [TransitiveConsumerExtension] as const,
+});
+const transitiveHostStatus: 'transitive' = transitiveEditor
+  .getApi(TransitiveRuntimeHostExtension)
+  .status();
+const transitiveConsumerStatus: 'transitive' = transitiveEditor
+  .getApi(TransitiveConsumerExtension)
+  .status();
+
 defineEditorExtension({
   name: 'old-capabilities',
   // @ts-expect-error public extension authoring uses api, not capabilities
@@ -197,3 +230,6 @@ const _keepsDirectValueInference: Descendant = directInstalledValue[0];
 const _keepsDirectBooleanInference: boolean = directInstalledActive;
 const _keepsHostStatusInference: 'ready' = hostStatus;
 const _keepsTokenHostStatusInference: 'ready' = tokenHostStatus;
+const _keepsTransitiveHostInference: 'transitive' = transitiveHostStatus;
+const _keepsTransitiveConsumerInference: 'transitive' =
+  transitiveConsumerStatus;

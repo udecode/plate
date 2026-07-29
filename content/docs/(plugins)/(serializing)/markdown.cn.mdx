@@ -121,8 +121,7 @@ const editor = createPlateEditor({
 ```
 
 <Callout type="info">
-  `MarkdownPlugin` 通过 `editor.api.markdown` 提供显式输入转换，通过
-  `editor.read.markdown` 提供快照序列化。插件 options 仍通过
+  `MarkdownPlugin` 通过 `editor.api.markdown` 提供转换。插件 options 仍通过
   `editor.plugin(MarkdownPlugin)` 访问。
 </Callout>
 
@@ -165,7 +164,7 @@ const editor = createPlateEditor({
 
 ### Plate 转 Markdown（序列化）
 
-使用 `editor.read.markdown.serialize` 将当前编辑器文档或指定的 `EditorDocumentValue` 转回 Markdown 字符串。
+使用 `editor.api.markdown.serialize` 将当前编辑器文档或指定的 `EditorDocumentValue` 转回 Markdown 字符串。
 
 序列化只读取文档的主 `children`。命名 roots 不属于 Markdown 表示。
 
@@ -173,7 +172,7 @@ const editor = createPlateEditor({
 
 ```tsx
 // 假设 editor 已有内容
-const markdownOutput = editor.read.markdown.serialize();
+const markdownOutput = editor.api.markdown.serialize();
 console.info(markdownOutput);
 ```
 
@@ -186,7 +185,7 @@ const specificNodes = [
 ];
 
 // 假设 editor 是你的 Plate 实例
-const partialMarkdownOutput = editor.read.markdown.serialize({
+const partialMarkdownOutput = editor.api.markdown.serialize({
   value: { children: specificNodes },
 });
 console.info(partialMarkdownOutput);
@@ -299,8 +298,8 @@ MarkdownPlugin.configure({
 
 ### `MarkdownPlugin`
 
-`MarkdownPlugin` 通过 `editor.api.markdown` 提供显式输入方法，通过
-`editor.read.markdown` 提供快照序列化，并声明以下 product codecs：
+`MarkdownPlugin` 通过 `editor.api.markdown` 提供转换方法，并声明以下
+product codecs：
 
 | 格式 | 解码 | 编码 | 表示 |
 | --- | --- | --- | --- |
@@ -379,7 +378,7 @@ slice，并在需要时回退到这些外部格式。
 
 ---
 
-### `editor.read.markdown.serialize`
+### `editor.api.markdown.serialize`
 
 将 `EditorDocumentValue` 序列化为 Markdown 字符串。
 
@@ -514,7 +513,7 @@ editor.update((tx) => {
   tx.value.replace(document);
 });
 
-const markdownOutput = editor.read.markdown.serialize();
+const markdownOutput = editor.api.markdown.serialize();
 // markdownOutput 将包含 GFM 语法
 ```
 
@@ -644,7 +643,7 @@ $$
 const document = editor.api.markdown.deserialize(markdown);
 // document.children 包含 'inline_equation' 及 'equation' 节点
 
-const markdownOutput = editor.read.markdown.serialize({ value: document });
+const markdownOutput = editor.api.markdown.serialize({ value: document });
 // 输出 Markdown 字符串包含 $...$ 和 $$...$$ 语法
 ```
 
@@ -685,7 +684,7 @@ Full name with ID: [Jane Smith](mention:user_123)
 const slateValue = editor.api.markdown.deserialize(markdown);
 // 自动生成合适值与显示文本的 mention 节点
 
-const markdownOutput = editor.read.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // mention 序列化后始终用链接格式: [Alice](mention:alice), [John Doe](mention:john_doe) 等
 ```
 
@@ -742,7 +741,7 @@ const markdown = `
 const slateValue = editor.api.markdown.deserialize(markdown);
 // 生成包含嵌套 column 元素的 column_group 节点
 
-const markdownOutput = editor.read.markdown.serialize({ value: slateValue });
+const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
 // 输出的 Markdown 保持列结构和宽度属性
 ```
 

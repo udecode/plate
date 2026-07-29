@@ -16,7 +16,7 @@ docs:
 - **流式 Markdown/MDX 插入**，支持表格、列和代码块，通过 `editor.update.aiChat.insertChunk` 执行。
 - **插入和聊天审查模式**，通过局部回滚预览和 `editor.update.ai` 实现撤销安全批处理。
 - **块选择感知变换**，使用 `editor.update.aiChat.replaceSelection` 和 `editor.update.aiChat.insertBelow` 替换或追加整个部分。
-- **与 `@ai-sdk/react` 直接集成**，使 `editor.api.aiChat.submit` 可以从 Vercel AI SDK 助手流式传输响应。
+- **与 `@ai-sdk/react` 直接集成**，使 `editor.plugin(AIChatPlugin).api.submit` 可以从 Vercel AI SDK 助手流式传输响应。
 - **建议和评论工具**，可对 AI 编辑进行差异比较、接受/拒绝更改，并将 AI 反馈映射回文档范围。
 
 </PackageInfo>
@@ -193,7 +193,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 });
 ```
 
-- `useChatChunk`：监视 `UseChatHelpers` 状态并生成增量块。
+- `useChatChunk`：监视存储的聊天适配器并生成增量块。
 - `editor.update.ai.beginPreview`：在写入首个预览块之前捕获回滚片段和选区。
 - `update.insertChunk`：将 Markdown/MDX 分块写入文档并复用当前区块。
 - `update.applySuggestions`：将编辑响应转换为临时建议节点。
@@ -202,7 +202,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 
 ### 构建 API 路由
 
-在服务器上处理 `editor.api.aiChat.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
+在服务器上处理 `editor.plugin(AIChatPlugin).api.submit` 请求。每个请求包含来自 `@ai-sdk/react` 的聊天 `messages` 和一个 `ctx` 有效载荷，其中包含编辑器 `children`、当前 `selection` 和最后的 `toolName`。
 [完整 API 示例](https://github.com/udecode/plate-playground-template/blob/main/src/app/api/ai/command/route.ts)
 
 ```ts title="app/api/ai/command/route.ts"
@@ -250,14 +250,14 @@ export async function POST(req: Request) {
 import { useEffect } from 'react';
 
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type UseChatHelpers, useChat } from '@ai-sdk/react';
-import { AIChatPlugin } from '@platejs/ai/react';
+import { useChat } from '@ai-sdk/react';
+import { AIChatPlugin, createAIChatAdapter } from '@platejs/ai/react';
 import { useEditorPlugin } from 'platejs/react';
 
 type ChatMessage = UIMessage<{}, { toolName: 'comment' | 'edit' | 'generate'; comment?: unknown }>;
 
 export const useEditorAIChat = () => {
-  const { editor, store } = useEditorPlugin(AIChatPlugin);
+  const { store } = useEditorPlugin(AIChatPlugin);
 
   const chat = useChat<ChatMessage>({
     id: 'editor',
@@ -271,7 +271,7 @@ export const useEditorAIChat = () => {
   });
 
   useEffect(() => {
-    store.set({ chat: chat as UseChatHelpers<ChatMessage> });
+    store.set({ chat: createAIChatAdapter(chat) });
   }, [chat, store]);
 
   return chat;
@@ -293,7 +293,7 @@ useEditorChat({
 现在您可以以编程方式提交提示：
 
 ```tsx
-editor.api.aiChat.submit('', {
+editor.plugin(AIChatPlugin).api.submit('', {
   prompt: {
     default: 'Continue the document after {block}',
     selecting: 'Rewrite {selection} with a clearer tone',
@@ -330,7 +330,7 @@ aiChat.api.submit('Improve tone', {
 
 - `getChooseToolPrompt` 决定请求是 `generate`、`edit` 还是 `comment`。
 - `getGeneratePrompt`、`getEditPrompt` 和 `getCommentPrompt` 将当前编辑器状态转换为针对每种模式量身定制的指令。
-- 服务端提示助手通过 `editor.read.markdown.serialize`
+- 服务端提示助手通过 `editor.api.markdown.serialize`
   序列化显式编辑器快照，并使用 `buildStructuredPrompt`
   组合选区、块 ID 和 MDX 标签。
 
@@ -404,7 +404,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown);
 
 ### `useEditorChat`
 
-将 `UseChatHelpers` 连接到编辑器状态，以便 AI 菜单知道是锚定到光标、选择还是块选择。
+监视 AI 菜单状态，并报告打开的菜单锚定到光标、文本选择还是块选择。
 
 <API name="useEditorChat">
 <APIParameters>
@@ -439,22 +439,24 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 
 | 命名空间 | 方法 |
 | --- | --- |
+| `ai.api` | `findTextRangeInBlock` |
 | `aiChat.api` | `deserializeChunk`, `deserializeInlineChunk`, `hide`, `reload`, `reset`, `show`, `stop`, `submit` |
 | `aiChat.read` | `commentRange`, `insertStart`, `markdown`, `node`, `prompt`, `resolvePlaceholders`, `serializeChunk` |
 | `aiChat.store.get` | `lastAssistantMessage` |
 | `aiChat.update` | `accept`, `acceptSuggestions`, `applySuggestions`, `applyTableCellSuggestion`, `insertBelow`, `insertChunk`, `rejectSuggestions`, `removeAnchor`, `replaceSelection` |
 
-### `findTextRangeInBlock`
+### `ai.api.findTextRangeInBlock`
 
-使用 LCS 在块内查找最接近匹配的模糊搜索助手。
+在块内查找精确匹配、容错匹配或部分前缀匹配：
 
-<API name="findTextRangeInBlock">
-<APIParameters>
-  <APIItem name="node" type="Node">要搜索的块节点。</APIItem>
-  <APIItem name="searchText" type="string">要定位的文本片段。</APIItem>
-</APIParameters>
-<APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">匹配的范围或 `null`。</APIReturns>
-</API>
+```tsx
+const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
+  block,
+  findText: '要查找的文本',
+});
+```
+
+返回 Plite `Range` 或 `null`。
 
 ## 插件
 
@@ -478,7 +480,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
     <APIItem name="trigger" type="RegExp | string | string[]" optional>打开命令菜单的字符。默认为 `' '`。</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
     <APIItem name="triggerQuery" type="(editor: BaseEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
-    <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>存储来自 `useChat` 的助手，以便 API 调用可以访问它们。</APIItem>
+    <APIItem name="chat" type="AIChatAdapter" optional>存储 `createAIChatAdapter(useChat(...))` 返回的适配器，以便 API 调用可以访问聊天状态和控制器。</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
@@ -490,7 +492,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 
 ## API
 
-### `editor.api.aiChat.submit(input, options?)`
+### `editor.plugin(AIChatPlugin).api.submit(input, options?)`
 
 向您的模型提供商提交提示。当省略 `mode` 时，折叠光标默认为 `'insert'`，否则为 `'chat'`。
 
@@ -507,7 +509,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 </APIOptions>
 </API>
 
-### `editor.api.aiChat.reset(options?)`
+### `editor.plugin(AIChatPlugin).api.reset(options?)`
 
 清除聊天状态，移除 AI 节点，并可选择撤销最后一个 AI 批次。
 
@@ -528,19 +530,19 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 <APIReturns type="NodeEntry | undefined">匹配的节点条目（如果找到）。</APIReturns>
 </API>
 
-### `editor.api.aiChat.reload()`
+### `editor.plugin(AIChatPlugin).api.reload()`
 
-使用存储的 `UseChatHelpers` 重放最后一个提示，在重新提交之前恢复原始选择或块选择。
+使用存储的聊天适配器重放最后一个提示，在重新提交之前恢复原始选择或块选择。
 
-### `editor.api.aiChat.stop()`
+### `editor.plugin(AIChatPlugin).api.stop()`
 
 停止流式传输并调用 `chat.stop`。
 
-### `editor.api.aiChat.show()`
+### `editor.plugin(AIChatPlugin).api.show()`
 
 打开 AI 菜单，清除之前的聊天消息，并重置工具状态。
 
-### `editor.api.aiChat.hide(options?)`
+### `editor.plugin(AIChatPlugin).api.hide(options?)`
 
 关闭 AI 菜单，可选择撤销最后一个 AI 批次并重新聚焦编辑器。
 
@@ -653,7 +655,7 @@ aiChat.update.insertChunk(chunk, { autoScroll: true });
 
 <ComponentSource name="ai-menu" />
 
-扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ aiEditor, editor, input }` 并可以使用自定义提示或变换调用 `editor.api.aiChat.submit`。
+扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ aiEditor, editor, input }` 并可以使用自定义提示或变换调用 `editor.plugin(AIChatPlugin).api.submit`。
 
 #### 简单自定义命令
 
@@ -663,7 +665,7 @@ summarizeInBullets: {
   label: 'Summarize in bullets',
   value: 'summarizeInBullets',
   onSelect: ({ editor }) => {
-    void editor.api.aiChat.submit('', {
+    void editor.plugin(AIChatPlugin).api.submit('', {
       prompt: 'Summarize the current selection using bullet points',
       toolName: 'generate',
     });
@@ -688,7 +690,7 @@ generateTOC: {
         ? 'Create a realistic table of contents for this document'
         : 'Generate a table of contents that reflects the existing headings';
 
-    void editor.api.aiChat.submit('', {
+    void editor.plugin(AIChatPlugin).api.submit('', {
       mode: 'insert',
       prompt,
       toolName: 'generate',

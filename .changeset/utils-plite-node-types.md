@@ -2,6 +2,9 @@
 "@platejs/utils": major
 ---
 
+Export complete `NormalizeTypesPluginState`, `TrailingBlockPluginState`, and
+`BlockPlaceholderPluginState` contracts.
+
 - Base Plate node types on Plite `Element` and `Text`
 - Replace the optional caption property contract with direct inline
   `TMediaElement.children`; remove `TCaptionElement` and the `caption` node-map

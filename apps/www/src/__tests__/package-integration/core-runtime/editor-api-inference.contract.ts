@@ -4,6 +4,7 @@ type Assert<T extends true> = T;
 type AssertNever<T extends never> = T;
 type EditorApiKeys = keyof MyEditor['api'];
 type ExpectedEditorApiKeys =
+  | 'ai'
   | 'aiChat'
   | 'audio'
   | 'blockMenu'

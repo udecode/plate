@@ -3,6 +3,11 @@
 import { BaseTablePlugin } from './BaseTablePlugin';
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 import { createPlateEditor } from '@platejs/core/react';
+import {
+  ContentSlice,
+  defineEditorExtension,
+  editorReads,
+} from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 import type { TestEditor } from '@platejs/test-utils';
 
@@ -52,7 +57,7 @@ describe('table clipboard', () => {
         initialValue: input.children,
       });
 
-      const fragment = editor.read.fragment();
+      const fragment = editor.read.slice.export().content;
 
       expect(fragment).toMatchObject([
         editor.plugin(BaseTablePlugin).read.getGridAbove()[0][0],
@@ -98,11 +103,47 @@ describe('table clipboard', () => {
         initialValue: input.children,
       });
 
-      const fragment = editor.read.fragment();
+      const fragment = editor.read.slice.export().content;
 
       expect(fragment).toMatchObject(blocks);
     });
   });
+
+  it('preserves a table inside an ordinary document range', () => {
+    const input = (
+      <editor>
+        <hp>
+          <anchor />
+          before
+        </hp>
+        <htable>
+          <htr>
+            <htd>
+              <hp>11</hp>
+            </htd>
+            <htd>
+              <hp>12</hp>
+            </htd>
+          </htr>
+        </htable>
+        <hp>
+          after
+          <focus />
+        </hp>
+      </editor>
+    ) as TestEditor;
+    const editor = createPlateEditor({
+      nodeId: true,
+      plugins: getTestTablePlugins(),
+      selection: input.selection,
+      initialValue: input.children,
+    });
+
+    expect(editor.read.slice.export().content).toContainEqual(
+      expect.objectContaining({ type: 'table' })
+    );
+  });
+
   jsxt;
 
   jsxt;
@@ -333,6 +374,63 @@ describe('table clipboard', () => {
         expect(envelope.slice.openEnd).toBe(0);
         expect(copiedCells.map(readText)).toEqual(['11', '12', '21', '22']);
         expect(values.has('application/x-slate-fragment')).toBe(false);
+      });
+
+      it('applies export projections to the exact table fragment', () => {
+        const input = (
+          <editor>
+            <htable>
+              <htr>
+                <htd>
+                  <hp>
+                    <anchor />
+                    11
+                  </hp>
+                </htd>
+                <htd>
+                  <hp>
+                    12
+                    <focus />
+                  </hp>
+                </htd>
+              </htr>
+            </htable>
+          </editor>
+        ) as TestEditor;
+        const { clipboard, values } = createClipboard();
+        const editor = createTableEditor(input);
+
+        editor.extend(
+          defineEditorExtension({
+            name: 'table-clipboard-export-projection',
+            read: ({ around }) => [
+              around(editorReads.slice.export, ({ next }) => {
+                const slice = next();
+
+                return ContentSlice.fromJSON({
+                  ...slice,
+                  content: slice.content.map((node) => ({
+                    ...node,
+                    clipboardProjection: true,
+                  })),
+                });
+              }),
+            ],
+          })
+        );
+
+        expect(
+          editor.plugin(BaseTablePlugin).api.writeSelection(clipboard)
+        ).toBe(true);
+
+        const encoded = values.get('application/x-plite-fragment');
+        const envelope = JSON.parse(decodeURIComponent(atob(encoded!))) as {
+          slice: {
+            content: Array<{ clipboardProjection?: boolean }>;
+          };
+        };
+
+        expect(envelope.slice.content[0]?.clipboardProjection).toBe(true);
       });
 
       it('quotes CSV fields while leaving TSV and plain text literal', () => {
