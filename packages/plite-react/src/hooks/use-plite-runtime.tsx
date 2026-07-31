@@ -26,6 +26,7 @@ import {
   type Value,
   type ValueOf,
 } from '@platejs/plite';
+import type { DOMApi } from '@platejs/plite-dom';
 import {
   createDOMEditorCapability,
   DOM_CLIPBOARD_HANDLERS,
@@ -94,7 +95,6 @@ const selectPublicActiveRoot = (state: EditorStateView): RootKey | undefined =>
   toPublicRootOption(selectActiveRoot(state));
 
 type ExtensionLike = {
-  api?: Record<string, unknown>;
   name: string;
 };
 
@@ -105,23 +105,12 @@ export type PliteContentRootOwner = {
   ownerRoot: RootKey;
 };
 
-const getExtensionCapabilityName = (extension: ExtensionLike) => {
-  const apiNames = Object.keys(extension.api ?? {});
-
-  return apiNames.includes(extension.name)
-    ? extension.name
-    : (apiNames[0] ?? extension.name);
-};
-
 const getContentRootOwnerKey = (owner: PliteContentRootOwner) =>
   `${owner.ownerRoot}\u0000${owner.ownerPath.join('.')}\u0000${
     owner.childRoot
   }`;
 
-const createReactApi = (
-  editor: object,
-  domApi: ReactRuntimeEditor['api']['dom']
-) =>
+const createReactApi = (editor: object, domApi: DOMApi) =>
   Object.freeze({
     refreshDecorations: (options?: PliteProjectionStoreRefreshOptions) => {
       refreshEditorDecorations(editor, {
@@ -168,8 +157,8 @@ export type PliteRuntimeValue<
   ReactEditorType<V, TExtensions>,
   | 'anchor'
   | 'api'
+  | 'extension'
   | 'extend'
-  | 'getApi'
   | 'read'
   | 'subscribe'
   | 'subscribeCommit'
@@ -268,8 +257,8 @@ const createReactRuntime = <
     api: editor.api,
     anchor: editor.anchor,
     editor,
+    extension: editor.extension,
     extend: editor.extend,
-    getApi: editor.getApi,
     read: editor.read,
     subscribe: editor.subscribe,
     subscribeCommit: editor.subscribeCommit,
@@ -292,7 +281,7 @@ export const createReactRuntimeViewEditor = <
   const runtimeOwner = getEditorRuntimeOwner(view as any);
   const {
     api: _api,
-    getApi: _getApi,
+    extension: _extension,
     ...descriptors
   } = Object.getOwnPropertyDescriptors(view);
   const editor = Object.create(Object.getPrototypeOf(view)) as EditorView<
@@ -309,14 +298,12 @@ export const createReactRuntimeViewEditor = <
     getEditorExtensionContributions(editor as any, DOM_CLIPBOARD_HANDLERS)
   );
   const reactApi = createReactApi(editor, domApi);
+  const scopedDomApi = Object.freeze({ ...domApi, clipboard });
   const baseApi = view.api as Record<PropertyKey, unknown>;
   const viewApi = new Proxy(baseApi, {
     get(target, property, receiver) {
-      if (property === 'clipboard') {
-        return clipboard;
-      }
       if (property === 'dom') {
-        return domApi;
+        return scopedDomApi;
       }
       if (property === 'react') {
         return reactApi;
@@ -331,17 +318,18 @@ export const createReactRuntimeViewEditor = <
       enumerable: true,
       value: viewApi,
     },
-    getApi: {
+    extension: {
       enumerable: true,
       value: ((extension: ExtensionLike) => {
-        const capability = view.getApi(extension as any);
-        const rebound = Reflect.get(
-          viewApi,
-          getExtensionCapabilityName(extension)
-        );
+        const portal = (
+          view.extension as unknown as (extension: ExtensionLike) => {
+            api: unknown;
+          }
+        )(extension);
+        const rebound = Reflect.get(viewApi, extension.name);
 
-        return rebound ?? capability;
-      }) as typeof view.getApi,
+        return rebound === undefined ? portal : Object.freeze({ api: rebound });
+      }) as typeof view.extension,
     },
   });
 
@@ -901,7 +889,7 @@ export type PliteRootEditor<
   TExtensions extends readonly unknown[] = readonly [],
 > = ReactEditorType<V, TExtensions> &
   ReactRuntimeEditor<V, TExtensions> &
-  Omit<EditorView<V, TExtensions>, 'api' | 'getApi' | 'read' | 'update'>;
+  Omit<EditorView<V, TExtensions>, 'api' | 'extension' | 'read' | 'update'>;
 
 /**
  * Create a command-capable editor for one root.

@@ -1,4 +1,4 @@
-import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, createBasePlugin } from '@platejs/core';
 import {
   ElementApi,
   NodeApi,
@@ -20,7 +20,7 @@ const initialState: FindReplacePluginState = {
 };
 
 export const FindReplacePlugin = createBasePlugin({
-  key: KEYS.searchHighlight,
+  name: KEYS.searchHighlight,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -126,4 +126,4 @@ export const FindReplacePlugin = createBasePlugin({
   },
 });
 
-export type FindReplaceConfig = InferConfig<typeof FindReplacePlugin>;
+export type FindReplaceDefinition = DefinitionOf<typeof FindReplacePlugin>;

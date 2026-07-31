@@ -35,10 +35,13 @@ describe('useMediaState', () => {
     );
 
     useEditorMock.mockReturnValue({
-      getType: (key: string) =>
-        key === actualUtils.KEYS.mediaEmbed
-          ? actualUtils.NODES.mediaEmbed
-          : key,
+      plugin: (pluginName: string) => ({
+        installed: true,
+        type:
+          pluginName === actualUtils.KEYS.mediaEmbed
+            ? actualUtils.NODES.mediaEmbed
+            : pluginName,
+      }),
     });
     useElementMock.mockReturnValue(element);
     useEditorFocusedMock.mockReturnValue(false);

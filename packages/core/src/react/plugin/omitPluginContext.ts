@@ -1,14 +1,23 @@
-import type { AnyPluginConfig } from '../../lib';
+import type { AnyBasePluginDefinition } from '../../lib';
 import type { PlatePluginContext } from './PlatePlugin';
 
 export const omitPluginContext = <
-  T extends PlatePluginContext<AnyPluginConfig>,
+  T extends PlatePluginContext<AnyBasePluginDefinition>,
 >(
   ctx: T
 ) => {
-  const { api, editor, plugin, store, type, update, ...rest } = ctx;
-
-  void update;
+  const {
+    api,
+    defineCodecs,
+    editor,
+    installed,
+    plugin,
+    read,
+    store,
+    type,
+    update,
+    ...rest
+  } = ctx;
 
   return rest;
 };

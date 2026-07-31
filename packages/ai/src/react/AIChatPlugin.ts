@@ -27,21 +27,18 @@ import {
   type Path,
   PathApi,
   type Range,
+  type Value,
   defineEffect,
   editorCommands,
   schema,
   TextApi,
 } from '@platejs/plite';
 import {
+  type DefinitionOf,
   nanoid,
   type PlatePluginReadState,
-  type PluginConfig,
 } from '@platejs/core';
-import {
-  type InferConfig,
-  type PlateEditor,
-  createPlatePlugin,
-} from '@platejs/core/react';
+import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 import {
   type TIdElement,
   type TTableCellElement,
@@ -107,12 +104,12 @@ export type AIChatPluginState = {
   _blockPath: Path | null;
   _mdxName: string | null;
   _replaceIds: string[];
-  aiEditor: PlateEditor | null;
   chat: AIChatAdapter | null;
   chatNodes: TIdElement[];
   chatSelection: Range | null;
   mode: AIMode;
   open: boolean;
+  previewValue: Value;
   streaming: boolean;
   toolName: AIToolName;
   trigger: NonNullable<TriggerComboboxPluginState['trigger']>;
@@ -148,16 +145,9 @@ const dependencies = [
   BaseTablePlugin,
 ] as const;
 
-type AIChatPluginContextConfig = PluginConfig<
-  typeof KEYS.aiChat,
-  AIChatPluginState,
-  {},
-  {},
-  {},
-  {},
-  typeof dependencies
+type AIChatPluginReadState = PlatePluginReadState<
+  DefinitionOf<(typeof dependencies)[number]>
 >;
-type AIChatPluginReadState = PlatePluginReadState<AIChatPluginContextConfig>;
 type AIChatInsertState = Pick<AIChatPluginReadState, 'nodes' | 'selection'>;
 type AIChatPromptState = Pick<AIChatPluginReadState, 'blockSelection'>;
 
@@ -166,12 +156,12 @@ const initialState: AIChatPluginState = {
   _blockPath: null,
   _mdxName: null,
   _replaceIds: [],
-  aiEditor: null,
   chat: null,
   chatNodes: [],
   chatSelection: null,
   mode: 'insert',
   open: false,
+  previewValue: [],
   streaming: false,
   toolName: null,
   trigger: ' ',
@@ -180,7 +170,7 @@ const initialState: AIChatPluginState = {
 
 export const AIChatPlugin = createPlatePlugin({
   dependencies,
-  key: KEYS.aiChat,
+  name: KEYS.aiChat,
   initialState,
   schema: {
     element: {
@@ -190,6 +180,9 @@ export const AIChatPlugin = createPlatePlugin({
 })
   .extend((context) => {
     const editor = context.editor;
+    const codeBlock = editor.plugin(KEYS.codeBlock);
+    const columnGroup = editor.plugin(KEYS.columnGroup);
+    const equation = editor.plugin(KEYS.equation);
     const getChunkTrimmed = (
       chunk: string,
       { direction = 'right' }: { direction?: 'left' | 'right' } = {}
@@ -252,8 +245,8 @@ export const AIChatPlugin = createPlatePlugin({
     }
     const isSameNode = (left: Descendant, right: Descendant) => {
       if (
-        left.type !== editor.getType(KEYS.p) ||
-        right.type !== editor.getType(KEYS.p)
+        left.type !== editor.plugin(KEYS.p).type ||
+        right.type !== editor.plugin(KEYS.p).type
       ) {
         return left.type === right.type;
       }
@@ -296,7 +289,7 @@ export const AIChatPlugin = createPlatePlugin({
           return [
             {
               children: [{ text: input }],
-              type: editor.getType(KEYS.p),
+              type: editor.plugin(KEYS.p).type,
             },
           ];
         }
@@ -328,7 +321,8 @@ export const AIChatPlugin = createPlatePlugin({
           ? {
               ...node,
               children: [...node.children],
-              ...(node.type === editor.getType(KEYS.equation) &&
+              ...(node.type ===
+                (equation.installed ? equation.type : KEYS.equation) &&
               typeof node.texExpression === 'string'
                 ? { texExpression: node.texExpression.trim() }
                 : {}),
@@ -402,9 +396,13 @@ export const AIChatPlugin = createPlatePlugin({
       if (
         lastBlock &&
         ElementApi.isElement(lastBlock) &&
-        KEYS.heading.some(
-          (headingKey) => lastBlock.type === editor.getType(headingKey)
-        )
+        KEYS.heading.some((headingName) => {
+          const heading = editor.plugin(headingName);
+
+          return (
+            lastBlock.type === (heading.installed ? heading.type : headingName)
+          );
+        })
       ) {
         const lastText = lastBlock.children.at(-1);
 
@@ -513,9 +511,10 @@ export const AIChatPlugin = createPlatePlugin({
       const entry = state.nodes.get<Element>(path);
 
       return entry &&
-        [editor.getType(KEYS.columnGroup), editor.getType(KEYS.table)].includes(
-          entry[0].type
-        )
+        [
+          columnGroup.installed ? columnGroup.type : KEYS.columnGroup,
+          editor.plugin(KEYS.table).type,
+        ].includes(entry[0].type)
         ? (state.nodes.above()?.[1] ?? path)
         : path;
     };
@@ -529,7 +528,7 @@ export const AIChatPlugin = createPlatePlugin({
         startInEmptyParagraph:
           !!startBlock &&
           NodeApi.string(startBlock).length === 0 &&
-          startBlock.type === editor.getType(KEYS.p),
+          startBlock.type === editor.plugin(KEYS.p).type,
       };
     };
     const withoutSuggestionData = (
@@ -574,7 +573,7 @@ export const AIChatPlugin = createPlatePlugin({
       if (
         chatNodes.length === 1 &&
         ElementApi.isElement(first) &&
-        first.type === editor.getType(KEYS.table) &&
+        first.type === editor.plugin(KEYS.table).type &&
         first.children.length === 1
       ) {
         const row = first.children[0];
@@ -585,7 +584,7 @@ export const AIChatPlugin = createPlatePlugin({
 
         if (
           ElementApi.isElement(cell) &&
-          cell.type === editor.getType(KEYS.td)
+          cell.type === editor.plugin(KEYS.td).type
         ) {
           chatNodes = [...cell.children];
         }
@@ -664,6 +663,7 @@ export const AIChatPlugin = createPlatePlugin({
         _replaceIds: [],
         chatNodes: [],
         mode: 'insert',
+        previewValue: [],
         toolName: null,
       });
     };
@@ -757,7 +757,7 @@ export const AIChatPlugin = createPlatePlugin({
         )
       );
       const table = state.nodes.block<TTableElement>({
-        match: { type: editor.getType(KEYS.table) },
+        match: { type: editor.plugin(KEYS.table).type },
       })?.[0];
 
       if (!table) return '';
@@ -766,7 +766,7 @@ export const AIChatPlugin = createPlatePlugin({
       const rows = table.children.map((row, rowIndex) => {
         if (
           !ElementApi.isElement(row) ||
-          row.type !== editor.getType(KEYS.tr)
+          row.type !== editor.plugin(KEYS.tr).type
         ) {
           throw new Error('Tables must contain table rows.');
         }
@@ -774,8 +774,8 @@ export const AIChatPlugin = createPlatePlugin({
         const values = row.children.map((cell) => {
           if (
             !ElementApi.isElement(cell) ||
-            (cell.type !== editor.getType(KEYS.td) &&
-              cell.type !== editor.getType(KEYS.th))
+            (cell.type !== editor.plugin(KEYS.td).type &&
+              cell.type !== editor.plugin(KEYS.th).type)
           ) {
             throw new Error('Table rows must contain table cells.');
           }
@@ -846,7 +846,7 @@ export const AIChatPlugin = createPlatePlugin({
     };
 
     return {
-      api: {
+      api: () => ({
         deserializeChunk,
         deserializeInlineChunk,
         hide,
@@ -854,6 +854,7 @@ export const AIChatPlugin = createPlatePlugin({
           const { chat, chatNodes, chatSelection, toolName } =
             context.store.get();
 
+          context.store.set({ previewValue: [] });
           editor.plugin(BaseAIPlugin).update.undo();
           if (chatSelection) editor.update.selection.set(chatSelection);
           else {
@@ -904,6 +905,8 @@ export const AIChatPlugin = createPlatePlugin({
 
           if (!prompt && input.length === 0) return;
 
+          context.store.set({ previewValue: [] });
+
           const nextMode =
             mode ??
             (editor.plugin(BlockSelectionPlugin).read.isSelecting()
@@ -948,7 +951,7 @@ export const AIChatPlugin = createPlatePlugin({
             ...options,
           });
         },
-      },
+      }),
       read: ({ state }) => ({
         commentRange: (comment: TComment) => {
           const nodes = editor.api.markdown.deserialize(
@@ -1013,7 +1016,7 @@ export const AIChatPlugin = createPlatePlugin({
             return state.nodes.find<Node>({
               at: path,
               match: (node) =>
-                Boolean(Reflect.get(node, editor.getType(KEYS.ai))),
+                Boolean(Reflect.get(node, editor.plugin(KEYS.ai).type)),
               mode: 'lowest',
               reverse: true,
               ...rest,
@@ -1022,7 +1025,7 @@ export const AIChatPlugin = createPlatePlugin({
 
           return state.nodes.find<Node>({
             match: (node) =>
-              Boolean(Reflect.get(node, editor.getType(KEYS.ai))),
+              Boolean(Reflect.get(node, editor.plugin(KEYS.ai).type)),
             ...rest,
           });
         },
@@ -1061,6 +1064,18 @@ export const AIChatPlugin = createPlatePlugin({
           ),
       },
       update: ({ context: updateContext, tx }) => {
+        const getPreviewSource = () => {
+          const source = [...context.store.get('previewValue')];
+
+          if (
+            source.length === 0 ||
+            source.every((node) => editor.read.nodes.isEmpty(node))
+          ) {
+            return;
+          }
+
+          return source;
+        };
         const insertChunk = (
           chunk: string,
           options: StreamInsertOptions = {}
@@ -1182,9 +1197,9 @@ export const AIChatPlugin = createPlatePlugin({
                   );
 
                   nextChunks = [
-                    editor.getType(KEYS.codeBlock),
-                    editor.getType(KEYS.table),
-                    editor.getType(KEYS.equation),
+                    codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+                    editor.plugin(KEYS.table).type,
+                    equation.installed ? equation.type : KEYS.equation,
                   ].includes(blocks[0].type)
                     ? combined
                     : replacement;
@@ -1445,19 +1460,11 @@ export const AIChatPlugin = createPlatePlugin({
           acceptSuggestions: () => reviewSuggestions('accept'),
           applySuggestions,
           applyTableCellSuggestion,
-          insertBelow: (
-            sourceEditor: PlateEditor,
-            { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
-          ) => {
-            const source = [...sourceEditor.read.children()];
-
-            if (
-              source.length === 0 ||
-              source.every((node) => sourceEditor.read.nodes.isEmpty(node))
-            ) {
-              return;
-            }
-
+          insertBelow: ({
+            format = 'single',
+          }: {
+            format?: 'all' | 'none' | 'single';
+          } = {}) => {
             const blockSelection = editor.plugin(BlockSelectionPlugin);
 
             if (context.store.get('toolName') !== 'generate') {
@@ -1485,6 +1492,10 @@ export const AIChatPlugin = createPlatePlugin({
 
               return;
             }
+
+            const source = getPreviewSource();
+
+            if (!source) return;
 
             const isBlockSelecting =
               blockSelection.store.get('isSelectingSome');
@@ -1562,18 +1573,14 @@ export const AIChatPlugin = createPlatePlugin({
               ...options,
             });
           },
-          replaceSelection: (
-            sourceEditor: PlateEditor,
-            { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
-          ) => {
-            const source = [...sourceEditor.read.children()];
+          replaceSelection: ({
+            format = 'single',
+          }: {
+            format?: 'all' | 'none' | 'single';
+          } = {}) => {
+            const source = getPreviewSource();
 
-            if (
-              source.length === 0 ||
-              source.every((node) => sourceEditor.read.nodes.isEmpty(node))
-            ) {
-              return;
-            }
+            if (!source) return;
 
             tx.ai.undo();
             tx.nodes.remove({
@@ -1641,78 +1648,74 @@ export const AIChatPlugin = createPlatePlugin({
     };
   })
   .extend((context) => ({
-    extension: {
-      commands: ({ handle }) => [
-        handle(editorCommands.insertText, ({ input, state }) => {
-          const { trigger, triggerPreviousCharPattern, triggerQuery } =
-            context.store.get();
-          const selection = state.selection();
-          const matches =
-            trigger instanceof RegExp
-              ? trigger.test(input.text)
-              : Array.isArray(trigger)
-                ? trigger.includes(input.text)
-                : input.text === trigger;
+    commands: ({ handle }) => [
+      handle(editorCommands.insertText, ({ input, state }) => {
+        const { trigger, triggerPreviousCharPattern, triggerQuery } =
+          context.store.get();
+        const selection = state.selection();
+        const matches =
+          trigger instanceof RegExp
+            ? trigger.test(input.text)
+            : Array.isArray(trigger)
+              ? trigger.includes(input.text)
+              : input.text === trigger;
 
-          if (
-            !selection ||
-            !matches ||
-            (triggerQuery && !triggerQuery(context.editor))
+        if (
+          !selection ||
+          !matches ||
+          (triggerQuery && !triggerQuery(context.editor))
+        ) {
+          return false;
+        }
+
+        const before = state.points.before(selection);
+        const previous = before
+          ? state.text.string({ anchor: before, focus: selection.anchor })
+          : '';
+        const block = state.nodes.block({ mode: 'highest' });
+
+        if (
+          !triggerPreviousCharPattern?.test(previous) ||
+          !block ||
+          !state.nodes.isEmpty(block[0])
+        ) {
+          return false;
+        }
+
+        return state.transaction((tx) => {
+          tx.effects.emit(aiChatShowEffect, null);
+        });
+      }),
+    ],
+    corrections: [
+      {
+        event: 'content',
+        correct({ entry: [node, path], tx }) {
+          if (Reflect.get(node, KEYS.ai) && !context.store.get('open')) {
+            const aiType = context.editor.plugin(KEYS.ai).type;
+
+            tx.nodes.unset(aiType, {
+              at: path,
+              match: (candidate) => Boolean(Reflect.get(candidate, aiType)),
+            });
+          } else if (
+            ElementApi.isElement(node) &&
+            node.type === context.type &&
+            !context.store.get('open')
           ) {
-            return false;
-          }
-
-          const before = state.points.before(selection);
-          const previous = before
-            ? state.text.string({ anchor: before, focus: selection.anchor })
-            : '';
-          const block = state.nodes.block({ mode: 'highest' });
-
-          if (
-            !triggerPreviousCharPattern?.test(previous) ||
-            !block ||
-            !state.nodes.isEmpty(block[0])
-          ) {
-            return false;
-          }
-
-          return state.transaction((tx) => {
-            tx.effects.emit(aiChatShowEffect, null);
-          });
-        }),
-      ],
-      corrections: [
-        {
-          event: 'content',
-          correct({ entry: [node, path], tx }) {
-            if (Reflect.get(node, KEYS.ai) && !context.store.get('open')) {
-              const aiType = context.editor.getType(KEYS.ai);
-
-              tx.nodes.unset(aiType, {
-                at: path,
-                match: (candidate) => Boolean(Reflect.get(candidate, aiType)),
-              });
-            } else if (
-              ElementApi.isElement(node) &&
-              node.type === context.type &&
-              !context.store.get('open')
-            ) {
-              tx.nodes.remove({ at: path });
-            }
-          },
-        },
-      ],
-      effectTypes: [aiChatShowEffect],
-      on: {
-        commit({ commit }) {
-          if (
-            commit.effects.some((effect) => effect.type === aiChatShowEffect)
-          ) {
-            context.api.show();
+            tx.nodes.remove({ at: path });
           }
         },
+      },
+    ],
+    effectTypes: [aiChatShowEffect],
+    on: {
+      commit({ commit }) {
+        if (commit.effects.some((effect) => effect.type === aiChatShowEffect)) {
+          context.api.show();
+        }
       },
     },
   }));
 
-export type AIChatPluginConfig = InferConfig<typeof AIChatPlugin>;
+export type AIChatDefinition = DefinitionOf<typeof AIChatPlugin>;

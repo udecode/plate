@@ -1,15 +1,12 @@
-import {
-  createBaseEditor,
-  createBasePlugin,
-  getEditorPlugin,
-} from '@platejs/core';
+import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import { createPluginContext } from '@platejs/core/internal';
 import { type Descendant, schema } from '@platejs/plite';
 import { NODES } from '@platejs/utils';
 
 import { FindReplacePlugin } from './FindReplacePlugin';
 
 const InlinePlugin = createBasePlugin({
-  key: 'a',
+  name: 'a',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -28,12 +25,12 @@ const decorate = ({
   const editor = createBaseEditor({
     plugins: [FindReplacePlugin, InlinePlugin],
   });
-  const plugin = editor.getPlugin(FindReplacePlugin);
+  const plugin = editor.plugin(FindReplacePlugin).plugin;
 
   editor.plugin(FindReplacePlugin).store.set({ search });
 
   return plugin.decorate?.({
-    ...getEditorPlugin(editor, plugin),
+    ...createPluginContext(editor, plugin),
     entry: [{ children, type: 'p' }, [0]],
   });
 };
@@ -237,9 +234,9 @@ describe('FindReplacePlugin', () => {
       plugins: [FindReplacePlugin],
     });
 
-    const plugin = editor.getPlugin(FindReplacePlugin);
+    const plugin = editor.plugin(FindReplacePlugin).plugin;
 
-    expect(plugin.key).toBe('searchHighlight');
+    expect(plugin.name).toBe('searchHighlight');
     expect(plugin.type).toBe(NODES.searchHighlight);
 
     editor.plugin(FindReplacePlugin).store.set({ search: 'test' });
@@ -261,7 +258,7 @@ describe('FindReplacePlugin', () => {
 
     expect(
       plugin.decorate?.({
-        ...getEditorPlugin(editor, plugin),
+        ...createPluginContext(editor, plugin),
         entry: [{ children: [{ text: 'test' }], type: 'p' }, [0]],
       })
     ).toEqual(expected);

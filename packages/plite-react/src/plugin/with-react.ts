@@ -4,21 +4,13 @@ import {
   defineEditorExtension,
   type Editor,
   type EditorExtensionsFromOptions,
-  type EditorExtension,
-  type EditorExtensionConfigurationEditor,
-  type EditorExtensionConfigurationContext,
-  type EditorExtensionTypeProvider,
   type EditorValueFromOptions,
   type Value,
 } from '@platejs/plite';
-import type {
-  DOMApi,
-  DOMClipboardApi,
-  DOMEditorOptions,
-  DOMExtension,
-} from '@platejs/plite-dom';
+import type { DOMEditorOptions, DOMExtension } from '@platejs/plite-dom';
 import { dom } from '@platejs/plite-dom';
 import {
+  DOMEditor,
   EDITOR_TO_PENDING_SELECTION,
   findEditorDOMRootRuntime,
 } from '@platejs/plite-dom/internal';
@@ -26,8 +18,18 @@ import { history, type HistoryExtension } from '@platejs/plite-history';
 import { refreshEditorDecorations } from '../decoration-refresh';
 import type { PliteProjectionStoreRefreshOptions } from '../projection-store';
 
-/** Options for installing the React DOM bridge on an editor. */
-export interface ReactEditorOptions extends DOMEditorOptions {}
+type AnyDOMExtension =
+  | DOMExtension<true>
+  | DOMExtension<false>
+  | DOMExtension<boolean>;
+
+/** Options for installing React over one exact DOM extension descriptor. */
+export interface ReactEditorOptions<
+  TDOMExtension extends AnyDOMExtension = AnyDOMExtension,
+> {
+  /** DOM extension owned by this React bridge. */
+  dom: TDOMExtension;
+}
 
 /** React capability exposed through `editor.api.react`. */
 export type ReactApi = {
@@ -37,90 +39,26 @@ export type ReactApi = {
   isReadOnly: () => boolean;
 };
 
-export type ReactExtensionTypes = {
-  api: {
-    clipboard: DOMClipboardApi;
-    dom: DOMApi;
-    react: ReactApi;
-  };
-};
-
-/** Editor extension installed by `react()`. */
-export type ReactExtension = Omit<
-  EditorExtension<Editor>,
-  'api' | 'dependencies' | 'name' | 'state' | 'tx'
-> &
-  EditorExtensionTypeProvider<(editor: Editor) => ReactExtensionTypes> & {
-    api: (
-      editor: EditorExtensionConfigurationEditor<Editor>,
-      context: EditorExtensionConfigurationContext
-    ) => ReactExtensionTypes['api'];
-    dependencies: readonly [DOMExtension<true>];
-    name: 'react';
-  };
-type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
-  ReactExtension,
-  HistoryExtension,
-  ...TExtensions,
-];
-/** Editor type with Plite React, DOM, and history extensions installed. */
-export type ReactEditor<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = Editor<V, ReactDefaultExtensions<TExtensions>>;
-
-/** React-only editor context value used by lower-level provider internals. */
-export type ReactEditorContextValue<V extends Value = Value> = Omit<
-  Editor<V, readonly [ReactExtension]>,
-  'api' | 'getApi'
-> & {
-  api: Editor<V, readonly [ReactExtension]>['api'];
-  getApi: Editor<V, readonly [ReactExtension]>['getApi'];
-};
-
-/** Options for `createReactEditor`. */
-export type CreateReactEditorOptions<
-  V extends Value = Value,
-  TExtensions extends readonly unknown[] = readonly [],
-> = CreateEditorOptions<V, TExtensions> & ReactEditorOptions;
-
-const createReactApi = (editor: Editor, domApi: DOMApi): ReactApi =>
+const createReactApi = (editor: Editor): ReactApi =>
   Object.freeze({
     refreshDecorations: (options) => {
       refreshEditorDecorations(editor, {
         ...options,
         reason: options?.reason ?? 'external',
         requiresDOMSelectionExport:
-          options?.requiresDOMSelectionExport ?? domApi.isFocused(),
+          options?.requiresDOMSelectionExport ?? DOMEditor.isFocused(editor),
       });
     },
-    isComposing: () => domApi.isComposing(),
-    isFocused: () => domApi.isFocused(),
-    isReadOnly: () => domApi.isReadOnly(),
+    isComposing: () => DOMEditor.isComposing(editor),
+    isFocused: () => DOMEditor.isFocused(editor),
+    isReadOnly: () => DOMEditor.isReadOnly(editor),
   });
 
-/**
- * Installs the DOM bridge and exposes React focus, read-only, and composition
- * APIs through the editor extension system.
- */
-export const react = (options: ReactEditorOptions = {}): ReactExtension => {
-  const { clipboard: _clipboard, ...domOptions } = options;
-  const domExtension = dom(domOptions);
-
-  const extension = defineEditorExtension<Editor>()({
-    api(editor, context) {
-      const api = domExtension.api(editor, context);
-
-      if (!api.clipboard) {
-        throw new Error('React editor DOM clipboard capability is missing.');
-      }
-
-      return {
-        ...api,
-        clipboard: api.clipboard,
-        react: createReactApi(editor, api.dom),
-      };
-    },
+const createReactExtension = <const TDOMExtension extends AnyDOMExtension>(
+  domExtension: TDOMExtension
+) =>
+  defineEditorExtension({
+    api: ({ editor }) => createReactApi(editor),
     dependencies: [domExtension],
     name: 'react',
     on: {
@@ -135,8 +73,46 @@ export const react = (options: ReactEditorOptions = {}): ReactExtension => {
     },
   });
 
-  return extension as ReactExtension;
+/** React extension backed by one exact DOM dependency. */
+export type ReactExtension<
+  TDOMExtension extends AnyDOMExtension = DOMExtension<true>,
+> = ReturnType<typeof createReactExtension<TDOMExtension>>;
+
+/**
+ * Installs the DOM bridge and exposes React focus, read-only, and composition
+ * APIs through the editor extension system.
+ */
+export const react = <const TDOMExtension extends AnyDOMExtension>({
+  dom: domExtension,
+}: ReactEditorOptions<TDOMExtension>): ReactExtension<TDOMExtension> =>
+  createReactExtension(domExtension);
+
+type ReactDefaultExtensions<TExtensions extends readonly unknown[]> = readonly [
+  ReactExtension,
+  HistoryExtension,
+  ...TExtensions,
+];
+/** Editor type with Plite React, DOM, and history extensions installed. */
+export type ReactEditor<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = Editor<V, ReactDefaultExtensions<TExtensions>>;
+
+/** React-only editor context value used by lower-level provider internals. */
+export type ReactEditorContextValue<V extends Value = Value> = Omit<
+  Editor<V, readonly [ReactExtension]>,
+  'api' | 'extension'
+> & {
+  api: Editor<V, readonly [ReactExtension]>['api'];
+  extension: Editor<V, readonly [ReactExtension]>['extension'];
 };
+
+/** Options for `createReactEditor`. */
+export type CreateReactEditorOptions<
+  V extends Value = Value,
+  TExtensions extends readonly unknown[] = readonly [],
+> = CreateEditorOptions<V, TExtensions> &
+  Pick<DOMEditorOptions, 'clipboardFormatKey'>;
 
 export function createReactEditor<
   const TOptions extends CreateReactEditorOptions<any, readonly unknown[]> & {
@@ -167,9 +143,9 @@ export function createReactEditor<
   options: CreateReactEditorOptions<V, TExtensions> = {}
 ): ReactEditor<V, TExtensions> {
   const { clipboardFormatKey, extensions, ...editorOptions } = options;
-  const reactOptions = { clipboardFormatKey };
+  const exactDOMExtension = dom({ clipboardFormatKey });
   const editorExtensions = [
-    react(reactOptions),
+    react({ dom: exactDOMExtension }),
     history(),
     ...((extensions ?? []) as TExtensions),
   ] as const;

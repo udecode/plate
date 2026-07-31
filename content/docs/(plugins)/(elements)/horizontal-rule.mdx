@@ -120,7 +120,9 @@ import { HrElementStatic } from '@/components/ui/hr-node-static';
 
 export const staticEditor = createStaticEditor({
   plugins: [
-    BaseHorizontalRulePlugin.configure({ component: HrElementStatic }),
+    BaseHorizontalRulePlugin.configure({
+      component: HrElementStatic,
+    }),
   ],
 });
 ```
@@ -150,7 +152,7 @@ const value = [
 
 | Field | Type | Notes |
 |-------|------|-------|
-| `type` | `'hr'` | Plugin key and node type from `KEYS.hr`. |
+| `type` | `'hr'` | Plugin name and node type from `KEYS.hr`. |
 | `children` | `[{ text: '' }]` | Required child for the void element. |
 
 ## Input Rules

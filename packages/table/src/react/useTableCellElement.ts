@@ -99,7 +99,7 @@ export function useTableCellSize({
   const rowSize = useElementSelector(
     ([node]: NodeEntry<TTableRowElement>) => node.size,
     {
-      key: KEYS.tr,
+      name: KEYS.tr,
     }
   );
 
@@ -199,11 +199,11 @@ export const useTableCellElementResizable = ({
   const initialWidth = useElementSelector(
     ([node]) =>
       colSpan > 1 ? (node as TTableElement).colSizes?.[colIndex] : undefined,
-    { key: KEYS.table }
+    { name: KEYS.table }
   );
   const marginLeft = useElementSelector(
     ([node]) => (node as TTableElement).marginLeft ?? 0,
-    { key: KEYS.table }
+    { name: KEYS.table }
   );
 
   const colSizesWithoutOverrides = useTableColSizes({ disableOverrides: true });

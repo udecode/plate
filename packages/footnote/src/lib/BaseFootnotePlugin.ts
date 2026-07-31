@@ -4,7 +4,7 @@ import {
 } from '@platejs/combobox';
 import {
   BaseParagraphPlugin,
-  type InferConfig,
+  type DefinitionOf,
   createBasePlugin,
 } from '@platejs/core';
 import {
@@ -29,7 +29,7 @@ export type TFootnoteElement = Element & {
 
 /** Enables support for block footnote definitions. */
 export const BaseFootnoteDefinitionPlugin = createBasePlugin({
-  key: KEYS.footnoteDefinition,
+  name: KEYS.footnoteDefinition,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -39,11 +39,44 @@ export const BaseFootnoteDefinitionPlugin = createBasePlugin({
       properties: { identifier: property.string() },
     },
   }),
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'footnoteDefinition',
+        kind: 'node',
+        decode: ({ decodeNodes, decoration, node, registry, type }) => {
+          const paragraphType = registry.getType(KEYS.p);
+          const children = decodeNodes(node.children, decoration);
+          const blocks = children.map((child) =>
+            !TextApi.isText(child) && child.type === paragraphType
+              ? child
+              : {
+                  children: [child],
+                  type: paragraphType,
+                }
+          );
+
+          return {
+            children:
+              blocks.length > 0
+                ? blocks
+                : [{ children: [{ text: '' }], type: paragraphType }],
+            identifier: node.identifier,
+            type,
+          };
+        },
+        encode: ({ encodeFlow, node }) => ({
+          children: encodeFlow(node.children),
+          identifier: node.identifier ?? '',
+          type: 'footnoteDefinition',
+        }),
+      },
+    }),
 });
 
 /** Enables support for inline footnote combobox inputs. */
 export const BaseFootnoteInputPlugin = createBasePlugin({
-  key: KEYS.footnoteInput,
+  name: KEYS.footnoteInput,
   schema: {
     element: {
       properties: {
@@ -90,17 +123,33 @@ const initialState: FootnotePluginState = {
 /** Enables footnote references and their document-level operations. */
 export const BaseFootnotePlugin = createBasePlugin({
   dependencies: [BaseFootnoteInputPlugin],
-  extension: ({ editor, plugin, store, type }) =>
-    createTriggerComboboxExtension({
-      editor,
-      getState: () => store.get(),
-      name: plugin.key,
-      type,
-    }),
-  key: 'footnote',
+  name: 'footnote',
   initialState,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'footnoteReference',
+        kind: 'node',
+        decode: ({ node, type }) => ({
+          children: [{ text: '' }],
+          identifier: node.identifier ?? '',
+          type,
+        }),
+        encode: ({ node }) => ({
+          identifier:
+            node.identifier ??
+            node.children
+              .map((child) => (TextApi.isText(child) ? child.text : ''))
+              .join(''),
+          type: 'footnoteReference',
+        }),
+      },
+    }),
   read: ({ editor, state, type }) => {
-    const definitionType = editor.getType(KEYS.footnoteDefinition);
+    const definition = editor.plugin(KEYS.footnoteDefinition);
+    const definitionType = definition.installed
+      ? definition.type
+      : KEYS.footnoteDefinition;
     let registry:
       | {
           children: readonly Descendant[];
@@ -253,9 +302,20 @@ export const BaseFootnotePlugin = createBasePlugin({
   },
   type: KEYS.footnoteReference,
 })
+  .extend(({ editor, plugin, store, type }) =>
+    createTriggerComboboxExtension({
+      editor,
+      getState: () => store.get(),
+      name: plugin.name,
+      type,
+    })
+  )
   .extend(({ editor, plugin }) => ({
     update: ({ tx }) => {
-      const definitionType = editor.getType(KEYS.footnoteDefinition);
+      const definition = editor.plugin(KEYS.footnoteDefinition);
+      const definitionType = definition.installed
+        ? definition.type
+        : KEYS.footnoteDefinition;
       const referencePoint = (path: Path) => {
         const parentEntry = tx.nodes.parent<Element>(path);
         let point: Point | undefined;
@@ -294,13 +354,13 @@ export const BaseFootnotePlugin = createBasePlugin({
 
           if (!entry || entry[0].type !== definitionType) return false;
           if (!entry[0].identifier) return false;
-          if (!tx[plugin.key].isDuplicateDefinition({ path })) return false;
+          if (!tx[plugin.name].isDuplicateDefinition({ path })) return false;
 
-          const nextIdentifier = identifier ?? tx[plugin.key].nextId();
+          const nextIdentifier = identifier ?? tx[plugin.name].nextId();
 
           if (
             nextIdentifier !== entry[0].identifier &&
-            tx[plugin.key].definition({ identifier: nextIdentifier })
+            tx[plugin.name].definition({ identifier: nextIdentifier })
           ) {
             return false;
           }
@@ -310,7 +370,7 @@ export const BaseFootnotePlugin = createBasePlugin({
           return nextIdentifier;
         },
         selectDefinition: ({ identifier }: { identifier: string }) => {
-          const definition = tx[plugin.key].definition({ identifier });
+          const definition = tx[plugin.name].definition({ identifier });
 
           if (!definition) return false;
 
@@ -329,7 +389,7 @@ export const BaseFootnotePlugin = createBasePlugin({
           identifier: string;
           index?: number;
         }) => {
-          const reference = tx[plugin.key].references({ identifier })[index];
+          const reference = tx[plugin.name].references({ identifier })[index];
 
           if (!reference) return false;
 
@@ -347,19 +407,22 @@ export const BaseFootnotePlugin = createBasePlugin({
   .extend(({ plugin }) => ({
     update: ({ tx }) => ({
       focusDefinition: ({ identifier }: { identifier: string }) =>
-        !!tx[plugin.key].selectDefinition({ identifier }),
+        !!tx[plugin.name].selectDefinition({ identifier }),
       focusReference: ({
         identifier,
         index = 0,
       }: {
         identifier: string;
         index?: number;
-      }) => !!tx[plugin.key].selectReference({ identifier, index }),
+      }) => !!tx[plugin.name].selectReference({ identifier, index }),
     }),
   }))
   .extend(({ editor, plugin }) => ({
     update: ({ tx }) => {
-      const definitionType = editor.getType(KEYS.footnoteDefinition);
+      const definition = editor.plugin(KEYS.footnoteDefinition);
+      const definitionType = definition.installed
+        ? definition.type
+        : KEYS.footnoteDefinition;
 
       return {
         createDefinition: ({
@@ -367,15 +430,15 @@ export const BaseFootnotePlugin = createBasePlugin({
           fragment,
           identifier,
         }: CreateFootnoteDefinitionOptions) => {
-          const existingDefinition = tx[plugin.key].definition({ identifier });
+          const existingDefinition = tx[plugin.name].definition({ identifier });
 
           if (existingDefinition) {
-            if (focus) tx[plugin.key].focusDefinition({ identifier });
+            if (focus) tx[plugin.name].focusDefinition({ identifier });
 
             return existingDefinition[1];
           }
 
-          const paragraphType = editor.getType(KEYS.p);
+          const paragraphType = editor.plugin(KEYS.p).type;
           const clonedFragment = fragment ? structuredClone(fragment) : [];
           const children: Element[] = [];
           let inlineChildren: Descendant[] = [];
@@ -413,7 +476,7 @@ export const BaseFootnotePlugin = createBasePlugin({
             { at: path }
           );
 
-          if (focus) tx[plugin.key].focusDefinition({ identifier });
+          if (focus) tx[plugin.name].focusDefinition({ identifier });
 
           return path;
         },
@@ -431,7 +494,7 @@ export const BaseFootnotePlugin = createBasePlugin({
 
         if (!selection && options.at === undefined) return;
 
-        const nextIdentifier = identifier ?? tx[plugin.key].nextId();
+        const nextIdentifier = identifier ?? tx[plugin.name].nextId();
         const fragment =
           selection && tx.selection.isExpanded()
             ? tx.fragment({ at: selection })
@@ -456,7 +519,7 @@ export const BaseFootnotePlugin = createBasePlugin({
           },
           options
         );
-        tx[plugin.key].createDefinition({
+        tx[plugin.name].createDefinition({
           focus: focusDefinition,
           fragment,
           identifier: nextIdentifier,
@@ -472,4 +535,4 @@ export const BaseFootnotePlugin = createBasePlugin({
     }),
   }));
 
-export type FootnoteConfig = InferConfig<typeof BaseFootnotePlugin>;
+export type FootnoteDefinition = DefinitionOf<typeof BaseFootnotePlugin>;

@@ -16,14 +16,14 @@ Applied packs:
 - none
 
 Plate Next source:
-- prompt / link: user pointed out `defaultType: editor.getType('p')` remains in `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx`
+- prompt / link: user pointed out `defaultType: editor.plugin('p').type` remains in `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx`
 - mode: named API ergonomics packet
 - target surface: Plite `blocks.toggle` default block type and Plate callsites in paragraph/input-rules
 - review target: best Plate v2 migration on top of Plite, not legacy
   compatibility
 - broad Core sweep: N/A: named API ergonomics packet, not full Core review
-- correction-triggered related Core sweep: required for `defaultType: editor.getType('p')`, `blocks.toggle`, and `toggleBlock`
-- completion threshold summary: no `defaultType: editor.getType('p')` callsites remain; Plate custom paragraph type still toggles back correctly; focused Plite/Core tests and typecheck/lint pass
+- correction-triggered related Core sweep: required for `defaultType: editor.plugin('p').type`, `blocks.toggle`, and `toggleBlock`
+- completion threshold summary: no `defaultType: editor.plugin('p').type` callsites remain; Plate custom paragraph type still toggles back correctly; focused Plite/Core tests and typecheck/lint pass
 
 First checkpoint:
 - Copy every explicit prompt requirement into this plan before implementation:
@@ -133,7 +133,7 @@ Current verdict:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Prompt requirements captured before work | yes | Remove remaining `defaultType: editor.getType('p')` boilerplate by fixing owner fallback, not behavior. |
+| Prompt requirements captured before work | yes | Remove remaining `defaultType: editor.plugin('p').type` boilerplate by fixing owner fallback, not behavior. |
 | `plate-next` skill/rule read | yes | `.agents/skills/plate-next/SKILL.md` read fully. |
 | Active goal checked or created | yes | `get_goal` returned none; active goal created for this plan. |
 | Mode classified as named packet vs broad Core sweep | yes | Named API ergonomics packet. |
@@ -200,9 +200,9 @@ Completion Gates:
 | Named verification threshold | yes | Run the proof commands named in this plan | Old boilerplate audit empty; focused Plite/Core tests pass. |
 | Broad Core drift ledger coverage | no | Record manifest command, expected row count, actual row count, missing row count, and extra row count when broad Core sweep applies | N/A: named API packet. |
 | Score gate | no | Prove all scores are valid and high drift is owned/fixed/deferred in the plan ledger | N/A: no broad drift scoring. |
-| Best Plate v2 recommendation | yes | Record the recommended current shape and rejected legacy/hack alternatives for the reviewed target | Plite owns `defaultBlockType`; Plate installs `editor.getType('p')` once; callsites omit `defaultType`. |
+| Best Plate v2 recommendation | yes | Record the recommended current shape and rejected legacy/hack alternatives for the reviewed target | Plite owns `defaultBlockType`; Plate installs `editor.plugin('p').type` once; callsites omit `defaultType`. |
 | Plite/Plate gap ledger | yes | Record blockers or N/A when no gap blocks the target | Plite gap patched: default block type. |
-| Related Core sweep after correction | yes | For each correction, run and record same-class Core search/review results | Swept `defaultType: editor.getType('p')`, `toggleBlock`, and `blocks.toggle`. |
+| Related Core sweep after correction | yes | For each correction, run and record same-class Core search/review results | Swept `defaultType: editor.plugin('p').type`, `toggleBlock`, and `blocks.toggle`. |
 | Package/API proof | yes | Run focused typecheck/test/build or record N/A | Plite/Core focused tests, Plite/Core typecheck, Plite/Core lint all passed. |
 | Non-Core package error triage | yes | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | N/A: proof commands passed. |
 | Source audit | yes | Run exact audit for removed compatibility names or record N/A | `rg` old-boilerplate audit returned no matches. |
@@ -223,14 +223,14 @@ Review matrix:
 |------------|-------------|---------|-------|----------|------|
 | `packages/plite/src/core/public-state.ts` block toggle fallback | 0 | move-to-plite | Plite runtime | `blocks.toggle` reads `getEditorDefaultBlockType(editor)`. | keep |
 | `packages/plite/src/interfaces/editor.ts` `CreateEditorOptions` | 0 | move-to-plite | Plite public editor options | `defaultBlockType?: string` configures raw Plite fallback. | keep |
-| `packages/core/src/lib/editor/withPlite.ts` Plate install | 0 | main-parity-cleanup | Core Plate runtime setup | `setEditorDefaultBlockType(editor, editor.getType(BaseParagraphPlugin.key))` runs after plugin resolution. | keep |
+| `packages/core/src/lib/editor/withPlite.ts` Plate install | 0 | main-parity-cleanup | Core Plate runtime setup | `setEditorDefaultBlockType(editor, editor.plugin(BaseParagraphPlugin.key).type)` runs after plugin resolution. | keep |
 | `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx` | 0 | hard-cut boilerplate | Core React paragraph shortcut | Now calls `editor.update.blocks.toggle(type)`. | keep |
 | `packages/core/src/lib/plugins/input-rules/createInputRules.ts` | 0 | hard-cut boilerplate | Core input-rules | Toggle/wrap paths omit default type; direct conversion path still uses `nodes.set`. | keep |
 
 Best Plate v2 recommendation:
 | Target | Recommended shape | Rejected legacy/hack alternatives | Reason | User-review need |
 |--------|-------------------|-----------------------------------|--------|------------------|
-| Semantic block toggle default | Plite editor-level `defaultBlockType`, Plate sets it once from paragraph plugin type. | Per-call `defaultType: editor.getType('p')`; hardcoded raw `'p'` in Plate callsites; old `editor.tf.toggleBlock`. | Removes boilerplate without losing custom paragraph mapping. | None. |
+| Semantic block toggle default | Plite editor-level `defaultBlockType`, Plate sets it once from paragraph plugin type. | Per-call `defaultType: editor.plugin('p').type`; hardcoded raw `'p'` in Plate callsites; old `editor.tf.toggleBlock`. | Removes boilerplate without losing custom paragraph mapping. | None. |
 
 Plite / Plate gap ledger:
 | Gap type | Missing capability | Why local workaround is a hack | Smallest owner | Proof needed | Decision |
@@ -295,7 +295,7 @@ Findings:
 
 Decisions and tradeoffs:
 - Added `defaultBlockType` to Plite `CreateEditorOptions` because raw Plite should also be configurable.
-- Kept the per-call `defaultType` option in Plite for explicit one-off overrides; removed Plate's repeated `editor.getType('p')` usage.
+- Kept the per-call `defaultType` option in Plite for explicit one-off overrides; removed Plate's repeated `editor.plugin('p').type` usage.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |

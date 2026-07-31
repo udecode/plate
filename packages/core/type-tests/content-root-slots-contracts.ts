@@ -6,7 +6,7 @@ import {
 } from '@platejs/core/react';
 
 const FigurePlugin = createPlatePlugin({
-  key: 'typedFigure',
+  name: 'typedFigure',
   schema: {
     element: {
       contentRoots: {
@@ -49,6 +49,6 @@ const editor = createPlateEditor({
   },
 });
 const captionRoot: string =
-  editor.read.schema.createAndFill(FigurePlugin).childRoots.caption;
+  editor.read.schema.create(FigurePlugin).childRoots.caption;
 
 void captionRoot;

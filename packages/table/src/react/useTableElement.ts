@@ -53,7 +53,7 @@ export const useTableColSizes = ({
   const { editor } = useEditorPlugin(TablePlugin);
   const colSizeOverrides = useTableValue('colSizeOverrides');
   const tablePath = useElementSelector(([, path]) => path, {
-    key: KEYS.table,
+    name: KEYS.table,
   });
 
   const overriddenColSizes = useEditorSelector(

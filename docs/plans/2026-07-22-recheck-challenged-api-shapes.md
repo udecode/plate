@@ -144,7 +144,7 @@ Recheck verdicts:
 | Shape | Verdict                     | Absolute-best target                                                                                                            |
 | ----: | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 |     3 | revise                      | Keep contextual non-widening `.configure`; compose ordered object/callback layers.                                              |
-|     9 | keep                        | Keep top-level weak optional `targetPluginKeys`; compile one private resolved binding. Reject `config.targets`.                 |
+|     9 | keep                        | Keep top-level weak optional `targetPluginNames`; compile one private resolved binding. Reject `config.targets`.                 |
 |    10 | revise                      | Infer the sole shortcut route; require optional target `update` or `api` only for collisions.                                   |
 |    11 | revise                      | Keep a stable inert fallback privately for hook order; expose strict and nullable public hooks.                                 |
 |    12 | revise                      | Prefer descriptor inference while accepting generic/type-only forms; strict/optional hooks; no fake live arbitrary-node path.   |
@@ -215,7 +215,7 @@ Findings:
   permits handlers/options/render/shortcuts. `.extend` returns an
   `ExtendedBasePlugin` and is the widening owner. Keep callback configuration;
   replace the single `__runtimeConfiguration` slot with ordered composition.
-- Shape 9: six production plugins use the same `targetPluginKeys` for schema
+- Shape 9: six production plugins use the same `targetPluginNames` for schema
   property targets and runtime host behavior. No divergent caller currently
   justifies a second targeting concept. Keys are deliberately weak/optional and
   avoid cross-package imports; descriptors remain correct for required peers.
@@ -300,7 +300,7 @@ Reboot status:
 
 Open risks:
 
-- `targetPluginKeys` needs one internal compiled binding and typo diagnostics
+- `targetPluginNames` needs one internal compiled binding and typo diagnostics
   without making absent optional peers fatal.
 - Async-loading adoption must prove that product/controller loading UI replaces
   the current editable fallback-document behavior.

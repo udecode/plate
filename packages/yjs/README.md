@@ -17,7 +17,7 @@ import { YjsPlugin } from "@platejs/yjs/react";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
-  schema: { id: 'yjs-example', version: 1 },
+  schemaIdentity: { id: 'yjs-example', version: 1 },
   plugins: [
     YjsPlugin.configure({
       initialState: {

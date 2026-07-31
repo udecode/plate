@@ -111,7 +111,7 @@ const validateBatchSelections = <V extends Value>(
         ? batch.selectionBeforeRoot
         : batch.selectionAfterRoot;
 
-    editor.read.schema.validateDocument(value);
+    editor.read.schema.assertDocument(value);
     assertSelectionSupported(
       editor,
       selectionAtBase,
@@ -119,7 +119,7 @@ const validateBatchSelections = <V extends Value>(
       selectionAtBaseRoot ?? 'main'
     );
     value = batch.change.apply(value) as EditorDocumentValue<V>;
-    editor.read.schema.validateDocument(value);
+    editor.read.schema.assertDocument(value);
     assertSelectionSupported(
       editor,
       selectionAfterChange,

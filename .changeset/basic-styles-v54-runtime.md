@@ -16,4 +16,4 @@ Export `TextIndentPluginState` as the complete mutable state contract for
 `editor.update.textAlign.set(value)` and `setLineHeight(editor, value)` with
 `editor.update.lineHeight.set(value)`. Configure a custom storage key through
 the plugin's top-level `type`, and configure style targets through
-`targetPluginKeys`.
+`targetPluginNames`.

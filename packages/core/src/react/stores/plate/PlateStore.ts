@@ -1,12 +1,12 @@
-import type { NodeEntry, Range } from '@platejs/plite';
+import type { Editor, NodeEntry, Range } from '@platejs/plite';
 import type { Nullable } from '@udecode/utils';
 
 import type { EditableProps } from '../../../lib';
 import type { PlateEditor } from '../../editor';
 
-export type PlateStoreEditor = PlateEditor;
+export type PlateStoreEditor = PlateEditor<any, any>;
 
-export type PlateStoreState<E extends PlateStoreEditor = PlateStoreEditor> =
+export type PlateStoreState<E extends Editor<any, any> = PlateStoreEditor> =
   Nullable<{
     decorate: NonNullable<
       (options: { editor: E; entry: NodeEntry }) => Range[]

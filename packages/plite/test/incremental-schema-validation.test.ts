@@ -27,7 +27,10 @@ import {
   rebaseElementOwnedRootIndex,
   resolveElementOwnedRootPath,
 } from '../src/core/element-owned-root-index';
-import { getCompiledEditorSchemaFromApi } from '../src/core/editor-schema';
+import {
+  getCompiledEditorSchemaFromApi,
+  type InternalEditorSchemaApi,
+} from '../src/core/editor-schema';
 import { getEditorSchema } from '../src/core/editor-runtime';
 
 const paragraph = (text: string): Element => ({
@@ -74,20 +77,16 @@ const createValidationEditor = () =>
             target: { kind: 'type', type: 'paragraph' },
           }),
         ],
-        root: {
-          content: schema.content.types(['paragraph', 'section'], {
-            default: { type: 'paragraph' },
-            max: 3,
+        root: schema.content.types(['paragraph', 'section'], {
+          default: { type: 'paragraph' },
+          max: 3,
+          min: 1,
+        }),
+        roots: {
+          header: schema.content.type('heading', {
+            default: { type: 'heading' },
             min: 1,
           }),
-        } as const,
-        roots: {
-          header: {
-            content: schema.content.type('heading', {
-              default: { type: 'heading' },
-              min: 1,
-            }),
-          } as const,
         },
         unknown: 'reject',
         version: 1,
@@ -130,14 +129,12 @@ const ownedRootExtension = defineEditorSchema({
     } as const,
   },
   id: 'incremental-owned-root-index',
-  root: {
-    content: schema.content.types([
-      'container',
-      'heading-owner',
-      'paragraph',
-      'paragraph-owner',
-    ]),
-  } as const,
+  root: schema.content.types([
+    'container',
+    'heading-owner',
+    'paragraph',
+    'paragraph-owner',
+  ]),
   unknown: 'reject',
   version: 1,
 });
@@ -268,9 +265,7 @@ describe('incremental schema validation', () => {
               target: target.type('paragraph'),
             }),
           ],
-          root: {
-            content: schema.content.type('paragraph', { min: 1 }),
-          } as const,
+          root: schema.content.type('paragraph', { min: 1 }),
           unknown: 'reject',
           version: 1,
         }),
@@ -311,19 +306,17 @@ describe('incremental schema validation', () => {
               target: { kind: 'type', type: 'paragraph' },
             }),
           ],
-          root: {
-            content: schema.content.type('paragraph', {
-              default: { type: 'paragraph' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
           unknown: 'reject',
           version: 1,
         }),
       ],
       initialValue: { children: [paragraph('seed')] },
     });
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
     const children = Array.from({ length: 512 }, (_, index) =>
       paragraphWithText(`sibling-${index}`, {
@@ -332,7 +325,7 @@ describe('incremental schema validation', () => {
     );
     const change = DocumentChange.between(before, { children });
     const after = change.apply(before);
-    const full = errorMessage(() => schemaApi.validateDocument(after));
+    const full = errorMessage(() => schemaApi.assertDocument(after));
     const incremental = errorMessage(() =>
       validateWithBuilder(before, change, schemaApi)
     );
@@ -343,10 +336,10 @@ describe('incremental schema validation', () => {
 
   it('matches full validation for changed descendants, ancestors, and roots', () => {
     const editor = createValidationEditor();
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
 
-    schemaApi.validateDocument(before);
+    schemaApi.assertDocument(before);
 
     const candidates: EditorDocumentValue[] = [
       {
@@ -403,7 +396,7 @@ describe('incremental schema validation', () => {
     for (const candidate of candidates) {
       const change = DocumentChange.between(before, candidate);
       const after = change.apply(before);
-      const full = errorMessage(() => schemaApi.validateDocument(after));
+      const full = errorMessage(() => schemaApi.assertDocument(after));
       const incremental = errorMessage(() =>
         validateWithBuilder(before, change, schemaApi)
       );
@@ -418,10 +411,10 @@ describe('incremental schema validation', () => {
 
   it('matches full validation across generated structural and property edits', () => {
     const editor = createValidationEditor();
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
 
-    schemaApi.validateDocument(before);
+    schemaApi.assertDocument(before);
 
     fc.assert(
       fc.property(
@@ -441,7 +434,7 @@ describe('incremental schema validation', () => {
           };
           const change = DocumentChange.between(before, candidate);
           const after = change.apply(before);
-          const full = errorMessage(() => schemaApi.validateDocument(after));
+          const full = errorMessage(() => schemaApi.assertDocument(after));
           const incremental = errorMessage(() =>
             validateWithBuilder(before, change, schemaApi)
           );
@@ -455,7 +448,7 @@ describe('incremental schema validation', () => {
 
   it('requires explicit boundary validation for detached baselines', () => {
     const editor = createValidationEditor();
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
     const change = DocumentChange.between(before, {
       ...before,
@@ -469,7 +462,7 @@ describe('incremental schema validation', () => {
     const previous = profilerGlobal.__PLITE_REACT_RENDER_PROFILER__;
     const events: string[] = [];
 
-    schemaApi.validateDocument(before);
+    schemaApi.assertDocument(before);
     profilerGlobal.__PLITE_REACT_RENDER_PROFILER__ = {
       record: ({ id }) => events.push(id),
     };
@@ -506,7 +499,7 @@ describe('incremental schema validation', () => {
         0
       );
 
-      schemaApi.validateDocument(detached);
+      schemaApi.assertDocument(detached);
       validateWithBuilder(detached, detachedChange, schemaApi);
       assert.equal(
         events.filter((id) => id === 'schema-validation-full-document-boundary')
@@ -591,7 +584,7 @@ describe('incremental schema validation', () => {
 
   it('rebases element-owned root grammar and live lookup through one change', () => {
     const editor = createOwnedRootEditor();
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
     const candidate: EditorDocumentValue = {
       ...before,
@@ -993,7 +986,7 @@ describe('incremental schema validation', () => {
 
   it('matches full validation across generated element-owned root edits', () => {
     const editor = createOwnedRootEditor();
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
     const ownerArbitrary = fc.record({
       root: fc.constantFrom('owned:a', 'owned:b'),
@@ -1044,7 +1037,7 @@ describe('incremental schema validation', () => {
           const incremental = errorMessage(() =>
             validateWithBuilder(before, change, schemaApi)
           );
-          const full = errorMessage(() => schemaApi.validateDocument(after));
+          const full = errorMessage(() => schemaApi.assertDocument(after));
 
           assert.equal(
             incremental === null,
@@ -1059,7 +1052,7 @@ describe('incremental schema validation', () => {
 
   it('does not trust an invalid ownership index cached by full validation', () => {
     const editor = createOwnedRootEditor();
-    const schemaApi = getEditorSchema(editor);
+    const schemaApi: InternalEditorSchemaApi = getEditorSchema(editor);
     const before = editor.read.value();
     const candidate: EditorDocumentValue = {
       children: [ownedRootElement('heading-owner', 'owned:missing')],
@@ -1069,7 +1062,7 @@ describe('incremental schema validation', () => {
     const after = change.apply(before);
 
     assert.match(
-      errorMessage(() => schemaApi.validateDocument(after)) ?? '',
+      errorMessage(() => schemaApi.assertDocument(after)) ?? '',
       /content root "owned:missing" is missing/i
     );
     assert.match(

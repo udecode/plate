@@ -98,9 +98,9 @@ whole editor type only to reach one installed capability.
 | Call                                                                                  | Target                                                                                                                                                                                                                 |
 | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/csv/src/lib/deserializer/utils/deserializeCsv.ts:15`                        | Let `CsvPlugin` call `deserializeCsvWithContext` directly. A retained editor wrapper imports the real `CsvPlugin` and passes its resolved options; otherwise delete the wrapper in favor of the plugin API.            |
-| `packages/markdown/src/lib/internal/markdownRuntime.ts:43`                            | Make `createMarkdownRuntime` consume resolved `MarkdownPluginState` or owner context. Do not invent `MarkdownRuntimeConfig` from `pluginKey`.                                                                        |
+| `packages/markdown/src/lib/internal/markdownRuntime.ts:43`                            | Make `createMarkdownRuntime` consume resolved `MarkdownPluginState` or owner context. Do not invent `MarkdownRuntimeConfig` from `pluginName`.                                                                        |
 | `packages/markdown/src/lib/internal/markdownRuntime.ts:77`                            | Pass resolved options into `withMarkdownRuntime`; keep the runtime module descriptor-agnostic to avoid a cycle.                                                                                                        |
-| `packages/media/src/react/placeholder/PlaceholderPlugin.tsx:485`                      | Let the handler context retain the exact plugin config so bare `editor.update((tx) => tx.placeholder.insertMedia(...))` infers. Core currently erases the key through `DOMHandlers<WithAnyKey<C>>`; repair that owner. |
+| `packages/media/src/react/placeholder/PlaceholderPlugin.tsx:485`                      | Let the handler context retain the exact plugin config so bare `editor.update((tx) => tx.placeholder.insertMedia(...))` infers. Core currently erases the key through `DOMHandlers<WithAnyName<C>>`; repair that owner. |
 | `packages/selection/src/react/hooks/useBlockSelectable.ts:20`                         | Use `useEditorPlugin(BlockSelectionPlugin)` after colocating/breaking the reverse import.                                                                                                                              |
 | `packages/selection/src/react/hooks/useSelectionArea.ts:45`                           | Same real-descriptor portal; delete the key-plus-config surrogate.                                                                                                                                                     |
 | `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts:229` | Use the contextual installed `plugin` in `transformProps` with `useEditorPluginStore`.                                                                                                                                 |
@@ -123,7 +123,7 @@ Excalidraw value specialization.
   — infer the `label: string` codec proof plugin.
 - `apps/www/src/registry/ui/suggestion-node.tsx:29,229,233,300,304`
   — use the real resolved suggestion descriptor/renderer plugin instead of a
-  key-only `WithRequiredKey<SuggestionConfig>` surrogate.
+  name-only `WithRequiredName<SuggestionConfig>` surrogate.
 - `apps/www/src/registry/ui/media-placeholder-node.tsx:111`
   — take `editor` from `useEditorPlugin(PlaceholderPlugin)` and infer
   `tx.placeholder`.

@@ -33,7 +33,7 @@ const ScriptSchema = defineEditorSchema({
       exclusive: [ScriptPosition],
     }),
   ],
-  root: { content: schema.content.type('paragraph') },
+  root: schema.content.type('paragraph'),
   unknown: 'reject',
   version: 1,
 });

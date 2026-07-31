@@ -538,7 +538,7 @@ Configuration for different file types. Default configuration:
 Supported file types: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
 <APISubList>
   <APISubListItem parent="uploadConfig" name="mediaType" type="MediaKeys">
-    The media plugin keys that this config is for: `'audio' | 'file' | 'image' | 'video'`
+    The media plugin names that this config is for: `'audio' | 'file' | 'image' | 'video'`
   </APISubListItem>
   <APISubListItem parent="uploadConfig" name="maxFileCount" type="number" optional>
     The maximum number of files of this type that can be uploaded.
@@ -979,24 +979,6 @@ Parses the URL of an iframe embed.
 <APIParameters>
   <APIItem name="url" type="string">
     The URL or embed code of the iframe.
-  </APIItem>
-</APIParameters>
-</API>
-
-### `submitFloatingMedia`
-
-Submits a floating media element.
-
-<API name="submitFloatingMedia">
-<APIParameters>
-  <APIItem name="editor" type="BaseEditor">
-    The editor containing the media element.
-  </APIItem>
-  <APIItem name="options.element" type="TMediaElement">
-    The floating media element to be submitted.
-  </APIItem>
-  <APIItem name="options.plugin" type="WithRequiredKey<MediaPluginConfig>">
-    The image or media-embed plugin that owns the URL options.
   </APIItem>
 </APIParameters>
 </API>

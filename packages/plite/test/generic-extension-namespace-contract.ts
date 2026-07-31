@@ -23,72 +23,62 @@ type ImageElement = {
 };
 
 type CustomValue = (ParagraphElement | ImageElement)[];
-type CustomEditor = Editor<CustomValue>;
-
 const initialValue: CustomValue = [
   { type: 'paragraph', children: [{ text: 'paragraph' }] },
 ];
 
-const extension = defineEditorExtension<CustomEditor>()({
-  name: 'generic-namespace',
-  state: {
-    link(state) {
-      const value: CustomValue = [...state.children()];
+const LinkExtension = defineEditorExtension({
+  name: 'link',
+  read: ({ state }) => ({
+    nested: {
+      canOpen: () => state.selection() != null,
+    },
+    selectedHref: () => null as string | null,
+    value: [...state.children()] as CustomValue,
+  }),
+  update: ({ tx }) => ({
+    nested: {
+      remove() {
+        tx.nodes.remove({ at: [0] });
+      },
+    },
+    setHref(href: string) {
+      tx.nodes.set({ url: href }, { at: [0] });
+    },
+  }),
+});
 
-      return {
-        nested: {
-          canOpen: () => state.selection() != null,
-        },
-        selectedHref: () => null,
-        value,
-      };
+const MediaExtension = defineEditorExtension({
+  name: 'media',
+  update: ({ tx }) => ({
+    insertImage(src: string) {
+      tx.nodes.insert({
+        type: 'image',
+        src,
+        children: [{ text: '' }],
+      } satisfies ImageElement);
     },
-    table(state) {
-      return {
-        isInTable: () => state.nodes.hasPath([0]),
-        rowCount: () => state.children().length,
-      };
+  }),
+});
+
+const TableExtension = defineEditorExtension({
+  name: 'table',
+  read: ({ state }) => ({
+    isInTable: () => state.nodes.hasPath([0]),
+    rowCount: () => state.children().length,
+  }),
+  update: ({ tx }) => ({
+    insertRow() {
+      tx.nodes.insert(
+        {
+          type: 'paragraph',
+          children: [{ text: 'row' }],
+        } satisfies ParagraphElement,
+        { at: [tx.children().length] }
+      );
     },
-  },
-  tx: {
-    link(tx) {
-      return {
-        nested: {
-          remove() {
-            tx.nodes.remove({ at: [0] });
-          },
-        },
-        setHref(href: string) {
-          tx.nodes.set({ url: href }, { at: [0] });
-        },
-      };
-    },
-    media(tx) {
-      return {
-        insertImage(src: string) {
-          tx.nodes.insert({
-            type: 'image',
-            src,
-            children: [{ text: '' }],
-          } satisfies ImageElement);
-        },
-      };
-    },
-    table(tx) {
-      return {
-        insertRow() {
-          tx.nodes.insert(
-            {
-              type: 'paragraph',
-              children: [{ text: 'row' }],
-            } satisfies ParagraphElement,
-            { at: [tx.children().length] }
-          );
-        },
-        rowCount: () => tx.children().length,
-      };
-    },
-  },
+    rowCount: () => tx.children().length,
+  }),
 });
 
 type RuntimeMode = {
@@ -107,7 +97,7 @@ const getRuntimeMode = (editor: Editor) => {
 
 const runtimeExtension = defineEditorExtension({
   activate(editor, context) {
-    let currentMode: 'cell' | 'text' = context.config.initialMode;
+    let currentMode: 'cell' | 'text' = 'text';
     const signal: AbortSignal = context.signal;
     const mode: RuntimeMode = {
       get: () => currentMode,
@@ -122,60 +112,30 @@ const runtimeExtension = defineEditorExtension({
     });
     void signal;
   },
-  name: 'runtime-generic-namespace',
-  config: {
-    initialMode: 'text' as const,
-  },
-  state: {
-    table(state, editor) {
-      const mode = getRuntimeMode(editor);
+  name: 'runtimeTable',
+  read: ({ editor, state }) => {
+    const mode = getRuntimeMode(editor);
 
-      return {
-        isInTable: () => mode.get() === 'cell' && state.nodes.hasPath([0]),
-        rowCount: () => state.children().length,
-      };
-    },
+    return {
+      isInTable: () => mode.get() === 'cell' && state.nodes.hasPath([0]),
+      rowCount: () => state.children().length,
+    };
   },
-  tx: {
-    table(tx, editor) {
-      const mode = getRuntimeMode(editor);
+  update: ({ editor, tx }) => {
+    const mode = getRuntimeMode(editor);
 
-      return {
-        insertRow() {
-          mode.set('cell');
-          tx.nodes.insert({
-            type: 'paragraph',
-            children: [{ text: 'row' }],
-          } satisfies ParagraphElement);
-        },
-        rowCount: () => tx.children().length,
-      };
-    },
+    return {
+      insertRow() {
+        mode.set('cell');
+        tx.nodes.insert({
+          type: 'paragraph',
+          children: [{ text: 'row' }],
+        } satisfies ParagraphElement);
+      },
+      rowCount: () => tx.children().length,
+    };
   },
 });
-
-const tupleConfigExtension = defineEditorExtension({
-  config: {
-    targets: [
-      'paragraph',
-      { kind: 'heading' as const, level: 2 as const },
-    ] as const,
-  },
-  name: 'tuple-config-schema',
-  schema({ config }) {
-    const firstTarget: 'paragraph' = config.targets[0];
-    const secondTargetKind: 'heading' = config.targets[1].kind;
-    const secondTargetLevel: 2 = config.targets[1].level;
-
-    void firstTarget;
-    void secondTargetKind;
-    void secondTargetLevel;
-
-    return {};
-  },
-});
-
-void tupleConfigExtension;
 
 defineEditorExtension({
   name: 'bad-register-slot',
@@ -185,9 +145,9 @@ defineEditorExtension({
   },
 });
 
-defineEditorExtension<CustomEditor>()({
+defineEditorExtension({
   name: 'bad-command-namespace',
-  // @ts-expect-error command registrations come from the typed factory
+  // @ts-expect-error command registrations require a full registration
   commands: () => [
     {
       handler: () => false,
@@ -195,7 +155,7 @@ defineEditorExtension<CustomEditor>()({
   ],
 });
 
-defineEditorExtension<CustomEditor>()({
+defineEditorExtension({
   name: 'bad-engine-transform',
   // @ts-expect-error Plite extensions expose pure commands, not transforms
   transforms: {
@@ -203,7 +163,7 @@ defineEditorExtension<CustomEditor>()({
   },
 });
 
-defineEditorExtension<CustomEditor>()({
+defineEditorExtension({
   name: 'middleware-context-typing',
   commands: ({ around }) => [
     around(editorCommands.insertText, ({ next, ...context }) => {
@@ -218,13 +178,13 @@ defineEditorExtension<CustomEditor>()({
   ],
 });
 
-defineEditorExtension<CustomEditor>()({
+defineEditorExtension({
   name: 'correction-typing',
   corrections: [
     {
       event: 'content',
       correct({ entry, tx }) {
-        const value: CustomValue = tx.value().children;
+        const value = tx.value().children;
 
         tx.schema.isInline(entry[0]);
         tx.nodes.insert({
@@ -241,13 +201,13 @@ defineEditorExtension<CustomEditor>()({
   ],
 });
 
-defineEditorExtension<CustomEditor>()({
+defineEditorExtension({
   name: 'bad-legacy-normalizers-slot',
   // @ts-expect-error extensions use declarative corrections
   normalizers: {},
 });
 
-defineEditorExtension<CustomEditor>()({
+defineEditorExtension({
   name: 'bad-correction-event',
   corrections: [
     {
@@ -258,7 +218,10 @@ defineEditorExtension<CustomEditor>()({
   ],
 });
 
-const editor = createEditor({ extensions: [extension] as const, initialValue });
+const editor = createEditor({
+  extensions: [LinkExtension, MediaExtension, TableExtension] as const,
+  initialValue,
+});
 
 const selectedHref: string | null = editor.read((state) =>
   state.link.selectedHref()

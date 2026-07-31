@@ -2292,12 +2292,12 @@ export const createDOMEditorCapability = <
   TExtensions extends readonly unknown[],
 >(
   editor: DOMEditor<V, TExtensions>,
-  clipboardHandlers: readonly DOMClipboardHandler<NoInfer<V>>[] = []
+  clipboardHandlers: readonly DOMClipboardHandler<any>[] = []
 ): DOMEditorCapability<V> => {
   const runClipboardInsert = (
     data: DataTransfer,
     fallback: (data: DataTransfer) => boolean,
-    handlers: readonly DOMClipboardHandler<NoInfer<V>>[] = []
+    handlers: readonly DOMClipboardHandler<any>[] = []
   ) => {
     const transaction = getActiveEditorTransaction(editor);
     const insert = (tx: EditorUpdateTransaction<V, TExtensions>) =>

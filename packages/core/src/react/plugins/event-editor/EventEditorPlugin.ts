@@ -6,9 +6,9 @@ import {
 } from './EventEditorStore';
 
 export const EventEditorPlugin = createPlatePlugin({
-  key: 'eventEditor',
-  handlers: {
-    onBlur: ({ editor }) => {
+  name: 'eventEditor',
+  on: {
+    blur: ({ editor }) => {
       const focus = EventEditorStore.get('focus');
 
       if (focus === editor.id) {
@@ -23,7 +23,7 @@ export const EventEditorPlugin = createPlatePlugin({
         })
       );
     },
-    onFocus: ({ editor }) => {
+    focus: ({ editor }) => {
       EventEditorStore.set('focus', editor.id);
       EventEditorStore.set('last', editor.id);
 

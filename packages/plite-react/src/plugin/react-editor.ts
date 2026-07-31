@@ -15,8 +15,7 @@ export interface ReactRuntimeEditor<
   TExtensions extends readonly unknown[] = readonly [],
 > extends DOMEditor<V, TExtensions> {
   api: DOMEditor<V, TExtensions>['api'] & {
-    clipboard: DOMClipboardApi;
-    dom: DOMApi;
+    dom: DOMApi & { clipboard: DOMClipboardApi };
     react: ReactApi;
   };
 }

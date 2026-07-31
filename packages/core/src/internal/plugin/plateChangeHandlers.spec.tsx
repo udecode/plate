@@ -14,14 +14,17 @@ import {
 jsxt;
 
 import { type BaseEditor, createBaseEditor } from '../../lib/editor';
-import { type AnyPluginConfig, createBasePlugin } from '../../lib/plugin';
+import {
+  type AnyBasePluginDefinition,
+  createBasePlugin,
+} from '../../lib/plugin';
 import {
   createPlateChangeHandlersExtension,
   subscribePlateChangeCallbacks,
 } from './plateChangeHandlers';
 
 const textNode: Descendant = { text: 'node' };
-const createNodeChange = <P extends AnyPluginConfig>(
+const createNodeChange = <P extends AnyBasePluginDefinition>(
   editor: BaseEditor<Value, P>
 ): EditorNodeChangeContext<BaseEditor<Value, P>> => ({
   commit: editor.read.lastCommit()!,
@@ -33,7 +36,7 @@ const createNodeChange = <P extends AnyPluginConfig>(
   prevNode: null,
   root: 'main',
 });
-const createTextChange = <P extends AnyPluginConfig>(
+const createTextChange = <P extends AnyBasePluginDefinition>(
   editor: BaseEditor<Value, P>
 ): EditorTextChangeContext<BaseEditor<Value, P>> => ({
   commit: editor.read.lastCommit()!,
@@ -45,12 +48,24 @@ const createTextChange = <P extends AnyPluginConfig>(
   root: 'main',
   text: 'next',
 });
+const dispatchPlateChange = (
+  editor: BaseEditor,
+  event: 'nodeChange' | 'textChange',
+  context: object
+) => {
+  const on = Reflect.get(createPlateChangeHandlersExtension(editor), 'on');
+
+  if (typeof on !== 'object' || on === null) {
+    throw new Error('Expected Plate change lifecycle callbacks.');
+  }
+  Reflect.apply(Reflect.get(on, event), undefined, [context]);
+};
 
 describe('plate change handlers', () => {
   it('dispatches node change handlers from Plite node change events', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
-      key: 'nodeObserver',
+      name: 'nodeObserver',
       schema: {
         properties: [
           schema.elementProperty('variant', property.string(), {
@@ -58,7 +73,7 @@ describe('plate change handlers', () => {
           }),
         ],
       },
-      handlers: { onNodeChange },
+      on: { nodeChange: onNodeChange },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -86,8 +101,8 @@ describe('plate change handlers', () => {
   it('dispatches inserted and removed node payloads', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
-      key: 'nodeObserver',
-      handlers: { onNodeChange },
+      name: 'nodeObserver',
+      on: { nodeChange: onNodeChange },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -128,8 +143,8 @@ describe('plate change handlers', () => {
   it('does not dispatch node handlers for text intents', () => {
     const onNodeChange = mock();
     const NodeObserverPlugin = createBasePlugin({
-      key: 'nodeObserver',
-      handlers: { onNodeChange },
+      name: 'nodeObserver',
+      on: { nodeChange: onNodeChange },
     });
     const editor = createBaseEditor({
       plugins: [NodeObserverPlugin],
@@ -151,8 +166,8 @@ describe('plate change handlers', () => {
   it('dispatches text change handlers from Plite text change events', () => {
     const onTextChange = mock();
     const TextObserverPlugin = createBasePlugin({
-      key: 'textObserver',
-      handlers: { onTextChange },
+      name: 'textObserver',
+      on: { textChange: onTextChange },
     });
     const editor = createBaseEditor({
       plugins: [TextObserverPlugin],
@@ -184,8 +199,9 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
-          key: 'textObserver',
-          handlers: { onTextChange },
+          name: 'textObserver',
+          editOnly: true,
+          on: { textChange: onTextChange },
         }),
       ],
       readOnly: true,
@@ -194,10 +210,30 @@ describe('plate change handlers', () => {
 
     onTextChange.mockClear();
 
-    createPlateChangeHandlersExtension(editor).on?.textChange?.(
-      createTextChange(editor)
-    );
+    dispatchPlateChange(editor, 'textChange', createTextChange(editor));
+
     expect(onTextChange).not.toHaveBeenCalled();
+  });
+
+  it('dispatches read-only lifecycle events when editOnly.on is false', () => {
+    const onTextChange = mock();
+    const editor = createBaseEditor({
+      plugins: [
+        createBasePlugin({
+          name: 'textObserver',
+          editOnly: { on: false },
+          on: { textChange: onTextChange },
+        }),
+      ],
+      readOnly: true,
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    onTextChange.mockClear();
+
+    dispatchPlateChange(editor, 'textChange', createTextChange(editor));
+
+    expect(onTextChange).toHaveBeenCalledTimes(1);
   });
 
   it('stops dispatch after a plugin handles the change', () => {
@@ -206,12 +242,12 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
-          key: 'first',
-          handlers: { onTextChange: first },
+          name: 'first',
+          on: { textChange: first },
         }),
         createBasePlugin({
-          key: 'second',
-          handlers: { onTextChange: second },
+          name: 'second',
+          on: { textChange: second },
         }),
       ],
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
@@ -235,8 +271,9 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
-          key: 'nodeObserver',
-          handlers: { onNodeChange },
+          name: 'nodeObserver',
+          editOnly: true,
+          on: { nodeChange: onNodeChange },
         }),
       ],
       readOnly: true,
@@ -245,9 +282,8 @@ describe('plate change handlers', () => {
 
     onNodeChange.mockClear();
 
-    createPlateChangeHandlersExtension(editor).on?.nodeChange?.(
-      createNodeChange(editor)
-    );
+    dispatchPlateChange(editor, 'nodeChange', createNodeChange(editor));
+
     expect(onNodeChange).not.toHaveBeenCalled();
   });
 
@@ -257,12 +293,12 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
-          key: 'firstNodeObserver',
-          handlers: { onNodeChange: first },
+          name: 'firstNodeObserver',
+          on: { nodeChange: first },
         }),
         createBasePlugin({
-          key: 'secondNodeObserver',
-          handlers: { onNodeChange: second },
+          name: 'secondNodeObserver',
+          on: { nodeChange: second },
         }),
       ],
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
@@ -271,15 +307,19 @@ describe('plate change handlers', () => {
     first.mockClear();
     second.mockClear();
 
-    createPlateChangeHandlersExtension(editor).on?.nodeChange?.(
-      createNodeChange(editor)
+    editor.update.nodes.insert(
+      { children: [{ text: 'inserted' }], type: 'p' },
+      { at: [1] }
     );
 
     expect(first).toHaveBeenCalledTimes(1);
     expect(second).not.toHaveBeenCalled();
     expect(first.mock.calls[0]?.[0]).toMatchObject({
       kind: 'insert',
-      node: textNode,
+      node: {
+        children: [{ text: 'inserted' }],
+        type: 'p',
+      },
       root: undefined,
     });
   });
@@ -290,8 +330,8 @@ describe('plate change handlers', () => {
     const editor = createBaseEditor({
       plugins: [
         createBasePlugin({
-          key: 'textHandler',
-          handlers: { onTextChange: pluginHandler },
+          name: 'textHandler',
+          on: { textChange: pluginHandler },
         }),
       ],
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],

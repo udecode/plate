@@ -50,15 +50,10 @@ const measure = <T>(run: () => T) => {
 
 const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
   const ParagraphPlugin = createBasePlugin({
-    key: 'p',
+    name: 'p',
     initialState: { variant: 'initial' },
     schema: {
-      element: {
-        content: schema.content.any(
-          [schema.content.text(), schema.content.group('inline')],
-          { default: 'text', min: 1 }
-        ),
-      },
+      element: schema.element.textBlock(),
     },
     type: 'benchmark-paragraph',
   }).extend(({ defineCodecs, store }) => {
@@ -87,13 +82,13 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const LinkPlugin = createBasePlugin({
-    key: 'benchmarkLink',
+    name: 'benchmarkLink',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
         inline: true,
         properties: { url: property.string() },
-        topLevel: false,
+        blockContent: false,
       },
     },
     type: 'benchmark-link',
@@ -123,14 +118,14 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const ListItemPlugin = createBasePlugin({
-    key: 'benchmarkListItem',
+    name: 'benchmarkListItem',
     schema: {
       element: {
         content: schema.content.type('benchmark-paragraph', {
           default: { type: 'benchmark-paragraph' },
           min: 1,
         }),
-        topLevel: false,
+        blockContent: false,
       },
     },
     type: 'benchmark-list-item',
@@ -156,7 +151,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const ListPlugin = createBasePlugin({
-    key: 'benchmarkList',
+    name: 'benchmarkList',
     schema: {
       element: {
         content: schema.content.type('benchmark-list-item', {
@@ -188,7 +183,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const TableCellPlugin = createBasePlugin({
-    key: 'benchmarkTableCell',
+    name: 'benchmarkTableCell',
     schema: {
       element: {
         content: schema.content.type('benchmark-paragraph', {
@@ -196,7 +191,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
           min: 1,
         }),
         properties: { width: property.number() },
-        topLevel: false,
+        blockContent: false,
       },
     },
     type: 'benchmark-table-cell',
@@ -230,14 +225,14 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const TableRowPlugin = createBasePlugin({
-    key: 'benchmarkTableRow',
+    name: 'benchmarkTableRow',
     schema: {
       element: {
         content: schema.content.type('benchmark-table-cell', {
           default: { type: 'benchmark-table-cell' },
           min: 1,
         }),
-        topLevel: false,
+        blockContent: false,
       },
     },
     type: 'benchmark-table-row',
@@ -263,7 +258,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const TablePlugin = createBasePlugin({
-    key: 'benchmarkTable',
+    name: 'benchmarkTable',
     schema: {
       element: {
         content: schema.content.type('benchmark-table-row', {
@@ -298,15 +293,11 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     };
   });
   const MediaPlugin = createBasePlugin({
-    key: 'benchmarkMedia',
+    name: 'benchmarkMedia',
     schema: {
-      element: {
-        content: schema.content.any(
-          [schema.content.text(), schema.content.group('inline')],
-          { default: 'text', min: 1 }
-        ),
+      element: schema.element.textBlock({
         properties: { url: property.string(), width: property.number() },
-      },
+      }),
     },
     type: 'benchmark-media',
   }).extend(({ defineCodecs }) => {
@@ -352,7 +343,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
   });
   const markPlugins = Array.from({ length: MARK_COUNT }, (_, index) =>
     createBasePlugin({
-      key: `benchmarkMark${index}`,
+      name: `benchmarkMark${index}`,
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
@@ -392,7 +383,7 @@ const createBenchmarkPlugins = (counters: BenchmarkCounters) => {
     { length: UNRELATED_MATCHER_COUNT },
     (_, index) =>
       createBasePlugin({
-        key: `benchmarkUnrelated${index}`,
+        name: `benchmarkUnrelated${index}`,
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),

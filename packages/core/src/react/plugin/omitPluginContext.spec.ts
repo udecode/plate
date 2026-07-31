@@ -4,10 +4,13 @@ describe('omitPluginContext (plate)', () => {
   it('removes the plugin context keys and keeps the rest', () => {
     const ctx = {
       api: { remove: true },
+      defineCodecs: { remove: true },
       editor: { id: 'editor' },
       extra: 'kept',
+      installed: true,
       nested: { value: 2 },
-      plugin: { key: 'plugin' },
+      plugin: { name: 'plugin' },
+      read: { remove: true },
       store: { get: () => ({ value: 1 }) },
       type: 'plugin',
       update: () => {},

@@ -6,14 +6,23 @@ Keep inserted and deleted replacement markers on their exact text ranges.
 Preserve exact formatting boundaries and JSON-compatible property removals in
 derived diff spans.
 
-Use `createExcludeDiffFragmentExtension` to exclude diff markers from copied
-fragments and `excludeDiffFromFragment` for direct fragment cleanup.
+Use `excludeDiffFromFragment` for direct fragment cleanup. `BaseDiffPlugin`
+registers copied-fragment cleanup through its root `readMiddleware`.
 
-Install the extension through a Plate plugin:
+Install the behavior through the plugin:
 
 ```tsx
 createBasePlugin({
-  extension: createExcludeDiffFragmentExtension(),
-  key: 'diff',
+  name: 'diff',
+  readMiddleware: ({ around }) => [
+    around(editorReads.slice.export, ({ next }) => {
+      const slice = next();
+
+      return {
+        ...slice,
+        content: excludeDiffFromFragment(slice.content),
+      };
+    }),
+  ],
 });
 ```

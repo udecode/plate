@@ -16,7 +16,7 @@ const components = {
 };
 
 const RevisionPlugin = createBasePlugin({
-  key: 'revision',
+  name: 'revision',
   schema: {
     properties: [
       schema.elementProperty('revision', property.number(), {
@@ -44,7 +44,7 @@ const createEditor = ({
     components,
     plugins: [
       createBasePlugin({
-        key: 'bold',
+        name: 'bold',
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
@@ -81,7 +81,7 @@ const createEditorWithMultipleElements = ({
     components,
     plugins: [
       createBasePlugin({
-        key: 'bold',
+        name: 'bold',
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
         },
@@ -251,7 +251,7 @@ describe('PlateStatic Memoization', () => {
       const editor = createBaseEditor({
         plugins: [
           createBasePlugin({
-            key: 'fallback-element',
+            name: 'fallback-element',
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),
@@ -279,7 +279,7 @@ describe('PlateStatic Memoization', () => {
 
   it('renders text node injections when the path is already known', () => {
     const TonePlugin = createBasePlugin({
-      key: 'tone',
+      name: 'tone',
       schema: { mark: { property: property.string() } },
       inject: {
         nodeProps: {
@@ -317,7 +317,7 @@ describe('PlateStatic Memoization', () => {
       nodeId: false,
       plugins: [
         createBasePlugin({
-          key: 'figure',
+          name: 'figure',
           schema: {
             element: {
               contentRoots: {
@@ -329,7 +329,7 @@ describe('PlateStatic Memoization', () => {
                   ownership: 'exclusive',
                 },
               },
-              topLevel: true,
+              blockContent: true,
               void: 'block',
             },
           },

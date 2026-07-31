@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   createEditor as createPliteEditor,
+  defineEditorExtension,
   defineEditorSchema,
   type Descendant,
   ElementApi,
@@ -152,22 +153,20 @@ const SnapshotContractSchema = defineEditorSchema({
   },
   id: 'snapshot-contract',
   properties: [schema.textProperty('segment', property.boolean())],
-  root: {
-    content: schema.content.types([
-      'article',
-      'block',
-      'bulleted-list',
-      'code-block',
-      'container',
-      'heading',
-      'list-item',
-      'numbered-list',
-      'paragraph',
-      'quote',
-      'section',
-      'thematic-break',
-    ]),
-  } as const,
+  root: schema.content.types([
+    'article',
+    'block',
+    'bulleted-list',
+    'code-block',
+    'container',
+    'heading',
+    'list-item',
+    'numbered-list',
+    'paragraph',
+    'quote',
+    'section',
+    'thematic-break',
+  ]),
   unknown: 'preserve',
   version: 1,
 });
@@ -534,17 +533,19 @@ it('defers custom normalization until the outer update commits', () => {
   let runs = 0;
   let runsInsideCallback = 0;
 
-  editor.extend({
-    corrections: [
-      {
-        correct() {
-          runs += 1;
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct() {
+            runs += 1;
+          },
+          event: 'content',
         },
-        event: 'content',
-      },
-    ],
-    name: 'deferred-correction-observer',
-  });
+      ],
+      name: 'deferred-correction-observer',
+    })
+  );
 
   editor.update(() => {
     editorReplace(editor, {
@@ -567,19 +568,21 @@ it('normalizes split dirty paths instead of the full document', () => {
   const editor = createEditor();
   const normalizedTopLevelPaths: number[] = [];
 
-  editor.extend({
-    corrections: [
-      {
-        correct({ entry: [, path] }) {
-          if (path.length === 1) {
-            normalizedTopLevelPaths.push(path[0]!);
-          }
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct({ entry: [, path] }) {
+            if (path.length === 1) {
+              normalizedTopLevelPaths.push(path[0]!);
+            }
+          },
+          event: 'content',
         },
-        event: 'content',
-      },
-    ],
-    name: 'dirty-path-observer',
-  });
+      ],
+      name: 'dirty-path-observer',
+    })
+  );
 
   editorReplace(editor, {
     children: Array.from({ length: 256 }, (_value, index) => ({
@@ -702,29 +705,31 @@ it('shouldMergeNodesRemovePrevNode can remove an empty previous sibling during m
 it('fails intentionally when custom normalization revisits an earlier draft state', () => {
   const editor = createEditor();
 
-  editor.extend({
-    corrections: [
-      {
-        correct({ tx }) {
-          if (tx.nodes.children().length === 1) {
-            tx.nodes.insert(
-              {
-                type: 'paragraph',
-                children: [{ text: '' }],
-              },
-              { at: [1] }
-            );
-            return;
-          }
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct({ tx }) {
+            if (tx.nodes.children().length === 1) {
+              tx.nodes.insert(
+                {
+                  type: 'paragraph',
+                  children: [{ text: '' }],
+                },
+                { at: [1] }
+              );
+              return;
+            }
 
-          tx.nodes.remove({ at: [1] });
+            tx.nodes.remove({ at: [1] });
+          },
+          event: 'children',
+          query: 'root',
         },
-        event: 'children',
-        query: 'root',
-      },
-    ],
-    name: 'cycling-root-correction',
-  });
+      ],
+      name: 'cycling-root-correction',
+    })
+  );
 
   assert.throws(() => {
     editorReplace(editor, {
@@ -742,25 +747,27 @@ it('fails intentionally when custom normalization revisits an earlier draft stat
 it('treats semantic id prop changes as normalization progress', () => {
   const editor = createEditor();
 
-  editor.extend({
-    corrections: [
-      {
-        correct({ entry: [node, path], tx }) {
-          if (
-            path.length === 1 &&
-            !editorIsEditor(node) &&
-            ElementApi.isElement(node) &&
-            node.type === 'paragraph' &&
-            (node as Element & { id?: string }).id !== 'kept'
-          ) {
-            tx.nodes.set({ id: 'kept' }, { at: path });
-          }
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct({ entry: [node, path], tx }) {
+            if (
+              path.length === 1 &&
+              !editorIsEditor(node) &&
+              ElementApi.isElement(node) &&
+              node.type === 'paragraph' &&
+              (node as Element & { id?: string }).id !== 'kept'
+            ) {
+              tx.nodes.set({ id: 'kept' }, { at: path });
+            }
+          },
+          event: 'content',
         },
-        event: 'content',
-      },
-    ],
-    name: 'semantic-id-correction',
-  });
+      ],
+      name: 'semantic-id-correction',
+    })
+  );
 
   editorReplace(editor, {
     children: [
@@ -781,28 +788,30 @@ it('treats semantic id prop changes as normalization progress', () => {
 it('a registered correction can enforce a descendant-level node rewrite', () => {
   const editor = createEditor();
 
-  editor.extend({
-    corrections: [
-      {
-        correct({ entry: [node, path], tx }) {
-          if (
-            path.length > 0 &&
-            'children' in node &&
-            node.type === 'heading'
-          ) {
-            tx.nodes.set(
-              {
-                type: 'paragraph',
-              },
-              { at: path }
-            );
-          }
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct({ entry: [node, path], tx }) {
+            if (
+              path.length > 0 &&
+              'children' in node &&
+              node.type === 'heading'
+            ) {
+              tx.nodes.set(
+                {
+                  type: 'paragraph',
+                },
+                { at: path }
+              );
+            }
+          },
+          event: 'content',
         },
-        event: 'content',
-      },
-    ],
-    name: 'heading-correction',
-  });
+      ],
+      name: 'heading-correction',
+    })
+  );
 
   editorReplace(editor, {
     children: [
@@ -827,32 +836,35 @@ it('a registered correction can enforce a descendant-level node rewrite', () => 
 it('a root correction can wrap a semantically matched top-level block', () => {
   const editor = createEditor();
 
-  editor.extend({
-    corrections: [
-      {
-        correct: ({ entry, tx }) => {
-          const [, path] = entry;
-          const index = tx.nodes
-            .children()
-            .findIndex(
-              (child) => ElementApi.isElement(child) && child.rootWrap === true
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct: ({ entry, tx }) => {
+            const [, path] = entry;
+            const index = tx.nodes
+              .children()
+              .findIndex(
+                (child) =>
+                  ElementApi.isElement(child) && child.rootWrap === true
+              );
+
+            if (index < 0) return;
+
+            tx.nodes.wrap(
+              { type: 'quote', children: [] },
+              {
+                at: [...path, index],
+              }
             );
-
-          if (index < 0) return;
-
-          tx.nodes.wrap(
-            { type: 'quote', children: [] },
-            {
-              at: [...path, index],
-            }
-          );
+          },
+          event: 'content',
+          query: 'root',
         },
-        event: 'content',
-        query: 'root',
-      },
-    ],
-    name: 'root-block-content',
-  });
+      ],
+      name: 'root-block-content',
+    })
+  );
 
   editorReplace(editor, {
     children: [
@@ -2516,31 +2528,34 @@ it('publishes an immutable cloned selection for a text change', () => {
 it('runs custom corrections after text changes', () => {
   const editor = createEditor();
 
-  editor.extend({
-    corrections: [
-      {
-        correct({ entry: [node, path], tx }) {
-          if (
-            path.length === 1 &&
-            !editorIsEditor(node) &&
-            ElementApi.isElement(node) &&
-            node.type === 'paragraph' &&
-            (node as Element & { normalized?: boolean }).normalized !== true &&
-            node.children.some(
-              (child) =>
-                'text' in child &&
-                typeof child.text === 'string' &&
-                child.text.includes('!')
-            )
-          ) {
-            tx.nodes.set({ normalized: true }, { at: path });
-          }
+  editor.extend(
+    defineEditorExtension({
+      corrections: [
+        {
+          correct({ entry: [node, path], tx }) {
+            if (
+              path.length === 1 &&
+              !editorIsEditor(node) &&
+              ElementApi.isElement(node) &&
+              node.type === 'paragraph' &&
+              (node as Element & { normalized?: boolean }).normalized !==
+                true &&
+              node.children.some(
+                (child) =>
+                  'text' in child &&
+                  typeof child.text === 'string' &&
+                  child.text.includes('!')
+              )
+            ) {
+              tx.nodes.set({ normalized: true }, { at: path });
+            }
+          },
+          event: 'content',
         },
-        event: 'content',
-      },
-    ],
-    name: 'direct-text-correction',
-  });
+      ],
+      name: 'direct-text-correction',
+    })
+  );
 
   editorReplace(editor, {
     children: createChildren(),

@@ -6,7 +6,7 @@ import { getRenderNodeStaticProps } from './getRenderNodeStaticProps';
 describe('getRenderNodeStaticProps', () => {
   it('merges plugin props, allowed attrs, Plite classes, and injected node props', () => {
     const ParagraphPlugin = createBasePlugin({
-      key: 'p',
+      name: 'p',
       type: 'p',
       schema: {
         element: {
@@ -33,8 +33,8 @@ describe('getRenderNodeStaticProps', () => {
       },
     });
     const AlignPlugin = createBasePlugin({
-      targetPluginKeys: ['p'],
-      key: 'align',
+      targetPluginNames: ['p'],
+      name: 'align',
       schema: {
         properties: [
           schema.elementProperty('align', property.string(), {
@@ -68,7 +68,7 @@ describe('getRenderNodeStaticProps', () => {
 
     const result = getRenderNodeStaticProps({
       editor,
-      plugin: editor.getPlugin(ParagraphPlugin),
+      plugin: editor.plugin(ParagraphPlugin).plugin,
       props: {
         attributes: { 'data-plite-align': 'center' },
         children: null,

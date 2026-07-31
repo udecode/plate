@@ -1,8 +1,9 @@
 import type {
   EditorSchemaDeclaration,
+  EditorSchemaDerivedDefinition,
   EditorSchemaDefinition,
   EditorSchemaExtension,
-  EditorSchemaSource,
+  EditorSchemaNamedDefinition,
   PropertyEnumDescriptor,
   PropertyJsonDescriptor,
   PropertyJsonOptions,
@@ -20,6 +21,7 @@ import type {
   SchemaContentDefault,
   SchemaContentInput,
   SchemaContentOptions,
+  SchemaElement,
   SchemaElementHandle,
   SchemaElementProperty,
   SchemaElementPropertyHandle,
@@ -32,7 +34,9 @@ import type {
   SchemaTarget,
   SchemaTextProperty,
   SchemaTextPropertyOptions,
+  SchemaTextBlockOptions,
 } from '../interfaces/schema';
+import type { EditorSchemaSource } from './schema-source.internal';
 import { cloneFrozen } from './clone';
 
 const RESERVED_PRIMARY_ROOT = 'main';
@@ -331,7 +335,7 @@ const defineValue = <TValue, TKind extends Exclude<PropertyValueKind, 'set'>>(
 ): PropertyValueDescriptor<TValue, TKind> => {
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
+    ['default', 'omitDefault', 'validate', 'validationVersion'],
     `property.${kind}`
   );
   assertPropertyValidation(options, `property.${kind}`);
@@ -364,7 +368,6 @@ const defineValue = <TValue, TKind extends Exclude<PropertyValueKind, 'set'>>(
       ...(hasDefault ? { default: defaultValue as TValue } : {}),
       kind,
       omitDefault: options.omitDefault ?? false,
-      ...(options.significant === false ? { significant: false } : {}),
       ...(options.validate
         ? { validationVersion: options.validationVersion }
         : {}),
@@ -381,7 +384,7 @@ const defineSet = <TItemDescriptor extends PropertyValueDescriptor>(
   assertPropertyDescriptorValidations(item, 'property.set');
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
+    ['default', 'omitDefault', 'validate', 'validationVersion'],
     'property.set'
   );
   assertPropertyValidation(options, 'property.set');
@@ -438,7 +441,6 @@ const defineSet = <TItemDescriptor extends PropertyValueDescriptor>(
       item,
       kind: 'set' as const,
       omitDefault: options.omitDefault ?? false,
-      ...(options.significant === false ? { significant: false } : {}),
       ...(options.validate
         ? { validationVersion: options.validationVersion }
         : {}),
@@ -454,7 +456,7 @@ const defineEnum = <const TValues extends readonly [string, ...string[]]>(
 ): PropertyEnumDescriptor<TValues> => {
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
+    ['default', 'omitDefault', 'validate', 'validationVersion'],
     'property.enum'
   );
   assertPropertyValidation(options, 'property.enum');
@@ -500,7 +502,6 @@ const defineEnum = <const TValues extends readonly [string, ...string[]]>(
       ...(hasDefault ? { default: defaultValue } : {}),
       kind: 'enum' as const,
       omitDefault: options.omitDefault ?? false,
-      ...(options.significant === false ? { significant: false } : {}),
       ...(options.validate
         ? { validationVersion: options.validationVersion }
         : {}),
@@ -511,26 +512,23 @@ const defineEnum = <const TValues extends readonly [string, ...string[]]>(
   );
 };
 
-type PropertyJsonOptionsWithoutValidation<TValue extends PropertyJsonValue> =
-  Readonly<{
-    default?: TValue;
-    omitDefault?: boolean;
-    significant?: boolean;
-    validate?: never;
-    validationVersion?: never;
-  }>;
+type PropertyJsonOptionsWithoutValidation = Readonly<{
+  default?: PropertyJsonValue;
+  omitDefault?: boolean;
+  validate?: never;
+  validationVersion?: never;
+}>;
 
 type PropertyJsonOptionsWithValidation<TValue> = Readonly<{
   default?: NoInfer<TValue>;
   omitDefault?: boolean;
-  significant?: boolean;
   validate: (value: unknown) => value is TValue;
   validationVersion: number;
 }>;
 
-function defineJson<TValue extends PropertyJsonValue = PropertyJsonValue>(
-  options?: PropertyJsonOptionsWithoutValidation<TValue>
-): PropertyJsonDescriptor<TValue>;
+function defineJson(
+  options?: PropertyJsonOptionsWithoutValidation
+): PropertyJsonDescriptor<PropertyJsonValue>;
 function defineJson<TValue>(
   options: PropertyJsonOptionsWithValidation<TValue>
 ): PropertyJsonDescriptor<TValue>;
@@ -539,7 +537,7 @@ function defineJson<TValue = PropertyJsonValue>(
 ): PropertyJsonDescriptor<TValue> {
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['default', 'omitDefault', 'significant', 'validate', 'validationVersion'],
+    ['default', 'omitDefault', 'validate', 'validationVersion'],
     'property.json'
   );
 
@@ -713,7 +711,7 @@ const textProperty = <
   assertPropertyKey(key);
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['exclusive', 'inclusive', 'split', 'target', 'typeChange'],
+    ['exclusive', 'inclusive', 'role', 'split', 'target', 'typeChange'],
     'schema.textProperty options'
   );
 
@@ -723,6 +721,7 @@ const textProperty = <
       inclusive: options.inclusive ?? true,
       key,
       placement: 'text' as const,
+      role: options.role ?? 'content',
       split: options.split ?? 'preserve',
       ...(options.target ? { target: options.target } : {}),
       typeChange: options.typeChange ?? 'drop',
@@ -744,7 +743,7 @@ const elementProperty = <
   assertPropertyKey(key);
   assertOnlyKeys(
     options as Readonly<Record<string, unknown>>,
-    ['split', 'target', 'typeChange'],
+    ['role', 'split', 'target', 'typeChange'],
     'schema.elementProperty options'
   );
 
@@ -752,6 +751,7 @@ const elementProperty = <
     {
       key,
       placement: 'element' as const,
+      role: options.role ?? 'content',
       split: options.split ?? 'preserve',
       target: options.target,
       typeChange: options.typeChange ?? 'drop',
@@ -853,6 +853,46 @@ const combineContent = (
   );
 };
 
+function textBlock(): SchemaElement<{ content: SchemaContent }>;
+function textBlock<const TOptions extends SchemaTextBlockOptions>(
+  options: TOptions
+): SchemaElement<TOptions & { content: SchemaContent }>;
+function textBlock(
+  options: SchemaTextBlockOptions = {}
+): SchemaElement<SchemaTextBlockOptions & { content: SchemaContent }> {
+  assertOnlyKeys(
+    options as Readonly<Record<string, unknown>>,
+    [
+      'atom',
+      'contentRoots',
+      'groups',
+      'isolating',
+      'keyboardSelectable',
+      'markableVoid',
+      'properties',
+      'readOnly',
+      'selectable',
+      'slice',
+    ],
+    'schema.element.textBlock options'
+  );
+
+  return cloneFrozenDeclaration(
+    {
+      ...options,
+      content: combineContent(
+        'any',
+        [
+          content(Object.freeze({ kind: 'text' })),
+          content(Object.freeze({ group: 'inline', kind: 'group' })),
+        ],
+        { default: 'text', min: 1 }
+      ),
+    },
+    'schema.element.textBlock'
+  );
+}
+
 const elementHandle = <
   const TSchema extends EditorSchemaSource,
   const TType extends SchemaElementTypes<TSchema>,
@@ -911,6 +951,7 @@ export const schema = Object.freeze({
         options
       ),
   }),
+  element: Object.freeze({ textBlock }),
   elementProperty,
   handle: Object.freeze({
     element: elementHandle,
@@ -940,6 +981,25 @@ export const normalizeEditorSchemaDeclaration = <
   return normalized;
 };
 
+type NormalizedEditorSchemaFields<TInput extends EditorSchemaDefinition> =
+  Readonly<{
+    elements: 'elements' extends keyof TInput
+      ? NonNullable<TInput['elements']>
+      : Readonly<Record<never, never>>;
+    unknown: 'unknown' extends keyof TInput
+      ? NonNullable<TInput['unknown']>
+      : 'reject';
+  }>;
+
+type NormalizedEditorSchemaInput<TInput extends EditorSchemaDefinition> =
+  TInput extends EditorSchemaNamedDefinition
+    ? Omit<TInput, 'elements' | 'unknown'> &
+        NormalizedEditorSchemaFields<TInput>
+    : TInput extends EditorSchemaDerivedDefinition
+      ? Omit<TInput, 'elements' | 'unknown'> &
+          NormalizedEditorSchemaFields<TInput>
+      : never;
+
 /**
  * Define one complete immutable schema extension and its inferred value
  * vocabulary. Omit `id` and `version` for exact semantic matching without
@@ -964,7 +1024,7 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
       never
     > &
     WithoutReservedPrimaryRoot<TInput>
-): EditorSchemaExtension<TInput> => {
+): EditorSchemaExtension<NormalizedEditorSchemaInput<TInput>> => {
   assertOnlyKeys(
     input as Readonly<Record<string, unknown>>,
     [
@@ -999,13 +1059,19 @@ export const defineEditorSchema = <const TInput extends EditorSchemaDefinition>(
     assertVersion(version, `Editor schema "${id}"`);
     extensionName = `schema:${id}`;
   }
-  if (!['preserve', 'reject'].includes(input.unknown)) {
+  const unknown = input.unknown ?? 'reject';
+
+  if (!['preserve', 'reject'].includes(unknown)) {
     throw new Error('Editor schema unknown must be "preserve" or "reject".');
   }
-  const definition = normalizeEditorSchemaDeclaration(input);
+  const definition = normalizeEditorSchemaDeclaration({
+    ...input,
+    elements: input.elements ?? {},
+    unknown,
+  }) as NormalizedEditorSchemaInput<TInput>;
 
   return Object.freeze({
     name: extensionName,
     schema: definition,
-  }) as unknown as EditorSchemaExtension<TInput>;
+  }) as EditorSchemaExtension<NormalizedEditorSchemaInput<TInput>>;
 };

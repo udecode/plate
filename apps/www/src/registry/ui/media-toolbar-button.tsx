@@ -94,14 +94,14 @@ function insertMedia(
   plugin: MediaPlugin,
   input: { name?: string; url: string }
 ) {
-  switch (plugin.key) {
-    case BaseAudioPlugin.key:
+  switch (plugin.name) {
+    case BaseAudioPlugin.name:
       return editor.plugin(plugin).update.insert(input);
-    case BaseFilePlugin.key:
+    case BaseFilePlugin.name:
       return editor.plugin(plugin).update.insert(input);
-    case BaseImagePlugin.key:
+    case BaseImagePlugin.name:
       return editor.plugin(plugin).update.insert(input);
-    case BaseVideoPlugin.key:
+    case BaseVideoPlugin.name:
       return editor.plugin(plugin).update.insert(input);
   }
 }
@@ -110,7 +110,7 @@ export function MediaToolbarButton({
   plugin,
   ...props
 }: DropdownMenuProps & { plugin: MediaPlugin }) {
-  const nodeType = plugin.key;
+  const nodeType = plugin.name;
   const currentConfig = MEDIA_CONFIG[nodeType];
 
   const editor = useEditor();
@@ -207,7 +207,7 @@ function MediaUrlDialogContent({
 
     setOpen(false);
     const input = {
-      name: plugin.key === KEYS.file ? url.split('/').pop() : undefined,
+      name: plugin.name === KEYS.file ? url.split('/').pop() : undefined,
       url,
     };
 

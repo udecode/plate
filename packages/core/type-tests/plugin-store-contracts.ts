@@ -6,31 +6,29 @@ import {
   usePluginStore,
 } from '@platejs/core/react';
 
-type SuggestionState = {
+type SuggestionPluginState = {
   activeId: string | null;
+  enabled: boolean;
   hoverId: string | null;
 };
 
-const suggestionState: SuggestionState = {
+const suggestionInitialState: SuggestionPluginState = {
   activeId: null,
+  enabled: true,
   hoverId: null,
 };
 
 const BaseStoreContractPlugin = createBasePlugin({
-  initialState: { enabled: true },
-  key: 'storeContract',
+  initialState: suggestionInitialState,
+  name: 'storeContract',
+  selectors: {
+    isActive: (state, id: string) => state.activeId === id,
+  },
 });
 
-const StoreContractPlugin = toPlatePlugin(BaseStoreContractPlugin)
-  .extend({
-    initialState: suggestionState,
-  })
-  .extend(() => ({
-    selectors: {
-      isActive: (state, id: string) => state.activeId === id,
-    },
-  }))
-  .configure({});
+const StoreContractPlugin = toPlatePlugin(BaseStoreContractPlugin).configure(
+  {}
+);
 
 const editor = createPlateEditor({ plugins: [StoreContractPlugin] });
 
@@ -88,10 +86,10 @@ usePluginStore(StoreContractPlugin, 'isActive', 1);
 usePluginStore(StoreContractPlugin, 'isActive', 'suggestion-1', true);
 // @ts-expect-error Raw state fields do not accept selector arguments.
 usePluginStore(StoreContractPlugin, 'activeId', 'suggestion-1');
-// @ts-expect-error A key-only object carries no plugin store contract.
-usePluginStore({ key: 'storeContract' }, 'activeId');
+// @ts-expect-error A name-only object carries no plugin store contract.
+usePluginStore({ name: 'storeContract' }, 'activeId');
 // @ts-expect-error Explicit-editor hooks also require a typed descriptor.
-useEditorPluginStore(editor, { key: 'storeContract' }, 'activeId');
+useEditorPluginStore(editor, { name: 'storeContract' }, 'activeId');
 
 void exactActive;
 void exactActiveId;

@@ -32,7 +32,7 @@ describe('extension method hard cut', () => {
 
     assert.throws(
       () => editor.extend(methodsExtension),
-      /Editor extension "method-link" cannot use methods\. Add state or tx groups instead\./
+      /Editor extension "method-link" cannot use methods\. Declare read or update capabilities instead\./
     );
     assert.equal('insertText' in editor, false);
     assert.equal('insertLink' in editor, false);
@@ -100,7 +100,7 @@ describe('extension method hard cut', () => {
 
     assert.throws(
       () => editor.extend(methodsExtension),
-      /Editor extension "method-wrapper" cannot use methods\. Add state or tx groups instead\./
+      /Editor extension "method-wrapper" cannot use methods\. Declare read or update capabilities instead\./
     );
     assert.equal('insertText' in editor, false);
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
@@ -127,11 +127,11 @@ describe('extension method hard cut', () => {
   it('rejects one stable name with different descriptor identities', () => {
     const editor = createEditor();
     const first = defineEditorExtension({
-      api: { duplicateIdentity: 'first' },
+      api: () => ({ duplicateIdentity: 'first' }),
       name: 'duplicate-descriptor-name',
     });
     const second = defineEditorExtension({
-      api: { duplicateIdentity: 'second' },
+      api: () => ({ duplicateIdentity: 'second' }),
       name: 'duplicate-descriptor-name',
     });
 
@@ -142,39 +142,10 @@ describe('extension method hard cut', () => {
     assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
   });
 
-  it('discards earlier namespace groups when a later extension fails', () => {
-    const editor = createEditor();
-    const first = defineEditorExtension({
-      name: 'first-table',
-      state: {
-        table() {
-          return { source: 'first' };
-        },
-      },
-    });
-    const second = defineEditorExtension({
-      name: 'second-table',
-      state: {
-        table() {
-          return { source: 'second' };
-        },
-      },
-    });
-
-    assert.throws(
-      () => editor.extend([first, second]),
-      /state group "table".*conflicts/
-    );
-    assert.equal(editorGetExtensionRegistry(editor).extensions.size, 0);
-    assert.equal(
-      editor.read((state) => 'table' in state),
-      false
-    );
-  });
-
-  it('activates options and cleanup signal around extension-owned state', () => {
+  it('activates factory inputs and cleanup signal around extension-owned state', () => {
     const editor = createEditor();
     const cleanupEvents: string[] = [];
+    const initialMode = 'text' as const;
     let runtimeMode: {
       cleanup: () => void;
       get: () => 'cell' | 'text';
@@ -185,10 +156,9 @@ describe('extension method hard cut', () => {
       defineEditorExtension({
         activate(_editor, context) {
           assert.equal(context.name, 'runtime-table');
-          assert.equal(context.config.initialMode, 'text');
 
           let active = true;
-          let current: 'cell' | 'text' = context.config.initialMode;
+          let current: 'cell' | 'text' = initialMode;
           const mode = {
             cleanup() {
               active = false;
@@ -213,42 +183,43 @@ describe('extension method hard cut', () => {
           });
         },
         name: 'runtime-table',
-        config: { initialMode: 'text' as const },
-        state: {
-          table() {
-            return {
-              mode: () => runtimeMode?.get(),
-            };
+        read: () => ({
+          mode: () => runtimeMode?.get(),
+        }),
+        update: () => ({
+          setMode(nextMode: 'text' | 'cell') {
+            runtimeMode?.set(nextMode);
           },
-        },
-        tx: {
-          table() {
-            return {
-              setMode(nextMode: 'text' | 'cell') {
-                runtimeMode?.set(nextMode);
-              },
-            };
-          },
-        },
+        }),
       })
     );
 
     assert.equal(
       editor.read((state) =>
-        (state as typeof state & { table: { mode(): string } }).table.mode()
+        (
+          state as typeof state & {
+            'runtime-table': { mode(): string };
+          }
+        )['runtime-table'].mode()
       ),
       'text'
     );
 
     editor.update((tx) => {
       (
-        tx as typeof tx & { table: { setMode(mode: 'text' | 'cell'): void } }
-      ).table.setMode('cell');
+        tx as typeof tx & {
+          'runtime-table': { setMode(mode: 'text' | 'cell'): void };
+        }
+      )['runtime-table'].setMode('cell');
     });
 
     assert.equal(
       editor.read((state) =>
-        (state as typeof state & { table: { mode(): string } }).table.mode()
+        (
+          state as typeof state & {
+            'runtime-table': { mode(): string };
+          }
+        )['runtime-table'].mode()
       ),
       'cell'
     );
@@ -258,42 +229,38 @@ describe('extension method hard cut', () => {
     assert.deepEqual(cleanupEvents, ['abort:cell', 'cleanup:cell']);
     assert.throws(() => runtimeMode?.get(), /Extension state is inactive/);
     assert.equal(
-      editor.read((state) => 'table' in state),
+      editor.read((state) => 'runtime-table' in state),
       false
     );
   });
 
   it('resolves editor api handles only from installed extension tokens', () => {
     const installed = defineEditorExtension({
-      name: 'history',
-      api: {
-        history: {
-          run(_options: { save?: boolean }, fn: () => void) {
-            fn();
-          },
+      api: () => ({
+        run(_options: { save?: boolean }, fn: () => void) {
+          fn();
         },
-      },
+      }),
+      name: 'history',
     });
     const fresh = defineEditorExtension({
-      name: 'history',
-      api: {
-        history: {
-          run(_options: { save?: boolean }, fn: () => void) {
-            fn();
-          },
+      api: () => ({
+        run(_options: { save?: boolean }, fn: () => void) {
+          fn();
         },
-      },
+      }),
+      name: 'history',
     });
     const editor = createEditor({ extensions: [installed] as const });
     let called = false;
 
-    assert.equal(editor.getApi(installed), editor.api.history);
-    editor.getApi(installed).run({ save: false }, () => {
+    assert.equal(editor.extension(installed).api, editor.api.history);
+    editor.extension(installed).api.run({ save: false }, () => {
       called = true;
     });
     assert.equal(called, true);
     assert.throws(
-      () => editor.getApi(fresh),
+      () => editor.extension(fresh),
       /Editor extension "history" is not installed on this editor\./
     );
   });
@@ -302,17 +269,15 @@ describe('extension method hard cut', () => {
     const installed = defineEditorExtension({
       api() {
         return {
-          actual: {
-            read: () => 42,
-          },
+          read: () => 42,
         };
       },
       name: 'factory-owner',
     });
     const editor = createEditor({ extensions: [installed] as const });
 
-    assert.equal(editor.getApi(installed), editor.api.actual);
-    assert.equal(editor.getApi(installed).read(), 42);
+    assert.equal(editor.extension(installed).api, editor.api['factory-owner']);
+    assert.equal(editor.extension(installed).api.read(), 42);
   });
 
   it('pure command handlers delegate, override, and extend one spec', () => {
@@ -477,30 +442,18 @@ describe('extension method hard cut', () => {
   it('rejects active same-name descriptors and accepts disabled tombstones', () => {
     const editor = createEditor();
     const first = defineEditorExtension({
-      api: {
-        duplicate: {
-          value: 'first',
-        },
-      },
+      api: () => ({
+        value: 'first',
+      }),
       name: 'duplicate',
-      state: {
-        duplicate() {
-          return { value: () => 'first' };
-        },
-      },
+      read: () => ({ value: () => 'first' }),
     });
     const second = defineEditorExtension({
-      api: {
-        duplicate: {
-          value: 'second',
-        },
-      },
+      api: () => ({
+        value: 'second',
+      }),
       name: 'duplicate',
-      state: {
-        duplicate() {
-          return { value: () => 'second' };
-        },
-      },
+      read: () => ({ value: () => 'second' }),
     });
 
     assert.throws(
@@ -529,113 +482,24 @@ describe('extension method hard cut', () => {
     );
   });
 
-  it('merges object API capabilities from shared API names', () => {
-    const editor = createEditor();
-
-    editor.extend([
-      defineEditorExtension({
-        api: {
-          host: {
-            focus: () => 'focus',
-          },
-        },
-        name: 'host-focus',
-      }),
-      defineEditorExtension({
-        api: {
-          host: {
-            blur: () => 'blur',
-          },
-        },
-        name: 'host-blur',
-      }),
-    ]);
-
-    const host = (
-      editor.api as unknown as {
-        host: { blur: () => string; focus: () => string };
-      }
-    ).host;
-
-    assert.equal(host.focus(), 'focus');
-    assert.equal(host.blur(), 'blur');
-  });
-
-  it('uses latest callable API capability from shared API names', () => {
-    const editor = createEditor();
-    const installFallback = editor.extend(
-      defineEditorExtension({
-        api: {
-          redecorate: () => 'fallback',
-        },
-        name: 'fallback-redecorate',
-      })
-    );
-
-    assert.equal(
-      (editor.api as unknown as { redecorate: () => string }).redecorate(),
-      'fallback'
-    );
-
-    const installOverride = editor.extend(
-      defineEditorExtension({
-        api: {
-          redecorate: () => 'override',
-        },
-        name: 'mounted-redecorate',
-      })
-    );
-
-    assert.equal(
-      (editor.api as unknown as { redecorate: () => string }).redecorate(),
-      'override'
-    );
-
-    installOverride();
-
-    assert.equal(
-      (editor.api as unknown as { redecorate: () => string }).redecorate(),
-      'fallback'
-    );
-
-    installFallback();
-
-    assert.equal(
-      (editor.api as unknown as { redecorate?: unknown }).redecorate,
-      undefined
-    );
-  });
-
   it('keeps installed same-name extension when replacement validation fails', () => {
     const editor = createEditor();
     const installed = defineEditorExtension({
-      api: {
-        duplicate: {
-          value: 'installed',
-        },
-      },
+      api: () => ({
+        value: 'installed',
+      }),
       name: 'duplicate',
-      state: {
-        duplicate() {
-          return { value: () => 'installed' };
-        },
-      },
+      read: () => ({ value: () => 'installed' }),
     });
     const replacement = defineEditorExtension({
-      api: {
-        duplicate: {
-          value: 'replacement',
-        },
-      },
+      api: () => ({
+        value: 'replacement',
+      }),
       name: 'duplicate',
-      validateConfiguration() {
+      validate() {
         throw new Error('invalid replacement');
       },
-      state: {
-        duplicate() {
-          return { value: () => 'replacement' };
-        },
-      },
+      read: () => ({ value: () => 'replacement' }),
     });
 
     editor.extend(installed);
@@ -654,11 +518,20 @@ describe('extension method hard cut', () => {
       'installed'
     );
     assert.equal(
-      editor.getApi(installed as never),
+      (
+        editor.extension as unknown as (extension: typeof installed) => {
+          api: { value: string };
+        }
+      )(installed).api,
       (editor.api as { duplicate?: unknown }).duplicate
     );
     assert.throws(
-      () => editor.getApi(replacement as never),
+      () =>
+        (
+          editor.extension as unknown as (extension: typeof replacement) => {
+            api: { value: string };
+          }
+        )(replacement),
       /Editor extension "duplicate" is not installed on this editor\./
     );
   });

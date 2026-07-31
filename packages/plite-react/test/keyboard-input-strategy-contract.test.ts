@@ -144,7 +144,7 @@ const contentRootExtension = defineEditorSchema({
     },
   },
   id: 'keyboard-content-root-test',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -2463,9 +2463,7 @@ describe('keyboard input strategy', () => {
           defineEditorSchema({
             elements: { mention: { void: 'markable-inline' } },
             id: 'keyboard-input-strategy-inline-void-test',
-            root: {
-              content: schema.content.not(schema.content.text()),
-            },
+            root: schema.content.not(schema.content.text()),
             unknown: 'preserve',
             version: 1,
           }),
@@ -2568,9 +2566,7 @@ describe('keyboard input strategy', () => {
           defineEditorSchema({
             elements: { image: { void: 'block' } },
             id: 'keyboard-input-strategy-void-test',
-            root: {
-              content: schema.content.not(schema.content.text()),
-            },
+            root: schema.content.not(schema.content.text()),
             unknown: 'preserve',
             version: 1,
           }),

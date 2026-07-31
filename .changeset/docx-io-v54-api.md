@@ -7,7 +7,10 @@ download as the standalone `downloadDocx` browser service.
 
 ```tsx
 const docx = editor.plugin(DocxIOPlugin);
-const blob = await docx.api.toBlob(editor.read.children());
+const blob = await docx.api.toBlob(editor.read.children(), {
+  editorPlugins: EditorKit,
+  editorStaticComponent: EditorStatic,
+});
 
 downloadDocx(blob, 'document');
 
@@ -22,8 +25,7 @@ Keep DOCX comment types with `DocxIOPlugin`. Each imported comment exposes
 `references` as points in `result.nodes`; private import markers never appear
 in the returned node snapshot.
 
-Use `DocxIOPlugin.api.import` as the DOCX import surface. Remove direct imports
-of `preprocessMammothHtml`, `extractComments`, `buildCommentToken`,
-`getCommentTokenPrefix`, `getCommentTokenSuffix`, and
-`PreprocessMammothHtmlResult`. Remove the renderer's circular module
-dependency.
+Use `editor.plugin(DocxIOPlugin).api.import` as the DOCX import surface. Remove
+direct imports of `preprocessMammothHtml`, `extractComments`,
+`buildCommentToken`, `getCommentTokenPrefix`, `getCommentTokenSuffix`, and
+`PreprocessMammothHtmlResult`. Remove the renderer's circular module dependency.

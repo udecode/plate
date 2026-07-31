@@ -73,22 +73,20 @@ describe('editor runtime/view contract', () => {
 
   it('resolves extension API factories against each view root', () => {
     const rootAware = defineEditorExtension({
-      api(editor, context) {
+      api({ editor, root }) {
         return {
-          rootAware: {
-            append: (text: string) => {
-              editor.update((tx) => {
-                tx.text.insert(text, {
-                  at: { offset: 6, path: [0, 0] },
-                });
+          append: (text: string) => {
+            editor.update((tx) => {
+              tx.text.insert(text, {
+                at: { offset: 6, path: [0, 0] },
               });
-            },
-            root: () => context.root ?? null,
-            text: () =>
-              editor.read((state) =>
-                state.children().map(NodeApi.string).join('\n')
-              ),
+            });
           },
+          root: () => root ?? null,
+          text: () =>
+            editor.read((state) =>
+              state.children().map(NodeApi.string).join('\n')
+            ),
         };
       },
       name: 'rootAware',
@@ -107,7 +105,10 @@ describe('editor runtime/view contract', () => {
     assert.equal(mainEditor.api.rootAware.text(), 'body');
     assert.equal(headerEditor.api.rootAware.root(), 'header');
     assert.equal(headerEditor.api.rootAware.text(), 'header');
-    assert.equal(headerEditor.getApi(rootAware), headerEditor.api.rootAware);
+    assert.equal(
+      headerEditor.extension(rootAware).api,
+      headerEditor.api.rootAware
+    );
 
     headerEditor.api.rootAware.append('!');
 
@@ -307,8 +308,8 @@ describe('editor runtime/view contract', () => {
           cleanupReason = reason;
         });
       },
-      api(_editor, context) {
-        apiFactoryRoot = context.root;
+      api({ root }) {
+        apiFactoryRoot = root;
 
         return {};
       },
@@ -328,18 +329,18 @@ describe('editor runtime/view contract', () => {
         },
       },
 
-      state: {
-        hostState(_state, editor) {
+      read: ({ editor }) => ({
+        hostState() {
           return editor;
         },
-      },
-      tx: {
-        hostTx(_tx, editor) {
+      }),
+      update: ({ editor }) => ({
+        hostTx() {
           txEditor = editor;
 
           return editor.read.view.root();
         },
-      },
+      }),
     });
 
     const cleanup = headerEditor.extend(headerExtension);
@@ -348,15 +349,26 @@ describe('editor runtime/view contract', () => {
     assert.equal(activationRoot, 'header');
     assert.equal(apiFactoryRoot, 'header');
     assert.equal(
-      headerEditor.read(
-        (state) => (state as unknown as { hostState: unknown }).hostState
+      headerEditor.read((state) =>
+        (
+          state as unknown as {
+            'header-bound-extension': { hostState: () => unknown };
+          }
+        )['header-bound-extension'].hostState()
       ),
       headerEditor
     );
 
     commitEditors.length = 0;
     headerEditor.update((tx) => {
-      assert.equal((tx as unknown as { hostTx: unknown }).hostTx, 'header');
+      assert.equal(
+        (
+          tx as unknown as {
+            'header-bound-extension': { hostTx: () => unknown };
+          }
+        )['header-bound-extension'].hostTx(),
+        'header'
+      );
       tx.text.insert('!', { at: { path: [0, 0], offset: 6 } });
       tx.nodes.insert(paragraph('next'), { at: [1] });
     });

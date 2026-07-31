@@ -10,7 +10,49 @@ export type InsertDateOptions = NodeInsertNodesOptions<TDateElement | Text> & {
 };
 
 export const BaseDatePlugin = createBasePlugin({
-  key: KEYS.date,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'date',
+        kind: 'node',
+        decode: ({ node, parseAttributes, type }) => {
+          const props = parseAttributes(node.attributes);
+          const firstChild = node.children[0];
+          const dateValue =
+            typeof props.value === 'string'
+              ? props.value
+              : firstChild?.type === 'text'
+                ? firstChild.value
+                : '';
+
+          return {
+            children: [{ text: '' }],
+            ...normalizeDateValue(dateValue),
+            type,
+          };
+        },
+        encode: ({ node, propsToAttributes }) => {
+          if (node.date && !node.rawDate) {
+            return {
+              attributes: propsToAttributes({ value: node.date }),
+              children: [],
+              name: 'date',
+              type: 'mdxJsxTextElement',
+            };
+          }
+
+          return {
+            attributes: [],
+            children: [
+              { type: 'text', value: node.rawDate ?? node.date ?? '' },
+            ],
+            name: 'date',
+            type: 'mdxJsxTextElement',
+          };
+        },
+      },
+    }),
+  name: KEYS.date,
   schema: {
     element: {
       properties: {

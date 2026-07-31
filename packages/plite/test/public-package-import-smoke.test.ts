@@ -402,6 +402,7 @@ const internalBridgeRuntimeExportExpectations = {
     'assertSelectionSupported',
     'before',
     'collapse',
+    'compileEditorExtension',
     'compileEditorSchemaContributions',
     'createEditorEffect',
     'createDetachedContentSlice',

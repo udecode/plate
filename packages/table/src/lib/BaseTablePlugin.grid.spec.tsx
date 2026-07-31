@@ -56,30 +56,9 @@ describe('table grid queries', () => {
       expect(initialValue).toEqual(inputSnapshot);
     });
 
-    it('skips the synthetic root when the configured table type is root', () => {
-      const initialValue = [{ ...structuredClone(value[0]), type: 'root' }];
-      const editor = createPlateEditor({
-        nodeId: true,
-        plugins: [
-          BaseTablePlugin.configure({
-            initialState: { disableMerge: true },
-            type: 'root',
-          }),
-        ],
-        initialValue,
-      });
-
-      expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c11')
-      ).toEqual({ col: 0, row: 0 });
-      expect(
-        editor.plugin(BaseTablePlugin).read.getCellIndicesById('c12')
-      ).toEqual({ col: 1, row: 0 });
-    });
-
     it('indexes tables in element-owned content roots', () => {
       const RootHolderPlugin = createPlatePlugin({
-        key: 'tableRootHolder',
+        name: 'tableRootHolder',
         schema: {
           element: {
             contentRoots: {
@@ -91,7 +70,7 @@ describe('table grid queries', () => {
                 ownership: 'exclusive',
               },
             },
-            topLevel: true,
+            blockContent: true,
             void: 'block',
           },
         },

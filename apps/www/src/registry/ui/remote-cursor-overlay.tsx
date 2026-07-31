@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import { useYjsRemoteCursorOverlayPositions } from '@platejs/yjs/react';
-import { useEditor } from 'platejs/react';
+import { useEditor, useEditorScrollElement } from 'platejs/react';
 
 type CursorData = {
   color?: unknown;
@@ -35,10 +35,32 @@ const pointsEqual = (
 export function RemoteCursorOverlay() {
   const editor = useEditor();
   const [positions] = useYjsRemoteCursorOverlayPositions<CursorData>(editor);
-  const container = editor.api.dom.scroll();
-  const containerRect = container?.getBoundingClientRect();
+  const container = useEditorScrollElement(editor);
+  const [containerOffset, setContainerOffset] = React.useState<{
+    left: number;
+    scrollLeft: number;
+    scrollTop: number;
+    top: number;
+  } | null>(null);
 
-  if (!container || !containerRect) return null;
+  React.useLayoutEffect(() => {
+    if (!container) {
+      setContainerOffset(null);
+
+      return;
+    }
+
+    const rect = container.getBoundingClientRect();
+
+    setContainerOffset({
+      left: rect.left,
+      scrollLeft: container.scrollLeft,
+      scrollTop: container.scrollTop,
+      top: rect.top,
+    });
+  }, [container, positions]);
+
+  if (!containerOffset) return null;
 
   return (
     <div
@@ -51,8 +73,9 @@ export function RemoteCursorOverlay() {
 
         const color = cursorColor(clientId, cursor.data);
         const collapsed = pointsEqual(range.anchor, range.focus);
-        const left = rect.left - containerRect.left + container.scrollLeft;
-        const top = rect.top - containerRect.top + container.scrollTop;
+        const left =
+          rect.left - containerOffset.left + containerOffset.scrollLeft;
+        const top = rect.top - containerOffset.top + containerOffset.scrollTop;
 
         return (
           <React.Fragment key={clientId}>

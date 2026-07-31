@@ -260,7 +260,7 @@ Findings:
 - Historical migration docs may retain historical names and are excluded.
 - Scoped allowed-source scan is zero for all named legacy API families.
 - `BaseListKit` configured headings before paragraph even though
-  `createsElement` deliberately uses `targetPluginKeys[0]`. That made app list
+  `createsElement` deliberately uses `targetPluginNames[0]`. That made app list
   HTML decode produce h1 nodes. `KEYS.p` is now first while all targets remain.
 - The broad static UI exact-state fixture made claims that presentation HTML
   cannot carry: TOC projection identity, mention keys, ISO date identity, and

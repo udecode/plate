@@ -1,11 +1,11 @@
 import type { BasePluginInput } from '../../lib/editor';
 
-import { createBaseEditor } from '../../lib/editor';
+import { createPlateEditor } from '../../react/editor/withPlate';
 
 export const resolvePluginTest = <P extends BasePluginInput>(plugin: P) => {
-  const editor = createBaseEditor({
+  const editor = createPlateEditor({
     plugins: [plugin],
   });
 
-  return editor.getPlugin(plugin);
+  return editor.plugin(plugin.name).plugin;
 };

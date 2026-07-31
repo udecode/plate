@@ -3,6 +3,7 @@ import {
   DocumentChange,
   ElementApi,
   type EditorDocumentValue,
+  type Editor as PliteEditor,
   type Path,
   type Selection,
   type SnapshotIndex,
@@ -14,8 +15,9 @@ import {
   runTrustedUpdate,
 } from '@platejs/plite/internal';
 
-import { getEditorPlugin } from '../../lib/plugin';
-import { getPlateRuntime } from './compilePlateModel';
+import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
+import type { AnyBasePluginDefinition } from '../../lib/plugin/PluginDefinition';
+import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
 import { isEditOnly } from './isEditOnlyDisabled';
 
 const getSharedNodeIndexes = (
@@ -92,61 +94,72 @@ export const transformInitialValue = (
 
   editor.runtime.isNormalizing = true;
   try {
-    getPlateRuntime(editor).pluginCache.transformInitialValue.forEach((key) => {
-      const plugin = editor.getPlugin({ key });
+    getPlateRuntime(editor).pluginCache.transformInitialValue.forEach(
+      (pluginName) => {
+        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
 
-      if (
-        isEditOnly(
-          editor.read.view.isReadOnly(),
-          plugin,
-          'transformInitialValue'
-        ) ||
-        !plugin.transformInitialValue
-      ) {
-        return;
-      }
+        if (
+          isEditOnly(
+            editor.read.view.isReadOnly(),
+            plugin,
+            'transformInitialValue'
+          ) ||
+          !plugin.transformInitialValue
+        ) {
+          return;
+        }
 
-      const nextValue = plugin.transformInitialValue({
-        ...getEditorPlugin(editor, plugin),
-        value,
-      } as any);
-
-      if (
-        !nextValue ||
-        Array.isArray(nextValue) ||
-        !Array.isArray(nextValue.children)
-      ) {
-        throw new Error(
-          `Plugin "${key}" transformInitialValue must return an editor document with primary-root children.`
+        const nextValue = Reflect.apply(
+          plugin.transformInitialValue,
+          undefined,
+          [
+            {
+              ...createPluginContext(editor, plugin),
+              value,
+            },
+          ]
         );
-      }
 
-      if (selection) {
-        const beforeChildren =
-          selectionRoot === MAIN_ROOT_KEY
-            ? value.children
-            : (value.roots?.[selectionRoot] ?? []);
-        const afterChildren =
-          selectionRoot === MAIN_ROOT_KEY
-            ? nextValue.children
-            : (nextValue.roots?.[selectionRoot] ?? []);
+        if (
+          !nextValue ||
+          Array.isArray(nextValue) ||
+          !Array.isArray(nextValue.children)
+        ) {
+          throw new Error(
+            `Plugin "${pluginName}" transformInitialValue must return an editor document with primary-root children.`
+          );
+        }
 
-        selection = mapSelectionThroughChange(
-          editor,
-          selection,
-          DocumentChange.between(value, nextValue),
-          value,
-          nextValue,
-          selectionRoot,
-          {
-            association: 'backward',
-            preferPositionMapping: true,
-            runtimeIndexes: getSharedNodeIndexes(beforeChildren, afterChildren),
-          }
-        );
+        if (selection) {
+          const beforeChildren =
+            selectionRoot === MAIN_ROOT_KEY
+              ? value.children
+              : (value.roots?.[selectionRoot] ?? []);
+          const afterChildren =
+            selectionRoot === MAIN_ROOT_KEY
+              ? nextValue.children
+              : (nextValue.roots?.[selectionRoot] ?? []);
+
+          selection = mapSelectionThroughChange(
+            editor,
+            selection,
+            DocumentChange.between(value, nextValue),
+            value,
+            nextValue,
+            selectionRoot,
+            {
+              association: 'backward',
+              preferPositionMapping: true,
+              runtimeIndexes: getSharedNodeIndexes(
+                beforeChildren,
+                afterChildren
+              ),
+            }
+          );
+        }
+        value = nextValue;
       }
-      value = nextValue;
-    });
+    );
 
     return { selection, value };
   } finally {
@@ -155,8 +168,13 @@ export const transformInitialValue = (
 };
 
 /** Reapply every document-input transform to the current document. */
-export const pipeTransformInitialValue = (editor: BaseEditor) => {
-  runTrustedUpdate(editor, (tx) => {
+export const pipeTransformInitialValue = <
+  V extends Value,
+  P extends AnyBasePluginDefinition,
+>(
+  editor: BaseEditor<V, P>
+) => {
+  runTrustedUpdate(editor as unknown as PliteEditor<V>, (tx) => {
     tx.value.replace({
       ...editor.read.value(),
       selection: editor.read.selection(),

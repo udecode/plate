@@ -4,6 +4,7 @@ import {
   TextApi,
   type Descendant,
   type EditorCoreStateView,
+  type EditorStateSchemaApi,
   type Element as PliteElement,
   type PropertyValueDescriptor,
   type SchemaProperty,
@@ -26,7 +27,8 @@ import isEqual from 'lodash/isEqual.js';
 import type { BaseEditor } from '../../editor';
 import type {
   AnyBasePlugin,
-  AnyPluginConfig,
+  AnyBasePluginDefinition,
+  DefinitionOf,
   HtmlContentToken,
   HtmlMatcher,
   HtmlParser,
@@ -34,13 +36,9 @@ import type {
   HtmlPluginContext,
   HtmlPluginRegistry,
   PluginReference,
-  WithAnyKey,
 } from '../../plugin';
-import {
-  type InferConfig,
-  createBasePlugin,
-  getEditorPlugin,
-} from '../../plugin';
+import { createBasePlugin } from '../../plugin';
+import { createPluginContext } from '../../plugin/createPluginContext.internal';
 import { isHtmlBlockElement, isHtmlElement, isHtmlText } from './htmlDom';
 import {
   getCompiledPlateModel,
@@ -108,7 +106,7 @@ type CompiledHtmlSerializerIndex = Readonly<{
 
 const HTML_FORMAT = 'text/html';
 const HTML_HOST_KEY = 'plate:html';
-const HTML_PLUGIN_KEY = 'html';
+const HTML_PLUGIN_NAME = 'html';
 const HTML_CONTENT_TOKEN: HtmlContentToken = Object.freeze({
   __htmlContentToken: true,
 });
@@ -383,15 +381,16 @@ type CompiledPlateHtmlArtifact = Readonly<{
 
 const COMPILED_PLATE_HTML = new WeakMap<object, CompiledPlateHtmlArtifact>();
 
-type PreparedHtmlPluginEntry<C extends AnyPluginConfig = AnyPluginConfig> =
-  Readonly<{
-    context: Omit<HtmlPluginContext<C>, 'pluginState' | 'state'>;
-    getPluginState: () => HtmlPluginContext<C>['pluginState'];
-    key: string;
-    query?: HtmlParser<C>['query'];
-    transformData?: HtmlParser<C>['transformData'];
-    transformFragment?: HtmlParser<C>['transformFragment'];
-  }>;
+type PreparedHtmlPluginEntry<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = Readonly<{
+  context: Omit<HtmlPluginContext<C>, 'pluginState' | 'state'>;
+  getPluginState: () => HtmlPluginContext<C>['pluginState'];
+  name: string;
+  query?: HtmlParser<C>['query'];
+  transformData?: HtmlParser<C>['transformData'];
+  transformFragment?: HtmlParser<C>['transformFragment'];
+}>;
 
 type PreparedHtmlRegistry = Readonly<{
   plugins: readonly PreparedHtmlPluginEntry[];
@@ -407,33 +406,71 @@ const EDITOR_PARSER_REGISTRIES = new WeakMap<
   }>
 >();
 
-const preparePlugin = <C extends AnyPluginConfig>(
+const preparePlugin = <P extends AnyBasePlugin & PluginReference>(
   editor: BaseEditor,
-  plugin: PluginReference & { readonly __config: C },
+  plugin: P,
   registry: HtmlPluginRegistry
-): PreparedHtmlPluginEntry<WithAnyKey<C>> => {
-  const installed = getCompiledPlatePlugin(editor, plugin);
-
-  if (!installed) {
-    throw new Error(`Parser plugin "${plugin.key}" is not installed.`);
-  }
+): PreparedHtmlPluginEntry<DefinitionOf<P>> => {
+  const installed = getCompiledPlatePlugin(editor, plugin)!;
   const parser = installed.parsers.html;
 
   return Object.freeze({
     context: Object.freeze({
       registry,
-      type: registry.getType(plugin.key),
+      type: registry.getType(plugin.name),
     }),
     getPluginState: () =>
-      getPluginStore(editor, installed.key)?.public.get() ??
+      getPluginStore<DefinitionOf<P>>(editor, plugin.name)?.public.get() ??
       installed.initialState,
-    key: plugin.key,
+    name: plugin.name,
     ...(parser?.query ? { query: parser.query } : {}),
     ...(parser?.transformData ? { transformData: parser.transformData } : {}),
     ...(parser?.transformFragment
       ? { transformFragment: parser.transformFragment }
       : {}),
   });
+};
+
+const prepareCompiledPlugin = (
+  editor: BaseEditor,
+  installed: AnyBasePlugin,
+  registry: HtmlPluginRegistry
+): PreparedHtmlPluginEntry => {
+  const parserValue = installed.parsers.html;
+  const parser =
+    typeof parserValue === 'object' && parserValue !== null ? parserValue : {};
+  const query = Reflect.get(parser, 'query');
+  const transformData = Reflect.get(parser, 'transformData');
+  const transformFragment = Reflect.get(parser, 'transformFragment');
+  const prepared: PreparedHtmlPluginEntry = {
+    context: Object.freeze({
+      registry,
+      type: registry.getType(installed.name),
+    }),
+    getPluginState: () =>
+      getPluginStore(editor, installed.name)?.public.get() ??
+      installed.initialState,
+    name: installed.name,
+    ...(typeof query === 'function'
+      ? {
+          query: (options) => Reflect.apply(query, undefined, [options]),
+        }
+      : {}),
+    ...(typeof transformData === 'function'
+      ? {
+          transformData: (options) =>
+            Reflect.apply(transformData, undefined, [options]),
+        }
+      : {}),
+    ...(typeof transformFragment === 'function'
+      ? {
+          transformFragment: (options) =>
+            Reflect.apply(transformFragment, undefined, [options]),
+        }
+      : {}),
+  };
+
+  return Object.freeze(prepared);
 };
 
 /** Snapshot the flat whole-input HTML hooks for one compiled Plate model. */
@@ -452,20 +489,22 @@ export const prepareHtmlRegistry = (
     return cached.registry;
   }
 
-  const typesByKey = new Map(
-    pluginList.map((plugin) => [plugin.key, plugin.type] as const)
+  const typesByName = new Map(
+    pluginList.map((plugin) => [plugin.name, plugin.type] as const)
   );
-  const keysByType = new Map(
-    pluginList.map((plugin) => [plugin.type, plugin.key] as const)
+  const namesByType = new Map(
+    pluginList.map((plugin) => [plugin.type, plugin.name] as const)
   );
   const publicRegistry = Object.freeze({
-    getKey: (type: string) => keysByType.get(type),
-    getType: (key: string) => typesByKey.get(key) ?? key,
-    has: (key: string) => typesByKey.has(key),
+    getName: (type: string) => namesByType.get(type),
+    getType: (name: string) => typesByName.get(name) ?? name,
+    has: (name: string) => typesByName.has(name),
   });
   const prepared = Object.freeze({
     plugins: Object.freeze(
-      pluginList.map((plugin) => preparePlugin(editor, plugin, publicRegistry))
+      pluginList.map((plugin) =>
+        prepareCompiledPlugin(editor, plugin, publicRegistry)
+      )
     ),
     public: publicRegistry,
   });
@@ -484,7 +523,7 @@ export const prepareHtmlRegistry = (
   return prepared;
 };
 
-const createHtmlPluginContext = <C extends AnyPluginConfig>(
+const createHtmlPluginContext = <C extends AnyBasePluginDefinition>(
   plugin: PreparedHtmlPluginEntry<C>,
   state: EditorCoreStateView
 ): HtmlPluginContext<C> =>
@@ -548,10 +587,12 @@ const pipeTransformFragment = (
 };
 
 /** Build one parser context factory for focused package proof. */
-export const prepareHtmlPluginContext = <C extends AnyPluginConfig>(
+export const prepareHtmlPluginContext = <
+  P extends AnyBasePlugin & PluginReference,
+>(
   editor: BaseEditor,
-  plugin: PluginReference & { readonly __config: C }
-): ((state: EditorCoreStateView) => HtmlPluginContext<WithAnyKey<C>>) => {
+  plugin: P
+): ((state: EditorCoreStateView) => HtmlPluginContext<DefinitionOf<P>>) => {
   const registry = prepareHtmlRegistry(editor);
   const prepared = preparePlugin(editor, plugin, registry.public);
 
@@ -869,34 +910,34 @@ const targetMatchesElementType = (
 const compileRule = (
   editor: BaseEditor,
   model: CompiledPlateModel,
-  pluginsByKey: ReadonlyMap<string, AnyBasePlugin>,
+  pluginsByName: ReadonlyMap<string, AnyBasePlugin>,
   ownerPlugin: AnyBasePlugin,
-  targetKey: string | null,
-  extension: AnyBasePlugin['__htmlCodecExtensions'][number]['extension']
+  targetPluginName: string | null,
+  extension: AnyBasePlugin['__htmlCodecContributions'][number]['extension']
 ): CompiledHtmlRule => {
   function assertDeclaration(
     value: unknown
   ): asserts value is HtmlRuleDeclaration {
     if (!isRecord(value)) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" callback must return an object.`
+        `Plate HTML codec "${ownerPlugin.name}" callback must return an object.`
       );
     }
     Object.keys(value).forEach((field) => {
       if (!HTML_RULE_FIELDS.has(field)) {
         throw new Error(
-          `Plate HTML codec "${ownerPlugin.key}" has unknown field "${field}".`
+          `Plate HTML codec "${ownerPlugin.name}" has unknown field "${field}".`
         );
       }
     });
     if (!Array.isArray(value.match) || value.match.length === 0) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" match must be a non-empty array.`
+        `Plate HTML codec "${ownerPlugin.name}" match must be a non-empty array.`
       );
     }
     if (typeof value.decode !== 'function') {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" decode must be a function.`
+        `Plate HTML codec "${ownerPlugin.name}" decode must be a function.`
       );
     }
     if (
@@ -904,42 +945,44 @@ const compileRule = (
       (typeof value.priority !== 'number' || !Number.isFinite(value.priority))
     ) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" priority must be finite.`
+        `Plate HTML codec "${ownerPlugin.name}" priority must be finite.`
       );
     }
     if (value.createsElement !== undefined && value.createsElement !== true) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" createsElement must be true when present.`
+        `Plate HTML codec "${ownerPlugin.name}" createsElement must be true when present.`
       );
     }
     if (value.decodeOnly !== undefined && value.decodeOnly !== true) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" decodeOnly must be true when present.`
+        `Plate HTML codec "${ownerPlugin.name}" decodeOnly must be true when present.`
       );
     }
     if (value.decodeOnly === true) {
       if (value.encode !== undefined) {
         throw new Error(
-          `Plate HTML codec "${ownerPlugin.key}" cannot define encode with decodeOnly.`
+          `Plate HTML codec "${ownerPlugin.name}" cannot define encode with decodeOnly.`
         );
       }
     } else if (typeof value.encode !== 'function') {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" must define encode or decodeOnly: true.`
+        `Plate HTML codec "${ownerPlugin.name}" must define encode or decodeOnly: true.`
       );
     }
   }
 
-  if (targetKey === ownerPlugin.key) {
+  if (targetPluginName === ownerPlugin.name) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" must use the self overload for its own schema.`
+      `Plate HTML codec "${ownerPlugin.name}" must use the self overload for its own schema.`
     );
   }
-  const targetPlugin = targetKey ? pluginsByKey.get(targetKey) : ownerPlugin;
+  const targetPlugin = targetPluginName
+    ? pluginsByName.get(targetPluginName)
+    : ownerPlugin;
 
-  if (!targetPlugin || (targetKey && targetPlugin.enabled === false)) {
+  if (!targetPlugin || (targetPluginName && targetPlugin.enabled === false)) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" targets missing or disabled plugin "${targetKey}".`
+      `Plate HTML codec "${ownerPlugin.name}" targets missing or disabled plugin "${targetPluginName}".`
     );
   }
   const authoredFamilies = getHtmlCodecSchemaFamilies(extension);
@@ -950,35 +993,37 @@ const compileRule = (
     getPluginSchemaFamily(targetPlugin) !== authoredFamilies.target
   ) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" owner or target "${targetPlugin.key}" belongs to a different schema family than its authored descriptor.`
+      `Plate HTML codec "${ownerPlugin.name}" owner or target "${targetPlugin.name}" belongs to a different schema family than its authored descriptor.`
     );
   }
-  const binding = model.byKey[targetPlugin.key];
+  const binding = model.byName[targetPlugin.name];
 
   if (!binding) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" target "${targetPlugin.key}" has no compiled model binding.`
+      `Plate HTML codec "${ownerPlugin.name}" target "${targetPlugin.name}" has no compiled model binding.`
     );
   }
-  const declaration = extension(getEditorPlugin(editor, ownerPlugin));
+  const declaration = Reflect.apply(extension, undefined, [
+    createPluginContext(editor, ownerPlugin),
+  ]);
 
   assertDeclaration(declaration);
-  if (targetKey && declaration.createsElement) {
+  if (targetPluginName && declaration.createsElement) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" cannot use createsElement for foreign target "${targetKey}".`
+      `Plate HTML codec "${ownerPlugin.name}" cannot use createsElement for foreign target "${targetPluginName}".`
     );
   }
 
   let kind: CompiledHtmlRule['kind'];
   let targetType: string | null = null;
-  const properties = compileProperties(ownerPlugin.key, binding);
+  const properties = compileProperties(ownerPlugin.name, binding);
 
   if (
     binding.kind === 'element' &&
     properties.some(({ property }) => property.placement !== 'element')
   ) {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" element targets cannot mix element and text property claims.`
+      `Plate HTML codec "${ownerPlugin.name}" element targets cannot mix element and text property claims.`
     );
   }
   if (binding.kind === 'element') {
@@ -996,29 +1041,33 @@ const compileRule = (
     kind = 'element-property';
   } else {
     throw new Error(
-      `Plate HTML codec "${ownerPlugin.key}" target "${targetPlugin.key}" must own one element or properties of one placement.`
+      `Plate HTML codec "${ownerPlugin.name}" target "${targetPlugin.name}" must own one element or properties of one placement.`
     );
   }
 
   if (declaration.createsElement) {
-    if (kind !== 'element-property' || targetKey) {
+    if (kind !== 'element-property' || targetPluginName) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" can use createsElement only for self-owned element properties.`
+        `Plate HTML codec "${ownerPlugin.name}" can use createsElement only for self-owned element properties.`
       );
     }
-    const primaryKey = targetPlugin.targetPluginKeys[0];
-    const primaryPlugin = primaryKey ? pluginsByKey.get(primaryKey) : undefined;
-    const primaryBinding = primaryKey ? model.byKey[primaryKey] : undefined;
+    const primaryPluginName = targetPlugin.targetPluginNames[0];
+    const primaryPlugin = primaryPluginName
+      ? pluginsByName.get(primaryPluginName)
+      : undefined;
+    const primaryBinding = primaryPluginName
+      ? model.byName[primaryPluginName]
+      : undefined;
 
     if (
-      !primaryKey ||
+      !primaryPluginName ||
       !primaryPlugin ||
       primaryPlugin.enabled === false ||
       primaryBinding?.kind !== 'element' ||
       !primaryBinding.elementType
     ) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" createsElement requires installed element targetPluginKeys[0].`
+        `Plate HTML codec "${ownerPlugin.name}" createsElement requires installed element targetPluginNames[0].`
       );
     }
     targetType = primaryBinding.elementType;
@@ -1030,7 +1079,7 @@ const compileRule = (
 
     if (unsupported) {
       throw new Error(
-        `Plate HTML codec "${ownerPlugin.key}" configured primary "${targetType}" does not satisfy property "${unsupported.key}".`
+        `Plate HTML codec "${ownerPlugin.name}" configured primary "${targetType}" does not satisfy property "${unsupported.key}".`
       );
     }
   }
@@ -1041,12 +1090,12 @@ const compileRule = (
       ...declaration,
       match: Object.freeze(
         declaration.match.map((matcher, index) =>
-          compileMatcher(ownerPlugin.key, matcher, index)
+          compileMatcher(ownerPlugin.name, matcher, index)
         )
       ),
     }),
     kind,
-    owner: ownerPlugin.key,
+    owner: ownerPlugin.name,
     properties,
     rulePriority: declaration.priority ?? 0,
     targetType,
@@ -1496,7 +1545,7 @@ const validateExplicitDecodedChildren = (
       Object.hasOwn(value, key) ? [[key, value[key]] as const] : []
     )
   );
-  const parent = state.schema.createAndFill(rule.targetType!, properties);
+  const parent = state.schema.create(rule.targetType!, properties);
   const fitted = state.slice.fitContent(ContentSlice.closed(children), {
     parent,
   });
@@ -2047,7 +2096,7 @@ const decodeCompiledHtml = (
         fallbackRootElement &&
         markedChildren.every((child) => isInlineDescendant(child, state))
       ) {
-        const createdElement = state.schema.createAndFill(
+        const createdElement = state.schema.create(
           fallbackRootElement.type,
           properties
         );
@@ -2074,7 +2123,7 @@ const decodeCompiledHtml = (
 
         return fitDecodedChildren(
           markedChildren,
-          state.schema.createAndFill(parentType),
+          state.schema.create(parentType),
           state
         );
       }
@@ -2082,7 +2131,7 @@ const decodeCompiledHtml = (
       return markedChildren;
     }
 
-    const createdElement = state.schema.createAndFill(
+    const createdElement = state.schema.create(
       structural.rule.targetType!,
       properties
     );
@@ -2418,7 +2467,7 @@ const propertyValue = (
       : node[property.key];
 
   if (
-    descriptor.significant === false ||
+    compiled.role === 'metadata' ||
     value === undefined ||
     (descriptor.omitDefault === true &&
       'default' in descriptor &&
@@ -2430,7 +2479,7 @@ const propertyValue = (
   return value;
 };
 
-const hasSignificantValue = (
+const hasContentValue = (
   node: PliteElement | Text,
   key: string,
   property: NonNullable<ReturnType<EditorCoreStateView['schema']['property']>>
@@ -2442,7 +2491,7 @@ const hasSignificantValue = (
       : node[key];
 
   return (
-    descriptor.significant !== false &&
+    property.role === 'content' &&
     value !== undefined &&
     !(
       descriptor.omitDefault === true &&
@@ -2472,10 +2521,10 @@ const assertSupportedProperties = (
     if (
       property &&
       !supportedPropertyIds.has(property.id) &&
-      hasSignificantValue(node, key, property)
+      hasContentValue(node, key, property)
     ) {
       throw new Error(
-        `Plate HTML encode has no encoder for significant property "${key}".`
+        `Plate HTML encode has no encoder for content property "${key}".`
       );
     }
   }
@@ -2507,10 +2556,10 @@ const assertSupportedProperties = (
     }
     if (
       !supportedPropertyIds.has(id) &&
-      hasSignificantValue(node, property.key, property)
+      hasContentValue(node, property.key, property)
     ) {
       throw new Error(
-        `Plate HTML encode has no encoder for significant property "${property.key}".`
+        `Plate HTML encode has no encoder for content property "${property.key}".`
       );
     }
   }
@@ -2719,14 +2768,21 @@ export const compilePlateHtmlCodec = (
   model: CompiledPlateModel,
   plugins: readonly AnyBasePlugin[]
 ): HostCodec => {
-  const pluginsByKey = new Map(
-    plugins.map((plugin) => [plugin.key, plugin] as const)
+  const pluginsByName = new Map(
+    plugins.map((plugin) => [plugin.name, plugin] as const)
   );
   const rules = Object.freeze(
     plugins
       .flatMap((plugin) =>
-        (plugin.__htmlCodecExtensions ?? []).map(({ extension, targetKey }) =>
-          compileRule(editor, model, pluginsByKey, plugin, targetKey, extension)
+        plugin.__htmlCodecContributions.map(({ extension, targetPluginName }) =>
+          compileRule(
+            editor,
+            model,
+            pluginsByName,
+            plugin,
+            targetPluginName,
+            extension
+          )
         )
       )
       .sort(compareRules)
@@ -2736,7 +2792,7 @@ export const compilePlateHtmlCodec = (
   const matcherIndex = compileMatcherIndex(rules);
   const serializerIndex = compileSerializerIndex(model, rules);
 
-  const htmlPlugin = pluginsByKey.get(HTML_PLUGIN_KEY);
+  const htmlPlugin = pluginsByName.get(HTML_PLUGIN_NAME);
 
   if (!htmlPlugin) throw new Error('Plate HTML plugin is not installed.');
   const registry = prepareHtmlRegistry(editor);
@@ -2771,7 +2827,7 @@ export const compilePlateHtmlCodec = (
     );
 
     if (transformedFragment.length === 0) return null;
-    context.state.schema.validateFragment(transformedFragment);
+    context.state.schema.assertFragment(transformedFragment);
 
     return ContentSlice.closed(transformedFragment);
   };
@@ -2815,8 +2871,15 @@ export const compilePlateHtmlCodec = (
   return codec;
 };
 
+export type HtmlApi = {
+  deserialize: (options: {
+    collapseWhiteSpace?: boolean;
+    element: HTMLElement | string;
+  }) => Descendant[] | null;
+};
+
 export const HtmlPlugin = createBasePlugin({
-  api: ({ editor }) => ({
+  api: ({ editor }): HtmlApi => ({
     deserialize: ({
       collapseWhiteSpace: shouldCollapseWhiteSpace = true,
       element,
@@ -2841,7 +2904,9 @@ export const HtmlPlugin = createBasePlugin({
           decodeCompiledHtml(editor, normalized, artifact.matcherIndex, state)
         );
 
-        editor.read.schema.validateFragment(fragment);
+        const schema: EditorStateSchemaApi = editor.read.schema;
+
+        schema.assertFragment(fragment);
 
         return fragment;
       } catch (cause) {
@@ -2864,7 +2929,7 @@ export const HtmlPlugin = createBasePlugin({
       }
     },
   }),
-  key: HTML_PLUGIN_KEY,
+  name: HTML_PLUGIN_NAME,
 });
 
-export type HtmlApi = InferConfig<typeof HtmlPlugin>['pluginApi'];
+export type HtmlDefinition = DefinitionOf<typeof HtmlPlugin>;

@@ -2,7 +2,6 @@ import React from 'react';
 
 import { property } from 'platejs';
 import { createBaseEditor, createBasePlugin } from 'platejs';
-import { toPlatePlugin } from 'platejs/react';
 import { renderStaticHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -12,7 +11,7 @@ import { createStaticEditor } from './create-static-editor';
 describe('core static renderStaticHtml custom render hooks', () => {
   it('renders belowNodes output around children', async () => {
     const renderBelowPlugin = createBasePlugin({
-      key: 'test-list',
+      name: 'test-list',
       render: {
         belowNodes: (_injectProps: any) =>
           function Component({ children }: { children: React.ReactNode }) {
@@ -76,23 +75,20 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies both node and leaf renderers', async () => {
-    const testPlugin = toPlatePlugin(
-      createBasePlugin({
-        key: 'test',
-        schema: {
-          mark: property.boolean({ default: false, omitDefault: true }),
-        },
-        render: {
-          isDecoration: false,
-          leaf: ({ children }) => (
-            <span data-plite-test="leaf-wrapper">{children}</span>
-          ),
-        },
-      })
-    ).configure({
+    const testPlugin = createBasePlugin({
       component: ({ children }) => (
         <span data-plite-test="node-wrapper">{children}</span>
       ),
+      name: 'test',
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      render: {
+        isDecoration: false,
+        leaf: ({ children }) => (
+          <span data-plite-test="leaf-wrapper">{children}</span>
+        ),
+      },
     });
 
     const editor = createBaseEditor({
@@ -121,20 +117,17 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies a component renderer to decoration leaves', async () => {
-    const testPlugin = toPlatePlugin(
-      createBasePlugin({
-        key: 'test',
-        schema: {
-          mark: property.boolean({ default: false, omitDefault: true }),
-        },
-        render: {
-          isDecoration: true,
-        },
-      })
-    ).configure({
+    const testPlugin = createBasePlugin({
       component: ({ children }) => (
         <span data-plite-test="node-wrapper">{children}</span>
       ),
+      name: 'test',
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      render: {
+        isDecoration: true,
+      },
     });
 
     const editor = createBaseEditor({
@@ -163,20 +156,17 @@ describe('core static renderStaticHtml custom render hooks', () => {
   });
 
   it('applies a component renderer to non-decoration leaves', async () => {
-    const testPlugin = toPlatePlugin(
-      createBasePlugin({
-        key: 'test',
-        schema: {
-          mark: property.boolean({ default: false, omitDefault: true }),
-        },
-        render: {
-          isDecoration: false,
-        },
-      })
-    ).configure({
+    const testPlugin = createBasePlugin({
       component: ({ children }) => (
         <span data-plite-test="node-wrapper">{children}</span>
       ),
+      name: 'test',
+      schema: {
+        mark: property.boolean({ default: false, omitDefault: true }),
+      },
+      render: {
+        isDecoration: false,
+      },
     });
 
     const editor = createBaseEditor({

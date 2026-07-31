@@ -51,14 +51,12 @@ const Schema = defineEditorSchema({
       target: target.type('paragraph'),
     }),
   ],
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  } as const,
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   roots: {
-    header: { content: schema.content.type('heading') } as const,
+    header: schema.content.type('heading'),
   },
   unknown: 'reject',
   version: 1,
@@ -95,7 +93,8 @@ const withoutMessage = ({
 
 describe('runtime schema validation diagnostics', () => {
   it('rejects the internal primary-root sentinel in property queries', () => {
-    const editor = createDiagnosticEditor();
+    const editor: ReturnType<typeof createDiagnosticEditor> =
+      createDiagnosticEditor();
     const root: string = 'main';
 
     assert.throws(
@@ -120,7 +119,7 @@ describe('runtime schema validation diagnostics', () => {
 
     assert.ok(bold);
     const diagnostic = captureDiagnostic(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             type: 'paragraph',
@@ -165,7 +164,7 @@ describe('runtime schema validation diagnostics', () => {
 
     assert.ok(count);
     const error = captureError(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           type: 'paragraph',
           count: 'one',
@@ -204,7 +203,7 @@ describe('runtime schema validation diagnostics', () => {
       .filter((value) => value !== null)
       .sort((left, right) => left.id.localeCompare(right.id));
     const diagnostic = captureDiagnostic(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           type: 'heading',
           children: [{ text: 'invalid', tone: 'loud' }],
@@ -232,12 +231,12 @@ describe('runtime schema validation diagnostics', () => {
   it('omits property context for unknown elements and properties', () => {
     const editor = createDiagnosticEditor();
     const unknownElement = captureDiagnostic(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [{ type: 'mystery', children: [{ text: '' }] }],
       })
     );
     const unknownProperty = captureDiagnostic(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           type: 'paragraph',
           children: [{ mystery: true, text: '' }],
@@ -264,7 +263,7 @@ describe('runtime schema validation diagnostics', () => {
   it('locates invalid parent content in primary, named, and projected roots', () => {
     const editor = createDiagnosticEditor();
     const primary = captureDiagnostic(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             type: 'container',
@@ -274,7 +273,7 @@ describe('runtime schema validation diagnostics', () => {
       })
     );
     const named = captureDiagnostic(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [{ type: 'paragraph', children: [{ text: '' }] }],
         roots: {
           header: [{ type: 'paragraph', children: [{ text: '' }] }],
@@ -282,7 +281,7 @@ describe('runtime schema validation diagnostics', () => {
       })
     );
     const projected = captureDiagnostic(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             childRoots: { body: 'portal:1' },
@@ -319,11 +318,12 @@ describe('runtime schema validation diagnostics', () => {
   });
 
   it('wraps JSON ingress and deeply freezes public diagnostics', () => {
-    const editor = createDiagnosticEditor();
+    const editor: ReturnType<typeof createDiagnosticEditor> =
+      createDiagnosticEditor();
     let thrown: unknown;
 
     try {
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           type: 'paragraph',
           children: [{ payload: () => true, text: '' }],
@@ -343,5 +343,18 @@ describe('runtime schema validation diagnostics', () => {
     assert.ok(Object.isFrozen(thrown.diagnostics));
     assert.ok(Object.isFrozen(thrown.diagnostics[0]));
     assert.ok(Object.isFrozen(thrown.diagnostics[0]!.path));
+
+    assert.throws(
+      () => editor.read.schema.assertDocument(null),
+      /object with a children array/
+    );
+    assert.throws(
+      () => editor.read.schema.assertDocument({ roots: {} }),
+      /object with a children array/
+    );
+    assert.throws(
+      () => editor.read.schema.assertFragment({ children: [] }),
+      /fragment must be an array/
+    );
   });
 });

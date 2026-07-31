@@ -7,15 +7,12 @@ import {
   useEditorPlugin,
 } from '@platejs/core/react';
 import { ElementApi } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
-import type { BlockSelectionConfig } from './BlockSelectionPlugin';
+import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 import { useSelectionArea } from './useBlockSelection';
 
 export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
-  const { api, editor, store, update } = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
+  const { api, editor, store, update } = useEditorPlugin(BlockSelectionPlugin);
   const isSelectingSome = useSyncExternalStore(
     store.subscribe,
     () => store.get('isSelectingSome'),

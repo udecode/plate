@@ -367,41 +367,41 @@ Audit Requirements:
 
 2026-07-29 Lexical Sync Checklist:
 
-- [ ] Resolve the registered Lexical architecture, test, issue, manifest,
+- [x] Resolve the registered Lexical architecture, test, issue, manifest,
       matrix, branch, upstream, and artifact cursors before pulling.
-- [ ] Prove `../lexical` is clean and registered on `main` / `origin/main`,
+- [x] Prove `../lexical` is clean and registered on `main` / `origin/main`,
       then fast-forward only to the remote head.
-- [ ] Account for every changed file and meaningful declaration since the
+- [x] Account for every changed file and meaningful declaration since the
       registered architecture cursor; re-audit affected concepts, dependencies,
       consumers, public contracts, proof, performance, ownership, adoption, and
       deletion consequences.
-- [ ] Backfill a symmetric canonical Lexical concept manifest and exactly one
+- [x] Backfill a symmetric canonical Lexical concept manifest and exactly one
       strict matrix row per concept, including local-only mechanisms and prior
       candidates; pass `validate-concept-matrix.mjs` before making any global
       superiority claim.
-- [ ] Run the incremental Lexical test harvest from the independent
+- [x] Run the incremental Lexical test harvest from the independent
       `testHarvestCommit`; update stable artifacts or record an exact blocker
       without advancing the cursor.
-- [ ] Run Lexical issue refresh-only against the supported provider; preserve
+- [x] Run Lexical issue refresh-only against the supported provider; preserve
       prior decisions, update compact rows only, and record provider, coverage,
       counts, and freshness.
-- [ ] Reconcile every prior Lexical material candidate as still valid, changed,
+- [x] Reconcile every prior Lexical material candidate as still valid, changed,
       rejected, or reopened; update the master audit and strongest-local-law
       claims only where current source supports them.
-- [ ] Update the Lexical architecture report, source manifest, canonical
+- [x] Update the Lexical architecture report, source manifest, canonical
       matrix, master audit, registry, and directly stale Lexical provenance
       statements together at one verified commit.
-- [ ] Recheck clean HEAD/branch/upstream/ancestry, validate registry JSON and
+- [x] Recheck clean HEAD/branch/upstream/ancestry, validate registry JSON and
       artifact links, run all audit validators and the autogoal checker, and
       record exact source-unit, concept, exclusion, candidate, and unresolved
       counts.
-- [ ] Deliver the planning-only sync status and request acceptance without
+- [x] Deliver the planning-only sync status and request acceptance without
       implementation or git/public mutation.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Close zero-unmapped concepts, full candidate dossiers, cursors, registry, citation/count validation, review, and checker | 585 audit checks pass; autogoal checker passes |
+| Named verification threshold | yes | Close zero-unmapped concepts, full candidate dossiers, cursors, registry, citation/count validation, review, and checker | 592 audit checks pass; autogoal checker passes |
 | Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Five exhaustive source manifests and ledgers |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Six accepted dossiers; complete keep/reject/move/defer ledger |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Dossiers, donor dispositions, and evidence-backed reopen gates |
@@ -411,7 +411,7 @@ Completion Gates:
 | Implementation gates | no | N/A: planning-only; no product code, runtime, tests, or package APIs may change | N/A: implementation explicitly excluded |
 | Final handoff contract | yes | Record recommendation, evidence, caveats, residual risk, and next owner | Final recommendation, issue caveat, and per-packet routing recorded |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent when files changed | Scoped Node syntax, JSON parse, artifact validators, and `git diff --check`; generated and exhaustive-ledger formatting preserved |
-| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Five accidental broad outputs recorded; all later reads artifacted/bounded |
+| Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | Six accidental broad outputs recorded; all later reads artifacted/bounded |
 | Timed checkpoint | no | N/A: no duration requested | N/A: no timebox |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-07-25-multi-editor-full-architecture-audit.md` | passed after Wordgard sync closure |
 
@@ -428,9 +428,9 @@ Phase / pass table:
 | Review / pressure pass | completed | independent pressure review reduced ten draft rows to six material packets | done |
 | Implementation or plan artifact | completed | planning artifact only; no product implementation authorized | done |
 | Wordgard delta sync | completed | one source statement, zero test-tree changes, zero issue metadata changes, no material packet | done |
-| Lexical delta sync | in progress | registered cursor resolved; strict-matrix backfill and latest-source pull pending | pull and audit |
-| Verification | pending | prior 585-check closure is historical; rerun current strict matrix, audit, registry, source, and autogoal gates | after Lexical reconciliation |
-| Closeout | pending | prior decision-ready audit is reopened only for the registered Lexical delta | final response |
+| Lexical delta sync | completed | fast-forwarded to `dd5c41b13193efa9ab1574234d8593d2c9e4f988`; 59 source concepts and 73 symmetric rows close with two material candidates | done |
+| Verification | completed | strict matrix, 592-check audit, Lexical source/test/issue/citation validator, registry, JSON, reference provenance, and autogoal gates pass | done |
+| Closeout | completed | planning-only Lexical result is decision-ready; no product implementation or public mutation | request acceptance |
 
 Findings:
 
@@ -1245,7 +1245,7 @@ export const BaseSubscriptPlugin = createBasePlugin({
   update: ({ editor, tx, type }) => ({
     toggle: () =>
       tx.marks.toggle(type, true, {
-        clear: editor.getType(KEYS.sup),
+        clear: editor.plugin(KEYS.sup).type,
       }),
   }),
 });
@@ -2506,7 +2506,7 @@ as `A5`, use their own typed descriptor and registry—not dependency API lookup
 ## Complete donor dispositions
 
 The per-reference ledgers contain one independent judgment for every atomic
-concept: Wordgard 73, Lexical 48, and ProseMirror 64. This family ledger closes
+concept: Wordgard 73, Lexical 59, and ProseMirror 64. This family ledger closes
 the final target without hiding a donor mechanism behind grouped praise.
 
 | Donor mechanism family                                                       | Final verdict                                | Reason                                                                                                                                                                                                                                              |
@@ -2652,7 +2652,7 @@ change an architecture verdict.
 | Reference   | Cursor                                                                              | Inventory                                                                          | Result                                                                            |
 | ----------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Wordgard    | `01eb2b5eae509509677345fd603acad001827dff`                                          | 27 files, 24 runnable, 644 cases, 33 families; test tree unchanged                 | zero uncertain; source-only mobile key phase is an explicit raw-device proof gate |
-| Lexical     | `d52f66e250e031a6c6fd8836d160373b0df557c7`                                          | 271 artifacts, 196 runnable, 137 portable/mixed runnable, 2,095 indexed call sites | zero uncertain; descriptor inference supports `A6`; browser rows remain proof     |
+| Lexical     | `dd5c41b13193efa9ab1574234d8593d2c9e4f988`                                          | 405 artifacts, 351 runnable, 278 portable/mixed runnable, 4,212 indexed call sites | zero uncertain; browser and feature-package rows remain independent proof input   |
 | ProseMirror | composite `sha256:8a8158142c4d7f27635ad76eb698113183f6da1a9b453e81f2d275b8a5a86c84` | 47 test/support files, 1,369 named rows, 23 behavior families                      | zero uncertain; fitter/clipboard/browser/history laws routed to their real owners |
 
 ### Issue metadata refresh
@@ -2660,7 +2660,7 @@ change an architecture verdict.
 | Reference   | Verified at            | Host total | Open / closed | Added unchecked | Metadata re-read | Verified provider omissions |
 | ----------- | ---------------------- | ---------: | ------------: | --------------: | ---------------: | --------------------------: |
 | Wordgard    | `2026-07-27T14:28:47Z` |         27 |        7 / 20 |               0 |                0 |                           0 |
-| Lexical     | `2026-07-25T23:13:33Z` |      2,782 |   310 / 2,472 |              41 |              132 |                           7 |
+| Lexical     | `2026-07-29T13:25:57.084Z` |      2,786 |   313 / 2,473 |               4 |                0 |                           0 |
 | ProseMirror | `2026-07-25T23:13:33Z` |      1,420 |   111 / 1,309 |               0 |    11 label-only |                           2 |
 
 The commit-aware registry is
@@ -2694,7 +2694,7 @@ and is therefore unknown for this request.
 
 ## Closure
 
-- Donor concepts evaluated: Wordgard 73/73, Lexical 48/48, ProseMirror 64/64.
+- Donor concepts evaluated: Wordgard 73/73, Lexical 59/59, ProseMirror 64/64.
 - Local concepts evaluated: Plite 32/32, Plate 45/45.
 - Unmapped source units/declarations: 0.
 - Material proposals: 6; every dossier has current/proposed public and internal
@@ -2723,3 +2723,85 @@ The latest Wordgard sync does not change that recommendation. Do not copy its
 platform-wide keymap bypass. If raw-device proof reproduces the swipe-input or
 autocapitalization bug in Plite, repair the existing default-action phase
 predicate while preserving explicit app, modifier, and hardware-key bindings.
+
+## 2026-07-29 Lexical full sync
+
+This section is the current Lexical authority and supersedes older
+Lexical-specific counts, candidate claims, and cursors above. Wordgard and
+ProseMirror were not fetched in this sync.
+
+### Source and symmetric coverage
+
+- Fast-forward: `d52f66e250e031a6c6fd8836d160373b0df557c7` →
+  `dd5c41b13193efa9ab1574234d8593d2c9e4f988`, 392 commits and 1,542
+  changed paths.
+- Full current tree: 2,107 tracked units, 1,895 relevant, 212 exact
+  exclusions, 7,450 declarations, 59 source-derived concepts, zero
+  unexplained units or declarations.
+- Symmetric union: 59 Lexical concepts plus 14 local-only Plite/Plate
+  mechanisms, exactly 73 strict matrix rows, zero grouped/missing/duplicate
+  rows, zero canned qualitative profiles, and zero unresolved prior
+  candidates.
+- Live local refresh at `01847c776dcf16738ba173b60053fc55828cf7a4`:
+  Plite 2,330 files / 6,042 declarations / 32 concepts / zero unmapped;
+  Plate 1,648 included files / 6,977 declarations / 45 concepts / 135 exact
+  exclusions. The current local manifests, not the historical audit counts,
+  back the winner claims.
+- The initial pull transcript exceeded the intended bounded output. All
+  subsequent reads used counted queries or durable artifacts; no claim relies
+  on the truncated transcript.
+
+Current artifacts:
+
+- [Lexical architecture ledger](./artifacts/multi-editor-full-architecture-audit/lexical-architecture-ledger.md)
+- [Lexical source manifest](./artifacts/multi-editor-full-architecture-audit/lexical-source-manifest.json)
+- [Lexical canonical concept manifest](./artifacts/multi-editor-full-architecture-audit/lexical-concept-manifest.json)
+- [Lexical canonical matrix](./artifacts/multi-editor-full-architecture-audit/lexical-concept-matrix.md)
+- [Lexical test harvest](../editor-test-harvester/lexical/report.md)
+- [Lexical issue refresh](../editor-issue-harvester/lexical/full/issue-refresh.md)
+
+### Updated recommendation
+
+Current Plite/Plate is the preferred base for 69 of 73 concepts. Two
+product-specific concepts are different tradeoffs. Two Lexical ideas clear the
+material-value gate:
+
+| Priority | Concept | Decision | Target | Delete / avoid | Next owner |
+| --- | --- | --- | --- | --- | --- |
+| P1 | `LX-MDAST` | Adapt feature-owned MDAST import/export contributions into ordinary Plate `text/markdown` codec contributions. | Each feature plugin owns its Markdown rule; `MarkdownPlugin` keeps the document pipeline and API. | Delete feature entries from central `defaultRules`; do not add a Markdown-specific plugin grammar or Lexical extension bundles. | `plate-plan` |
+| P2 | `LX-CORE-REFCOUNT` | Move document-global selection listener ownership into a ref-counted DOM document runtime. | One native `selectionchange` listener per `Document`, routed to mounted root runtimes. | Delete per-root native registration; add no public provider, option, hook, or editor API. | `plite-plan` |
+
+The [Lexical architecture ledger](./artifacts/multi-editor-full-architecture-audit/lexical-architecture-ledger.md)
+contains current/proposed public and internal shapes, adoption, deletion,
+typing, runtime, browser, and performance proof for both packets.
+
+The prior Lexical-origin `A6` candidate is superseded. Current Plite already
+has descriptor-owned dependencies/conflicts, immutable config, typed
+`api`/`read`/`update`, contribution points, atomic publication, rollback,
+dynamic replacement, and activation cleanup. Importing Lexical's mutable
+`init`/`build`/`register` phases or string peer/conflict edges would make the
+API worse.
+
+Rejected architecture transplants:
+
+- class-node `$config()` synthesis;
+- named node slots instead of element-owned roots;
+- `DOMSlot`, `DOMRenderExtension`, and `DOMImportExtension`;
+- generic editor-owned focus traps and roving tabindex;
+- `GenMap` without a common-model benchmark;
+- reactive/mutable extension phases and service lookup;
+- playground, devtools, website, and packaging policy.
+
+Portable shadow-DOM, IME, composition, iOS/Android, Firefox/Safari,
+clipboard, collaboration, and slot-concurrency cases remain test-harvest
+input. No real-device claim was made or tested.
+
+### Independent cursor closure
+
+| Audit | Repository | Audited commit | Current head | Architecture | Matrix | Tests | Issues | Overall |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `wordgard-lexical-prosemirror-full` | `github.com/facebook/lexical` | `dd5c41b13193efa9ab1574234d8593d2c9e4f988` | `dd5c41b13193efa9ab1574234d8593d2c9e4f988` | current: 59/59 | current: 73/73 strict | current: 405 rows, 351 runnable, 278 indexed files, 4,212 calls, 0 uncertain | current: `2026-07-29T13:25:57.084Z`, 2,786 rows, 4 new unchecked | decision-ready |
+
+Implementation remains out of scope. Accept the two packets to route them to
+their layer plans; reject them and the registered audit remains current with
+no product change.

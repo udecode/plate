@@ -24,7 +24,7 @@ import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plu
 jsxt;
 
 const insertData = (editor: BaseEditor, data: DataTransfer) => {
-  editor.api.clipboard.insertData(data);
+  editor.api.dom.clipboard.insertData(data);
 };
 
 describe('when inserting html', () => {

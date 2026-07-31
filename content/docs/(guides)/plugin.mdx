@@ -12,11 +12,11 @@ Plate plugins are highly configurable, allowing you to customize their behavior 
 
 ### New Plugin
 
-The most basic plugin configuration requires only a `key`:
+The most basic plugin configuration requires only a `name`:
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: "minimal",
+  name: "minimal",
 });
 ```
 
@@ -47,7 +47,7 @@ Declare a new element with `schema.element`:
 import { schema } from "platejs";
 
 const ParagraphPlugin = createPlatePlugin({
-  key: "p",
+  name: "p",
   type: "p",
   schema: {
     element: { content: schema.content.text({ default: "text", min: 1 }) },
@@ -61,7 +61,7 @@ You can associate a component with your element. See [Plugin Components](/docs/p
 import { schema } from "platejs";
 
 const ParagraphPlugin = createPlatePlugin({
-  key: "p",
+  name: "p",
   type: "p",
   schema: {
     element: { content: schema.content.text({ default: "text", min: 1 }) },
@@ -78,7 +78,7 @@ with a property descriptor under `schema.mark`:
 import { property, schema } from "platejs";
 
 const LinkPlugin = createPlatePlugin({
-  key: "link",
+  name: "link",
   type: "a",
   schema: {
     element: {
@@ -89,13 +89,13 @@ const LinkPlugin = createPlatePlugin({
 });
 
 const ImagePlugin = createPlatePlugin({
-  key: "image",
+  name: "image",
   type: "img",
   schema: { element: { void: "block" } },
 });
 
 const BoldPlugin = createPlatePlugin({
-  key: "bold",
+  name: "bold",
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -127,23 +127,24 @@ See the [Plugin Rules guide](/docs/plugin-rules) for a complete list of availabl
 
 ### Event Handlers
 
-The recommended way to respond to user-generated events from inside a plugin is
-the `handlers` field. A handler receives a
+The `on` field owns both editor lifecycle and React DOM events. A DOM handler receives a
 `PlatePluginContext & { event }` object.
 
-The `onChange` handler, which is called when the editor value changes, is an exception to this rule; the context object includes the changed `value` instead of `event`.
+Child names do not repeat the `on` prefix. Lifecycle handlers use names such as
+`commit`, `nodeChange`, and `textChange`; DOM handlers use `keyDown`, `paste`,
+and `click`.
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
-  handlers: {
-    onChange: ({ editor, value })  => {
-      console.info(editor, value);
+  on: {
+    commit: ({ editor, snapshot }) => {
+      console.info(editor, snapshot.children);
     },
-    onKeyDown: ({ editor, event }) => {
+    keyDown: ({ editor, event }) => {
       console.info(`You pressed ${event.key}`);
     },
   },
-  key: "example",
+  name: "example",
 });
 ```
 
@@ -152,18 +153,18 @@ const ExamplePlugin = createPlatePlugin({
 You may want to inject a class name or CSS property into any node having a certain property. For example, the following plugin sets the `textAlign` CSS property on paragraphs with an `align` property.
 
 ```ts showLineNumbers
-import { KEYS, property, target } from 'platejs';
+import { KEYS, property, target } from "platejs";
 
 const TextAlignPlugin = createPlatePlugin({
   codecs: ({ defineCodecs }) =>
     defineCodecs({
-      'text/html': {
+      "text/html": {
         decode: ({ element }) => element.style.textAlign || undefined,
         encode: ({ value }) => ({ style: { textAlign: value } }),
         match: [
           {
             style: {
-              textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+              textAlign: ["start", "left", "center", "right", "end", "justify"],
             },
           },
         ],
@@ -177,16 +178,16 @@ const TextAlignPlugin = createPlatePlugin({
       validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
   },
-  key: "align",
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  name: "align",
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
-        typeChange: 'preserve-if-allowed',
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
+        typeChange: "preserve-if-allowed",
       }),
     ],
   }),
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
 });
 ```
 
@@ -194,7 +195,7 @@ const TextAlignPlugin = createPlatePlugin({
 binds the bidirectional HTML claim to this plugin's schema. `defineCodecs`
 keeps `value` inferred from the property declaration. Both paths use the
 plugin's resolved `type`, so terminal `.configure({ type })` changes the stored
-property without duplicating a key in the codec.
+property without duplicating the plugin name in the codec.
 
 A paragraph node affected by the plugin looks like this:
 
@@ -212,29 +213,27 @@ Put plugin reads and services under `api`, and document mutations under
 `update`. Constructor callbacks receive the plugin context.
 
 ```ts
-type CustomPluginState = {
+export type CustomPluginState = {
   prefix: string;
-};
-
-const initialState: CustomPluginState = {
-  prefix: "Note: ",
 };
 
 const CustomPlugin = createPlatePlugin({
   api: ({ store }) => ({
-    getPrefix: () => store.get('prefix'),
+    getPrefix: () => store.get("prefix"),
   }),
-  initialState,
-  key: "custom",
+  initialState: {
+    prefix: "Note: ",
+  } satisfies CustomPluginState,
+  name: "custom",
   update: ({ store, tx }) => ({
     insertPrefix: () => {
-      tx.text.insert(store.get('prefix'));
+      tx.text.insert(store.get("prefix"));
     },
   }),
 });
 ```
 
-After the plugin resolves, concrete editors infer its reads on the root API and one-shot writes use the keyed update helper:
+After the plugin resolves, concrete editors infer its reads on the root API and one-shot writes use the name-scoped update helper:
 
 ```ts
 editor.api.custom.getPrefix();
@@ -244,38 +243,42 @@ editor.update.custom.insertPrefix();
 Generic package code can reach the same immutable API object through
 `editor.plugin(CustomPlugin).api.getPrefix()`.
 
-### Install Plite Extensions (Advanced)
+### Native Plite Capabilities
 
-Put Plite substrate behavior under the `extension` contribution: schema facts,
-state groups, transaction groups, corrections, commands, query middleware, and
-runtime services.
+Plate plugins declare Plite capabilities directly at the plugin root. Use
+`readMiddleware`, `commands`, `corrections`, `stateFields`, `effectTypes`,
+`facetProviders`, `selectionKinds`, `contributions`, `on`, `activate`, and
+`validate` without a second wrapper.
 
 ```ts showLineNumbers
-import { createPlatePlugin } from "platejs/react";
+import { createPlatePlugin, defineStateField } from "platejs";
+
+const enabledField = defineStateField({
+  initial: false,
+  key: "customState.enabled",
+});
 
 const CustomStatePlugin = createPlatePlugin({
-  extension: {
-    state: {
-      customState() {
-        return {
-          enabled: () => true,
-        };
-      },
+  name: "customState",
+  stateFields: [enabledField],
+  read: ({ state }) => ({
+    enabled: () => state.getField(enabledField),
+  }),
+  on: {
+    commit: ({ commit }) => {
+      console.info(commit.changed);
     },
   },
-  key: "customState",
 });
 ```
 
 <Callout type="info" title="Extensions, APIs, and commands">
-  Put independent `extension`, `api`, `read`, and `update` fields in the
-  constructor. Use `.extend()` only for an imported/prebuilt descriptor, a
-  shared factory the constructor cannot access, or an earlier-stage type.
+  Put every independent capability in the constructor. Use `.extend()` only for
+  an imported/prebuilt descriptor, a shared factory the constructor cannot
+  access, or an earlier-stage type.
 </Callout>
 
-Return plain extension objects from Plate constructor and `.extend()`
-callbacks. Keep Plate context capture inline and extract domain inputs. An
-independently reusable standalone Plite descriptor uses
+An independently reusable standalone Plite descriptor uses
 `defineEditorExtension` from `@platejs/plite`. See
 [Plugin Methods](/docs/plugin-methods#install-plite-capabilities).
 
@@ -296,9 +299,9 @@ const initialState: MyPluginState = {
 
 const MyPlugin = createPlatePlugin({
   initialState,
-  key: "myPlugin",
-  handlers: {
-    onClick: ({ store }) => {
+  name: "myPlugin",
+  on: {
+    click: ({ store }) => {
       store.set({ count: 1 });
     },
   },
@@ -333,11 +336,11 @@ See more in [Plugin Context](/docs/plugin-context) and [Editor Methods](/docs/ed
 
 ### Dependencies
 
-Declare required plugins with their plugin objects. Plate installs the dependency graph recursively, deduplicates plugins by key, and loads dependencies before their dependents.
+Declare required plugins with their plugin objects. Plate installs the dependency graph recursively, deduplicates plugins by name, and loads dependencies before their dependents.
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: "myPlugin",
+  name: "myPlugin",
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -348,7 +351,7 @@ The `enabled` property allows you to conditionally enable or disable a plugin:
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: "myPlugin",
+  name: "myPlugin",
   enabled: true, // or false to disable
 });
 ```
@@ -360,7 +363,7 @@ When an enhancement needs a host, the enhancement depends on the host:
 
 ```ts
 const CodeHighlightPlugin = createPlatePlugin({
-  key: "codeHighlight",
+  name: "codeHighlight",
   dependencies: [CodeBlockPlugin],
 });
 
@@ -391,13 +394,13 @@ fragment.
 
 ```ts
 const HtmlCleanupPlugin = createPlatePlugin({
-  key: 'htmlCleanup',
+  name: "htmlCleanup",
   parsers: {
     html: {
       query: ({ data, format }) =>
-        format === 'text/html' && data.includes('<!--StartFragment-->'),
+        format === "text/html" && data.includes("<!--StartFragment-->"),
       transformData: ({ data }) =>
-        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
+        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
     },
   },
 });
@@ -409,13 +412,13 @@ whole-input hooks.
 
 ## Typed Plugins
 
-Using above methods, plugin types are automatically inferred from the given configuration.
-
-If you need to pass an explicit type as generic, you can use `createPlatePlugin`.
+`createPlatePlugin` infers one exact definition from the author object. Keep
+state contracts explicit with a typed `initialState` value or `satisfies`;
+do not pass caller generics to the factory.
 
 ### Using createPlatePlugin
 
-The `createPlatePlugin` function allows you to create a typed plugin:
+The inferred definition carries the plugin name, state, API, reads, and updates:
 
 ```ts
 export type CodeBlockPluginState = {
@@ -425,25 +428,25 @@ export type CodeBlockPluginState = {
 };
 
 const initialState: CodeBlockPluginState = {
-  language: 'typescript',
+  language: "typescript",
   syntax: true,
   syntaxPopularFirst: false,
 };
 
 export const CodeBlockPlugin = createPlatePlugin({
   api: ({ store }) => ({
-    getLanguage: () => store.get('language'),
-    getSyntaxState: () => store.get('syntax'),
+    getLanguage: () => store.get("language"),
+    getSyntaxState: () => store.get("syntax"),
   }),
   initialState,
-  key: 'codeBlock',
-  type: 'code_block',
+  name: "codeBlock",
+  type: "code_block",
   update: ({ store, tx }) => ({
     insertCodeBlock: () => {
       tx.nodes.insert({
-        type: 'code_block',
-        language: store.get('language'),
-        children: [{ text: '' }],
+        type: "code_block",
+        language: store.get("language"),
+        children: [{ text: "" }],
       });
     },
   }),

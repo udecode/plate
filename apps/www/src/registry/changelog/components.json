@@ -1,6 +1,12 @@
 {
   "schemaVersion": 1,
   "components": {
+    "ai-menu": [
+      "2026-07-31-simplify-ai-chat-source-commands",
+      "2026-07-26-plugin-store-state",
+      "2026-01-09-support-using-ai-features-tables-improve-prompts",
+      "2025-11-20-biome-ultracite"
+    ],
     "code-drawing-demo": [
       "2026-07-29-preserve-feature-example-wiring",
       "2026-07-26-fix-code-drawing-demo",
@@ -118,11 +124,6 @@
       "2026-07-26-plugin-store-state",
       "2026-07-24-compose-markdown-footnotes",
       "2026-07-23-terminal-plugin-configure"
-    ],
-    "ai-menu": [
-      "2026-07-26-plugin-store-state",
-      "2026-01-09-support-using-ai-features-tables-improve-prompts",
-      "2025-11-20-biome-ultracite"
     ],
     "ai-node": ["2026-07-26-plugin-store-state"],
     "block-context-menu": [

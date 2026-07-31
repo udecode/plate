@@ -34,7 +34,7 @@ export type EmojiPluginState = {
 } & TriggerComboboxPluginState;
 
 export const BaseEmojiInputPlugin = createBasePlugin({
-  key: KEYS.emojiInput,
+  name: KEYS.emojiInput,
   schema: {
     element: {
       properties: {
@@ -61,21 +61,21 @@ const emojiInitialState: EmojiPluginState = {
 };
 
 export const BaseEmojiPlugin = createBasePlugin({
-  key: KEYS.emoji,
+  name: KEYS.emoji,
   dependencies: [BaseEmojiInputPlugin],
   initialState: emojiInitialState,
 
   editOnly: true,
-  extension: ({ editor, plugin, store, type }) =>
-    createTriggerComboboxExtension({
-      editor,
-      getState: () => store.get(),
-      name: plugin.key,
-      type,
-    }),
   update: ({ store, tx }) => ({
     insert: (emoji: Emoji) => {
       tx.nodes.insert(store.get('createEmojiNode')(emoji));
     },
   }),
-});
+}).extend(({ editor, plugin, store, type }) =>
+  createTriggerComboboxExtension({
+    editor,
+    getState: () => store.get(),
+    name: plugin.name,
+    type,
+  })
+);

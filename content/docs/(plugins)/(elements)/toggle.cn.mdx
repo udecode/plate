@@ -92,10 +92,10 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     IndentPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
-        TogglePlugin.key,
+        ParagraphPlugin.name,
+        TogglePlugin.name,
       ],
     }),
     TogglePlugin.configure({ component: ToggleElement }),
@@ -104,7 +104,7 @@ const editor = createPlateEditor({
 ```
 
 - `component`: 指定 [`ToggleElement`](/docs/components/toggle-node) 渲染折叠元素
-- `IndentPlugin.targetPluginKeys`: 配置支持缩进的元素插件类型（包括折叠项）
+- `IndentPlugin.targetPluginNames`: 配置支持缩进的元素插件名称（包括折叠项）
 
 ### 添加工具栏按钮
 

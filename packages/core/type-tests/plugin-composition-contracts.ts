@@ -1,50 +1,18 @@
-import type {
-  AnyPluginConfig,
-  BasePlugin,
-  InferDependencies,
-  InferPluginStoreState,
-  PluginConfig,
-  PluginReference,
-} from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
 import { defineStateField, editorCommands } from '@platejs/plite';
 import {
   createPlateEditor,
   createPlatePlugin,
   toPlatePlugin,
+  useEditorPlugin,
 } from '@platejs/core/react';
 
-type PluginConfigOf<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : never;
-
 export const DeclarationSafeBaseExtensionPlugin = createBasePlugin({
-  key: 'declarationSafeBaseExtension',
+  name: 'declarationSafeBaseExtension',
   initialState: { enabled: true },
 })
   .extend(({ store }) => ({
-    extension: {
-      corrections: [
-        {
-          correct() {
-            void store.get().enabled;
-          },
-          event: 'content',
-        },
-      ],
-    },
-  }))
-  .configure(({ store }) => ({
-    initialState: { enabled: store.get().enabled },
-  }));
-
-export const DeclarationSafeReactExtensionPlugin = createPlatePlugin({
-  key: 'declarationSafeReactExtension',
-  initialState: { enabled: true },
-}).extend(({ store }) => ({
-  extension: {
     corrections: [
       {
         correct() {
@@ -53,88 +21,80 @@ export const DeclarationSafeReactExtensionPlugin = createPlatePlugin({
         event: 'content',
       },
     ],
-  },
+  }))
+  .configure(({ store }) => ({
+    initialState: { enabled: store.get().enabled },
+  }));
+
+export const DeclarationSafeReactExtensionPlugin = createPlatePlugin({
+  name: 'declarationSafeReactExtension',
+  initialState: { enabled: true },
+}).extend(({ store }) => ({
+  corrections: [
+    {
+      correct() {
+        void store.get().enabled;
+      },
+      event: 'content',
+    },
+  ],
 }));
 
 const RequiredLeafPlugin = createBasePlugin({
-  key: 'requiredLeaf',
-  api: {
+  api: () => ({
     read: () => 'required' as const,
-  },
-}).extend(() => ({
+  }),
+  name: 'requiredLeaf',
   update: () => ({
     runRequiredLeaf: () => undefined,
   }),
-}));
+});
 
 const RequiredBranchPlugin = createBasePlugin({
-  dependencies: [RequiredLeafPlugin],
-  key: 'requiredBranch',
-  api: {
+  api: () => ({
     read: () => 'branch' as const,
-  },
+  }),
+  dependencies: [RequiredLeafPlugin],
+  name: 'requiredBranch',
 });
 
 export const DependencyAwareBaseExtensionPlugin = createBasePlugin({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) => {
+      const exactText: string = input.text;
+
+      void exactText;
+
+      return state.transaction((tx) => {
+        tx.requiredLeaf.runRequiredLeaf();
+        // @ts-expect-error Extension transactions expose installed dependency groups only.
+        tx.missingDependency.run();
+      });
+    }),
+  ],
   dependencies: [RequiredLeafPlugin],
-  key: 'dependencyAwareBaseExtension',
-}).extend(() => ({
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertText, ({ input, state }) => {
-        const exactText: string = input.text;
-
-        void exactText;
-
-        return state.transaction((tx) => {
-          tx.requiredLeaf.runRequiredLeaf();
-          // @ts-expect-error Extension transactions expose installed dependency groups only.
-          tx.missingDependency.run();
-        });
-      }),
-    ],
-  },
-}));
+  name: 'dependencyAwareBaseExtension',
+});
 
 const portableStateField = defineStateField({
   initial: false,
   key: 'portable-extension-contract',
 });
 
-type PortableExplicitContract = {
-  api: {
-    pluginMethod: (value: 'plugin') => 'plugin';
-  };
-  update: {
-    mutate: (value: 'update') => void;
-  };
-};
-
-const PortableExplicitPlugin = createBasePlugin<
-  PluginConfig<
-    'portableExplicit',
-    {},
-    {},
-    { portableExplicit: PortableExplicitContract['update'] },
-    {},
-    {},
-    readonly [],
-    never,
-    PortableExplicitContract['api']
-  >
->({
-  api: {
-    pluginMethod: (value) => value,
-  },
-  key: 'portableExplicit',
+const PortableExplicitPlugin = createBasePlugin({
+  api: () => ({
+    pluginMethod: (value: 'plugin') => value,
+  }),
+  name: 'portableExplicit',
+  stateFields: [portableStateField],
   update: () => ({
-    mutate: (value) => {
+    mutate: (value: 'update') => {
       const exactValue: 'update' = value;
 
       void exactValue;
     },
   }),
-}).extend({ extension: [portableStateField] });
+});
 const portableExplicitEditor = createBaseEditor({
   plugins: [PortableExplicitPlugin],
 });
@@ -150,77 +110,64 @@ void portableExplicitEditor.state.portableExplicit;
 void portablePluginValue;
 
 const ExplicitInlineExtensionPlugin = createBasePlugin({
-  key: 'explicitInlineExtension',
-  api: { ready: () => true },
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertText, ({ input, state }) => {
-        const exactText: string = input.text;
+  api: () => ({ ready: () => true }),
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) => {
+      const exactText: string = input.text;
 
-        void exactText;
+      void exactText;
 
-        return state.transaction(() => undefined);
-      }),
-    ],
-    name: 'explicit-inline-extension',
-  },
+      return state.transaction(() => undefined);
+    }),
+  ],
+  name: 'explicitInlineExtension',
 });
 
 void ExplicitInlineExtensionPlugin;
 
-const DeclaredRootExtensionPlugin = createBasePlugin({
-  key: 'declaredRootExtension',
-  extension: {
-    api: () => ({
-      declaredRoot: {
-        value: () => 'declared' as const,
-      },
-    }),
-    name: 'declared-root-extension',
-  },
+const DeclaredApiPlugin = createBasePlugin({
+  api: () => ({
+    value: () => 'declared' as const,
+  }),
+  name: 'declaredApi',
 });
 const declaredRootEditor = createBaseEditor({
-  plugins: [DeclaredRootExtensionPlugin],
+  plugins: [DeclaredApiPlugin],
 });
 const declaredRootValue: 'declared' =
-  declaredRootEditor.api.declaredRoot.value();
+  declaredRootEditor.api.declaredApi.value();
 
 void declaredRootValue;
 
 export const ParentPlugin = createBasePlugin({
+  api: ({ editor }) => ({
+    readDependencies: () =>
+      `${editor.api.requiredBranch.read()}:${editor.api.requiredLeaf.read()}` as const,
+  }),
   dependencies: [RequiredBranchPlugin],
-  key: 'parent',
-}).extend(({ editor }) => ({
+  name: 'parent',
   update: ({ tx }) => ({
     runParent: () => {
-      const branch: 'branch' = editor.api.requiredBranch.read();
-      const required: 'required' = editor.api.requiredLeaf.read();
-
       tx.requiredLeaf.runRequiredLeaf();
-      void branch;
-      void required;
     },
   }),
-}));
+});
 
-type ParentConfig = PluginConfigOf<typeof ParentPlugin>;
-type ParentDependencyConfig = PluginConfigOf<
-  InferDependencies<ParentConfig>[0]
->;
-const exactParentDependencies: readonly [typeof RequiredBranchPlugin] =
-  ParentPlugin.dependencies;
-const parentDependenciesRoundTrip: InferDependencies<ParentConfig> =
-  exactParentDependencies;
-const dependencyOptionsStayOnDescriptor: keyof InferPluginStoreState<ParentDependencyConfig> extends never
-  ? true
-  : false = true;
+type ParentDefinition = DefinitionOf<typeof ParentPlugin>;
+type ParentDependencies = ParentDefinition['dependencies'];
+declare const parentDependency: ParentDependencies[0];
+const exactParentDependencyName: 'requiredBranch' = parentDependency.name;
+const exactRuntimeParentDependencyName: 'requiredBranch' =
+  ParentPlugin.dependencies[0].name;
 
-void dependencyOptionsStayOnDescriptor;
-void parentDependenciesRoundTrip;
+void exactParentDependencyName;
+void exactRuntimeParentDependencyName;
 
 const baseEditor = createBaseEditor({ plugins: [ParentPlugin] });
 
 const branchValue: 'branch' = baseEditor.api.requiredBranch.read();
+const parentDependencyValue: 'branch:required' =
+  baseEditor.api.parent.readDependencies();
 const requiredValue: 'required' = baseEditor.api.requiredLeaf.read();
 
 baseEditor.update((tx) => {
@@ -229,38 +176,12 @@ baseEditor.update((tx) => {
 });
 
 void branchValue;
+void parentDependencyValue;
 void requiredValue;
-
-type DeclarationFallbackDependency = PluginReference & {
-  readonly __config: AnyPluginConfig;
-};
-type DeclarationFallbackOwnerConfig = PluginConfig<
-  'declarationFallbackOwner',
-  {},
-  {},
-  {
-    declarationFallbackOwner: {
-      run: () => void;
-    };
-  },
-  {},
-  {},
-  readonly DeclarationFallbackDependency[]
->;
-declare const declarationFallbackOwner: BasePlugin<DeclarationFallbackOwnerConfig>;
-const declarationFallbackEditor = createBaseEditor({
-  plugins: [declarationFallbackOwner],
-});
-
-declarationFallbackEditor.update((tx) => {
-  tx.declarationFallbackOwner.run();
-  // @ts-expect-error An unresolved dependency cannot publish arbitrary updates.
-  tx.unresolvedDependency.run();
-});
 
 const TransitiveParentPlugin = createBasePlugin({
   dependencies: [ParentPlugin],
-  key: 'transitiveParent',
+  name: 'transitiveParent',
 });
 const transitiveEditor = createBaseEditor({
   plugins: [TransitiveParentPlugin],
@@ -280,11 +201,11 @@ ParentPlugin.configure({
 });
 
 const DisabledAtCreationPlugin = createBasePlugin({
-  enabled: false,
-  key: 'disabledAtCreation',
-  api: {
+  api: () => ({
     read: () => true,
-  },
+  }),
+  enabled: false,
+  name: 'disabledAtCreation',
 });
 const disabledAtCreationEditor = createBaseEditor({
   plugins: [DisabledAtCreationPlugin],
@@ -294,10 +215,10 @@ const disabledAtCreationEditor = createBaseEditor({
 disabledAtCreationEditor.api.disabledAtCreation.read();
 
 const ReplacementLeafPlugin = createBasePlugin({
-  key: 'requiredLeaf',
-  api: {
+  api: () => ({
     readReplacement: () => 'replacement' as const,
-  },
+  }),
+  name: 'requiredLeaf',
 });
 const replacementEditor = createBaseEditor({
   plugins: [ParentPlugin, ReplacementLeafPlugin],
@@ -311,103 +232,164 @@ replacementEditor.api.requiredLeaf.read();
 void replacementValue;
 
 const ReactRequiredLeafPlugin = createPlatePlugin({
-  key: 'reactRequiredLeaf',
-  api: {
+  api: () => ({
     read: () => 'react-required' as const,
-  },
-}).extend(() => ({
+  }),
+  name: 'reactRequiredLeaf',
   update: () => ({
     runReactRequiredLeaf: () => undefined,
   }),
-}));
+});
 export const DependencyAwareReactExtensionPlugin = createPlatePlugin({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertText, ({ input, state }) => {
+      const exactText: string = input.text;
+
+      void exactText;
+
+      return state.transaction((tx) => {
+        tx.reactRequiredLeaf.runReactRequiredLeaf();
+        // @ts-expect-error Extension transactions expose installed dependency groups only.
+        tx.missingDependency.run();
+      });
+    }),
+  ],
   dependencies: [ReactRequiredLeafPlugin],
-  key: 'dependencyAwareReactExtension',
-}).extend(() => ({
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertText, ({ input, state }) => {
-        const exactText: string = input.text;
-
-        void exactText;
-
-        return state.transaction((tx) => {
-          tx.reactRequiredLeaf.runReactRequiredLeaf();
-          // @ts-expect-error Extension transactions expose installed dependency groups only.
-          tx.missingDependency.run();
-        });
-      }),
-    ],
-  },
-}));
+  name: 'dependencyAwareReactExtension',
+});
 export const ReactParentPlugin = createPlatePlugin({
   dependencies: [ReactRequiredLeafPlugin],
-  key: 'reactParent',
+  name: 'reactParent',
 });
 
-type ReactParentConfig = PluginConfigOf<typeof ReactParentPlugin>;
-const exactReactDependencies: readonly [typeof ReactRequiredLeafPlugin] =
-  ReactParentPlugin.dependencies;
-const reactDependenciesRoundTrip: InferDependencies<ReactParentConfig> =
-  exactReactDependencies;
+type ReactParentDefinition = DefinitionOf<typeof ReactParentPlugin>;
+type ReactParentDependencies = ReactParentDefinition['dependencies'];
+declare const reactParentDependency: ReactParentDependencies[0];
+const exactReactParentDependencyName: 'reactRequiredLeaf' =
+  reactParentDependency.name;
+const exactRuntimeReactParentDependencyName: 'reactRequiredLeaf' =
+  ReactParentPlugin.dependencies[0].name;
 
-void reactDependenciesRoundTrip;
+void exactReactParentDependencyName;
+void exactRuntimeReactParentDependencyName;
 
 const reactEditor = createPlateEditor({ plugins: [ReactParentPlugin] });
 
 reactEditor.api.reactRequiredLeaf.read();
 
-const StaticDependencyPlugin = createPlatePlugin({
-  key: 'staticDependency',
-  api: {
-    read: () => true,
-  },
-});
-const ConvertedParentPlugin = toPlatePlugin(ParentPlugin, {
-  dependencies: [StaticDependencyPlugin],
-});
+const ConvertedParentPlugin = toPlatePlugin(ParentPlugin);
 const convertedEditor = createPlateEditor({
   plugins: [ConvertedParentPlugin],
 });
 
-convertedEditor.api.staticDependency.read();
-// @ts-expect-error Static conversion replaces the Base dependency tuple.
 convertedEditor.api.requiredBranch.read();
+convertedEditor.update.requiredLeaf.runRequiredLeaf();
+const convertedPortal = convertedEditor.plugin(ConvertedParentPlugin);
 
-toPlatePlugin(
-  ParentPlugin,
-  // @ts-expect-error Runtime conversion callbacks cannot change topology.
-  () => ({ dependencies: [StaticDependencyPlugin] })
+convertedPortal.update.runParent();
+convertedEditor.update.requiredLeaf.runRequiredLeaf();
+
+// @ts-expect-error Consumer portals do not expose the editor.
+convertedPortal.editor.update.requiredLeaf.runRequiredLeaf();
+
+// @ts-expect-error Converted portals expose only the owner's declared updates.
+convertedPortal.update.missingUpdate();
+
+const useConvertedParentPortalContract = () => {
+  const portal = useEditorPlugin(ConvertedParentPlugin);
+
+  portal.editor.update.requiredLeaf.runRequiredLeaf();
+  // @ts-expect-error React hook portals exclude unknown dependency updates.
+  portal.editor.update.missingDependency.run();
+};
+
+void useConvertedParentPortalContract;
+
+const AdapterDependencyPlugin = toPlatePlugin(
+  createBasePlugin({
+    name: 'adapterDependencyOwner',
+  }),
+  {
+    dependencies: [ReactRequiredLeafPlugin],
+  }
 );
+const adapterDependencyEditor = createPlateEditor({
+  plugins: [AdapterDependencyPlugin],
+});
+
+adapterDependencyEditor.update.reactRequiredLeaf.runReactRequiredLeaf();
+const adapterDependencyPortal = adapterDependencyEditor.plugin(
+  AdapterDependencyPlugin
+);
+
+// @ts-expect-error Consumer portals do not expose the editor.
+adapterDependencyPortal.editor.update.reactRequiredLeaf.runReactRequiredLeaf();
+
+// @ts-expect-error Adapter dependencies do not widen to unknown update methods.
+adapterDependencyEditor.update.reactRequiredLeaf.missingUpdate();
+
+const AdapterDependencyA = createPlatePlugin({
+  name: 'adapterDependencyA',
+  update: () => ({ runA: () => undefined }),
+});
+const AdapterDependencyB = createPlatePlugin({
+  name: 'adapterDependencyB',
+  update: () => ({ runB: () => undefined }),
+});
+const AdapterDependencyC = createPlatePlugin({
+  name: 'adapterDependencyC',
+  update: () => ({ runC: () => undefined }),
+});
+const AdapterDependencyD = createPlatePlugin({
+  name: 'adapterDependencyD',
+  update: () => ({ runD: () => undefined }),
+});
+const FourDependencyAdapterPlugin = toPlatePlugin(
+  createBasePlugin({ name: 'fourDependencyAdapter' }),
+  {
+    dependencies: [
+      AdapterDependencyA,
+      AdapterDependencyB,
+      AdapterDependencyC,
+      AdapterDependencyD,
+    ],
+  }
+);
+const fourDependencyAdapterEditor = createPlateEditor({
+  plugins: [FourDependencyAdapterPlugin],
+});
+
+fourDependencyAdapterEditor.update.adapterDependencyA.runA();
+fourDependencyAdapterEditor.update.adapterDependencyB.runB();
+fourDependencyAdapterEditor.update.adapterDependencyC.runC();
+fourDependencyAdapterEditor.update.adapterDependencyD.runD();
 
 const ConvertedExtensionInferencePlugin = toPlatePlugin(
   ParentPlugin,
   ({ editor }) => ({
-    extension: {
-      commands: ({ around }) => [
-        around(editorCommands.insertText, ({ input, next, state }) => {
-          const exactText: string = input.text;
+    commands: ({ around }) => [
+      around(editorCommands.insertText, ({ input, next, state }) => {
+        const exactText: string = input.text;
 
-          void exactText;
-          void state.selection();
+        void exactText;
+        void state.selection();
 
-          return next();
-        }),
-      ],
-      corrections: [
-        {
-          correct({ entry, tx }) {
-            void entry[0];
-            void tx.nodes.some();
-          },
-          event: 'content',
+        return next();
+      }),
+    ],
+    corrections: [
+      {
+        correct({ entry, tx }) {
+          void entry[0];
+          void tx.nodes.some();
         },
-      ],
-      on: {
-        commit({ commit }) {
-          void commit.tags;
-          editor.api.requiredBranch.read();
-        },
+        event: 'content',
+      },
+    ],
+    on: {
+      commit({ commit }) {
+        void commit.tags;
+        editor.api.requiredBranch.read();
       },
     },
   })

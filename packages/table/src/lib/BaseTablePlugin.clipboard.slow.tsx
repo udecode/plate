@@ -487,7 +487,7 @@ describe('table clipboard slow contracts', () => {
           nodeId: true,
           plugins: [
             BaseTablePlugin.extend(() => ({
-              api: {
+              api: () => ({
                 createCell: () => ({
                   background: 'custom',
                   children: [
@@ -498,7 +498,7 @@ describe('table clipboard slow contracts', () => {
                   ],
                   type: 'td',
                 }),
-              },
+              }),
             })).configure({
               initialState: {
                 disableMerge: true,

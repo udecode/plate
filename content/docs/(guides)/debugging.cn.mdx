@@ -104,15 +104,15 @@ try {
 
 ### 1. 记录已提交的变更
 
-使用 Plite 扩展的 `onCommit` 观察已发布的规范变更：
+使用插件根级 `on.commit` 观察已发布的规范变更：
 
 ```ts
 import { createPlatePlugin } from 'platejs/react';
 
 const LoggingPlugin = createPlatePlugin({
-  key: 'logging',
-  extension: {
-    onCommit({ commit }) {
+  name: 'logging',
+  on: {
+    commit({ commit }) {
       console.debug('Document change:', commit.changes);
     },
   },

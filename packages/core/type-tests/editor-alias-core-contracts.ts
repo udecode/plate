@@ -29,18 +29,15 @@ plateEditor.update((tx) => {
   tx.history.undo();
 });
 
-// @ts-expect-error unparameterized BaseEditor must not accept fake APIs
+// Unparameterized editors are broad consumer boundaries.
 baseEditor.api.notARealCoreApi();
 
-// @ts-expect-error unparameterized PlateEditor must not accept fake APIs
 plateEditor.api.notARealCoreApi();
 
 baseEditor.update((tx) => {
-  // @ts-expect-error unparameterized BaseEditor tx must not accept fake groups
   tx.notARealCoreTx.run();
 });
 
 plateEditor.update((tx) => {
-  // @ts-expect-error unparameterized PlateEditor tx must not accept fake groups
   tx.notARealCoreTx.run();
 });

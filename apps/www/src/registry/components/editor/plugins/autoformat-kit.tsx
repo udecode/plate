@@ -8,10 +8,13 @@ import {
   KEYS,
 } from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: BaseEditor) =>
-  editor.read.nodes.some({
-    match: { type: editor.getType(KEYS.codeBlock) },
+const isTextSubstitutionBlocked = (editor: BaseEditor) => {
+  const codeBlock = editor.plugin(KEYS.codeBlock);
+
+  return editor.read.nodes.some({
+    match: { type: codeBlock.installed ? codeBlock.type : KEYS.codeBlock },
   });
+};
 
 const createAutoformatTextSubstitutionRule = ({
   patterns,
@@ -161,7 +164,7 @@ const superscriptSymbolsRule = createAutoformatTextSubstitutionRule({
 });
 
 const AutoformatShortcutsPlugin = createBasePlugin({
-  key: 'autoformatShortcuts',
+  name: 'autoformatShortcuts',
   inputRules: [
     legalRule,
     legalHtmlRule,

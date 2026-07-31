@@ -1,4 +1,4 @@
-import type { InferConfig } from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 import { createPlatePlugin } from '@platejs/core/react';
 import { PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
@@ -11,13 +11,15 @@ import type {
 import { TabbableEffects } from './TabbableEffects';
 
 export const TabbablePlugin = createPlatePlugin({
-  key: KEYS.tabbable,
+  name: KEYS.tabbable,
   initialState: ({ editor }): TabbablePluginState => ({
     globalEventListener: false,
     insertTabbableEntries: (_event) => [],
     isTabbable: (entry) => editor.read.schema.isVoid(entry.slateNode),
     query: (_event) => true,
   }),
+  render: { afterEditable: TabbableEffects },
+}).extend({
   read: ({ state }) => ({
     findDestination: ({
       activeTabbableEntry,
@@ -67,7 +69,6 @@ export const TabbablePlugin = createPlatePlugin({
         : null;
     },
   }),
-  render: { afterEditable: TabbableEffects },
 });
 
-export type TabbableConfig = InferConfig<typeof TabbablePlugin>;
+export type TabbableDefinition = DefinitionOf<typeof TabbablePlugin>;

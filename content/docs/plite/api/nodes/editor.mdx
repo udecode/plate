@@ -18,8 +18,19 @@ interface BaseEditor<
   >;
   readonly anchor: EditorAnchorApi;
   readonly id: string;
-  extend(extension: EditorExtensionInput<any>): () => void;
-  getApi(extension: EditorExtension): unknown;
+  extend(
+    extension: EditorExtensionInput,
+    options?: EditorExtensionReconfigureOptions
+  ): () => void;
+  extension<const TExtension extends EditorExtensionReference>(
+    extension: TExtension,
+    ...guard: EditorInstalledExtensionGuard<
+      TExtension,
+      TExtensions
+    > extends never
+      ? [never]
+      : []
+  ): EditorExtensionPortal<TExtension>;
   read: EditorRead<V, TExtensions>;
   subscribe(listener: SnapshotListener): () => void;
   subscribeCommit(listener: (commit: EditorCommit) => void): () => void;
@@ -59,8 +70,8 @@ const editor = createEditor({
 });
 ```
 
-Extensions define schema, corrections, commit listeners, typed state and
-transaction groups, and optional runtime APIs.
+Extensions define schema, corrections, commit listeners, owner-local read and
+update groups, and optional runtime APIs.
 
 `maxLength` limits user-facing text, fragment, and node insertions. Adapter-owned
 canonical change application remains outside user insertion policy.
@@ -348,24 +359,19 @@ import {
 
 const TableSchema = defineEditorSchema({
   elements: {
-    tableCell: {
-      content: schema.content.text({ default: "text", min: 1 }),
+    tableCell: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
       properties: {
         colSpan: property.number({ default: 1, omitDefault: true }),
         rowSpan: property.number({ default: 1, omitDefault: true }),
       },
-    },
-  },
-  id: "table-document",
-  root: {
-    content: schema.content.type("tableCell", {
-      default: { type: "tableCell" },
-      min: 1,
     }),
   },
-  unknown: "reject",
+  id: "table-document",
+  root: schema.content.type("tableCell", {
+    min: 1,
+  }),
   version: 1,
 });
 const tableCell = schema.handle.element(TableSchema, "tableCell");
@@ -389,7 +395,7 @@ const behavior = editor.read((state) => ({
 Common schema checks include:
 
 - `state.schema.allowsElementType(parentType, childType)`
-- `state.schema.createAndFill(type, properties?)`
+- `state.schema.create(type, properties?)`
 - `state.schema.createDefaultRootChild(root?)`
 - `state.schema.delta()`
 - `state.schema.element(type)`
@@ -408,11 +414,11 @@ Common schema checks include:
 - `state.schema.isKeyboardSelectable(element)`
 - `state.schema.isReadOnly(element)`
 - `state.schema.isVoid(element)`
-- `state.schema.markableVoid(element)`
+- `state.schema.isMarkableVoid(element)`
 - `state.schema.isSelectable(element)`
 - `state.schema.property({ key, placement, type? })`
-- `state.schema.validateDocument(document)`
-- `state.schema.validateFragment(children)`
+- `state.schema.assertDocument(document)`
+- `state.schema.assertFragment(children)`
 
 `state.schema.identity()` always returns either a derived identity or a named
 identity. Derived schemas omit `id` and `version`; named schemas provide both
@@ -435,17 +441,16 @@ Extensions expose mounted host and runtime services through `editor.api`.
 
 ```javascript
 editor.api.dom.focus();
-editor.api.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
 ```
 
 Use `api` for services that are not transaction-scoped document mutations:
 DOM/React bridges, clipboard ingress, mounted overlay handles, measurements, or
 framework adapters. Do not put product editing commands there.
-If a feature changes Plite model state, expose it as a `tx` group and call it
-inside `editor.update(...)`.
+If a feature changes Plite model state, expose it as an `update` group.
 
-Use `editor.getApi(extension)` when the call site owns the extension token and
-needs the typed API for that extension.
+Use `editor.extension(Extension).api` when the call site owns the extension
+descriptor and needs its typed API.
 
 ## Subscribing to commits
 
@@ -482,7 +487,7 @@ Call the returned function to unsubscribe.
 ## Installing and reconfiguring extensions
 
 Install statically known extensions when the editor is created. This preserves
-their inferred `state`, `tx`, and `api` groups.
+their inferred `read`, `update`, and `api` groups.
 
 ```javascript
 const editor = createEditor({ extensions: [myExtension] as const });
@@ -491,7 +496,7 @@ const editor = createEditor({ extensions: [myExtension] as const });
 #### `editor.extend(extension, options?) => () => void`
 
 Install a host-selected extension after creation. Plite compiles and validates
-a detached configuration candidate, publishes and activates it atomically, then
+a detached extension candidate, publishes and activates it atomically, then
 emits one commit. The commit includes the migrated document when `options`
 provides one. Calling the returned cleanup function publishes the corresponding
 removal through the same lifecycle.

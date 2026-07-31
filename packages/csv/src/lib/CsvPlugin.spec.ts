@@ -6,49 +6,48 @@ import {
 import { ElementApi, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
-import * as csv from '../index';
 import { CsvPlugin } from './CsvPlugin';
 
 const TestTableCellPlugin = createBasePlugin({
-  key: KEYS.td,
+  name: KEYS.td,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
         default: { type: plugins.elementType(BaseParagraphPlugin) },
         min: 1,
       }),
-      topLevel: false,
+      blockContent: false,
     },
   }),
 });
 const TestTableHeaderPlugin = createBasePlugin({
-  key: KEYS.th,
+  name: KEYS.th,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
         default: { type: plugins.elementType(BaseParagraphPlugin) },
         min: 1,
       }),
-      topLevel: false,
+      blockContent: false,
     },
   }),
 });
 const TestTableRowPlugin = createBasePlugin({
   dependencies: [TestTableCellPlugin, TestTableHeaderPlugin],
-  key: KEYS.tr,
+  name: KEYS.tr,
   schema: ({ plugins }) => ({
     element: {
       content: schema.content.types(
         plugins.elementTypes([TestTableCellPlugin, TestTableHeaderPlugin]),
         { default: { type: plugins.elementType(TestTableCellPlugin) }, min: 1 }
       ),
-      topLevel: false,
+      blockContent: false,
     },
   }),
 });
 const TestTablePlugin = createBasePlugin({
   dependencies: [TestTableRowPlugin],
-  key: KEYS.table,
+  name: KEYS.table,
   schema: ({ plugins }) => ({
     element: {
       content: schema.content.type(plugins.elementType(TestTableRowPlugin), {
@@ -99,7 +98,6 @@ const getCellTypes = (
 describe('CsvPlugin', () => {
   it('exposes initial state, scoped/root api, and the plain-text codec', () => {
     const editor = createCsvEditor();
-    const plugin = editor.getPlugin(CsvPlugin);
     const data = 'name,age\nAda,36';
     const dataTransfer = new DataTransfer();
 
@@ -113,15 +111,10 @@ describe('CsvPlugin', () => {
     });
     expect(typeof editor.api.csv.deserialize).toBe('function');
     expect(typeof editor.plugin(CsvPlugin).api.deserialize).toBe('function');
-    expect('deserializeCsv' in csv).toBe(false);
-    expect('deserializeCsvWithContext' in csv).toBe(false);
-    expect('parser' in plugin).toBe(false);
-    expect(editor.api.clipboard.insertData(dataTransfer)).toBe(true);
-    expect(editor.read.children()).toEqual(
-      editor.api.csv.deserialize({ data }) as ReturnType<
-        typeof editor.read.children
-      >
-    );
+    expect(editor.api.dom.clipboard.insertData(dataTransfer)).toBe(true);
+    const content = editor.api.csv.deserialize({ data });
+
+    expect(content).toEqual([...editor.read.children()]);
   });
 
   it('reads live state without changing document schema identity', () => {

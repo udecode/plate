@@ -7,7 +7,7 @@ import { FloatingToolbarButtons } from '@/registry/ui/floating-toolbar-classic-b
 
 export const FloatingToolbarKit = [
   createPlatePlugin({
-    key: 'floating-toolbar',
+    name: 'floating-toolbar',
     render: {
       afterEditable: () => (
         <FloatingToolbar>

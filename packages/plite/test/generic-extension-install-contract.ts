@@ -1,8 +1,12 @@
 import {
   createEditor,
+  type DefinitionOf,
   type Descendant,
   defineEditorExtension,
+  type EditorExtensionTypeProvider,
+  type Value,
 } from '@platejs/plite';
+import type { EditorExtensionTypeLambda } from '@platejs/plite/internal';
 
 type CustomText = {
   text: string;
@@ -14,7 +18,7 @@ type ChecklistElement = {
   children: CustomText[];
 };
 
-type CustomValue = ChecklistElement[];
+type CustomValue = readonly ChecklistElement[];
 
 const typeOnly = (_callback: () => void) => {};
 
@@ -24,35 +28,25 @@ const initialValue: CustomValue = [
 
 const ChecklistExtension = defineEditorExtension({
   name: 'checklist',
-  state: {
-    checklist(state) {
-      return {
-        isActive: () => state.selection() != null,
-        value: () => state.children() as CustomValue,
-      };
+  read: ({ state }) => ({
+    isActive: () => state.selection() != null,
+    value: () => state.children() as CustomValue,
+  }),
+  update: ({ tx }) => ({
+    toggle() {
+      tx.nodes.set({ checked: true }, { at: [0, 0] });
     },
-  },
-  tx: {
-    checklist(tx) {
-      return {
-        toggle() {
-          tx.nodes.set({ checked: true }, { at: [0, 0] });
-        },
-        value: () => tx.children() as CustomValue,
-      };
-    },
-  },
+    value: () => tx.children() as CustomValue,
+  }),
 });
 
 const RuntimeHostExtension = defineEditorExtension({
-  name: 'runtime-host',
-  api: {
-    runtimeHost: {
-      status() {
-        return 'ready' as const;
-      },
+  api: () => ({
+    status() {
+      return 'ready' as const;
     },
-  },
+  }),
+  name: 'runtime-host',
 });
 
 const editor = createEditor({
@@ -77,52 +71,172 @@ editor.update((tx) => {
 });
 editor.update.checklist.toggle();
 
-const hostStatus: 'ready' = editor.api.runtimeHost.status();
-const tokenHostStatus: 'ready' = editor.getApi(RuntimeHostExtension).status();
+const hostStatus: 'ready' = editor.api['runtime-host'].status();
+const tokenHostStatus: 'ready' = editor
+  .extension(RuntimeHostExtension)
+  .api.status();
 
 const OtherRuntimeHostExtension = defineEditorExtension({
-  name: 'other-runtime-host',
-  api: {
-    runtimeHost: {
-      status() {
-        return 'ready' as const;
-      },
+  api: () => ({
+    status() {
+      return 'ready' as const;
     },
-  },
+  }),
+  name: 'other-runtime-host',
 });
 
+type ValueEchoExtensionTypes<V extends Value> = {
+  read: {
+    valueEcho: {
+      value: () => V;
+    };
+  };
+};
+
+interface ValueEchoExtensionTypeLambda extends EditorExtensionTypeLambda {
+  readonly output: ValueEchoExtensionTypes<this['input']>;
+}
+
+const ValueEchoExtension = defineEditorExtension({
+  name: 'value-echo',
+}) as ReturnType<typeof defineEditorExtension> &
+  EditorExtensionTypeProvider<ValueEchoExtensionTypeLambda> & {
+    name: 'value-echo';
+  };
+const ValueEchoCarrierExtension = defineEditorExtension({
+  dependencies: [ValueEchoExtension],
+  name: 'value-echo-carrier',
+});
+const directValueEchoEditor = createEditor({
+  initialValue,
+  extensions: [ValueEchoExtension] as const,
+});
+const transitiveValueEchoEditor = createEditor({
+  initialValue,
+  extensions: [ValueEchoCarrierExtension] as const,
+});
+const widenedValueEchoExtensions: readonly (
+  | typeof OtherRuntimeHostExtension
+  | typeof ValueEchoExtension
+)[] = [ValueEchoExtension];
+const widenedValueEchoEditor = createEditor({
+  initialValue,
+  extensions: widenedValueEchoExtensions,
+});
+type InferredCustomValue = readonly {
+  readonly children: readonly {
+    readonly checked?: boolean;
+    readonly text: string;
+  }[];
+  readonly type: string;
+}[];
+const _directValueEcho: InferredCustomValue =
+  directValueEchoEditor.read.valueEcho.value();
+const _transitiveValueEcho: InferredCustomValue =
+  transitiveValueEchoEditor.read.valueEcho.value();
+const _widenedValueEcho: InferredCustomValue =
+  widenedValueEchoEditor.read.valueEcho.value();
+
 const TransitiveRuntimeHostExtension = defineEditorExtension({
-  api: {
-    transitiveRuntimeHost: {
-      status: () => 'transitive' as const,
-    },
-  },
-  name: 'transitive-runtime-host',
+  api: () => ({
+    status: () => 'transitive' as const,
+  }),
+  name: 'transitiveRuntimeHost',
 });
 
 const TransitiveConsumerExtension = defineEditorExtension({
-  api(runtimeEditor) {
-    const host = runtimeEditor.getApi(TransitiveRuntimeHostExtension);
+  api({ editor }) {
+    const host = editor.extension(TransitiveRuntimeHostExtension).api;
 
     return {
-      transitiveConsumer: {
-        status: host.status,
-      },
+      status: host.status,
     };
   },
   dependencies: [TransitiveRuntimeHostExtension],
-  name: 'transitive-consumer',
+  name: 'transitiveConsumer',
+});
+
+const TransitiveRootExtension = defineEditorExtension({
+  api({ editor }) {
+    return {
+      status: editor.extension(TransitiveRuntimeHostExtension).api.status,
+    };
+  },
+  dependencies: [TransitiveConsumerExtension] as const,
+  name: 'transitiveRoot',
 });
 
 const transitiveEditor = createEditor({
-  extensions: [TransitiveConsumerExtension] as const,
+  extensions: [TransitiveRootExtension] as const,
 });
 const transitiveHostStatus: 'transitive' = transitiveEditor
-  .getApi(TransitiveRuntimeHostExtension)
-  .status();
+  .extension(TransitiveRuntimeHostExtension)
+  .api.status();
 const transitiveConsumerStatus: 'transitive' = transitiveEditor
-  .getApi(TransitiveConsumerExtension)
-  .status();
+  .extension(TransitiveConsumerExtension)
+  .api.status();
+const transitiveRootStatus: 'transitive' = transitiveEditor
+  .extension(TransitiveRootExtension)
+  .api.status();
+
+type Equal<TLeft, TRight> =
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2
+    ? true
+    : false;
+type Expect<T extends true> = T;
+type TransitiveConsumerDefinition = DefinitionOf<
+  typeof TransitiveConsumerExtension
+>;
+type ConsumerDependencies = NonNullable<
+  TransitiveConsumerDefinition['dependencies']
+>;
+type ConsumerDependency = ConsumerDependencies[number];
+type _keepsPublicDependenciesShallow = Expect<
+  Equal<
+    Extract<keyof ConsumerDependency, 'api' | 'read' | 'schema' | 'update'>,
+    never
+  >
+>;
+type _keepsPublicDependencyName = Expect<
+  Equal<ConsumerDependency['name'], 'transitiveRuntimeHost'>
+>;
+type _keepsPublicDependencyTuple = Expect<
+  Equal<ConsumerDependencies['length'], 1>
+>;
+type _keepsDefinitionFieldsFlat = Expect<
+  Equal<
+    Extract<keyof TransitiveConsumerDefinition, string>,
+    'api' | 'dependencies' | 'name'
+  >
+>;
+type _keepsApiOutputInsteadOfFactory = Expect<
+  Equal<
+    TransitiveConsumerDefinition['api'] extends (...args: never[]) => unknown
+      ? true
+      : false,
+    false
+  >
+>;
+type _keepsDescriptorWitnessOutOfStringKeys = Expect<
+  Equal<
+    Extract<keyof typeof TransitiveConsumerExtension, string>,
+    'api' | 'dependencies' | 'name'
+  >
+>;
+type RuntimeConsumerDependency =
+  (typeof TransitiveConsumerExtension)['dependencies'][number];
+type _keepsRuntimeDependenciesShallow = Expect<
+  Equal<
+    Extract<
+      keyof RuntimeConsumerDependency,
+      'api' | 'read' | 'schema' | 'update'
+    >,
+    never
+  >
+>;
+type _keepsRuntimeDependencyName = Expect<
+  Equal<RuntimeConsumerDependency['name'], 'transitiveRuntimeHost'>
+>;
 
 defineEditorExtension({
   name: 'old-capabilities',
@@ -144,6 +258,34 @@ const DisabledRuntimeHostExtension = defineEditorExtension({
   name: 'runtime-host',
 });
 
+const DisabledDependencyConsumerExtension = defineEditorExtension({
+  api({ editor }) {
+    typeOnly(() => {
+      // @ts-expect-error disabled dependencies do not provide portals
+      editor.extension(DisabledRuntimeHostExtension);
+    });
+
+    return {};
+  },
+  dependencies: [DisabledRuntimeHostExtension],
+  name: 'disabled-dependency-consumer',
+});
+
+type DisabledDependencyConsumerDefinition = DefinitionOf<
+  typeof DisabledDependencyConsumerExtension
+>;
+type DisabledDependencyDefinition =
+  DisabledDependencyConsumerDefinition['dependencies'][number];
+type _keepsDisabledDependencyFlag = Expect<
+  Equal<DisabledDependencyDefinition['enabled'], false>
+>;
+type _keepsDisabledRuntimeDependencyFlag = Expect<
+  Equal<
+    (typeof DisabledDependencyConsumerExtension)['dependencies'][number]['enabled'],
+    false
+  >
+>;
+
 const disabledEditor = createEditor({
   initialValue,
   extensions: [
@@ -155,35 +297,75 @@ const disabledEditor = createEditor({
 });
 
 typeOnly(() => {
-  // @ts-expect-error disabled extensions do not contribute state groups
+  // @ts-expect-error disabled extensions do not contribute read groups
   disabledEditor.read((state) => state.checklist.isActive());
 
-  // @ts-expect-error disabled extensions do not contribute tx groups
+  // @ts-expect-error disabled extensions do not contribute update groups
   disabledEditor.update((tx) => tx.checklist.toggle());
 
   // @ts-expect-error disabled extensions do not contribute runtime API handles
   disabledEditor.api.runtimeHost.status();
 
   // @ts-expect-error disabled extension tokens cannot access installed API
-  disabledEditor.getApi(RuntimeHostExtension);
+  disabledEditor.extension(RuntimeHostExtension);
 });
 
+const DisabledRuntimeHostCarrierExtension = defineEditorExtension({
+  dependencies: [RuntimeHostExtension, DisabledRuntimeHostExtension],
+  name: 'disabled-runtime-host-carrier',
+});
+const disabledRuntimeHostDependencyEditor = createEditor({
+  initialValue,
+  extensions: [DisabledRuntimeHostCarrierExtension] as const,
+});
+
+typeOnly(() => {
+  // @ts-expect-error a later disabled dependency shadows the enabled descriptor
+  disabledRuntimeHostDependencyEditor.api['runtime-host'].status();
+
+  // @ts-expect-error a later disabled dependency removes the enabled portal
+  disabledRuntimeHostDependencyEditor.extension(RuntimeHostExtension);
+});
+
+const EnabledRuntimeHostCarrierExtension = defineEditorExtension({
+  dependencies: [DisabledRuntimeHostExtension, RuntimeHostExtension],
+  name: 'enabled-runtime-host-carrier',
+});
+const enabledRuntimeHostDependencyEditor = createEditor({
+  initialValue,
+  extensions: [EnabledRuntimeHostCarrierExtension] as const,
+});
+const _reenabledRuntimeHostStatus: 'ready' =
+  enabledRuntimeHostDependencyEditor.api['runtime-host'].status();
+const _reenabledRuntimeHostPortalStatus: 'ready' =
+  enabledRuntimeHostDependencyEditor
+    .extension(RuntimeHostExtension)
+    .api.status();
+
 const FirstSameNameExtension = defineEditorExtension({
+  api: () => ({
+    firstOnly: () => 'first-api' as const,
+  }),
   name: 'same-name',
-  api: {
-    sameName: {
-      firstOnly() {},
-    },
-  },
+  read: () => ({
+    firstOnly: () => 'first-read' as const,
+  }),
+  update: () => ({
+    firstOnly() {},
+  }),
 });
 
 const SecondSameNameExtension = defineEditorExtension({
+  api: () => ({
+    secondOnly: () => 'second-api' as const,
+  }),
   name: 'same-name',
-  api: {
-    sameName: {
-      secondOnly() {},
-    },
-  },
+  read: () => ({
+    secondOnly: () => 'second-read' as const,
+  }),
+  update: () => ({
+    secondOnly() {},
+  }),
 });
 
 const latestWinsEditor = createEditor({
@@ -191,37 +373,67 @@ const latestWinsEditor = createEditor({
   extensions: [FirstSameNameExtension, SecondSameNameExtension] as const,
 });
 
-latestWinsEditor.api.sameName.secondOnly();
+latestWinsEditor.api['same-name'].secondOnly();
 
 typeOnly(() => {
   // @ts-expect-error latest same-name extension replaces earlier type output
-  latestWinsEditor.api.sameName.firstOnly();
+  latestWinsEditor.api['same-name'].firstOnly();
 });
 
-latestWinsEditor.getApi(SecondSameNameExtension).secondOnly();
+latestWinsEditor.extension(SecondSameNameExtension).api.secondOnly();
 
 typeOnly(() => {
   // @ts-expect-error replaced extension tokens cannot access installed API
-  latestWinsEditor.getApi(FirstSameNameExtension);
+  latestWinsEditor.extension(FirstSameNameExtension);
+});
+
+const SameNameCarrierExtension = defineEditorExtension({
+  dependencies: [FirstSameNameExtension, SecondSameNameExtension],
+  name: 'same-name-carrier',
+});
+const transitiveLatestWinsEditor = createEditor({
+  initialValue,
+  extensions: [SameNameCarrierExtension] as const,
+});
+
+const _transitiveLatestApi: 'second-api' =
+  transitiveLatestWinsEditor.api['same-name'].secondOnly();
+const _transitiveLatestRead: 'second-read' =
+  transitiveLatestWinsEditor.read['same-name'].secondOnly();
+transitiveLatestWinsEditor.update['same-name'].secondOnly();
+transitiveLatestWinsEditor.extension(SecondSameNameExtension).api.secondOnly();
+
+typeOnly(() => {
+  // @ts-expect-error transitive latest same-name dependency replaces earlier API
+  transitiveLatestWinsEditor.api['same-name'].firstOnly();
+
+  // @ts-expect-error transitive latest same-name dependency replaces earlier read
+  transitiveLatestWinsEditor.read['same-name'].firstOnly();
+
+  // @ts-expect-error transitive latest same-name dependency replaces earlier update
+  transitiveLatestWinsEditor.update['same-name'].firstOnly();
+
+  // @ts-expect-error replaced transitive extension tokens are not installed
+  transitiveLatestWinsEditor.extension(FirstSameNameExtension);
 });
 
 const plainEditor = createEditor({ initialValue });
 
 typeOnly(() => {
-  // @ts-expect-error extension state groups are only present when installed
+  // @ts-expect-error extension read groups are only present when installed
   plainEditor.read((state) => state.checklist.isActive());
 
-  // @ts-expect-error extension tx groups are only present when installed
+  // @ts-expect-error extension update groups are only present when installed
   plainEditor.update((tx) => tx.checklist.toggle());
 
   // @ts-expect-error extension api handles are only present when installed
   plainEditor.api.runtimeHost.status();
 
   // @ts-expect-error capability lookup by string is not public API
-  editor.getApi('runtime-host');
+  editor.extension('runtime-host');
 
   // @ts-expect-error uninstalled extension tokens cannot access installed API
-  editor.getApi(OtherRuntimeHostExtension);
+  editor.extension(OtherRuntimeHostExtension);
 });
 
 const _keepsValueInference: Descendant = installedValue[0];
@@ -233,3 +445,4 @@ const _keepsTokenHostStatusInference: 'ready' = tokenHostStatus;
 const _keepsTransitiveHostInference: 'transitive' = transitiveHostStatus;
 const _keepsTransitiveConsumerInference: 'transitive' =
   transitiveConsumerStatus;
+const _keepsTransitiveRootInference: 'transitive' = transitiveRootStatus;

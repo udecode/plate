@@ -205,7 +205,7 @@ Check whether a DOM event target is inside a non-read-only void element.
 
 ## DataTransfer
 
-#### `editor.api.clipboard.insertData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertData(data: DataTransfer): boolean`
 
 Insert data from a `DataTransfer` into the editor. Returns `true` when Plite or
 an extension inserts content. The call owns one transaction or joins the active
@@ -216,26 +216,26 @@ that returns `true` stops the default import path. When no handler claims the
 data, Plite DOM tries an internal Plite slice for the editor's configured
 `clipboardFormatKey`, then plain text.
 
-#### `editor.api.clipboard.insertFragmentData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertFragmentData(data: DataTransfer): boolean`
 
 Insert Plite fragment data from a `DataTransfer`. Returns `true` when fragment
 content was inserted.
 
-#### `editor.api.clipboard.insertTextData(data: DataTransfer): boolean`
+#### `editor.api.dom.clipboard.insertTextData(data: DataTransfer): boolean`
 
 Insert plain text data from a `DataTransfer`. Returns `true` when text content
 was inserted.
 
-#### `editor.api.clipboard.readSlice(data: Pick<DataTransfer, 'getData' | 'types'>): ClipboardSliceRead`
+#### `editor.api.dom.clipboard.readSlice(data: Pick<DataTransfer, 'getData' | 'types'>): ClipboardSliceRead`
 
 Read one exact Plite slice. The result distinguishes absent data, invalid MIME
 or HTML data, and a valid `ContentSlice`.
 
-#### `editor.api.clipboard.writeSelection(data: Pick<DataTransfer, 'getData' | 'setData'>): void`
+#### `editor.api.dom.clipboard.writeSelection(data: Pick<DataTransfer, 'getData' | 'setData'>): void`
 
 Write the current selection to a `DataTransfer`.
 
-#### `editor.api.clipboard.writeSlice(data: Pick<DataTransfer, 'getData' | 'setData'>, payload: ClipboardSliceWrite): void`
+#### `editor.api.dom.clipboard.writeSlice(data: Pick<DataTransfer, 'getData' | 'setData'>, payload: ClipboardSliceWrite): void`
 
 Write one exact `ContentSlice` plus optional host MIME formats.
 

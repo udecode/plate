@@ -42,7 +42,7 @@ const articleSchema = (version: number, preserveContext = false) =>
       },
     },
     id: 'article',
-    root: { content: schema.content.type('paragraph') },
+    root: schema.content.type('paragraph'),
     unknown: 'reject',
     version,
   });
@@ -52,7 +52,7 @@ const requiredCardSchema = defineEditorSchema({
     card: { content: schema.content.text({ min: 1 }) },
   },
   id: 'required-card',
-  root: { content: schema.content.type('card', { min: 2 }) },
+  root: schema.content.type('card', { min: 2 }),
   unknown: 'reject',
   version: 1,
 });
@@ -101,7 +101,7 @@ const policySchema = ({
       },
     },
     id: 'article-policy-schema',
-    root: { content: schema.content.type('paragraph') },
+    root: schema.content.type('paragraph'),
     unknown: 'reject',
     version,
   });
@@ -492,7 +492,7 @@ describe('@platejs/yjs schema identity contract', () => {
     const assertActivePolicy = () => {
       const before = calls.length;
 
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         policyParagraph(expectedText, expectedPayloadRevision),
       ]);
 

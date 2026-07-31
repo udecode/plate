@@ -1,12 +1,7 @@
 import React from 'react';
 
 import { act, render } from '@testing-library/react';
-import {
-  Plate,
-  PlateContent,
-  createPlateEditor,
-  getEditorPlugin,
-} from '@platejs/core/react';
+import { Plate, PlateContent, createPlateEditor } from '@platejs/core/react';
 import { pipeHandler } from '@platejs/core/react/internal';
 
 import { DndPlugin } from './DndPlugin';
@@ -16,7 +11,7 @@ describe('DndPlugin', () => {
     const editor = createPlateEditor({
       plugins: [DndPlugin],
     });
-    const context = getEditorPlugin(editor, DndPlugin);
+    const context = editor.plugin(DndPlugin);
     const target = document.createElement('div');
     const dataTransfer = {
       dropEffect: 'none',
@@ -54,7 +49,7 @@ describe('DndPlugin', () => {
         }),
       ],
     });
-    const context = getEditorPlugin(editor, DndPlugin);
+    const context = editor.plugin(DndPlugin);
     const dataTransfer = {
       dropEffect: 'none',
       effectAllowed: 'none',
@@ -80,7 +75,7 @@ describe('DndPlugin', () => {
     const editor = createPlateEditor({
       plugins: [DndPlugin],
     });
-    const context = getEditorPlugin(editor, DndPlugin);
+    const context = editor.plugin(DndPlugin);
     const inside = document.createElement('div');
     const block = document.createElement('div');
     const blockText = document.createElement('span');
@@ -168,7 +163,7 @@ describe('DndPlugin', () => {
         }),
       ],
     });
-    const context = getEditorPlugin(editor, DndPlugin);
+    const context = editor.plugin(DndPlugin);
     const view = render(
       <Plate editor={editor}>
         <PlateContent />

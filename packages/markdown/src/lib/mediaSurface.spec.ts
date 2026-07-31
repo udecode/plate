@@ -29,6 +29,27 @@ Rich **caption**.
     );
   });
 
+  it('round-trips image attributes through the image plugin codec', () => {
+    const editor = createMediaEditor();
+    const input =
+      '<img alt="caption alt" height="180" src="/from-attr.png" width="320" />';
+    const document = editor.api.markdown.deserialize(input);
+
+    expect(document.children).toMatchObject([
+      {
+        alt: 'caption alt',
+        children: [{ text: '' }],
+        height: 180,
+        type: 'img',
+        url: '/from-attr.png',
+        width: 320,
+      },
+    ]);
+    expect(editor.api.markdown.serialize({ value: document })).toBe(
+      '<img alt="caption alt" height="180" width="320" src="/from-attr.png" />\n'
+    );
+  });
+
   it.each([
     {
       expected:

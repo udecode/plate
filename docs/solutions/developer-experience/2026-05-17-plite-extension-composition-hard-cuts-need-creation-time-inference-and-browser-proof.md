@@ -1,7 +1,7 @@
 ---
 title: Plite extension composition hard cuts need creation-time inference and browser proof
 date: 2026-05-17
-last_updated: 2026-05-17
+last_updated: 2026-07-30
 category: docs/solutions/developer-experience
 module: plite extension composition
 problem_type: developer_experience
@@ -32,8 +32,8 @@ docs, and React runtime paths still taught or depended on wrapper-era roots.
   wrapper-shaped casts.
 - Runtime React code still probed root `editor.undo()` / `editor.redo()` and
   root `editor.dom.clipboard`.
-- Public docs and examples still used `dom.clipboard.insertData` after the API
-  decision moved clipboard to sibling `editor.api.clipboard`.
+- Public docs and examples still used a root clipboard namespace instead of
+  the DOM-owned `editor.api.dom.clipboard`.
 - The scoped Ralph completion file correctly stayed `pending` while runnable
   browser and broad verification remained.
 
@@ -99,7 +99,7 @@ editor.api.history.withoutSaving(() => {
   })
 })
 
-editor.api.clipboard.insertData(data)
+editor.api.dom.clipboard.insertData(data)
 ```
 
 For React runtime history, stop probing root methods:
@@ -183,8 +183,8 @@ not bureaucracy. It prevents the stop hook from becoming a fake green light.
   that exercise the moved behavior, not only package typechecks.
 - Do not mark Ralph completion `done` while the continuation file names a
   runnable next action.
-- Handler keys should follow the public capability name. If users call
-  `editor.api.clipboard`, examples should not teach `dom.clipboard`.
+- Handler keys should follow the public capability name. Clipboard examples
+  use `editor.api.dom.clipboard`.
 - When mapping installed extension unions, distribute per extension and return
   `never` for empty groups. `unknown` is not a neutral element inside unions.
 - Test `enabled: false` both at runtime and in negative type contracts.

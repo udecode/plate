@@ -12,9 +12,10 @@ import { getCompiledSchemaPropertyId } from '@platejs/plite/internal';
 
 import type { BaseEditor, PlateSchemaIdentity } from '../../lib/editor';
 import type {
-  AnyPluginConfig,
+  AnyBasePluginDefinition,
   AnyBasePlugin,
   BasePlugin,
+  DefinitionOf,
   NodeComponents,
   PluginReference,
   PluginReferenceDocumentType,
@@ -40,17 +41,17 @@ export type CompiledPlateModelBinding = Readonly<{
   elementType: string | null;
   isDecoration: boolean;
   kind: 'element' | 'mark' | 'none';
-  pluginKey: string;
+  pluginName: string;
   properties: readonly SchemaProperty[];
   propertyIds: readonly string[];
-  referencedPluginKeys: readonly string[];
+  referencedPluginNames: readonly string[];
   textPropertyId: string | null;
   type: string;
 }>;
 
 export type CompiledPlateModel = Readonly<{
   bindings: readonly CompiledPlateModelBinding[];
-  byKey: Readonly<Record<string, CompiledPlateModelBinding | undefined>>;
+  byName: Readonly<Record<string, CompiledPlateModelBinding | undefined>>;
   byType: Readonly<Record<string, CompiledPlateModelBinding | undefined>>;
   contribution: EditorSchemaContribution;
   revision: object;
@@ -78,7 +79,7 @@ export const createPlateBlockContent = (options?: SchemaContentOptions) =>
 
 const EMPTY_MODEL: CompiledPlateModel = Object.freeze({
   bindings: Object.freeze([]),
-  byKey: Object.freeze(Object.create(null)),
+  byName: Object.freeze(Object.create(null)),
   byType: Object.freeze(Object.create(null)),
   contribution: Object.freeze({}),
   revision: Object.freeze({}),
@@ -101,7 +102,7 @@ const resolvedTargetBindings = new WeakMap<
 const candidatePluginSets = new WeakMap<
   object,
   Readonly<{
-    byKey: Readonly<Record<string, AnyBasePlugin | undefined>>;
+    byName: Readonly<Record<string, AnyBasePlugin | undefined>>;
     list: readonly AnyBasePlugin[];
   }>
 >();
@@ -112,15 +113,15 @@ type PendingReference = Readonly<{
 }>;
 
 type ResolvedPluginTargetBinding = Readonly<{
-  keys: readonly string[];
-  missingKeys: readonly string[];
+  missingNames: readonly string[];
+  names: readonly string[];
   plugins: readonly AnyBasePlugin[];
   types: readonly string[];
 }>;
 
 const compileResolvedPluginTargetBinding = (
   editor: BaseEditor,
-  plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
+  plugin: Pick<AnyBasePlugin, 'name' | 'targetPluginNames'>
 ): ResolvedPluginTargetBinding => {
   const owner = getPlateOwner(editor);
   let editorBindings = resolvedTargetBindings.get(owner);
@@ -132,21 +133,21 @@ const compileResolvedPluginTargetBinding = (
 
   const installed = new Map(
     getCompiledPlatePluginList(editor).map((candidate) => [
-      candidate.key,
+      candidate.name,
       candidate,
     ])
   );
   const plugins: AnyBasePlugin[] = [];
-  const missingKeys: string[] = [];
+  const missingNames: string[] = [];
   const seen = new Set<string>();
 
-  for (const key of plugin.targetPluginKeys) {
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const targetPlugin = installed.get(key);
+  for (const pluginName of plugin.targetPluginNames) {
+    if (seen.has(pluginName)) continue;
+    seen.add(pluginName);
+    const targetPlugin = installed.get(pluginName);
 
     if (!targetPlugin || targetPlugin.enabled === false) {
-      missingKeys.push(key);
+      missingNames.push(pluginName);
       continue;
     }
 
@@ -154,8 +155,8 @@ const compileResolvedPluginTargetBinding = (
   }
 
   const binding = Object.freeze({
-    keys: Object.freeze(plugins.map(({ key }) => key)),
-    missingKeys: Object.freeze(missingKeys),
+    missingNames: Object.freeze(missingNames),
+    names: Object.freeze(plugins.map(({ name }) => name)),
     plugins: Object.freeze(plugins),
     types: Object.freeze(plugins.map(({ type }) => type)),
   });
@@ -168,7 +169,7 @@ const compileResolvedPluginTargetBinding = (
 /** Internal compiled view of a plugin's weak, optional target allowlist. */
 export const getResolvedPluginTargetBinding = (
   editor: BaseEditor,
-  plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
+  plugin: Pick<AnyBasePlugin, 'name' | 'targetPluginNames'>
 ): ResolvedPluginTargetBinding => {
   const cached = resolvedTargetBindings
     .get(getPlateOwner(editor))
@@ -180,43 +181,43 @@ export const getResolvedPluginTargetBinding = (
 /** @internal Resolve the installed document types owned by one target binding. */
 export const getResolvedPluginTargetTypes = (
   editor: BaseEditor,
-  plugin: Pick<AnyBasePlugin, 'key' | 'targetPluginKeys'>
+  plugin: Pick<AnyBasePlugin, 'name' | 'targetPluginNames'>
 ) => getResolvedPluginTargetBinding(editor, plugin).types;
 
 const assertType = (plugin: AnyBasePlugin) => {
   if (typeof plugin.type !== 'string' || plugin.type.length === 0) {
     throw new Error(
-      `Plate plugin "${plugin.key}" type must be a non-empty string.`
+      `Plate plugin "${plugin.name}" type must be a non-empty string.`
     );
   }
 };
 
 const resolveReference = <const TPlugin extends PluginReference>(
   editor: BaseEditor,
-  owner: Readonly<{ key: string }>,
+  owner: Readonly<{ name: string }>,
   reference: TPlugin,
   references: PendingReference[]
 ): PluginReferenceDocumentType<TPlugin> => {
   if (!isNominalPluginReference(reference)) {
     throw new Error(
-      `Plate plugin "${owner.key}" schema references an invalid plugin descriptor.`
+      `Plate plugin "${owner.name}" schema references an invalid plugin descriptor.`
     );
   }
 
-  const target = getCompiledPlatePlugin(editor, reference.key);
+  const target = getCompiledPlatePlugin(editor, reference.name);
 
   if (!target) {
     throw new Error(
-      `Plate plugin "${owner.key}" schema references missing or disabled plugin "${reference.key}".`
+      `Plate plugin "${owner.name}" schema references missing or disabled plugin "${reference.name}".`
     );
   }
   if (target.type !== reference.type) {
     throw new Error(
-      `Plate plugin "${owner.key}" schema reference "${reference.key}" expects type "${reference.type}" but the installed plugin owns "${target.type}".`
+      `Plate plugin "${owner.name}" schema reference "${reference.name}" expects type "${reference.type}" but the installed plugin owns "${target.type}".`
     );
   }
 
-  references.push(Object.freeze({ owner: owner.key, target: target.key }));
+  references.push(Object.freeze({ owner: owner.name, target: target.name }));
 
   return reference.type;
 };
@@ -229,19 +230,19 @@ type PluginReferenceTypes<TPlugins extends readonly PluginReference[]> = {
 
 function resolveReferences<const TPlugins extends readonly PluginReference[]>(
   editor: BaseEditor,
-  owner: Readonly<{ key: string }>,
+  owner: Readonly<{ name: string }>,
   items: TPlugins,
   references: PendingReference[]
 ): PluginReferenceTypes<TPlugins>;
 function resolveReferences(
   editor: BaseEditor,
-  owner: Readonly<{ key: string }>,
+  owner: Readonly<{ name: string }>,
   items: readonly PluginReference[],
   references: PendingReference[]
 ): readonly string[];
 function resolveReferences(
   editor: BaseEditor,
-  owner: Readonly<{ key: string }>,
+  owner: Readonly<{ name: string }>,
   items: readonly PluginReference[],
   references: PendingReference[]
 ): readonly string[] {
@@ -252,19 +253,21 @@ function resolveReferences(
   );
 }
 
-const resolvePluginKeys = (
+const resolvePluginNames = (
   editor: BaseEditor,
-  owner: Readonly<{ key: string }>,
-  pluginKeys: readonly string[],
+  owner: Readonly<{ name: string }>,
+  pluginNames: readonly string[],
   references: PendingReference[]
 ) =>
   Object.freeze(
-    pluginKeys.flatMap((pluginKey) => {
-      const target = getCompiledPlatePlugin(editor, pluginKey);
+    pluginNames.flatMap((pluginName) => {
+      const target = getCompiledPlatePlugin(editor, pluginName);
 
       if (!target) return [];
 
-      references.push(Object.freeze({ owner: owner.key, target: target.key }));
+      references.push(
+        Object.freeze({ owner: owner.name, target: target.name })
+      );
 
       return [target.type];
     })
@@ -286,7 +289,7 @@ const evaluateDeclaration = (
   if (typeof declaration !== 'function') {
     if (!isPluginSchemaDeclaration(declaration)) {
       throw new Error(
-        `Plate plugin "${plugin.key}" schema must be a declaration or factory.`
+        `Plate plugin "${plugin.name}" schema must be a declaration or factory.`
       );
     }
 
@@ -301,18 +304,18 @@ const evaluateDeclaration = (
     elementTypes: <const TPlugins extends readonly PluginReference[]>(
       items: TPlugins
     ) => resolveReferences(editor, plugin, items, references),
-    elementTypesByKey: (pluginKeys) => {
-      if (pluginKeys === targetBinding.keys) {
+    elementTypesByName: (pluginNames) => {
+      if (pluginNames === targetBinding.names) {
         targetBinding.plugins.forEach((targetPlugin) => {
           references.push(
-            Object.freeze({ owner: plugin.key, target: targetPlugin.key })
+            Object.freeze({ owner: plugin.name, target: targetPlugin.name })
           );
         });
 
         return targetBinding.types;
       }
 
-      return resolvePluginKeys(editor, plugin, pluginKeys, references);
+      return resolvePluginNames(editor, plugin, pluginNames, references);
     },
   });
   const own: PluginSchemaOwn = Object.freeze({
@@ -328,12 +331,12 @@ const evaluateDeclaration = (
     textProperty: (value, options?: SchemaTextPropertyOptions) =>
       schema.textProperty(plugin.type, value, options),
   });
-  const context: PluginSchemaContext<AnyPluginConfig> = Object.freeze({
+  const context: PluginSchemaContext<AnyBasePluginDefinition> = Object.freeze({
     initialState: plugin.initialState,
-    key: plugin.key,
+    name: plugin.name,
     own,
     plugins,
-    targetPluginKeys: targetBinding.keys,
+    targetPluginNames: targetBinding.names,
     type: plugin.type,
   });
 
@@ -341,7 +344,7 @@ const evaluateDeclaration = (
 
   if (!isPluginSchemaDeclaration(result)) {
     throw new Error(
-      `Plate plugin "${plugin.key}" schema factory must return a declaration.`
+      `Plate plugin "${plugin.name}" schema factory must return a declaration.`
     );
   }
 
@@ -374,7 +377,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
   });
   pluginList.forEach((plugin) => {
     declarations.set(
-      plugin.key,
+      plugin.name,
       evaluateDeclaration(editor, plugin, references)
     );
   });
@@ -384,7 +387,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
   const contentRoots: SchemaContentRootContribution[] = [];
   const properties: SchemaProperty[] = [];
   const bindings = pluginList.map((plugin) => {
-    const declaration = declarations.get(plugin.key) ?? null;
+    const declaration = declarations.get(plugin.name) ?? null;
     if (
       declaration &&
       'element' in declaration &&
@@ -393,7 +396,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       declaration.mark
     ) {
       throw new Error(
-        `Plate plugin "${plugin.key}" cannot declare both schema.element and schema.mark.`
+        `Plate plugin "${plugin.name}" cannot declare both schema.element and schema.mark.`
       );
     }
     const element =
@@ -428,11 +431,11 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
         const firstOwner = bindingsByElementType.get(plugin.type);
 
         throw new Error(
-          `Plate plugins "${firstOwner}" and "${plugin.key}" both declare element type "${plugin.type}".`
+          `Plate plugins "${firstOwner}" and "${plugin.name}" both declare element type "${plugin.type}".`
         );
       }
-      const { topLevel, ...schemaElement } = element as typeof element & {
-        topLevel?: boolean;
+      const { blockContent, ...schemaElement } = element as typeof element & {
+        blockContent?: boolean;
       };
       const isInline =
         schemaElement.inline === true ||
@@ -440,7 +443,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
         schemaElement.void === 'markable-inline';
       const groups = [
         ...(schemaElement.groups ?? []),
-        ...(!isInline && topLevel !== false
+        ...(!isInline && blockContent !== false
           ? [PLATE_BLOCK_CONTENT_SCHEMA_GROUP]
           : []),
       ];
@@ -451,7 +454,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
           ? { groups: Object.freeze([...new Set(groups)]) }
           : {}),
       });
-      bindingsByElementType.set(plugin.type, plugin.key);
+      bindingsByElementType.set(plugin.type, plugin.name);
     }
     if (mark) {
       textProperty = compileMark(plugin.type, mark);
@@ -472,7 +475,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       elementType: element ? plugin.type : null,
       isDecoration: plugin.render.isDecoration ?? true,
       kind: element ? 'element' : mark ? 'mark' : 'none',
-      pluginKey: plugin.key,
+      pluginName: plugin.name,
       properties: Object.freeze([
         ...elementProperties,
         ...declaredProperties,
@@ -484,9 +487,9 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
           getCompiledSchemaPropertyId(property)
         ),
       ]),
-      referencedPluginKeys: Object.freeze(
+      referencedPluginNames: Object.freeze(
         references
-          .filter((reference) => reference.owner === plugin.key)
+          .filter((reference) => reference.owner === plugin.name)
           .map((reference) => reference.target)
       ),
       textPropertyId: textProperty
@@ -495,11 +498,11 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
       type: plugin.type,
     }) satisfies CompiledPlateModelBinding;
   });
-  const byKey: Record<string, CompiledPlateModelBinding> = Object.create(null);
+  const byName: Record<string, CompiledPlateModelBinding> = Object.create(null);
   const byType: Record<string, CompiledPlateModelBinding> = Object.create(null);
 
   for (const binding of bindings) {
-    byKey[binding.pluginKey] = binding;
+    byName[binding.pluginName] = binding;
   }
 
   for (const binding of bindings) {
@@ -508,13 +511,13 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
 
     if (existing) {
       throw new Error(
-        `Plate plugins "${existing.pluginKey}" and "${binding.pluginKey}" both own schema type "${binding.type}".`
+        `Plate plugins "${existing.pluginName}" and "${binding.pluginName}" both own schema type "${binding.type}".`
       );
     }
     byType[binding.type] = binding;
   }
   for (const reference of references) {
-    const target = byKey[reference.target];
+    const target = byName[reference.target];
 
     if (target?.kind !== 'element') {
       throw new Error(
@@ -525,7 +528,7 @@ export const compilePlateModel = (editor: BaseEditor): CompiledPlateModel => {
 
   return Object.freeze({
     bindings: Object.freeze(bindings),
-    byKey: Object.freeze(byKey),
+    byName: Object.freeze(byName),
     byType: Object.freeze(byType),
     contribution: Object.freeze({
       contentRoots: Object.freeze(contentRoots),
@@ -577,8 +580,8 @@ export const getCompiledPlateModel = (editor: object) =>
 
 export const getCompiledPlateModelBinding = (
   editor: object,
-  plugin: AnyBasePlugin | PluginReference
-) => getCompiledPlateModel(editor).byKey[plugin.key];
+  plugin: Readonly<{ name: string }>
+) => getCompiledPlateModel(editor).byName[plugin.name];
 
 export const getCompiledPlatePluginList = (editor: object) =>
   candidatePluginSets.get(getPlateOwner(editor))?.list ??
@@ -587,32 +590,51 @@ export const getCompiledPlatePluginList = (editor: object) =>
 export const hasCompiledPlatePluginCandidate = (editor: object) =>
   candidatePluginSets.has(getPlateOwner(editor));
 
-export function getCompiledPlatePlugin<C extends AnyPluginConfig>(
-  editor: object,
-  plugin: PluginReference & { readonly __config: C }
-): BasePlugin<C> | undefined;
+export function getCompiledPlatePlugin<
+  P extends AnyBasePlugin & PluginReference,
+>(editor: object, plugin: P): BasePlugin<DefinitionOf<P>> | undefined;
 export function getCompiledPlatePlugin(
   editor: object,
-  key: string
+  pluginName: string
 ): AnyBasePlugin | undefined;
 export function getCompiledPlatePlugin(
   editor: object,
-  plugin: string | Readonly<{ key: string }>
+  plugin: string | Readonly<{ name: string }>
 ): unknown {
   const owner = getPlateOwner(editor);
-  const key = typeof plugin === 'string' ? plugin : plugin.key;
+  const pluginName = typeof plugin === 'string' ? plugin : plugin.name;
 
   return candidatePluginSets.has(owner)
-    ? candidatePluginSets.get(owner)!.byKey[key]
-    : getPlateRuntime(editor).plugins[key];
+    ? candidatePluginSets.get(owner)!.byName[pluginName]
+    : getPlateRuntime(editor).plugins[pluginName];
 }
 
-export const getCompiledPlatePluginApi = (editor: object, key: string) => {
+export const getCompiledPlatePluginName = (editor: object, type: string) =>
+  getPlateRuntime(editor).pluginCache.node.types[type];
+
+export const getCompiledPlatePluginByType = (
+  editor: object,
+  type: string
+): AnyBasePlugin | undefined => {
+  const name = getCompiledPlatePluginName(editor, type);
+
+  return name ? getCompiledPlatePlugin(editor, name) : undefined;
+};
+
+export const getCompiledPlateContainerTypes = (editor: object) =>
+  getPlateRuntime(editor).pluginCache.node.containerTypes.map(
+    (name) => getCompiledPlatePlugin(editor, name)?.type ?? name
+  );
+
+export const getCompiledPlatePluginApi = (
+  editor: object,
+  pluginName: string
+) => {
   const owner = getPlateOwner(editor);
 
   return candidatePluginApis.has(owner)
-    ? candidatePluginApis.get(owner)![key]
-    : getPlateModelPublication(editor)?.apiByPlugin[key];
+    ? candidatePluginApis.get(owner)![pluginName]
+    : getPlateModelPublication(editor)?.apiByPlugin[pluginName];
 };
 
 export const hasCompiledPlatePluginApiCandidate = (editor: object) =>
@@ -630,20 +652,20 @@ export const setCompiledPlatePluginCandidate = (
 
   if (!candidate) return;
   const list = [...candidate.list];
-  const index = list.findIndex(({ key }) => key === plugin.key);
+  const index = list.findIndex(({ name }) => name === plugin.name);
 
   if (index === -1) list.push(plugin);
   else list[index] = plugin;
-  const byKey: Record<string, AnyBasePlugin> = Object.assign(
+  const byName: Record<string, AnyBasePlugin> = Object.assign(
     Object.create(null),
-    candidate.byKey,
-    { [plugin.key]: plugin }
+    candidate.byName,
+    { [plugin.name]: plugin }
   );
 
   candidatePluginSets.set(
     owner,
     Object.freeze({
-      byKey: Object.freeze(byKey),
+      byName: Object.freeze(byName),
       list: Object.freeze(list),
     })
   );
@@ -656,15 +678,15 @@ export const withCompiledPlatePluginCandidate = <T>(
 ): T => {
   const owner = getPlateOwner(editor);
   const previous = candidatePluginSets.get(owner);
-  const byKey: Record<string, AnyBasePlugin> = Object.create(null);
+  const byName: Record<string, AnyBasePlugin> = Object.create(null);
 
   list.forEach((plugin) => {
-    byKey[plugin.key] = plugin;
+    byName[plugin.name] = plugin;
   });
   candidatePluginSets.set(
     owner,
     Object.freeze({
-      byKey: Object.freeze(byKey),
+      byName: Object.freeze(byName),
       list: Object.freeze([...list]),
     })
   );

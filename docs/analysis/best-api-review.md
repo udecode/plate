@@ -125,7 +125,7 @@ inside the owning plan.
 ```ts
 export const CounterPlugin = createPlatePlugin({
   initialState: { value: 0 },
-  key: "counter",
+  name: "counter",
   selectors: {
     doubled: (state) => state.value * 2,
   },

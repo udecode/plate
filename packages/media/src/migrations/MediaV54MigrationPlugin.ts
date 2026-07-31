@@ -188,7 +188,7 @@ const migrateMediaV54Document = (
  * schema fitting.
  */
 export const MediaV54MigrationPlugin = createBasePlugin({
-  key: 'mediaV54Migration',
+  name: 'mediaV54Migration',
   transformInitialValue: ({ editor, value }) => {
     const types = new Set<string>();
     const audio = editor.plugin(BaseAudioPlugin);

@@ -27,7 +27,7 @@ const typePrefixPattern = /^type\s+/;
 const exportAliasSplitPattern = /\s+as\s+/;
 const immediateJsdocPattern = /\/\*\*[\s\S]*?\*\/\s*$/;
 const readmeDomFocusPattern = /editor\.api\.dom\.focus\(\)/;
-const readmeClipboardPattern = /editor\.api\.clipboard\.insertTextData/;
+const readmeClipboardPattern = /editor\.api\.dom\.clipboard\.insertTextData/;
 const readmeRootImportPattern =
   /import \{ DOMCoverage, Hotkeys, isDOMNode \} from '@platejs\/plite-dom'/;
 const readmeCoveragePattern = /DOM coverage boundaries model same-root content/;
@@ -349,6 +349,7 @@ describe('plite-dom public surface contract', () => {
         'assertPlitePoint',
         'assertPliteRange',
         'blur',
+        'clipboard',
         'deselect',
         'editable',
         'findDocumentOrShadowRoot',
@@ -396,6 +397,7 @@ describe('plite-dom public surface contract', () => {
           'assertPlitePoint',
           'assertPliteRange',
           'blur',
+          'clipboard',
           'deselect',
           'editable',
           'findDocumentOrShadowRoot',
@@ -425,7 +427,7 @@ describe('plite-dom public surface contract', () => {
           'resolvePliteRange',
         ].sort()
       );
-      assert.deepEqual(Object.keys(editor.api.clipboard).sort(), [
+      assert.deepEqual(Object.keys(editor.api.dom.clipboard).sort(), [
         'insertData',
         'insertFragmentData',
         'insertTextData',
@@ -444,7 +446,7 @@ describe('plite-dom public surface contract', () => {
     );
     assert.deepEqual(
       extractDocumentedCapabilityMethods(docs, 'clipboard'),
-      Object.keys(editor.api.clipboard).sort()
+      Object.keys(editor.api.dom.clipboard).sort()
     );
   });
 

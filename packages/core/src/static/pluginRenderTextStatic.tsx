@@ -2,8 +2,16 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { RenderTextProps, AnyBasePlugin, BaseEditor } from '..';
-import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
+import type {
+  AnyBasePlugin,
+  AnyResolvedBasePlugin,
+  BaseEditor,
+  RenderTextProps,
+} from '..';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
 
 import { PliteText } from './components';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
@@ -14,13 +22,13 @@ export type PliteRenderText = (
 
 export const pluginRenderTextStatic = (
   editor: BaseEditor,
-  plugin: AnyBasePlugin
+  plugin: AnyResolvedBasePlugin
 ): PliteRenderText =>
   function render(nodeProps) {
     const { children, text } = nodeProps;
 
     if (text[plugin.type]) {
-      const Component = getPlateRuntime(editor).components[plugin.key] as any;
+      const Component = getPlateRuntime(editor).components[plugin.name] as any;
       const Text = Component ?? PliteText;
 
       const ctxProps = getRenderNodeStaticProps({
@@ -50,16 +58,16 @@ export const pipeRenderTextStatic = (
   const renderTexts: PliteRenderText[] = [];
   const textPropsPlugins: AnyBasePlugin[] = [];
 
-  getPlateRuntime(editor).pluginCache.node.textMarks.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.node.textMarks.forEach((pluginName) => {
+    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
 
     if (plugin) {
       renderTexts.push(pluginRenderTextStatic(editor, plugin as any));
     }
   });
 
-  getPlateRuntime(editor).pluginCache.node.textProps.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.node.textProps.forEach((pluginName) => {
+    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
     if (plugin) {
       textPropsPlugins.push(plugin as any);
     }

@@ -120,19 +120,15 @@ const detachedContentSchema = defineEditorSchema({
       target: target.root('comments'),
     }),
   ],
-  root: {
-    content: schema.content.group('block', {
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  roots: {
+    comments: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  } as const,
-  roots: {
-    comments: {
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    } as const,
   },
   unknown: 'reject',
   version: 1,
@@ -170,7 +166,7 @@ describe('detached slice content fitting', () => {
     assert.equal(Object.isFrozen(fitted), true);
     assert.equal(Object.isFrozen(fitted?.[0]), true);
     assert.doesNotThrow(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         { children: [...fitted!], type: 'cell' },
       ])
     );

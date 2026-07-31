@@ -1734,11 +1734,11 @@ generated: 2026-05-10
 ## `../tiptap/packages/extension-bubble-menu/__tests__/bubble-menu-plugin.spec.ts`
 
 - L30: BubbleMenuView cross-contamination
-- L31: should only process updateOptions for its own pluginKey (string)
-- L57: should only process updateOptions for its own pluginKey (PluginKey instance)
-- L86: should only process updatePosition for its own pluginKey
+- L31: should only process updateOptions for its own pluginName (string)
+- L57: should only process updateOptions for its own pluginName (PluginName instance)
+- L86: should only process updatePosition for its own pluginName
 - L104: should not cross-contaminate options between two instances
-- L140: should maintain backward compatibility with default "bubbleMenu" pluginKey
+- L140: should maintain backward compatibility with default "bubbleMenu" pluginName
 
 ## `../tiptap/packages/extension-code-block-lowlight/__tests__/codeBlockLowlight.spec.ts`
 
@@ -1929,12 +1929,12 @@ generated: 2026-05-10
 ## `../tiptap/packages/extension-floating-menu/__tests__/floating-menu-plugin.spec.ts`
 
 - L31: FloatingMenuView cross-contamination
-- L32: should only process updateOptions for its own pluginKey (string)
-- L58: should only process updateOptions for its own pluginKey (PluginKey instance)
-- L87: should only process updatePosition for its own pluginKey
+- L32: should only process updateOptions for its own pluginName (string)
+- L58: should only process updateOptions for its own pluginName (PluginName instance)
+- L87: should only process updatePosition for its own pluginName
 - L105: should not cross-contaminate options between two instances
-- L141: should use pluginKey in updateFloatingMenuPosition command
-- L170: should maintain backward compatibility with default "floatingMenu" pluginKey
+- L141: should use pluginName in updateFloatingMenuPosition command
+- L170: should maintain backward compatibility with default "floatingMenu" pluginName
 
 ## `../tiptap/packages/extension-horizontal-rule/__tests__/horizontalRule.spec.ts`
 

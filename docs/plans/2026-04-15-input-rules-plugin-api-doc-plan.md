@@ -542,7 +542,7 @@ Required content:
   - `getBlockTextBeforeSelection`
   - `getCharBefore`
   - `getCharAfter`
-  - `pluginKey`
+  - `pluginName`
 
 Recommended table:
 

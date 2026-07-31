@@ -1,19 +1,11 @@
 import type { BaseEditor } from '../../lib/editor';
-import type { AnyPluginConfig } from '../../lib/plugin/PluginConfig';
-import type {
-  PlatePluginReadState,
-  PlatePluginTransaction,
-} from '../../lib/editor/pluginRuntimeTypes';
 import type {
   AnyBasePlugin,
-  BasePluginContext,
-  PlateEditorExtensionInput,
-  PlatePluginReadExtension,
-  PlatePluginTxExtension,
+  AnyBasePluginContext,
 } from '../../lib/plugin/BasePlugin';
+import type { EditorExtensionReference } from '@platejs/plite';
 
-import { normalizePlateEditorExtensions } from '../../lib/plugin/createBasePlugin';
-import { getEditorPlugin } from '../../lib/plugin/getEditorPlugin';
+import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { pluginCodecMapDeclaration } from '../../lib/plugin/pluginAuthoringContext';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import {
@@ -24,222 +16,456 @@ import {
 import { snapshotApiValue } from '../utils/snapshotApiValue';
 import { withResolvingPlatePlugin } from './compilePlateModel';
 
-const assertConfiguredInputRules = (config: unknown) => {
+export type ResolvedPluginConfiguration = Readonly<
+  Record<PropertyKey, unknown>
+>;
+
+type PluginContribution = Record<PropertyKey, unknown> & {
+  api?: (context: object) => object;
+  codecs?: Readonly<Record<PropertyKey, unknown>>;
+  name?: string;
+  on?: Readonly<Record<PropertyKey, unknown>>;
+  read?: (context: object) => object;
+  update?: (context: object) => object;
+};
+
+type ResolvedPluginApiContribution =
+  | Readonly<{
+      factory: (context: object) => object;
+      kind: 'native';
+    }>
+  | Readonly<{
+      kind: 'plate';
+      value: Readonly<Record<PropertyKey, unknown>>;
+    }>;
+
+export type ResolvedPluginCapabilityContribution = Readonly<{
+  factory: (context: object) => unknown;
+  kind: 'native' | 'plate';
+}>;
+
+type ResolvedPluginCapabilities = Readonly<{
+  api: readonly ResolvedPluginApiContribution[];
+  nativeSources: readonly EditorExtensionReference[];
+  read: readonly ResolvedPluginCapabilityContribution[];
+  update: readonly ResolvedPluginCapabilityContribution[];
+}>;
+
+const emptyResolvedPluginCapabilities: ResolvedPluginCapabilities =
+  Object.freeze({
+    api: Object.freeze([]),
+    nativeSources: Object.freeze([]),
+    read: Object.freeze([]),
+    update: Object.freeze([]),
+  });
+
+const resolvedPluginCapabilities = new WeakMap<
+  object,
+  ResolvedPluginCapabilities
+>();
+
+export const getResolvedPluginCapabilities = (plugin: object) =>
+  resolvedPluginCapabilities.get(plugin) ?? emptyResolvedPluginCapabilities;
+
+export const inheritResolvedPluginCapabilities = <T extends object>(
+  source: object,
+  target: T
+): T => {
+  const capabilities = resolvedPluginCapabilities.get(source);
+
+  if (capabilities) {
+    resolvedPluginCapabilities.set(target, capabilities);
+  }
+
+  return target;
+};
+
+const isObjectRecord = (
+  value: unknown
+): value is Record<PropertyKey, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const assertConfiguredInputRules = (value: unknown) => {
   if (
-    config === undefined ||
-    typeof config === 'function' ||
-    Array.isArray(config)
+    value === undefined ||
+    typeof value === 'function' ||
+    Array.isArray(value)
   ) {
     return;
   }
 
   throw new Error(
-    'inputRules config must be an array of explicit rule instances or a factory.'
+    'inputRules must be an array of explicit rule instances or a factory.'
   );
 };
 
-/**
- * Resolves and finalizes a plugin configuration for use in a Plate editor.
- *
- * This function processes a given plugin configuration and applies its
- * extensions. It prepares the plugin for integration into the Plate editor
- * system by:
- *
- * 1. Cloning the plugin to avoid mutating the original
- * 2. Resolving the stored consumer configuration once
- * 3. Applying extensions against the configured values
- * 4. Reapplying the captured consumer values as the final override
- *
- * @example
- *   const plugin = createBasePlugin({ key: 'myPlugin', ...otherOptions });
- *   const resolvedPlugin = resolvePlugin(editor, plugin);
- */
-export type ResolvedPluginConfiguration = Readonly<
-  Record<PropertyKey, unknown>
->;
+const mergeLifecycleHandlers = (
+  pluginName: string,
+  previous: unknown,
+  contribution: Readonly<Record<PropertyKey, unknown>>
+) => {
+  const handlers: Record<PropertyKey, unknown> = isObjectRecord(previous)
+    ? { ...previous }
+    : {};
+
+  for (const name of Reflect.ownKeys(contribution)) {
+    const prior = handlers[name];
+    const next = contribution[name];
+
+    if (typeof prior === 'function' && typeof next === 'function') {
+      handlers[name] = (...args: unknown[]) => {
+        const result = Reflect.apply(prior, undefined, args);
+
+        return result === true ? true : Reflect.apply(next, undefined, args);
+      };
+    } else if (
+      next === null ||
+      next === undefined ||
+      typeof next === 'function'
+    ) {
+      handlers[name] = next;
+    } else {
+      throw new Error(
+        `Plate plugin "${pluginName}" on.${String(name)} must be a function or null.`
+      );
+    }
+  }
+
+  return handlers;
+};
+
+const mergeFactory =
+  (
+    previous: unknown,
+    next: (context: object) => object,
+    pluginContext: AnyBasePluginContext
+  ) =>
+  (context: object) => {
+    const prior =
+      typeof previous === 'function'
+        ? Reflect.apply(previous, undefined, [context])
+        : {};
+    const contribution = Reflect.apply(next, undefined, [
+      Object.assign(Object.create(pluginContext), context),
+    ]);
+
+    if (!isObjectRecord(contribution)) {
+      throw new Error(
+        `Plate plugin "${pluginContext.plugin.name}" capability factories must return an object.`
+      );
+    }
+
+    return mergePlugins(prior, contribution);
+  };
+
+const assertNativeTopology = (
+  plugin: AnyBasePlugin,
+  field: 'conflicts' | 'dependencies',
+  contribution: unknown
+) => {
+  if (contribution === undefined) return;
+  if (
+    !Array.isArray(contribution) ||
+    contribution.some(
+      (reference) =>
+        !reference ||
+        typeof reference !== 'object' ||
+        typeof Reflect.get(reference, 'name') !== 'string'
+    )
+  ) {
+    throw new Error(
+      `Plate plugin "${plugin.name}" adopted a native extension with invalid ${field}.`
+    );
+  }
+
+  const declared = plugin[field];
+
+  if (
+    declared.length !== contribution.length ||
+    declared.some(
+      (reference, index) =>
+        reference.name !== Reflect.get(contribution[index], 'name')
+    )
+  ) {
+    throw new Error(
+      `Plate plugin "${plugin.name}" must declare the same ${field} as its adopted native extension.`
+    );
+  }
+};
+
+const applyCodecs = (
+  plugin: AnyBasePlugin,
+  codecs: Readonly<Record<PropertyKey, unknown>>
+) => {
+  if (codecs[pluginCodecMapDeclaration] !== true) {
+    throw new Error(
+      `Plate plugin "${plugin.name}" codecs must be declared with the context-bound \`defineCodecs(...)\` helper.`
+    );
+  }
+
+  const { 'text/html': htmlCodec, ...productCodecs } = codecs;
+
+  if (Reflect.ownKeys(productCodecs).length > 0) {
+    const currentCodecs = Reflect.get(plugin, 'codecs');
+
+    if (isObjectRecord(currentCodecs)) {
+      const currentFormats = new Map(
+        Object.keys(currentCodecs).map((format) => [
+          format.trim().toLowerCase(),
+          format,
+        ])
+      );
+
+      for (const format of Object.keys(productCodecs)) {
+        const normalizedFormat = format.trim().toLowerCase();
+
+        if (currentFormats.has(normalizedFormat)) {
+          throw new Error(
+            `Plate codec owner "${plugin.name}" must declare "${normalizedFormat}" once with decode and encode in the same object.`
+          );
+        }
+      }
+    }
+
+    Reflect.set(
+      plugin,
+      'codecs',
+      mergePlugins(currentCodecs ?? {}, productCodecs)
+    );
+  }
+  if (htmlCodec === undefined) return;
+
+  const htmlCodecs = Array.isArray(htmlCodec) ? htmlCodec : [htmlCodec];
+
+  if (htmlCodecs.length === 0) {
+    throw new Error(
+      'Plate plugin `codecs["text/html"]` tuples must be non-empty.'
+    );
+  }
+
+  for (const declaration of htmlCodecs) {
+    if (!isObjectRecord(declaration)) {
+      throw new Error(
+        'Plate plugin `codecs["text/html"]` must contain codec declarations.'
+      );
+    }
+
+    const { target, ...rule } = declaration;
+    const targetPlugin = target ?? plugin;
+
+    if (!isNominalPluginDescriptor(targetPlugin)) {
+      throw new Error(
+        'Plate plugin HTML codec `target` must be a plugin descriptor.'
+      );
+    }
+    if (target !== undefined && targetPlugin.name === plugin.name) {
+      throw new Error(
+        'Plate plugin HTML codec `target` must be a different plugin descriptor.'
+      );
+    }
+
+    const contribution = registerHtmlCodecSchemaFamilies(
+      () => rule,
+      plugin,
+      targetPlugin
+    );
+
+    plugin.__htmlCodecContributions = [
+      ...plugin.__htmlCodecContributions,
+      Object.freeze({
+        extension: contribution,
+        targetPluginName: target === undefined ? null : targetPlugin.name,
+      }),
+    ];
+  }
+};
+
+const applyStage = (
+  plugin: AnyBasePlugin,
+  contribution: PluginContribution,
+  pluginContext: AnyBasePluginContext
+) => {
+  const isRawPliteDescriptor = Object.hasOwn(contribution, 'name');
+
+  if (
+    isRawPliteDescriptor &&
+    contribution.name !== undefined &&
+    contribution.name !== plugin.name
+  ) {
+    throw new Error(
+      `Plate plugin "${plugin.name}" cannot adopt Plite extension "${contribution.name}". Their names must match.`
+    );
+  }
+
+  const {
+    api,
+    codecs,
+    conflicts,
+    dependencies,
+    name: _name,
+    on,
+    read,
+    update,
+    ...configuration
+  } = contribution;
+  if (isRawPliteDescriptor) {
+    assertNativeTopology(plugin, 'conflicts', conflicts);
+    assertNativeTopology(plugin, 'dependencies', dependencies);
+  }
+  const next = mergePlugins(
+    plugin,
+    isRawPliteDescriptor
+      ? configuration
+      : {
+          ...configuration,
+          ...(conflicts === undefined ? {} : { conflicts }),
+          ...(dependencies === undefined ? {} : { dependencies }),
+        }
+  );
+  const previousCapabilities = getResolvedPluginCapabilities(plugin);
+  let apiContributions = previousCapabilities.api;
+  let nativeSources = previousCapabilities.nativeSources;
+  let readContributions = previousCapabilities.read;
+  let updateContributions = previousCapabilities.update;
+
+  if (isRawPliteDescriptor) {
+    nativeSources = Object.freeze([
+      ...nativeSources,
+      contribution as EditorExtensionReference,
+    ]);
+  }
+
+  if (on !== undefined) {
+    if (!isObjectRecord(on)) {
+      throw new Error(`Plate plugin "${plugin.name}" on must be an object.`);
+    }
+    Reflect.set(
+      next,
+      'on',
+      mergeLifecycleHandlers(plugin.name, Reflect.get(next, 'on'), on)
+    );
+  }
+  if (api !== undefined) {
+    if (typeof api !== 'function') {
+      throw new Error(
+        `Plate plugin "${plugin.name}" API must be a context factory.`
+      );
+    }
+    if (isRawPliteDescriptor) {
+      apiContributions = Object.freeze([
+        ...apiContributions,
+        Object.freeze({ factory: api, kind: 'native' as const }),
+      ]);
+    } else {
+      const apiValue = Reflect.apply(api, undefined, [pluginContext]);
+
+      if (!isObjectRecord(apiValue)) {
+        throw new Error(
+          `Plate plugin "${plugin.name}" API factories must return an object.`
+        );
+      }
+      const snapshot = snapshotApiValue(apiValue);
+
+      apiContributions = Object.freeze([
+        ...apiContributions,
+        Object.freeze({ kind: 'plate' as const, value: snapshot }),
+      ]);
+      Reflect.set(
+        next,
+        'api',
+        snapshotApiValue(
+          mergePlugins(
+            isObjectRecord(Reflect.get(next, 'api'))
+              ? Reflect.get(next, 'api')
+              : {},
+            snapshot
+          )
+        )
+      );
+    }
+  }
+  if (typeof read === 'function') {
+    readContributions = Object.freeze([
+      ...readContributions,
+      Object.freeze({
+        factory: read,
+        kind: isRawPliteDescriptor ? ('native' as const) : ('plate' as const),
+      }),
+    ]);
+    if (!isRawPliteDescriptor) {
+      Reflect.set(
+        next,
+        'read',
+        mergeFactory(Reflect.get(next, 'read'), read, pluginContext)
+      );
+    }
+  }
+  if (typeof update === 'function') {
+    updateContributions = Object.freeze([
+      ...updateContributions,
+      Object.freeze({
+        factory: update,
+        kind: isRawPliteDescriptor ? ('native' as const) : ('plate' as const),
+      }),
+    ]);
+    if (!isRawPliteDescriptor) {
+      Reflect.set(
+        next,
+        'update',
+        mergeFactory(Reflect.get(next, 'update'), update, pluginContext)
+      );
+    }
+  }
+  if (codecs !== undefined) {
+    if (!isObjectRecord(codecs)) {
+      throw new Error('Plate plugin `codecs` must be a MIME-keyed object.');
+    }
+    applyCodecs(next, codecs);
+  }
+
+  if (
+    apiContributions.length > 0 ||
+    nativeSources.length > 0 ||
+    readContributions.length > 0 ||
+    updateContributions.length > 0
+  ) {
+    resolvedPluginCapabilities.set(
+      next,
+      Object.freeze({
+        api: apiContributions,
+        nativeSources,
+        read: readContributions,
+        update: updateContributions,
+      })
+    );
+  }
+
+  return next;
+};
 
 const finalizeResolvedPlugin = <P extends AnyBasePlugin>(
   editor: BaseEditor,
   plugin: P
 ): P => {
-  (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
-    Object.freeze([...plugin.targetPluginKeys]);
+  const nodeProps = plugin.inject.nodeProps;
 
+  if (nodeProps) {
+    const nodeKey = nodeProps.nodeKey ?? plugin.type;
+
+    plugin.inject = {
+      ...plugin.inject,
+      nodeProps: {
+        ...nodeProps,
+        nodeKey,
+        styleKey: nodeProps.styleKey ?? nodeKey,
+      },
+    };
+  }
+  (plugin as { targetPluginNames: readonly string[] }).targetPluginNames =
+    Object.freeze([...plugin.targetPluginNames]);
   validatePlugin(editor, plugin);
 
   return plugin;
-};
-
-type UnifiedExtensionResult = Record<PropertyKey, unknown> & {
-  api?: object;
-  codecs?: Readonly<Record<string, object>>;
-  extension?: PlateEditorExtensionInput;
-  read?: (context: { state: PlatePluginReadState<AnyPluginConfig> }) => object;
-  selectors?: object;
-  update?: (context: {
-    context: import('@platejs/plite').EditorUpdateContext;
-    tx: PlatePluginTransaction<AnyPluginConfig>;
-  }) => object;
-};
-
-const isUnifiedExtensionResult = (
-  value: unknown
-): value is UnifiedExtensionResult =>
-  typeof value === 'object' && value !== null;
-
-const snapshotStaticExtensionApis = (
-  input: PlateEditorExtensionInput
-): PlateEditorExtensionInput => {
-  const extensions = Array.isArray(input) ? input : [input];
-
-  return extensions.map((extension) => {
-    if (
-      !extension.api ||
-      typeof extension.api === 'function' ||
-      Array.isArray(extension.api)
-    ) {
-      return extension;
-    }
-
-    return {
-      ...extension,
-      api: snapshotApiValue(extension.api),
-    };
-  });
-};
-
-const applyUnifiedExtension = <P extends AnyBasePlugin>(
-  plugin: P,
-  extension: UnifiedExtensionResult,
-  pluginContext: BasePluginContext<AnyPluginConfig>
-): P => {
-  const {
-    api,
-    codecs,
-    extension: editorExtension,
-    read,
-    selectors,
-    update,
-    ...configuration
-  } = extension;
-  const extended = mergePlugins(
-    plugin,
-    selectors === undefined ? configuration : { ...configuration, selectors }
-  );
-
-  if (codecs !== undefined) {
-    if (!codecs || typeof codecs !== 'object' || Array.isArray(codecs)) {
-      throw new Error('Plate plugin `codecs` must be a MIME-keyed object.');
-    }
-    if (
-      (codecs as Record<PropertyKey, unknown>)[pluginCodecMapDeclaration] !==
-      true
-    ) {
-      throw new Error(
-        `Plate plugin "${plugin.key}" codecs must be declared with the context-bound \`defineCodecs(...)\` helper.`
-      );
-    }
-
-    const { 'text/html': htmlCodec, ...productCodecs } = codecs;
-
-    if (Object.keys(productCodecs).length > 0) {
-      extended.__codecExtensions = [
-        ...extended.__codecExtensions,
-        () => productCodecs,
-      ];
-    }
-    if (htmlCodec !== undefined) {
-      const htmlCodecs = Array.isArray(htmlCodec) ? htmlCodec : [htmlCodec];
-
-      if (htmlCodecs.length === 0) {
-        throw new Error(
-          'Plate plugin `codecs["text/html"]` tuples must be non-empty.'
-        );
-      }
-
-      for (const declaration of htmlCodecs) {
-        if (
-          !declaration ||
-          typeof declaration !== 'object' ||
-          Array.isArray(declaration)
-        ) {
-          throw new Error(
-            'Plate plugin `codecs["text/html"]` must contain codec declarations.'
-          );
-        }
-
-        const { target, ...rule } = declaration as Record<PropertyKey, unknown>;
-        const targetPlugin = target ?? extended;
-
-        if (!isNominalPluginDescriptor(targetPlugin)) {
-          throw new Error(
-            'Plate plugin HTML codec `target` must be a plugin descriptor.'
-          );
-        }
-        if (target !== undefined && targetPlugin.key === extended.key) {
-          throw new Error(
-            'Plate plugin HTML codec `target` must be a different plugin descriptor.'
-          );
-        }
-
-        const storedExtension = registerHtmlCodecSchemaFamilies(
-          () => rule,
-          extended,
-          targetPlugin
-        );
-
-        extended.__htmlCodecExtensions = [
-          ...extended.__htmlCodecExtensions,
-          Object.freeze({
-            extension: storedExtension,
-            targetKey: target === undefined ? null : targetPlugin.key,
-          }),
-        ];
-      }
-    }
-  }
-  if (api !== undefined) {
-    extended.__apiExtensions = [
-      ...extended.__apiExtensions,
-      { extension: () => api, isPluginSpecific: true },
-    ];
-  }
-  if (typeof read === 'function') {
-    const readExtension: PlatePluginReadExtension = () => ({
-      [extended.key]: (state) =>
-        read(
-          Object.assign(Object.create(pluginContext), {
-            state,
-          })
-        ),
-    });
-
-    extended.__readExtensions = [...extended.__readExtensions, readExtension];
-  }
-  if (typeof update === 'function') {
-    const txExtension: PlatePluginTxExtension = () => ({
-      [extended.key]: (tx, _editor, context) =>
-        update(
-          Object.assign(Object.create(pluginContext), {
-            context,
-            tx,
-          })
-        ),
-    });
-
-    txExtension.__plateOwnTxGroup = true;
-    extended.__txExtensions = [...extended.__txExtensions, txExtension];
-  }
-  if (editorExtension !== undefined) {
-    const snapshottedExtensions = snapshotStaticExtensionApis(editorExtension);
-
-    extended.__editorExtensions = [
-      ...extended.__editorExtensions,
-      () => normalizePlateEditorExtensions(extended.key, snapshottedExtensions),
-    ];
-  }
-
-  return extended;
 };
 
 /** Reapply captured terminal configuration without executing callbacks again. */
@@ -248,12 +474,15 @@ export const reapplyResolvedPluginConfigurations = <P extends AnyBasePlugin>(
   plugin: P,
   configurations: readonly ResolvedPluginConfiguration[]
 ): P => {
-  const configurationLayers = [...plugin.__configurationLayers];
+  const layers = [...plugin.__configurationLayers];
   let configured = plugin;
 
   for (const configuration of configurations) {
-    configured = mergePlugins(configured, configuration);
-    configured.__configurationLayers = configurationLayers;
+    configured = inheritResolvedPluginCapabilities(
+      configured,
+      mergePlugins(configured, configuration)
+    );
+    configured.__configurationLayers = layers;
   }
 
   return finalizeResolvedPlugin(editor, configured);
@@ -261,77 +490,65 @@ export const reapplyResolvedPluginConfigurations = <P extends AnyBasePlugin>(
 
 export const resolvePluginWithConfigurations = <P extends AnyBasePlugin>(
   editor: BaseEditor,
-  _plugin: P
+  descriptor: P
 ): Readonly<{
   configurations: readonly ResolvedPluginConfiguration[];
   plugin: P;
 }> => {
-  // Create a deep clone of the plugin
-  let plugin = mergePlugins({}, _plugin) as P;
+  let plugin = mergePlugins({}, descriptor) as P;
 
   plugin.__resolved = true;
 
-  // A direct descriptor contributes at most one terminal consumer
-  // configuration. Capture every result so contextual callbacks execute only
-  // once per editor.
-  const configurationLayers = [...plugin.__configurationLayers];
-  const resolvedConfigurations: ResolvedPluginConfiguration[] = [];
+  const layers = [...plugin.__configurationLayers];
+  const configurations: ResolvedPluginConfiguration[] = [];
 
-  for (const layer of configurationLayers) {
-    const rawConfigResult =
+  for (const layer of layers) {
+    const value =
       layer.kind === 'context'
         ? withResolvingPlatePlugin(editor, plugin, () =>
             Reflect.apply(layer.value, undefined, [
-              getEditorPlugin(editor, plugin),
+              createPluginContext(editor, plugin),
             ])
           )
         : layer.value;
-    // Copy before merging: descriptor snapshots and callback results can be
-    // reused across editor instances.
-    const configResult = {
-      ...rawConfigResult,
-    } as Record<PropertyKey, unknown>;
 
-    if (Object.hasOwn(configResult, 'inputRules')) {
-      assertConfiguredInputRules(configResult.inputRules);
+    if (!isObjectRecord(value)) {
+      throw new Error(
+        `Plate plugin "${plugin.name}" configuration must resolve to an object.`
+      );
+    }
+    if (Object.hasOwn(value, 'inputRules')) {
+      assertConfiguredInputRules(value.inputRules);
     }
 
-    plugin = mergePlugins(plugin, configResult);
-    plugin.__configurationLayers = configurationLayers;
-    resolvedConfigurations.push(configResult);
+    const snapshot = { ...value };
+
+    plugin = mergePlugins(plugin, snapshot);
+    plugin.__configurationLayers = layers;
+    configurations.push(snapshot);
   }
-  // Apply all stored extensions
-  if (plugin.__extensions && plugin.__extensions.length > 0) {
-    const extensions = [...plugin.__extensions];
 
-    for (const extension of extensions) {
-      plugin = withResolvingPlatePlugin(editor, plugin, () => {
-        const pluginContext = getEditorPlugin(editor, plugin);
-        const extensionResult = Reflect.apply(extension, undefined, [
-          pluginContext,
-        ]);
+  const stages = [...plugin.__stages];
 
-        if (!isUnifiedExtensionResult(extensionResult)) {
-          throw new Error(
-            `Plate plugin "${plugin.key}" extension must return an object.`
-          );
-        }
+  for (const stage of stages) {
+    plugin = withResolvingPlatePlugin(editor, plugin, () => {
+      const context = createPluginContext(editor, plugin);
+      const contribution = Reflect.apply(stage, undefined, [context]);
 
-        return applyUnifiedExtension(plugin, extensionResult, pluginContext);
-      });
-    }
-    plugin.__extensions = extensions;
+      if (!isObjectRecord(contribution)) {
+        throw new Error(
+          `Plate plugin "${plugin.name}" stage must return an object.`
+        );
+      }
+
+      return applyStage(plugin, contribution, context) as P;
+    });
   }
-  // Extensions read configured values, but the consumer configuration remains
-  // the final override for fields that both layers define.
-  plugin = reapplyResolvedPluginConfigurations(
-    editor,
-    plugin,
-    resolvedConfigurations
-  );
+  plugin.__stages = stages;
+  plugin = reapplyResolvedPluginConfigurations(editor, plugin, configurations);
 
   return Object.freeze({
-    configurations: Object.freeze(resolvedConfigurations),
+    configurations: Object.freeze(configurations),
     plugin,
   });
 };
@@ -343,11 +560,15 @@ export const resolvePlugin = <P extends AnyBasePlugin>(
 
 export const validatePlugin = (
   editor: BaseEditor,
-  plugin: Pick<AnyBasePlugin, '__extensions' | 'key'>
+  plugin: Pick<AnyBasePlugin, '__stages' | 'name'>
 ) => {
-  if (!plugin.__extensions) {
-    getEditorPlugin(editor, DebugPlugin).api.error(
-      `Invalid plugin '${plugin.key}', you should use createBasePlugin.`,
+  if (!plugin.__stages) {
+    const api = createPluginContext(editor, DebugPlugin).api as {
+      error: (message: string, code: string) => void;
+    };
+
+    api.error(
+      `Invalid plugin '${plugin.name}', use createBasePlugin.`,
       'USE_CREATE_PLUGIN'
     );
   }

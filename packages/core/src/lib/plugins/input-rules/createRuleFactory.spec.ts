@@ -9,11 +9,11 @@ const resolveInsertTextRule = <TMatch>(
   rule: InsertTextInputRule<TMatch>,
   {
     blockText,
-    pluginKey,
+    pluginName,
     range,
   }: {
     blockText: string;
-    pluginKey: string;
+    pluginName: string;
     range: Range;
   }
 ) => {
@@ -33,7 +33,7 @@ const resolveInsertTextRule = <TMatch>(
       insertText: () => {},
       isCollapsed: true,
       options: undefined,
-      pluginKey,
+      pluginName,
       text: ' ',
       tx,
     });
@@ -91,7 +91,7 @@ describe('createRuleFactory', () => {
   });
 
   it('binds a plugin owner without changing rule factory behavior', () => {
-    const plugin = createBasePlugin({ key: 'blockquote' });
+    const plugin = createBasePlugin({ name: 'blockquote' });
     const editor = createBaseEditor({ plugins: [plugin] });
     const rule = createRuleFactory(plugin)<{}, { marker: string }>({
       type: 'blockStart',
@@ -119,7 +119,7 @@ describe('createRuleFactory', () => {
         insertText: () => {},
         isCollapsed: true,
         options: undefined,
-        pluginKey: plugin.key,
+        pluginName: plugin.name,
         text: ' ',
         tx,
       });
@@ -144,7 +144,7 @@ describe('createRuleFactory', () => {
 
     const match = resolveInsertTextRule(rule, {
       blockText: '>',
-      pluginKey: 'blockquote',
+      pluginName: 'blockquote',
       range,
     });
 
@@ -169,7 +169,7 @@ describe('createRuleFactory', () => {
 
     const match = resolveInsertTextRule(rule, {
       blockText: '3.',
-      pluginKey: 'list',
+      pluginName: 'list',
       range,
     });
 

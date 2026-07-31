@@ -5,7 +5,6 @@ import {
   createTestEditor,
   getTestDeserializeOptions,
 } from '../__tests__/createTestEditor';
-import { defaultRules } from '../rules';
 import {
   buildSlateNode,
   convertNodesDeserialize,
@@ -44,9 +43,7 @@ describe('convertNodesDeserialize', () => {
     mockBoldNode,
   ];
 
-  const baseOptions: DeserializeMdContext = getTestDeserializeOptions(editor, {
-    rules: defaultRules,
-  });
+  const baseOptions: DeserializeMdContext = getTestDeserializeOptions(editor);
 
   const mockParagraphNodeSlate = {
     children: [{ text: 'Hello' }],

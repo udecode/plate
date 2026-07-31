@@ -1,4 +1,4 @@
-import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, createBasePlugin } from '@platejs/core';
 import type {
   EditorStateView,
   Element,
@@ -23,16 +23,34 @@ export type TocPluginState = {
 };
 
 export const BaseTocPlugin = createBasePlugin({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'toc',
+        kind: 'node',
+        decode: ({ decode, decoration, node, type }) => ({
+          children: decode(node.children, decoration),
+          type,
+        }),
+        encode: ({ encodeFlow, node }) => ({
+          attributes: [],
+          children: encodeFlow(node.children),
+          name: 'toc',
+          type: 'mdxJsxFlowElement',
+        }),
+      },
+    }),
   initialState: (): TocPluginState => ({
     isScroll: true,
     topOffset: 80,
   }),
-  key: KEYS.toc,
+  name: KEYS.toc,
   schema: {
     element: {
       void: 'block',
     },
   },
+}).extend({
   read: ({ store, state }) => ({
     headings: () => {
       const { queryHeading } = store.get();
@@ -77,4 +95,4 @@ export const BaseTocPlugin = createBasePlugin({
   }),
 });
 
-export type TocConfig = InferConfig<typeof BaseTocPlugin>;
+export type TocDefinition = DefinitionOf<typeof BaseTocPlugin>;

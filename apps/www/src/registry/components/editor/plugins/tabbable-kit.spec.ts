@@ -51,7 +51,7 @@ describe('TabbableKit', () => {
       [...TabbableKit, ...IndentKit],
     ]) {
       const editor = createPlateEditor({ plugins });
-      const indent = editor.getPlugin(IndentPlugin);
+      const indent = editor.plugin(IndentPlugin).plugin;
 
       expect(indent.shortcuts.tab).toBeNull();
       expect(indent.shortcuts.untab).toBeNull();

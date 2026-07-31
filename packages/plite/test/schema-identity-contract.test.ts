@@ -24,7 +24,7 @@ describe('schema identity contract', () => {
       elements: {
         paragraph: { content: schema.content.text() },
       },
-      root: { content: schema.content.type('paragraph') },
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
     });
     const NamedSchema = defineEditorSchema({
@@ -32,7 +32,7 @@ describe('schema identity contract', () => {
         paragraph: { content: schema.content.text() },
       },
       id: 'article',
-      root: { content: schema.content.type('paragraph') },
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -67,29 +67,16 @@ describe('schema identity contract', () => {
     assert.equal(identity.fingerprint.length > 0, true);
   });
 
-  it('treats the primary root as complete-schema ownership', () => {
-    assert.throws(
-      () =>
-        compileEditorSchemaContributions([
-          record('missing-unknown', {
-            root: { content: schema.content.open() },
-          } as unknown as EditorSchemaContributionRecord['contribution']),
-        ]),
-      (error: unknown) => {
-        assert.ok(error instanceof EditorSchemaCompileError);
-        assert.deepEqual(error.diagnostics, [
-          {
-            code: 'missing-complete-schema-field',
-            extensions: ['missing-unknown'],
-            message:
-              'Complete schema definition "missing-unknown" must own schema field "unknown".',
-            path: 'schema.unknown',
-          },
-        ]);
+  it('treats the primary root as complete-schema ownership with closed defaults', () => {
+    const compiled = compileEditorSchemaContributions([
+      record('closed-defaults', {
+        elements: { paragraph: schema.element.textBlock() },
+        root: schema.content.type('paragraph'),
+      }),
+    ]);
 
-        return true;
-      }
-    );
+    assert.equal(compiled.identity.kind, 'derived');
+    assert.equal(compiled.unknown, 'reject');
   });
 
   it('requires named lineage fields together', () => {
@@ -98,7 +85,7 @@ describe('schema identity contract', () => {
         compileEditorSchemaContributions([
           record('missing-id', {
             elements: {},
-            root: { content: schema.content.open() },
+            root: schema.content.open(),
             unknown: 'preserve',
             version: 1,
           } as unknown as EditorSchemaContributionRecord['contribution']),
@@ -124,7 +111,7 @@ describe('schema identity contract', () => {
     const complete = (id?: string) => ({
       elements: {},
       ...(id ? { id, version: 1 } : {}),
-      root: { content: schema.content.open() },
+      root: schema.content.open(),
       unknown: 'preserve' as const,
     });
 

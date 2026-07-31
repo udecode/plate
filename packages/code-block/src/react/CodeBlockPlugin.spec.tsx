@@ -28,7 +28,7 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
   jsxt;
 
   const TestCodeBlockPropertyPlugin = createBasePlugin({
-    key: 'testCodeBlockProperty',
+    name: 'testCodeBlockProperty',
     schema: {
       properties: [
         schema.elementProperty('foo', property.string(), {
@@ -44,12 +44,10 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
   ) => {
     editor.extend(
       defineEditorExtension({
-        api: {
-          react: {
-            refreshDecorations,
-          },
-        },
-        name: 'test:react-refresh-decorations',
+        api: () => ({
+          refreshDecorations,
+        }),
+        name: 'react',
       })
     );
   };
@@ -86,7 +84,7 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
             BaseParagraphPlugin,
             CodeBlockPlugin,
             createBasePlugin({
-              key: 'a',
+              name: 'a',
               codecs: ({ defineCodecs }) =>
                 defineCodecs({
                   'text/plain': {
@@ -102,7 +100,7 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
           initialValue: input.children,
         });
 
-        editor.api.clipboard.insertData(
+        editor.api.dom.clipboard.insertData(
           createDataTransfer(
             new Map([
               ['text/html', '<pre><code>test</code></pre>'],
@@ -139,7 +137,7 @@ import { BaseCodeBlockPlugin } from '../lib/BaseCodeBlockPlugin';
           initialValue: input.children,
         });
 
-        editor.api.clipboard.insertData(
+        editor.api.dom.clipboard.insertData(
           createDataTransfer(
             new Map([['text/html', '<pre><code>test</code></pre>']])
           )

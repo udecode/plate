@@ -1,9 +1,9 @@
-import type { InferConfig } from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 
 import { createPlatePlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 
-import type { BlockSelectionConfig } from './BlockSelectionPlugin';
+import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
 export const BLOCK_CONTEXT_MENU_ID = 'context';
 
@@ -28,7 +28,7 @@ const initialState: BlockMenuPluginState = {
 };
 
 export const BlockMenuPlugin = createPlatePlugin({
-  key: KEYS.blockMenu,
+  name: KEYS.blockMenu,
   initialState,
 
   editOnly: true,
@@ -57,9 +57,7 @@ export const BlockMenuPlugin = createPlatePlugin({
       hide,
       show,
       showContextMenu: (blockId: string, position: BlockMenuPosition) => {
-        const blockSelection = editor.plugin<BlockSelectionConfig>({
-          key: KEYS.blockSelection,
-        });
+        const blockSelection = editor.plugin(BlockSelectionPlugin);
 
         if (blockSelection.installed) {
           blockSelection.store.set({ selectedIds: new Set([blockId]) });
@@ -68,9 +66,9 @@ export const BlockMenuPlugin = createPlatePlugin({
       },
     };
   },
-}).extend({
-  handlers: {
-    onMouseDown: ({ api, event, store }) => {
+}).extend(({ api }) => ({
+  on: {
+    mouseDown: ({ event, store }) => {
       if (event.button === 0 && store.get().openId) {
         event.preventDefault();
         api.hide();
@@ -78,6 +76,6 @@ export const BlockMenuPlugin = createPlatePlugin({
       if (event.button === 2) event.preventDefault();
     },
   },
-});
+}));
 
-export type BlockMenuConfig = InferConfig<typeof BlockMenuPlugin>;
+export type BlockMenuDefinition = DefinitionOf<typeof BlockMenuPlugin>;

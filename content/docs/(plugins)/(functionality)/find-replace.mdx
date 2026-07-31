@@ -100,7 +100,7 @@ The package is headless. The registry gives you a visible highlight leaf and a d
 | Match scope | Block text and text inside direct inline children contribute to the same search string. |
 | Multiple matches | Each match becomes one or more ranges. |
 | Split text leaves | A match crossing adjacent leaves is split into per-leaf ranges. |
-| Range payload | Each range includes `[FindReplacePlugin.key]: true` and the matched `search` slice. |
+| Range payload | Each range includes `[FindReplacePlugin.name]: true` and the matched `search` slice. |
 
 `FindReplacePlugin` searches the concatenated text for one element, then maps each match back to the original child text paths.
 

@@ -4,7 +4,7 @@ import React from 'react';
 import debounce from 'lodash/debounce.js';
 
 import { type MarkdownEditor, MarkdownPlugin } from '@platejs/markdown';
-import { type InferConfig, NodeIdPlugin } from '@platejs/core';
+import { type DefinitionOf, NodeIdPlugin } from '@platejs/core';
 import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 import {
   type Range,
@@ -122,7 +122,7 @@ const initialState: CopilotPluginState = {
   suggestionNodeId: null,
   suggestionText: null,
   autoTriggerQuery: ({ editor }) => {
-    if (editor.plugin({ key: KEYS.copilot }).store.get('suggestionText')) {
+    if (editor.read.getField(copilotSuggestionField).text) {
       return false;
     }
 
@@ -149,12 +149,9 @@ const initialState: CopilotPluginState = {
 
 export const CopilotPlugin = createPlatePlugin({
   dependencies,
-  extension: {
-    effectTypes: [copilotSuggestionEffect],
-    stateFields: [copilotSuggestionField],
-    name: 'copilot-suggestion',
-  },
-  key: KEYS.copilot,
+  effectTypes: [copilotSuggestionEffect],
+  stateFields: [copilotSuggestionField],
+  name: KEYS.copilot,
   initialState,
   update: ({ context, editor, store, tx }) => {
     const setSuggestion = (next: CopilotSuggestionState) => {
@@ -197,6 +194,7 @@ export const CopilotPlugin = createPlatePlugin({
 
         if (!suggestionText?.length) return false;
 
+        tx.tags.add('history-skip');
         tx.tags.add(COPILOT_SKIP_ABORT_TAG);
         setSuggestion({ id: null, text: null });
         context.afterCommit(() => {
@@ -212,6 +210,7 @@ export const CopilotPlugin = createPlatePlugin({
         text: string;
         id?: string | null;
       }) => {
+        tx.tags.add('history-skip');
         const block = tx.nodes.block();
         const blockId =
           id ??
@@ -390,9 +389,7 @@ export const CopilotPlugin = createPlatePlugin({
           completeOptions?.onError?.(error);
         },
         onFinish: (sourcePrompt, completion) => {
-          context.editor
-            .update({ history: 'skip' })
-            .copilot.setBlockSuggestion({ text: completion });
+          context.update.setBlockSuggestion({ text: completion });
           completeOptions?.onFinish?.(sourcePrompt, completion);
         },
       });
@@ -403,24 +400,16 @@ export const CopilotPlugin = createPlatePlugin({
       : null;
 
     return {
-      api: {
+      api: () => ({
         stop,
         triggerSuggestion: debouncedTrigger ?? triggerImmediately,
-      },
+      }),
     };
   })
   .extend((context) => {
     let previousSelection: Range | null = null;
 
     return {
-      handlers: {
-        onBlur: () => {
-          context.editor.update({ history: 'skip' }).copilot.reject();
-        },
-        onMouseDown: () => {
-          context.editor.update({ history: 'skip' }).copilot.reject();
-        },
-      },
       render: {
         belowNodes: () => {
           const GhostText = context.store.get().renderGhostText;
@@ -448,71 +437,78 @@ export const CopilotPlugin = createPlatePlugin({
           target: 'update',
         },
       },
-      extension: {
-        on: {
-          commit({ commit }) {
-            if (
-              (!commit.changes.empty || commit.selectionChanged) &&
-              context.store.get().shouldAbort &&
-              !commit.tags.includes(COPILOT_SKIP_ABORT_TAG) &&
-              context.store.get().suggestionText?.length
-            ) {
-              context.editor.update({ history: 'skip' }).copilot.reject();
-              context.store.set({
-                completion: null,
-                suggestionNodeId: null,
-                suggestionText: null,
-              });
-            }
-
-            const next = commit.effects.findLast(
-              (candidate) => candidate.type === copilotSuggestionEffect
-            )?.value.next;
-
-            if (next) {
-              context.store.set({
-                suggestionNodeId: next.id,
-                suggestionText: next.text,
-              });
-            }
-            if (!commit.selectionChanged) return;
-
-            const selection = context.editor.read.selection();
-
-            if (
-              selection &&
-              (!previousSelection ||
-                !RangeApi.equals(previousSelection, selection)) &&
-              context.store
-                .get()
-                .autoTriggerQuery?.({ editor: context.editor }) &&
-              context.editor.read.view.isFocused()
-            ) {
-              void context.api.triggerSuggestion();
-            }
-
-            previousSelection = selection;
-          },
+      on: {
+        blur: () => {
+          context.update.reject();
         },
-        commands: ({ around }) => [
-          around(editorCommands.insertText, ({ input, state, next }) => {
-            const suggestionText = context.store.get().suggestionText;
+        commit({ commit }) {
+          if (
+            (!commit.changes.empty || commit.selectionChanged) &&
+            context.store.get().shouldAbort &&
+            !commit.tags.includes(COPILOT_SKIP_ABORT_TAG) &&
+            context.store.get().suggestionText?.length
+          ) {
+            context.update.reject();
+            context.store.set({
+              completion: null,
+              suggestionNodeId: null,
+              suggestionText: null,
+            });
+          }
 
-            if (!suggestionText?.startsWith(input.text)) return next();
+          const next = commit.effects.findLast(
+            (candidate) => candidate.type === copilotSuggestionEffect
+          )?.value.next;
 
-            const prefix = state.transaction((tx) => {
-              tx.tags.add(COPILOT_SKIP_ABORT_TAG);
-              tx.copilot.setSuggestion({
+          if (next) {
+            context.store.set({
+              suggestionNodeId: next.id,
+              suggestionText: next.text,
+            });
+          }
+          if (!commit.selectionChanged) return;
+
+          const selection = context.editor.read.selection();
+
+          if (
+            selection &&
+            (!previousSelection ||
+              !RangeApi.equals(previousSelection, selection)) &&
+            context.store
+              .get()
+              .autoTriggerQuery?.({ editor: context.editor }) &&
+            context.editor.read.view.isFocused()
+          ) {
+            void context.api.triggerSuggestion();
+          }
+
+          previousSelection = selection;
+        },
+        mouseDown: () => {
+          context.update.reject();
+        },
+      },
+      commands: ({ around }) => [
+        around(editorCommands.insertText, ({ input, state, next }) => {
+          const suggestionText = context.store.get().suggestionText;
+
+          if (!suggestionText?.startsWith(input.text)) return next();
+
+          const prefix = state.transaction((tx) => {
+            tx.tags.add(COPILOT_SKIP_ABORT_TAG);
+            tx.effects.emit(copilotSuggestionEffect, {
+              next: {
                 id: context.store.get().suggestionNodeId ?? null,
                 text: suggestionText.slice(input.text.length),
-              });
+              },
+              previous: tx.getField(copilotSuggestionField),
             });
+          });
 
-            return next.after(prefix);
-          }),
-        ],
-      },
+          return next.after(prefix);
+        }),
+      ],
     };
   });
 
-export type CopilotPluginConfig = InferConfig<typeof CopilotPlugin>;
+export type CopilotDefinition = DefinitionOf<typeof CopilotPlugin>;

@@ -4,25 +4,30 @@ import type {
   EditorCommitContext,
   EditorCorrection,
   EditorExtension,
+  EditorExtensionDependencyReferenceFor,
+  EditorExtensionReference,
   EditorExtensionActivationContext,
+  EditorExtensionApiFactoryContext,
   EditorExtensionApiMap,
   EditorExtensionCleanupContext,
   EditorExtensionContribution,
-  EditorExtensionConfigurationContext,
+  EditorExtensionContributionInput,
+  EditorExtensionCandidateContext,
   EditorExtensionCommandContext,
+  EditorExtensionDefinition,
+  EditorExtensionDefinitionInput,
   EditorExtensionPoint,
   EditorExtensionReadContext,
-  EditorExtensionSchemaFactoryContext,
   EditorDocumentValue,
   EditorExtensionInput,
   EditorExtensionReconfigureOptions,
   EditorLifecycleErrorSink,
-  EditorImmutableConfig,
   EditorNodeChangeContext,
   EditorStateField,
   EditorTextChangeContext,
   EditorTransactionChangeContext,
   EditorUpdateContext,
+  EditorValueFromExtensions,
   RegisteredEditorExtension,
   ValueOf,
 } from '../interfaces/editor';
@@ -99,7 +104,7 @@ export const defineExtensionPoint = <TValue>(
 };
 
 const getEditorExtensionContributionValue = (
-  contribution: EditorExtensionContribution<unknown>
+  contribution: EditorExtensionContributionInput<any>
 ) => {
   if (!EDITOR_EXTENSION_CONTRIBUTION_VALUES.has(contribution)) {
     throw new Error(
@@ -116,14 +121,13 @@ import {
   activateStateField,
   getEditorDocumentValue,
   runTrustedUpdate,
-  stageEditorExtensionConfiguration,
+  stageEditorExtensionCandidate,
 } from './public-state';
 import {
   EDITOR_EXTENSION_SLOT_INPUT,
   type InternalEditorExtensionSlotValue,
 } from './extension-slot';
 import {
-  getEditorSchema,
   getEditorRuntimeOwner,
   getEditorRuntimeRoot,
   type InternalEditorExtensionPublicationEntry,
@@ -134,7 +138,7 @@ type ExtensionRecord = {
   api: EditorExtensionApiMap | null;
   editor: Editor;
   explicit: boolean;
-  extension: EditorExtension<Editor>;
+  extension: EditorExtensionReference;
   order: number;
   requiredBy: ReadonlySet<string>;
   slotOwners: ReadonlySet<string>;
@@ -158,13 +162,19 @@ const EXTENSION_ERROR_SINKS = new WeakMap<Editor, EditorLifecycleErrorSink>();
 const CANONICAL_EDITOR_EXTENSIONS = new WeakSet<object>();
 const CANONICAL_EDITOR_EXTENSION_BY_INPUT = new WeakMap<
   object,
-  EditorExtension<any, any>
+  EditorExtensionReference
 >();
 const CANDIDATE_EDITOR_EXTENSION_APIS = new WeakMap<
   Editor,
-  ReadonlyMap<EditorExtension<any, any>, EditorExtensionApiMap>
+  ReadonlyMap<EditorExtensionReference, EditorExtensionApiMap>
 >();
-let nextDynamicExtensionConfiguration = 0;
+let nextDynamicExtensionPublication = 0;
+
+const getEditorExtensionRuntimeFields = <
+  TEditor extends BaseEditor<any> = Editor,
+>(
+  extension: EditorExtensionReference
+) => extension as unknown as EditorExtensionDefinitionInput<TEditor>;
 
 export const setEditorLifecycleErrorSink = (
   editor: Editor,
@@ -242,9 +252,7 @@ export const getCompiledEditorConfiguration = (editor: Editor) => {
   });
 };
 
-const normalizeExtensionInput = <TEditor extends Editor>(
-  input: EditorExtensionInput<TEditor>
-) =>
+const normalizeExtensionInput = (input: EditorExtensionInput) =>
   (Array.isArray(input) ? input : [input]).map((extension) =>
     canonicalizeEditorExtension(extension)
   );
@@ -252,7 +260,7 @@ const normalizeExtensionInput = <TEditor extends Editor>(
 type ExtensionEntry = {
   editor: Editor;
   explicit: boolean;
-  extension: EditorExtension<Editor, any>;
+  extension: EditorExtensionReference;
   requiredBy: ReadonlySet<string>;
   slotOwners: ReadonlySet<string>;
 };
@@ -306,19 +314,19 @@ const createCanonicalExtensionResourceRecord = <
 };
 
 const expandExtensionInput = (
-  input: EditorExtensionInput<any>,
+  input: EditorExtensionInput,
   editor: Editor,
   relation:
     | Readonly<{ kind: 'dependency' | 'slot'; owner: string }>
     | Readonly<{ kind: 'explicit' }> = { kind: 'explicit' },
-  visiting = new Set<EditorExtension>(),
-  expanded = new Set<EditorExtension>()
+  visiting = new Set<EditorExtensionReference>(),
+  expanded = new Set<EditorExtensionReference>()
 ): ExtensionEntry[] =>
   normalizeExtensionInput(input).flatMap((extension) => {
     const entry = {
       editor,
       explicit: relation.kind === 'explicit',
-      extension: extension as EditorExtension<Editor, any>,
+      extension: extension as EditorExtensionReference,
       requiredBy: new Set(
         relation.kind === 'dependency' ? [relation.owner] : []
       ),
@@ -334,9 +342,9 @@ const expandExtensionInput = (
 
     visiting.add(extension);
     const dependencies = (extension.dependencies ?? []).flatMap(
-      (dependency: EditorExtension) =>
+      (dependency: EditorExtensionReference) =>
         expandExtensionInput(
-          dependency as EditorExtensionInput<any>,
+          dependency as EditorExtensionInput,
           editor,
           { kind: 'dependency', owner: extension.name },
           visiting,
@@ -392,7 +400,8 @@ const resolveLatestExtensionEntries = (
       entries.set(extension.name, null);
       continue;
     }
-    for (const field of extension.stateFields ?? []) {
+    for (const field of getEditorExtensionRuntimeFields(extension)
+      .stateFields ?? []) {
       const known = fields.get(field.key);
 
       if (known && known !== field) {
@@ -493,56 +502,117 @@ const getValidationStateWithoutReplacements = (
   return { ...state, records };
 };
 
-type DefineEditorExtensionFor<TEditor extends BaseEditor<any>> = {
-  <
-    const TConfig,
-    const TDeclaration extends EditorSchemaDeclaration,
-    const TRest extends Omit<
-      EditorExtension<TEditor, TConfig>,
-      'config' | 'schema'
-    >,
-  >(
-    extension: TRest & {
-      config: TConfig & EditorImmutableConfig<TConfig>;
-      schema: (
-        context: EditorExtensionSchemaFactoryContext<TConfig>
-      ) => TDeclaration;
-    }
-  ): Omit<TRest, 'config' | 'schema'> & {
-    config: TConfig;
-    schema: TDeclaration;
-  };
-  <
-    const TConfig,
-    const TRest extends Omit<EditorExtension<TEditor, TConfig>, 'config'>,
-  >(
-    extension: TRest & {
-      config: TConfig & EditorImmutableConfig<TConfig>;
-    }
-  ): Omit<TRest, 'config'> & { config: TConfig };
-  <const TConfig, const TExtension extends EditorExtension<TEditor, TConfig>>(
-    extension: NoExtraEditorExtensionProperties<
-      TExtension,
-      EditorExtension<TEditor, TConfig>
-    >
-  ): TExtension extends Readonly<{
-    schema: (
-      ...args: any[]
-    ) => infer TInferredDeclaration extends EditorSchemaDeclaration;
-  }>
-    ? Omit<TExtension, 'schema'> & Readonly<{ schema: TInferredDeclaration }>
-    : TExtension;
+type NormalizedEditorExtensionApi<TInput> = TInput extends {
+  api: (...args: never[]) => infer TResult;
+}
+  ? TResult
+  : never;
+
+type NormalizedEditorExtensionRead<TInput> = TInput extends {
+  read: (...args: never[]) => infer TResult;
+}
+  ? TResult
+  : never;
+
+type NormalizedEditorExtensionUpdate<TInput> = TInput extends {
+  update: (...args: never[]) => infer TResult;
+}
+  ? TResult
+  : never;
+
+type NormalizedEditorExtensionSchema<TInput> = TInput extends {
+  schema: infer TSchema;
+}
+  ? TSchema extends (...args: never[]) => infer TResult
+    ? TResult extends EditorSchemaDeclaration
+      ? TResult
+      : never
+    : TSchema extends EditorSchemaDeclaration
+      ? TSchema
+      : never
+  : never;
+
+type EditorExtensionPresenceField =
+  | 'activate'
+  | 'commands'
+  | 'contributions'
+  | 'corrections'
+  | 'effectTypes'
+  | 'facetProviders'
+  | 'on'
+  | 'readMiddleware'
+  | 'selectionKinds'
+  | 'stateFields'
+  | 'validate';
+
+type EditorExtensionInputSeed = {
+  [TKey in keyof EditorExtensionDefinitionInput]?: unknown;
+} & {
+  name: string;
 };
 
-type DefineEditorExtension = DefineEditorExtensionFor<Editor> &
-  (<
-    TEditor extends BaseEditor<any> = Editor,
-  >() => DefineEditorExtensionFor<TEditor>);
+type EditorExtensionAuthorEditor<
+  TDependencies extends readonly EditorExtensionReference[],
+> = Editor<EditorValueFromExtensions<TDependencies>, TDependencies>;
 
-type NoExtraEditorExtensionProperties<
-  TExtension extends EditorExtension<any, any>,
-  TShape extends EditorExtension<any, any>,
-> = TExtension & Record<Exclude<keyof TExtension, keyof TShape>, never>;
+type NormalizedEditorExtensionReferences<TInput> =
+  TInput extends readonly unknown[]
+    ? {
+        readonly [TIndex in keyof TInput]: EditorExtensionDependencyReferenceFor<
+          TInput[TIndex]
+        >;
+      }
+    : never;
+
+type NormalizeEditorExtensionDefinition<
+  TInput extends EditorExtensionInputSeed,
+> = Readonly<{
+  [TKey in keyof TInput as TKey extends keyof EditorExtensionDefinition
+    ? TKey
+    : never]: TKey extends 'api'
+    ? NormalizedEditorExtensionApi<TInput>
+    : TKey extends 'conflicts' | 'dependencies'
+      ? NormalizedEditorExtensionReferences<TInput[TKey]>
+      : TKey extends 'enabled'
+        ? TInput[TKey]
+        : TKey extends 'read'
+          ? NormalizedEditorExtensionRead<TInput>
+          : TKey extends 'update'
+            ? NormalizedEditorExtensionUpdate<TInput>
+            : TKey extends 'schema'
+              ? NormalizedEditorExtensionSchema<TInput>
+              : TKey extends EditorExtensionPresenceField
+                ? true
+                : TInput[TKey];
+}> &
+  Readonly<{ name: TInput['name'] }>;
+
+type DefineEditorExtension = {
+  <
+    const TDependencies extends readonly EditorExtensionReference[],
+    const TInput extends EditorExtensionDefinitionInput<
+      EditorExtensionAuthorEditor<TDependencies>
+    >,
+  >(
+    extension: TInput &
+      Readonly<{ dependencies: TDependencies }> &
+      NoExtraEditorExtensionProperties<TInput>
+  ): EditorExtension<NormalizeEditorExtensionDefinition<TInput>>;
+  <
+    const TInput extends EditorExtensionDefinitionInput<
+      EditorExtensionAuthorEditor<readonly []>
+    >,
+  >(
+    extension: TInput &
+      Readonly<{ dependencies?: never }> &
+      NoExtraEditorExtensionProperties<TInput>
+  ): EditorExtension<NormalizeEditorExtensionDefinition<TInput>>;
+};
+
+type NoExtraEditorExtensionProperties<TInput> = Record<
+  Exclude<keyof TInput, keyof EditorExtensionDefinitionInput>,
+  never
+>;
 
 const functionSource = Function.prototype.toString;
 const objectConstructorSource = functionSource.call(Object);
@@ -565,94 +635,17 @@ const isObjectPrototype = (prototype: object | null) =>
   (Object.getPrototypeOf(prototype) === null &&
     hasIntrinsicConstructor(prototype, objectConstructorSource));
 
-const cloneFrozenExtensionConfig = <T>(
-  value: T,
-  ancestors = new Set<object>()
-): T => {
-  if (
-    value === null ||
-    value === undefined ||
-    typeof value === 'boolean' ||
-    typeof value === 'string'
-  ) {
-    return value;
-  }
-  if (typeof value === 'number') {
-    if (Number.isFinite(value)) return value;
-
-    throw new TypeError(
-      'Editor extension config accepts only finite JSON numbers.'
-    );
-  }
-  if (typeof value !== 'object') {
-    throw new TypeError(
-      'Editor extension config accepts only plain immutable data. Keep functions and runtime resources in the extension factory closure.'
-    );
-  }
-  if (ancestors.has(value)) {
-    throw new TypeError('Editor extension config cannot be cyclic.');
-  }
-
-  const prototype = Object.getPrototypeOf(value);
-
-  if (
-    !Array.isArray(value) &&
-    prototype !== Object.prototype &&
-    prototype !== null
-  ) {
-    throw new TypeError(
-      'Editor extension config accepts only plain immutable data. Keep class instances and runtime resources in the extension factory closure.'
-    );
-  }
-
-  ancestors.add(value);
-  try {
-    if (Array.isArray(value)) {
-      return Object.freeze(
-        value.map((item) => cloneFrozenExtensionConfig(item, ancestors))
-      ) as T;
-    }
-
-    const clone: Record<string, unknown> = {};
-
-    for (const key of Reflect.ownKeys(value)) {
-      if (typeof key !== 'string') {
-        throw new TypeError(
-          'Editor extension config accepts only string-keyed plain data.'
-        );
-      }
-      const descriptor = Object.getOwnPropertyDescriptor(value, key);
-
-      if (
-        !descriptor ||
-        !Object.hasOwn(descriptor, 'value') ||
-        descriptor.enumerable === false
-      ) {
-        throw new TypeError(
-          'Editor extension config cannot contain property accessors or hidden properties.'
-        );
-      }
-
-      clone[key] = cloneFrozenExtensionConfig(descriptor.value, ancestors);
-    }
-
-    return Object.freeze(clone) as T;
-  } finally {
-    ancestors.delete(value);
-  }
-};
-
 const canonicalizeEditorExtension = <
-  TEditor extends BaseEditor<any>,
-  TConfig,
-  TExtension extends EditorExtension<TEditor, TConfig>,
+  TEditor extends BaseEditor<any, any> = Editor,
 >(
-  extension: TExtension
-): TExtension => {
-  if (CANONICAL_EDITOR_EXTENSIONS.has(extension)) return extension;
+  extension: EditorExtensionDefinitionInput<TEditor>
+): EditorExtensionReference => {
+  if (CANONICAL_EDITOR_EXTENSIONS.has(extension)) {
+    return extension as unknown as EditorExtensionReference;
+  }
   const cached = CANONICAL_EDITOR_EXTENSION_BY_INPUT.get(extension);
 
-  if (cached) return cached as TExtension;
+  if (cached) return cached;
   const canonical = { ...extension } as Record<PropertyKey, unknown>;
   const listKeys = [
     'conflicts',
@@ -672,9 +665,6 @@ const canonicalizeEditorExtension = <
       canonical[key] = Object.freeze(Array.from(value));
     }
   }
-  if (extension.config !== undefined) {
-    canonical.config = cloneFrozenExtensionConfig(extension.config);
-  }
   if (extension.on) {
     canonical.on = Object.freeze({ ...extension.on });
   }
@@ -683,7 +673,6 @@ const canonicalizeEditorExtension = <
       typeof extension.schema === 'function'
         ? extension.schema(
             Object.freeze({
-              config: canonical.config as EditorImmutableConfig<TConfig>,
               name: extension.name,
             })
           )
@@ -700,15 +689,7 @@ const canonicalizeEditorExtension = <
       normalizeExtensionInput(slotInput)
     );
   }
-  for (const key of ['api', 'state', 'tx'] as const) {
-    const value = canonical[key];
-
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      canonical[key] = Object.freeze({ ...value });
-    }
-  }
-
-  const result = Object.freeze(canonical) as TExtension;
+  const result = Object.freeze(canonical) as EditorExtensionReference;
 
   CANONICAL_EDITOR_EXTENSION_RESOURCES.set(
     result,
@@ -721,25 +702,25 @@ const canonicalizeEditorExtension = <
 };
 
 /**
- * Defines an editor extension while preserving literal names, declared slots,
- * and compile-time rejection of unsupported extension keys.
- *
- * Use the curried form to bind an extension to a specific editor type before
- * passing the descriptor.
+ * Define one editor extension from a contextually typed author object.
+ * The returned descriptor carries only its normalized capability contract.
  */
 export const defineEditorExtension = ((
-  extension?: EditorExtension<any, any>
+  extension: EditorExtensionDefinitionInput
 ) =>
-  extension === undefined
-    ? <const TExtension extends EditorExtension<any, any>>(
-        typedExtension: TExtension
-      ) => canonicalizeEditorExtension(typedExtension)
-    : canonicalizeEditorExtension(extension)) as DefineEditorExtension;
+  canonicalizeEditorExtension(extension)) as unknown as DefineEditorExtension;
+
+/** Compile one dynamically assembled extension at an internal owner boundary. */
+export const compileEditorExtension = <
+  TEditor extends BaseEditor<any, any> = Editor,
+>(
+  extension: EditorExtensionDefinitionInput<TEditor>
+): EditorExtensionReference => canonicalizeEditorExtension(extension);
 
 export const resolveInstalledEditorExtension = (
   editor: Editor,
-  extension: EditorExtension<any, any>
-) => {
+  extension: EditorExtensionReference
+): EditorExtensionReference | undefined => {
   const canonical = CANONICAL_EDITOR_EXTENSIONS.has(extension)
     ? extension
     : CANONICAL_EDITOR_EXTENSION_BY_INPUT.get(extension);
@@ -763,7 +744,7 @@ export const getInstalledEditorExtensionApi = (
 /** @internal Read an API map while a detached candidate is compiling. */
 export const getCandidateEditorExtensionApi = (
   editor: Editor,
-  extension: EditorExtension<any, any>
+  extension: EditorExtensionReference
 ) => {
   const canonical = CANONICAL_EDITOR_EXTENSIONS.has(extension)
     ? extension
@@ -774,6 +755,21 @@ export const getCandidateEditorExtensionApi = (
         canonical
       )
     : undefined;
+};
+
+/** @internal Read one API group resolved earlier in the active candidate. */
+export const getCandidateEditorApiValue = (
+  editor: Editor,
+  name: string
+): unknown => {
+  const candidateApis = CANDIDATE_EDITOR_EXTENSION_APIS.get(
+    getEditorRuntimeOwner(editor)
+  );
+
+  if (!candidateApis) return;
+  for (const api of candidateApis.values()) {
+    if (Object.hasOwn(api, name)) return api[name];
+  }
 };
 
 /** @internal Read ordered values from one published extension point. */
@@ -791,10 +787,10 @@ export const getEditorExtensionContributions = <TValue>(
 export const getInstalledEditorExtension = (
   editor: Editor,
   name: string
-): EditorExtension<any, any> | undefined =>
+): EditorExtensionReference | undefined =>
   getExtensionState(getEditorRuntimeOwner(editor)).records.get(name)?.extension;
 
-const assertNoUnsupportedSlots = (extension: EditorExtension<Editor, any>) => {
+const assertNoUnsupportedSlots = (extension: EditorExtensionReference) => {
   const methods = (extension as unknown as { methods?: unknown }).methods;
   const commitListeners = (
     extension as unknown as { commitListeners?: unknown }
@@ -803,7 +799,7 @@ const assertNoUnsupportedSlots = (extension: EditorExtension<Editor, any>) => {
 
   if (methods !== undefined) {
     throw new Error(
-      `Editor extension "${extension.name}" cannot use methods. Add state or tx groups instead.`
+      `Editor extension "${extension.name}" cannot use methods. Declare read or update capabilities instead.`
     );
   }
 
@@ -822,7 +818,7 @@ const assertNoUnsupportedSlots = (extension: EditorExtension<Editor, any>) => {
 
 const getInstalledConflict = (
   state: ExtensionState,
-  extension: EditorExtension<Editor, any>
+  extension: EditorExtensionReference
 ) => {
   for (const [installedName, record] of state.records) {
     if (
@@ -837,8 +833,8 @@ const getInstalledConflict = (
 };
 
 const getPendingConflict = (
-  extension: EditorExtension<Editor, any>,
-  pending: Map<string, EditorExtension<Editor, any>>
+  extension: EditorExtensionReference,
+  pending: Map<string, EditorExtensionReference>
 ) => {
   for (const [pendingName, pendingExtension] of pending) {
     if (pendingName === extension.name) {
@@ -858,10 +854,10 @@ const getPendingConflict = (
 
 const resolveExtensionOrder = (
   state: ExtensionState,
-  extensions: readonly EditorExtension<Editor, any>[]
+  extensions: readonly EditorExtensionReference[]
 ) => {
-  const pending = new Map<string, EditorExtension<Editor, any>>();
-  const ordered: EditorExtension<Editor, any>[] = [];
+  const pending = new Map<string, EditorExtensionReference>();
+  const ordered: EditorExtensionReference[] = [];
   const visiting = new Set<string>();
   const visited = new Set<string>();
 
@@ -887,7 +883,7 @@ const resolveExtensionOrder = (
     }
   }
 
-  const visit = (extension: EditorExtension<Editor, any>) => {
+  const visit = (extension: EditorExtensionReference) => {
     if (visited.has(extension.name)) {
       return;
     }
@@ -951,10 +947,10 @@ const registerExtensionSlots = <TEditor extends Editor>(
   registry: ExtensionRegistry<TEditor>,
   api: EditorExtensionApiMap | null = record.api
 ) => {
-  const extension = record.extension as EditorExtension<TEditor, any>;
+  const extension = record.extension as EditorExtensionReference;
   const cleanups: Array<() => void> = [];
-  const registerSlots = (slots: EditorExtension<TEditor, any>) => {
-    assertNoUnsupportedSlots(slots as EditorExtension<Editor, any>);
+  const registerSlots = (slots: EditorExtensionDefinitionInput<TEditor>) => {
+    assertNoUnsupportedSlots(slots as EditorExtensionReference);
     const commandContext: EditorExtensionCommandContext<TEditor> =
       Object.freeze({
         around: (command, handler) =>
@@ -970,7 +966,7 @@ const registerExtensionSlots = <TEditor extends Editor>(
       around: (read, handler) => createReadRegistration(read, handler as never),
     });
 
-    for (const registration of slots.read?.(readContext) ?? []) {
+    for (const registration of slots.readMiddleware?.(readContext) ?? []) {
       cleanups.push(registerReadInRegistry(registry.reads, registration));
     }
 
@@ -1093,54 +1089,48 @@ const registerExtensionSlots = <TEditor extends Editor>(
       );
     }
 
-    for (const groupName of Object.keys(slots.state ?? {})) {
-      const factory = slots.state?.[groupName];
-
-      if (factory) {
-        cleanups.push(
-          registerStateGroupInRegistry(
-            registry,
-            extension.name,
-            groupName,
-            (state) => factory(state, editor)
-          )
-        );
-      }
+    if (slots.read) {
+      cleanups.push(
+        registerStateGroupInRegistry(
+          registry,
+          extension.name,
+          extension.name,
+          (state) => slots.read!({ editor, state })
+        )
+      );
     }
 
-    for (const groupName of Object.keys(slots.tx ?? {})) {
-      const factory = slots.tx?.[groupName];
-
-      if (factory) {
-        cleanups.push(
-          registerTxGroupInRegistry(
-            registry,
-            extension.name,
-            groupName,
-            (transaction, _runtimeEditor, context) =>
-              factory(
-                transaction,
-                editor,
-                Object.freeze({
-                  afterCommit(handler) {
-                    context.afterCommit(({ commit, snapshot }) => {
-                      handler({
-                        commit,
-                        editor,
-                        snapshot,
-                      });
+    if (slots.update) {
+      cleanups.push(
+        registerTxGroupInRegistry(
+          registry,
+          extension.name,
+          extension.name,
+          (tx, _runtimeEditor, context) =>
+            slots.update!({
+              context: Object.freeze({
+                afterCommit(handler) {
+                  context.afterCommit(({ commit, snapshot }) => {
+                    handler({
+                      commit,
+                      editor,
+                      snapshot,
                     });
-                  },
-                }) as EditorUpdateContext<TEditor>
-              )
-          )
-        );
-      }
+                  });
+                },
+              }) as EditorUpdateContext<TEditor>,
+              editor,
+              tx,
+            })
+        )
+      );
     }
   };
 
   try {
-    registerSlots(extension);
+    registerSlots(
+      extension as unknown as EditorExtensionDefinitionInput<TEditor>
+    );
   } catch (error) {
     for (const cleanup of cleanups.slice().reverse()) {
       cleanup();
@@ -1204,7 +1194,8 @@ const activateExtensionRecord = <TEditor extends Editor>(
     published: false,
   };
   record.activation = activation;
-  const extension = record.extension as EditorExtension<TEditor, any>;
+  const extension = record.extension as EditorExtensionReference;
+  const runtimeFields = getEditorExtensionRuntimeFields<TEditor>(extension);
   const context = Object.freeze({
     name: extension.name,
     onCleanup(cleanup) {
@@ -1233,15 +1224,14 @@ const activateExtensionRecord = <TEditor extends Editor>(
 
       activation.afterPublishCallbacks.push(callback);
     },
-    config: extension.config,
     root: toPublicRoot(getEditorRuntimeRoot(editor)),
     schema: createEditorSchema(() => editor),
     signal: activation.abortController.signal,
-  } satisfies EditorExtensionActivationContext<any>);
+  } satisfies EditorExtensionActivationContext);
 
   try {
     assertSynchronousLifecycleResult(
-      extension.activate?.(editor, context),
+      runtimeFields.activate?.(editor, context),
       `Editor extension "${extension.name}" activation`
     );
   } catch (error) {
@@ -1310,36 +1300,35 @@ const getRegisteredExtension = (
 });
 
 const resolveExtensionApi = <TEditor extends Editor>(
-  editor: TEditor,
-  extension: EditorExtension<TEditor, any>,
-  context?: EditorExtensionConfigurationContext<TEditor, any>
+  extension: EditorExtensionReference,
+  context?: EditorExtensionApiFactoryContext<TEditor>
 ) => {
-  if (typeof extension.api === 'function' && !context) {
+  if (extension.api !== undefined && !context) {
     throw new Error(
-      `Editor extension "${extension.name}" API factory requires a candidate configuration context.`
+      `Editor extension "${extension.name}" API factory requires a candidate context.`
     );
   }
 
+  if (extension.api === undefined) return Object.freeze({});
   const api =
-    typeof extension.api === 'function'
-      ? extension.api(
-          editor as EditorExtensionConfigurationContext<TEditor, any>['editor'],
-          context!
-        )
-      : (extension.api ?? {});
+    (extension.api as EditorExtensionDefinitionInput<TEditor>['api'])!(
+      context!
+    );
 
   assertSynchronousLifecycleResult(
     api,
-    `Editor extension "${extension.name}" API factory`
+    `Editor extension "${extension.name}" API`
   );
 
   if (!api || typeof api !== 'object' || Array.isArray(api)) {
     throw new Error(
-      `Editor extension "${extension.name}" API factory must return an object.`
+      `Editor extension "${extension.name}" API must return an object.`
     );
   }
 
-  return Object.freeze({ ...api });
+  return Object.freeze({
+    [extension.name]: Object.freeze({ ...api }),
+  });
 };
 
 const resolveEditorApiCapability = (capabilities: readonly unknown[]) => {
@@ -1365,86 +1354,81 @@ const resolveEditorApiCapability = (capabilities: readonly unknown[]) => {
 export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
   editor: TEditor,
   source: Editor
-): Pick<TEditor, 'api' | 'getApi'> => {
+): Pick<TEditor, 'api' | 'extension'> => {
   let cachedRegistry: ExtensionRegistry | undefined;
   let apiGroups = new Map<string, unknown[]>();
-  let descriptorApis = new Map<EditorExtension, EditorExtensionApiMap>();
+  let descriptorApis = new Map<
+    EditorExtensionReference,
+    EditorExtensionApiMap
+  >();
 
   const refresh = () => {
     const registry = getExtensionRegistry(source);
 
     if (registry === cachedRegistry) return;
 
-    const nextApiGroups = new Map<string, unknown[]>();
-    const nextDescriptorApis = new Map<
-      EditorExtension,
-      EditorExtensionApiMap
-    >();
-    const schema = getEditorSchema(editor);
-
-    for (const extension of registry.dependencyOrder) {
-      if (registry.extensions.get(extension.name)?.descriptor !== extension) {
-        continue;
-      }
-      const viewExtension = extension as EditorExtension<TEditor, any>;
-
-      const extensionApi =
-        typeof extension.api === 'function'
-          ? resolveExtensionApi(
-              editor,
-              viewExtension,
-              createExtensionConfigurationContext(
-                editor,
-                viewExtension,
-                registry as ExtensionRegistry<TEditor>,
-                schema
-              )
-            )
-          : (getInstalledEditorExtensionApi(source, extension.name) ?? {});
-
-      nextDescriptorApis.set(extension, extensionApi);
-
-      for (const [name, value] of Object.entries(extensionApi)) {
-        const values = nextApiGroups.get(name) ?? [];
-
-        values.push(...(Array.isArray(value) ? value : [value]));
-        nextApiGroups.set(name, values);
-      }
-    }
+    const previousRegistry = cachedRegistry;
+    const previousApiGroups = apiGroups;
+    const previousDescriptorApis = descriptorApis;
 
     cachedRegistry = registry;
-    apiGroups = nextApiGroups;
-    descriptorApis = nextDescriptorApis;
+    apiGroups = new Map();
+    descriptorApis = new Map();
+
+    try {
+      for (const extension of registry.dependencyOrder) {
+        if (registry.extensions.get(extension.name)?.descriptor !== extension) {
+          continue;
+        }
+        const viewExtension = extension as EditorExtensionReference;
+
+        const extensionApi =
+          extension.api === undefined
+            ? {}
+            : resolveExtensionApi(
+                viewExtension,
+                createExtensionApiFactoryContext(
+                  editor,
+                  registry as ExtensionRegistry<TEditor>
+                )
+              );
+
+        descriptorApis.set(extension, extensionApi);
+
+        for (const [name, value] of Object.entries(extensionApi)) {
+          const values = apiGroups.get(name) ?? [];
+
+          values.push(...(Array.isArray(value) ? value : [value]));
+          apiGroups.set(name, values);
+        }
+      }
+    } catch (error) {
+      cachedRegistry = previousRegistry;
+      apiGroups = previousApiGroups;
+      descriptorApis = previousDescriptorApis;
+      throw error;
+    }
   };
   const resolveValue = (
     installedName: string,
     installedApi: EditorExtensionApiMap
   ) => {
-    const apiNames = Object.keys(installedApi);
-    const capabilityName = apiNames.includes(installedName)
-      ? installedName
-      : (apiNames[0] ?? installedName);
-
-    if (apiNames.length > 1 && !apiNames.includes(installedName)) {
-      throw new Error(
-        `Editor extension "${installedName}" must expose exactly one API group or an API group matching its extension name to be used with editor.getApi().`
-      );
-    }
-    const capability = installedApi[capabilityName];
+    const capability = installedApi[installedName];
 
     if (capability === undefined) {
       throw new Error(
-        `Editor extension "${installedName}" API group "${capabilityName}" is not installed.`
+        `Editor extension "${installedName}" does not expose an API.`
       );
     }
 
-    return Array.isArray(capability)
-      ? resolveEditorApiCapability(capability)
-      : capability;
+    return capability;
   };
   const api = new Proxy(Object.create(null) as Record<string, unknown>, {
     get(_target, property) {
       if (typeof property !== 'string') return;
+      const candidateValue = getCandidateEditorApiValue(editor, property);
+
+      if (candidateValue !== undefined) return candidateValue;
 
       refresh();
       const values = apiGroups.get(property);
@@ -1452,10 +1436,14 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
       return values?.length ? resolveEditorApiCapability(values) : undefined;
     },
   }) as TEditor['api'];
-  const getApi = ((extension: EditorExtension<any, any>) => {
+  const extensionPortal = ((extension: EditorExtensionReference) => {
     const candidateApi = getCandidateEditorExtensionApi(editor, extension);
 
-    if (candidateApi) return resolveValue(extension.name, candidateApi);
+    if (candidateApi) {
+      return Object.freeze({
+        api: resolveValue(extension.name, candidateApi),
+      });
+    }
     const installed = resolveInstalledEditorExtension(source, extension);
 
     if (!installed) {
@@ -1466,30 +1454,26 @@ export const createEditorViewExtensionApis = <TEditor extends Editor<any, any>>(
 
     refresh();
 
-    return resolveValue(
-      installed.name,
-      descriptorApis.get(installed) ??
-        getInstalledEditorExtensionApi(source, installed.name) ??
-        {}
-    );
-  }) as TEditor['getApi'];
+    return Object.freeze({
+      api: resolveValue(
+        installed.name,
+        descriptorApis.get(installed) ??
+          getInstalledEditorExtensionApi(source, installed.name) ??
+          {}
+      ),
+    });
+  }) as unknown as TEditor['extension'];
 
-  return Object.freeze({ api, getApi }) as Pick<TEditor, 'api' | 'getApi'>;
+  return Object.freeze({ api, extension: extensionPortal }) as Pick<
+    TEditor,
+    'api' | 'extension'
+  >;
 };
 
-const createExtensionRecord = <TEditor extends Editor>(
-  entry: ExtensionEntry,
-  order: number
-) =>
+const createExtensionRecord = (entry: ExtensionEntry, order: number) =>
   ({
     activation: null,
-    api:
-      typeof entry.extension.api === 'function'
-        ? null
-        : resolveExtensionApi(
-            entry.editor as TEditor,
-            entry.extension as EditorExtension<TEditor, any>
-          ),
+    api: entry.extension.api === undefined ? Object.freeze({}) : null,
     editor: entry.editor,
     explicit: entry.explicit,
     extension: entry.extension,
@@ -1591,8 +1575,8 @@ const sameExtensionRecords = (
   [...left].every(([name, record]) => right.get(name) === record);
 
 const areEquivalentExtensionInputs = (
-  left: EditorExtensionInput<any>,
-  right: EditorExtensionInput<any>
+  left: EditorExtensionInput,
+  right: EditorExtensionInput
 ): boolean => {
   const leftItems = normalizeExtensionInput(left);
   const rightItems = normalizeExtensionInput(right);
@@ -1605,7 +1589,6 @@ const areEquivalentExtensionInputs = (
   );
 };
 
-const IMMUTABLE_EXTENSION_RESOURCE_KEYS = new Set<PropertyKey>(['config']);
 const ORDERED_VALUE_EXTENSION_RESOURCE_KEYS = new Set<PropertyKey>([
   'conflicts',
   'dependencies',
@@ -1620,8 +1603,8 @@ const ORDERED_IDENTITY_EXTENSION_RESOURCE_KEYS = new Set<PropertyKey>([
 ]);
 const KEYED_IDENTITY_EXTENSION_RESOURCE_KEYS = new Set<PropertyKey>([
   'api',
-  'state',
-  'tx',
+  'read',
+  'update',
 ]);
 
 const areEquivalentImmutableExtensionValues = (
@@ -1737,14 +1720,11 @@ const areEquivalentNormalizedExtensionResources = (
   }
   if (key === EDITOR_EXTENSION_SLOT_INPUT) {
     return areEquivalentExtensionInputs(
-      left.value as EditorExtensionInput<any>,
-      right.value as EditorExtensionInput<any>
+      left.value as EditorExtensionInput,
+      right.value as EditorExtensionInput
     );
   }
-  if (
-    IMMUTABLE_EXTENSION_RESOURCE_KEYS.has(key) ||
-    ORDERED_VALUE_EXTENSION_RESOURCE_KEYS.has(key)
-  ) {
+  if (ORDERED_VALUE_EXTENSION_RESOURCE_KEYS.has(key)) {
     return areEquivalentImmutableExtensionValues(left.value, right.value);
   }
   if (ORDERED_IDENTITY_EXTENSION_RESOURCE_KEYS.has(key)) {
@@ -1758,8 +1738,8 @@ const areEquivalentNormalizedExtensionResources = (
 };
 
 const areEquivalentExtensions = (
-  left: EditorExtension<Editor, any>,
-  right: EditorExtension<Editor, any>
+  left: EditorExtensionReference,
+  right: EditorExtensionReference
 ): boolean => {
   if (left === right) return true;
   const leftResources = CANONICAL_EDITOR_EXTENSION_RESOURCES.get(left);
@@ -1812,7 +1792,7 @@ const classifyCandidatePublicationDocument = (
     isSetValued: (node, key, context) =>
       schema.isSetValuedProperty(node, key, context),
     validate: (candidate) =>
-      schema.validateDocument(candidate as EditorDocumentValue),
+      schema.assertDocument(candidate as EditorDocumentValue),
   });
 
   builder.applyCanonical(change);
@@ -1868,9 +1848,9 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
           record.editor as TEditor,
           record,
           registry,
-          typeof record.extension.api === 'function'
-            ? (resolvedApis.get(record.extension.name) ?? null)
-            : record.api
+          record.extension.api === undefined
+            ? record.api
+            : (resolvedApis.get(record.extension.name) ?? null)
         )
       );
     }
@@ -1897,7 +1877,9 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
     candidate,
     preview.schemaContributions
   );
-  const schema = createEditorSchema<ValueOf<TEditor>>(
+  const schema: InternalEditorSchemaApi<ValueOf<TEditor>> = createEditorSchema<
+    ValueOf<TEditor>
+  >(
     () => editor,
     () => mergedCandidate
   );
@@ -1906,7 +1888,7 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
   if (options.validateDocument !== false) {
     const currentDocument = getEditorDocumentValue(editor);
     if (options.initialPublication && !options.initializeDocument) {
-      schema.validateDocument(currentDocument);
+      schema.assertDocument(currentDocument);
 
       return Object.freeze({
         configured: candidate,
@@ -1916,7 +1898,7 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
       });
     }
     if (!declarativeSchemaChanged) {
-      schema.validateDocument(currentDocument);
+      schema.assertDocument(currentDocument);
     } else {
       const inputDocument = options.migrate
         ? (() => {
@@ -1980,49 +1962,54 @@ const buildConfiguredRegistry = <TEditor extends Editor>(
   });
 };
 
-const createExtensionConfigurationContext = <TEditor extends Editor>(
+const createExtensionApiFactoryContext = <TEditor extends Editor>(
   editor: TEditor,
-  extension: EditorExtension<TEditor, any>,
-  registry: ExtensionRegistry<TEditor>,
-  schema: InternalEditorSchemaApi<ValueOf<TEditor>>
+  registry: ExtensionRegistry<TEditor>
 ) =>
   Object.freeze({
-    config: extension.config,
-    editor: editor as EditorExtensionConfigurationContext<
-      TEditor,
-      any
-    >['editor'],
+    editor: editor as EditorExtensionApiFactoryContext<TEditor>['editor'],
     getContributions: <TValue>(point: EditorExtensionPoint<TValue>) =>
       Object.freeze(
         (registry.contributions.get(point) ?? []).map(
           ({ value }) => value as Readonly<TValue>
         )
       ),
-    name: extension.name,
     root: toPublicRoot(getEditorRuntimeRoot(editor)),
-    schema,
-  }) satisfies EditorExtensionConfigurationContext<TEditor, any>;
+  }) satisfies EditorExtensionApiFactoryContext<TEditor>;
 
-const validateExtensionConfigurations = <TEditor extends Editor>(
+const createExtensionCandidateContext = <TEditor extends Editor>(
+  editor: TEditor,
+  extension: EditorExtensionReference,
+  registry: ExtensionRegistry<TEditor>,
+  schema: InternalEditorSchemaApi<ValueOf<TEditor>>
+) =>
+  Object.freeze({
+    ...createExtensionApiFactoryContext(editor, registry),
+    name: extension.name,
+    schema,
+  }) satisfies EditorExtensionCandidateContext<TEditor>;
+
+const validateExtensions = <TEditor extends Editor>(
   records: ReadonlyMap<string, ExtensionRecord>,
   registry: ExtensionRegistry<TEditor>,
   schema: InternalEditorSchemaApi<ValueOf<TEditor>>
 ) => {
   for (const record of getOrderedExtensionRecords(records)) {
-    const extension = record.extension as EditorExtension<TEditor, any>;
+    const extension = record.extension as EditorExtensionReference;
+    const runtimeFields = getEditorExtensionRuntimeFields<TEditor>(extension);
 
-    if (!extension.validateConfiguration) continue;
+    if (!runtimeFields.validate) continue;
 
     assertSynchronousLifecycleResult(
-      extension.validateConfiguration(
-        createExtensionConfigurationContext(
+      runtimeFields.validate(
+        createExtensionCandidateContext(
           record.editor as TEditor,
           extension,
           registry,
           schema
         )
       ),
-      `Editor extension "${extension.name}" configuration validation`
+      `Editor extension "${extension.name}" validation`
     );
   }
 };
@@ -2097,7 +2084,7 @@ const prepareRecordPublication = <TEditor extends Editor>(
       { validateDocument: false }
     );
     const candidateApis = new Map<
-      EditorExtension<any, any>,
+      EditorExtensionReference,
       EditorExtensionApiMap
     >();
 
@@ -2108,20 +2095,17 @@ const prepareRecordPublication = <TEditor extends Editor>(
 
     try {
       for (const record of getOrderedExtensionRecords(nextRecords)) {
-        if (typeof record.extension.api !== 'function') {
+        if (record.extension.api === undefined) {
           candidateApis.set(record.extension, record.api ?? {});
           continue;
         }
 
-        const extension = record.extension as EditorExtension<TEditor, any>;
+        const extension = record.extension as EditorExtensionReference;
         const api = resolveExtensionApi(
-          record.editor as TEditor,
           extension,
-          createExtensionConfigurationContext(
+          createExtensionApiFactoryContext(
             record.editor as TEditor,
-            extension,
-            declarative.merged,
-            declarative.schema
+            declarative.merged
           )
         );
 
@@ -2137,10 +2121,15 @@ const prepareRecordPublication = <TEditor extends Editor>(
         options
       );
 
-      validateExtensionConfigurations(nextRecords, built.merged, built.schema);
+      validateExtensions(nextRecords, built.merged, built.schema);
       candidate = built.configured;
       candidateDocumentChange = built.documentChange;
-      validateCandidateDocument = built.schema.validateDocument;
+      const nextSchema: InternalEditorSchemaApi<ValueOf<TEditor>> =
+        built.schema;
+
+      validateCandidateDocument = (value) => {
+        nextSchema.assertDocument(value);
+      };
     } finally {
       CANDIDATE_EDITOR_EXTENSION_APIS.delete(getEditorRuntimeOwner(editor));
     }
@@ -2151,13 +2140,13 @@ const prepareRecordPublication = <TEditor extends Editor>(
   >();
 
   for (const record of nextRecords.values()) {
-    if (typeof record.extension.api === 'function') {
+    if (record.extension.api !== undefined) {
       previousFactoryApis.set(record, record.api);
     }
   }
   const installResolvedApis = () => {
     for (const record of nextRecords.values()) {
-      if (typeof record.extension.api !== 'function') continue;
+      if (record.extension.api === undefined) continue;
 
       record.api = resolvedApis.get(record.extension.name) ?? null;
     }
@@ -2178,7 +2167,8 @@ const prepareRecordPublication = <TEditor extends Editor>(
     ownsDraftFields = true;
     try {
       for (const record of activatedRecords) {
-        for (const field of record.extension.stateFields ?? []) {
+        for (const field of getEditorExtensionRuntimeFields(record.extension)
+          .stateFields ?? []) {
           const rollback = activateStateField(editor, field);
 
           appliedDraftFieldDisposals.push(rollback);
@@ -2258,12 +2248,15 @@ const prepareRecordPublication = <TEditor extends Editor>(
         }
 
         const removalInput = removableRecords.map(({ extension }) =>
-          Object.freeze({ enabled: false, name: extension.name })
+          canonicalizeEditorExtension({
+            enabled: false,
+            name: extension.name,
+          })
         );
-        const removalKey = `editor.unextend:${++nextDynamicExtensionConfiguration}`;
+        const removalKey = `editor.unextend:${++nextDynamicExtensionPublication}`;
 
         runTrustedUpdate(editor, () => {
-          stageEditorExtensionConfiguration(
+          stageEditorExtensionCandidate(
             editor,
             removalKey,
             removalInput,
@@ -2378,7 +2371,7 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
   const state = getExtensionState(configurationEditor);
   const previousRegistry = getConfiguredExtensionRegistry(configurationEditor);
   const previousRecords = state.records;
-  const expanded = new Set<EditorExtension>();
+  const expanded = new Set<EditorExtensionReference>();
   const latest = resolveLatestExtensionEntries(
     entries.flatMap(({ editor: extensionEditor, extension }) =>
       expandExtensionInput(
@@ -2535,7 +2528,7 @@ export const prepareScopedEditorExtensionPublication = <TEditor extends Editor>(
 
 export const prepareEditorExtensionPublication = <TEditor extends Editor>(
   editor: TEditor,
-  input: EditorExtensionInput<TEditor>
+  input: EditorExtensionInput
 ): PreparedEditorExtensionPublication =>
   prepareScopedEditorExtensionPublication(
     editor,
@@ -2549,7 +2542,7 @@ export const prepareInitialEditorExtensionPublication = <
   TEditor extends Editor,
 >(
   editor: TEditor,
-  input: EditorExtensionInput<TEditor>,
+  input: EditorExtensionInput,
   initializeDocument: boolean
 ): PreparedEditorExtensionPublication =>
   prepareScopedEditorExtensionPublication(
@@ -2562,14 +2555,14 @@ export const prepareInitialEditorExtensionPublication = <
 
 export const extendEditor = <TEditor extends Editor>(
   editor: TEditor,
-  input: EditorExtensionInput<TEditor>,
+  input: EditorExtensionInput,
   options: EditorExtensionReconfigureOptions = {}
 ): (() => void) => {
   let cleanup = () => {};
-  const key = `editor.extend:${++nextDynamicExtensionConfiguration}`;
+  const key = `editor.extend:${++nextDynamicExtensionPublication}`;
 
   runTrustedUpdate(editor, () => {
-    stageEditorExtensionConfiguration(
+    stageEditorExtensionCandidate(
       editor,
       key,
       input,

@@ -1,4 +1,4 @@
-import { type InferConfig, nanoid } from '@platejs/core';
+import { type DefinitionOf, nanoid } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
 import { createAtomStore } from '@platejs/core/react/internal';
 import {
@@ -199,7 +199,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
   initialState,
 })
   .extend(({ store }) => ({
-    api: {
+    api: () => ({
       addUploadingFile: (id: string, file: File) => {
         store.set({
           uploadingFiles: {
@@ -214,7 +214,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         delete uploadingFiles[id];
         store.set({ uploadingFiles });
       },
-    },
+    }),
     selectors: {
       uploadingFile: (
         state: Readonly<{ uploadingFiles: Record<string, File> }>,
@@ -419,10 +419,10 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
           ...options
         }: Omit<NodeInsertNodesOptions<TMediaElement>, 'at'> & { at: Path }
       ) => {
-        const audioType = editor.getType(KEYS.audio);
-        const fileType = editor.getType(KEYS.file);
-        const imageType = editor.getType(KEYS.img);
-        const videoType = editor.getType(KEYS.video);
+        const audioType = editor.plugin(KEYS.audio).type;
+        const fileType = editor.plugin(KEYS.file).type;
+        const imageType = editor.plugin(KEYS.img).type;
+        const videoType = editor.plugin(KEYS.video).type;
 
         if (
           mediaType !== audioType &&
@@ -446,9 +446,17 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
       },
     }),
   }))
+  .extend(({ plugin }) => ({
+    update: ({ tx }) => ({
+      insertMediaReplacingBlock: (files: File[] | FileList, at: Path) => {
+        tx.nodes.remove({ at });
+        tx[plugin.name].insertMedia(files, { at });
+      },
+    }),
+  }))
   .extend(({ editor, store, update }) => ({
-    handlers: {
-      onDrop: ({ event }) => {
+    on: {
+      drop: ({ event }) => {
         // The DnD plugin owns file drops unless explicitly disabled.
         if (!store.get('disableFileDrop')) return;
 
@@ -467,7 +475,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
 
         return true;
       },
-      onPaste: ({ event }) => {
+      paste: ({ event }) => {
         const { files, types } = event.clipboardData;
 
         if (files.length === 0 || types.includes('text/html')) return false;
@@ -478,10 +486,7 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
         const ancestor = editor.read.nodes.block();
 
         if (ancestor && NodeApi.string(ancestor[0]).length === 0) {
-          editor.update((tx) => {
-            tx.nodes.remove({ at: ancestor[1] });
-            tx.placeholder.insertMedia(files, { at: ancestor[1] });
-          });
+          update.insertMediaReplacingBlock(files, ancestor[1]);
 
           return true;
         }
@@ -495,4 +500,4 @@ export const PlaceholderPlugin = toPlatePlugin(BasePlaceholderPlugin, {
     },
   }));
 
-export type PlaceholderPluginConfig = InferConfig<typeof PlaceholderPlugin>;
+export type PlaceholderDefinition = DefinitionOf<typeof PlaceholderPlugin>;

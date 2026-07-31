@@ -1,12 +1,13 @@
 import { createEditor, type Editor, type Value } from '@platejs/plite';
-import type { CorePluginConfig } from '../../lib/plugins';
+import type { CorePluginDefinition } from '../../lib/plugins';
 
 import {
-  type BaseEditor,
   type BasePluginInput,
   type CreateBaseEditorOptions,
   type ExtendBaseEditorOptions,
   type InferPlugins,
+  type InternalBaseEditorWithInstalledPlugins,
+  type MergeInstalledPluginDefinitions,
   extendBaseEditor,
 } from '../../lib/editor';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
@@ -21,8 +22,10 @@ type StaticPluginInput<P extends readonly BasePluginInput[] = readonly []> =
   | P[number];
 
 type StaticEditorPlugins<P extends readonly BasePluginInput[] = readonly []> =
-  | CorePluginConfig
-  | InferPlugins<StaticPluginInput<P>[]>;
+  MergeInstalledPluginDefinitions<
+    CorePluginDefinition,
+    InferPlugins<StaticPluginInput<P>[]>
+  >;
 
 const extendStaticEditor = <
   V extends Value = Value,
@@ -46,7 +49,8 @@ export const createStaticEditor = <
   editor,
   id,
   ...options
-}: CreateStaticEditorOptions<V, P> = {}): BaseEditor<
+}: CreateStaticEditorOptions<
   V,
-  StaticEditorPlugins<P>
-> => extendStaticEditor<V, P>(editor ?? createEditor({ id }), options);
+  P
+> = {}): InternalBaseEditorWithInstalledPlugins<V, StaticEditorPlugins<P>> =>
+  extendStaticEditor<V, P>(editor ?? createEditor({ id }), options);

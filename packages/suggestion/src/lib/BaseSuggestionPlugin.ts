@@ -1,7 +1,7 @@
 import {
   type BaseEditor,
   createBasePlugin,
-  type InferConfig,
+  type DefinitionOf,
   nanoid,
 } from '@platejs/core';
 import {
@@ -224,7 +224,7 @@ const initialState: BaseSuggestionPluginState = {
 };
 
 export const BaseSuggestionPlugin = createBasePlugin({
-  key: KEYS.suggestion,
+  name: KEYS.suggestion,
   schema: {
     mark: {
       property: property.boolean({ default: false, omitDefault: true }),
@@ -561,6 +561,29 @@ export const BaseSuggestionPlugin = createBasePlugin({
           .filter((id): id is string => typeof id === 'string'),
     };
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'suggestion',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, {
+            [type]: true,
+            ...decoration,
+          }),
+        encode: ({ node }) => {
+          if (!TextApi.isText(node)) return;
+
+          return {
+            attributes: [],
+            children: [{ type: 'text', value: node.text }],
+            name: 'suggestion',
+            type: 'mdxJsxTextElement',
+          };
+        },
+      },
+    }),
 })
   .extend(({ api, store, type }) => ({
     read: ({ state }) => {
@@ -1557,342 +1580,339 @@ export const BaseSuggestionPlugin = createBasePlugin({
     },
   }))
   .extend((context) => ({
-    extension: {
-      commands: ({ around, handle }) => {
-        const { editor, store } = context;
+    commands: ({ around, handle }) => {
+      const { editor, store } = context;
 
-        return [
-          handle(editorCommands.addMark, ({ input, state, tags }) => {
-            if (
-              !store.get().isSuggesting ||
-              !context.api.isTracking(tags) ||
-              !state.selection.isExpanded()
-            ) {
-              return false;
+      return [
+        handle(editorCommands.addMark, ({ input, state, tags }) => {
+          if (
+            !store.get().isSuggesting ||
+            !context.api.isTracking(tags) ||
+            !state.selection.isExpanded()
+          ) {
+            return false;
+          }
+
+          return state.transaction((tx) => {
+            tx.suggestion.addMark(input.key, input.value);
+          });
+        }),
+        handle(editorCommands.removeMark, ({ input, state, tags }) => {
+          if (
+            !store.get().isSuggesting ||
+            !context.api.isTracking(tags) ||
+            !state.selection.isExpanded()
+          ) {
+            return false;
+          }
+
+          const previousValue = state.marks()?.[input.key] ?? true;
+
+          return state.transaction((tx) => {
+            tx.suggestion.removeMark(input.key, previousValue);
+          });
+        }),
+        handle(editorCommands.toggleMark, ({ input, state, tags }) => {
+          if (
+            !store.get().isSuggesting ||
+            !context.api.isTracking(tags) ||
+            !state.selection.isExpanded()
+          ) {
+            return false;
+          }
+
+          const currentValue = state.marks()?.[input.key];
+          const isActive =
+            currentValue !== undefined && isEqual(currentValue, input.value);
+
+          return state.transaction((tx) => {
+            if (isActive) {
+              tx.suggestion.removeMark(input.key, currentValue);
+              return;
             }
 
-            return state.transaction((tx) => {
-              tx.suggestion.addMark(input.key, input.value);
+            tx.suggestion.addMark(input.key, input.value);
+          });
+        }),
+        around(editorCommands.insertNodes, ({ input, tags, next }) => {
+          const currentUserId = store.get().currentUserId;
+
+          if (
+            !store.get().isSuggesting ||
+            currentUserId === null ||
+            !context.api.isTracking(tags)
+          ) {
+            return next();
+          }
+
+          const nodes = Array.isArray(input.nodes)
+            ? input.nodes
+            : [input.nodes];
+
+          if (
+            nodes.some(
+              (node) =>
+                ElementApi.isElement(node) && node.type === 'slash_input'
+            )
+          ) {
+            return next();
+          }
+
+          const suggestionNodes = nodes.map((node) => ({
+            ...node,
+            [KEYS.suggestion]: {
+              id: nanoid(),
+              createdAt: Date.now(),
+              type: 'insert',
+              userId: currentUserId,
+            },
+          }));
+
+          return next({ ...input, nodes: suggestionNodes });
+        }),
+        handle(editorCommands.removeNodes, ({ input, state, tags }) => {
+          if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+            return false;
+          }
+
+          const nodes = state.nodes.toArray<Element | Text>(input.options);
+
+          if (
+            nodes.some(
+              ([node]) =>
+                ElementApi.isElement(node) && node.type === 'slash_input'
+            )
+          ) {
+            return false;
+          }
+
+          return state.transaction((tx) => {
+            tx.suggestion.removeNodes(nodes);
+          });
+        }),
+        around(editorCommands.replaceSlice, ({ input, state, tags, next }) => {
+          if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+            return next();
+          }
+
+          const selection =
+            input.options?.at === undefined
+              ? state.selection()
+              : state.ranges.get(input.options.at);
+
+          if (!selection) return next();
+
+          if (!RangeApi.isExpanded(selection)) {
+            return next({
+              ...input,
+              slice: ContentSlice.withContent(
+                input.slice,
+                context.api.createFragment(
+                  input.slice.content,
+                  state.suggestion.findIdentity({
+                    at: selection,
+                    type: 'insert',
+                  }) ?? context.api.createIdentity()
+                ),
+                { open: 'preserve' }
+              ),
             });
-          }),
-          handle(editorCommands.removeMark, ({ input, state, tags }) => {
-            if (
-              !store.get().isSuggesting ||
-              !context.api.isTracking(tags) ||
-              !state.selection.isExpanded()
-            ) {
-              return false;
+          }
+
+          return state.transaction((tx) => {
+            if (input.options?.at !== undefined) {
+              tx.selection.set(selection);
             }
 
-            const previousValue = state.marks()?.[input.key] ?? true;
-
-            return state.transaction((tx) => {
-              tx.suggestion.removeMark(input.key, previousValue);
-            });
-          }),
-          handle(editorCommands.toggleMark, ({ input, state, tags }) => {
-            if (
-              !store.get().isSuggesting ||
-              !context.api.isTracking(tags) ||
-              !state.selection.isExpanded()
-            ) {
-              return false;
-            }
-
-            const currentValue = state.marks()?.[input.key];
-            const isActive =
-              currentValue !== undefined && isEqual(currentValue, input.value);
-
-            return state.transaction((tx) => {
-              if (isActive) {
-                tx.suggestion.removeMark(input.key, currentValue);
-                return;
-              }
-
-              tx.suggestion.addMark(input.key, input.value);
-            });
-          }),
-          around(editorCommands.insertNodes, ({ input, tags, next }) => {
-            const currentUserId = store.get().currentUserId;
-
-            if (
-              !store.get().isSuggesting ||
-              currentUserId === null ||
-              !context.api.isTracking(tags)
-            ) {
-              return next();
-            }
-
-            const nodes = Array.isArray(input.nodes)
-              ? input.nodes
-              : [input.nodes];
-
-            if (
-              nodes.some(
-                (node) =>
-                  ElementApi.isElement(node) && node.type === 'slash_input'
+            tx.suggestion.insertFragment(input.slice.content, (content) =>
+              tx.slice.replace(
+                ContentSlice.withContent(input.slice, content, {
+                  open: 'preserve',
+                }),
+                input.options
               )
-            ) {
-              return next();
-            }
+            );
+          });
+        }),
+        around(editorCommands.delete, ({ input, state, tags, next }) => {
+          const selection = state.selection();
 
-            const suggestionNodes = nodes.map((node) => ({
-              ...node,
-              [KEYS.suggestion]: {
-                id: nanoid(),
-                createdAt: Date.now(),
-                type: 'insert',
-                userId: currentUserId,
-              },
-            }));
+          if (!selection) return next();
 
-            return next({ ...input, nodes: suggestionNodes });
-          }),
-          handle(editorCommands.removeNodes, ({ input, state, tags }) => {
-            if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
-              return false;
-            }
+          const reverse = input.direction === 'backward';
+          const pointTarget = reverse
+            ? state.points.before(selection, { unit: input.unit })
+            : state.points.after(selection, { unit: input.unit });
 
-            const nodes = state.nodes.toArray<Element | Text>(input.options);
+          if (store.get().isSuggesting && context.api.isTracking(tags)) {
+            if (reverse) {
+              const node = state.nodes.above<TSuggestionElement>();
 
-            if (
-              nodes.some(
-                ([node]) =>
-                  ElementApi.isElement(node) && node.type === 'slash_input'
-              )
-            ) {
-              return false;
-            }
-
-            return state.transaction((tx) => {
-              tx.suggestion.removeNodes(nodes);
-            });
-          }),
-          around(
-            editorCommands.replaceSlice,
-            ({ input, state, tags, next }) => {
-              if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+              if (
+                node?.[0][KEYS.suggestion] &&
+                !node[0].suggestion.isLineBreak
+              ) {
                 return next();
               }
-
-              const selection =
-                input.options?.at === undefined
-                  ? state.selection()
-                  : state.ranges.get(input.options.at);
-
-              if (!selection) return next();
-
-              if (!RangeApi.isExpanded(selection)) {
-                return next({
-                  ...input,
-                  slice: ContentSlice.withContent(
-                    input.slice,
-                    context.api.createFragment(
-                      input.slice.content,
-                      state.suggestion.findIdentity({
-                        at: selection,
-                        type: 'insert',
-                      }) ?? context.api.createIdentity()
-                    ),
-                    { open: 'preserve' }
-                  ),
-                });
-              }
-
-              return state.transaction((tx) => {
-                if (input.options?.at !== undefined) {
-                  tx.selection.set(selection);
-                }
-
-                tx.suggestion.insertFragment(input.slice.content, (content) =>
-                  tx.slice.replace(
-                    ContentSlice.withContent(input.slice, content, {
-                      open: 'preserve',
-                    }),
-                    input.options
-                  )
-                );
-              });
-            }
-          ),
-          around(editorCommands.delete, ({ input, state, tags, next }) => {
-            const selection = state.selection();
-
-            if (!selection) return next();
-
-            const reverse = input.direction === 'backward';
-            const pointTarget = reverse
-              ? state.points.before(selection, { unit: input.unit })
-              : state.points.after(selection, { unit: input.unit });
-
-            if (store.get().isSuggesting && context.api.isTracking(tags)) {
-              if (reverse) {
-                const node = state.nodes.above<TSuggestionElement>();
-
-                if (
-                  node?.[0][KEYS.suggestion] &&
-                  !node[0].suggestion.isLineBreak
-                ) {
-                  return next();
-                }
-              }
-
-              if (!pointTarget) return state.transaction(() => {});
-
-              return state.transaction((tx) => {
-                tx.suggestion.delete(
-                  { anchor: selection.anchor, focus: pointTarget },
-                  { reverse, unit: input.unit }
-                );
-              });
             }
 
-            if (
-              reverse &&
-              pointTarget &&
-              state.selection.isAcrossBlocks({
-                at: { anchor: selection.anchor, focus: pointTarget },
-              })
-            ) {
-              const prefix = state.transaction((tx) => {
-                tx.nodes.unset([KEYS.suggestion], { at: pointTarget });
-              });
-
-              return next.after(prefix);
-            }
-
-            return next();
-          }),
-          handle(editorCommands.deleteFragment, ({ input, state, tags }) => {
-            if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
-              return false;
-            }
-
-            const selection =
-              input.at === undefined
-                ? state.selection()
-                : state.ranges.get(input.at);
-
-            if (!selection) return false;
+            if (!pointTarget) return state.transaction(() => {});
 
             return state.transaction((tx) => {
-              if (input.at !== undefined) tx.selection.set(selection);
-
-              tx.suggestion.deleteFragment({
-                reverse: input.direction === 'backward',
-              });
-            });
-          }),
-          around(editorCommands.insertBreak, ({ state, tags, next }) => {
-            const currentUserId = store.get().currentUserId;
-
-            if (
-              !store.get().isSuggesting ||
-              currentUserId === null ||
-              !context.api.isTracking(tags)
-            ) {
-              return false;
-            }
-
-            const selection = state.selection();
-            const above = state.nodes.above<Element>();
-
-            if (!selection || !above) return state.transaction(() => {});
-
-            const [node, path] = above;
-
-            if (path.length > 1 || node.type !== editor.getType(KEYS.p)) {
-              return state.transaction((tx) => {
-                tx.suggestion.insertText('\n');
-              });
-            }
-
-            const { id, createdAt } =
-              state.suggestion.findIdentity({
-                at: selection,
-                type: 'insert',
-              }) ?? context.api.createIdentity();
-            const inserted = next();
-
-            if (inserted === false) return false;
-
-            return state.transaction.extend(inserted, (tx) => {
-              tx.tags.add('history-merge');
-              tx.nodes.set(
-                {
-                  [KEYS.suggestion]: {
-                    id,
-                    createdAt,
-                    isLineBreak: true,
-                    type: 'insert',
-                    userId: currentUserId,
-                  },
-                },
-                { at: path }
+              tx.suggestion.delete(
+                { anchor: selection.anchor, focus: pointTarget },
+                { reverse, unit: input.unit }
               );
             });
-          }),
-          handle(editorCommands.insertText, ({ input, state, tags }) => {
-            if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
-              return false;
-            }
+          }
 
-            const node = state.nodes.above<TSuggestionElement>();
-
-            if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
-              return false;
-            }
-
-            return state.transaction((tx) => {
-              tx.suggestion.insertText(input.text);
+          if (
+            reverse &&
+            pointTarget &&
+            state.selection.isAcrossBlocks({
+              at: { anchor: selection.anchor, focus: pointTarget },
+            })
+          ) {
+            const prefix = state.transaction((tx) => {
+              tx.nodes.unset([KEYS.suggestion], { at: pointTarget });
             });
-          }),
-        ];
-      },
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry, tx }) {
-            const [node, path] = entry;
-            const inlineNode =
-              TextApi.isText(node) ||
-              (ElementApi.isElement(node) && tx.schema.isInline(node))
-                ? node
-                : undefined;
 
-            if (!inlineNode || !Reflect.get(inlineNode, KEYS.suggestion)) {
-              return;
-            }
+            return next.after(prefix);
+          }
 
-            const keyId = context.api.keyId(inlineNode);
+          return next();
+        }),
+        handle(editorCommands.deleteFragment, ({ input, state, tags }) => {
+          if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+            return false;
+          }
 
-            if (!keyId) {
-              context.api.untracked(() => {
-                tx.nodes.unset([KEYS.suggestion, 'suggestionData'], {
-                  at: path,
-                });
-              });
+          const selection =
+            input.at === undefined
+              ? state.selection()
+              : state.ranges.get(input.at);
 
-              return;
-            }
+          if (!selection) return false;
 
-            const inlineData = context.api.inlineData(inlineNode);
+          return state.transaction((tx) => {
+            if (input.at !== undefined) tx.selection.set(selection);
 
-            if (inlineData?.userId) return;
+            tx.suggestion.deleteFragment({
+              reverse: input.direction === 'backward',
+            });
+          });
+        }),
+        around(editorCommands.insertBreak, ({ state, tags, next }) => {
+          const currentUserId = store.get().currentUserId;
 
-            if (inlineData?.type === 'remove') {
-              context.api.untracked(() => {
-                tx.nodes.unset([KEYS.suggestion, keyId], { at: path });
-              });
-            } else {
-              context.api.untracked(() => {
-                tx.nodes.remove({ at: path });
-              });
-            }
-          },
-        },
-      ],
+          if (
+            !store.get().isSuggesting ||
+            currentUserId === null ||
+            !context.api.isTracking(tags)
+          ) {
+            return false;
+          }
+
+          const selection = state.selection();
+          const above = state.nodes.above<Element>();
+
+          if (!selection || !above) return state.transaction(() => {});
+
+          const [node, path] = above;
+
+          if (path.length > 1 || node.type !== editor.plugin(KEYS.p).type) {
+            return state.transaction((tx) => {
+              tx.suggestion.insertText('\n');
+            });
+          }
+
+          const { id, createdAt } =
+            state.suggestion.findIdentity({
+              at: selection,
+              type: 'insert',
+            }) ?? context.api.createIdentity();
+          const inserted = next();
+
+          if (inserted === false) return false;
+
+          return state.transaction.extend(inserted, (tx) => {
+            tx.tags.add('history-merge');
+            tx.nodes.set(
+              {
+                [KEYS.suggestion]: {
+                  id,
+                  createdAt,
+                  isLineBreak: true,
+                  type: 'insert',
+                  userId: currentUserId,
+                },
+              },
+              { at: path }
+            );
+          });
+        }),
+        handle(editorCommands.insertText, ({ input, state, tags }) => {
+          if (!store.get().isSuggesting || !context.api.isTracking(tags)) {
+            return false;
+          }
+
+          const node = state.nodes.above<TSuggestionElement>();
+
+          if (node?.[0][KEYS.suggestion] && !node[0].suggestion.isLineBreak) {
+            return false;
+          }
+
+          return state.transaction((tx) => {
+            tx.suggestion.insertText(input.text);
+          });
+        }),
+      ];
     },
+    corrections: [
+      {
+        event: 'properties',
+        correct({ entry, tx }) {
+          const [node, path] = entry;
+          const inlineNode =
+            TextApi.isText(node) ||
+            (ElementApi.isElement(node) && tx.schema.isInline(node))
+              ? node
+              : undefined;
+
+          if (!inlineNode || !Reflect.get(inlineNode, KEYS.suggestion)) {
+            return;
+          }
+
+          const keyId = context.api.keyId(inlineNode);
+
+          if (!keyId) {
+            context.api.untracked(() => {
+              tx.nodes.unset([KEYS.suggestion, 'suggestionData'], {
+                at: path,
+              });
+            });
+
+            return;
+          }
+
+          const inlineData = context.api.inlineData(inlineNode);
+
+          if (inlineData?.userId) return;
+
+          if (inlineData?.type === 'remove') {
+            context.api.untracked(() => {
+              tx.nodes.unset([KEYS.suggestion, keyId], { at: path });
+            });
+          } else {
+            context.api.untracked(() => {
+              tx.nodes.remove({ at: path });
+            });
+          }
+        },
+      },
+    ],
   }));
 
-export type BaseSuggestionConfig = InferConfig<typeof BaseSuggestionPlugin>;
+export type BaseSuggestionDefinition = DefinitionOf<
+  typeof BaseSuggestionPlugin
+>;

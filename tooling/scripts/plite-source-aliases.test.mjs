@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import test from 'node:test';
 
 import { getWorkspaceSourceEntries } from '../../config/workspace-source-entries.mjs';
 import { repoRoot } from './check-plite.mjs';
+
+const require = createRequire(import.meta.url);
+const {
+  createBunTestArgs,
+} = require('../../packages/plate-scripts/bun-test-args.cjs');
 
 test('workspace source entries cover every public runtime entry exactly once', () => {
   const entries = getWorkspaceSourceEntries(repoRoot);
@@ -75,16 +81,18 @@ test('Core proof does not build workspace artifacts or serialize package lint', 
 });
 
 test('ordinary package tests use the root source-first Bun config', () => {
-  const source = readFileSync(
-    path.join(repoRoot, 'packages/plate-scripts/run-with-pkg-dir.cjs'),
-    'utf8'
+  assert.deepEqual(
+    createBunTestArgs({
+      packageCwd: path.join(repoRoot, 'packages/plite'),
+      projectCwd: repoRoot,
+    }),
+    [
+      `--config=${path.join(repoRoot, 'bunfig.toml')}`,
+      `--cwd=${repoRoot}`,
+      'test',
+      'packages/plite/',
+    ]
   );
-  const bunConfigUses = source.match(
-    /path\.join\(PROJECT_CWD, 'bunfig\.toml'\)/g
-  );
-
-  assert.equal(bunConfigUses?.length, 2);
-  assert.doesNotMatch(source, /--preload/);
 });
 
 test('package typecheck gets source paths without exposing them to Bun', () => {

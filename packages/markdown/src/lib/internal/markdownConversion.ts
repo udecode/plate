@@ -3,13 +3,19 @@ import remarkParse from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { type Plugin, unified } from 'unified';
 
-import type { BaseEditor, NormalizePluginState } from '@platejs/core';
-import { getPluginKey } from '@platejs/core';
+import type {
+  AnyBasePluginDefinition,
+  BaseEditor,
+  MarkdownPluginRegistry,
+  NormalizePluginState,
+} from '@platejs/core';
+import { getCompiledPlatePluginName } from '@platejs/core/internal';
 import {
   type Descendant,
   type EditorCoreStateView,
   type EditorDocumentValue,
   type Element,
+  type Value,
   ElementApi,
   TextApi,
 } from '@platejs/plite';
@@ -21,7 +27,7 @@ import { htmlToJsx } from '../deserializer/utils/htmlToJsx';
 import { splitIncompleteMdx } from '../deserializer/utils/splitIncompleteMdx';
 import { stripMarkdownBlocks } from '../deserializer/utils/stripMarkdown';
 import type { MdRoot } from '../mdast';
-import { defaultRules } from '../rules/defaultRules';
+import { intrinsicRules } from '../rules/intrinsicRules';
 import { convertNodesSerialize } from '../serializer/convertNodesSerialize';
 import type {
   DeserializeMdContext,
@@ -37,13 +43,19 @@ import {
 } from '../utils/getRemarkPluginsWithoutMdx';
 import type { DeserializeMdOptions, SerializeMdOptions } from '../types';
 import type { MarkdownSerializeDocumentValue } from './markdownDocument';
+import {
+  type CompiledMarkdownCodecs,
+  compileMarkdownCodecs,
+} from './markdownCodecs';
 
 export type MarkdownRuntimeState = NormalizePluginState<MarkdownPluginState>;
 
-type MarkdownPluginRegistry = Readonly<{
-  getKey: (type: string) => string | undefined;
-  getType: (key: string) => string;
-  has: (key: string) => boolean;
+type MarkdownRuntimeEditorState = Readonly<{
+  schema: Pick<
+    EditorCoreStateView['schema'],
+    'isBlock' | 'isInline' | 'isVoid'
+  >;
+  value: EditorCoreStateView['value'];
 }>;
 
 type MarkdownRuntimeOptions = Readonly<{
@@ -55,32 +67,44 @@ type MarkdownRuntimeOptions = Readonly<{
   remarkStringifyOptions: NonNullable<
     MarkdownRuntimeState['remarkStringifyOptions']
   > | null;
-  rules: NonNullable<MarkdownRuntimeState['rules']> | null;
 }>;
 
 export type MarkdownRuntime = Readonly<{
+  codecs: CompiledMarkdownCodecs;
   options: MarkdownRuntimeOptions;
   registry: MarkdownPluginRegistry;
-  state: EditorCoreStateView;
+  state: MarkdownRuntimeEditorState;
 }>;
 
-export const createMarkdownRuntime = (
-  editor: BaseEditor,
+export const createMarkdownRuntime = <
+  V extends Value,
+  P extends AnyBasePluginDefinition,
+>(
+  editor: BaseEditor<V, P>,
   options: MarkdownRuntimeState,
-  state: EditorCoreStateView
+  state: MarkdownRuntimeEditorState
 ): MarkdownRuntime =>
   Object.freeze({
+    codecs: compileMarkdownCodecs(editor),
     options: Object.freeze(options),
     registry: Object.freeze({
-      getKey: (type: string) => getPluginKey(editor, type),
-      getType: (key: string) => editor.getType(key),
-      has: (key: string) => editor.plugin({ key }).installed,
+      getName: (type: string) => getCompiledPlatePluginName(editor, type),
+      getType: (pluginName: string) => {
+        const plugin = editor.plugin(pluginName);
+
+        return plugin.installed ? plugin.type : pluginName;
+      },
+      has: (pluginName: string) => editor.plugin(pluginName).installed,
     }),
     state,
   });
 
-export const withMarkdownRuntime = <T>(
-  editor: BaseEditor,
+export const withMarkdownRuntime = <
+  T,
+  V extends Value,
+  P extends AnyBasePluginDefinition,
+>(
+  editor: BaseEditor<V, P>,
   options: MarkdownRuntimeState,
   run: (runtime: MarkdownRuntime) => T
 ): T =>
@@ -89,8 +113,8 @@ export const withMarkdownRuntime = <T>(
 export const buildRulesWithRuntime = (runtime: MarkdownRuntime): MdRules => {
   const rules: MdRules = {};
 
-  Object.entries(defaultRules).forEach(([key, rule]) => {
-    rules[runtime.registry.getKey(key) ?? key] = rule;
+  Object.entries(intrinsicRules).forEach(([key, rule]) => {
+    rules[runtime.registry.getName(key) ?? key] = rule;
   });
 
   return rules;
@@ -99,18 +123,16 @@ export const buildRulesWithRuntime = (runtime: MarkdownRuntime): MdRules => {
 const createConversionContext = (
   runtime: MarkdownRuntime
 ): MarkdownConversionContext => ({
-  getPluginKey: (type) => runtime.registry.getKey(type),
-  getPluginType: (key) => runtime.registry.getType(key),
-  hasPlugin: (key) => runtime.registry.has(key),
   isBlock: (node) => runtime.state.schema.isBlock(node),
   isInline: (node) => runtime.state.schema.isInline(node),
+  registry: runtime.registry,
 });
 
 export const getMergedOptionsDeserialize = (
   runtime: MarkdownRuntime,
   options?: DeserializeMdOptions
 ): DeserializeMdContext => {
-  const { allowedNodes, allowNode, disallowedNodes, remarkPlugins, rules } =
+  const { allowedNodes, allowNode, disallowedNodes, remarkPlugins } =
     runtime.options;
 
   const context: DeserializeMdContext = {
@@ -127,8 +149,11 @@ export const getMergedOptionsDeserialize = (
       : materializeRemarkPlugins(options?.remarkPlugins ?? remarkPlugins),
     rules: {
       ...buildRulesWithRuntime(runtime),
-      ...(options?.rules ?? rules),
+      ...runtime.codecs.rules,
+      ...options?.rules,
     },
+    compiledCodecs: runtime.codecs,
+    ruleOverrides: options?.rules ?? undefined,
     splitLineBreaks: options?.splitLineBreaks,
   };
 
@@ -147,7 +172,6 @@ export const getMergedOptionsSerialize = (
     plainMarks,
     remarkPlugins,
     remarkStringifyOptions,
-    rules,
   } = runtime.options;
 
   const document = documentOverride ?? options?.value ?? runtime.state.value();
@@ -173,7 +197,8 @@ export const getMergedOptionsSerialize = (
         : remarkStringifyOptions),
     rules: {
       ...buildRulesWithRuntime(runtime),
-      ...(options?.rules ?? rules),
+      ...runtime.codecs.rules,
+      ...options?.rules,
     },
     spread: options?.spread,
     value: [...document.children],

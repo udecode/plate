@@ -21,10 +21,10 @@ describe('typed extension contributions', () => {
       contributions: [messages.of('second')],
     });
     const consumer = defineEditorExtension({
-      api(_editor, context) {
-        const values = context.getContributions(messages);
+      api({ getContributions }) {
+        const values = getContributions(messages);
 
-        return { consumer: { values: () => values } };
+        return { values: () => values };
       },
       name: 'consumer',
     });
@@ -32,7 +32,10 @@ describe('typed extension contributions', () => {
       extensions: [first, second, consumer] as const,
     });
 
-    assert.deepEqual(editor.getApi(consumer).values(), ['first', 'second']);
+    assert.deepEqual(editor.extension(consumer).api.values(), [
+      'first',
+      'second',
+    ]);
   });
 
   it('rejects structurally spoofed contributions without publishing them', () => {

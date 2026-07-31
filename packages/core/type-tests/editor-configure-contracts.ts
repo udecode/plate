@@ -6,23 +6,19 @@ const childInitialState: { level: 1 | 2 } = {
 };
 
 const ChildPlugin = createBasePlugin({
-  extension: ({ plugin, store }) => ({
-    api: {
-      plugin: {
-        getLevel: () => plugin.initialState.level,
-      },
-      setLevel: (level: 1 | 2) => {
-        store.set({ level });
-      },
+  api: ({ plugin, store }) => ({
+    getLevel: () => plugin.initialState.level,
+    setLevel: (level: 1 | 2) => {
+      store.set({ level });
     },
   }),
-  key: 'child',
+  name: 'child',
   initialState: childInitialState,
 });
 
 const ParentPlugin = createBasePlugin({
   dependencies: [ChildPlugin],
-  key: 'parent',
+  name: 'parent',
 });
 const ConfiguredChildPlugin = ChildPlugin.configure({
   initialState: {
@@ -39,12 +35,10 @@ const displayInitialState: { label: 'body' | 'title' } = {
 };
 
 const DisplayPlugin = createPlatePlugin({
-  extension: ({ store }) => ({
-    api: {
-      getLabel: () => store.get().label,
-    },
+  api: ({ store }) => ({
+    getLabel: () => store.get().label,
   }),
-  key: 'display',
+  name: 'display',
   initialState: displayInitialState,
 });
 
@@ -58,13 +52,13 @@ const plateEditor = createPlateEditor({
 const nestedLevel: 1 | 2 = basePlateEditor
   .plugin(ChildPlugin)
   .store.get().level;
-const nestedApiLevel: 1 | 2 = basePlateEditor.api.plugin.getLevel();
+const nestedApiLevel: 1 | 2 = basePlateEditor.api.child.getLevel();
 const plateValue: readonly [{ children: [{ text: string }]; type: 'p' }] =
   plateEditor.read.children();
-const plateLabel: 'body' | 'title' = plateEditor.api.getLabel();
+const plateLabel: 'body' | 'title' = plateEditor.api.display.getLabel();
 
-basePlateEditor.api.setLevel(1);
-basePlateEditor.api.setLevel(2);
+basePlateEditor.api.child.setLevel(1);
+basePlateEditor.api.child.setLevel(2);
 
 void nestedApiLevel;
 void nestedLevel;
@@ -79,7 +73,7 @@ ChildPlugin.configure({
 });
 
 // @ts-expect-error invalid nested editor api argument
-basePlateEditor.api.setLevel(3);
+basePlateEditor.api.child.setLevel(3);
 
 DisplayPlugin.configure({
   initialState: {
@@ -89,7 +83,7 @@ DisplayPlugin.configure({
 });
 
 // @ts-expect-error custom editor api should stay narrow
-plateEditor.api.getLabel('extra');
+plateEditor.api.display.getLabel('extra');
 
 const expectParagraphValue = (value: typeof plateValue) => value;
 

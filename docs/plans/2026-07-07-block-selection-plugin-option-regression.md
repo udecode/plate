@@ -53,7 +53,7 @@ Timed checkpoint:
 
 Completion threshold:
 - BlockSelection option reads use `BlockSelectionPlugin` where safe.
-- `BlockSelectionPluginKey` remains only for internal context/transform paths
+- `BlockSelectionPluginName` remains only for internal context/transform paths
   that would otherwise create a plugin self-reference or runtime cycle.
 - Focused selection typecheck and tests pass.
 - Named file/API work may close from a scoped source map and focused proof.
@@ -87,7 +87,7 @@ Verification surface:
   `pnpm --filter @platejs/selection test`
 - package proof: focused selection package typecheck/test
 - shared Core gate: N/A: selection-only regression packet
-- source audits: `rg -n "BlockSelectionPluginKey|usePluginOption\\(" packages/selection/src/react`
+- source audits: `rg -n "BlockSelectionPluginName|usePluginOption\\(" packages/selection/src/react`
 - related Core sweep query / match count / patched count / deferred count:
   pending
 - package file manifest / row count / checked count / deferred count: pending
@@ -160,7 +160,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types.
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
@@ -289,12 +289,12 @@ Completion Gates:
 | Score gate | yes | Prove all scores are valid and high drift is owned/fixed/deferred in the plan ledger | Reviewed selection option-read packet; no high drift remains. |
 | Best Plate v2 recommendation | yes | Record the recommended current shape and rejected legacy/hack alternatives for the reviewed target | Use real plugin for option reads; key only for internal cycle breakers. |
 | Plite/Plate gap ledger | yes | Record blockers or N/A when no gap blocks the target | N/A: no gap; focused typecheck passed. |
-| Related Core sweep after correction | yes | For each correction, run and record same-class Core search/review results | Ran selection source audit for `usePluginOption(BlockSelectionPluginKey)`. |
+| Related Core sweep after correction | yes | For each correction, run and record same-class Core search/review results | Ran selection source audit for `usePluginOption(BlockSelectionPluginName)`. |
 | Package file checklist | N/A | Record manifest command, row counts, score-100 rows, unchecked/deferred rows, and proof per file when package review applies | Not package review mode. |
 | Package/API proof | yes | Run focused typecheck/test/build or record N/A | `pnpm turbo typecheck --filter=./packages/selection`; `pnpm --filter @platejs/selection test`. |
 | Shared Core gate coverage | N/A | Add Core-adjacent reviewed packages to `tooling/scripts/check-core.mjs`, or record why N/A | Selection-only packet. |
 | Non-Core package error triage | N/A | If a proof command reports non-Core failures, classify as named/touched/Core-regression or out-of-scope package drift | No proof failures. |
-| Source audit | yes | Run exact audit for removed compatibility names or record N/A | `rg -n "isSelectingSome|usePluginOption\\(BlockSelectionPluginKey" packages/selection/src/react -S`. |
+| Source audit | yes | Run exact audit for removed compatibility names or record N/A | `rg -n "isSelectingSome|usePluginOption\\(BlockSelectionPluginName" packages/selection/src/react -S`. |
 | Rename ledger | N/A | Update `docs/plans/pre-renaming.md` when a rename is postponed or intentionally kept | No renames. |
 | Extracted-file inventory | N/A | Record untracked/extracted file command, row count, and bucket for every file in scope | No extracted files in this packet. |
 | Autoreview / review | N/A | Run review gate for non-trivial implementation diffs or record N/A | Tiny targeted regression; focused proof is stronger than broad review here. |
@@ -312,7 +312,7 @@ Review matrix:
 Best Plate v2 recommendation:
 | Target | Recommended shape | Rejected legacy/hack alternatives | Reason | User-review need |
 |--------|-------------------|-----------------------------------|--------|------------------|
-| BlockSelection option reads | `usePluginOption(BlockSelectionPlugin, key)` | `usePluginOption(BlockSelectionPluginKey, key)` as default style | The real plugin preserves typed public shape; the key is only an internal cycle breaker. | none |
+| BlockSelection option reads | `usePluginOption(BlockSelectionPlugin, key)` | `usePluginOption(BlockSelectionPluginName, key)` as default style | The real plugin preserves typed public shape; the key is only an internal cycle breaker. | none |
 
 Plite / Plate gap ledger:
 | Gap type | Missing capability | Why local workaround is a hack | Smallest owner | Proof needed | Decision |
@@ -322,7 +322,7 @@ Plite / Plate gap ledger:
 Related Core sweep ledger:
 | Trigger correction | Sweep query / method | Matches | Patched | Deferred | Remaining risk |
 |--------------------|----------------------|---------|---------|----------|----------------|
-| Replace key option reads with real plugin | `rg -n "usePluginOption\\(BlockSelectionPluginKey|isSelectingSome" packages/selection/src/react -S` | 7 relevant rows after patch; 0 key option reads | 4 files | 0 | Remaining key usage is non-option internal path. |
+| Replace key option reads with real plugin | `rg -n "usePluginOption\\(BlockSelectionPluginName|isSelectingSome" packages/selection/src/react -S` | 7 relevant rows after patch; 0 key option reads | 4 files | 0 | Remaining key usage is non-option internal path. |
 
 Core drift ledger:
 - Applies: N/A
@@ -393,7 +393,7 @@ Changed list:
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Remaining `BlockSelectionPluginKey` | It is still used for internal context/transform access, not option reads. | `packages/selection/src/react/internal/blockSelectionPluginKey.ts` | Keep internal unless you want a later cycle-breaker cleanup. |
+| 1 | Remaining `BlockSelectionPluginName` | It is still used for internal context/transform access, not option reads. | `packages/selection/src/react/internal/blockSelectionPluginName.ts` | Keep internal unless you want a later cycle-breaker cleanup. |
 
 Findings:
 - `usePluginOption(BlockSelectionPlugin, ...)` works in the target consumers;
@@ -411,7 +411,7 @@ Error attempts:
 Verification evidence:
 - `pnpm turbo typecheck --filter=./packages/selection` passed.
 - `pnpm --filter @platejs/selection test` passed: 98 tests.
-- Source audit: no `usePluginOption(BlockSelectionPluginKey, ...)` remains in
+- Source audit: no `usePluginOption(BlockSelectionPluginName, ...)` remains in
   `packages/selection/src/react`.
 
 Final handoff contract:

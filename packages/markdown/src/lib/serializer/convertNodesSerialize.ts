@@ -43,7 +43,7 @@ export const convertNodesSerialize = (
         continue;
       }
 
-      const pType = options.getPluginType(KEYS.p);
+      const pType = options.registry.getType(KEYS.p);
 
       if (isListElement(node, pType)) {
         listBlock.push(node);
@@ -89,17 +89,20 @@ export const buildMdastNode = (
   options: SerializeMdContext,
   isBlock = false
 ) => {
-  let key = options.getPluginKey(node.type) ?? node.type;
+  const pluginName = options.registry.getName(node.type) ?? node.type;
+  let fallbackName = pluginName;
 
-  if (KEYS.heading.includes(key)) {
-    key = 'heading';
+  if (KEYS.heading.includes(pluginName)) {
+    fallbackName = 'heading';
   }
 
-  if (key === KEYS.olClassic || key === KEYS.ulClassic) {
-    key = 'list';
+  if (pluginName === KEYS.olClassic || pluginName === KEYS.ulClassic) {
+    fallbackName = 'list';
   }
 
-  const nodeParser = options.rules?.[key]?.serialize;
+  const nodeParser =
+    options.rules?.[pluginName]?.serialize ??
+    options.rules?.[fallbackName]?.serialize;
 
   if (nodeParser) {
     const mdastNode = nodeParser(node, options);

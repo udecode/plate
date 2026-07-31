@@ -36,6 +36,30 @@ donor checkout as proof after the transplant.
   inspection. It does not supply a behavior-profile DSL. Plate specs define
   product law; named kits require real reuse, while runtime control is a
   separate proven job.
+- `EditorExtension` carries one exact normalized definition. `name` is
+  descriptor identity; `type` is serialized node identity. The public factory
+  is one object call with no caller generics. Its private typing may infer a
+  small dependency environment beside the author input when TypeScript needs
+  that split for contextual callbacks; do not expose it or pretend one
+  self-referential generic can infer everything. Reject excess fields and
+  preserve the definition through a private invariant witness without leaking
+  raw callbacks into declarations.
+- Root `EditorExtensionDependencyReference` is a shallow, non-generic identity
+  value with `name` and optional `enabled`. `EditorExtensionTypeProvider` is the
+  sole public value-sensitive capability bridge. Its higher-kinded encoding,
+  normalized installed-capability carrier, and transitive dependency expansion
+  are internal-only; they do not recursively materialize exact dependency
+  ancestry.
+- Static portals require a unique literal name and mutually assignable
+  descriptor/installed capabilities. Runtime portals require exact installed
+  descriptor identity, so a same-name object is not an interchangeable token.
+- Low-level React composition receives the actual DOM dependency as
+  `react({ dom })`. Its implementation may erase exactly one invariant-union
+  boundary when TypeScript 7 cannot reduce it; the public call stays one exact
+  object with no caller generics.
+- `DefinitionOf<typeof FooExtension>` is the sole public definition extractor;
+  name the alias `FooDefinition`, never `FooConfig`. True domain/runtime
+  config types remain valid.
 - Layering beats feature buckets: document truth, DOM transport, React runtime,
   browser proof, projections/services, layout, lightweight surfaces, and
   productization need clear owners.
@@ -50,18 +74,27 @@ donor checkout as proof after the transplant.
   `editor.update(policy?, fn)` as the public lifecycle.
 - `state` is the normal read view; `tx` is the normal write view and can read
   transaction-local state.
-- Extension namespaces add named groups to `state`, `tx`, and the direct update
-  surface. Use `txOnly(...)` for controls that require an active transaction.
-- `EditorExtension` stays flat except for the coherent `on.*` change-handler
-  family. Pure core-read policy composes through descriptor-owned `read`
-  middleware over `editorReads`; app policy does not earn a special root hook.
+- Extension-owned factories are `read` and `update`; the compiler projects
+  their methods under `definition.name` onto the read view, active `tx`, and
+  direct update surface. Use `txOnly(...)` for controls that require an active
+  transaction. Do not restore descriptor `state`/`tx` authoring.
+- `EditorExtension` stays flat except for the coherent `on.*` event family.
+  Lifecycle and host/DOM observation use prefixless child names; Plate extends
+  the same family with names such as `keyDown`, `paste`, `nodeChange`,
+  `textChange`, and capture variants instead of adding `handlers`. Pure
+  core-read policy composes through descriptor-owned `readMiddleware` over
+  `editorReads`; app policy does not earn a special root hook.
 - Typed ordered values are extension-point `contributions`, not outputs.
   Extension declarations use explicit low-level nouns: `stateFields`,
   `effectTypes`, `facetProviders`, and `selectionKinds`.
-- Immutable extension declaration input has one `config` channel across
-  schema, API, validation, and activation. Opaque runtime resources stay in
-  extension factory closures. Activation schedules publication-dependent work
-  with `afterPublish`.
+- Extensions have no `config` channel. Immutable construction inputs and
+  opaque runtime resources stay in factory closures or honest host owners.
+  `validate` checks assembled context without a configuration argument.
+  Activation schedules publication-dependent work with `afterPublish`.
+- One descriptor-owned `api` projects under `name` to
+  `editor.api.<name>` and `editor.extension(Extension).api`. Do not root-merge
+  methods or expose `getApi`. `api` is always a factory, even for
+  context-free values, and receives one context object.
 - Public update policy is semantic and narrow: history behavior plus ordered
   tags. Raw provenance and normalization authority stay internal to runtime and
   adapter owners.
@@ -82,7 +115,8 @@ donor checkout as proof after the transplant.
 - `tx.*` is the current public API authority for normal writes. Primitive
   `editor.*` writes may remain internal or advanced bridge tools, but do not
   use them to justify old docs/examples as final DX.
-- `api` is too vague and `tf` is too Plate-shaped for raw Plite core naming.
+- Unscoped `api` methods are too vague, and `tf` is too Plate-shaped for raw
+  Plite core naming. Descriptor APIs remain namespaced by `name`.
 - Whole-document replacement should be a transaction write, not public
   `Editor.replace`, `editor.replace`, or `editor.reset` as app-author API.
 - `EditorCommit` is the local runtime fact for history, collaboration, React,

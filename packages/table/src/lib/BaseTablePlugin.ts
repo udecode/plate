@@ -14,8 +14,7 @@ import {
   BaseParagraphPlugin,
   createBasePlugin,
   DebugPlugin,
-  getPluginTypes,
-  type InferConfig,
+  type DefinitionOf,
 } from '@platejs/core';
 import {
   ContentSlice,
@@ -44,6 +43,7 @@ import {
   SelectionApi,
   TextApi,
 } from '@platejs/plite';
+import { clipboardHandler } from '@platejs/plite-dom';
 import {
   KEYS,
   type TTableCellBorder,
@@ -323,7 +323,7 @@ const parseHtmlCssNumber = (value: string | null | undefined) => {
 };
 
 export const BaseTableRowPlugin = createBasePlugin({
-  key: KEYS.tr,
+  name: KEYS.tr,
   schema: ({ plugins }) => {
     const [cellType, headerCellType] = plugins.elementTypes([
       BaseTableCellPlugin,
@@ -338,7 +338,7 @@ export const BaseTableRowPlugin = createBasePlugin({
           min: 0,
         }),
         properties: { size: property.number() },
-        topLevel: false,
+        blockContent: false,
       },
     };
   },
@@ -361,11 +361,25 @@ export const BaseTableRowPlugin = createBasePlugin({
         }),
         match: [{ tag: 'tr' }],
       },
+      'text/markdown': {
+        encode: ({ encode, node }) => {
+          const children = encode(node.children);
+
+          if (!children.every((child) => child.type === 'tableCell')) {
+            throw new Error(
+              'Markdown table rows can only contain table cells.'
+            );
+          }
+
+          return { children, type: 'tableRow' };
+        },
+        kind: 'node',
+      },
     }),
 });
 
 export const BaseTableCellPlugin = createBasePlugin({
-  key: KEYS.td,
+  name: KEYS.td,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -379,7 +393,7 @@ export const BaseTableCellPlugin = createBasePlugin({
         rowSpan: property.number(),
         size: property.number(),
       },
-      topLevel: false,
+      blockContent: false,
     },
   }),
   codecs: ({ defineCodecs }) =>
@@ -393,6 +407,32 @@ export const BaseTableCellPlugin = createBasePlugin({
         }),
         match: [{ tag: 'td' }],
       },
+      'text/markdown': {
+        encode: ({ encode, isPhrasing, node }) => {
+          const blocks = encode(node.children);
+          const children = blocks.flatMap((block, index) => {
+            const content =
+              block.type === 'paragraph'
+                ? block.children
+                : isPhrasing(block)
+                  ? [block]
+                  : [];
+
+            if (block.type !== 'paragraph' && !isPhrasing(block)) {
+              throw new Error(
+                'Markdown table cells can only contain inline content.'
+              );
+            }
+
+            return index === blocks.length - 1
+              ? content
+              : [...content, { type: 'html' as const, value: '<br/>' }];
+          });
+
+          return { children, type: 'tableCell' };
+        },
+        kind: 'node',
+      },
     }),
 
   render: { nodeProps: ({ element }) => getTableCellHtmlProps(element) },
@@ -402,7 +442,7 @@ export const BaseTableCellPlugin = createBasePlugin({
 });
 
 export const BaseTableCellHeaderPlugin = createBasePlugin({
-  key: KEYS.th,
+  name: KEYS.th,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -416,7 +456,7 @@ export const BaseTableCellHeaderPlugin = createBasePlugin({
         rowSpan: property.number(),
         size: property.number(),
       },
-      topLevel: false,
+      blockContent: false,
     },
   }),
   codecs: ({ defineCodecs }) =>
@@ -429,6 +469,32 @@ export const BaseTableCellHeaderPlugin = createBasePlugin({
           tag: 'th',
         }),
         match: [{ tag: 'th' }],
+      },
+      'text/markdown': {
+        encode: ({ encode, isPhrasing, node }) => {
+          const blocks = encode(node.children);
+          const children = blocks.flatMap((block, index) => {
+            const content =
+              block.type === 'paragraph'
+                ? block.children
+                : isPhrasing(block)
+                  ? [block]
+                  : [];
+
+            if (block.type !== 'paragraph' && !isPhrasing(block)) {
+              throw new Error(
+                'Markdown table cells can only contain inline content.'
+              );
+            }
+
+            return index === blocks.length - 1
+              ? content
+              : [...content, { type: 'html' as const, value: '<br/>' }];
+          });
+
+          return { children, type: 'tableCell' };
+        },
+        kind: 'node',
       },
     }),
 
@@ -463,19 +529,24 @@ export const BaseTablePlugin = createBasePlugin({
         header ??
         (row
           ? (row as Element).children.every(
-              (cell) => cell.type === editor.getType(KEYS.th)
+              (cell) => cell.type === editor.plugin(KEYS.th).type
             )
           : false);
 
       return {
         children: children ?? [
-          { children: [{ text: '' }], type: editor.getType(KEYS.p) },
+          { children: [{ text: '' }], type: editor.plugin(KEYS.p).type },
         ],
-        type: isHeader ? editor.getType(KEYS.th) : editor.getType(KEYS.td),
+        type: isHeader
+          ? editor.plugin(KEYS.th).type
+          : editor.plugin(KEYS.td).type,
       };
     },
     getCellChildren: (cell: TTableCellElement) => [...cell.children],
-    getCellTypes: () => getPluginTypes(editor, [KEYS.td, KEYS.th]),
+    getCellTypes: () => [
+      editor.plugin(KEYS.td).type,
+      editor.plugin(KEYS.th).type,
+    ],
     getColSpan,
     getColumnCount: (tableNode: TTableElement) =>
       compileTableGrid(tableNode).width,
@@ -492,7 +563,7 @@ export const BaseTablePlugin = createBasePlugin({
         ].includes(kind)
       ),
   }),
-  key: KEYS.table,
+  name: KEYS.table,
   dependencies: [
     BaseTableRowPlugin,
     BaseTableCellPlugin,
@@ -572,10 +643,79 @@ export const BaseTablePlugin = createBasePlugin({
         }),
         match: [{ tag: 'table' }],
       },
+      'text/markdown': {
+        decode: ({
+          decode,
+          decoration,
+          registry,
+          isBlock,
+          isInline,
+          node,
+          type,
+        }) => {
+          const rows = node.children.map((row, rowIndex) => ({
+            children: row.children.map((cell) => {
+              const children = decode(cell.children, decoration);
+              const grouped: Descendant[] = [];
+              let inline: Descendant[] = [];
+              const flush = () => {
+                if (inline.length === 0) return;
+
+                grouped.push({
+                  children: inline,
+                  type: registry.getType(KEYS.p),
+                });
+                inline = [];
+              };
+
+              children.forEach((child) => {
+                if (
+                  ElementApi.isElement(child) &&
+                  !isInline(child) &&
+                  isBlock(child)
+                ) {
+                  flush();
+                  grouped.push(child);
+                } else {
+                  inline.push(child);
+                }
+              });
+              flush();
+
+              return {
+                children:
+                  grouped.length > 0
+                    ? grouped
+                    : [
+                        {
+                          children: [{ text: '' }],
+                          type: registry.getType(KEYS.p),
+                        },
+                      ],
+                type: registry.getType(rowIndex === 0 ? KEYS.th : KEYS.td),
+              };
+            }),
+            type: registry.getType(KEYS.tr),
+          }));
+
+          return { children: rows, type };
+        },
+        encode: ({ encode, node }) => {
+          const children = encode(node.children);
+
+          if (!children.every((child) => child.type === 'tableRow')) {
+            throw new Error('Markdown tables can only contain table rows.');
+          }
+
+          return { children, type: 'table' };
+        },
+        from: 'table',
+        kind: 'node',
+      },
     }),
 })
   .extend(({ api, editor }) => ({
-    api: {
+    api: () => ({
       createRow: ({
         colCount = 1,
         ...cellOptions
@@ -583,7 +723,7 @@ export const BaseTablePlugin = createBasePlugin({
         children: Array.from({ length: colCount }, () =>
           api.createCell(cellOptions)
         ),
-        type: editor.getType(KEYS.tr),
+        type: editor.plugin(KEYS.tr).type,
       }),
       getOverriddenColumnSizes: (
         tableNode: TTableElement,
@@ -597,10 +737,10 @@ export const BaseTablePlugin = createBasePlugin({
             : (Array.from({ length: colCount }).fill(0) as number[])
         ).map((size, index) => colSizeOverrides?.get?.(index) ?? size);
       },
-    },
+    }),
   }))
   .extend(({ api, type }) => ({
-    api: {
+    api: () => ({
       create: ({
         colCount,
         header,
@@ -616,7 +756,7 @@ export const BaseTablePlugin = createBasePlugin({
         ),
         type,
       }),
-    },
+    }),
     read: ({ state }) => {
       const getCellIndicesById = (id: string): CellIndices | undefined => {
         const value = state.value();
@@ -873,7 +1013,7 @@ export const BaseTablePlugin = createBasePlugin({
 
           const rowEntry = state.nodes.above<TTableRowElement>({
             at: cellEntry[1],
-            match: { type: editor.getType(KEYS.tr) },
+            match: { type: editor.plugin(KEYS.tr).type },
           });
 
           if (!rowEntry) return;
@@ -1074,7 +1214,7 @@ export const BaseTablePlugin = createBasePlugin({
         if (!rowSize) {
           const [rowElement] = state.nodes.parent<TTableRowElement>(path) ?? [];
 
-          if (!rowElement || rowElement.type !== editor.getType(KEYS.tr)) {
+          if (!rowElement || rowElement.type !== editor.plugin(KEYS.tr).type) {
             return { minHeight: 0, width: 0 };
           }
 
@@ -1421,7 +1561,7 @@ export const BaseTablePlugin = createBasePlugin({
         return true;
       },
     }),
-    api: {
+    api: () => ({
       writeSelection: (
         data: Pick<DataTransfer, 'getData' | 'setData'>
       ): boolean => {
@@ -1446,7 +1586,7 @@ export const BaseTablePlugin = createBasePlugin({
           .join('\n')}\n`;
         const tsv = `${values.map((row) => row.join('\t')).join('\n')}\n`;
 
-        editor.api.clipboard.writeSlice(data, {
+        editor.api.dom.clipboard.writeSlice(data, {
           formats: {
             'text/csv': csv,
             'text/plain': tsv,
@@ -1458,7 +1598,7 @@ export const BaseTablePlugin = createBasePlugin({
 
         return true;
       },
-    },
+    }),
   }))
   .extend(({ api, editor, store, type }) => ({
     update: ({ tx }) => {
@@ -1618,7 +1758,7 @@ export const BaseTablePlugin = createBasePlugin({
           } else {
             const rowEntry = tx.nodes.find<TTableRowElement>({
               at: options.fromRow ?? options.at,
-              match: { type: editor.getType(KEYS.tr) },
+              match: { type: editor.plugin(KEYS.tr).type },
             });
 
             if (!rowEntry) return;
@@ -1660,7 +1800,7 @@ export const BaseTablePlugin = createBasePlugin({
               }),
             header: options.header,
             kind: 'insert-row',
-            rowType: editor.getType(KEYS.tr),
+            rowType: editor.plugin(KEYS.tr).type,
             select: options.select,
           });
         },
@@ -1876,77 +2016,6 @@ export const BaseTablePlugin = createBasePlugin({
   }))
   .extend((context) => {
     const { api, editor, plugin, type } = context;
-    const projectTableSlice = (slice: ContentSlice): ContentSlice => {
-      const content: Descendant[] = [];
-      let projected = false;
-      const tableNodes = slice.content.filter(
-        (node) => ElementApi.isElement(node) && node.type === context.type
-      );
-      const selectedTable =
-        tableNodes.length === 1
-          ? context.read.getGridAbove()[0]?.[0]
-          : undefined;
-
-      slice.content.forEach((node) => {
-        if (!ElementApi.isElement(node) || node.type !== context.type) {
-          content.push(node);
-          return;
-        }
-
-        if (!selectedTable) {
-          content.push(node);
-          return;
-        }
-
-        const rows = node.children as TTableRowElement[];
-        const rowCount = rows.length;
-
-        if (!rowCount) {
-          content.push(node);
-          return;
-        }
-
-        const colCount = rows[0].children.length;
-
-        projected = true;
-
-        if (rowCount <= 1 && colCount <= 1) {
-          const cell = rows[0].children[0] as TTableCellElement;
-
-          content.push(...cell.children);
-          return;
-        }
-
-        content.push({
-          ...selectedTable,
-          ...node,
-          children: selectedTable.children,
-        });
-      });
-
-      return projected
-        ? ContentSlice.fromJSON({
-            ...slice,
-            content,
-            openEnd: 0,
-            openStart: 0,
-          })
-        : slice;
-    };
-    const withPasteSource = <T>(source: TablePasteSource, run: () => T): T => {
-      const stack = tablePasteSources.get(editor) ?? [];
-
-      stack.push(source);
-      tablePasteSources.set(editor, stack);
-
-      try {
-        return run();
-      } finally {
-        stack.pop();
-
-        if (stack.length === 0) tablePasteSources.delete(editor);
-      }
-    };
 
     return {
       update: ({ tx }) => {
@@ -2051,7 +2120,7 @@ export const BaseTablePlugin = createBasePlugin({
               });
             };
             const apply = () => {
-              tx[plugin.key].setBorderSizes(updates);
+              tx[plugin.name].setBorderSizes(updates);
             };
 
             if (border === 'none') {
@@ -2153,7 +2222,7 @@ export const BaseTablePlugin = createBasePlugin({
             size: number,
             { at, border = 'all' }: Omit<SetBorderSizeOptions, 'size'> = {}
           ) => {
-            tx[plugin.key].setBorderSizes([{ at, border, size }]);
+            tx[plugin.name].setBorderSizes([{ at, border, size }]);
           },
           merge: (): void => {
             const cellEntries = tx.table.getSelection()?.cellEntries ?? [];
@@ -2396,7 +2465,7 @@ export const BaseTablePlugin = createBasePlugin({
                   row: sourceRow,
                 }),
               kind: 'split',
-              rowType: editor.getType(KEYS.tr),
+              rowType: editor.plugin(KEYS.tr).type,
             });
           },
           tab: ({ reverse = false }: { reverse?: boolean } = {}) => {
@@ -2439,641 +2508,693 @@ export const BaseTablePlugin = createBasePlugin({
           },
         };
       },
-      extension: [
-        {
-          commands: ({ around }) => [
-            around(editorCommands.select, ({ input, state, next }) =>
-              next({
-                ...input,
-                target: RangeApi.isRange(input.target)
-                  ? clampTableSelection(context.type, input.target, state)
-                  : input.target,
-              })
-            ),
-            around(editorCommands.setSelection, ({ input, state, next }) => {
-              const selection = state.selection();
+    };
+  })
+  .extend((context) => {
+    const { editor } = context;
+    const withPasteSource = <T>(source: TablePasteSource, run: () => T): T => {
+      const stack = tablePasteSources.get(editor) ?? [];
 
-              if (!selection) return next();
+      stack.push(source);
+      tablePasteSources.set(editor, stack);
 
-              const nextSelection = { ...selection, ...input.props };
-              const clamped = clampTableSelection(
-                context.type,
-                nextSelection,
-                state
-              );
+      try {
+        return run();
+      } finally {
+        stack.pop();
 
-              return next({
-                ...input,
-                props:
-                  clamped === nextSelection
-                    ? input.props
-                    : { ...input.props, focus: clamped.focus },
-              });
-            }),
-          ],
-        },
-        {
-          commands: ({ handle }) => [
-            handle(editorCommands.delete, ({ input, state }) => {
-              const selection = state.selection();
+        if (stack.length === 0) tablePasteSources.delete(editor);
+      }
+    };
 
-              if (!selection || !state.selection.isCollapsed()) return false;
-
-              const reverse = input.direction === 'forward';
-              const cellEntry = state.nodes.block({
-                match: { type: context.api.getCellTypes() },
-              });
-
-              if (cellEntry) {
-                const edge = reverse
-                  ? state.points.end(cellEntry[1])
-                  : state.points.start(cellEntry[1]);
-
-                return edge && PointApi.equals(selection.anchor, edge)
-                  ? state.transaction(() => {})
-                  : false;
+    return {
+      contributions: [
+        clipboardHandler({
+          insertData(data, { next }) {
+            const types = Array.from(data.types ?? []);
+            const read = (format: string) => {
+              try {
+                return data.getData(format);
+              } catch {
+                return '';
               }
+            };
+            const html = read('text/html');
+            const text =
+              read('text/plain') || read('text/tsv') || read('text/csv');
+            const exact = context.editor.api.dom.clipboard.readSlice(data);
+            const hasRecognizedExact = exact.kind !== 'absent';
+            const view = context.read.getSelection();
+            const hasStructuralTarget =
+              !!view &&
+              (isTableCellSelection(view.selection) || view.anchors.length > 1);
+            const source: TablePasteSource = hasRecognizedExact
+              ? 'model'
+              : html
+                ? 'html'
+                : types.includes('text/tsv') ||
+                    types.includes('text/tab-separated-values') ||
+                    text.includes('\t')
+                  ? 'tsv'
+                  : 'csv';
+            const exactSlice = exact.kind === 'slice' ? exact.slice : null;
+            const exactTable =
+              exactSlice &&
+              getTablePasteElement(exactSlice, {
+                cellTypes: context.api.getCellTypes(),
+                rowType: context.editor.plugin(KEYS.tr).type,
+                tableType: context.type,
+              });
 
-              const nextPoint = reverse
-                ? state.points.after(selection, { unit: input.unit })
-                : state.points.before(selection, { unit: input.unit });
+            if (hasStructuralTarget && exact.kind === 'invalid') {
+              context.editor
+                .plugin(DebugPlugin)
+                .api.warn(
+                  'Table paste rejected: invalid-source.',
+                  'TABLE_MUTATION_DIAGNOSTIC',
+                  { kind: 'invalid-source', reason: 'malformed-exact' }
+                );
+
+              return true;
+            }
+
+            if (exactSlice && exactTable) {
+              const grid = compileTableGrid(exactTable);
 
               if (
-                nextPoint &&
-                state.nodes.block({
-                  at: nextPoint,
-                  match: { type: context.api.getCellTypes() },
-                })
+                grid.height === 0 ||
+                grid.width === 0 ||
+                grid.anchors.length === 0
               ) {
-                return state.transaction((tx) => {
-                  tx.selection.move({ reverse: !reverse });
-                });
-              }
-
-              return false;
-            }),
-            handle(editorCommands.deleteFragment, ({ input, state }) => {
-              const selection =
-                input.at === undefined
-                  ? state.selection()
-                  : state.ranges.get(input.at);
-
-              if (!selection) return false;
-
-              if (
-                state.selection.isWithinBlock({
-                  at: selection,
-                  match: { type: context.type },
-                })
-              ) {
-                const cells = state.table.getGridAbove({
-                  at: selection,
-                  format: 'cell',
-                });
-
-                if (cells.length < 2) return false;
-
-                const anchor = state.points.start(cells[0][1]);
-                const focus = state.points.start(cells.at(-1)![1]);
-
-                return state.transaction((tx) => {
-                  cells.forEach(([, path]) => {
-                    tx.nodes.replaceChildren(
-                      [
-                        {
-                          children: [{ text: '' }],
-                          type: context.editor.getType(KEYS.p),
-                        },
-                      ],
-                      { at: path }
-                    );
-                  });
-
-                  if (anchor && focus) {
-                    const range = { anchor, focus };
-
-                    tx.selection.set(
-                      tx.table.createCellSelection(range) ?? range
-                    );
-                  }
-                });
-              }
-
-              return false;
-            }),
-          ],
-        },
-        {
-          clipboard: {
-            insertData(data, { next }) {
-              const types = Array.from(data.types ?? []);
-              const read = (format: string) => {
-                try {
-                  return data.getData(format);
-                } catch {
-                  return '';
-                }
-              };
-              const html = read('text/html');
-              const text =
-                read('text/plain') || read('text/tsv') || read('text/csv');
-              const exact = context.editor.api.clipboard.readSlice(data);
-              const hasRecognizedExact = exact.kind !== 'absent';
-              const view = context.read.getSelection();
-              const hasStructuralTarget =
-                !!view &&
-                (isTableCellSelection(view.selection) ||
-                  view.anchors.length > 1);
-              const source: TablePasteSource = hasRecognizedExact
-                ? 'model'
-                : html
-                  ? 'html'
-                  : types.includes('text/tsv') ||
-                      types.includes('text/tab-separated-values') ||
-                      text.includes('\t')
-                    ? 'tsv'
-                    : 'csv';
-              const exactSlice = exact.kind === 'slice' ? exact.slice : null;
-              const exactTable =
-                exactSlice &&
-                getTablePasteElement(exactSlice, {
-                  cellTypes: context.api.getCellTypes(),
-                  rowType: context.editor.getType(KEYS.tr),
-                  tableType: context.type,
-                });
-
-              if (hasStructuralTarget && exact.kind === 'invalid') {
                 context.editor
                   .plugin(DebugPlugin)
                   .api.warn(
                     'Table paste rejected: invalid-source.',
                     'TABLE_MUTATION_DIAGNOSTIC',
-                    { kind: 'invalid-source', reason: 'malformed-exact' }
+                    { kind: 'invalid-source', reason: 'empty' }
                   );
 
                 return true;
               }
 
-              if (exactSlice && exactTable) {
-                const grid = compileTableGrid(exactTable);
+              return withPasteSource('model', () => next(data));
+            }
 
-                if (
-                  grid.height === 0 ||
-                  grid.width === 0 ||
-                  grid.anchors.length === 0
-                ) {
-                  context.editor
-                    .plugin(DebugPlugin)
-                    .api.warn(
-                      'Table paste rejected: invalid-source.',
-                      'TABLE_MUTATION_DIAGNOSTIC',
-                      { kind: 'invalid-source', reason: 'empty' }
-                    );
+            return withPasteSource(source, () => next(data));
+          },
+        }),
+      ],
+    };
+  })
+  .extend((context) => ({
+    corrections: [
+      {
+        event: 'content',
+        correct({ entry, tx }) {
+          const [node, path] = entry;
 
-                  return true;
+          if (!ElementApi.isElement(node)) {
+            return;
+          }
+
+          const { enableUnsetSingleColSize, initialTableWidth } =
+            context.store.get();
+
+          if (node.type === context.type) {
+            const table = node as TTableElement;
+            const repair = planTableMutation(
+              createDetachedTableContext(table, path),
+              {
+                createCell: ({ children, header, sourceRow }) =>
+                  context.api.createCell({
+                    children: children ? [...children] : undefined,
+                    header,
+                    row: sourceRow,
+                  }),
+                kind: 'repair',
+              }
+            );
+
+            if (repair.kind !== 'plan') {
+              context.editor
+                .plugin(DebugPlugin)
+                .api.warn(
+                  `Table correction rejected: ${repair.kind}.`,
+                  'TABLE_MUTATION_DIAGNOSTIC',
+                  repair
+                );
+              return;
+            }
+
+            if (repair.operations.length > 0) {
+              applyTableMutationPlan(tx, repair);
+              return;
+            }
+
+            if (
+              table.colSizes?.length &&
+              enableUnsetSingleColSize &&
+              context.api.getColumnCount(table) < 2
+            ) {
+              tx.nodes.unset('colSizes', { at: path });
+              return;
+            }
+
+            if (initialTableWidth) {
+              const colCount = (
+                table.children[0] as TTableRowElement | undefined
+              )?.children.length;
+
+              if (colCount) {
+                const fallbackSize = initialTableWidth / colCount;
+                const colSizes = table.colSizes
+                  ? table.colSizes.map((size) => size || fallbackSize)
+                  : Array.from({ length: colCount }, () => fallbackSize);
+
+                if (!table.colSizes || table.colSizes.some((size) => !size)) {
+                  tx.nodes.set<TTableElement>({ colSizes }, { at: path });
+                  return;
                 }
+              }
+            }
+          }
+        },
+      },
+    ],
+  }))
+  .extend((context) => {
+    const projectTableSlice = (slice: ContentSlice): ContentSlice => {
+      const content: Descendant[] = [];
+      let projected = false;
+      const tableNodes = slice.content.filter(
+        (node) => ElementApi.isElement(node) && node.type === context.type
+      );
+      const selectedTable =
+        tableNodes.length === 1
+          ? context.read.getGridAbove()[0]?.[0]
+          : undefined;
 
-                return withPasteSource('model', () => next(data));
+      slice.content.forEach((node) => {
+        if (!ElementApi.isElement(node) || node.type !== context.type) {
+          content.push(node);
+          return;
+        }
+
+        if (!selectedTable) {
+          content.push(node);
+          return;
+        }
+
+        const rows = node.children as TTableRowElement[];
+        const rowCount = rows.length;
+
+        if (!rowCount) {
+          content.push(node);
+          return;
+        }
+
+        const colCount = rows[0].children.length;
+
+        projected = true;
+
+        if (rowCount <= 1 && colCount <= 1) {
+          const cell = rows[0].children[0] as TTableCellElement;
+
+          content.push(...cell.children);
+          return;
+        }
+
+        content.push({
+          ...selectedTable,
+          ...node,
+          children: selectedTable.children,
+        });
+      });
+
+      return projected
+        ? ContentSlice.fromJSON({
+            ...slice,
+            content,
+            openEnd: 0,
+            openStart: 0,
+          })
+        : slice;
+    };
+
+    return {
+      readMiddleware: ({ around }) => [
+        around(editorReads.slice.export, ({ next, state }) => {
+          const slice = next();
+
+          return SelectionApi.isNode(state.selection())
+            ? slice
+            : projectTableSlice(slice);
+        }),
+      ],
+      selectionKinds: [
+        {
+          codec: defineValueCodec<TableCellSelection>({
+            decode(value) {
+              if (!isTableCellSelection(value)) {
+                throw new Error('Invalid table-cell selection.');
               }
 
-              return withPasteSource(source, () => next(data));
+              return value;
             },
-          },
-        },
-        {
-          commands: ({ handle }) => [
-            handle(editorCommands.replaceSlice, ({ input, state }) => {
-              const { slice } = input;
-              const selection = state.selection();
-              const rejectTablePaste = (diagnostic: TablePasteDiagnostic) => {
-                context.editor
-                  .plugin(DebugPlugin)
-                  .api.warn(
-                    `Table paste rejected: ${diagnostic.kind}.`,
-                    'TABLE_MUTATION_DIAGNOSTIC',
-                    diagnostic
-                  );
-
-                return state.transaction(() => {});
-              };
-
-              if (!selection) return false;
-
-              const view = state.table.getSelection(selection);
-
-              if (!view) return false;
-
-              const root = view.root;
-              let source = getTablePasteElement(slice, {
-                cellTypes: context.api.getCellTypes(),
-                rowType: context.editor.getType(KEYS.tr),
-                tableType: context.type,
+            encode: (selection) => selection,
+            version: 1,
+          }),
+          primaryRange: (selection) =>
+            Object.freeze({
+              anchor: selection.anchor,
+              focus: selection.anchor,
+            }),
+          kind: 'table-cell',
+          map(selection, context) {
+            const range = context.mapRange(selection, {
+              association: 'outward',
+            });
+            const seen = new Set<string>();
+            const cells = selection.cells.flatMap((cell) => {
+              const mapped = context.mapRange(cell, {
+                association: 'outward',
+                deletion: 'drop',
               });
-              let ordinary = false;
 
-              if (!source) {
+              if (!mapped) return [];
+
+              const key = JSON.stringify([
+                mapped.anchor.root ?? context.root,
+                mapped.anchor.path,
+                mapped.anchor.offset,
+                mapped.focus.root ?? context.root,
+                mapped.focus.path,
+                mapped.focus.offset,
+              ]);
+
+              if (seen.has(key)) return [];
+
+              seen.add(key);
+
+              return [mapped];
+            });
+
+            return range && cells.length > 0
+              ? { ...selection, ...range, cells }
+              : null;
+          },
+          marks() {
+            const cells = context.read.getGridAbove({
+              format: 'cell',
+            });
+            const markCounts: Record<string, number> = {};
+            const marks: Record<string, unknown> = {};
+            let textCount = 0;
+
+            cells.forEach(([, cellPath]) => {
+              context.editor.read.nodes
+                .toArray({
+                  at: cellPath,
+                  match: (node) => TextApi.isText(node),
+                })
+                .forEach(([text]) => {
+                  textCount++;
+
+                  Object.keys(text).forEach((key) => {
+                    if (key === 'text') return;
+
+                    markCounts[key] = (markCounts[key] ?? 0) + 1;
+                    marks[key] = text[key];
+                  });
+                });
+            });
+
+            Object.keys(markCounts).forEach((key) => {
+              if (markCounts[key] !== textCount) delete marks[key];
+            });
+
+            return marks;
+          },
+          ranges: (selection) => selection.cells,
+          replacementRange: (selection) => selection,
+          slice: (selection, state) =>
+            projectTableSlice(state.slice.get({ at: selection })),
+          validate: isTableCellSelection,
+        } satisfies EditorSelectionSpec<TableCellSelection>,
+      ],
+      commands: ({ around, handle }) => [
+        around(editorCommands.select, ({ input, state, next }) =>
+          next({
+            ...input,
+            target: RangeApi.isRange(input.target)
+              ? clampTableSelection(context.type, input.target, state)
+              : input.target,
+          })
+        ),
+        around(editorCommands.setSelection, ({ input, state, next }) => {
+          const selection = state.selection();
+
+          if (!selection) return next();
+
+          const nextSelection = { ...selection, ...input.props };
+          const clamped = clampTableSelection(
+            context.type,
+            nextSelection,
+            state
+          );
+
+          return next({
+            ...input,
+            props:
+              clamped === nextSelection
+                ? input.props
+                : { ...input.props, focus: clamped.focus },
+          });
+        }),
+        handle(editorCommands.delete, ({ input, state }) => {
+          const selection = state.selection();
+
+          if (!selection || !state.selection.isCollapsed()) return false;
+
+          const reverse = input.direction === 'forward';
+          const cellEntry = state.nodes.block({
+            match: { type: context.api.getCellTypes() },
+          });
+
+          if (cellEntry) {
+            const edge = reverse
+              ? state.points.end(cellEntry[1])
+              : state.points.start(cellEntry[1]);
+
+            return edge && PointApi.equals(selection.anchor, edge)
+              ? state.transaction(() => {})
+              : false;
+          }
+
+          const nextPoint = reverse
+            ? state.points.after(selection, { unit: input.unit })
+            : state.points.before(selection, { unit: input.unit });
+
+          if (
+            nextPoint &&
+            state.nodes.block({
+              at: nextPoint,
+              match: { type: context.api.getCellTypes() },
+            })
+          ) {
+            return state.transaction((tx) => {
+              tx.selection.move({ reverse: !reverse });
+            });
+          }
+
+          return false;
+        }),
+        handle(editorCommands.deleteFragment, ({ input, state }) => {
+          const selection =
+            input.at === undefined
+              ? state.selection()
+              : state.ranges.get(input.at);
+
+          if (!selection) return false;
+
+          if (
+            state.selection.isWithinBlock({
+              at: selection,
+              match: { type: context.type },
+            })
+          ) {
+            const cells = state.table.getGridAbove({
+              at: selection,
+              format: 'cell',
+            });
+
+            if (cells.length < 2) return false;
+
+            const anchor = state.points.start(cells[0][1]);
+            const focus = state.points.start(cells.at(-1)![1]);
+            const range = anchor && focus ? { anchor, focus } : null;
+
+            const replacement = state.transaction((tx) => {
+              cells.forEach(([, path]) => {
+                tx.nodes.replaceChildren(
+                  [
+                    {
+                      children: [{ text: '' }],
+                      type: context.editor.plugin(KEYS.p).type,
+                    },
+                  ],
+                  { at: path }
+                );
+              });
+            });
+
+            return range
+              ? state.transaction.extend(replacement, (tx) => {
+                  tx.selection.set(
+                    state.table.createCellSelection(range) ?? range
+                  );
+                })
+              : replacement;
+          }
+
+          return false;
+        }),
+        handle(editorCommands.replaceSlice, ({ input, state }) => {
+          const { slice } = input;
+          const selection = state.selection();
+          const rejectTablePaste = (diagnostic: TablePasteDiagnostic) => {
+            context.editor
+              .plugin(DebugPlugin)
+              .api.warn(
+                `Table paste rejected: ${diagnostic.kind}.`,
+                'TABLE_MUTATION_DIAGNOSTIC',
+                diagnostic
+              );
+
+            return state.transaction(() => {});
+          };
+
+          if (!selection) return false;
+
+          const view = state.table.getSelection(selection);
+
+          if (!view) return false;
+
+          const root = view.root;
+          let source = getTablePasteElement(slice, {
+            cellTypes: context.api.getCellTypes(),
+            rowType: context.editor.plugin(KEYS.tr).type,
+            tableType: context.type,
+          });
+          let ordinary = false;
+
+          if (!source) {
+            if (
+              !isTableCellSelection(view.selection) &&
+              view.anchors.length <= 1
+            ) {
+              return false;
+            }
+
+            const children = state.slice.fitContent(slice, {
+              parent: view.anchor.cell,
+              ...(root === undefined ? {} : { root }),
+            });
+
+            if (children === null) {
+              return rejectTablePaste({
+                kind: 'invalid-source',
+                reason: 'content-rejected',
+              });
+            }
+
+            source = createOrdinaryTablePasteElement(children, {
+              cell: view.anchor.cell,
+              rowType: context.editor.plugin(KEYS.tr).type,
+              tableType: context.type,
+            });
+            ordinary = true;
+          }
+
+          const prepared = prepareTablePaste(source, {
+            createCell: ({ children, header, sourceRow }) =>
+              context.api.createCell({
+                children: children ? [...children] : undefined,
+                header,
+                row: sourceRow,
+              }),
+            createRow: () => context.api.createRow({ colCount: 0 }),
+            source: tablePasteSources.get(context.editor)?.at(-1) ?? 'model',
+          });
+
+          if ('kind' in prepared) {
+            return rejectTablePaste(prepared);
+          }
+
+          const fillBounds =
+            isTableCellSelection(view.selection) || view.anchors.length > 1
+              ? view.bounds
+              : undefined;
+          const plan = planPreparedTablePaste(view.context, prepared, {
+            createCell: ({ children, header, sourceRow }) =>
+              context.api.createCell({
+                children: children ? [...children] : undefined,
+                header,
+                row: sourceRow,
+              }),
+            createRow: () => context.api.createRow({ colCount: 0 }),
+            disableExpand: context.store.get().disableExpandOnInsert,
+            ...(fillBounds ? { fillBounds } : {}),
+            fitChildren: ordinary
+              ? (_cell, children) => children
+              : (cell, children) =>
+                  state.slice.fitContent(ContentSlice.closed(children), {
+                    parent: cell,
+                    ...(root === undefined ? {} : { root }),
+                  }),
+            ...(root === undefined ? {} : { root }),
+            startCol: fillBounds?.minCol ?? view.anchor.col,
+            startRow: fillBounds?.minRow ?? view.anchor.row,
+          });
+
+          if (plan.kind !== 'plan') {
+            return rejectTablePaste(plan);
+          }
+
+          return state.transaction((tx) => {
+            applyTableMutationPlan(tx, {
+              kind: 'plan',
+              operations: plan.operations,
+              selection: plan.selection,
+            });
+          });
+        }),
+        around(editorCommands.insertText, ({ state, next }) => {
+          const selection = state.selection();
+
+          if (!selection || !state.selection.isExpanded()) return next();
+          const cells = state.table.getGridAbove({
+            at: selection,
+            format: 'cell',
+          });
+
+          if (cells.length < 2) return next();
+
+          const focus = state.points.start(cells.at(-1)![1]);
+          const transaction = state.transaction((tx) => {
+            cells.forEach(([, path]) => {
+              tx.nodes.replaceChildren(
+                [
+                  {
+                    children: [{ text: '' }],
+                    type: context.editor.plugin(KEYS.p).type,
+                  },
+                ],
+                { at: path }
+              );
+            });
+
+            if (focus) {
+              tx.selection.set({ anchor: focus, focus });
+            }
+          });
+
+          return next.after(transaction);
+        }),
+        handle(editorCommands.addMark, ({ input, state }) => {
+          if (!state.selection() || state.selection.isCollapsed()) return false;
+
+          const cells = state.table.getGridAbove({ format: 'cell' });
+
+          if (cells.length <= 1) return false;
+
+          return state.transaction((tx) => {
+            cells.forEach(([, cellPath]) => {
+              tx.nodes.set(
+                { [input.key]: input.value },
+                { at: cellPath, marks: true }
+              );
+            });
+          });
+        }),
+        handle(editorCommands.removeMark, ({ input, state }) => {
+          if (!state.selection() || state.selection.isCollapsed()) return false;
+
+          const cells = state.table.getGridAbove({ format: 'cell' });
+
+          if (cells.length <= 1) return false;
+
+          return state.transaction((tx) => {
+            cells.forEach(([, cellPath]) => {
+              tx.nodes.unset(input.key, {
+                at: cellPath,
+                match: (node) => TextApi.isText(node),
+              });
+            });
+          });
+        }),
+        around(editorCommands.setNodes, ({ input, state, next }) => {
+          if (input.options?.marks) return next();
+          if (!state.selection() || state.selection.isCollapsed())
+            return next();
+
+          const cells = state.table.getGridAbove({ format: 'cell' });
+
+          if (cells.length <= 1) return next();
+
+          const cellPaths = cells.map(([, cellPath]) => cellPath);
+
+          if (input.options?.at) {
+            const target = input.options.at;
+            const range = PathApi.isPath(target)
+              ? undefined
+              : state.ranges.get(target);
+            const targetsSelectedCell = PathApi.isPath(target)
+              ? cellPaths.some((cellPath) => PathApi.isCommon(cellPath, target))
+              : !!range &&
+                cellPaths.some((cellPath) => {
+                  const cellRange = state.ranges.get(cellPath);
+
+                  return (
+                    !!cellRange &&
+                    (RangeApi.includes(cellRange, range.anchor) ||
+                      RangeApi.includes(cellRange, range.focus) ||
+                      RangeApi.includes(range, cellRange))
+                  );
+                });
+
+            if (!targetsSelectedCell) return next();
+          }
+
+          const optionMatch = input.options?.match;
+          const optionAt = input.options?.at;
+
+          return next({
+            ...input,
+            options: {
+              ...input.options,
+              match: (node, path) => {
                 if (
-                  !isTableCellSelection(view.selection) &&
-                  view.anchors.length <= 1
+                  !cellPaths.some((cellPath) =>
+                    PathApi.isCommon(cellPath, path)
+                  )
                 ) {
                   return false;
                 }
 
-                const children = state.slice.fitContent(slice, {
-                  parent: view.anchor.cell,
-                  ...(root === undefined ? {} : { root }),
-                });
-
-                if (children === null) {
-                  return rejectTablePaste({
-                    kind: 'invalid-source',
-                    reason: 'content-rejected',
-                  });
+                if (optionMatch)
+                  return NodeApi.matches(node, optionMatch, path);
+                if (optionAt && PathApi.isPath(optionAt)) {
+                  return PathApi.equals(path, optionAt);
                 }
 
-                source = createOrdinaryTablePasteElement(children, {
-                  cell: view.anchor.cell,
-                  rowType: context.editor.getType(KEYS.tr),
-                  tableType: context.type,
-                });
-                ordinary = true;
-              }
-
-              const prepared = prepareTablePaste(source, {
-                createCell: ({ children, header, sourceRow }) =>
-                  context.api.createCell({
-                    children: children ? [...children] : undefined,
-                    header,
-                    row: sourceRow,
-                  }),
-                createRow: () => context.api.createRow({ colCount: 0 }),
-                source:
-                  tablePasteSources.get(context.editor)?.at(-1) ?? 'model',
-              });
-
-              if ('kind' in prepared) {
-                return rejectTablePaste(prepared);
-              }
-
-              const fillBounds =
-                isTableCellSelection(view.selection) || view.anchors.length > 1
-                  ? view.bounds
-                  : undefined;
-              const plan = planPreparedTablePaste(view.context, prepared, {
-                createCell: ({ children, header, sourceRow }) =>
-                  context.api.createCell({
-                    children: children ? [...children] : undefined,
-                    header,
-                    row: sourceRow,
-                  }),
-                createRow: () => context.api.createRow({ colCount: 0 }),
-                disableExpand: context.store.get().disableExpandOnInsert,
-                ...(fillBounds ? { fillBounds } : {}),
-                fitChildren: ordinary
-                  ? (_cell, children) => children
-                  : (cell, children) =>
-                      state.slice.fitContent(ContentSlice.closed(children), {
-                        parent: cell,
-                        ...(root === undefined ? {} : { root }),
-                      }),
-                ...(root === undefined ? {} : { root }),
-                startCol: fillBounds?.minCol ?? view.anchor.col,
-                startRow: fillBounds?.minRow ?? view.anchor.row,
-              });
-
-              if (plan.kind !== 'plan') {
-                return rejectTablePaste(plan);
-              }
-
-              return state.transaction((tx) => {
-                applyTableMutationPlan(tx, {
-                  kind: 'plan',
-                  operations: plan.operations,
-                  selection: plan.selection,
-                });
-              });
-            }),
-          ],
-        },
-        {
-          commands: ({ around }) => [
-            around(editorCommands.insertText, ({ state, next }) => {
-              const selection = state.selection();
-
-              if (!selection || !state.selection.isExpanded()) return next();
-              const cells = state.table.getGridAbove({
-                at: selection,
-                format: 'cell',
-              });
-
-              if (cells.length < 2) return next();
-
-              const focus = state.points.start(cells.at(-1)![1]);
-              const transaction = state.transaction((tx) => {
-                cells.forEach(([, path]) => {
-                  tx.nodes.replaceChildren(
-                    [
-                      {
-                        children: [{ text: '' }],
-                        type: context.editor.getType(KEYS.p),
-                      },
-                    ],
-                    { at: path }
-                  );
-                });
-
-                if (focus) {
-                  tx.selection.set({ anchor: focus, focus });
-                }
-              });
-
-              return next.after(transaction);
-            }),
-          ],
-        },
-        {
-          corrections: [
-            {
-              event: 'content',
-              correct({ entry, tx }) {
-                const [node, path] = entry;
-
-                if (!ElementApi.isElement(node)) {
-                  return;
-                }
-
-                const { enableUnsetSingleColSize, initialTableWidth } =
-                  context.store.get();
-
-                if (node.type === context.type) {
-                  const table = node as TTableElement;
-                  const repair = planTableMutation(
-                    createDetachedTableContext(table, path),
-                    {
-                      createCell: ({ children, header, sourceRow }) =>
-                        context.api.createCell({
-                          children: children ? [...children] : undefined,
-                          header,
-                          row: sourceRow,
-                        }),
-                      kind: 'repair',
-                    }
-                  );
-
-                  if (repair.kind !== 'plan') {
-                    context.editor
-                      .plugin(DebugPlugin)
-                      .api.warn(
-                        `Table correction rejected: ${repair.kind}.`,
-                        'TABLE_MUTATION_DIAGNOSTIC',
-                        repair
-                      );
-                    return;
-                  }
-
-                  if (repair.operations.length > 0) {
-                    applyTableMutationPlan(tx, repair);
-                    return;
-                  }
-
-                  if (
-                    table.colSizes?.length &&
-                    enableUnsetSingleColSize &&
-                    context.api.getColumnCount(table) < 2
-                  ) {
-                    tx.nodes.unset('colSizes', { at: path });
-                    return;
-                  }
-
-                  if (initialTableWidth) {
-                    const colCount = (
-                      table.children[0] as TTableRowElement | undefined
-                    )?.children.length;
-
-                    if (colCount) {
-                      const fallbackSize = initialTableWidth / colCount;
-                      const colSizes = table.colSizes
-                        ? table.colSizes.map((size) => size || fallbackSize)
-                        : Array.from({ length: colCount }, () => fallbackSize);
-
-                      if (
-                        !table.colSizes ||
-                        table.colSizes.some((size) => !size)
-                      ) {
-                        tx.nodes.set<TTableElement>({ colSizes }, { at: path });
-                        return;
-                      }
-                    }
-                  }
-                }
+                return ElementApi.isElement(node) && state.nodes.isBlock(node);
               },
             },
-          ],
-        },
-        {
-          read: ({ around }) => [
-            around(editorReads.slice.export, ({ next, state }) => {
-              const slice = next();
-
-              return SelectionApi.isNode(state.selection())
-                ? slice
-                : projectTableSlice(slice);
-            }),
-          ],
-          selectionKinds: [
-            {
-              codec: defineValueCodec<TableCellSelection>({
-                decode(value) {
-                  if (!isTableCellSelection(value)) {
-                    throw new Error('Invalid table-cell selection.');
-                  }
-
-                  return value;
-                },
-                encode: (selection) => selection,
-                version: 1,
-              }),
-              primaryRange: (selection) =>
-                Object.freeze({
-                  anchor: selection.anchor,
-                  focus: selection.anchor,
-                }),
-              kind: 'table-cell',
-              map(selection, context) {
-                const range = context.mapRange(selection, {
-                  association: 'outward',
-                });
-                const seen = new Set<string>();
-                const cells = selection.cells.flatMap((cell) => {
-                  const mapped = context.mapRange(cell, {
-                    association: 'outward',
-                    deletion: 'drop',
-                  });
-
-                  if (!mapped) return [];
-
-                  const key = JSON.stringify([
-                    mapped.anchor.root ?? context.root,
-                    mapped.anchor.path,
-                    mapped.anchor.offset,
-                    mapped.focus.root ?? context.root,
-                    mapped.focus.path,
-                    mapped.focus.offset,
-                  ]);
-
-                  if (seen.has(key)) return [];
-
-                  seen.add(key);
-
-                  return [mapped];
-                });
-
-                return range && cells.length > 0
-                  ? { ...selection, ...range, cells }
-                  : null;
-              },
-              marks() {
-                const cells = context.read.getGridAbove({
-                  format: 'cell',
-                });
-                const markCounts: Record<string, number> = {};
-                const marks: Record<string, unknown> = {};
-                let textCount = 0;
-
-                cells.forEach(([, cellPath]) => {
-                  context.editor.read.nodes
-                    .toArray({
-                      at: cellPath,
-                      match: (node) => TextApi.isText(node),
-                    })
-                    .forEach(([text]) => {
-                      textCount++;
-
-                      Object.keys(text).forEach((key) => {
-                        if (key === 'text') return;
-
-                        markCounts[key] = (markCounts[key] ?? 0) + 1;
-                        marks[key] = text[key];
-                      });
-                    });
-                });
-
-                Object.keys(markCounts).forEach((key) => {
-                  if (markCounts[key] !== textCount) delete marks[key];
-                });
-
-                return marks;
-              },
-              ranges: (selection) => selection.cells,
-              replacementRange: (selection) => selection,
-              slice: (selection, state) =>
-                projectTableSlice(state.slice.get({ at: selection })),
-              validate: isTableCellSelection,
-            } satisfies EditorSelectionSpec<TableCellSelection>,
-          ],
-          commands: ({ around, handle }) => [
-            handle(editorCommands.addMark, ({ input, state }) => {
-              if (!state.selection() || state.selection.isCollapsed())
-                return false;
-
-              const cells = state.table.getGridAbove({ format: 'cell' });
-
-              if (cells.length <= 1) return false;
-
-              return state.transaction((tx) => {
-                cells.forEach(([, cellPath]) => {
-                  tx.nodes.set(
-                    { [input.key]: input.value },
-                    { at: cellPath, marks: true }
-                  );
-                });
-              });
-            }),
-            handle(editorCommands.removeMark, ({ input, state }) => {
-              if (!state.selection() || state.selection.isCollapsed())
-                return false;
-
-              const cells = state.table.getGridAbove({ format: 'cell' });
-
-              if (cells.length <= 1) return false;
-
-              return state.transaction((tx) => {
-                cells.forEach(([, cellPath]) => {
-                  tx.nodes.unset(input.key, {
-                    at: cellPath,
-                    match: (node) => TextApi.isText(node),
-                  });
-                });
-              });
-            }),
-            around(editorCommands.setNodes, ({ input, state, next }) => {
-              if (input.options?.marks) return next();
-              if (!state.selection() || state.selection.isCollapsed())
-                return next();
-
-              const cells = state.table.getGridAbove({ format: 'cell' });
-
-              if (cells.length <= 1) return next();
-
-              const cellPaths = cells.map(([, cellPath]) => cellPath);
-
-              if (input.options?.at) {
-                const target = input.options.at;
-                const range = PathApi.isPath(target)
-                  ? undefined
-                  : state.ranges.get(target);
-                const targetsSelectedCell = PathApi.isPath(target)
-                  ? cellPaths.some((cellPath) =>
-                      PathApi.isCommon(cellPath, target)
-                    )
-                  : !!range &&
-                    cellPaths.some((cellPath) => {
-                      const cellRange = state.ranges.get(cellPath);
-
-                      return (
-                        !!cellRange &&
-                        (RangeApi.includes(cellRange, range.anchor) ||
-                          RangeApi.includes(cellRange, range.focus) ||
-                          RangeApi.includes(range, cellRange))
-                      );
-                    });
-
-                if (!targetsSelectedCell) return next();
-              }
-
-              const optionMatch = input.options?.match;
-              const optionAt = input.options?.at;
-
-              return next({
-                ...input,
-                options: {
-                  ...input.options,
-                  match: (node, path) => {
-                    if (
-                      !cellPaths.some((cellPath) =>
-                        PathApi.isCommon(cellPath, path)
-                      )
-                    ) {
-                      return false;
-                    }
-
-                    if (optionMatch)
-                      return NodeApi.matches(node, optionMatch, path);
-                    if (optionAt && PathApi.isPath(optionAt)) {
-                      return PathApi.equals(path, optionAt);
-                    }
-
-                    return (
-                      ElementApi.isElement(node) && state.nodes.isBlock(node)
-                    );
-                  },
-                },
-              });
-            }),
-          ],
-        },
+          });
+        }),
       ],
     };
   });
 
-export type TableConfig = InferConfig<typeof BaseTablePlugin>;
+export type TableDefinition = DefinitionOf<typeof BaseTablePlugin>;

@@ -1,28 +1,30 @@
 import type { Value } from '@platejs/plite';
 
 import type {
-  AnyPluginConfig,
-  InferKey,
-  PluginConfig,
-  WithRequiredKey,
-} from '../plugin/PluginConfig';
+  AnyBasePluginDefinition,
+  InferName,
+  PluginReference,
+} from '../plugin/PluginDefinition';
+import type { InternalPluginDefinitionOf } from '../plugin/pluginDefinitionLookup.internal';
 import type {
-  BasePlugin,
-  BasePluginContext,
-  InjectNodeProps,
-  InferConfig,
+  AnyBasePlugin,
+  AnyBasePluginPortal,
+  AnyResolvedBasePlugin,
+  BasePluginPortal,
 } from '../plugin/BasePlugin';
-import type { BaseParagraphPlugin, CorePluginConfig } from '../plugins';
 import type {
-  BasePluginInput as RuntimeBasePluginInput,
-  InferPluginConfig as RuntimeInferPluginConfig,
+  CoreEditorCapabilityDefinition,
+  CoreNodePluginName,
+} from './coreEditorCapabilityDefinition.internal';
+import type {
+  InternalPliteEditorWithInstalledPlateDefinitions,
   PliteEditorWithPlatePlugins,
 } from './pluginRuntimeTypes';
 
 export type {
   BasePluginInput,
-  InferPluginConfig,
   InferPlugins,
+  MergeInstalledPluginDefinitions,
 } from './pluginRuntimeTypes';
 
 export type PlateSchemaIdentity = Readonly<{
@@ -43,46 +45,34 @@ type PlateEditorRuntime = {
 };
 
 type PlatePluginRuntime = {
-  plugin: GetBasePluginContext;
-  getInjectProps: GetInjectProps;
-  getPlugin: GetBasePlugin;
-  getType: (pluginKey: string) => string;
+  plugin: GetBasePluginPortal;
 };
 
-type GetBasePlugin = {
-  <P extends PluginWithConfig>(plugin: P): BasePlugin<InferConfig<P>>;
-  <PInput extends RuntimeBasePluginInput = PluginConfig>(
-    plugin: WithRequiredKey<PInput>
-  ): RuntimeInferPluginConfig<PInput> extends { clone: unknown }
-    ? RuntimeInferPluginConfig<PInput>
-    : BasePlugin<RuntimeInferPluginConfig<PInput>>;
+type GetBasePluginPortal = {
+  <P extends (AnyBasePlugin | AnyResolvedBasePlugin) & PluginReference>(
+    plugin: P
+  ): BasePluginPortal<InternalPluginDefinitionOf<P>>;
+  (pluginName: string): AnyBasePluginPortal;
 };
 
-type PluginWithConfig = { readonly __config: AnyPluginConfig; key: string };
-
-type GetInjectProps = {
-  <P extends PluginWithConfig>(plugin: P): InjectNodeProps<InferConfig<P>>;
-  <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ): InjectNodeProps<C>;
-};
-
-type GetBasePluginContext = {
-  <P extends PluginWithConfig>(plugin: P): BasePluginContext<InferConfig<P>>;
-  <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ): BasePluginContext<C>;
-};
-
-export type KeyofPlugins<T extends AnyPluginConfig> =
+export type NameofPlugins<T extends AnyBasePluginDefinition> =
   | (string & {})
-  | InferKey<CorePluginConfig | T>;
+  | InferName<CoreEditorCapabilityDefinition | T>;
 
-export type KeyofNodePlugins<T extends AnyPluginConfig> =
+export type NameofNodePlugins<T extends AnyBasePluginDefinition> =
   | (string & {})
-  | InferKey<T | typeof BaseParagraphPlugin>;
+  | CoreNodePluginName
+  | InferName<T>;
 
 export type BaseEditor<
   V extends Value = Value,
-  P extends AnyPluginConfig = AnyPluginConfig,
+  P extends AnyBasePluginDefinition = AnyBasePluginDefinition,
 > = PliteEditorWithPlatePlugins<V, P> & PlateEditorRuntime & PlatePluginRuntime;
+
+/** @internal Editor whose plugin definition union is already lowered. */
+export type InternalBaseEditorWithInstalledPlugins<
+  V extends Value,
+  D,
+> = InternalPliteEditorWithInstalledPlateDefinitions<V, D> &
+  PlateEditorRuntime &
+  PlatePluginRuntime;

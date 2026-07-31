@@ -3,16 +3,18 @@ import type {
   EditorCommitListener,
   EditorCorrection,
   EditorEffectType,
-  EditorExtension,
-  EditorExtensionStateGroup,
-  EditorExtensionTxGroup,
+  EditorExtensionReference,
   EditorFacet,
   EditorFacetProvider,
   EditorNodeChangeHandler,
   EditorSelectionSpec,
+  EditorStateView,
   EditorStateField,
   EditorTextChangeHandler,
   EditorTransactionChangeHandler,
+  EditorUpdateContext,
+  EditorUpdateTransaction,
+  ExtensionsOf,
   RegisteredEditorExtension,
   ValueOf,
 } from '../interfaces/editor';
@@ -24,16 +26,27 @@ import {
   type EditorSchemaContributionRegistry,
 } from './schema-contribution-registry';
 
+type EditorStateGroupFactory<TEditor extends Editor> = (
+  state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
+  editor: TEditor
+) => unknown;
+
+type EditorTxGroupFactory<TEditor extends Editor> = (
+  tx: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
+  editor: TEditor,
+  context: EditorUpdateContext<TEditor>
+) => unknown;
+
 export type EditorStateGroupRegistration<TEditor extends Editor = Editor> =
   Readonly<{
     extensionName: string;
-    factory: EditorExtensionStateGroup<TEditor>;
+    factory: EditorStateGroupFactory<TEditor>;
   }>;
 
 export type EditorTxGroupRegistration<TEditor extends Editor = Editor> =
   Readonly<{
     extensionName: string;
-    factory: EditorExtensionTxGroup<TEditor>;
+    factory: EditorTxGroupFactory<TEditor>;
   }>;
 
 export type CompiledCommandPipeline = Readonly<{
@@ -67,10 +80,13 @@ export type ExtensionRegistry<TEditor extends Editor = Editor> = {
   commitListeners: Set<EditorCommitListener<ValueOf<TEditor>>>;
   configurationRevision: number;
   contributions: Map<object, EditorExtensionContributionRegistration[]>;
-  dependencyOrder: readonly EditorExtension[];
+  dependencyOrder: readonly EditorExtensionReference[];
   effectTypes: Map<string, EditorEffectTypeRegistration>;
   extensions: Map<string, RegisteredEditorExtension>;
-  extensionsByDescriptor: Map<EditorExtension, RegisteredEditorExtension>;
+  extensionsByDescriptor: Map<
+    EditorExtensionReference,
+    RegisteredEditorExtension
+  >;
   facets: Map<string, EditorFacetProvider[]>;
   nodeChangeListeners: Set<EditorNodeChangeHandler<TEditor>>;
   corrections: Map<string, EditorCorrection<TEditor>>;
@@ -1140,7 +1156,7 @@ export const registerStateGroupInRegistry = <TEditor extends Editor>(
   registry: ExtensionRegistry<TEditor>,
   extensionName: string,
   groupName: string,
-  factory: EditorExtensionStateGroup<TEditor>
+  factory: EditorStateGroupFactory<TEditor>
 ) =>
   registerViewGroup(
     registry.stateGroups,
@@ -1155,7 +1171,7 @@ export const registerTxGroupInRegistry = <TEditor extends Editor>(
   registry: ExtensionRegistry<TEditor>,
   extensionName: string,
   groupName: string,
-  factory: EditorExtensionTxGroup<TEditor>
+  factory: EditorTxGroupFactory<TEditor>
 ) =>
   registerViewGroup(
     registry.txGroups,

@@ -104,16 +104,16 @@ const plugins = [
 
 ### 编辑器的 `components` 选项
 
-您可以在`createPlateEditor`（或`usePlateEditor`）中全局映射插件键到组件。这对于在一个地方管理所有组件，或由多个插件组成的插件特别有用。
+您可以在`createPlateEditor`（或`usePlateEditor`）中全局映射插件名称到组件。这对于在一个地方管理所有组件，或由多个插件组成的插件特别有用。
 
 ```tsx
 const editor = createPlateEditor({
   plugins: [ParagraphPlugin, CodeBlockPlugin /* ...其他插件 */],
   components: {
-    [ParagraphPlugin.key]: MyParagraphElement,
-    [CodeBlockPlugin.key]: MyCodeBlockElement,
-    [CodeLinePlugin.key]: MyCodeLineElement,
-    [CodeHighlightPlugin.key]: MyCodeSyntaxLeaf,
+    [ParagraphPlugin.name]: MyParagraphElement,
+    [CodeBlockPlugin.name]: MyCodeBlockElement,
+    [CodeLinePlugin.name]: MyCodeLineElement,
+    [CodeHighlightPlugin.name]: MyCodeSyntaxLeaf,
     // ...其他组件覆盖
   },
 });

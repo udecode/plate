@@ -34,7 +34,7 @@
 
 import type {
   BasePluginInput,
-  InferConfig,
+  DefinitionOf,
   NodeComponents,
 } from '@platejs/core';
 import { createBaseEditor, createBasePlugin } from '@platejs/core';
@@ -195,6 +195,12 @@ export type DocxExportOperationOptions = {
    */
   customStyles?: string;
 
+  /** Plate editor-kit descriptors used for HTML serialization. */
+  editorPlugins?: readonly BasePluginInput[];
+
+  /** React component used for static HTML rendering. */
+  editorStaticComponent?: React.ComponentType<PlateStaticProps>;
+
   /**
    * Font family for the document body. Sets the document default font; when
    * omitted the document falls back to the docx default (Times New Roman).
@@ -240,26 +246,6 @@ export type DocxExportOperationOptions = {
   title?: string;
 };
 
-/**
- * Editor-local state for DocxIOPlugin.
- * This lives in the plugin store.
- */
-export type DocxIOPluginState = {
-  /**
-   * The Plate.js editor plugins to use for HTML serialization.
-   * If not provided, the editor's current plugins will be used.
-   *
-   * This should match the plugins used in your editor for accurate serialization.
-   */
-  editorPlugins?: readonly BasePluginInput[];
-
-  /**
-   * The React component to use for static rendering.
-   * If not provided, a default PlateStatic component will be used.
-   */
-  editorStaticComponent?: React.ComponentType<PlateStaticProps>;
-};
-
 /** Comment extracted from a DOCX file. */
 export type DocxComment = {
   id: string;
@@ -280,8 +266,8 @@ export type ImportDocxOptions = {
   rtf?: string;
 };
 
-/** Options for standalone DOCX export. */
-export type DocxExportOptions = DocxExportOperationOptions & DocxIOPluginState;
+/** Options for DOCX export. */
+export type DocxExportOptions = DocxExportOperationOptions;
 
 // =============================================================================
 // Default Values
@@ -505,14 +491,8 @@ export function downloadDocx(blob: Blob, filename: string): void {
 // Plate.js Plugins
 // =============================================================================
 
-/**
- * Converts caller-provided DOCX buffers and document snapshots without
- * reading or mutating the active document.
- */
-const docxIOInitialState: DocxIOPluginState = {};
-
 export const DocxIOPlugin = createBasePlugin({
-  api: ({ editor, store, plugin }) => ({
+  api: ({ editor, plugin }) => ({
     import: async (
       arrayBuffer: ArrayBuffer,
       options: ImportDocxOptions = {}
@@ -688,23 +668,21 @@ export const DocxIOPlugin = createBasePlugin({
     },
     toBlob: async (
       value: readonly Value[number][],
-      options: DocxExportOperationOptions = {}
+      options: DocxExportOptions = {}
     ): Promise<Blob> => {
-      const pluginState = store.get();
+      const { editorPlugins, editorStaticComponent, ...operationOptions } =
+        options;
 
       return exportToDocxInternal({
-        ...options,
+        ...operationOptions,
         components: plugin.override.components,
-        editorPlugins: pluginState.editorPlugins?.map((pluginReference) =>
-          editor.getPlugin(pluginReference)
-        ),
-        editorStaticComponent: pluginState.editorStaticComponent,
+        editorPlugins,
+        editorStaticComponent,
         value: [...value],
       });
     },
   }),
-  key: 'docxIO',
-  initialState: docxIOInitialState,
+  name: 'docxIO',
 });
 
-export type DocxIOConfig = InferConfig<typeof DocxIOPlugin>;
+export type DocxIODefinition = DefinitionOf<typeof DocxIOPlugin>;

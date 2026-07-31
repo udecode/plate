@@ -18,23 +18,23 @@ describe('extendStaticEditor', () => {
 
       expect(editor.id).toBe('1');
       expect(getPlateRuntime(editor).plugins).toBeDefined();
-      expect(editor.getPlugin(ViewPlugin)).toBeDefined();
+      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
     });
 
     it('include ViewPlugin in the plugin list', () => {
       const editor = createStaticEditor();
 
-      const pluginKeys = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+      const pluginNames = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.name
       );
-      expect(pluginKeys).toContain(DOMPlugin.key);
+      expect(pluginNames).toContain(DOMPlugin.name);
     });
 
     it('exposes the ViewPlugin fragment API', () => {
       const editor = createStaticEditor();
 
       // ViewPlugin extends DOMPlugin, so we check the DOM plugin is installed.
-      const domPlugin = editor.getPlugin(DOMPlugin);
+      const domPlugin = editor.plugin(DOMPlugin).plugin;
       expect(domPlugin).toBeDefined();
 
       // The API should be applied through the plugin system.
@@ -44,33 +44,33 @@ describe('extendStaticEditor', () => {
 
   describe('when plugins are provided', () => {
     it('add custom plugins after static plugins', () => {
-      const customPlugin = createBasePlugin({ key: 'custom' });
+      const customPlugin = createBasePlugin({ name: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
-      const pluginKeys = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+      const pluginNames = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.name
       );
-      expect(pluginKeys).toContain('custom');
-      expect(pluginKeys).toContain(DOMPlugin.key);
+      expect(pluginNames).toContain('custom');
+      expect(pluginNames).toContain(DOMPlugin.name);
 
       // Ensure custom plugin comes after static plugins
-      const domIndex = pluginKeys.indexOf(DOMPlugin.key);
-      const customIndex = pluginKeys.indexOf('custom');
+      const domIndex = pluginNames.indexOf(DOMPlugin.name);
+      const customIndex = pluginNames.indexOf('custom');
       expect(customIndex).toBeGreaterThan(domIndex);
     });
 
     it('allow multiple custom plugins', () => {
-      const plugin1 = createBasePlugin({ key: 'plugin1' });
-      const plugin2 = createBasePlugin({ key: 'plugin2' });
+      const plugin1 = createBasePlugin({ name: 'plugin1' });
+      const plugin2 = createBasePlugin({ name: 'plugin2' });
 
       const editor = createStaticEditor({
         plugins: [plugin1, plugin2],
       });
 
-      expect(editor.getPlugin({ key: 'plugin1' })).toBeDefined();
-      expect(editor.getPlugin({ key: 'plugin2' })).toBeDefined();
+      expect(editor.plugin('plugin1').plugin).toBeDefined();
+      expect(editor.plugin('plugin2').plugin).toBeDefined();
     });
   });
 
@@ -174,7 +174,7 @@ describe('extendStaticEditor', () => {
       });
 
       expect(editor.id).toBe('existing');
-      expect(editor.getPlugin(ViewPlugin)).toBeDefined();
+      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
     });
 
     it('preserves a raw editor id when a new id is provided', () => {
@@ -196,26 +196,26 @@ describe('extendStaticEditor', () => {
       // Should have both core plugins from extendBaseEditor and static plugins
       expect(editor.read((state) => state.history())).toBeDefined(); // from HistoryPlugin
       expect(editor.read.view.isReadOnly()).toBe(false); // from Plite view
-      expect(editor.getPlugin(ViewPlugin)).toBeDefined(); // static plugin
+      expect(editor.plugin(ViewPlugin).plugin).toBeDefined(); // static plugin
     });
 
     it('maintain plugin order with static plugins first', () => {
-      const customPlugin = createBasePlugin({ key: 'custom' });
+      const customPlugin = createBasePlugin({ name: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
 
-      const pluginKeys = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+      const pluginNames = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.name
       );
 
       // ViewPlugin (static) should come before custom plugins
-      const viewPluginIndex = pluginKeys.findIndex((key) =>
+      const viewPluginIndex = pluginNames.findIndex((pluginName) =>
         getPlateRuntime(editor).pluginList.find(
-          (p) => p.key === key && p === ViewPlugin
+          (plugin) => plugin.name === pluginName && plugin === ViewPlugin
         )
       );
-      const customIndex = pluginKeys.indexOf('custom');
+      const customIndex = pluginNames.indexOf('custom');
 
       if (viewPluginIndex !== -1 && customIndex !== -1) {
         expect(viewPluginIndex).toBeLessThan(customIndex);
@@ -229,14 +229,14 @@ describe('extendStaticEditor', () => {
         plugins: [],
       });
 
-      expect(editor.getPlugin(ViewPlugin)).toBeDefined();
+      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
     });
 
     it('handle undefined options', () => {
       const editor = createStaticEditor();
 
       expect(editor).toBeDefined();
-      expect(editor.getPlugin(ViewPlugin)).toBeDefined();
+      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
     });
 
     it('create unique ids for different editors', () => {

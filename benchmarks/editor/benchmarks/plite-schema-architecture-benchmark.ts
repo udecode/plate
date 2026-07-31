@@ -312,7 +312,7 @@ const createPlateDescriptorPlugins = (
 ) =>
   Array.from({ length: count }, (_value, index) =>
     createBasePlugin({
-      key: `plate_descriptor_${cohort}_${count}_${index}`,
+      name: `plate_descriptor_${cohort}_${count}_${index}`,
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),

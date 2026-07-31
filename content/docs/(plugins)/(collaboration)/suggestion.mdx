@@ -106,9 +106,9 @@ Add click handling to manage active suggestion state:
 
 ```tsx
 export const suggestionPlugin = SuggestionPlugin.configure({
-  handlers: {
+  on: {
     // Unset active suggestion when clicking outside of suggestion
-    onClick: ({ api, editor, event, store, type }) => {
+    click: ({ api, editor, event, store, type }) => {
       let leaf = event.target as HTMLElement;
       let isSet = false;
 
@@ -163,7 +163,7 @@ import { createPlateEditor, createPlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
 
 const suggestionLineBreakPlugin = createPlatePlugin({
-  key: 'suggestionLineBreak',
+  name: 'suggestionLineBreak',
   render: { belowNodes: SuggestionLineBreak as any },
 });
 

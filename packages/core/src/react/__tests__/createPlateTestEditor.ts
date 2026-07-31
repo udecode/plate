@@ -9,7 +9,7 @@ import React from 'react';
 import { PlateTest } from '../components/PlateTest';
 import { type CreatePlateEditorOptions, createPlateEditor } from '../editor';
 
-type PlateTestEditorPluginInput = { key: string };
+type PlateTestEditorPluginInput = { name: string };
 
 type PlateTestHarnessOptions = {
   componentProps?: Partial<React.ComponentProps<typeof PlateTest>>;
@@ -80,7 +80,7 @@ export const createPlateTestEditor = async <
   } = buildTestHarnessOptions;
   const editor = createPlateEditor<V, TPlugins>({
     ...options,
-    schema: options.schema,
+    schemaIdentity: options.schemaIdentity,
   });
   const plateProps = {
     ...componentProps,

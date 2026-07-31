@@ -7,7 +7,7 @@ const useEditorPluginMock = mock();
 const usePluginStoreMock = mock();
 
 mock.module('@platejs/suggestion/react', () => ({
-  SuggestionPlugin: { key: 'suggestion' },
+  SuggestionPlugin: { name: 'suggestion' },
 }));
 
 mock.module('platejs/react', () => ({

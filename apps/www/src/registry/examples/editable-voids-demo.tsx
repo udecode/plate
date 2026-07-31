@@ -19,7 +19,7 @@ import { editableVoidsValue } from '@/registry/examples/values/editable-voids-va
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 export const EditableVoidPlugin = createPlatePlugin({
-  key: 'editable-void',
+  name: 'editable-void',
   schema: { element: { void: 'editable-island' } },
 }).configure({ component: EditableVoidElement });
 

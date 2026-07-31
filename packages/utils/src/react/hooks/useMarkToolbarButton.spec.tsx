@@ -6,7 +6,7 @@ import {
   Plate,
   type PlateEditor,
 } from '@platejs/core/react';
-import { defineEditorExtension, property, schema } from '@platejs/plite';
+import { property, schema } from '@platejs/plite';
 import { renderHook } from '@testing-library/react';
 
 import {
@@ -17,7 +17,7 @@ import {
 const Emphasis = schema.property.exclusive('test:emphasis');
 const Literal = schema.property.exclusive('test:literal');
 const MarksPlugin = createBasePlugin({
-  key: 'testMarks',
+  name: 'testMarks',
   schema: {
     properties: [
       schema.textProperty('bold', property.boolean(), {
@@ -84,16 +84,8 @@ describe('useMarkToolbarButton', () => {
     });
 
     editor.update.marks.add('italic', true);
-    const focusSpy = mock(() => {});
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            focus: focusSpy,
-          },
-        },
-        name: 'test:dom-focus',
-      })
+    const focusSpy = spyOn(editor.api.dom, 'focus').mockImplementation(
+      () => {}
     );
 
     const { result } = renderHook(

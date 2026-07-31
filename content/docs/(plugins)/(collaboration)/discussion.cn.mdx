@@ -99,7 +99,7 @@ const initialState: DiscussionPluginState = {
 
 export const discussionPlugin = createPlatePlugin({
   initialState,
-  key: 'discussion',
+  name: 'discussion',
   selectors: {
     currentUser: (state) => state.users[state.currentUserId],
     user: (state, id: string) => state.users[id],

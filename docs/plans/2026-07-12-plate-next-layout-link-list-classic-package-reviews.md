@@ -207,7 +207,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types.
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.

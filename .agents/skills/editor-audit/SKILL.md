@@ -348,6 +348,15 @@ adaptation and debt fields answer â€œwhat should still change inside that base?â
 A local base can win while a reference ownership rule, compiler step, failure
 boundary, or proof invariant is still worth adapting.
 
+Run a second pass over every reference win below the feature row. A donor may
+lose the overall capability comparison while still having a better reusable
+architecture pattern: feature-local declarations, compilation, precedence,
+caching, failure isolation, lifecycle, or proof topology. For each such
+pattern, show the current local owner graph and its deletion cone, then record
+`adapt`, `reject`, or `defer` independently. A 1:1 feature score is incomplete
+if it never asks whether the donor removes a central registry or reverses an
+ownership dependency.
+
 Do not make a global superiority claim unless the full matrix validator passes
 and the conclusion enumerates every classification count, concept ID, material
 evidence gap, and exception. Architecture fitness for Plite/Plate's constraints

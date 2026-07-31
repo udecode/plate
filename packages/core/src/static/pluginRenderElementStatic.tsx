@@ -1,12 +1,15 @@
 import React from 'react';
 
-import {
-  type AnyBasePlugin,
-  type BaseEditor,
-  type RenderElementProps,
-  getEditorPlugin,
+import type {
+  AnyResolvedBasePlugin,
+  BaseEditor,
+  RenderElementProps,
 } from '../lib';
-import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
+import { createPluginContext } from '../lib/plugin/createPluginContext.internal';
 
 import { PliteElement } from './components/plite-nodes';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
@@ -17,10 +20,10 @@ export type PliteRenderElement = (
 
 export const pluginRenderElementStatic = (
   editor: BaseEditor,
-  plugin: AnyBasePlugin
+  plugin: AnyResolvedBasePlugin
 ): PliteRenderElement =>
   function render(nodeProps) {
-    const Component = getPlateRuntime(editor).components[plugin.key] as any;
+    const Component = getPlateRuntime(editor).components[plugin.name] as any;
     const Element = Component ?? PliteElement;
 
     let { children } = nodeProps;
@@ -33,19 +36,29 @@ export const pluginRenderElementStatic = (
       props: nodeProps as any,
     }) as any;
 
-    getPlateRuntime(editor).pluginCache.render.belowNodes.forEach((key) => {
-      const wrapperPlugin = editor.getPlugin({ key });
-      const wrapperContext = getEditorPlugin(editor, wrapperPlugin);
-      const hoc = wrapperPlugin.render.belowNodes!({
-        ...nodeProps,
-        ...wrapperContext,
-        key,
-      } as any);
+    getPlateRuntime(editor).pluginCache.render.belowNodes.forEach(
+      (pluginName) => {
+        const wrapperPlugin = getCompiledPlatePlugin(editor, pluginName)!;
+        const wrapperContext = createPluginContext(editor, wrapperPlugin);
+        const renderBelow = wrapperPlugin.render.belowNodes;
+        const hoc =
+          typeof renderBelow === 'function'
+            ? Reflect.apply(renderBelow, undefined, [
+                {
+                  ...nodeProps,
+                  ...wrapperContext,
+                  pluginName,
+                },
+              ])
+            : undefined;
 
-      if (hoc) {
-        children = hoc({ ...nodeProps, children } as any);
+        if (typeof hoc === 'function') {
+          children = Reflect.apply(hoc, undefined, [
+            { ...nodeProps, children },
+          ]);
+        }
       }
-    });
+    );
 
     const defaultProps = Component ? {} : { as: plugin.render?.as };
 
@@ -54,37 +67,49 @@ export const pluginRenderElementStatic = (
         {children}
 
         {getPlateRuntime(editor).pluginCache.render.belowRootNodes.map(
-          (key) => {
-            const plugin = editor.getPlugin({ key }) as any;
+          (pluginName) => {
+            const plugin = getCompiledPlatePlugin(editor, pluginName)!;
             const Component = plugin.render.belowRootNodes;
-            const pluginContext = getEditorPlugin(editor, plugin);
+            const pluginContext = createPluginContext(editor, plugin);
 
-            return (
-              <Component
-                key={key}
-                {...defaultProps}
-                {...nodeProps}
-                {...pluginContext}
-              />
-            );
+            if (typeof Component !== 'function') return null;
+
+            return Reflect.apply(Component, undefined, [
+              {
+                ...defaultProps,
+                ...nodeProps,
+                ...pluginContext,
+                key: pluginName,
+              },
+            ]) as React.ReactNode;
           }
         )}
       </Element>
     );
 
-    getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach((key) => {
-      const wrapperPlugin = editor.getPlugin({ key });
-      const wrapperContext = getEditorPlugin(editor, wrapperPlugin);
-      const hoc = wrapperPlugin.render.aboveNodes!({
-        ...nodeProps,
-        ...wrapperContext,
-        key,
-      } as any);
+    getPlateRuntime(editor).pluginCache.render.aboveNodes.forEach(
+      (pluginName) => {
+        const wrapperPlugin = getCompiledPlatePlugin(editor, pluginName)!;
+        const wrapperContext = createPluginContext(editor, wrapperPlugin);
+        const renderAbove = wrapperPlugin.render.aboveNodes;
+        const hoc =
+          typeof renderAbove === 'function'
+            ? Reflect.apply(renderAbove, undefined, [
+                {
+                  ...nodeProps,
+                  ...wrapperContext,
+                  pluginName,
+                },
+              ])
+            : undefined;
 
-      if (hoc) {
-        component = hoc({ ...nodeProps, children: component } as any);
+        if (typeof hoc === 'function') {
+          component = Reflect.apply(hoc, undefined, [
+            { ...nodeProps, children: component },
+          ]);
+        }
       }
-    });
+    );
 
     return component;
   };

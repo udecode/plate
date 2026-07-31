@@ -22,12 +22,12 @@ describe('BaseColumnPlugin schema', () => {
     ).toThrow(/columnGroup.*disabled.*column|column.*disabled.*columnGroup/i);
   });
 
-  it('constructs configured column-group content from plugin-key grammar', () => {
+  it('constructs configured column-group content from plugin-name grammar', () => {
     const editor = createBaseEditor({
       plugins: [BaseColumnPlugin],
     });
 
-    expect(editor.read.schema.createAndFill(BaseColumnPlugin)).toEqual({
+    expect(editor.read.schema.create(BaseColumnPlugin)).toEqual({
       children: [
         {
           children: [{ children: [{ text: '' }], type: KEYS.p }],
@@ -47,7 +47,7 @@ describe('BaseColumnPlugin schema', () => {
       'block'
     );
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ children: [{ text: '' }], type: KEYS.p }],
@@ -57,7 +57,7 @@ describe('BaseColumnPlugin schema', () => {
       })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     expect(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           children: [
             { children: [{ text: '' }], type: KEYS.p },
@@ -68,7 +68,7 @@ describe('BaseColumnPlugin schema', () => {
       ])
     ).toThrow(/cannot contain/i);
     expect(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           children: [
             {
@@ -81,7 +81,7 @@ describe('BaseColumnPlugin schema', () => {
       ])
     ).toThrow(/at least 2 children/i);
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [
@@ -225,7 +225,7 @@ describe('BaseColumnPlugin schema', () => {
         const entry = editor.read.nodes.get<TColumnGroupElement>([1]);
 
         assert(entry);
-        expect(BaseColumnPlugin.key).toBe('columnGroup');
+        expect(BaseColumnPlugin.name).toBe('columnGroup');
         expect(BaseColumnPlugin.type).toBe(NODES.columnGroup);
         expect(entry[0].type).toBe(NODES.columnGroup);
         expect(entry[0].children).toHaveLength(3);

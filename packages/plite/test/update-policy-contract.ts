@@ -20,27 +20,19 @@ const paragraph = (text: string): Element => ({
 
 const historyCapability = defineEditorExtension({
   name: 'history',
-  tx: {
-    history() {
-      return {};
-    },
-  },
+  update: () => ({}),
 });
 
 const workflowCapability = defineEditorExtension({
   name: 'workflow',
-  tx: {
-    workflow(tx) {
-      return {
-        direct(text: string) {
-          tx.text.insert(text);
-        },
-        scoped: txOnly((text: string) => {
-          tx.text.insert(text);
-        }),
-      };
+  update: ({ tx }) => ({
+    direct(text: string) {
+      tx.text.insert(text);
     },
-  },
+    scoped: txOnly((text: string) => {
+      tx.text.insert(text);
+    }),
+  }),
 });
 
 const escapedState = defineStateField({
@@ -306,7 +298,6 @@ describe('update policy contract', () => {
 
           for (const mutate of [
             () => tx.text.insert('?'),
-            () => tx.workflow.direct('?'),
             () => tx.setField(escapedState, 'escaped'),
             () => tx.tags.add('escaped'),
           ]) {
@@ -327,7 +318,7 @@ describe('update policy contract', () => {
     release();
     await settled;
 
-    assert.equal(escapedErrors.length, 4);
+    assert.equal(escapedErrors.length, 3);
     for (const error of escapedErrors) {
       assert.match(String(error), /transaction is no longer active/);
     }

@@ -6,6 +6,10 @@ import { property, schema, target } from '@platejs/plite';
 import { render } from '@testing-library/react';
 
 import { createBasePlugin } from '../../lib';
+import {
+  attachPlateModelPublication,
+  getPlateModelPublication,
+} from '../../internal/plugin/compilePlateModel';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import {
   PlateElement,
@@ -28,7 +32,7 @@ const createValue = (id?: string) =>
   ] as any;
 
 const ListStylePropertyPlugin = createBasePlugin({
-  key: 'listStyleProperty',
+  name: 'listStyleProperty',
   schema: {
     properties: [
       schema.elementProperty('listStyleType', property.string(), {
@@ -38,7 +42,7 @@ const ListStylePropertyPlugin = createBasePlugin({
   },
 });
 
-const renderPipe = (editor: PlateEditor<any, any>) => {
+const renderPipe = (editor: PlateEditor) => {
   const renderElement = pipeRenderElement(editor)!;
   const element = editor.read.children()[0] as any;
 
@@ -58,7 +62,7 @@ const renderPipe = (editor: PlateEditor<any, any>) => {
   );
 };
 
-const renderPipeBare = (editor: PlateEditor<any, any>) => {
+const renderPipeBare = (editor: PlateEditor) => {
   const renderElement = pipeRenderElement(editor)!;
   const element = editor.read.children()[0] as any;
 
@@ -91,6 +95,27 @@ describe('pipeRenderElement', () => {
 
     expect(element).toBeInTheDocument();
     expect(element).toHaveClass('plite-p');
+    expect(element?.tagName).toBe('DIV');
+  });
+
+  it('renders an unregistered element through the default renderer', () => {
+    const editor = createPlateEditor({
+      navigationFeedback: false,
+      plugins: [],
+      initialValue: createValue(),
+    });
+    const publication = getPlateModelPublication(editor)!;
+    const { p: _paragraphPlugin, ...plugins } = publication.plugins;
+
+    attachPlateModelPublication(editor, { ...publication, plugins });
+
+    const { container } = renderPipe(editor);
+
+    attachPlateModelPublication(editor, publication);
+    const element = container.querySelector('[data-plite-node="element"]');
+
+    expect(element).toBeInTheDocument();
+    expect(element).toHaveTextContent('Body');
     expect(element?.tagName).toBe('DIV');
   });
 
@@ -139,7 +164,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {
@@ -179,7 +204,7 @@ describe('pipeRenderElement', () => {
       plugins: [
         createPlatePlugin({
           component: CustomElement,
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {
@@ -202,7 +227,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'hr',
+          name: 'hr',
           type: 'hr',
           schema: { element: { void: 'block' } },
           render: {
@@ -249,7 +274,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'above',
+          name: 'above',
           render: {
             aboveNodes:
               () =>
@@ -271,7 +296,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {
@@ -299,7 +324,7 @@ describe('pipeRenderElement', () => {
       navigationFeedback: false,
       plugins: [
         createBasePlugin({
-          key: 'inactive-below',
+          name: 'inactive-below',
           render: {
             belowNodes: ({ element }: any) => {
               // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -326,8 +351,8 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          targetPluginKeys: ['p'],
-          key: 'list',
+          targetPluginNames: ['p'],
+          name: 'list',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -357,8 +382,8 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          targetPluginKeys: ['p'],
-          key: 'hook-inject',
+          targetPluginNames: ['p'],
+          name: 'hook-inject',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -400,8 +425,8 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          targetPluginKeys: ['p'],
-          key: 'selector-inject',
+          targetPluginNames: ['p'],
+          name: 'selector-inject',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -439,8 +464,8 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          targetPluginKeys: ['p'],
-          key: 'list',
+          targetPluginNames: ['p'],
+          name: 'list',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -458,7 +483,7 @@ describe('pipeRenderElement', () => {
           },
         }),
         createBasePlugin({
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {
@@ -494,8 +519,8 @@ describe('pipeRenderElement', () => {
       plugins: [
         ListStylePropertyPlugin,
         createBasePlugin({
-          targetPluginKeys: ['p'],
-          key: 'list',
+          targetPluginNames: ['p'],
+          name: 'list',
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -513,7 +538,7 @@ describe('pipeRenderElement', () => {
           },
         }),
         createBasePlugin({
-          key: 'active-below',
+          name: 'active-below',
           render: {
             belowNodes: ({ element }: any) => {
               // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -556,7 +581,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {
@@ -584,7 +609,7 @@ describe('pipeRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {

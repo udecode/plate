@@ -21,7 +21,23 @@ export type InsertInlineEquationOptions =
   };
 
 export const BaseEquationPlugin = createBasePlugin({
-  key: KEYS.equation,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'math',
+        kind: 'node',
+        decode: ({ node, type }) => ({
+          children: [{ text: '' }],
+          texExpression: node.value,
+          type,
+        }),
+        encode: ({ node }) => ({
+          type: 'math',
+          value: node.texExpression ?? '',
+        }),
+      },
+    }),
+  name: KEYS.equation,
   schema: {
     element: {
       properties: { texExpression: property.string() },
@@ -43,7 +59,23 @@ export const BaseEquationPlugin = createBasePlugin({
 });
 
 export const BaseInlineEquationPlugin = createBasePlugin({
-  key: KEYS.inlineEquation,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'inlineMath',
+        kind: 'node',
+        decode: ({ node, type }) => ({
+          children: [{ text: '' }],
+          texExpression: node.value,
+          type,
+        }),
+        encode: ({ node }) => ({
+          type: 'inlineMath',
+          value: node.texExpression ?? '',
+        }),
+      },
+    }),
+  name: KEYS.inlineEquation,
   schema: {
     element: {
       properties: { texExpression: property.string() },
@@ -81,7 +113,7 @@ export const MathRules = (() => {
         {
           children: [{ text: '' }],
           texExpression: '',
-          type: editor.getType(KEYS.equation),
+          type: editor.plugin(KEYS.equation).type,
         },
         {
           at: match.path,
@@ -115,7 +147,7 @@ export const MathRules = (() => {
       tx.nodes.insert<TEquationElement>({
         children: [{ text: '' }],
         texExpression: match.texExpression,
-        type: editor.getType(KEYS.inlineEquation),
+        type: editor.plugin(KEYS.inlineEquation).type,
       });
 
       return true;
@@ -154,33 +186,51 @@ export const MathRules = (() => {
         if (rule.target === 'insertBreak') {
           const enabled = rule.enabled;
 
-          rule.enabled = (context) =>
-            (enabled?.(context) ?? true) &&
-            !context.editor.read.nodes.some({
-              match: {
-                type: [
-                  context.editor.getType(KEYS.codeBlock),
-                  context.editor.getType(KEYS.equation),
-                  context.editor.getType(KEYS.inlineEquation),
-                ],
-              },
-            });
+          rule.enabled = (context) => {
+            const codeBlock = context.editor.plugin(KEYS.codeBlock);
+            const equation = context.editor.plugin(KEYS.equation);
+            const inlineEquation = context.editor.plugin(KEYS.inlineEquation);
+
+            return (
+              (enabled?.(context) ?? true) &&
+              !context.editor.read.nodes.some({
+                match: {
+                  type: [
+                    codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+                    equation.installed ? equation.type : KEYS.equation,
+                    inlineEquation.installed
+                      ? inlineEquation.type
+                      : KEYS.inlineEquation,
+                  ],
+                },
+              })
+            );
+          };
         }
 
         if (rule.target === 'insertText') {
           const enabled = rule.enabled;
 
-          rule.enabled = (context) =>
-            (enabled?.(context) ?? true) &&
-            !context.editor.read.nodes.some({
-              match: {
-                type: [
-                  context.editor.getType(KEYS.codeBlock),
-                  context.editor.getType(KEYS.equation),
-                  context.editor.getType(KEYS.inlineEquation),
-                ],
-              },
-            });
+          rule.enabled = (context) => {
+            const codeBlock = context.editor.plugin(KEYS.codeBlock);
+            const equation = context.editor.plugin(KEYS.equation);
+            const inlineEquation = context.editor.plugin(KEYS.inlineEquation);
+
+            return (
+              (enabled?.(context) ?? true) &&
+              !context.editor.read.nodes.some({
+                match: {
+                  type: [
+                    codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+                    equation.installed ? equation.type : KEYS.equation,
+                    inlineEquation.installed
+                      ? inlineEquation.type
+                      : KEYS.inlineEquation,
+                  ],
+                },
+              })
+            );
+          };
         }
 
         return rule;
@@ -190,17 +240,26 @@ export const MathRules = (() => {
       const rule = inline(ruleOptions);
       const enabled = rule.enabled;
 
-      rule.enabled = (context) =>
-        (enabled?.(context) ?? true) &&
-        !context.editor.read.nodes.some({
-          match: {
-            type: [
-              context.editor.getType(KEYS.codeBlock),
-              context.editor.getType(KEYS.equation),
-              context.editor.getType(KEYS.inlineEquation),
-            ],
-          },
-        });
+      rule.enabled = (context) => {
+        const codeBlock = context.editor.plugin(KEYS.codeBlock);
+        const equation = context.editor.plugin(KEYS.equation);
+        const inlineEquation = context.editor.plugin(KEYS.inlineEquation);
+
+        return (
+          (enabled?.(context) ?? true) &&
+          !context.editor.read.nodes.some({
+            match: {
+              type: [
+                codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+                equation.installed ? equation.type : KEYS.equation,
+                inlineEquation.installed
+                  ? inlineEquation.type
+                  : KEYS.inlineEquation,
+              ],
+            },
+          })
+        );
+      };
 
       return rule;
     },

@@ -1,4 +1,4 @@
-import type { InferConfig } from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 import { toPlatePlugin } from '@platejs/core/react';
 
 import { BaseLinkPlugin } from '../lib';
@@ -51,7 +51,7 @@ export const LinkPlugin = toPlatePlugin(BaseLinkPlugin, {
     });
   };
   return {
-    api: {
+    api: () => ({
       decodeUrl: (url: string) => {
         try {
           return decodeURI(url);
@@ -83,11 +83,11 @@ export const LinkPlugin = toPlatePlugin(BaseLinkPlugin, {
         });
       },
       show,
-    },
+    }),
     selectors: {
       isOpen: (state, editorId: string) => state.openEditorId === editorId,
     },
   };
 });
 
-export type LinkConfig = InferConfig<typeof LinkPlugin>;
+export type LinkDefinition = DefinitionOf<typeof LinkPlugin>;

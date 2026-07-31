@@ -24,8 +24,7 @@ import {
   MAIN_ROOT_KEY,
 } from '@platejs/plite/internal';
 
-import type { InferConfig } from '../../plugin/BasePlugin';
-
+import type { DefinitionOf } from '../../plugin/PluginDefinition';
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 
 export type NodeIdPluginState = {
@@ -690,16 +689,13 @@ const nodeIdInitialState: NodeIdPluginState = {
 
 export const NodeIdPlugin = createBasePlugin({
   initialState: nodeIdInitialState,
-  key: 'nodeId',
+  name: 'nodeId',
   schema: ({ initialState }) => ({
     properties: [
-      schema.elementProperty(
-        initialState.idKey ?? 'id',
-        property.json({ significant: false }),
-        {
-          target: target.group('element'),
-        }
-      ),
+      schema.elementProperty(initialState.idKey ?? 'id', property.json(), {
+        role: 'metadata',
+        target: target.group('element'),
+      }),
     ],
   }),
   update: ({ store, tx }) => ({
@@ -780,115 +776,108 @@ export const NodeIdPlugin = createBasePlugin({
       applyUpdates();
     },
   }),
-  extension: ({ editor, store }) => ({
-    on: {
-      transactionChange({ after, before, change, changed, tx }) {
-        if (
-          tx.tags.has('node-id-normalizing') ||
-          editor.runtime.isNormalizing
-        ) {
-          return;
-        }
+  on: {
+    transactionChange({ after, before, change, changed, editor, store, tx }) {
+      if (tx.tags.has('node-id-normalizing') || editor.runtime.isNormalizing) {
+        return;
+      }
 
-        const state = store.get();
-        const { idKey = 'id' } = state;
-        const runtimeOptions = {
-          ...state,
+      const state = store.get();
+      const { idKey = 'id' } = state;
+      const runtimeOptions = {
+        ...state,
+        idKey,
+        isBlock: (node: Descendant) => editor.read.schema.isBlock(node),
+      };
+      const roots = new Set([
+        ...getInternalDocumentChangeRootKeys(change),
+        ...change.createRoots,
+      ]);
+      const updates: {
+        node: Descendant;
+        path: Path;
+        root: string;
+      }[] = [];
+
+      for (const root of roots) {
+        const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
+
+        if (!changed.has('structure', publicRoot)) continue;
+
+        const beforeChildren =
+          root === MAIN_ROOT_KEY
+            ? before.children
+            : (before.roots?.[root] ?? []);
+        const afterChildren =
+          root === MAIN_ROOT_KEY ? after.children : (after.roots?.[root] ?? []);
+        const insertedEntries = collectInsertedNodeEntries(
+          beforeChildren,
+          afterChildren,
           idKey,
-          isBlock: (node: Descendant) => editor.read.schema.isBlock(node),
-        };
-        const roots = new Set([
-          ...getInternalDocumentChangeRootKeys(change),
-          ...change.createRoots,
-        ]);
-        const updates: {
-          node: Descendant;
-          path: Path;
-          root: string;
-        }[] = [];
+          changed.topLevelRanges(publicRoot)
+        );
+        const reservedIds = new Set<unknown>();
 
-        for (const root of roots) {
-          const publicRoot = root === MAIN_ROOT_KEY ? undefined : root;
-
-          if (!changed.has('structure', publicRoot)) continue;
-
-          const beforeChildren =
-            root === MAIN_ROOT_KEY
-              ? before.children
-              : (before.roots?.[root] ?? []);
-          const afterChildren =
-            root === MAIN_ROOT_KEY
-              ? after.children
-              : (after.roots?.[root] ?? []);
-          const insertedEntries = collectInsertedNodeEntries(
+        for (const entry of insertedEntries) {
+          const splitPath = isSplitNodeEntry(
             beforeChildren,
             afterChildren,
-            idKey,
-            changed.topLevelRanges(publicRoot)
+            entry
           );
-          const reservedIds = new Set<unknown>();
+          const normalized = splitPath
+            ? normalizeSplitNodeIds(
+                { node: entry.node, path: splitPath, root },
+                runtimeOptions,
+                before,
+                reservedIds
+              )
+            : normalizeInsertedNodeIds(
+                { ...entry, root },
+                runtimeOptions,
+                before,
+                reservedIds,
+                tx.tags.has('paste') && state.reuseId !== true
+              );
 
-          for (const entry of insertedEntries) {
-            const splitPath = isSplitNodeEntry(
-              beforeChildren,
-              afterChildren,
-              entry
-            );
-            const normalized = splitPath
-              ? normalizeSplitNodeIds(
-                  { node: entry.node, path: splitPath, root },
-                  runtimeOptions,
-                  before,
-                  reservedIds
-                )
-              : normalizeInsertedNodeIds(
-                  { ...entry, root },
-                  runtimeOptions,
-                  before,
-                  reservedIds,
-                  tx.tags.has('paste') && state.reuseId !== true
-                );
-
-            if (!isEqual(normalized, entry.node)) {
-              updates.push({ node: normalized, path: entry.path, root });
-            }
+          if (!isEqual(normalized, entry.node)) {
+            updates.push({ node: normalized, path: entry.path, root });
           }
         }
+      }
 
-        if (updates.length === 0) return;
+      if (updates.length === 0) return;
 
-        tx.tags.add('node-id-normalizing');
-        let corrected = after;
+      tx.tags.add('node-id-normalizing');
+      let corrected = after;
 
-        for (const update of updates) {
-          if (update.root === MAIN_ROOT_KEY) {
-            corrected = {
-              ...corrected,
-              children: replaceNodeAt(
-                corrected.children,
+      for (const update of updates) {
+        if (update.root === MAIN_ROOT_KEY) {
+          corrected = {
+            ...corrected,
+            children: replaceNodeAt(
+              corrected.children,
+              update.path,
+              update.node
+            ) as Value,
+          };
+        } else {
+          corrected = {
+            ...corrected,
+            roots: {
+              ...corrected.roots,
+              [update.root]: replaceNodeAt(
+                corrected.roots?.[update.root] ?? [],
                 update.path,
                 update.node
               ) as Value,
-            };
-          } else {
-            corrected = {
-              ...corrected,
-              roots: {
-                ...corrected.roots,
-                [update.root]: replaceNodeAt(
-                  corrected.roots?.[update.root] ?? [],
-                  update.path,
-                  update.node
-                ) as Value,
-              },
-            };
-          }
+            },
+          };
         }
+      }
 
-        tx.changes.apply(DocumentChange.between(after, corrected));
-      },
+      tx.changes.apply(DocumentChange.between(after, corrected));
     },
-  }),
+  },
   transformInitialValue: ({ editor, store, value }) => {
     const state = store.get();
     const { idKey = 'id' } = state;
@@ -950,6 +939,8 @@ export const NodeIdPlugin = createBasePlugin({
   },
 });
 
-export type NodeIdConfig = InferConfig<typeof NodeIdPlugin>;
+export type NodeIdPluginUpdate = {
+  normalize: () => void;
+};
 
-export type NodeIdPluginUpdate = NodeIdConfig['tx']['nodeId'];
+export type NodeIdDefinition = DefinitionOf<typeof NodeIdPlugin>;

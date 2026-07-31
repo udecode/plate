@@ -22,8 +22,8 @@ export default function ListClassicDemo() {
     plugins: [
       ...EditorKit.filter(
         (plugin) =>
-          plugin.key !== FixedToolbarPlugin.key &&
-          plugin.key !== FloatingToolbarPlugin.key
+          plugin.name !== FixedToolbarPlugin.name &&
+          plugin.name !== FloatingToolbarPlugin.name
       ),
       IndentPlugin.configure({ enabled: false }),
       BlockListPlugin.configure({ enabled: false }),

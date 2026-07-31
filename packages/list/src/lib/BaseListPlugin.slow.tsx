@@ -83,7 +83,7 @@ describe('BaseListPlugin toggle behavior', () => {
   const CUSTOM_H1 = 'heading-one';
 
   const H1Plugin = createBasePlugin({
-    key: KEYS.h1,
+    name: KEYS.h1,
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -91,12 +91,18 @@ describe('BaseListPlugin toggle behavior', () => {
     },
   });
 
-  const CustomH1Plugin = H1Plugin.extend({
+  const CustomH1Plugin = createBasePlugin({
+    name: KEYS.h1,
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
     type: CUSTOM_H1,
   });
 
   const BlockquotePlugin = createBasePlugin({
-    key: KEYS.blockquote,
+    name: KEYS.blockquote,
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -105,7 +111,7 @@ describe('BaseListPlugin toggle behavior', () => {
   });
 
   const PagePlugin = createBasePlugin({
-    key: 'page',
+    name: 'page',
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
@@ -120,10 +126,10 @@ describe('BaseListPlugin toggle behavior', () => {
     H1Plugin,
     BlockquotePlugin,
     BaseListPlugin.configure({
-      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
     }),
     BaseIndentPlugin.configure({
-      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
     }),
   ];
 
@@ -131,10 +137,10 @@ describe('BaseListPlugin toggle behavior', () => {
     CustomH1Plugin,
     BlockquotePlugin,
     BaseListPlugin.configure({
-      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
     }),
     BaseIndentPlugin.configure({
-      targetPluginKeys: [KEYS.blockquote, KEYS.h1, KEYS.p],
+      targetPluginNames: [KEYS.blockquote, KEYS.h1, KEYS.p],
     }),
   ];
 
@@ -1190,7 +1196,7 @@ describe('BaseListPlugin numbering behavior', () => {
   const CUSTOM_H1 = 'heading-one';
 
   const H1Plugin = createBasePlugin({
-    key: KEYS.h1,
+    name: KEYS.h1,
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -1198,12 +1204,18 @@ describe('BaseListPlugin numbering behavior', () => {
     },
   });
 
-  const CustomH1Plugin = H1Plugin.extend({
+  const CustomH1Plugin = createBasePlugin({
+    name: KEYS.h1,
+    schema: {
+      element: {
+        content: schema.content.text({ default: 'text', min: 1 }),
+      },
+    },
     type: CUSTOM_H1,
   });
 
   const BlockquotePlugin = createBasePlugin({
-    key: KEYS.blockquote,
+    name: KEYS.blockquote,
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -1212,7 +1224,7 @@ describe('BaseListPlugin numbering behavior', () => {
   });
 
   const PagePlugin = createBasePlugin({
-    key: 'page',
+    name: 'page',
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
@@ -1224,7 +1236,7 @@ describe('BaseListPlugin numbering behavior', () => {
   });
 
   const VisitedPlugin = createBasePlugin({
-    key: 'visited',
+    name: 'visited',
     schema: {
       properties: [
         schema.elementProperty('visited', property.boolean(), {
@@ -1238,14 +1250,14 @@ describe('BaseListPlugin numbering behavior', () => {
     headingPlugin = H1Plugin,
     normalizeInitial = false,
     pages = false,
-    targetPluginKeys = [KEYS.p],
+    targetPluginNames = [KEYS.p],
     value,
   }: {
     value: Value;
     headingPlugin?: typeof CustomH1Plugin | typeof H1Plugin;
     normalizeInitial?: boolean;
     pages?: boolean;
-    targetPluginKeys?: readonly string[];
+    targetPluginNames?: readonly string[];
   }) =>
     createBaseEditor({
       plugins: [
@@ -1254,12 +1266,12 @@ describe('BaseListPlugin numbering behavior', () => {
         BlockquotePlugin,
         PagePlugin,
         BaseIndentPlugin.configure({
-          targetPluginKeys,
+          targetPluginNames,
         }),
         pages
           ? listPluginPage
           : BaseListPlugin.configure({
-              targetPluginKeys,
+              targetPluginNames,
             }),
       ],
       shouldNormalizeEditor: normalizeInitial,
@@ -1456,7 +1468,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginKeys: [KEYS.h1, KEYS.p],
+          targetPluginNames: [KEYS.h1, KEYS.p],
           value: input,
         });
 
@@ -1478,7 +1490,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginKeys: [KEYS.h1, KEYS.p],
+          targetPluginNames: [KEYS.h1, KEYS.p],
           value: input,
         });
 
@@ -1500,7 +1512,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginKeys: [KEYS.h1, KEYS.p],
+          targetPluginNames: [KEYS.h1, KEYS.p],
           value: input,
         });
 
@@ -1524,7 +1536,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginKeys: [KEYS.h1, KEYS.p],
+          targetPluginNames: [KEYS.h1, KEYS.p],
           value: input,
         });
 
@@ -1547,7 +1559,7 @@ describe('BaseListPlugin numbering behavior', () => {
         const editor = createEditor({
           headingPlugin: CustomH1Plugin,
           normalizeInitial: true,
-          targetPluginKeys: [KEYS.h1, KEYS.p],
+          targetPluginNames: [KEYS.h1, KEYS.p],
           value: input,
         });
 
@@ -1569,7 +1581,7 @@ describe('BaseListPlugin numbering behavior', () => {
 
         const editor = createEditor({
           normalizeInitial: true,
-          targetPluginKeys: [KEYS.blockquote, KEYS.p],
+          targetPluginNames: [KEYS.blockquote, KEYS.p],
           value: input,
         });
 

@@ -1,5 +1,6 @@
 import { extendEditor, getFragment } from './core';
 import {
+  getCandidateEditorApiValue,
   getInstalledEditorExtensionApi,
   getCandidateEditorExtensionApi,
   prepareInitialEditorExtensionPublication,
@@ -21,7 +22,10 @@ import {
   getEditorSchema,
   setEditorRuntime,
 } from './core/editor-runtime';
-import { createEditorSchema } from './core/editor-schema';
+import {
+  createEditorSchema,
+  type InternalEditorSchemaApi,
+} from './core/editor-schema';
 import { createAnchor } from './core/anchor';
 import { hasActiveAnchors } from './core/anchor-state';
 import {
@@ -69,7 +73,7 @@ import type {
   Editor,
   EditorAnchorApi,
   EditorCommit,
-  EditorExtension,
+  EditorExtensionReference,
   EditorExtensionApiMap,
   EditorExtensionInput,
   EditorSnapshot,
@@ -109,12 +113,18 @@ type ReadonlyJson<T> = T extends (...args: any[]) => unknown
 type InitialValueFromOptions<TOptions> = TOptions extends {
   initialValue: infer TInitialValue;
 }
-  ? ReadonlyJson<
+  ? (
       TInitialValue extends { children: infer TChildren }
         ? TChildren
         : TInitialValue
-    > extends infer V extends Value
-    ? V
+    ) extends infer TChildren
+    ? TChildren extends unknown[]
+      ? TChildren extends Value
+        ? TChildren
+        : Value
+      : ReadonlyJson<TChildren> extends infer V extends Value
+        ? V
+        : Value
     : Value
   : Value;
 
@@ -148,7 +158,7 @@ const resolveApiCapability = (capabilities: unknown[]) => {
 
 const publishInitialEditorExtensions = <TEditor extends Editor>(
   editor: TEditor,
-  input: EditorExtensionInput<TEditor>,
+  input: EditorExtensionInput,
   explicitInitialDocument: boolean,
   initialize?: (
     transaction: EditorTransactionSpecBuilder<
@@ -215,7 +225,9 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
       if (publication.configurationChanged) {
         publication.validateDocument(publishedDocument);
       } else {
-        getEditorSchema(editor).validateDocument(publishedDocument);
+        const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+        schema.assertDocument(publishedDocument);
       }
     };
 
@@ -271,7 +283,7 @@ const publishInitialEditorExtensions = <TEditor extends Editor>(
 /** @internal Replace the derived base schema on one unchanged raw editor. */
 export const initializeEditorExtensions = <TEditor extends Editor>(
   editor: TEditor,
-  input: EditorExtensionInput<TEditor>,
+  input: EditorExtensionInput,
   options: Readonly<{
     initialize?: (
       transaction: EditorTransactionSpecBuilder<
@@ -372,7 +384,7 @@ const createEditorImplementation = <
 ): Editor<V, TExtensions> => {
   let editor!: Editor<V, TExtensions>;
   const runtimeEditor = () => editor;
-  const schema = createEditorSchema(runtimeEditor);
+  const schema: InternalEditorSchemaApi<V> = createEditorSchema(runtimeEditor);
 
   const extensionRuntime = {
     schema,
@@ -431,6 +443,12 @@ const createEditorImplementation = <
       if (typeof property !== 'string') {
         return;
       }
+      const candidateValue = getCandidateEditorApiValue(
+        editor as Editor,
+        property
+      );
+
+      if (candidateValue !== undefined) return candidateValue;
       const apiValues = getExtensionRegistry(editor as Editor).apiGroups.get(
         property
       );
@@ -443,39 +461,26 @@ const createEditorImplementation = <
     },
   }) as Editor<V, TExtensions>['api'];
 
-  const getApi = (extension: EditorExtension<any, any>) => {
-    const resolveValue = (
-      installedName: string,
-      installedApi: EditorExtensionApiMap
-    ) => {
-      const apiNames = Object.keys(installedApi);
-      const capabilityName = apiNames.includes(installedName)
-        ? installedName
-        : (apiNames[0] ?? installedName);
-
-      if (apiNames.length > 1 && !apiNames.includes(installedName)) {
-        throw new Error(
-          `Editor extension "${installedName}" must expose exactly one API group or an API group matching its extension name to be used with editor.getApi().`
-        );
-      }
-      const capability = installedApi[capabilityName];
+  const extensionPortal = (extension: EditorExtensionReference) => {
+    const resolveValue = (installedApi: EditorExtensionApiMap) => {
+      const capability = installedApi[extension.name];
 
       if (capability === undefined) {
         throw new Error(
-          `Editor extension "${installedName}" API group "${capabilityName}" is not installed.`
+          `Editor extension "${extension.name}" does not expose an API.`
         );
       }
 
-      return Array.isArray(capability)
-        ? resolveApiCapability([...capability])
-        : capability;
+      return capability;
     };
     const candidateApi = getCandidateEditorExtensionApi(
       editor as Editor,
       extension
     );
 
-    if (candidateApi) return resolveValue(extension.name, candidateApi);
+    if (candidateApi) {
+      return Object.freeze({ api: resolveValue(candidateApi) });
+    }
     const installedExtension = resolveInstalledEditorExtension(
       editor as Editor,
       extension
@@ -491,7 +496,7 @@ const createEditorImplementation = <
     const installedApi =
       getInstalledEditorExtensionApi(editor as Editor, installedName) ?? {};
 
-    return resolveValue(installedName, installedApi);
+    return Object.freeze({ api: resolveValue(installedApi) });
   };
 
   const read = createEditorReadApi<V, TExtensions>((fn) =>
@@ -521,7 +526,10 @@ const createEditorImplementation = <
     api,
     anchor: anchorApi,
     id: options.id ?? createEditorId(),
-    getApi: getApi as Editor<V, TExtensions>['getApi'],
+    extension: extensionPortal as unknown as Editor<
+      V,
+      TExtensions
+    >['extension'],
     read,
     subscribe: (listener) => subscribe(editor, listener),
     subscribeCommit: (listener) => subscribeCommit(editor, listener),
@@ -574,7 +582,7 @@ const createEditorImplementation = <
       );
     }
     assertSelectionSupported(editor, getLiveSelection(editor), initialDocument);
-    schema.validateDocument(initialDocument);
+    schema.assertDocument(initialDocument);
   }
 
   return editor;

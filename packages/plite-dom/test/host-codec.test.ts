@@ -70,12 +70,10 @@ const hostSchema = defineEditorSchema({
   },
   id: 'host-codec-test',
   properties: [ParagraphBold, HeadingBold, DataAttribute],
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -91,20 +89,13 @@ const inlineHostSchema = defineEditorSchema({
         url: property.string(),
       },
     },
-    paragraph: {
-      content: schema.content.any(
-        [schema.content.text(), schema.content.group('inline')],
-        { default: 'text', min: 1 }
-      ),
-    },
+    paragraph: schema.element.textBlock(),
   },
   id: 'host-codec-inline-test',
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -203,9 +194,9 @@ test('host codecs expose only immutable model and host read capabilities', () =>
 
   data.setData('text/html', '<p>parsed</p>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   expect(inspect).toHaveBeenCalledTimes(1);
   expect(editor.read.text.string([])).toBe('parsed');
 });
@@ -232,9 +223,9 @@ test('host codecs receive an ingress snapshot instead of the DataTransfer', () =
 
   data.setData('text/html', '<p>before</p>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   expect(editor.read.text.string([])).toBe('snapshot');
 });
 
@@ -256,9 +247,9 @@ test('host codec results cross one immutable slice boundary', () => {
 
   data.setData('text/html', '<p>parsed</p>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   parsed.children[0] = { text: 'mutated after parse' };
   expect(editor.read.text.string([])).toBe('parsed');
   expect(Object.isFrozen(editor.read.children()[0])).toBe(true);
@@ -281,7 +272,7 @@ test('plain-text construction observes the active transaction without cloning pr
     );
 
     expect(
-      editor.api.clipboard.insertData(data as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
     ).toBe(true);
   });
 
@@ -307,7 +298,7 @@ test('plain-text inline wrappers preserve validated properties and schema constr
     });
 
     expect(
-      editor.api.clipboard.insertData(data as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
     ).toBe(true);
   });
 
@@ -341,7 +332,7 @@ test('plain-text inline wrappers reject undeclared closed-schema properties', ()
     tx.nodes.set({ rogue: 'blocked' } as never, { at: [0, 1] });
 
     expect(
-      editor.api.clipboard.insertData(data as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
     ).toBe(false);
 
     tx.nodes.unset('rogue' as never, { at: [0, 1] });
@@ -409,7 +400,7 @@ test('host codec configuration order is deterministic per format', () => {
   const output = new DataTransferStub();
 
   input.setData('text/html', '<p>source</p>');
-  editor.api.clipboard.insertData(input as unknown as DataTransfer);
+  editor.api.dom.clipboard.insertData(input as unknown as DataTransfer);
   writeHostFragmentData(
     editor,
     output,
@@ -438,9 +429,9 @@ test('later host codec registration runs first', () => {
 
   data.setData('text/html', '<p>source</p>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   expect(editor.read.text.string([])).toBe('second');
 });
 
@@ -458,7 +449,7 @@ test('plain text is the last compiled codec fallback', () => {
   fallbackData.setData('text/plain', 'first\nsecond');
 
   expect(
-    fallbackEditor.api.clipboard.insertTextData(
+    fallbackEditor.api.dom.clipboard.insertTextData(
       fallbackData as unknown as DataTransfer
     )
   ).toBe(true);
@@ -480,7 +471,7 @@ test('plain text is the last compiled codec fallback', () => {
   overrideData.setData('text/plain', 'ignored');
 
   expect(
-    overrideEditor.api.clipboard.insertTextData(
+    overrideEditor.api.dom.clipboard.insertTextData(
       overrideData as unknown as DataTransfer
     )
   ).toBe(true);
@@ -576,12 +567,10 @@ test('schema reconfiguration recompiles codec claims and rolls back atomically',
         },
       },
       id: 'host-codec-schema-revision',
-      root: {
-        content: schema.content.type(type, {
-          default: { type },
-          min: 1,
-        }),
-      },
+      root: schema.content.type(type, {
+        default: { type },
+        min: 1,
+      }),
       unknown: 'reject',
       version,
     });
@@ -657,9 +646,9 @@ test('query and parse faults report lifecycle errors then fall through', () => {
 
   data.setData('text/html', '<p>invalid</p>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   expect(editor.read.text.string([])).toBe('fallback');
   expect(
     diagnostics.map((error) =>
@@ -711,9 +700,9 @@ test('a failed codec invocation reports once and publishes nothing', () => {
   editor.subscribeCommit(() => commits++);
   data.setData('text/html', '<p>invalid</p>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    false
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(false);
   expect(editor.read.children()).toEqual([paragraph('')]);
   expect(editor.read.lastCommit()).toBeNull();
   expect(commits).toBe(0);
@@ -783,9 +772,9 @@ test('host codecs preserve open slices and fit at the paste range', () => {
   );
   data.setData('text/html', '<span>X</span>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   expect(editor.read.text.string([])).toBe('befXore');
 });
 
@@ -801,9 +790,9 @@ test('host codecs fit detached text properties into the target parent', () => {
 
   data.setData('text/html', '<strong>X</strong>');
 
-  expect(editor.api.clipboard.insertData(data as unknown as DataTransfer)).toBe(
-    true
-  );
+  expect(
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer)
+  ).toBe(true);
   expect(editor.read.children()).toEqual([
     { children: [{ bold: true, text: 'X' }], type: 'paragraph' },
   ]);
@@ -938,7 +927,7 @@ test('host codecs round-trip registered formats', () => {
   writeHostFragmentData(source, output, ContentSlice.closed(value));
 
   expect(
-    target.api.clipboard.insertData(output as unknown as DataTransfer)
+    target.api.dom.clipboard.insertData(output as unknown as DataTransfer)
   ).toBe(true);
   expect(target.read.children()).toEqual(value);
   expect(NodeApi.string(target.read.children()[0]!)).toBe('round trip');

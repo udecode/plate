@@ -15,75 +15,60 @@ type ReadBodyValue = readonly [...BodyValue];
 
 type LayoutVariant = 'compact' | 'full';
 type EditorSummary = `${LayoutVariant}:@`;
-type LayoutStoreState = {
+type LayoutPluginState = {
   density: 1 | 2;
   variant: LayoutVariant;
 };
 
-const layoutInitialState: LayoutStoreState = {
+const layoutInitialState: LayoutPluginState = {
   density: 1,
   variant: 'full',
 };
 
 const LayoutPlugin = createPlatePlugin({
-  key: 'layout',
+  api: ({ store }) => ({
+    getVariant: () => store.get().variant,
+  }),
+  name: 'layout',
   initialState: layoutInitialState,
-})
-  .extend(() => ({
-    selectors: {
-      isDense: (state) => state.density === 2,
+  selectors: {
+    isDense: (state) => state.density === 2,
+  },
+  update: ({ tx }) => ({
+    setDensity: (density: 1 | 2) => {
+      tx.nodes.set({ density });
     },
-  }))
-  .extend(({ store }) => ({
-    extension: {
-      api: {
-        getVariant: () => store.get().variant,
-      },
-    },
-  }))
-  .extend(({ store }) => ({
-    update: () => ({
-      setDensity: (density: 1 | 2) => {
-        store.set({ density });
-      },
-    }),
-  }));
+  }),
+});
 
-const ConfiguredLayoutPlugin = LayoutPlugin.extend({
+const ConfiguredLayoutPlugin = LayoutPlugin.configure({
   initialState: {
     density: 2,
-  },
-}).configure({
-  initialState: {
     variant: 'compact',
   },
 });
 
 const MentionPlugin = createPlatePlugin({
-  key: 'mention',
+  api: ({ store }) => ({
+    getTrigger: () => store.get().trigger,
+  }),
+  name: 'mention',
   initialState: {
     trigger: '@' as const,
   },
-}).extend(({ store }) => ({
-  extension: {
-    api: {
-      getTrigger: () => store.get().trigger,
-    },
-  },
-}));
+});
 
 const ToolbarPlugin = createPlatePlugin({
-  key: 'toolbar',
-  extension: {
-    api: {
-      describeToolbar: () => 'toolbar' as const,
-    },
-  },
-}).extend(() => ({
-  update: () => ({
-    setCompact: () => undefined,
+  api: () => ({
+    describeToolbar: () => 'toolbar' as const,
   }),
-}));
+  name: 'toolbar',
+  update: ({ tx }) => ({
+    setCompact: () => {
+      tx.nodes.set({ compact: true });
+    },
+  }),
+});
 
 const initialValue = [
   {
@@ -105,11 +90,11 @@ const plateEditor = createPlateEditor({
 const expectBodyValue = (value: ReadBodyValue) => value;
 
 const bodyValue: ReadBodyValue = plateEditor.read.children();
-const layoutVariant: LayoutVariant = plateEditor.api.getVariant();
-const mentionTrigger: '@' = plateEditor.api.getTrigger();
+const layoutVariant: LayoutVariant = plateEditor.api.layout.getVariant();
+const mentionTrigger: '@' = plateEditor.api.mention.getTrigger();
 const editorSummary: EditorSummary =
-  `${plateEditor.api.getVariant()}:${plateEditor.api.getTrigger()}` as const;
-const toolbarDescription: 'toolbar' = plateEditor.api.describeToolbar();
+  `${plateEditor.api.layout.getVariant()}:${plateEditor.api.mention.getTrigger()}` as const;
+const toolbarDescription: 'toolbar' = plateEditor.api.toolbar.describeToolbar();
 const isDense: boolean = plateEditor
   .plugin(ConfiguredLayoutPlugin)
   .store.get('isDense');
@@ -149,7 +134,7 @@ plateEditor.update((tx) => {
 plateEditor.plugin(ConfiguredLayoutPlugin).store.get('isDense', true);
 
 // @ts-expect-error invalid merged editor api
-plateEditor.api.describeToolbar('extra');
+plateEditor.api.toolbar.describeToolbar('extra');
 
 const invalidBodyValue: BodyValue = [
   {

@@ -9,7 +9,7 @@ import {
 } from '../utils/mergePlugins';
 
 type NominalPluginOutput = Readonly<{
-  key: string;
+  name: string;
   type: string;
 }>;
 
@@ -19,87 +19,59 @@ const expectReusableReference = (plugin: NominalPluginOutput) => {
 };
 
 describe('plugin references', () => {
-  it('captures configured document type identity', () => {
+  it('preserves document type identity through terminal configuration', () => {
     const TargetPlugin = createBasePlugin({
-      key: 'configuredReferenceTarget',
-      type: 'base-reference-type',
-    });
-    const ConfiguredTargetPlugin = TargetPlugin.configure({
+      name: 'configuredReferenceTarget',
       type: 'configured-reference-type',
     });
+    const ConfiguredTargetPlugin = TargetPlugin.configure({
+      enabled: true,
+    });
 
-    expect(ConfiguredTargetPlugin.type).toBe('configured-reference-type');
+    const editor = createBaseEditor({ plugins: [ConfiguredTargetPlugin] });
+
+    expect(editor.plugin(ConfiguredTargetPlugin).plugin.type).toBe(
+      'configured-reference-type'
+    );
     expect(isNominalPluginReference(ConfiguredTargetPlugin)).toBe(true);
   });
 
   it('keeps every public factory and method result nominal', () => {
     const BasePlugin = createBasePlugin({
-      key: 'baseReference',
+      name: 'baseReference',
       initialState: { nested: { value: 1 } },
     });
     const baseOutputs: NominalPluginOutput[] = [
       BasePlugin,
-      BasePlugin.clone(),
       BasePlugin.configure({ initialState: { nested: { value: 2 } } }),
       BasePlugin.extend({ editOnly: true }),
       BasePlugin.extend(() => ({ enabled: true })),
       BasePlugin.extend(() => ({
-        extension: { api: { nominalEditorApi: () => true } },
+        api: () => ({ nominalPluginApi: () => true }),
       })),
-      BasePlugin.extend(() => ({ api: { nominalPluginApi: () => true } })),
       BasePlugin.extend(() => ({ selectors: { nominalSelector: () => true } })),
       BasePlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
-      BasePlugin.extend(() => ({
-        extension: {
-          tx: {
-            nominalGroup: () => ({
-              nominalTx: () => true,
-            }),
-          },
-        },
-      })),
-      BasePlugin.extend({
-        extension: {
-          api: { nominalExtension: { read: () => true } },
-        },
-      }),
     ];
     const PlatePlugin = toPlatePlugin(BasePlugin);
     const plateOutputs: NominalPluginOutput[] = [
       createPlatePlugin({
-        key: 'plateReference',
+        name: 'plateReference',
         initialState: { nested: { value: 1 } },
       }),
       PlatePlugin,
       toPlatePlugin(BasePlugin, { editOnly: true }),
       toPlatePlugin(BasePlugin, () => ({ enabled: true })),
-      PlatePlugin.clone(),
       PlatePlugin.configure({ initialState: { nested: { value: 3 } } }),
       PlatePlugin.extend({ editOnly: true }),
       PlatePlugin.extend(() => ({ enabled: true })),
       PlatePlugin.extend(() => ({
-        extension: { api: { nominalEditorApi: () => true } },
+        api: () => ({ nominalPluginApi: () => true }),
       })),
-      PlatePlugin.extend(() => ({ api: { nominalPluginApi: () => true } })),
       PlatePlugin.extend(() => ({
         selectors: { nominalSelector: () => true },
       })),
       PlatePlugin.extend(() => ({ update: () => ({ nominalTx: () => true }) })),
-      PlatePlugin.extend(() => ({
-        extension: {
-          tx: {
-            nominalGroup: () => ({
-              nominalTx: () => true,
-            }),
-          },
-        },
-      })),
-      PlatePlugin.extend({
-        extension: {
-          api: { nominalExtension: { read: () => true } },
-        },
-      }),
-      PlatePlugin.configure({ component: () => null }),
+      toPlatePlugin(BasePlugin, { component: () => null }),
     ];
 
     [...baseOutputs, ...plateOutputs].forEach(expectReusableReference);
@@ -107,7 +79,7 @@ describe('plugin references', () => {
 
   it('accepts genuine state references and rejects spread-forged identities', () => {
     const TargetPlugin = createBasePlugin({
-      key: 'referenceTarget',
+      name: 'referenceTarget',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -116,7 +88,7 @@ describe('plugin references', () => {
       type: 'reference-target',
     });
     const OwnerPlugin = createBasePlugin({
-      key: 'referenceOwner',
+      name: 'referenceOwner',
       initialState: { target: TargetPlugin },
       schema: ({ initialState, own, plugins }) => ({
         properties: [
@@ -135,7 +107,7 @@ describe('plugin references', () => {
 
     const forgedReference = { ...TargetPlugin };
     const ForgedOwnerPlugin = createBasePlugin({
-      key: 'forgedReferenceOwner',
+      name: 'forgedReferenceOwner',
       initialState: { target: forgedReference },
       schema: ({ initialState, own, plugins }) => ({
         properties: [

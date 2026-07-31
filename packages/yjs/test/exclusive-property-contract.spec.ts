@@ -26,7 +26,7 @@ const ScriptSchema = defineEditorSchema({
       exclusive: [ScriptPosition],
     }),
   ],
-  root: { content: schema.content.type('paragraph') },
+  root: schema.content.type('paragraph'),
   unknown: 'reject',
   version: 1,
 });
@@ -74,8 +74,8 @@ describe('@platejs/yjs exclusive property contract', () => {
 
     assert.deepEqual(aText, bText);
     assert.equal(active(aText).length, 1);
-    a.editor.read.schema.validateDocument(a.editor.read.value());
-    b.editor.read.schema.validateDocument(b.editor.read.value());
+    a.editor.read.schema.assertDocument(a.editor.read.value());
+    b.editor.read.schema.assertDocument(b.editor.read.value());
     a.cleanup();
     b.cleanup();
   });

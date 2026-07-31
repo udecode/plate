@@ -18,6 +18,7 @@
       "@platejs/plite-layout": ["../plite-layout/src/index.ts"],
       "@platejs/plite-layout/react": ["../plite-layout/src/react.tsx"],
       "@platejs/plite-react": ["../plite-react/src/index.ts"],
+      "@platejs/plite-react/internal": ["../plite-react/src/internal/index.ts"],
       "@platejs/yjs": ["../yjs/src/index.ts"],
       "@platejs/yjs/core": ["../yjs/src/core/index.ts"],
       "@platejs/yjs/react": ["../yjs/src/react/index.ts"]

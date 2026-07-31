@@ -38,7 +38,7 @@ export const useToggleIndex = () => {
           enclosingToggles.map(([toggleId]) => toggleId)
         );
 
-        if (element.type === editor.getType(KEYS.toggle)) {
+        if (element.type === editor.plugin(KEYS.toggle).type) {
           enclosingToggles.push([element.id, adjustedIndent]);
         }
       });

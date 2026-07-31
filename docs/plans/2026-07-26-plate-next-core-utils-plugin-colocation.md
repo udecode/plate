@@ -257,7 +257,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options belong in
   `.extend({ extension })`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types. The
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types. The
   `extension` contribution accepts built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
@@ -649,7 +649,7 @@ Package file rows:
 - [x] `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.tsx` — score: 100 — verdict: keep/colocated — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.tsx` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
 - [x] `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — score: 100 — verdict: keep/colocated — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
 - [x] `packages/core/src/react/plugins/navigation-feedback/index.ts` — score: 100 — verdict: keep/colocated — owner: `packages/core/src/react/plugins/navigation-feedback/index.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
-- [x] `packages/core/src/react/plugins/navigation-feedback/internal/navigationFeedbackPluginKey.ts` — score: 100 — verdict: merge/delete — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
+- [x] `packages/core/src/react/plugins/navigation-feedback/internal/navigationFeedbackPluginName.ts` — score: 100 — verdict: merge/delete — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
 - [x] `packages/core/src/react/plugins/navigation-feedback/transforms/flashTarget.ts` — score: 100 — verdict: merge/delete — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
 - [x] `packages/core/src/react/plugins/navigation-feedback/transforms/index.ts` — score: 100 — verdict: merge/delete — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none
 - [x] `packages/core/src/react/plugins/navigation-feedback/transforms/navigate.ts` — score: 100 — verdict: merge/delete — owner: `packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts` — evidence: Core 153/153 fast, 27/27 slow, typecheck/lint — next: none

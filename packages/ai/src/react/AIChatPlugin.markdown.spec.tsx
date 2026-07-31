@@ -7,8 +7,6 @@ import {
   BaseParagraphPlugin,
   createBasePlugin,
   NodeIdPlugin,
-  type PlatePluginReadState,
-  type PluginConfig,
 } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { type Element, type ElementEntry, schema } from '@platejs/plite';
@@ -17,53 +15,8 @@ import { createPlateEditor } from '@platejs/core/react';
 
 jsxt;
 
-const getTableGridAbove = (
-  state: PlatePluginReadState<PluginConfig>
-): ElementEntry[] => {
-  const selection = state.selection();
-  if (!selection) return [];
-
-  const start = state.nodes.above<Element>({
-    at: selection.anchor,
-    match: { type: [KEYS.td, KEYS.th] },
-  });
-  const end = state.nodes.above<Element>({
-    at: selection.focus,
-    match: { type: [KEYS.td, KEYS.th] },
-  });
-  if (!start || !end) return [];
-
-  const tablePath = start[1].slice(0, -2);
-  const startRow = Math.min(start[1].at(-2)!, end[1].at(-2)!);
-  const endRow = Math.max(start[1].at(-2)!, end[1].at(-2)!);
-  const startColumn = Math.min(start[1].at(-1)!, end[1].at(-1)!);
-  const endColumn = Math.max(start[1].at(-1)!, end[1].at(-1)!);
-  const entries: ElementEntry[] = [];
-
-  for (let row = startRow; row <= endRow; row++) {
-    for (let column = startColumn; column <= endColumn; column++) {
-      const entry = state.nodes.get<Element>([...tablePath, row, column]);
-      if (entry) entries.push(entry);
-    }
-  }
-
-  return entries;
-};
-
-const TableFixturePlugin = createBasePlugin({
-  key: KEYS.table,
-  read: ({ state }) => ({
-    getGridAbove: () => getTableGridAbove(state),
-  }),
-  schema: ({ plugins }) => ({
-    element: {
-      content: schema.content.type(plugins.elementType(TableRowFixturePlugin)),
-    },
-  }),
-});
-
 const TableRowFixturePlugin = createBasePlugin({
-  key: KEYS.tr,
+  name: KEYS.tr,
   schema: ({ plugins }) => ({
     element: {
       content: schema.content.types(
@@ -77,7 +30,7 @@ const TableRowFixturePlugin = createBasePlugin({
 });
 
 const TableCellFixturePlugin = createBasePlugin({
-  key: KEYS.td,
+  name: KEYS.td,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
@@ -86,7 +39,7 @@ const TableCellFixturePlugin = createBasePlugin({
 });
 
 const TableHeaderCellFixturePlugin = createBasePlugin({
-  key: KEYS.th,
+  name: KEYS.th,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
@@ -103,7 +56,53 @@ const createTestEditor = async (
     plugins: [
       BaseParagraphPlugin,
       NodeIdPlugin,
-      TableFixturePlugin.configure({ type: tableType }),
+      createBasePlugin({
+        name: KEYS.table,
+        type: tableType,
+        read: ({ state }) => ({
+          getGridAbove: () => {
+            const selection = state.selection();
+            if (!selection) return [];
+
+            const start = state.nodes.above<Element>({
+              at: selection.anchor,
+              match: { type: [KEYS.td, KEYS.th] },
+            });
+            const end = state.nodes.above<Element>({
+              at: selection.focus,
+              match: { type: [KEYS.td, KEYS.th] },
+            });
+            if (!start || !end) return [];
+
+            const tablePath = start[1].slice(0, -2);
+            const startRow = Math.min(start[1].at(-2)!, end[1].at(-2)!);
+            const endRow = Math.max(start[1].at(-2)!, end[1].at(-2)!);
+            const startColumn = Math.min(start[1].at(-1)!, end[1].at(-1)!);
+            const endColumn = Math.max(start[1].at(-1)!, end[1].at(-1)!);
+            const entries: ElementEntry[] = [];
+
+            for (let row = startRow; row <= endRow; row++) {
+              for (let column = startColumn; column <= endColumn; column++) {
+                const entry = state.nodes.get<Element>([
+                  ...tablePath,
+                  row,
+                  column,
+                ]);
+                if (entry) entries.push(entry);
+              }
+            }
+
+            return entries;
+          },
+        }),
+        schema: ({ plugins }) => ({
+          element: {
+            content: schema.content.type(
+              plugins.elementType(TableRowFixturePlugin)
+            ),
+          },
+        }),
+      }),
       TableRowFixturePlugin,
       TableCellFixturePlugin,
       TableHeaderCellFixturePlugin,

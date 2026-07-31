@@ -6,7 +6,7 @@ import {
   createEditor,
   defineEditorSchema,
   type Descendant,
-  type EditorExtension,
+  type EditorExtensionReference,
   type Element,
   schema,
 } from '@platejs/plite';
@@ -143,7 +143,7 @@ const assertMovementSequence = (
 const createMovementEditor = (
   children: Descendant[],
   selection: Point,
-  extensions: readonly EditorExtension[] = []
+  extensions: readonly EditorExtensionReference[] = []
 ) =>
   createEditor({
     extensions,
@@ -161,9 +161,7 @@ const InlineVoidSchema = defineEditorSchema({
     token: { inline: true, void: 'inline' },
   },
   id: 'word-boundary-inline-void-proof',
-  root: {
-    content: schema.content.types(['paragraph']),
-  },
+  root: schema.content.types(['paragraph']),
   unknown: 'preserve',
   version: 1,
 });

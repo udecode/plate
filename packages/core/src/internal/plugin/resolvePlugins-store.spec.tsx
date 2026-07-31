@@ -10,18 +10,18 @@ describe('plugin store', () => {
   it('owns one store per installed plugin', () => {
     const FirstPlugin = createBasePlugin({
       initialState: { value: 1 },
-      key: 'first',
+      name: 'first',
     });
     const SecondPlugin = createBasePlugin({
       initialState: { value: 2 },
-      key: 'second',
+      name: 'second',
     });
     const editor = createStoreEditor([FirstPlugin, SecondPlugin]);
 
     expect(editor.plugin(FirstPlugin).store.get()).toEqual({ value: 1 });
     expect(editor.plugin(SecondPlugin).store.get()).toEqual({ value: 2 });
-    expect(getPluginStore(editor, FirstPlugin.key)).toBeDefined();
-    expect(getPluginStore(editor, SecondPlugin.key)).toBeDefined();
+    expect(getPluginStore(editor, FirstPlugin.name)).toBeDefined();
+    expect(getPluginStore(editor, SecondPlugin.name)).toBeDefined();
 
     editor.plugin(FirstPlugin).store.set({ value: 3 });
 
@@ -32,7 +32,7 @@ describe('plugin store', () => {
   it('isolates the same plugin store across editors', () => {
     const Plugin = createBasePlugin({
       initialState: { value: 1 },
-      key: 'plugin',
+      name: 'plugin',
     });
     const first = createStoreEditor([Plugin]);
     const second = createStoreEditor([Plugin]);
@@ -41,13 +41,13 @@ describe('plugin store', () => {
 
     expect(first.plugin(Plugin).store.get('value')).toBe(2);
     expect(second.plugin(Plugin).store.get('value')).toBe(1);
-    expect(getPluginStore(first, Plugin.key)).not.toBe(
-      getPluginStore(second, Plugin.key)
+    expect(getPluginStore(first, Plugin.name)).not.toBe(
+      getPluginStore(second, Plugin.name)
     );
   });
 
   it('uses an empty state when initialState is omitted', () => {
-    const Plugin = createBasePlugin({ key: 'plugin' });
+    const Plugin = createBasePlugin({ name: 'plugin' });
     const editor = createStoreEditor([Plugin]);
 
     expect(editor.plugin(Plugin).store.get()).toEqual({});
@@ -60,7 +60,7 @@ describe('plugin store', () => {
         untouched: true,
         value: 1,
       },
-      key: 'plugin',
+      name: 'plugin',
     });
     const editor = createStoreEditor([Plugin]);
     const { store } = editor.plugin(Plugin);
@@ -80,7 +80,7 @@ describe('plugin store', () => {
   it('owns and freezes writes without leaking caller mutation', () => {
     const Plugin = createBasePlugin({
       initialState: { nested: { value: 1 } },
-      key: 'plugin',
+      name: 'plugin',
     });
     const editor = createStoreEditor([Plugin]);
     const { store } = editor.plugin(Plugin);
@@ -121,7 +121,7 @@ describe('plugin store', () => {
   it('evaluates pure selectors against current state', () => {
     const Plugin = createBasePlugin({
       initialState: { value: 2 },
-      key: 'plugin',
+      name: 'plugin',
       selectors: {
         multiplied: (state, factor: number) => state.value * factor,
       },
@@ -139,26 +139,26 @@ describe('plugin store', () => {
   it('merges selector declarations from extensions', () => {
     const Plugin = createBasePlugin({
       initialState: { value: 2 },
-      key: 'plugin',
+      name: 'plugin',
       selectors: {
         doubled: (state) => state.value * 2,
       },
     }).extend({
       selectors: {
-        multiplied: (state, factor: number) => state.value * factor,
+        multiplied: (state) => state.value * 3,
       },
     });
     const editor = createStoreEditor([Plugin]);
     const { store } = editor.plugin(Plugin);
 
     expect(store.get('doubled')).toBe(4);
-    expect(store.get('multiplied', 3)).toBe(6);
+    expect(store.get('multiplied')).toBe(6);
   });
 
   it('rejects state and selector key collisions', () => {
     const Plugin = createBasePlugin({
       initialState: { value: 2 },
-      key: 'plugin',
+      name: 'plugin',
       selectors: {
         value: (state) => state.value * 2,
       },
@@ -172,7 +172,7 @@ describe('plugin store', () => {
   it('throws for unknown state fields or selectors', () => {
     const Plugin = createBasePlugin({
       initialState: { value: 1 },
-      key: 'plugin',
+      name: 'plugin',
     });
     const editor = createStoreEditor([Plugin]);
 

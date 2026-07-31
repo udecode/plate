@@ -9,13 +9,22 @@ import { parse } from '@babel/parser';
 import { extractJavaScriptCodeFences } from './check-plate-doc-code-contracts.mjs';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const sourceRoots = ['packages', 'apps', 'benchmarks', 'content'];
+const sourceRoots = ['packages', 'apps', 'benchmarks', 'content', '.changeset'];
 export const ciGeneratedPlateSchemaOutputRoots = Object.freeze([
   'apps/www/public/r',
   'apps/www/public/rd',
   'templates',
 ]);
 const markdownFilePattern = /\.mdx?$/;
+const staticPluginApiReferencePattern = /\b[A-Za-z_$][\w$]*Plugin\.api\b/gu;
+const basePluginExtendComponentPattern =
+  /\bBase[\w$]*Plugin\s*\.\s*extend\s*\(\s*(?:\([^)]*\)\s*=>\s*\(?\s*)?\{[\s\S]{0,400}?\bcomponent\s*:/;
+const terminalComponentConversionPattern =
+  /\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\s*\)\s*\.\s*configure\s*\(\s*\{[\s\S]{0,400}?\bcomponent\s*:/;
+const staticBaseKitReactAdapterPattern =
+  /(?:\b[\w-]+-base-kit\b[^\n]{0,500}\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b|\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b[^\n]{0,500}\b[\w-]+-base-kit\b)/i;
+const staticEditorBaseReactAdapterPattern =
+  /(?=[\s\S]*\b(?:createStaticEditor\s*\(|from\s+['"](?:platejs|@platejs\/core)\/static['"]))[\s\S]*\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b/;
 const auditedFilePattern = /\.(?:cjs|cts|js|jsx|md|mdx|mjs|mts|ts|tsx)$/;
 const typescriptFilePattern = /\.(?:cts|mts|ts|tsx)$/;
 const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
@@ -23,12 +32,17 @@ const platePluginFactoryNamePattern = /Plugin$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
 const privatePluginBuilderScaffoldNamePattern =
   /(?:PluginBase|PluginDefinition|PluginDescriptor)$/;
+const pluginDescriptorOwnerPathPattern =
+  /(?:^|\.)(?:plugin|[A-Za-z_$][\w$]*Plugin)$/;
+const basePluginDescriptorNamePattern = /^Base[\w$]*Plugin$/;
+const prefixedOnListenerPattern = /^on[A-Z]/;
 const pluginConfigurationMethods = new Set([
   'configure',
   'extend',
   'extendPlugin',
 ]);
 const deletedPluginBuilderMethods = new Set([
+  'clone',
   'extendApi',
   'extendCodecs',
   'extendEditorApi',
@@ -40,7 +54,6 @@ const deletedPluginBuilderMethods = new Set([
   'withComponent',
 ]);
 const pluginAuthoringMethods = new Set([
-  'clone',
   'configure',
   'configurePlugin',
   'extend',
@@ -48,11 +61,54 @@ const pluginAuthoringMethods = new Set([
   ...deletedPluginBuilderMethods,
 ]);
 const contextualConfigureKeys = new Set([
-  'handlers',
   'initialState',
+  'on',
   'override',
   'render',
   'shortcuts',
+]);
+const deletedPlatePluginDefinitionKeys = new Set([
+  'clipboard',
+  'config',
+  'extension',
+  'handlers',
+  'pluginApi',
+  'targetPluginKeys',
+  'tx',
+  'validateConfiguration',
+]);
+const deletedPliteExtensionDefinitionKeys = new Set([
+  'config',
+  'state',
+  'tx',
+  'validateConfiguration',
+]);
+const deletedPluginTypeSymbols = new Set([
+  'AnyPluginConfig',
+  'BasePluginExtensionContract',
+  'EffectiveExtensionContractField',
+  'EffectivePlateContractField',
+  'InferConfig',
+  'PluginConfig',
+  'TPlatePluginConfig',
+  'UnifiedRuntimeBasePluginConfig',
+  'UnifiedRuntimePlatePluginConfig',
+]);
+const deletedPluginContractMemberKeys = new Set(['__config', 'pluginApi']);
+const factoryOnlyCapabilityKeys = new Set([
+  'api',
+  'commands',
+  'read',
+  'readMiddleware',
+  'update',
+]);
+const staleCapabilityFactoryContextBindings = new Set([
+  'editorApi',
+  'editorReads',
+  'editorTransforms',
+  'pluginApi',
+  'pluginReads',
+  'pluginTransforms',
 ]);
 const plateEditorConstructionOptionIndexes = new Map([
   ['createBaseEditor', 0],
@@ -109,6 +165,7 @@ const deletedSymbols = new Set([
 const privateSchemaGroupOwners = new Set([
   'packages/core/src/internal/plugin/compilePlateModel.ts',
 ]);
+const plitePrivateWitnessOwner = 'packages/plite/src/interfaces/editor.ts';
 const internalRenderNodeOwners = new Set([
   'packages/core/src/internal/plugin/resolvePlugins.ts',
   'packages/core/src/lib/plugin/createBasePlugin.ts',
@@ -116,13 +173,33 @@ const internalRenderNodeOwners = new Set([
 ]);
 const intentionalRenderNodeNegativeContract =
   'packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts';
+const intentionalRuntimeRenderNodeNegativeMarker =
+  '@plate-schema-adoption-negative-render-node';
+const intentionalRuntimeRenderNodeNegativeContractCounts = new Map([
+  ['packages/core/src/lib/plugin/createBasePlugin.spec.ts', 1],
+]);
 const intentionalRawCodecNegativeMarker =
   '@plate-schema-adoption-negative-codec';
+const intentionalPliteConfigNegativeMarker =
+  '@ts-expect-error Plite extensions validate the candidate context, not Plate config';
+const intentionalReactFactoryNegativeMarker = '@ts-expect-error react ';
 const intentionalRawCodecNegativeContractCounts = new Map([
   ['packages/core/src/internal/plugin/compilePlateHtmlCodec.spec.ts', 1],
   ['packages/core/src/lib/plugins/ProductCodecs.spec.ts', 1],
   ['packages/core/src/lib/plugins/html/HtmlPlugin.codec.spec.ts', 1],
   ['packages/core/type-tests/base-plugin-contracts.ts', 1],
+]);
+const intentionalPliteConfigNegativeContractCounts = new Map([
+  ['packages/plite/test/generic-extension-contract.ts', 1],
+]);
+const intentionalReactFactoryNegativeContractCounts = new Map([
+  ['packages/plite-react/test/generic-react-editor-contract.tsx', 2],
+]);
+const intentionalRuntimeNegativeDefinitionFields = new Map([
+  [
+    'packages/core/src/react/plugin/createPlatePlugin.spec.ts',
+    new Set(['invalidApi:api']),
+  ],
 ]);
 const packageConfigureInstallationOwners = new Set([
   'packages/core/src/lib/plugins/getCorePlugins.ts',
@@ -135,52 +212,111 @@ const packageTestSourcePattern =
 const baseOrStaticSourcePattern =
   /(?:^|\/)(?:[^/]*-base-kit|[^/]*-static)\.[cm]?[jt]sx?$|(?:^|\/)static(?:\/|$)/;
 const reactPluginEntrypointPattern = /^(?:platejs|@platejs\/[^/]+)\/react$/;
+const plateReactAdapterEntrypointPattern =
+  /^(?:platejs|@platejs\/core)\/react$/;
+const pliteReactModulePattern = /^@platejs\/plite-react$/;
+const pliteRootModulePattern = /^@platejs\/plite$/;
+const publicCoreModulePattern =
+  /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
 const plateModulePattern = /^(?:platejs|@platejs\/)/;
+const internalCoreContractTypeSymbols = new Set([
+  'InternalDefinitionOf',
+  'InternalPluginDefinitionOf',
+  'PluginDefinitionCarrier',
+  'StaticEditorExtensionTypeLambda',
+]);
+const privateCoreDefinitionCarrierSymbols = new Set([
+  'InternalDefinitionOf',
+  'InternalPluginDefinitionOf',
+  'PluginDefinitionCarrier',
+]);
+const internalCoreCompilerTypeSymbols = new Set([
+  'LowerBasePlugin',
+  'NormalizeBasePluginInput',
+  'NormalizePlatePluginInput',
+]);
+const internalPliteContractTypeSymbols = new Set([
+  'EditorExtensionDependencyReferenceFor',
+  'EditorExtensionTypeLambda',
+  'InternalEditorExtensionDependencyReference',
+  'InternalEditorExtensionInstalledCapabilitiesOf',
+  'InternalEditorExtensionTypeProviderOf',
+  'InternalEditorExtensionWitnessFor',
+]);
 const liveRegistryNodeModulePattern = /^@\/registry\/ui\/.*-node$/;
 const historicalOrGeneratedSourcePattern =
   /(?:^|\/)(?:generated|historical)(?:\/|$)|^(?:apps\/www\/public|templates)\//;
 const intentionalProductionExtendStageChains = new Map([
   [
     'packages/core/src/lib/plugins/affinity/AffinityPlugin.ts',
-    [[['extension']]],
+    [[['commands']]],
   ],
-  ['packages/core/src/lib/plugins/dom/DOMPlugin.ts', [[['extension']]]],
+  ['packages/core/src/lib/plugins/HistoryPlugin.ts', [[['$factory:history']]]],
+  [
+    'packages/core/src/lib/plugins/dom/DOMPlugin.ts',
+    [[['$value:plateDOMExtension']]],
+  ],
+  [
+    'packages/core/src/lib/plugins/input-rules/InputRulesPlugin.ts',
+    [[['commands', 'contributions']]],
+  ],
   [
     'packages/core/src/lib/plugins/override/OverridePlugin.ts',
-    [[['extension']]],
+    [[['commands', 'corrections', 'readMiddleware']]],
   ],
-  ['packages/basic-nodes/src/lib/BaseBlockPlugins.ts', [[['shortcuts']]]],
-  ['packages/code-block/src/lib/BaseCodeBlockPlugin.ts', [[['shortcuts']]]],
+  [
+    'packages/core/src/react/editor/getPlateCorePlugins.ts',
+    [[['$value:plateReactExtension']]],
+  ],
+  [
+    'apps/www/src/registry/examples/version-history-demo.tsx',
+    [[['$factory:createExcludeDiffFragmentExtension']]],
+  ],
+  [
+    'packages/code-block/src/lib/BaseCodeBlockPlugin.ts',
+    [[['commands', 'contributions']], [['corrections', 'on']]],
+  ],
+  ['packages/basic-styles/src/lib/BaseStylePlugins.ts', [[['update']]]],
   ['packages/comment/src/lib/BaseCommentPlugin.ts', [[['update']]]],
   [
     'packages/list/src/lib/BaseListPlugin.ts',
-    [[['override', 'update'], ['extension']]],
+    [
+      [
+        ['api', 'read'],
+        ['override', 'update'],
+        ['commands', 'corrections', 'on'],
+      ],
+    ],
   ],
   [
     'packages/list-classic/src/lib/BaseListPlugin.ts',
-    [[['read'], ['update'], ['extension']]],
+    [[['commands']], [['read'], ['update'], ['commands', 'corrections']]],
   ],
-  ['packages/link/src/lib/BaseLinkPlugin.ts', [[['update'], ['extension']]]],
+  ['packages/link/src/lib/BaseLinkPlugin.ts', [[['update'], ['commands']]]],
+  ['packages/csv/src/lib/CsvPlugin.ts', [[['api'], ['codecs']]]],
+  ['packages/markdown/src/lib/MarkdownPlugin.ts', [[['api']]]],
+  ['packages/tabbable/src/react/TabbablePlugin.tsx', [[['read']]]],
+  ['packages/toc/src/lib/BaseTocPlugin.ts', [[['read', 'update']]]],
   [
-    'packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.ts',
-    [[['inject']]],
+    'packages/toggle/src/lib/BaseTogglePlugin.ts',
+    [[['api', 'read', 'selectors']]],
   ],
-  ['packages/csv/src/lib/CsvPlugin.ts', [[['codecs']]]],
-  ['packages/indent/src/lib/BaseIndentPlugin.ts', [[['codecs', 'shortcuts']]]],
-  ['packages/layout/src/lib/BaseColumnPlugin.ts', [[['shortcuts']]]],
-  ['packages/selection/src/react/BlockMenuPlugin.tsx', [[['handlers']]]],
   [
     'packages/selection/src/react/BlockSelectionPlugin.tsx',
-    [[['api', 'extension'], ['inject', 'shortcuts', 'update'], ['render']]],
+    [
+      [
+        ['api', 'commands', 'on'],
+        ['inject', 'shortcuts', 'update'],
+        ['render'],
+      ],
+    ],
   ],
-  [
-    'packages/selection/src/react/CursorOverlayPlugin.tsx',
-    [[['extension', 'handlers', 'useHooks']]],
-  ],
+  ['packages/selection/src/react/BlockMenuPlugin.tsx', [[['on']]]],
+  ['packages/selection/src/react/CursorOverlayPlugin.tsx', [[['on']]]],
   ['packages/tag/src/lib/BaseTagPlugin.ts', [[['read']]]],
   [
     'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx',
-    [[['inject', 'useHooks']]],
+    [[['selectors']], [['inject', 'useHooks']]],
   ],
   [
     'packages/table/src/lib/BaseTablePlugin.ts',
@@ -192,43 +328,87 @@ const intentionalProductionExtendStageChains = new Map([
         ['read'],
         ['api', 'read'],
         ['update'],
-        ['extension', 'update'],
+        ['update'],
+        ['contributions'],
+        ['corrections'],
+        ['commands', 'readMiddleware', 'selectionKinds'],
       ],
     ],
   ],
   [
     'packages/ai/src/react/CopilotPlugin.tsx',
-    [[['api'], ['extension', 'handlers', 'render', 'selectors', 'shortcuts']]],
+    [[['api'], ['commands', 'on', 'render', 'selectors', 'shortcuts']]],
   ],
   [
     'packages/ai/src/react/AIChatPlugin.ts',
-    [[['api', 'read', 'selectors', 'update'], ['extension']]],
+    [
+      [
+        ['api', 'read', 'selectors', 'update'],
+        ['commands', 'corrections', 'effectTypes', 'on'],
+      ],
+    ],
   ],
   [
     'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
-    [[['read'], ['update'], ['extension']]],
+    [[['read'], ['update'], ['commands', 'corrections']]],
   ],
   [
     'packages/footnote/src/lib/BaseFootnotePlugin.ts',
-    [[['update'], ['update'], ['update'], ['update']]],
+    [
+      [
+        ['$factory:createTriggerComboboxExtension'],
+        ['update'],
+        ['update'],
+        ['update'],
+        ['update'],
+      ],
+    ],
   ],
-  ['packages/media/src/lib/BaseMediaPlugin.ts', [[[]], [[]], [[]]]],
-  ['packages/media/src/lib/image/BaseImagePlugin.ts', [[[], ['extension']]]],
-  ['packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts', [[[]]]],
+  [
+    'packages/emoji/src/lib/BaseEmojiPlugin.ts',
+    [[['$factory:createTriggerComboboxExtension']]],
+  ],
+  [
+    'packages/mention/src/lib/BaseMentionPlugin.ts',
+    [[['$factory:createTriggerComboboxExtension']]],
+  ],
+  [
+    'packages/slash-command/src/lib/BaseSlashPlugin.ts',
+    [[['$factory:createTriggerComboboxExtension']]],
+  ],
+  [
+    'packages/media/src/lib/BaseMediaPlugin.ts',
+    [
+      [['$factory:defineMediaPlugin']],
+      [['$factory:defineMediaPlugin']],
+      [['$factory:defineMediaPlugin']],
+    ],
+  ],
+  [
+    'packages/media/src/lib/image/BaseImagePlugin.ts',
+    [[['$factory:defineMediaPlugin'], ['contributions']]],
+  ],
+  [
+    'packages/media/src/lib/media-embed/BaseMediaEmbedPlugin.ts',
+    [[['$factory:defineMediaPlugin']]],
+  ],
+  [
+    'packages/yjs/src/lib/BaseYjsPlugin.ts',
+    [[['$factory:createYjsExtension']]],
+  ],
 ]);
 const allowedSchemaFactoryBindings = new Set([
   'initialState',
-  'key',
+  'name',
   'own',
   'plugins',
-  'targetPluginKeys',
+  'targetPluginNames',
   'type',
 ]);
 // Raw queries are reserved for runtime discovery and contextual contract laws.
 // Every owning file has an exact reviewed count so tests cannot hide new drift.
 const intentionalRawSchemaQueryCounts = new Map([
   ['packages/ai/src/lib/BaseAIPlugin.spec.tsx', 6],
-  ['packages/basic-styles/src/lib/BaseStylePlugins.spec.ts', 6],
   ['packages/comment/src/lib/BaseCommentPlugin.spec.ts', 5],
   ['packages/core/src/lib/plugins/element-state/ElementStatePlugin.ts', 1],
   ['packages/core/src/lib/plugins/html/HtmlPlugin.ts', 5],
@@ -240,7 +420,6 @@ const intentionalRawSchemaQueryCounts = new Map([
   ['packages/suggestion/src/lib/BaseSuggestionPlugin.spec.tsx', 12],
   ['packages/table/src/lib/BaseTablePlugin.schema.spec.ts', 5],
 ]);
-const intentionalExplicitSchemaFactoryCounts = new Map();
 const intentionalNamedSchemaLineages = new Map([
   ['content/docs/(guides)/editor.cn.mdx', new Map([['acme-document@3', 1]])],
   ['content/docs/(guides)/editor.mdx', new Map([['acme-document@3', 1]])],
@@ -254,7 +433,7 @@ const intentionalNamedSchemaLineages = new Map([
   ],
   [
     'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
-    new Map([['plate:yjs-api-test@1', 2]]),
+    new Map([['plate:yjs-api-test@1', 3]]),
   ],
   ['packages/yjs/README.md', new Map([['yjs-example@1', 1]])],
 ]);
@@ -271,9 +450,9 @@ if (
   [...intentionalRawSchemaQueryCounts.values()].reduce(
     (total, count) => total + count,
     0
-  ) !== 54
+  ) !== 48
 ) {
-  throw new Error('Plate raw schema query allowlist must contain 54 calls.');
+  throw new Error('Plate raw schema query allowlist must contain 48 calls.');
 }
 
 const toPosixPath = (path) => path.split(sep).join('/');
@@ -1209,6 +1388,44 @@ const walkAst = (node, callback) => {
   }
 };
 
+const containsDefinitionOfType = (node) => {
+  const value =
+    node?.type === 'TSParenthesizedType' ? node.typeAnnotation : node;
+
+  return (
+    value?.type === 'TSTypeReference' &&
+    value.typeName?.type === 'Identifier' &&
+    value.typeName.name === 'DefinitionOf'
+  );
+};
+
+const isDirectDefinitionOfDescriptor = (node) => {
+  const value =
+    node?.type === 'TSParenthesizedType' ? node.typeAnnotation : node;
+  const parameter = value?.typeParameters?.params?.[0];
+
+  return (
+    containsDefinitionOfType(value) &&
+    parameter?.type === 'TSTypeQuery' &&
+    parameter.exprName?.type === 'Identifier'
+  );
+};
+
+const isExplicitPluginDescriptorAnnotation = (node) => {
+  const value = node?.type === 'TSTypeAnnotation' ? node.typeAnnotation : node;
+  const typeName =
+    value?.type === 'TSTypeReference' && value.typeName?.type === 'Identifier'
+      ? value.typeName.name
+      : undefined;
+
+  return (
+    typeName === 'BasePlugin' ||
+    typeName === 'ConfiguredBasePlugin' ||
+    typeName === 'ConfiguredPlatePlugin' ||
+    typeName === 'PlatePlugin'
+  );
+};
+
 const collectNamedSchemaLineageBindings = (
   ast,
   staticStringBindings = new Map()
@@ -1729,6 +1946,15 @@ const isFunction = (node) =>
   node?.type === 'ArrowFunctionExpression' ||
   node?.type === 'FunctionExpression' ||
   node?.type === 'ObjectMethod';
+const isStaticCapabilityDeclaration = (property) =>
+  property?.type === 'ObjectProperty' &&
+  property.value?.type === 'ObjectExpression';
+const getCapabilityFactoryParameterCount = (property) => {
+  if (property?.type === 'ObjectMethod') return property.params.length;
+  if (property?.type === 'ObjectProperty' && isFunction(property.value)) {
+    return property.value.params.length;
+  }
+};
 
 const inspectContextualConfigure = (callback) => {
   const body = unwrapTypedExpression(callback?.body);
@@ -1774,7 +2000,24 @@ const inspectContextualConfigure = (callback) => {
   return { invalidReturns, properties };
 };
 
-const getStaticExtensionProperties = (contribution) => {
+const getStaticExtensionProperties = (
+  contribution,
+  valueBindings,
+  staticStringBindings,
+  position,
+  useNode
+) => {
+  if (valueBindings && staticStringBindings) {
+    return resolveStaticObjectProperties(
+      contribution,
+      valueBindings,
+      staticStringBindings,
+      new Set(),
+      position ?? contribution?.start ?? Number.POSITIVE_INFINITY,
+      useNode ?? contribution
+    );
+  }
+
   const value = unwrapTypedExpression(contribution);
 
   if (value?.type === 'ObjectExpression') return value.properties;
@@ -1783,10 +2026,43 @@ const getStaticExtensionProperties = (contribution) => {
   return [];
 };
 
+const getStaticFunctionResults = (callback) => {
+  const body = unwrapTypedExpression(callback?.body);
+
+  if (!body) return [];
+  if (body.type !== 'BlockStatement') return [body];
+
+  const results = [];
+  const visitReturns = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (node !== body && isFunction(node)) return;
+    if (node.type === 'ReturnStatement') {
+      const result = unwrapTypedExpression(node.argument);
+
+      if (result) results.push(result);
+
+      return;
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const child of value) visitReturns(child);
+      } else {
+        visitReturns(value);
+      }
+    }
+  };
+
+  visitReturns(body);
+
+  return results;
+};
+
 const defaultPluginCreatorNames = new Set([
   'createBasePlugin',
   'createPlatePlugin',
 ]);
+const defaultPliteExtensionCreatorNames = new Set(['defineEditorExtension']);
+const pliteModulePattern = /^@platejs\/plite(?:\/|$)/;
 const isCallExpressionNode = (node) =>
   node?.type === 'CallExpression' || node?.type === 'OptionalCallExpression';
 
@@ -1989,6 +2265,122 @@ const resolveStaticObjectProperty = (
   }
 
   return result;
+};
+
+const resolveStaticObjectProperties = (
+  node,
+  valueBindings,
+  staticStringBindings,
+  seen = new Set(),
+  position = node?.start ?? Number.POSITIVE_INFINITY,
+  useNode = node
+) => {
+  const value = unwrapTypedExpression(node);
+
+  if (isFunction(value)) {
+    return getStaticFunctionResults(value).flatMap((result) =>
+      resolveStaticObjectProperties(
+        result,
+        valueBindings,
+        staticStringBindings,
+        new Set(seen),
+        result.start ?? position,
+        result
+      )
+    );
+  }
+  if (value?.type === 'ObjectExpression') {
+    return value.properties.flatMap((property) =>
+      property.type === 'SpreadElement'
+        ? resolveStaticObjectProperties(
+            property.argument,
+            valueBindings,
+            staticStringBindings,
+            new Set(seen),
+            property.start ?? position,
+            property
+          )
+        : [property]
+    );
+  }
+
+  const path = getResolvedStaticExpressionPath(
+    value,
+    staticStringBindings,
+    position,
+    useNode
+  );
+
+  if (!path || seen.has(path)) return [];
+
+  const event = valueBindings.getEventAt(path, position, useNode);
+
+  if (!event) return [];
+
+  const nextSeen = new Set(seen);
+
+  nextSeen.add(path);
+
+  return resolveStaticObjectProperties(
+    event.value,
+    valueBindings,
+    staticStringBindings,
+    nextSeen,
+    event.position,
+    event.node
+  );
+};
+
+const isFullyResolvedStaticObject = (
+  node,
+  valueBindings,
+  staticStringBindings,
+  seen = new Set(),
+  position = node?.start ?? Number.POSITIVE_INFINITY,
+  useNode = node
+) => {
+  const value = unwrapTypedExpression(node);
+
+  if (value?.type === 'ObjectExpression') {
+    return value.properties.every(
+      (property) =>
+        property.type !== 'SpreadElement' ||
+        isFullyResolvedStaticObject(
+          property.argument,
+          valueBindings,
+          staticStringBindings,
+          new Set(seen),
+          property.start ?? position,
+          property
+        )
+    );
+  }
+
+  const path = getResolvedStaticExpressionPath(
+    value,
+    staticStringBindings,
+    position,
+    useNode
+  );
+
+  if (!path || seen.has(path)) return false;
+
+  const event = valueBindings.getEventAt(path, position, useNode);
+
+  if (!event) return false;
+
+  const nextSeen = new Set(seen);
+
+  nextSeen.add(path);
+
+  return isFullyResolvedStaticObject(
+    event.value,
+    valueBindings,
+    staticStringBindings,
+    nextSeen,
+    event.position,
+    event.node
+  );
 };
 
 const resolveNamedSchemaLineage = (
@@ -2245,6 +2637,267 @@ const collectLocalPluginCreatorNames = (ast) => {
   }
 
   return names;
+};
+
+const collectLocalPliteExtensionCreatorNames = (ast) => {
+  const creators = new Set(defaultPliteExtensionCreatorNames);
+  const namespaces = new Set(['Plite']);
+  const creatorCandidates = [];
+  const namespaceCandidates = [];
+  const destructuredCandidates = [];
+  const addCandidate = (name, value) => {
+    if (!name) return;
+
+    creatorCandidates.push({ name, value });
+    namespaceCandidates.push({ name, value });
+  };
+  const addDestructuredCandidates = (pattern, source) => {
+    if (pattern?.type !== 'ObjectPattern') return;
+
+    for (const property of pattern.properties) {
+      if (
+        property.type !== 'ObjectProperty' ||
+        getPropertyName(property.key) !== 'defineEditorExtension'
+      ) {
+        continue;
+      }
+
+      const value = unwrapTypedExpression(property.value);
+      const identifier =
+        value?.type === 'Identifier'
+          ? value
+          : value?.type === 'AssignmentPattern' &&
+              value.left?.type === 'Identifier'
+            ? value.left
+            : undefined;
+
+      if (identifier) {
+        destructuredCandidates.push({ name: identifier.name, source });
+      }
+    }
+  };
+  const isNamespaceValue = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return current?.type === 'Identifier' && namespaces.has(current.name);
+  };
+  const isCreatorValue = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    if (current?.type === 'Identifier') return creators.has(current.name);
+    if (
+      current?.type !== 'MemberExpression' &&
+      current?.type !== 'OptionalMemberExpression'
+    ) {
+      return false;
+    }
+
+    return (
+      getStaticMemberName(current) === 'defineEditorExtension' &&
+      isNamespaceValue(current.object)
+    );
+  };
+
+  walkAst(ast, (node) => {
+    if (
+      node.type === 'ImportDeclaration' &&
+      pliteModulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        if (specifier.type === 'ImportNamespaceSpecifier') {
+          namespaces.add(specifier.local.name);
+        }
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          getPropertyName(specifier.imported) === 'defineEditorExtension'
+        ) {
+          creators.add(specifier.local.name);
+        }
+      }
+
+      return;
+    }
+    if (node.type === 'VariableDeclarator') {
+      if (node.id?.type === 'Identifier') {
+        addCandidate(node.id.name, node.init);
+      } else {
+        addDestructuredCandidates(node.id, node.init);
+      }
+
+      return;
+    }
+    if (node.type === 'AssignmentExpression' && node.operator === '=') {
+      if (node.left?.type === 'Identifier') {
+        addCandidate(node.left.name, node.right);
+      } else {
+        addDestructuredCandidates(node.left, node.right);
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const candidate of creatorCandidates) {
+      if (!creators.has(candidate.name) && isCreatorValue(candidate.value)) {
+        creators.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of namespaceCandidates) {
+      if (
+        !namespaces.has(candidate.name) &&
+        isNamespaceValue(candidate.value)
+      ) {
+        namespaces.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of destructuredCandidates) {
+      if (!creators.has(candidate.name) && isNamespaceValue(candidate.source)) {
+        creators.add(candidate.name);
+        changed = true;
+      }
+    }
+  }
+
+  return {
+    hasCall(node) {
+      if (!isCallExpressionNode(node)) return false;
+
+      const callee = unwrapTypedExpression(node.callee);
+
+      if (callee?.type === 'Identifier') return creators.has(callee.name);
+      if (
+        callee?.type !== 'MemberExpression' &&
+        callee?.type !== 'OptionalMemberExpression'
+      ) {
+        return false;
+      }
+
+      return (
+        getStaticMemberName(callee) === 'defineEditorExtension' &&
+        isNamespaceValue(callee.object)
+      );
+    },
+  };
+};
+
+const collectLocalModuleCallableNames = (
+  ast,
+  { exportedName, modulePattern }
+) => {
+  const callables = new Set();
+  const namespaces = new Set();
+  const callableCandidates = [];
+  const namespaceCandidates = [];
+  const destructuredCandidates = [];
+  const isNamespace = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return current?.type === 'Identifier' && namespaces.has(current.name);
+  };
+  const isCallable = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return (
+      (current?.type === 'Identifier' && callables.has(current.name)) ||
+      ((current?.type === 'MemberExpression' ||
+        current?.type === 'OptionalMemberExpression') &&
+        getStaticMemberName(current) === exportedName &&
+        isNamespace(current.object))
+    );
+  };
+
+  walkAst(ast, (node) => {
+    if (
+      node.type === 'ImportDeclaration' &&
+      modulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        if (specifier.type === 'ImportNamespaceSpecifier') {
+          namespaces.add(specifier.local.name);
+        }
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          getPropertyName(specifier.imported) === exportedName
+        ) {
+          callables.add(specifier.local.name);
+        }
+      }
+
+      return;
+    }
+    if (node.type !== 'VariableDeclarator') return;
+
+    if (node.id?.type === 'Identifier') {
+      callableCandidates.push({ name: node.id.name, value: node.init });
+      namespaceCandidates.push({ name: node.id.name, value: node.init });
+
+      return;
+    }
+    if (node.id?.type !== 'ObjectPattern') return;
+
+    for (const property of node.id.properties) {
+      if (
+        property.type !== 'ObjectProperty' ||
+        getPropertyName(property.key) !== exportedName
+      ) {
+        continue;
+      }
+
+      const value = unwrapTypedExpression(property.value);
+      const identifier =
+        value?.type === 'Identifier'
+          ? value
+          : value?.type === 'AssignmentPattern' &&
+              value.left?.type === 'Identifier'
+            ? value.left
+            : undefined;
+
+      if (identifier) {
+        destructuredCandidates.push({
+          name: identifier.name,
+          source: node.init,
+        });
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const candidate of callableCandidates) {
+      if (!callables.has(candidate.name) && isCallable(candidate.value)) {
+        callables.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of namespaceCandidates) {
+      if (!namespaces.has(candidate.name) && isNamespace(candidate.value)) {
+        namespaces.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of destructuredCandidates) {
+      if (!callables.has(candidate.name) && isNamespace(candidate.source)) {
+        callables.add(candidate.name);
+        changed = true;
+      }
+    }
+  }
+
+  return {
+    hasCall(node) {
+      if (!isCallExpressionNode(node)) return false;
+
+      return isCallable(node.callee);
+    },
+  };
 };
 
 const collectLocalPlateEditorConstructorNames = (ast, staticStringBindings) => {
@@ -2855,14 +3508,105 @@ const isDefineCodecsCall = (property) => {
   );
 };
 
-const getExtensionStageFields = (contribution, staticStringBindings) =>
-  getStaticExtensionProperties(contribution)
+const getOpaqueExtensionStageIdentity = (
+  contribution,
+  staticStringBindings
+) => {
+  let value = unwrapTypedExpression(contribution);
+
+  if (isFunction(value)) {
+    const results = getStaticFunctionResults(value);
+
+    if (results.length !== 1) return `$returns:${results.length}`;
+
+    value = results[0];
+  }
+  if (isCallExpressionNode(value)) {
+    const factory = getResolvedStaticExpressionPath(
+      value.callee,
+      staticStringBindings,
+      value.start,
+      value
+    );
+
+    return `$factory:${factory ?? '<dynamic>'}`;
+  }
+  if (value?.type === 'ArrayExpression') {
+    const entries = value.elements.map((element) => {
+      const item = unwrapTypedExpression(element);
+
+      if (isCallExpressionNode(item)) {
+        const callee = unwrapTypedExpression(item.callee);
+
+        if (isFunction(callee)) {
+          const results = getStaticFunctionResults(callee);
+          const fields = results.flatMap((result) =>
+            result?.type === 'ObjectExpression'
+              ? result.properties.map((property) =>
+                  property.type === 'SpreadElement'
+                    ? '...'
+                    : (getResolvedObjectPropertyName(
+                        property,
+                        staticStringBindings
+                      ) ?? '?')
+                )
+              : [`$${result?.type ?? 'missing'}`]
+          );
+
+          return `$iife:${fields.sort().join(',')}`;
+        }
+
+        return `$factory:${
+          getResolvedStaticExpressionPath(
+            item.callee,
+            staticStringBindings,
+            item.start,
+            item
+          ) ?? '<dynamic>'
+        }`;
+      }
+      if (item?.type !== 'ObjectExpression') {
+        return `$${item?.type ?? 'hole'}`;
+      }
+
+      return item.properties
+        .map((property) =>
+          property.type === 'SpreadElement'
+            ? '...'
+            : (getResolvedObjectPropertyName(property, staticStringBindings) ??
+              '?')
+        )
+        .sort()
+        .join(',');
+    });
+
+    return `$array:${entries.join('|')}`;
+  }
+  if (value?.type === 'ObjectExpression') return '$object';
+
+  const path = getResolvedStaticExpressionPath(
+    value,
+    staticStringBindings,
+    value?.start,
+    value
+  );
+
+  return path ? `$value:${path}` : `$node:${value?.type ?? 'missing'}`;
+};
+
+const getExtensionStageFields = (contribution, staticStringBindings) => {
+  const fields = getStaticExtensionProperties(contribution)
     .map((property) =>
       property.type === 'SpreadElement'
         ? '...'
         : (getResolvedObjectPropertyName(property, staticStringBindings) ?? '?')
     )
     .sort();
+
+  return fields.length > 0
+    ? fields
+    : [getOpaqueExtensionStageIdentity(contribution, staticStringBindings)];
+};
 
 const getExtendChainStages = (node, staticStringBindings) => {
   const stages = [];
@@ -2880,6 +3624,53 @@ const getExtendChainStages = (node, staticStringBindings) => {
 
   return stages;
 };
+
+const getPluginCreatorFromBuilderChain = (node, pluginCreatorNames) => {
+  let current = unwrapTypedExpression(node);
+
+  while (isCallExpressionNode(current)) {
+    if (getPluginCreatorCallKind(current, pluginCreatorNames)) return current;
+
+    const callee = unwrapTypedExpression(current.callee);
+
+    if (
+      callee?.type !== 'MemberExpression' &&
+      callee?.type !== 'OptionalMemberExpression'
+    ) {
+      return;
+    }
+
+    current = unwrapTypedExpression(callee.object);
+  }
+};
+
+const countStageField = (stages, field) =>
+  stages.reduce(
+    (count, stage) =>
+      count +
+      stage.reduce((stageCount, signature) => {
+        const entries = signature.startsWith('$array:')
+          ? signature.slice('$array:'.length).split('|')
+          : [signature];
+
+        return (
+          stageCount +
+          entries.reduce((entryCount, entry) => {
+            const fields = entry.startsWith('$iife:')
+              ? entry.slice('$iife:'.length).split(',')
+              : entry.startsWith('$')
+                ? []
+                : entry.split(',');
+
+            return (
+              entryCount +
+              fields.filter((candidate) => candidate === field).length
+            );
+          }, 0)
+        );
+      }, 0),
+    0
+  );
 
 const hasExactExtendStageFields = (actual, expected) =>
   actual.length === expected.length &&
@@ -3234,6 +4025,12 @@ const getStaticPliteElementMap = (node, staticStringBindings) => {
 export function auditPlateSchemaSource(source, file = 'fixture.ts') {
   const ast = parsePlateSource(source, file);
   const localPluginCreatorNames = collectLocalPluginCreatorNames(ast);
+  const localPliteExtensionCreatorNames =
+    collectLocalPliteExtensionCreatorNames(ast);
+  const localReactFactoryNames = collectLocalModuleCallableNames(ast, {
+    exportedName: 'react',
+    modulePattern: pliteReactModulePattern,
+  });
   const staticStringBindings = collectStaticStringBindings(ast);
   const localPlateEditorConstructorNames =
     collectLocalPlateEditorConstructorNames(ast, staticStringBindings);
@@ -3251,20 +4048,155 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     staticStringBindings
   );
   const issues = [];
-  const allowedExplicitSchemaFactoryCount =
-    intentionalExplicitSchemaFactoryCounts.get(file) ?? 0;
   const allowedRawCodecNegativeContractCount =
     intentionalRawCodecNegativeContractCounts.get(file) ?? 0;
+  const allowedRuntimeRenderNodeNegativeContractCount =
+    intentionalRuntimeRenderNodeNegativeContractCounts.get(file) ?? 0;
+  const allowedPliteConfigNegativeContractCount =
+    intentionalPliteConfigNegativeContractCounts.get(file) ?? 0;
+  const allowedReactFactoryNegativeContractCount =
+    intentionalReactFactoryNegativeContractCounts.get(file) ?? 0;
   const allowedRawSchemaQueryCount =
     intentionalRawSchemaQueryCounts.get(file) ?? 0;
-  let explicitSchemaFactoryCount = 0;
   const namedSchemaLineageCounts = new Map();
   let productionExtendChainCount = 0;
   const productionExtendChains = [];
+  let pliteConfigNegativeContractCount = 0;
+  let reactFactoryNegativeContractCount = 0;
   let rawCodecNegativeContractCount = 0;
   let rawSchemaQueryCount = 0;
+  let runtimeRenderNodeNegativeContractCount = 0;
 
   const report = (node, reason) => issues.push(createIssue(file, node, reason));
+  const getAuthorProperties = (value, owner = value) =>
+    getStaticExtensionProperties(
+      value,
+      staticValueBindings,
+      staticStringBindings,
+      owner?.start ?? value?.start,
+      owner
+    );
+  const isIntentionalRuntimeNegativeDefinitionField = (
+    property,
+    properties
+  ) => {
+    const key = getResolvedObjectPropertyName(property, staticStringBindings);
+    const nameProperty = properties.find(
+      (candidate) =>
+        getResolvedObjectPropertyName(candidate, staticStringBindings) ===
+        'name'
+    );
+    const name =
+      nameProperty?.type === 'ObjectProperty'
+        ? getStaticString(unwrapTypedExpression(nameProperty.value))
+        : undefined;
+
+    return (
+      !!name &&
+      !!key &&
+      (intentionalRuntimeNegativeDefinitionFields
+        .get(file)
+        ?.has(`${name}:${key}`) ??
+        false)
+    );
+  };
+  const reportPrefixedOnHandlers = (property) => {
+    const key = getResolvedObjectPropertyName(property, staticStringBindings);
+
+    if (key !== 'on' || property.type !== 'ObjectProperty') return;
+
+    for (const handler of resolveStaticObjectProperties(
+      property.value,
+      staticValueBindings,
+      staticStringBindings,
+      new Set(),
+      property.start,
+      property
+    )) {
+      const handlerName = getResolvedObjectPropertyName(
+        handler,
+        staticStringBindings
+      );
+
+      if (prefixedOnListenerPattern.test(handlerName ?? '')) {
+        report(
+          handler,
+          `plugin on listeners are prefixless; use ${handlerName[2].toLowerCase()}${handlerName.slice(3)}`
+        );
+      }
+    }
+  };
+  const getPropertyFunction = (property) => {
+    if (property?.type === 'ObjectMethod') return property;
+    if (
+      property?.type === 'ObjectProperty' &&
+      isFunction(unwrapTypedExpression(property.value))
+    ) {
+      return unwrapTypedExpression(property.value);
+    }
+  };
+  const reportPliteConfigContext = (property) => {
+    const key = getResolvedObjectPropertyName(property, staticStringBindings);
+
+    if (!['activate', 'api', 'schema', 'validate'].includes(key)) return;
+
+    const callback = getPropertyFunction(property);
+    const parameter = callback?.params[key === 'activate' ? 1 : 0];
+
+    if (parameter?.type !== 'ObjectPattern') return;
+
+    for (const binding of parameter.properties) {
+      if (
+        binding.type === 'ObjectProperty' &&
+        getResolvedObjectPropertyName(binding, staticStringBindings) ===
+          'config'
+      ) {
+        const isIntentionalNegativeContract =
+          key === 'validate' &&
+          pliteConfigNegativeContractCount <
+            allowedPliteConfigNegativeContractCount &&
+          hasPrecedingMarker(
+            source,
+            property,
+            intentionalPliteConfigNegativeMarker
+          );
+
+        if (isIntentionalNegativeContract) {
+          pliteConfigNegativeContractCount++;
+          continue;
+        }
+
+        report(
+          binding,
+          'final Plite schema/API/activation/validation contexts have no config'
+        );
+      }
+    }
+  };
+  const reportStaleCapabilityFactoryContext = (property) => {
+    const key = getResolvedObjectPropertyName(property, staticStringBindings);
+
+    if (!['api', 'read', 'update'].includes(key)) return;
+
+    const callback = getPropertyFunction(property);
+    const parameter = callback?.params[0];
+
+    if (parameter?.type !== 'ObjectPattern') return;
+
+    for (const binding of parameter.properties) {
+      const bindingName =
+        binding.type === 'ObjectProperty'
+          ? getResolvedObjectPropertyName(binding, staticStringBindings)
+          : undefined;
+
+      if (
+        bindingName &&
+        staleCapabilityFactoryContextBindings.has(bindingName)
+      ) {
+        report(binding, `stale ${key} factory context binding ${bindingName}`);
+      }
+    }
+  };
   const isLocallyCreatedPluginDescriptorExpression = (expression) =>
     isDirectCreatorExtendChain(expression, localPluginCreatorNames) ||
     localPluginDescriptorBindings.has(
@@ -3313,11 +4245,23 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     if (
       node.type === 'ImportDeclaration' &&
       baseOrStaticSourcePattern.test(file) &&
-      reactPluginEntrypointPattern.test(node.source.value)
+      reactPluginEntrypointPattern.test(node.source.value) &&
+      !plateReactAdapterEntrypointPattern.test(node.source.value)
     ) {
       report(
         node,
-        'Base/static modules cannot import the React plugin layer; bind static components through BasePlugin.configure({ component })'
+        'static/base modules cannot import a feature package live React plugin'
+      );
+    }
+
+    if (
+      node.type === 'ImportDeclaration' &&
+      baseOrStaticSourcePattern.test(file) &&
+      plateReactAdapterEntrypointPattern.test(node.source.value)
+    ) {
+      report(
+        node,
+        'static/base modules bind components with terminal BasePlugin.configure({ component }) without platejs/react'
       );
     }
 
@@ -3328,7 +4272,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     ) {
       report(
         node,
-        'Base/static kits cannot bind live registry node modules; import the static renderer'
+        'static/base kits cannot bind live registry node modules; import the static renderer'
       );
     }
 
@@ -3396,6 +4340,281 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
     if (node.type === 'Identifier' && deletedSymbols.has(node.name)) {
       report(node, `deleted Plate schema symbol ${node.name}`);
     }
+    if (
+      node.type === 'TSTypeAliasDeclaration' &&
+      containsDefinitionOfType(node.typeAnnotation) &&
+      (!node.id.name.endsWith('Definition') ||
+        (isDirectDefinitionOfDescriptor(node.typeAnnotation) &&
+          node.id.name.endsWith('PluginDefinition')))
+    ) {
+      report(
+        node.id,
+        'aliases derived with DefinitionOf use FooDefinition, never FooPluginDefinition'
+      );
+    }
+    if (
+      node.type === 'VariableDeclarator' &&
+      node.id?.type === 'Identifier' &&
+      node.id.name.endsWith('Plugin') &&
+      isExplicitPluginDescriptorAnnotation(node.id.typeAnnotation) &&
+      ancestors.some(
+        (ancestor) => ancestor.type === 'ExportNamedDeclaration'
+      ) &&
+      isPackagePluginDefinitionSource(file)
+    ) {
+      report(
+        node.id,
+        'exported package plugins infer their exact descriptor; do not force BasePlugin or PlatePlugin annotations'
+      );
+    }
+    if (
+      node.type === 'TSTypeReference' &&
+      node.typeName?.type === 'Identifier' &&
+      node.typeName.name === 'EditorExtension' &&
+      (node.typeParameters?.params.length ??
+        node.typeArguments?.params.length ??
+        0) > 1
+    ) {
+      report(
+        node,
+        'EditorExtension exposes one public Definition generic; transitive dependency requirements stay private'
+      );
+    }
+    if (
+      node.type === 'TSTypeReference' &&
+      node.typeName?.type === 'Identifier' &&
+      node.typeName.name === 'EditorExtensionDependencyReference' &&
+      (node.typeParameters?.params.length ??
+        node.typeArguments?.params.length ??
+        0) > 0
+    ) {
+      report(
+        node,
+        'EditorExtensionDependencyReference is a shallow non-generic root identity; capability/provider contracts stay internal'
+      );
+    }
+    if (
+      node.type === 'ImportDeclaration' &&
+      pliteRootModulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          internalPliteContractTypeSymbols.has(
+            getPropertyName(specifier.imported)
+          )
+        ) {
+          report(
+            specifier,
+            `${getPropertyName(specifier.imported)} is internal dependency typing; import it from @platejs/plite/internal`
+          );
+        }
+      }
+    }
+    if (
+      node.type === 'ImportDeclaration' &&
+      publicCoreModulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          internalCoreContractTypeSymbols.has(
+            getPropertyName(specifier.imported)
+          )
+        ) {
+          report(
+            specifier,
+            `${getPropertyName(specifier.imported)} is an internal Core author-to-canonical carrier and cannot be imported from a public entrypoint`
+          );
+        }
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          internalCoreCompilerTypeSymbols.has(
+            getPropertyName(specifier.imported)
+          )
+        ) {
+          report(
+            specifier,
+            `${getPropertyName(specifier.imported)} is internal Core compiler typing and cannot be imported from a public entrypoint`
+          );
+        }
+      }
+    }
+    if (
+      node.type === 'ExportNamedDeclaration' &&
+      node.source &&
+      pliteRootModulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        const exportedName = getPropertyName(specifier.local);
+
+        if (internalPliteContractTypeSymbols.has(exportedName)) {
+          report(
+            specifier,
+            `${exportedName} is internal dependency typing; re-export it only from @platejs/plite/internal`
+          );
+        }
+      }
+    }
+    if (
+      file === 'packages/plite/src/index.ts' &&
+      node.type === 'ExportSpecifier'
+    ) {
+      const exportedName = getPropertyName(node.local);
+
+      if (internalPliteContractTypeSymbols.has(exportedName)) {
+        report(
+          node,
+          `${exportedName} is internal dependency typing and cannot be root-exported`
+        );
+      }
+    }
+    if (
+      file === 'packages/core/src/index.ts' &&
+      node.type === 'ExportSpecifier'
+    ) {
+      const exportedName = getPropertyName(node.local);
+
+      if (internalCoreContractTypeSymbols.has(exportedName)) {
+        report(
+          node,
+          `${exportedName} is internal Core author-to-canonical typing and cannot be root-exported`
+        );
+      }
+    }
+    if (
+      file === 'packages/core/src/internal/index.ts' &&
+      node.type === 'ExportSpecifier'
+    ) {
+      const exportedName = getPropertyName(node.local);
+
+      if (privateCoreDefinitionCarrierSymbols.has(exportedName)) {
+        report(
+          node,
+          `${exportedName} is a private definition carrier; DefinitionOf is the sole public extractor`
+        );
+      }
+    }
+    if (
+      file.startsWith('packages/core/src/') &&
+      !file.includes('.internal.') &&
+      node.type === 'ExportSpecifier'
+    ) {
+      const exportedName = getPropertyName(node.local);
+
+      if (internalCoreCompilerTypeSymbols.has(exportedName)) {
+        report(
+          node,
+          `${exportedName} is internal Core compiler typing and cannot be public-exported`
+        );
+      }
+    }
+    if (
+      file.startsWith('packages/core/src/') &&
+      !file.includes('.internal.') &&
+      node.type === 'ExportAllDeclaration' &&
+      node.source.value.includes('.internal')
+    ) {
+      report(
+        node,
+        'public Core barrels cannot star-export internal compiler modules'
+      );
+    }
+    if (
+      node.type === 'TSTypeAliasDeclaration' &&
+      internalCoreCompilerTypeSymbols.has(node.id.name) &&
+      ancestors.some(
+        (ancestor) => ancestor.type === 'ExportNamedDeclaration'
+      ) &&
+      !file.includes('.internal.')
+    ) {
+      report(
+        node.id,
+        `${node.id.name} is a Core compiler alias and must be declared only in an internal module`
+      );
+    }
+    if (
+      (node.type === 'CallExpression' ||
+        node.type === 'OptionalCallExpression') &&
+      localReactFactoryNames.hasCall(node)
+    ) {
+      const options = node.arguments.length === 1 ? node.arguments[0] : null;
+      const properties = options
+        ? getAuthorProperties(options, node).filter(
+            (property) => property.type !== 'SpreadElement'
+          )
+        : [];
+      const propertyNames = properties.map((property) =>
+        getResolvedObjectPropertyName(property, staticStringBindings)
+      );
+
+      if (
+        properties.length !== 1 ||
+        propertyNames[0] !== 'dom' ||
+        node.arguments.length !== 1 ||
+        !isFullyResolvedStaticObject(
+          options,
+          staticValueBindings,
+          staticStringBindings,
+          new Set(),
+          node.start,
+          node
+        )
+      ) {
+        const isIntentionalNegativeContract =
+          reactFactoryNegativeContractCount <
+            allowedReactFactoryNegativeContractCount &&
+          hasPrecedingMarker(
+            source,
+            node,
+            intentionalReactFactoryNegativeMarker
+          );
+
+        if (isIntentionalNegativeContract) {
+          reactFactoryNegativeContractCount++;
+        } else {
+          report(
+            node,
+            'react requires exactly one { dom } object containing the exact DOM descriptor'
+          );
+        }
+      }
+    }
+    if (
+      node.type === 'Identifier' &&
+      node.name === 'editorExtensionDefinition' &&
+      file !== plitePrivateWitnessOwner &&
+      (file.startsWith('packages/') || file.startsWith('apps/'))
+    ) {
+      report(node, 'private Plite definition witness leaked outside its owner');
+    }
+    if (node.type === 'Identifier') {
+      const parent = ancestors.at(-1);
+      const isDeletedTypeReference =
+        deletedPluginTypeSymbols.has(node.name) &&
+        ((parent?.type === 'TSTypeReference' && parent.typeName === node) ||
+          (parent?.type === 'ImportSpecifier' &&
+            plateModulePattern.test(ancestors.at(-2)?.source?.value ?? '') &&
+            (parent.imported === node || parent.local === node)));
+      const deletedContractMemberOwner =
+        (parent?.type === 'MemberExpression' ||
+          parent?.type === 'OptionalMemberExpression') &&
+        parent.property === node
+          ? getStaticExpressionPath(parent.object)
+          : undefined;
+      const isDeletedContractMember =
+        deletedPluginContractMemberKeys.has(node.name) &&
+        ((deletedContractMemberOwner !== undefined &&
+          pluginDescriptorOwnerPathPattern.test(deletedContractMemberOwner)) ||
+          (parent?.type === 'TSPropertySignature' && parent.key === node));
+
+      if (
+        (isDeletedTypeReference || isDeletedContractMember) &&
+        (file.startsWith('packages/') || file.startsWith('apps/'))
+      ) {
+        report(node, `deleted Plate plugin contract symbol ${node.name}`);
+      }
+    }
 
     const staticString = getStaticString(node);
 
@@ -3409,7 +4628,28 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       report(node, 'private Plate block-content schema group');
     }
 
-    if (node.type === 'MemberExpression' && !node.computed) {
+    if (
+      (node.type === 'MemberExpression' ||
+        node.type === 'OptionalMemberExpression') &&
+      !node.computed
+    ) {
+      if (
+        packageTestSourcePattern.test(file) &&
+        getStaticExpressionPath(node) === 'editor.tx'
+      ) {
+        report(
+          node,
+          'test fixtures use the canonical root editor.update channel'
+        );
+      }
+
+      if (getStaticExpressionPath(node) === 'editor.api.clipboard') {
+        report(
+          node,
+          'DOM clipboard APIs project through editor.api.dom.clipboard'
+        );
+      }
+
       const owner = node.object;
       const readsDeletedNodeField =
         owner?.type === 'Identifier'
@@ -3437,21 +4677,47 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         key === 'render' && node.value?.type === 'ObjectExpression'
           ? getObjectProperty(node.value, 'node')
           : undefined;
-      const isIntentionalNegativeRenderNode =
+      const isIntentionalTypedNegativeRenderNode =
         file === intentionalRenderNodeNegativeContract &&
         nodeComponent &&
         hasExpectError(source, nodeComponent) &&
         ancestors.some(
           (ancestor) =>
             ancestor.type === 'CallExpression' &&
-            ancestor.callee.type === 'Identifier' &&
-            ancestor.callee.name === 'toPlatePlugin'
+            ((ancestor.callee.type === 'Identifier' &&
+              ancestor.callee.name === 'toPlatePlugin') ||
+              !!getPluginCreatorCallKind(ancestor, localPluginCreatorNames))
         );
+      const isIntentionalRuntimeNegativeRenderNode =
+        nodeComponent &&
+        runtimeRenderNodeNegativeContractCount <
+          allowedRuntimeRenderNodeNegativeContractCount &&
+        hasPrecedingMarker(
+          source,
+          nodeComponent,
+          intentionalRuntimeRenderNodeNegativeMarker
+        ) &&
+        ancestors.some(
+          (ancestor) =>
+            ancestor.type === 'CallExpression' &&
+            ancestor.callee.type === 'MemberExpression' &&
+            !ancestor.callee.computed &&
+            ancestor.callee.object.type === 'Identifier' &&
+            ancestor.callee.object.name === 'Reflect' &&
+            getPropertyName(ancestor.callee.property) === 'apply' &&
+            ancestor.arguments[0]?.type === 'Identifier' &&
+            ancestor.arguments[0].name === 'createBasePlugin'
+        );
+
+      if (isIntentionalRuntimeNegativeRenderNode) {
+        runtimeRenderNodeNegativeContractCount++;
+      }
 
       if (
         nodeComponent &&
         !internalRenderNodeOwners.has(file) &&
-        !isIntentionalNegativeRenderNode
+        !isIntentionalTypedNegativeRenderNode &&
+        !isIntentionalRuntimeNegativeRenderNode
       ) {
         report(
           nodeComponent,
@@ -3538,12 +4804,12 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       }
 
       if (
-        key === 'targetPluginKeys' &&
+        key === 'targetPluginNames' &&
         isInsidePluginInitialState(ancestors, localPluginCreatorNames)
       ) {
         report(
           node,
-          'schema target descriptors belong in top-level targetPluginKeys'
+          'schema target descriptors belong in top-level targetPluginNames'
         );
       }
 
@@ -3606,6 +4872,22 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         (node.callee.type === 'MemberExpression' ||
           node.callee.type === 'OptionalMemberExpression') &&
         isLocallyCreatedPluginDescriptorExpression(node.callee.object);
+      const memberCallOwnerPath = getStaticExpressionPath(memberCallOwner);
+      const callsLikelyPluginClone =
+        memberCallName !== 'clone' ||
+        callsLocallyCreatedPluginDescriptor ||
+        pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? '');
+
+      if (
+        memberCallName === 'assign' &&
+        getStaticExpressionPath(node.callee.object) === 'Object' &&
+        getStaticExpressionPath(node.arguments[0]) === 'editor.api'
+      ) {
+        report(
+          node,
+          'extension APIs project through editor.api.<name>, not Object.assign(editor.api, extensionApi)'
+        );
+      }
 
       if (
         hasDynamicComputedMember &&
@@ -3619,20 +4901,67 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         );
       }
 
+      const configuresComponent =
+        memberCallName === 'configure' &&
+        getAuthorProperties(node.arguments[0], node).some(
+          (property) =>
+            getResolvedObjectPropertyName(property, staticStringBindings) ===
+            'component'
+        );
+      const configuresConvertedBaseDescriptor =
+        memberCallOwner?.type === 'CallExpression' &&
+        (memberCallOwner.callee.type === 'Identifier'
+          ? memberCallOwner.callee.name === 'toPlatePlugin'
+          : getStaticMemberName(memberCallOwner.callee) === 'toPlatePlugin');
+      const configureOwnerName = memberCallOwnerPath?.split('.').at(-1);
+      const configureOwnerCreator = getPluginCreatorFromBuilderChain(
+        memberCallOwner,
+        localPluginCreatorNames
+      );
+      const configuresBaseDescriptor =
+        basePluginDescriptorNamePattern.test(configureOwnerName ?? '') ||
+        getPluginCreatorCallKind(
+          configureOwnerCreator,
+          localPluginCreatorNames
+        ) === 'createBasePlugin';
+
       if (
-        baseOrStaticSourcePattern.test(file) &&
-        node.callee.type === 'Identifier' &&
-        node.callee.name === 'toPlatePlugin'
+        configuresComponent &&
+        configuresConvertedBaseDescriptor &&
+        isProductionPluginAuthoringFile(file) &&
+        (file.startsWith('apps/') || file.startsWith('packages/'))
       ) {
         report(
           node,
-          'Base/static modules use BasePlugin.configure({ component }); toPlatePlugin belongs in live React adapters'
+          'terminal consumers configure the Base descriptor directly; owning React adapters pass component to toPlatePlugin() while publishing the Plate descriptor'
+        );
+      } else if (
+        baseOrStaticSourcePattern.test(file) &&
+        configuresComponent &&
+        configuresConvertedBaseDescriptor
+      ) {
+        report(
+          node,
+          'static/base component bindings use BasePlugin.configure({ component }) without a Plate React adapter'
+        );
+      }
+
+      if (
+        baseOrStaticSourcePattern.test(file) &&
+        configuresComponent &&
+        !configuresConvertedBaseDescriptor &&
+        !configuresBaseDescriptor
+      ) {
+        report(
+          node,
+          'static/base component bindings require the owning BasePlugin and its terminal .configure({ component })'
         );
       }
 
       if (
         memberCallName &&
         deletedPluginBuilderMethods.has(memberCallName) &&
+        callsLikelyPluginClone &&
         !isForeignStoreSelectorExtension(node, file)
       ) {
         report(
@@ -3643,14 +4972,64 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         );
       }
 
+      if (
+        memberCallName === 'getApi' &&
+        memberCallOwner?.type === 'Identifier' &&
+        memberCallOwner.name === 'editor'
+      ) {
+        report(
+          node,
+          'extension APIs use editor.api.<name> or editor.extension(Extension).api'
+        );
+      }
+
       if (memberCallName === 'extend' && isCallExpressionNode(node)) {
-        for (const property of getStaticExtensionProperties(
-          node.arguments[0]
-        )) {
+        for (const property of getAuthorProperties(node.arguments[0], node)) {
+          const key = getResolvedObjectPropertyName(
+            property,
+            staticStringBindings
+          );
+
+          reportPrefixedOnHandlers(property);
+          reportStaleCapabilityFactoryContext(property);
+
+          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+            report(property, `deleted Plate plugin definition field ${key}`);
+          }
+
           if (
-            getResolvedObjectPropertyName(property, staticStringBindings) !==
-            'codecs'
+            key === 'component' &&
+            (callsLocallyCreatedPluginDescriptor ||
+              pluginDescriptorOwnerPathPattern.test(
+                memberCallOwnerPath ?? ''
+              )) &&
+            !(
+              file === intentionalRenderNodeNegativeContract &&
+              hasExpectError(source, node)
+            )
           ) {
+            report(
+              property,
+              'plugin .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement'
+            );
+          }
+
+          if (
+            key &&
+            factoryOnlyCapabilityKeys.has(key) &&
+            isStaticCapabilityDeclaration(property)
+          ) {
+            report(property, `plugin ${key} must be declared as a factory`);
+          }
+
+          if (
+            key === 'api' &&
+            (getCapabilityFactoryParameterCount(property) ?? 0) > 1
+          ) {
+            report(property, 'plugin api factory receives one context object');
+          }
+
+          if (key !== 'codecs') {
             continue;
           }
 
@@ -3695,9 +5074,30 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           isLocallyCreatedPluginDescriptorExpression(node.callee.object)
         ) {
           const stages = getExtendChainStages(node, staticStringBindings);
+          const creator = getPluginCreatorFromBuilderChain(
+            node,
+            localPluginCreatorNames
+          );
+          const authorStages = creator
+            ? [
+                getExtensionStageFields(
+                  creator.arguments[0],
+                  staticStringBindings
+                ),
+                ...stages,
+              ]
+            : stages;
 
           productionExtendChainCount++;
           productionExtendChains.push(stages);
+
+          if (countStageField(authorStages, 'commands') > 1) {
+            report(
+              node,
+              'replacement plugin commands must have one ordered owner factory; .extend() does not concatenate command declarations'
+            );
+          }
+
           const expected =
             intentionalProductionExtendStageChains.get(file) ?? [];
 
@@ -3714,27 +5114,82 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         }
       }
 
+      if (memberCallName === 'configure' && isCallExpressionNode(node)) {
+        for (const property of getAuthorProperties(node.arguments[0], node)) {
+          const key = getResolvedObjectPropertyName(
+            property,
+            staticStringBindings
+          );
+
+          reportPrefixedOnHandlers(property);
+          reportStaleCapabilityFactoryContext(property);
+
+          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+            report(property, `deleted Plate plugin definition field ${key}`);
+          }
+
+          if (key === 'api') {
+            report(
+              property,
+              'plugin api is an author factory and cannot be configured'
+            );
+          }
+        }
+      }
+
       if (
         pluginCreatorKind &&
         !isIntentionalRuntimeNegativeConstructor &&
-        node.arguments[0]?.type === 'ObjectExpression'
+        node.arguments[0]
       ) {
-        for (const property of node.arguments[0].properties) {
+        const authorProperties = getAuthorProperties(node.arguments[0], node);
+
+        if (
+          (node.typeParameters?.params.length > 0 ||
+            node.typeArguments?.params.length > 0) &&
+          !hasExpectError(source, node)
+        ) {
+          report(
+            node,
+            'Plate plugin factories infer one definition from the author object'
+          );
+        }
+
+        for (const property of authorProperties) {
           const key =
             property.type === 'ObjectProperty' ||
             property.type === 'ObjectMethod'
               ? getResolvedObjectPropertyName(property, staticStringBindings)
               : undefined;
 
+          reportPrefixedOnHandlers(property);
+          reportStaleCapabilityFactoryContext(property);
+
+          if (key === 'key') {
+            report(property, 'Plate plugin identity uses name instead of key');
+          }
+
+          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+            report(property, `deleted Plate plugin definition field ${key}`);
+          }
+
           if (
-            pluginCreatorKind === 'createBasePlugin' &&
-            key === 'component' &&
-            !hasExpectError(source, property)
-          ) {
-            report(
+            key &&
+            factoryOnlyCapabilityKeys.has(key) &&
+            isStaticCapabilityDeclaration(property) &&
+            !isIntentionalRuntimeNegativeDefinitionField(
               property,
-              'createBasePlugin stays renderer-neutral; bind static components through terminal BasePlugin.configure({ component })'
-            );
+              authorProperties
+            )
+          ) {
+            report(property, `plugin ${key} must be declared as a factory`);
+          }
+
+          if (
+            key === 'api' &&
+            (getCapabilityFactoryParameterCount(property) ?? 0) > 1
+          ) {
+            report(property, 'plugin api factory receives one context object');
           }
 
           if (key === 'codecs' && !isDefineCodecsCall(property)) {
@@ -3753,6 +5208,60 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
               report(
                 property,
                 'plugin codec declarations must use the context-bound defineCodecs(...) helper'
+              );
+            }
+          }
+        }
+      }
+
+      if (localPliteExtensionCreatorNames.hasCall(node)) {
+        if (
+          node.typeParameters?.params.length > 0 ||
+          node.typeArguments?.params.length > 0
+        ) {
+          report(
+            node,
+            'defineEditorExtension infers one definition from its author object'
+          );
+        }
+
+        if (node.arguments[0]) {
+          for (const property of getAuthorProperties(node.arguments[0], node)) {
+            const key =
+              property.type === 'ObjectProperty' ||
+              property.type === 'ObjectMethod'
+                ? getResolvedObjectPropertyName(property, staticStringBindings)
+                : undefined;
+
+            reportPrefixedOnHandlers(property);
+            reportPliteConfigContext(property);
+            reportStaleCapabilityFactoryContext(property);
+
+            if (key && deletedPliteExtensionDefinitionKeys.has(key)) {
+              report(
+                property,
+                `deleted Plite extension definition field ${key}`
+              );
+            }
+
+            if (
+              key &&
+              factoryOnlyCapabilityKeys.has(key) &&
+              isStaticCapabilityDeclaration(property)
+            ) {
+              report(
+                property,
+                `extension ${key} must be declared as a factory`
+              );
+            }
+
+            if (
+              key === 'api' &&
+              (getCapabilityFactoryParameterCount(property) ?? 0) > 1
+            ) {
+              report(
+                property,
+                'extension api factory receives one context object'
               );
             }
           }
@@ -3811,27 +5320,6 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
         }
       }
 
-      if (
-        pluginCreatorKind &&
-        !isIntentionalRuntimeNegativeConstructor &&
-        (node.typeParameters?.params.length > 0 ||
-          node.typeArguments?.params.length > 0) &&
-        getResolvedObjectProperty(
-          node.arguments[0],
-          'schema',
-          staticStringBindings
-        )
-      ) {
-        explicitSchemaFactoryCount++;
-
-        if (explicitSchemaFactoryCount > allowedExplicitSchemaFactoryCount) {
-          report(
-            node,
-            'schema-bearing plugin factories must infer their descriptor before deriving the plugin config type'
-          );
-        }
-      }
-
       const elements = getStaticPliteElementMap(node, staticStringBindings);
 
       for (const elementProperty of elements?.properties ?? []) {
@@ -3885,7 +5373,7 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
           ) {
             report(
               property,
-              'contextual plugin configure only accepts explicit initialState, handlers, override, render, and shortcuts overrides'
+              'contextual plugin configure only accepts explicit initialState, on, override, render, and shortcuts overrides'
             );
           }
         }
@@ -3939,10 +5427,35 @@ export function auditPlateSchemaSource(source, file = 'fixture.ts') {
       `raw codec negative-contract allowlist expects ${allowedRawCodecNegativeContractCount} marked declaration${allowedRawCodecNegativeContractCount === 1 ? '' : 's'} but found ${rawCodecNegativeContractCount}`
     );
   }
-  if (explicitSchemaFactoryCount < allowedExplicitSchemaFactoryCount) {
+  if (
+    runtimeRenderNodeNegativeContractCount <
+    allowedRuntimeRenderNodeNegativeContractCount
+  ) {
     report(
       ast,
-      `explicit schema factory allowlist expects ${allowedExplicitSchemaFactoryCount} calls but found ${explicitSchemaFactoryCount}`
+      `runtime render.node negative-contract allowlist expects ${allowedRuntimeRenderNodeNegativeContractCount} marked declaration${allowedRuntimeRenderNodeNegativeContractCount === 1 ? '' : 's'} but found ${runtimeRenderNodeNegativeContractCount}`
+    );
+  }
+  if (
+    pliteConfigNegativeContractCount < allowedPliteConfigNegativeContractCount
+  ) {
+    issues.push(
+      createIssue(
+        file,
+        ast.program,
+        `Plite config negative-contract allowlist expects ${allowedPliteConfigNegativeContractCount} marked declaration${allowedPliteConfigNegativeContractCount === 1 ? '' : 's'} but found ${pliteConfigNegativeContractCount}`
+      )
+    );
+  }
+  if (
+    reactFactoryNegativeContractCount < allowedReactFactoryNegativeContractCount
+  ) {
+    issues.push(
+      createIssue(
+        file,
+        ast.program,
+        `React factory negative-contract allowlist expects ${allowedReactFactoryNegativeContractCount} marked call${allowedReactFactoryNegativeContractCount === 1 ? '' : 's'} but found ${reactFactoryNegativeContractCount}`
+      )
     );
   }
   if (
@@ -3981,8 +5494,84 @@ export function auditNamedSchemaLineageDocument(
 ) {
   const issues = [];
   const counts = new Map();
+  const auditsCurrentPluginRendererProse =
+    file.startsWith('.changeset/') ||
+    (file.startsWith('content/docs/') &&
+      !file.startsWith('content/docs/migration/'));
+
+  if (auditsCurrentPluginRendererProse) {
+    const terminalComponentConversion =
+      terminalComponentConversionPattern.exec(source);
+
+    if (terminalComponentConversion?.index !== undefined) {
+      issues.push({
+        column: 1,
+        file,
+        line: source.slice(0, terminalComponentConversion.index).split('\n')
+          .length,
+        reason:
+          'terminal consumers configure the Base descriptor directly; owning React adapters pass component to toPlatePlugin() while publishing the Plate descriptor',
+      });
+    }
+
+    const baseExtendComponent = basePluginExtendComponentPattern.exec(source);
+
+    if (baseExtendComponent?.index !== undefined) {
+      issues.push({
+        column: 1,
+        file,
+        line: source.slice(0, baseExtendComponent.index).split('\n').length,
+        reason:
+          'Base plugin .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement',
+      });
+    }
+
+    const staticBaseKitReactAdapter =
+      staticBaseKitReactAdapterPattern.exec(source);
+
+    if (staticBaseKitReactAdapter?.index !== undefined) {
+      issues.push({
+        column: 1,
+        file,
+        line: source.slice(0, staticBaseKitReactAdapter.index).split('\n')
+          .length,
+        reason:
+          'static/base kits declare or configure component on the Base descriptor without platejs/react',
+      });
+    }
+  }
+
+  if (file.startsWith('.changeset/') || file.startsWith('content/')) {
+    for (const match of source.matchAll(staticPluginApiReferencePattern)) {
+      issues.push({
+        column: 1,
+        file,
+        line: source.slice(0, match.index).split('\n').length,
+        reason:
+          'release prose uses an installed editor portal instead of static FooPlugin.api',
+      });
+    }
+  }
 
   for (const fence of extractJavaScriptCodeFences(source)) {
+    const staticEditorBaseReactAdapter = auditsCurrentPluginRendererProse
+      ? staticEditorBaseReactAdapterPattern.exec(fence.code)
+      : undefined;
+
+    if (staticEditorBaseReactAdapter?.index !== undefined) {
+      issues.push({
+        column: 1,
+        file,
+        line:
+          fence.line +
+          fence.code.slice(0, staticEditorBaseReactAdapter.index).split('\n')
+            .length -
+          1,
+        reason:
+          'static editors use terminal BasePlugin.configure({ component }) without platejs/react; toPlatePlugin(BasePlugin) is for live React',
+      });
+    }
+
     let ast;
 
     try {

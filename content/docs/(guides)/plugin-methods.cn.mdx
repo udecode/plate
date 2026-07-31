@@ -12,18 +12,17 @@ description: 编写和配置 Plate 插件。
 | --- | --- | --- |
 | `.extend()` | 适配 import/prebuilt descriptor、使用 constructor 无法访问的 shared factory，或消费前一阶段类型。 | 扩展插件类型。 |
 | `.configure()` | 为一个用户覆盖现有字段。 | 终结调用，不扩展类型。 |
-| `.clone()` | 复制插件定义。 | 返回新的插件对象。 |
 
 `createBasePlugin()` 和 `createPlatePlugin()` 拥有所有互相独立的作者贡献：
 
 | 字段 | 所有权 |
 | --- | --- |
 | `initialState` | 此插件 editor-local store 的初始值。 |
-| `api` | 插件作用域内的不可变服务和查询。 |
+| `api` | 创建插件作用域内不可变服务和查询的 factory。 |
 | `read` | 快照或事务内的读取。 |
 | `selectors` | 纯 state-first 派生值，包括 React 订阅。 |
 | `update` | 绑定事务的插件变更。 |
-| `extension` | Plite 运行时能力，包括编辑器级分组。 |
+| 原生 Plite 字段 | Read middleware、command、correction、state/effect/facet/selection descriptor、contribution、lifecycle、activation 和 validation。 |
 | `codecs` | 插件拥有的格式解码和编码。 |
 
 回调接收推断后的[插件上下文](/docs/plugin-context)，包括 `editor`、`plugin`、
@@ -41,29 +40,19 @@ export type CounterPluginState = {
   value: number;
 };
 
-type CounterApi = {
-  isEmpty: () => boolean;
-};
-
-type CounterUpdate = {
-  insertLabel: () => void;
-};
-
-const initialState: CounterPluginState = {
-  value: 0,
-};
-
 export const CounterPlugin = createPlatePlugin({
-  api: ({ store }): CounterApi => ({
+  api: ({ store }) => ({
     isEmpty: () => store.get('value') === 0,
   }),
-  initialState,
-  key: 'counter',
+  initialState: {
+    value: 0,
+  } satisfies CounterPluginState,
+  name: 'counter',
   selectors: {
     doubled: (state, factor: number) => state.value * factor,
     isEven: (state) => state.value % 2 === 0,
   },
-  update: ({ store, tx }): CounterUpdate => ({
+  update: ({ store, tx }) => ({
     insertLabel: () => {
       tx.text.insert(`Count: ${store.get('value')}`);
     },
@@ -82,10 +71,10 @@ export function CounterValue() {
 }
 ```
 
-可选返回类型描述所添加的字段。对 `update` 来说，它描述 callback
-返回的命令对象，而不是 callback 本身。完整合约可推断时不要写。
+让 constructor 推断新增的 API、read、selector 和 update group。只有包使用者
+需要该合约时，才保留导出的 state type。
 
-解析后，具体编辑器通过可读 key 暴露插件 API。通用包代码使用类型化 portal。
+解析后，具体编辑器通过可读名称暴露插件 API。通用包代码使用类型化 portal。
 
 ```ts
 editor.api.counter.isEmpty();
@@ -99,8 +88,8 @@ editor.plugin(CounterPlugin).update.insertLabel();
 .extend(({ plugin }) => ({
   update: ({ tx }) => ({
     insertPair: () => {
-      tx[plugin.key].insertLabel();
-      tx[plugin.key].insertLabel();
+      tx[plugin.name].insertLabel();
+      tx[plugin.name].insertLabel();
     },
   }),
 }))
@@ -110,54 +99,49 @@ editor.plugin(CounterPlugin).update.insertLabel();
 
 ## 安装 Plite 能力
 
-通用编辑器底层行为放在 `extension` 字段：schema 事实、state、command、
-correction、query middleware 和运行时服务。没有 `name` 的原始 extension options
-继承插件 key。
+通用编辑器底层行为直接声明在插件上：schema、command、correction、read
+middleware、state/effect/facet/selection descriptor、contribution、
+lifecycle、activation 和 validation。
 
 ```ts title="single-line-plugin.ts" showLineNumbers
 import { createBasePlugin, editorCommands } from 'platejs';
 
 export const SingleLinePlugin = createBasePlugin({
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertBreak, ({ state }) =>
-        state.transaction(() => {})
-      ),
-    ],
-  },
-  key: 'singleLine',
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) =>
+      state.transaction(() => {})
+    ),
+  ],
+  name: 'singleLine',
 });
 ```
 
-依赖 Plate context 的 extension callback 保持在 `extension` 字段中。这样
-command、input、state、transaction、dependency 和 plugin state 都能获得
-contextual typing。抽取 domain logic，不要为了类型把 plugin context 传入 factory：
+原生 callback 只接收对应的 Plite capability context。需要前一阶段的
+plugin store、read、API 或 update group 时，增加一次 `.extend()` 并在闭包中
+使用该能力。不要为了转发 owner context 新增 helper 参数：
 
 ```ts title="trigger-plugin.ts" showLineNumbers
 import { createBasePlugin, editorCommands } from 'platejs';
 
-const shouldHandleTrigger = (enabled: boolean) => enabled;
-
 export const TriggerPlugin = createBasePlugin({
   initialState: { enabled: true },
-  key: 'trigger',
-  extension: ({ store }) => ({
-    commands: ({ handle }) => [
-      handle(editorCommands.insertBreak, ({ state }) => {
-        if (!shouldHandleTrigger(store.get('enabled'))) return false;
+  name: 'trigger',
+}).extend(({ store }) => ({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) => {
+      if (!store.get('enabled')) return false;
 
-        return state.transaction(() => {});
-      }),
-    ],
-  }),
-});
+      return state.transaction(() => {});
+    }),
+  ],
+}));
 ```
 
 独立复用的 Plite descriptor 使用从 `@platejs/plite` import 的
-`defineEditorExtension`，然后把 descriptor 传给 plugin 的 `extension` 字段。
+`defineEditorExtension`，然后把 descriptor 放进 `dependencies`。
 
-真正无 key 的编辑器级能力也属于 `extension`。插件专用 API 保持在 `api`，
-不要发布两份实现。
+插件专用和 editor-wide host service 共用根级 `api` channel；Plite 会按插件
+name 投影它。不要发布两份实现。
 
 ## 声明产品 Codec
 
@@ -177,7 +161,7 @@ export const RecordsPlugin = createBasePlugin({
         encode: ({ slice }) => JSON.stringify(slice),
       },
     }),
-  key: 'records',
+  name: 'records',
 });
 ```
 
@@ -242,11 +226,11 @@ const initialState: CellPluginState = {
 
 const CellPlugin = createPlatePlugin({
   initialState,
-  key: 'cell',
+  name: 'cell',
 });
 
 const GridPlugin = createPlatePlugin({
-  key: 'grid',
+  name: 'grid',
   dependencies: [CellPlugin],
 });
 
@@ -256,32 +240,30 @@ export const AppGridPlugins = [
 ];
 ```
 
-可选能力是普通数组项。两个相同 key 的显式描述符会报错；数组顺序不是覆盖机制。
+可选能力是普通数组项。从同一个已创作插件派生的终端配置会按数组顺序组合：较早的字段
+会保留，除非后面的配置定义了同一字段。无关的插件和分叉的创作分支不能共享同一个名称。
 
 ## 将 Plite 插件转换为 Plate 插件
 
-语义基础已经存在、剩余工作仅属于 React 时，使用 `toPlatePlugin()`。
+在所属 React entrypoint 中使用 `toPlatePlugin()` 发布可复用 Plate descriptor
+或添加 Plate-only behavior。应用用户不为设置 component 而插入转换。
 
-```tsx title="mention-plugin.tsx" showLineNumbers
-import { createBasePlugin, schema } from 'platejs';
-import { toPlatePlugin } from 'platejs/react';
+```tsx title="script-plugin.tsx" showLineNumbers
+import { BaseScriptPlugin } from '@platejs/basic-nodes';
+import { KEYS } from 'platejs';
+import { PlateLeaf, toPlatePlugin } from 'platejs/react';
 
-import { MentionElement } from '@/components/ui/mention-node';
-
-const BaseMentionPlugin = createBasePlugin({
-  key: 'mention',
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
-    },
-  },
+export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
+  component: (props) => (
+    <PlateLeaf
+      {...props}
+      as={props.leaf[KEYS.script] === 'sub' ? 'sub' : 'sup'}
+    >
+      {props.children}
+    </PlateLeaf>
+  ),
 });
-
-export const MentionPlugin =
-  toPlatePlugin(BaseMentionPlugin).configure({ component: MentionElement });
 ```
 
-转换后的插件保持同一个创作模型：互相独立的字段放进 constructor，只有适配
-import/prebuilt declaration、使用 constructor 无法访问的 shared factory，或需要
-前一阶段类型时才使用 `.extend()`，最后调用一次 `.configure({ component })`。
+package 的 React owner 发布 `ScriptPlugin`；static/RSC 代码可直接在
+`BaseScriptPlugin` 上绑定 server-safe component，无需导入 `platejs/react`。

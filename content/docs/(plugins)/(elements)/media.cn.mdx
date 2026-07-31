@@ -530,7 +530,7 @@ export function PlaceholderElement({
 支持的文件类型: `'image' | 'video' | 'audio' | 'pdf' | 'text' | 'blob'`
 <APISubList>
   <APISubListItem parent="uploadConfig" name="mediaType" type="MediaKeys">
-    此配置对应的媒体插件键: `'audio' | 'file' | 'image' | 'video'`
+    此配置对应的媒体插件 name: `'audio' | 'file' | 'image' | 'video'`
   </APISubListItem>
   <APISubListItem parent="uploadConfig" name="maxFileCount" type="number" optional>
     此类型文件可上传的最大数量。
@@ -969,24 +969,6 @@ enum UploadErrorCode {
 <APIParameters>
   <APIItem name="url" type="string">
     iframe 的 URL 或嵌入代码。
-  </APIItem>
-</APIParameters>
-</API>
-
-### `submitFloatingMedia`
-
-提交浮动媒体元素。
-
-<API name="submitFloatingMedia">
-<APIParameters>
-  <APIItem name="editor" type="BaseEditor">
-    包含媒体元素的编辑器。
-  </APIItem>
-  <APIItem name="options.element" type="TMediaElement">
-    要提交的浮动媒体元素。
-  </APIItem>
-  <APIItem name="options.plugin" type="WithRequiredKey<MediaPluginConfig>">
-    拥有 URL 选项的图片或媒体嵌入插件。
   </APIItem>
 </APIParameters>
 </API>

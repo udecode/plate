@@ -1929,7 +1929,7 @@
 /Users/zbeyens/git/tiptap/packages/core/src/commands/index.ts:51:export * from './undoInputRule.js'
 /Users/zbeyens/git/tiptap/packages/core/src/inputRules/textblockTypeInputRule.ts:18:  undoable?: boolean
 /Users/zbeyens/git/tiptap/packages/core/src/inputRules/textblockTypeInputRule.ts:33:    undoable: config.undoable,
-/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:4:import { redo, undo, ySyncPlugin, yUndoPlugin, yUndoPluginKey, yXmlFragmentToProsemirrorJSON } from '@tiptap/y-tiptap'
+/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:4:import { redo, undo, ySyncPlugin, yUndoPlugin, yUndoPluginName, yXmlFragmentToProsemirrorJSON } from '@tiptap/y-tiptap'
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:25:       * @example editor.commands.undo()
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:27:      undo: () => ReturnType
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:30:       * @example editor.commands.redo()
@@ -1938,17 +1938,17 @@
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:108:    if (this.editor.extensionManager.extensions.find(extension => extension.name === 'undoRedo')) {
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:110:        '[tiptap warn]: "@tiptap/extension-collaboration" comes with its own history support and is not compatible with "@tiptap/extension-undo-redo".',
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:123:      undo:
-/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:128:          const undoManager: UndoManager = yUndoPluginKey.getState(state).undoManager
+/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:128:          const undoManager: UndoManager = yUndoPluginName.getState(state).undoManager
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:130:          if (undoManager.undoStack.length === 0) {
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:138:          return undo(state)
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:140:      redo:
-/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:145:          const undoManager: UndoManager = yUndoPluginKey.getState(state).undoManager
+/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:145:          const undoManager: UndoManager = yUndoPluginName.getState(state).undoManager
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:147:          if (undoManager.redoStack.length === 0) {
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:155:          return redo(state)
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:162:      'Mod-z': () => this.editor.commands.undo(),
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:163:      'Mod-y': () => this.editor.commands.redo(),
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:164:      'Shift-Mod-z': () => this.editor.commands.redo(),
-/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:179:      const { undoManager } = yUndoPluginKey.getState(view.state)
+/Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:179:      const { undoManager } = yUndoPluginName.getState(view.state)
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:181:      if (undoManager.restore) {
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:182:        undoManager.restore()
 /Users/zbeyens/git/tiptap/packages/extension-collaboration/src/collaboration.ts:183:        undoManager.restore = () => {
@@ -2068,7 +2068,7 @@
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle-react/src/DragHandle.tsx:22:   * Enable drag handles for nested content (list items, blockquotes, etc.).
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle-react/src/DragHandle.tsx:24:   * When enabled, the drag handle will appear for nested blocks, not just
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle-react/src/DragHandle.tsx:67:    className = 'drag-handle',
-/Users/zbeyens/git/tiptap/packages/extension-drag-handle-react/src/DragHandle.tsx:70:    pluginKey = dragHandlePluginDefaultKey,
+/Users/zbeyens/git/tiptap/packages/extension-drag-handle-react/src/DragHandle.tsx:70:    pluginName = dragHandlePluginDefaultKey,
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle-react/src/DragHandle.tsx:143:      data-dragging="false"
 /Users/zbeyens/git/tiptap/packages/extension-audio/__tests__/audio.spec.ts:191:    // Simulate paste by inserting plain text content that matches the paste rule regex
 /Users/zbeyens/git/tiptap/packages/extension-audio/__tests__/audio.spec.ts:192:    editor.view.pasteText(audioUrl)
@@ -2091,8 +2091,8 @@
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle.ts:118:  name: 'dragHandle',
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle.ts:125:        element.classList.add('drag-handle')
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:13:import { dragHandler } from './helpers/dragHandler.js'
-/Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:71:export const dragHandlePluginDefaultKey = new PluginKey('dragHandle')
-/Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:74:  pluginKey = dragHandlePluginDefaultKey,
+/Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:71:export const dragHandlePluginDefaultKey = new PluginName('dragHandle')
+/Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:74:  pluginName = dragHandlePluginDefaultKey,
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:133:    // Fixes bug where incorrect drag pos is returned if drag handle has position: absolute
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:134:    // Pass the current node context to avoid recalculation issues during drag start
 /Users/zbeyens/git/tiptap/packages/extension-drag-handle/src/drag-handle-plugin.ts:135:    dragHandler(e, editor, nestedOptions, { node: currentNode, pos: currentNodePos })

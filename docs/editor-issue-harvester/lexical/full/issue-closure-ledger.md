@@ -16,9 +16,9 @@ defer-only and must not trigger Plate edits.
 | defer | 1055 |
 | skip | 962 |
 | keep-portable | 724 |
-| unclassified | 41 |
-| unchecked relevant | 41 |
-| metadata review flagged | 180 |
+| unclassified | 45 |
+| unchecked relevant | 45 |
+| metadata review flagged | 184 |
 
 ## Closure Counts
 
@@ -28,7 +28,7 @@ defer-only and must not trigger Plate edits.
 | irrelevant:invalid-skip | 962 |
 | relevant:covered-by-existing-test | 211 |
 | relevant:test-written | 106 |
-| relevant:needs-test-audit | 41 |
+| relevant:needs-test-audit | 45 |
 
 ## Next Unchecked Relevant Issues
 
@@ -75,5 +75,9 @@ defer-only and must not trigger Plate edits.
 | [ ] | #8834 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | Bug: Committing an IME composition with a mouse click scrolls the viewport back to the composed text |
 | [ ] | #8860 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | Bug: Website crashes with 'clone method... expecting 0' error" |
 | [ ] | #8875 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | This issue lists Renovate updates and detected dependencies. Read the [Dependency Dashboard](https://docs.renovatebot.com/key-concepts/dashboard/) docs to learn more.<br>[View this repository on the Mend.io Web Portal](https://developer.mend.io/github/prosekit/prosemirror-adapter). |
+| [ ] | #8880 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | Bug: Table alignment fails when selecting in non-TL→BR direction |
+| [ ] | #8881 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | Bug: selection.hasFormat is giving wrong info when clear formatting is clicked from dropdown/button |
+| [ ] | #8885 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | Bug: SELECTION_CHANGE_COMMAND is triggered after clicking a link in Safari |
+| [ ] | #8886 | unclassified | Pending issue-harvester classification | unknown | issue-harvester facebook/lexical --state all --continue | Bug: Selection is leaving beyond the editor from the top block cursor |
 
 Full ledger: `issue-closure-ledger.tsv`.

@@ -21,11 +21,11 @@ const retainedPolicies = Number.parseInt(
 
 const historyCapability = defineEditorExtension({
   name: 'benchmark-history',
-  tx: {
+  update: () => ({
     history() {
       return {};
     },
-  },
+  }),
 });
 
 const createBenchmarkEditor = () =>

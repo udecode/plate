@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {
+  type Editor,
   type EditorCommit,
   type EditorStateView,
   type ExtensionsOf,
@@ -18,13 +19,15 @@ import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
 import type { PlateStoreEditor, PlateStoreState } from './PlateStore';
 
 import { createAtomStore } from '../../libs';
-import { createPlateEditor } from '../../editor';
+import { createPlateEditor, type PlateEditor } from '../../editor';
 import {
   usePlateControllerExists,
   usePlateControllerStore,
 } from '../plate-controller';
 
 export type PlateStore = ReturnType<typeof usePlateStore>;
+export type PlateEditorWithStore<E extends Editor<any, any> = PlateEditor> =
+  E & { store: PlateStore };
 
 export const PLATE_SCOPE = 'plate';
 
@@ -82,7 +85,7 @@ const {
 } = createPlateStore();
 
 let fallbackEditor: PlateStoreEditor | null = null;
-const fallbackEditors = new WeakSet<PlateStoreEditor>();
+const fallbackEditors = new WeakSet<object>();
 
 const getFallbackEditor = (): PlateStoreEditor => {
   if (!fallbackEditor) {
@@ -195,15 +198,14 @@ export type UseEditorOptions = {
   id?: string;
 };
 
-const useInternalEditor = <E extends PlateStoreEditor = PlateStoreEditor>(
+const useInternalEditor = <E extends Editor<any, any> = PlateEditor>(
   id?: string
-): E & { store: PlateStore } => {
+): PlateEditorWithStore<E> => {
   const store = usePlateStore(id);
   const editor = ((useAtomStoreValue(store, 'editor') as unknown as
     | E
-    | undefined) ?? (getFallbackEditor() as unknown as E)) as E & {
-    store: PlateStore;
-  };
+    | undefined) ??
+    (getFallbackEditor() as unknown as E)) as PlateEditorWithStore<E>;
 
   editor.store = store;
 
@@ -211,9 +213,19 @@ const useInternalEditor = <E extends PlateStoreEditor = PlateStoreEditor>(
 };
 
 /** Get the mounted editor, throwing while no matching editor is active. */
-export const useEditor = <E extends PlateStoreEditor = PlateStoreEditor>({
+// biome-ignore lint/style/useUnifiedTypeSignatures: The broad overloads preserve no-argument and ReturnType boundaries while the middle overload accepts explicit editor refinements.
+export function useEditor(
+  options?: UseEditorOptions
+): PlateEditorWithStore<PlateEditor>;
+export function useEditor<E extends Editor<any, any>>(
+  options?: UseEditorOptions
+): PlateEditorWithStore<E>;
+export function useEditor(
+  options?: UseEditorOptions
+): PlateEditorWithStore<PlateEditor>;
+export function useEditor<E extends Editor<any, any> = PlateEditor>({
   id,
-}: UseEditorOptions = {}): E & { store: PlateStore } => {
+}: UseEditorOptions = {}): PlateEditorWithStore<E> {
   const editor = useInternalEditor<E>(id);
 
   if (fallbackEditors.has(editor)) {
@@ -221,12 +233,12 @@ export const useEditor = <E extends PlateStoreEditor = PlateStoreEditor>({
   }
 
   return editor;
-};
+}
 
 /** Get the active editor, or `null` while its controller has no editor. */
-export const useActiveEditor = <E extends PlateStoreEditor = PlateStoreEditor>({
+export const useActiveEditor = <E extends Editor<any, any> = PlateEditor>({
   id,
-}: UseEditorOptions = {}): (E & { store: PlateStore }) | null => {
+}: UseEditorOptions = {}): PlateEditorWithStore<E> | null => {
   const editor = useInternalEditor<E>(id);
 
   return fallbackEditors.has(editor) ? null : editor;
@@ -244,14 +256,11 @@ export const useEditorSelection = (id?: string) => {
 
 export type UseEditorStateOptions<
   T,
-  E extends PlateStoreEditor = PlateStoreEditor,
+  E extends PlateStoreEditor = PlateEditor,
 > = EditorRuntimeStateSelectorOptions<T, E> & UseEditorOptions;
 
 /** Subscribe to a value derived from the immutable editor state. */
-export const useEditorState = <
-  T,
-  E extends PlateStoreEditor = PlateStoreEditor,
->(
+export const useEditorState = <T, E extends PlateStoreEditor = PlateEditor>(
   selector: (state: EditorStateView<ValueOf<E>, ExtensionsOf<E>>) => T,
   { id, ...options }: UseEditorStateOptions<T, E> = {}
 ): T => useEditorRuntimeState(useInternalEditor<E>(id), selector, options);

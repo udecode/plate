@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { act, render } from '@testing-library/react';
-import { defineEditorExtension } from '@platejs/plite';
+import { DOMEditor } from '@platejs/plite-dom/internal';
 
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 import { Plate } from '../../components/Plate';
@@ -175,18 +175,9 @@ describe('NavigationFeedbackPlugin', () => {
       },
       initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-    const focusSpy = mock(() => {});
-    const scrollSpy = mock(() => {});
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            focus: focusSpy,
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
+    const focusSpy = spyOn(DOMEditor, 'focus').mockImplementation(() => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
     );
     editor.update((tx) => {
       tx.navigation.navigate({
@@ -211,10 +202,14 @@ describe('NavigationFeedbackPlugin', () => {
       focus: { offset: 1, path: [0, 0] },
     });
     expect(focusSpy).toHaveBeenCalled();
-    expect(scrollSpy).toHaveBeenCalledWith({
-      offset: 1,
-      path: [0, 0],
-    });
+    expect(scrollSpy).toHaveBeenCalledWith(
+      editor,
+      {
+        offset: 1,
+        path: [0, 0],
+      },
+      undefined
+    );
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
     ).toEqual({
@@ -389,8 +384,8 @@ describe('NavigationFeedbackPlugin', () => {
     });
 
     expect(
-      getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
-    ).not.toContain(NavigationFeedbackPlugin.key);
+      getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
+    ).not.toContain(NavigationFeedbackPlugin.name);
     expect(editor.plugin(NavigationFeedbackPlugin).installed).toBe(false);
   });
 });

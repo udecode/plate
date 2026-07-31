@@ -7,7 +7,7 @@ import {
   defineEditorExtension,
   defineExtensionSlot,
   type EditorSchemaContribution,
-  type EditorExtension,
+  type EditorExtensionReference,
   type EditorExtensionInput,
   type PropertyJsonValue,
   type PropertyValueOf,
@@ -225,6 +225,7 @@ describe('schema declaration builders', () => {
       inclusive: true,
       key: 'bold',
       placement: 'text',
+      role: 'content',
       split: 'preserve',
       target: { group: 'textBlock', kind: 'group' },
       typeChange: 'drop',
@@ -234,12 +235,52 @@ describe('schema declaration builders', () => {
       },
     });
     assert.equal(Indent.placement, 'element');
+    assert.equal(Indent.role, 'content');
     assert.equal(Indent.target.kind, 'group');
     assert.deepEqual(Suggestions.key, {
       kind: 'prefix',
       prefix: 'suggestion_',
     });
     assert.equal(Object.isFrozen(Suggestions.key), true);
+  });
+
+  it('builds one canonical text-block element without structural escape hatches', () => {
+    const textBlock = schema.element.textBlock({
+      properties: { align: property.string() },
+      slice: { preserveContext: true },
+    });
+
+    assert.deepEqual(textBlock, {
+      content: {
+        allowed: {
+          kind: 'any',
+          rules: [{ kind: 'text' }, { group: 'inline', kind: 'group' }],
+        },
+        default: 'text',
+        min: 1,
+      },
+      properties: {
+        align: { kind: 'string', omitDefault: false },
+      },
+      slice: { preserveContext: true },
+    });
+    assert.equal(Object.isFrozen(textBlock), true);
+    assert.throws(
+      () =>
+        schema.element.textBlock({
+          // @ts-expect-error textBlock owns its content grammar
+          content: schema.content.open(),
+        }),
+      /does not support content/
+    );
+    assert.throws(
+      () =>
+        schema.element.textBlock({
+          // @ts-expect-error textBlock cannot be void
+          void: 'block',
+        }),
+      /does not support void/
+    );
   });
 
   it('declares frozen exclusive text-property groups', () => {
@@ -276,7 +317,7 @@ describe('schema declaration builders', () => {
     const ImageSchema = defineEditorSchema({
       elements: { image },
       id: 'image-shape',
-      root: { content: schema.content.type('image') },
+      root: schema.content.type('image'),
       unknown: 'reject',
       version: 1,
     });
@@ -297,6 +338,19 @@ describe('schema declaration builders', () => {
     assert.equal(Object.isFrozen(Image.contentRoots?.body), true);
   });
 
+  it('normalizes omitted complete-schema fields to closed defaults', () => {
+    const TextSchema = defineEditorSchema({
+      id: 'text-only',
+      root: schema.content.text(),
+      version: 1,
+    });
+    const unknown: 'reject' = TextSchema.schema.unknown;
+
+    assert.deepEqual(TextSchema.schema.elements, {});
+    assert.equal(unknown, 'reject');
+    assert.equal(Object.isFrozen(TextSchema.schema.elements), true);
+  });
+
   it('packages one deeply frozen schema extension and preserves literal types', () => {
     const Paragraph = {
       content: schema.content.text({ min: 1 }),
@@ -313,18 +367,14 @@ describe('schema declaration builders', () => {
           target: target.group('textBlock'),
         }),
       ],
-      root: {
-        content: schema.content.group('articleBlock', { min: 1 }),
-      } as const,
+      root: schema.content.group('articleBlock', { min: 1 }),
       roots: {
-        comments: {
-          content: schema.content.type('paragraph'),
-        } as const,
+        comments: schema.content.type('paragraph'),
       },
       unknown: 'reject',
       version: 1,
     });
-    const extension: EditorExtension = ArticleSchema;
+    const extension: EditorExtensionReference = ArticleSchema;
     const extensionInput: EditorExtensionInput = ArticleSchema;
     const slotted = defineExtensionSlot('article-schema').of(ArticleSchema);
     const editor = createEditor({
@@ -353,7 +403,7 @@ describe('schema declaration builders', () => {
 
   it('rejects public main roots and malformed cardinality', () => {
     const Paragraph = { content: schema.content.text() } as const;
-    const root = { content: schema.content.type('paragraph') } as const;
+    const root = schema.content.type('paragraph');
     const invalidMain = {
       elements: { paragraph: Paragraph },
       id: 'invalid-main',
@@ -396,7 +446,7 @@ describe('schema declaration builders', () => {
       },
       properties: [schema.textProperty('bold', property.boolean())],
     } as const;
-    const extension: EditorExtension = defineEditorExtension({
+    const extension: EditorExtensionReference = defineEditorExtension({
       name: 'paragraph-feature',
       schema: contribution,
     });
@@ -441,9 +491,7 @@ describe('schema declaration builders', () => {
         } as const,
       },
       id: 'open-elements',
-      root: {
-        content: schema.content.not(schema.content.text()),
-      } as const,
+      root: schema.content.not(schema.content.text()),
       unknown: 'preserve',
       version: 1,
     });
@@ -471,9 +519,7 @@ describe('schema declaration builders', () => {
                 container: { content: schema.content.text() },
               },
               id: 'closed-content',
-              root: {
-                content: schema.content.type('container'),
-              } as const,
+              root: schema.content.type('container'),
               unknown: 'preserve',
               version: 1,
             }),
@@ -500,7 +546,7 @@ describe('schema declaration builders', () => {
     const FrozenSchema = defineEditorSchema({
       elements,
       id: 'raw-structural-input',
-      root: { content: rawContent },
+      root: rawContent,
       unknown: 'reject',
       version: 1,
     });
@@ -535,7 +581,7 @@ describe('schema declaration builders', () => {
     const FrozenSchema = defineEditorSchema({
       elements: { paragraph: frozenElement },
       id: 'frozen-declaration-traversal',
-      root: { content: schema.content.type('paragraph') } as const,
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -559,7 +605,7 @@ describe('schema declaration builders', () => {
         defineEditorSchema({
           elements: { paragraph: accessor as SchemaElement },
           id: 'frozen-accessor',
-          root: { content: schema.content.type('paragraph') } as const,
+          root: schema.content.type('paragraph'),
           unknown: 'reject',
           version: 1,
         }),
@@ -577,7 +623,7 @@ describe('schema declaration builders', () => {
         defineEditorSchema({
           elements: { paragraph: nonPlain as unknown as SchemaElement },
           id: 'frozen-nonplain',
-          root: { content: schema.content.type('paragraph') } as const,
+          root: schema.content.type('paragraph'),
           unknown: 'reject',
           version: 1,
         }),
@@ -596,7 +642,7 @@ describe('schema declaration builders', () => {
         defineEditorSchema({
           elements: { paragraph: cyclic as unknown as SchemaElement },
           id: 'frozen-cycle',
-          root: { content: schema.content.type('paragraph') } as const,
+          root: schema.content.type('paragraph'),
           unknown: 'reject',
           version: 1,
         }),
@@ -615,7 +661,7 @@ describe('schema declaration builders', () => {
     };
     const invalidRootContribution: EditorSchemaContribution = {
       // @ts-expect-error only the complete schema definition owns the primary root
-      root: { content: schema.content.text() },
+      root: schema.content.text(),
     };
     const payload = property.json({
       validate: (value): value is { id: string } =>
@@ -628,7 +674,8 @@ describe('schema declaration builders', () => {
         typeof value === 'object' && value !== null && 'id' in value,
       validationVersion: 1,
     });
-    const unconstrained = property.json({ significant: false });
+    const unconstrained = property.json();
+    // @ts-expect-error narrow JSON types require a versioned validator
     const explicitJson = property.json<{ id: string }>();
     const inferredJson = property.json({ default: { id: 'json' } });
     const validatedBoolean = property.boolean({
@@ -652,12 +699,11 @@ describe('schema declaration builders', () => {
     const unconstrainedValue: PropertyValueOf<typeof unconstrained> = {
       id: 'json',
     };
-    const explicitJsonValue: PropertyValueOf<typeof explicitJson> = {
-      id: 'explicit',
-    };
     const inferredJsonValue: PropertyValueOf<typeof inferredJson> = {
       id: 'inferred',
     };
+    const broadlyInferredJsonValue: PropertyValueOf<typeof inferredJson> =
+      'still-json';
     const jsonValue: PropertyJsonValue = unconstrainedValue;
     const validPayload: PropertyValueOf<typeof payload> = { id: 'ok' };
     const validPayloadWithDefault: PropertyValueOf<typeof payloadWithDefault> =
@@ -679,7 +725,8 @@ describe('schema declaration builders', () => {
     });
 
     void contribution;
-    void explicitJsonValue;
+    void broadlyInferredJsonValue;
+    void explicitJson;
     void inferredJsonValue;
     void invalidContribution;
     void invalidJson;

@@ -1,4 +1,4 @@
-import type { Range, Value } from '@platejs/plite';
+import type { Range } from '@platejs/plite';
 import type * as Y from 'yjs';
 
 export type YjsAwarenessChange = {
@@ -200,13 +200,3 @@ export type YjsTx = {
     data?: YjsRemoteCursorData | null
   ) => void;
 };
-
-declare module '@platejs/plite' {
-  interface EditorStateExtensionGroups<V extends Value = Value> {
-    yjs: YjsState;
-  }
-
-  interface EditorTxExtensionGroups<V extends Value = Value> {
-    yjs: YjsTx;
-  }
-}

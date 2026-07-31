@@ -15,7 +15,7 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from 'lucide-react';
-import { type Value, getPluginType, KEYS } from 'platejs';
+import { type Value, KEYS } from 'platejs';
 import { Plate, usePlateEditor, usePlateViewEditor } from 'platejs/react';
 
 import { Button } from '@/components/ui/button';
@@ -323,6 +323,7 @@ export default function MarkdownStreamingDemo() {
     },
     []
   );
+  const aiChat = editor.plugin(AIChatPlugin);
 
   const currentChunks = testScenarios[selectedScenario];
   const transformedCurrentChunks = transformedChunks(currentChunks);
@@ -340,9 +341,9 @@ export default function MarkdownStreamingDemo() {
     setPausedState(false);
     setActiveIndex(0);
 
-    editor.plugin(AIChatPlugin).store.set({ streaming: false });
-    editor.plugin(AIChatPlugin).store.set({ _blockChunks: '' });
-    editor.plugin(AIChatPlugin).store.set({ _blockPath: null });
+    aiChat.store.set({ streaming: false });
+    aiChat.store.set({ _blockChunks: '' });
+    aiChat.store.set({ _blockPath: null });
 
     for (let i = 0; i < transformedCurrentChunks.length; i++) {
       while (pausedRef.current) {
@@ -356,9 +357,9 @@ export default function MarkdownStreamingDemo() {
 
       const chunk = transformedCurrentChunks[i];
 
-      editor.plugin(AIChatPlugin).update.insertChunk(chunk.chunk, {
+      aiChat.update.insertChunk(chunk.chunk, {
         textProps: {
-          [getPluginType(editor, KEYS.ai)]: true,
+          [editor.plugin(KEYS.ai).type]: true,
         },
       });
 
@@ -399,64 +400,55 @@ export default function MarkdownStreamingDemo() {
     setStreaming(false);
   }, [editorStatic, speed, transformedCurrentChunks, setPausedState]);
 
-  const onReset = useCallback(() => {
+  const onReset = () => {
     setActiveIndex(0);
     if (isPlateStatic) {
       editorStatic.update.value.replace({ children: [] });
       forceUpdate();
     } else {
       editor.update.value.replace({ children: [] });
-      editor.plugin(AIChatPlugin).store.set({ streaming: false });
-      editor.plugin(AIChatPlugin).store.set({ _blockChunks: '' });
-      editor.plugin(AIChatPlugin).store.set({ _blockPath: null });
+      aiChat.store.set({ streaming: false });
+      aiChat.store.set({ _blockChunks: '' });
+      aiChat.store.set({ _blockPath: null });
     }
-  }, [editor, editorStatic, isPlateStatic]);
+  };
 
-  const onNavigate = useCallback(
-    (targetIndex: number) => {
-      // Check if navigation is possible
-      if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length)
-        return;
+  const onNavigate = (targetIndex: number) => {
+    // Check if navigation is possible
+    if (targetIndex < 0 || targetIndex > transformedCurrentChunks.length)
+      return;
 
-      if (isPlateStatic) {
-        let output = '';
-        for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-          output += chunk.chunk;
-        }
-
-        editorStatic.update.value.replace(
-          editorStatic.api.markdown.deserialize(output)
-        );
-        setActiveIndex(targetIndex);
-        forceUpdate();
-      } else {
-        editor.update.value.replace({ children: [] });
-
-        editor.plugin(AIChatPlugin).store.set({ streaming: false });
-        editor.plugin(AIChatPlugin).store.set({ _blockChunks: '' });
-        editor.plugin(AIChatPlugin).store.set({ _blockPath: null });
-
-        for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
-          editor.plugin(AIChatPlugin).update.insertChunk(chunk.chunk, {
-            textProps: {
-              [getPluginType(editor, KEYS.ai)]: true,
-            },
-          });
-        }
-        setActiveIndex(targetIndex);
+    if (isPlateStatic) {
+      let output = '';
+      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
+        output += chunk.chunk;
       }
-    },
-    [editor, editorStatic, isPlateStatic, transformedCurrentChunks]
-  );
 
-  const onPrev = useCallback(
-    () => onNavigate(activeIndex - 1),
-    [onNavigate, activeIndex]
-  );
-  const onNext = useCallback(
-    () => onNavigate(activeIndex + 1),
-    [onNavigate, activeIndex]
-  );
+      editorStatic.update.value.replace(
+        editorStatic.api.markdown.deserialize(output)
+      );
+      setActiveIndex(targetIndex);
+      forceUpdate();
+    } else {
+      editor.update.value.replace({ children: [] });
+
+      aiChat.store.set({ streaming: false });
+      aiChat.store.set({ _blockChunks: '' });
+      aiChat.store.set({ _blockPath: null });
+
+      for (const chunk of transformedCurrentChunks.slice(0, targetIndex)) {
+        aiChat.update.insertChunk(chunk.chunk, {
+          textProps: {
+            [editor.plugin(KEYS.ai).type]: true,
+          },
+        });
+      }
+      setActiveIndex(targetIndex);
+    }
+  };
+
+  const onPrev = () => onNavigate(activeIndex - 1);
+  const onNext = () => onNavigate(activeIndex + 1);
 
   return (
     <section className="h-full overflow-y-auto p-20">

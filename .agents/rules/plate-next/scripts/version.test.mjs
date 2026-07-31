@@ -9,6 +9,8 @@ import {
   computeDoctrineFingerprint,
   computePackageFingerprint,
   getPackageStatuses,
+  haveMatchingRequiredResources,
+  haveMatchingRequiredSkills,
   haveMatchingSkillSource,
   readReviewedPackageSlugs,
   readDeclaredDoctrineVersion,
@@ -87,6 +89,18 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
 
   temporaryRoots.push(root);
   mkdirSync(join(root, '.agents/rules'), { recursive: true });
+  mkdirSync(join(root, '.agents/rules/plate-plugin-creator/references'), {
+    recursive: true,
+  });
+  mkdirSync(join(root, '.agents/rules/plate-plugin-creator/rules'), {
+    recursive: true,
+  });
+  mkdirSync(join(root, '.agents/rules/plate-ui/rules'), {
+    recursive: true,
+  });
+  mkdirSync(join(root, '.agents/rules/plate-next/scripts'), {
+    recursive: true,
+  });
   mkdirSync(join(root, 'docs/plans/templates'), { recursive: true });
   writeFileSync(
     join(root, '.agents/rules/plate-next.mdc'),
@@ -95,6 +109,30 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
   writeFileSync(
     join(root, '.agents/rules/plate-plugin-creator.mdc'),
     'plugin authoring doctrine\n'
+  );
+  writeFileSync(
+    join(
+      root,
+      '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md'
+    ),
+    'authoring audit\n'
+  );
+  writeFileSync(
+    join(root, '.agents/rules/plate-plugin-creator/rules/creation-flow.md'),
+    'creation flow\n'
+  );
+  writeFileSync(
+    join(root, '.agents/rules/plate-plugin-creator/rules/typing.md'),
+    'typing law\n'
+  );
+  writeFileSync(join(root, '.agents/rules/plate-ui.mdc'), 'ui doctrine\n');
+  writeFileSync(
+    join(root, '.agents/rules/plate-ui/rules/component-shape.md'),
+    'component shape\n'
+  );
+  writeFileSync(
+    join(root, '.agents/rules/plate-next/scripts/sync-resources.mjs'),
+    'sync resources\n'
   );
   writeFileSync(join(root, 'docs/plans/templates/plate-next.md'), 'template\n');
 
@@ -133,6 +171,111 @@ test('reads the visible doctrine version and fingerprints doctrine sources', () 
   );
 });
 
+test('requires exact generated doctrine resources', () => {
+  const root = createRoot();
+  const pairs = [
+    [
+      'plate-plugin-creator/references/plugin-authoring-audit.md',
+      'authoring audit\n',
+    ],
+    ['plate-plugin-creator/rules/creation-flow.md', 'creation flow\n'],
+    ['plate-plugin-creator/rules/typing.md', 'typing law\n'],
+    ['plate-ui/rules/component-shape.md', 'component shape\n'],
+  ];
+
+  for (const [path, value] of pairs) {
+    const source = join(root, '.agents/rules', path);
+    const generated = join(root, '.agents/skills', path);
+
+    mkdirSync(join(source, '..'), { recursive: true });
+    mkdirSync(join(generated, '..'), { recursive: true });
+    writeFileSync(source, value);
+    writeFileSync(generated, value);
+  }
+
+  assert.equal(haveMatchingRequiredResources(root), true);
+
+  writeFileSync(
+    join(root, '.agents/skills/plate-plugin-creator/rules/typing.md'),
+    'stale typing law\n'
+  );
+
+  assert.equal(haveMatchingRequiredResources(root), false);
+
+  writeFileSync(
+    join(root, '.agents/skills/plate-plugin-creator/rules/typing.md'),
+    'typing law\n'
+  );
+  writeFileSync(
+    join(root, '.agents/skills/plate-ui/rules/component-shape.md'),
+    'stale component shape\n'
+  );
+
+  assert.equal(haveMatchingRequiredResources(root), false);
+});
+
+test('requires exact generated doctrine skill bodies', () => {
+  const root = createRoot();
+  const pairs = [
+    {
+      generatedPath: '.agents/skills/plate-next/SKILL.md',
+      heading: '# Plate Next',
+      name: 'plate-next',
+      sourcePath: '.agents/rules/plate-next.mdc',
+    },
+    {
+      generatedPath: '.agents/skills/plate-plugin-creator/SKILL.md',
+      heading: '# Plate Plugin Creator',
+      name: 'plate-plugin-creator',
+      sourcePath: '.agents/rules/plate-plugin-creator.mdc',
+    },
+    {
+      generatedPath: '.agents/skills/best-api/SKILL.md',
+      heading: '# Best API',
+      name: 'best-api',
+      sourcePath: '.agents/rules/best-api.mdc',
+    },
+    {
+      generatedPath: '.agents/skills/docs-creator/SKILL.md',
+      heading: '# Docs Creator',
+      name: 'docs-creator',
+      sourcePath: '.agents/rules/docs-creator.mdc',
+    },
+    {
+      generatedPath: '.agents/skills/plate-ui/SKILL.md',
+      heading: '# Plate UI',
+      name: 'plate-ui',
+      sourcePath: '.agents/rules/plate-ui.mdc',
+    },
+  ];
+
+  for (const { generatedPath, heading, name, sourcePath } of pairs) {
+    const source = join(root, sourcePath);
+    const generated = join(root, generatedPath);
+    const description = `${name} doctrine`;
+
+    mkdirSync(join(source, '..'), { recursive: true });
+    mkdirSync(join(generated, '..'), { recursive: true });
+    writeFileSync(
+      source,
+      `---\ndescription: ${description}\n---\n${heading}\nbody\n`
+    );
+    writeFileSync(
+      generated,
+      `---\ndescription: ${description}\nname: ${name}\nmetadata:\n  skiller:\n    source: ${sourcePath}\n---\n${heading}\nbody\n`
+    );
+  }
+
+  assert.equal(haveMatchingRequiredSkills(root), true);
+
+  writeFileSync(
+    join(root, '.agents/skills/plate-ui/SKILL.md'),
+    'stale generated skill\n'
+  );
+
+  assert.equal(haveMatchingRequiredSkills(root), false);
+});
+
 test('validates contiguous doctrine history and exact package enrollment', () => {
   const root = createRoot();
   const registry = createRegistry();
@@ -155,13 +298,14 @@ test('validates contiguous doctrine history and exact package enrollment', () =>
   );
 });
 
-test('rejects an unversioned doctrine edit and stale generated skill', () => {
+test('rejects an unversioned doctrine edit and stale generated output', () => {
   const root = createRoot();
   const registry = createRegistry();
   const errors = validateRegistry({
     currentDoctrineFingerprint: `sha256:${'1'.repeat(64)}`,
     declaredVersion: 2,
-    generatedSkillMatches: false,
+    generatedResourcesMatch: false,
+    generatedSkillsMatch: false,
     registry,
     reviewedSlugs: ['alpha'],
     root,
@@ -174,7 +318,10 @@ test('rejects an unversioned doctrine edit and stale generated skill', () => {
     errors.some((error) => error.includes('bump the doctrine version'))
   );
   assert.ok(
-    errors.some((error) => error.includes('Generated Plate Next skill'))
+    errors.some((error) => error.includes('Required generated doctrine skills'))
+  );
+  assert.ok(
+    errors.some((error) => error.includes('Required generated skill resources'))
   );
 });
 
@@ -188,7 +335,7 @@ test('reports malformed version history without throwing', () => {
     validateRegistry({
       currentDoctrineFingerprint: `sha256:${'1'.repeat(64)}`,
       declaredVersion: 1,
-      generatedSkillMatches: true,
+      generatedSkillsMatch: true,
       registry,
       reviewedSlugs: ['alpha'],
       root,

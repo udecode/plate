@@ -50,7 +50,7 @@ import { createBasePlugin } from 'platejs';
 
 const TagInputPlugin = createBasePlugin({
   editOnly: true,
-  key: 'tag_input',
+  name: 'tag_input',
   schema: { element: { void: 'inline' } },
 });
 ```
@@ -77,7 +77,7 @@ const initialState: TagPluginState = {
 export const TagPlugin = createBasePlugin({
   dependencies: [TagInputPlugin],
   initialState,
-  key: 'tag',
+  name: 'tag',
   schema: { element: { void: 'inline' } },
 });
 ```

@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 
 import { BaseTablePlugin } from './BaseTablePlugin';
-import type { TableConfig } from './BaseTablePlugin';
+import type { TableDefinition } from './BaseTablePlugin';
 import { createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import {
@@ -28,10 +28,10 @@ describe('table selection slow contracts', () => {
     jsxt;
 
     const getTestTablePlugins = (
-      options?: Partial<TableConfig['initialState']>
+      options?: Partial<TableDefinition['initialState']>
     ) => [
       createBasePlugin({
-        key: 'tableSelectionTestSchema',
+        name: 'tableSelectionTestSchema',
         schema: {
           properties: [
             schema.textProperty('bold', property.boolean()),
@@ -55,7 +55,7 @@ describe('table selection slow contracts', () => {
 
     const createTableEditor = (
       input: TestEditor,
-      options?: Partial<TableConfig['initialState']>
+      options?: Partial<TableDefinition['initialState']>
     ) => {
       const editor = createPlateEditor({
         plugins: getTestTablePlugins(options),
@@ -892,7 +892,7 @@ describe('table selection slow contracts', () => {
       type: 'table',
     });
     const RootHolderPlugin = createBasePlugin({
-      key: 'tableSelectionRootHolder',
+      name: 'tableSelectionRootHolder',
       schema: {
         element: {
           contentRoots: {
@@ -904,7 +904,7 @@ describe('table selection slow contracts', () => {
               ownership: 'exclusive',
             },
           },
-          topLevel: true,
+          blockContent: true,
           void: 'block',
         },
       },
@@ -952,7 +952,7 @@ describe('table selection slow contracts', () => {
             {
               childRoots: { body: root },
               children: [{ text: '' }],
-              type: RootHolderPlugin.key,
+              type: RootHolderPlugin.name,
             },
             createTable('main'),
           ],
@@ -964,7 +964,6 @@ describe('table selection slow contracts', () => {
         anchor: editor.anchor,
         editor,
         extend: editor.extend,
-        getApi: editor.getApi,
         read: editor.read,
         subscribe: editor.subscribe,
         subscribeCommit: editor.subscribeCommit,
@@ -1114,7 +1113,7 @@ describe('table selection slow contracts', () => {
             {
               childRoots: { body: root },
               children: [{ text: '' }],
-              type: RootHolderPlugin.key,
+              type: RootHolderPlugin.name,
             },
             createTable('main'),
           ],
@@ -1128,7 +1127,6 @@ describe('table selection slow contracts', () => {
         anchor: editor.anchor,
         editor,
         extend: editor.extend,
-        getApi: editor.getApi,
         read: editor.read,
         subscribe: editor.subscribe,
         subscribeCommit: editor.subscribeCommit,

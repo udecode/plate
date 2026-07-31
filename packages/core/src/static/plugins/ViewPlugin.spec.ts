@@ -17,7 +17,7 @@ describe('ViewPlugin', () => {
     it('is included in the static editor', () => {
       const editor = createStaticEditor();
 
-      expect(editor.getPlugin(ViewPlugin)).toBeDefined();
+      expect(editor.plugin(ViewPlugin).plugin).toBeDefined();
       expect(editor.api.dom.getSelectedFragment).toBeDefined();
     });
 

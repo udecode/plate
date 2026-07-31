@@ -66,7 +66,7 @@ const inlineLinkSchema = defineEditorSchema({
     },
   },
   id: 'inline-decoration-boundary',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });

@@ -57,9 +57,9 @@ void extendedTablePlugin;
 
 const tableDependentPlugin = createBasePlugin({
   dependencies: [BaseTablePlugin],
-  key: 'tableDependent',
+  name: 'tableDependent',
 }).extend(({ editor }) => ({
-  api: {
+  api: () => ({
     createTable: () => {
       const api = editor.plugin(BaseTablePlugin).api;
       const cell = api.createCell({ header: true });
@@ -69,17 +69,17 @@ const tableDependentPlugin = createBasePlugin({
 
       return { cell, row, selection, table };
     },
-  },
+  }),
 }));
 
 const stagedTableExtension = BaseTablePlugin.extend(({ api }) => ({
-  api: {
+  api: () => ({
     createHeaderRow: () => api.createRow({ colCount: 2, header: true }),
-  },
+  }),
 })).extend(({ plugin }) => ({
   update: ({ tx }) => ({
     hideLeftBorder: () => {
-      tx[plugin.key].setBorderSize(0, { border: 'left' });
+      tx[plugin.name].setBorderSize(0, { border: 'left' });
 
       const selection = tx.selection();
       const tableSelection = tx.table.getSelection();

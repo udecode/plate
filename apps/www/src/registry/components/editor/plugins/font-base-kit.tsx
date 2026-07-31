@@ -7,7 +7,7 @@ import {
 import { KEYS } from 'platejs';
 
 const options = {
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
 };
 
 export const BaseFontKit = [

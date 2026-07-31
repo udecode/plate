@@ -2,7 +2,7 @@
 
 import type { TabbablePluginState } from '@platejs/tabbable';
 import { TabbablePlugin } from '@platejs/tabbable/react';
-import { ElementApi, getPluginTypes, KEYS } from 'platejs';
+import { ElementApi, KEYS } from 'platejs';
 
 export type TabbableKitPluginState = Pick<TabbablePluginState, 'query'>;
 
@@ -32,12 +32,13 @@ export const TabbableKit = [
           match: (n) =>
             !!(
               (ElementApi.isElement(n) &&
-                getPluginTypes(editor, [
-                  KEYS.codeBlock,
-                  KEYS.li,
-                  KEYS.listTodoClassic,
-                  KEYS.table,
-                ]).includes(n.type)) ||
+                [KEYS.codeBlock, KEYS.li, KEYS.listTodoClassic, KEYS.table]
+                  .map((name) => {
+                    const plugin = editor.plugin(name);
+
+                    return plugin.installed ? plugin.type : name;
+                  })
+                  .includes(n.type)) ||
               (ElementApi.isElement(n) && n.listStyleType)
             ),
         });

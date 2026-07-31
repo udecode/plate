@@ -11,6 +11,7 @@ import {
   property,
   type Range,
   schema,
+  target,
   SelectionApi,
   ElementApi as PliteElement,
 } from '@platejs/plite';
@@ -93,31 +94,27 @@ const clipboardRichSchema = defineEditorSchema({
       properties: { character: property.string() },
       void: 'markable-inline',
     },
-    paragraph: {
-      content: schema.content.any(
-        [schema.content.text(), schema.content.group('inline')],
-        { default: 'text', min: 1 }
-      ),
+    paragraph: schema.element.textBlock({
       properties: {
-        blockTone: property.string({ significant: true }),
-        transientLabel: property.string({ significant: false }),
+        blockTone: property.string(),
       },
-    },
+    }),
   },
   id: 'clipboard-rich-test',
   properties: [
-    schema.textProperty('emphasis', property.boolean({ significant: true })),
-    schema.textProperty(
-      'transientMark',
-      property.string({ significant: false })
-    ),
-  ],
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
+    schema.elementProperty('transientLabel', property.string(), {
+      role: 'metadata',
+      target: target.type('paragraph'),
     }),
-  },
+    schema.textProperty('emphasis', property.boolean()),
+    schema.textProperty('transientMark', property.string(), {
+      role: 'metadata',
+    }),
+  ],
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -125,7 +122,7 @@ const clipboardRichSchema = defineEditorSchema({
 const permissiveClipboardSchema = defineEditorSchema({
   elements: {},
   id: 'clipboard-permissive-test',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -150,12 +147,10 @@ const keyboardSelectableClipboardSchema = defineEditorSchema({
     },
   },
   id: 'keyboard-selectable-clipboard-test',
-  root: {
-    content: schema.content.types(['media', 'paragraph'], {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.types(['media', 'paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -660,7 +655,9 @@ describe('plite-dom clipboard boundary', () => {
       });
       const clipboard = new FakeDataTransfer();
 
-      editor.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       const encoded = clipboard.getData('application/x-plite-fragment');
 
@@ -709,7 +706,9 @@ describe('plite-dom clipboard boundary', () => {
       });
       const clipboard = new FakeDataTransfer();
 
-      editor.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('text/plain')).toBe('Owned');
       expect(
@@ -805,10 +804,10 @@ describe('plite-dom clipboard boundary', () => {
 
     expect('dom' in headlessEditor).toBe(false);
     expect('clipboard' in headlessEditor.api).toBe(false);
-    expect(typeof editor.api.clipboard.insertData).toBe('function');
-    expect(typeof editor.api.clipboard.readSlice).toBe('function');
-    expect(typeof editor.api.clipboard.writeSelection).toBe('function');
-    expect(typeof editor.api.clipboard.writeSlice).toBe('function');
+    expect(typeof editor.api.dom.clipboard.insertData).toBe('function');
+    expect(typeof editor.api.dom.clipboard.readSlice).toBe('function');
+    expect(typeof editor.api.dom.clipboard.writeSelection).toBe('function');
+    expect(typeof editor.api.dom.clipboard.writeSlice).toBe('function');
     expect('clipboard' in editor).toBe(false);
   });
 
@@ -819,18 +818,18 @@ describe('plite-dom clipboard boundary', () => {
     const exact = new FakeDataTransfer();
 
     malformed.setData('application/x-plite-fragment', 'not-an-envelope');
-    editor.api.clipboard.writeSlice(exact as unknown as DataTransfer, {
+    editor.api.dom.clipboard.writeSlice(exact as unknown as DataTransfer, {
       slice: ContentSlice.closed([createChildren()[0]!]),
     });
 
     expect(
-      editor.api.clipboard.readSlice(absent as unknown as DataTransfer)
+      editor.api.dom.clipboard.readSlice(absent as unknown as DataTransfer)
     ).toEqual({ kind: 'absent' });
     expect(
-      editor.api.clipboard.readSlice(malformed as unknown as DataTransfer)
+      editor.api.dom.clipboard.readSlice(malformed as unknown as DataTransfer)
     ).toEqual({ kind: 'invalid', source: 'mime' });
     expect(
-      editor.api.clipboard.readSlice(exact as unknown as DataTransfer)
+      editor.api.dom.clipboard.readSlice(exact as unknown as DataTransfer)
     ).toMatchObject({
       kind: 'slice',
       slice: { content: [createChildren()[0]!] },
@@ -854,7 +853,7 @@ describe('plite-dom clipboard boundary', () => {
     ]);
 
     expect(() =>
-      editor.api.clipboard.insertData(
+      editor.api.dom.clipboard.insertData(
         new FakeDataTransfer() as unknown as DataTransfer
       )
     ).toThrow('DOM clipboard handler next() can only be called once.');
@@ -912,12 +911,16 @@ describe('plite-dom clipboard boundary', () => {
 
     editor.update(() => {
       expect(
-        editor.api.clipboard.insertData(productCard as unknown as DataTransfer)
+        editor.api.dom.clipboard.insertData(
+          productCard as unknown as DataTransfer
+        )
       ).toBe(true);
     });
     editor.update(() => {
       expect(
-        editor.api.clipboard.insertData(plainText as unknown as DataTransfer)
+        editor.api.dom.clipboard.insertData(
+          plainText as unknown as DataTransfer
+        )
       ).toBe(true);
     });
 
@@ -945,14 +948,18 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
       expect(clipboard.getData('text/plain')).toBe('alpha');
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1009,7 +1016,7 @@ describe('plite-dom clipboard boundary', () => {
     const fragmentData = createExactData();
 
     assertOnePasteCommit(fragmentTarget, () =>
-      fragmentTarget.api.clipboard.insertFragmentData(
+      fragmentTarget.api.dom.clipboard.insertFragmentData(
         fragmentData as unknown as DataTransfer
       )
     );
@@ -1019,7 +1026,7 @@ describe('plite-dom clipboard boundary', () => {
 
     textData.setData('text/plain', 'text');
     assertOnePasteCommit(textTarget, () =>
-      textTarget.api.clipboard.insertTextData(
+      textTarget.api.dom.clipboard.insertTextData(
         textData as unknown as DataTransfer
       )
     );
@@ -1028,7 +1035,7 @@ describe('plite-dom clipboard boundary', () => {
     const composedData = createExactData();
 
     assertOnePasteCommit(composedTarget, () =>
-      composedTarget.api.clipboard.insertData(
+      composedTarget.api.dom.clipboard.insertData(
         composedData as unknown as DataTransfer
       )
     );
@@ -1052,9 +1059,9 @@ describe('plite-dom clipboard boundary', () => {
 
     expect(() => {
       editor.update((tx) => {
-        expect(
-          tx.clipboard.insertData(clipboard as unknown as DataTransfer)
-        ).toBe(true);
+        expect(tx.dom.insertData(clipboard as unknown as DataTransfer)).toBe(
+          true
+        );
         throw new Error('rollback clipboard transaction');
       });
     }).toThrow('rollback clipboard transaction');
@@ -1063,9 +1070,9 @@ describe('plite-dom clipboard boundary', () => {
     expect(editorGetSnapshot(editor)).toEqual(before);
 
     editor.update((tx) => {
-      expect(
-        tx.clipboard.insertData(clipboard as unknown as DataTransfer)
-      ).toBe(true);
+      expect(tx.dom.insertData(clipboard as unknown as DataTransfer)).toBe(
+        true
+      );
     });
 
     expect(commits).toBe(1);
@@ -1109,23 +1116,23 @@ describe('plite-dom clipboard boundary', () => {
       html: '<p>copied</p>',
       slice: fragment,
     });
-    exactTarget.api.clipboard.insertData(exact as unknown as DataTransfer);
+    exactTarget.api.dom.clipboard.insertData(exact as unknown as DataTransfer);
 
     expect(editorGetSnapshot(exactTarget).children).toEqual(expected);
     expect(editorGetLastCommit(exactTarget)?.tags).toContain('paste');
 
-    const HostCodec = hostCodecs('significant-property-paste', [
+    const HostCodec = hostCodecs('content-property-paste', [
       defineHostCodec({
-        format: 'application/x-significant-property',
-        key: 'significant-property-paste',
+        format: 'application/x-content-property',
+        key: 'content-property-paste',
         parse: () => fragment,
       }),
     ]);
     const hostTarget = createTarget([HostCodec]);
     const host = new FakeDataTransfer();
 
-    host.setData('application/x-significant-property', 'copied');
-    hostTarget.api.clipboard.insertData(host as unknown as DataTransfer);
+    host.setData('application/x-content-property', 'copied');
+    hostTarget.api.dom.clipboard.insertData(host as unknown as DataTransfer);
 
     expect(editorGetSnapshot(hostTarget).children).toEqual(expected);
     expect(editorGetLastCommit(hostTarget)?.tags).toContain('paste');
@@ -1175,7 +1182,7 @@ describe('plite-dom clipboard boundary', () => {
         [
           defineEditorExtension({
             name: 'clipboard-export-projection',
-            read: ({ around }) => [
+            readMiddleware: ({ around }) => [
               around(editorReads.slice.export, ({ next }) => {
                 const slice = next();
 
@@ -1253,7 +1260,9 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       const html = clipboard.getData('text/html');
 
@@ -1266,7 +1275,7 @@ describe('plite-dom clipboard boundary', () => {
 
       htmlOnlyClipboard.setData('text/html', html);
       target.update(() => {
-        target.api.clipboard.insertData(
+        target.api.dom.clipboard.insertData(
           htmlOnlyClipboard as unknown as DataTransfer
         );
       });
@@ -1338,7 +1347,9 @@ describe('plite-dom clipboard boundary', () => {
 
       const exactTarget = createTarget();
 
-      exactTarget.api.clipboard.insertData(exact as unknown as DataTransfer);
+      exactTarget.api.dom.clipboard.insertData(
+        exact as unknown as DataTransfer
+      );
       expect(editorString(exactTarget, [0])).toBe('exact');
 
       const host = new FakeDataTransfer();
@@ -1358,7 +1369,7 @@ describe('plite-dom clipboard boundary', () => {
 
       const hostTarget = createTarget();
 
-      hostTarget.api.clipboard.insertData(host as unknown as DataTransfer);
+      hostTarget.api.dom.clipboard.insertData(host as unknown as DataTransfer);
       expect(editorString(hostTarget, [0])).toBe('host');
 
       const plain = new FakeDataTransfer();
@@ -1368,7 +1379,9 @@ describe('plite-dom clipboard boundary', () => {
 
       const plainTarget = createTarget();
 
-      plainTarget.api.clipboard.insertData(plain as unknown as DataTransfer);
+      plainTarget.api.dom.clipboard.insertData(
+        plain as unknown as DataTransfer
+      );
       expect(editorString(plainTarget, [0])).toBe('plain');
     });
   });
@@ -1400,7 +1413,9 @@ describe('plite-dom clipboard boundary', () => {
 
       mountSimpleEditorDOM(source, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('text/plain').trimEnd()).toBe('1\n\n2');
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
@@ -1438,7 +1453,9 @@ describe('plite-dom clipboard boundary', () => {
 
       mountSimpleEditorDOM(source, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('text/plain').trimEnd()).toBe(
         'Line 1\n \n\nLine 4'
@@ -1474,7 +1491,7 @@ describe('plite-dom clipboard boundary', () => {
       mountListEditorDOM(source, document);
 
       expect(() => {
-        source.api.clipboard.writeSelection(
+        source.api.dom.clipboard.writeSelection(
           clipboard as unknown as DataTransfer
         );
       }).not.toThrow();
@@ -1521,7 +1538,9 @@ describe('plite-dom clipboard boundary', () => {
         version: 1,
       });
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('text/plain')).toBe('alpha');
       expect(clipboard.getData('text/html')).not.toContain(
@@ -1559,10 +1578,14 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1619,14 +1642,18 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
       expect(clipboard.getData('text/plain').trimEnd()).toBe('one\ntwo');
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1688,10 +1715,14 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1753,10 +1784,14 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1812,10 +1847,14 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1876,10 +1915,14 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -1928,13 +1971,17 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('application/x-plite-fragment')).toBe('');
       expect(clipboard.getData('application/x-proof-fragment')).not.toBe('');
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(
@@ -1964,13 +2011,15 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(
+      source.api.dom.clipboard.writeSelection(
         encodedClipboard as unknown as DataTransfer
       );
       clipboard.setData('text/html', encodedClipboard.getData('text/html'));
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(
@@ -2008,14 +2057,16 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(
+      source.api.dom.clipboard.writeSelection(
         encodedClipboard as unknown as DataTransfer
       );
       clipboard.setData('text/html', encodedClipboard.getData('text/html'));
       clipboard.setData('text/plain', 'plain fallback');
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(
@@ -2049,14 +2100,16 @@ describe('plite-dom clipboard boundary', () => {
       mountSimpleEditorDOM(source, document);
       mountEditorRoot(target, document);
 
-      source.api.clipboard.writeSelection(
+      source.api.dom.clipboard.writeSelection(
         encodedClipboard as unknown as DataTransfer
       );
       clipboard.setData('text/html', encodedClipboard.getData('text/html'));
       clipboard.setData('text/plain', 'plain fallback');
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(
@@ -2080,7 +2133,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'hello');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(
@@ -2130,7 +2183,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'PASTE ');
 
     expect(
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer)
     ).toBe(true);
     expect(editorGetSnapshot(editor).children).toEqual([
       {
@@ -2181,7 +2234,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'TEXT');
 
     expect(
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer)
     ).toBe(true);
     expect(editorGetSnapshot(editor).children).toEqual([
       {
@@ -2233,7 +2286,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'A\nB');
 
     expect(
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer)
     ).toBe(true);
     expect(editorGetSnapshot(editor).children).toEqual([
       {
@@ -2305,7 +2358,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'TEXT');
 
     expect(
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer)
     ).toBe(true);
     expect(editorGetSnapshot(editor).children).toEqual([
       {
@@ -2343,7 +2396,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'hello');
 
     expect(
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer)
     ).toBe(true);
     expect(editorGetSnapshot(editor).children).toEqual([
       {
@@ -2374,7 +2427,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'hello');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(
@@ -2406,7 +2459,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'hello');
 
     expect(
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer)
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer)
     ).toBe(true);
     expect(editorGetSnapshot(editor).children).toEqual([
       {
@@ -2441,7 +2494,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'world\nNext');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -2481,7 +2534,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'One\nTwo');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -2531,7 +2584,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'replaced');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -2574,7 +2627,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'world\nAnd text below');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -2614,7 +2667,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'hello\tworld\nhello\tworld');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -2654,7 +2707,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'ABD\tEFG');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -2706,7 +2759,9 @@ describe('plite-dom clipboard boundary', () => {
 
       expect(() => {
         editor.update(() => {
-          editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+          editor.api.dom.clipboard.insertData(
+            clipboard as unknown as DataTransfer
+          );
         });
       }).not.toThrow();
 
@@ -2734,7 +2789,9 @@ describe('plite-dom clipboard boundary', () => {
 
       expect(() => {
         editor.update(() => {
-          editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+          editor.api.dom.clipboard.insertData(
+            clipboard as unknown as DataTransfer
+          );
         });
       }).not.toThrow();
 
@@ -2775,7 +2832,7 @@ describe('plite-dom clipboard boundary', () => {
 
         expect(() => {
           editor.update(() => {
-            editor.api.clipboard.insertData(
+            editor.api.dom.clipboard.insertData(
               clipboard as unknown as DataTransfer
             );
           });
@@ -2803,7 +2860,9 @@ describe('plite-dom clipboard boundary', () => {
 
       expect(() => {
         editor.update(() => {
-          editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+          editor.api.dom.clipboard.insertData(
+            clipboard as unknown as DataTransfer
+          );
         });
       }).not.toThrow();
 
@@ -2832,7 +2891,9 @@ describe('plite-dom clipboard boundary', () => {
 
       mountDecoratedEditorDOM(source, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
       expect(clipboard.getData('text/plain')).toBe('lph');
@@ -2887,7 +2948,7 @@ describe('plite-dom clipboard boundary', () => {
       mountEditorRoot(target, document);
 
       expect(() => {
-        source.api.clipboard.writeSelection(
+        source.api.dom.clipboard.writeSelection(
           clipboard as unknown as DataTransfer
         );
       }).not.toThrow();
@@ -2920,7 +2981,9 @@ describe('plite-dom clipboard boundary', () => {
       expect(clipboard.getData('text/plain')).not.toContain('omega');
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -2945,7 +3008,9 @@ describe('plite-dom clipboard boundary', () => {
       expect(editorGetChangedRoots(target)).toEqual([null]);
 
       target.update(() => {
-        target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        target.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(target).children).toEqual([
@@ -3023,7 +3088,9 @@ describe('plite-dom clipboard boundary', () => {
 
       mountBlockVoidEditorDOM(source, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       const encoded = clipboard.getData('application/x-plite-fragment');
       const html = clipboard.getData('text/html');
@@ -3076,7 +3143,9 @@ describe('plite-dom clipboard boundary', () => {
 
       mountBlockVoidEditorDOM(source, document);
 
-      source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      source.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('application/x-plite-fragment')).not.toBe('');
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
@@ -3104,7 +3173,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'A\nB');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -3147,7 +3216,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'one\ntwo\nthree');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -3200,7 +3269,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'paste one\npaste two');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -3235,7 +3304,7 @@ describe('plite-dom clipboard boundary', () => {
     clipboard.setData('text/plain', 'one\ntwo\nthree');
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(editorGetSnapshot(editor).children).toEqual([
@@ -3283,7 +3352,7 @@ describe('plite-dom clipboard boundary', () => {
     editor.subscribeCommit(() => commits++);
 
     editor.update(() => {
-      editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
     expect(commits).toBe(1);

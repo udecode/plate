@@ -77,7 +77,7 @@ const contentRootExtension = defineEditorSchema({
     },
   },
   id: 'projected-command-test',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -85,7 +85,7 @@ const contentRootExtension = defineEditorSchema({
 const splitSchemaDocumentExtension = defineEditorSchema({
   elements: {},
   id: 'projected-command-split-schema-document',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -112,7 +112,7 @@ const inlineLinkExtension = defineEditorSchema({
     },
   },
   id: 'projected-command-inline-test',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -135,12 +135,10 @@ const structuralListExtension = defineEditorSchema({
   },
   groups: { 'list-item': {} },
   id: 'projected-command-structural-list-test',
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });

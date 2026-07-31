@@ -72,15 +72,10 @@ const SliceFitSchema = defineEditorSchema({
   },
   id: 'slice-fit-contract',
   properties: [schema.textProperty('bold', property.boolean())],
-  root: {
-    content: schema.content.types(
-      ['divider', 'heading', 'paragraph', 'section'],
-      {
-        default: { type: 'paragraph' },
-        min: 1,
-      }
-    ),
-  } as const,
+  root: schema.content.types(['divider', 'heading', 'paragraph', 'section'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -125,12 +120,10 @@ const CoveredDeletionSchema = defineEditorSchema({
     } as const,
   },
   id: 'covered-deletion-contract',
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  } as const,
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -177,12 +170,10 @@ const CoveredReplacementSchema = defineEditorSchema({
     } as const,
   },
   id: 'covered-replacement-contract',
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  } as const,
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });
@@ -206,12 +197,10 @@ const defineMentionSchema = (id: string) =>
     },
     id,
     properties: [schema.textProperty('bold', property.boolean())],
-    root: {
-      content: schema.content.type('paragraph', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    } as const,
+    root: schema.content.type('paragraph', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
     unknown: 'reject',
     version: 1,
   });
@@ -382,12 +371,10 @@ describe('contextual schema slice fitting', () => {
         } as const,
       },
       id: 'slice-context-barrier',
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -547,13 +534,11 @@ describe('contextual schema slice fitting', () => {
         } as const,
       },
       id: 'bounded-slice-fit-candidate',
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          max: 1,
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        max: 1,
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -733,12 +718,10 @@ describe('contextual schema slice fitting', () => {
         } as const,
       },
       id: 'closed-inline-split',
-      root: {
-        content: schema.content.type('paragraph', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -798,12 +781,10 @@ describe('contextual schema slice fitting', () => {
         } as const,
       },
       id: 'nested-leading-spine',
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -1651,12 +1632,10 @@ describe('contextual schema slice fitting', () => {
         item: {} as const,
       },
       id: 'slice-wrapper-maximum',
-      root: {
-        content: schema.content.types(['bucket', 'paragraph'], {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.types(['bucket', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -1722,12 +1701,10 @@ describe('contextual schema slice fitting', () => {
         item: {} as const,
       },
       id: 'slice-wrapper-minimum',
-      root: {
-        content: schema.content.types(['pair', 'paragraph'], {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.types(['pair', 'paragraph'], {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -1806,19 +1783,15 @@ describe('contextual schema slice fitting', () => {
         heading: {} as const,
       },
       id: 'named-root-slice-fit',
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      roots: {
+        header: schema.content.group('heading', {
+          default: { type: 'heading' },
           min: 1,
         }),
-      } as const,
-      roots: {
-        header: {
-          content: schema.content.group('heading', {
-            default: { type: 'heading' },
-            min: 1,
-          }),
-        } as const,
       },
       unknown: 'reject',
       version: 1,
@@ -1869,19 +1842,15 @@ describe('contextual schema slice fitting', () => {
         header: {} as const,
       },
       id: 'target-root-slice-fit',
-      root: {
-        content: schema.content.group('body', {
-          default: { type: 'paragraph' },
+      root: schema.content.group('body', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
+      roots: {
+        header: schema.content.group('header', {
+          default: { type: 'heading' },
           min: 1,
         }),
-      } as const,
-      roots: {
-        header: {
-          content: schema.content.group('header', {
-            default: { type: 'heading' },
-            min: 1,
-          }),
-        } as const,
       },
       unknown: 'reject',
       version: 1,
@@ -1942,12 +1911,10 @@ describe('contextual schema slice fitting', () => {
             } as const,
           },
           id: 'root-fit-selection-provenance',
-          root: {
-            content: schema.content.type('section', {
-              default: { type: 'section' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.type('section', {
+            default: { type: 'section' },
+            min: 1,
+          }),
           unknown: 'reject',
           version: 1,
         }),
@@ -2011,12 +1978,10 @@ describe('contextual schema slice fitting', () => {
             } as const,
           },
           id: 'root-fit-merged-selection-provenance',
-          root: {
-            content: schema.content.type('paragraph', {
-              default: { type: 'paragraph' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
           unknown: 'reject',
           version: 1,
         }),
@@ -2064,12 +2029,10 @@ describe('contextual schema slice fitting', () => {
             } as const,
           },
           id: 'root-fit-selected-spacer-provenance',
-          root: {
-            content: schema.content.type('paragraph', {
-              default: { type: 'paragraph' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.type('paragraph', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
           unknown: 'reject',
           version: 1,
         }),
@@ -2200,12 +2163,10 @@ describe('contextual schema slice fitting', () => {
         } as const,
       },
       id: 'selected-inline-boundary-schema',
-      root: {
-        content: schema.content.type('paragraph', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -2300,12 +2261,10 @@ describe('contextual schema slice fitting', () => {
       },
       id: 'bounded-representation-construction',
       properties: [schema.textProperty('mark', property.number())],
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });

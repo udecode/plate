@@ -1,4 +1,6 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test';
+import { createPluginContext } from '@platejs/core/internal';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { createBaseEditor } from 'platejs';
 
 mock.module('@/registry/ui/suggestion-node-static', () => ({
@@ -12,21 +14,19 @@ describe('BaseSuggestionKit', () => {
   });
 
   it('injects inline suggestion type for static inline element rendering', async () => {
-    const { BaseSuggestionKit } = await import(
-      `./suggestion-base-kit?test=${Math.random().toString(36).slice(2)}`
-    );
+    const { BaseSuggestionKit } = await import('./suggestion-base-kit');
 
     const editor = createBaseEditor({
       plugins: BaseSuggestionKit,
     });
-    const transformProps = editor.getPlugin(BaseSuggestionKit[0]).inject
-      ?.nodeProps?.transformProps;
+    const suggestion = createPluginContext(editor, BaseSuggestionPlugin);
+    const transformProps = suggestion.plugin.inject?.nodeProps?.transformProps;
 
     if (!transformProps) throw new Error('Missing transformProps');
 
     expect(
       transformProps({
-        editor,
+        ...suggestion,
         element: {
           children: [
             {

@@ -922,7 +922,7 @@ describe('@platejs/yjs remote import contract', () => {
           ),
         }),
       ],
-      root: { content: schema.content.type('section') },
+      root: schema.content.type('section'),
       unknown: 'reject',
       version: 1,
     });
@@ -1115,9 +1115,7 @@ describe('@platejs/yjs remote import contract', () => {
         },
       },
       id: 'closed-yjs-ingress',
-      root: {
-        content: schema.content.group('block', { min: 1 }),
-      },
+      root: schema.content.group('block', { min: 1 }),
       unknown: 'reject',
       version: 1,
     });

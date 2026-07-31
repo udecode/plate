@@ -175,7 +175,7 @@ function LinkOpenButton() {
   const attributes = React.useMemo(
     () => {
       const entry = editor.read.nodes.find<TLinkElement>({
-        match: { type: editor.getType(LinkPlugin.key) },
+        match: { type: editor.plugin(LinkPlugin.name).type },
       });
       if (!entry) {
         return {};

@@ -34,7 +34,7 @@ import { DocxIOPlugin } from './DocxIOPlugin';
 void jsx;
 
 const TestLinkPlugin = createBasePlugin({
-  key: 'link',
+  name: 'link',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -66,7 +66,7 @@ const TestLinkPlugin = createBasePlugin({
 });
 
 const TestTableRowPlugin = createBasePlugin({
-  key: KEYS.tr,
+  name: KEYS.tr,
   schema: ({ plugins }) => {
     const cellType = plugins.elementType(TestTableCellPlugin);
 
@@ -90,7 +90,7 @@ const TestTableRowPlugin = createBasePlugin({
 });
 
 const TestTableCellPlugin = createBasePlugin({
-  key: KEYS.td,
+  name: KEYS.td,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -110,7 +110,7 @@ const TestTableCellPlugin = createBasePlugin({
 });
 
 const TestTablePlugin = createBasePlugin({
-  key: KEYS.table,
+  name: KEYS.table,
   dependencies: [TestTableRowPlugin, TestTableCellPlugin],
   schema: ({ plugins }) => {
     const rowType = plugins.elementType(TestTableRowPlugin);

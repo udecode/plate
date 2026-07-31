@@ -59,7 +59,7 @@ import { YjsPlugin } from "@platejs/yjs/react";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
-  schema: { id: "yjs-example", version: 1 },
+  schemaIdentity: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
       initialState: {
@@ -83,7 +83,7 @@ const editor = createPlateEditor({
 ### Configure Provider And Cursors
 
 Wrap your provider as `YjsProviderLike`, then pass it through the plugin's
-`options`. The same React subpath exports remote cursor hooks.
+`initialState`. The same React subpath exports remote cursor hooks.
 
 ```tsx
 import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";

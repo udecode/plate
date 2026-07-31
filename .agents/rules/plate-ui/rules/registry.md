@@ -47,16 +47,19 @@ declaration when:
   binding;
 - removing it would hide which descriptor owns the visible feature.
 
-Transparency is source-level, not duplicate runtime membership. When the
-aggregate already contains the same descriptor, filter it out by descriptor
-key and then explicitly add/configure it once:
+Terminal configurations derived from the same authored plugin compose in source
+order. When the aggregate already contains that plugin, append the explicit
+configuration so earlier fields survive and its later defined values win:
 
 ```tsx
 plugins: [
-  ...EditorKit.filter((plugin) => plugin.key !== FeaturePlugin.key),
+  ...EditorKit,
   FeaturePlugin.configure({ component: FeatureElement }),
 ]
 ```
+
+Do not use this for unrelated plugins or divergent authoring branches that
+merely share a name; Core rejects those collisions.
 
 Before deduplicating example setup, compare the source with
 `registry-examples.ts`, its feature kit, and the independently copied install

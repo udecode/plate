@@ -149,8 +149,8 @@ import { Editor, EditorContainer } from '@/components/ui/editor';
 export function AppEditor() {
   const editor = usePlateEditor({
     components: {
-      [BlockquotePlugin.key]: BlockquoteElement,
-      [CodePlugin.key]: CodeLeaf,
+      [BlockquotePlugin.name]: BlockquoteElement,
+      [CodePlugin.name]: CodeLeaf,
     },
     plugins: [BlockquotePlugin, CodePlugin],
   });
@@ -165,7 +165,7 @@ export function AppEditor() {
 }
 ```
 
-The keys are plugin keys, not file names or component names.
+The object keys are plugin names, not file names or component names.
 
 ## Render Without a Custom Component
 
@@ -177,7 +177,7 @@ import { schema } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
 export const QuotePlugin = createPlatePlugin({
-  key: 'quote',
+  name: 'quote',
   render: {
     as: 'blockquote',
   },

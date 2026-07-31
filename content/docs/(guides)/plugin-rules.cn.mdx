@@ -607,7 +607,7 @@ const plugins = [
 import { schema } from 'platejs';
 
 const CodeBlockPlugin = createPlatePlugin({
-  key: 'codeBlock',
+  name: 'codeBlock',
   type: 'code_block',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
@@ -689,7 +689,7 @@ const plugins = [
 
 ## 高级用法
 
-当规则表无法表达核心命令行为时，通过 constructor 的 `extension` 添加纯
+当规则表无法表达核心命令行为时，通过 constructor 根级 `commands` 添加纯
 Plite command handler。下面的单行插件把结构化
 换行命令转换为软换行：
 
@@ -697,16 +697,14 @@ Plite command handler。下面的单行插件把结构化
 import { editorCommands } from 'platejs';
 
 const SingleLinePlugin = createPlatePlugin({
-  key: 'singleLine',
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertBreak, ({ state }) =>
-        state.transaction((tx) => {
-          tx.break.insertSoft();
-        })
-      ),
-    ],
-  },
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) =>
+      state.transaction((tx) => {
+        tx.break.insertSoft();
+      })
+    ),
+  ],
+  name: 'singleLine',
 });
 ```
 

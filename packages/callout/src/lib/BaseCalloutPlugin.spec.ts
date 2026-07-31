@@ -10,8 +10,11 @@ describe('BaseCalloutPlugin', () => {
       plugins: [BaseCalloutPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
-    const plugin = editor.getPlugin(BaseCalloutPlugin);
-    const callout = editor.read.schema.handle(BaseCalloutPlugin);
+    const plugin = editor.plugin(BaseCalloutPlugin).plugin;
+    const callout = schema.handle.element(
+      BaseCalloutPlugin,
+      BaseCalloutPlugin.type
+    );
     const variant = schema.handle.property(callout, 'variant');
 
     expect(plugin.rules).toMatchObject({
@@ -34,7 +37,7 @@ describe('BaseCalloutPlugin', () => {
     expect(editor.read.children().at(-1)).toMatchObject({
       children: [{ text: '' }],
       icon: '💡',
-      type: editor.getType('callout'),
+      type: editor.plugin('callout').type,
       variant: 'info',
     });
   });
@@ -63,11 +66,7 @@ describe('BaseCalloutPlugin', () => {
 
   it('uses the default bulb icon when no icon is provided', () => {
     const editor = createBaseEditor({
-      plugins: [
-        BaseCalloutPlugin.configure({
-          type: 'custom-callout',
-        }),
-      ],
+      plugins: [BaseCalloutPlugin],
       initialValue: [{ children: [{ text: '' }], type: KEYS.p }],
     });
 
@@ -75,10 +74,10 @@ describe('BaseCalloutPlugin', () => {
     editor.update.callout.insert({ icon: undefined });
 
     expect(
-      editor.read.children().filter((node) => node.type === 'custom-callout')
+      editor.read.children().filter((node) => node.type === KEYS.callout)
     ).toMatchObject([
-      { icon: '💡', type: 'custom-callout' },
-      { icon: '💡', type: 'custom-callout' },
+      { icon: '💡', type: KEYS.callout },
+      { icon: '💡', type: KEYS.callout },
     ]);
   });
 });

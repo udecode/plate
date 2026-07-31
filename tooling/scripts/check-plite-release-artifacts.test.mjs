@@ -305,15 +305,17 @@ test('packs Core and builds an executable final Plate schema consumer', () => {
   for (const source of [sources.types, sources.runtime]) {
     assert.match(source, /createBaseEditor/);
     assert.match(source, /createBasePlugin/);
+    assert.match(source, /api: \(\{ store \}\) => \(\{/);
     assert.match(source, /schema: \(\{ initialState \}\)/);
     assert.match(source, /mark: releasePlateProperty\.boolean/);
     assert.match(source, /ReleaseParentPlugin/);
     assert.match(source, /releaseHeldPlugin\.store\.set/);
     assert.match(source, /releasePlateIdentityAfter/);
+    assert.doesNotMatch(source, /\.extend\(\(\{ store \}\) =>/);
   }
 
   assert.match(sources.types, /releaseExactElementType/);
-  assert.match(sources.types, /releaseNestedElementKey/);
+  assert.match(sources.types, /releaseNestedElementName/);
   assert.doesNotMatch(sources.types, /@ts-expect-error/);
   assert.doesNotMatch(sources.runtime, /@ts-expect-error/);
   assert.match(

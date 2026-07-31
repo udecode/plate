@@ -31,11 +31,7 @@ import {
   X,
 } from 'lucide-react';
 import {
-  type Node,
   type NodeEntry,
-  type BaseEditor,
-  type EditorBlockOptions,
-  type EditorNodesOptions,
   ElementApi,
   isHotkey,
   KEYS,
@@ -65,32 +61,6 @@ import {
 import { cn } from '@/lib/utils';
 
 import { AIChatEditor } from './ai-chat-editor';
-
-const getDomNode = (editor: PlateEditor, node: Node) =>
-  editor.api.dom.resolveDOMNode(node);
-
-const getBlockEntry = (editor: BaseEditor, options?: EditorBlockOptions) =>
-  editor.read.nodes.block(options);
-
-const getBlockEntries = (
-  editor: BaseEditor,
-  options?: EditorNodesOptions<Node>
-) =>
-  editor.read((state) =>
-    state.nodes.toArray({
-      match: (node) => ElementApi.isElement(node) && state.schema.isBlock(node),
-      ...options,
-    })
-  );
-
-const getNodeEntry = (editor: BaseEditor, options?: EditorNodesOptions<Node>) =>
-  editor.read.nodes.find(options);
-
-const isSelectionAtBlockEnd = (editor: BaseEditor) =>
-  editor.read.selection.isAtBlockEnd();
-
-const isElementEmpty = (editor: BaseEditor, element: Node) =>
-  ElementApi.isElement(element) && editor.read.nodes.isEmpty(element);
 
 export function AIMenu() {
   const { api, editor, read } = useEditorPlugin(AIChatPlugin);
@@ -123,7 +93,7 @@ export function AIMenu() {
     const anchorEntry = read.node({ anchor: true });
     if (!anchorEntry) return;
 
-    const anchorDom = getDomNode(editor, anchorEntry[0]);
+    const anchorDom = editor.api.dom.resolveDOMNode(anchorEntry[0]);
     if (!anchorDom) return;
     const animationFrame = window.requestAnimationFrame(() => {
       setAnchorElement(anchorDom);
@@ -153,7 +123,7 @@ export function AIMenu() {
 
       if (!block || !ElementApi.isElement(block[0])) return;
 
-      const domNode = getDomNode(editor, block[0]);
+      const domNode = editor.api.dom.resolveDOMNode(block[0]);
 
       if (domNode) show(domNode);
     },
@@ -164,27 +134,34 @@ export function AIMenu() {
       }
     },
     onOpenCursor: () => {
-      const ancestorEntry = getBlockEntry(editor);
+      const ancestorEntry = editor.read.nodes.block();
 
       if (!ancestorEntry) return;
 
       const [ancestor] = ancestorEntry;
 
       if (
-        !isSelectionAtBlockEnd(editor) &&
+        !editor.read.selection.isAtBlockEnd() &&
         ElementApi.isElement(ancestor) &&
-        !isElementEmpty(editor, ancestor)
+        !editor.read.nodes.isEmpty(ancestor)
       ) {
         editor.plugin(BlockSelectionPlugin).api.set(ancestor.id as string);
       }
 
-      const domNode = getDomNode(editor, ancestor);
+      const domNode = editor.api.dom.resolveDOMNode(ancestor);
 
       if (domNode) show(domNode);
     },
     onOpenSelection: () => {
-      const block = getBlockEntries(editor).at(-1);
-      const domNode = block ? getDomNode(editor, block[0]) : null;
+      const block = editor
+        .read((state) =>
+          state.nodes.toArray({
+            match: (node) =>
+              ElementApi.isElement(node) && state.schema.isBlock(node),
+          })
+        )
+        .at(-1);
+      const domNode = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
 
       if (domNode) show(domNode);
     },
@@ -199,7 +176,7 @@ export function AIMenu() {
   React.useEffect(() => {
     if (toolName !== 'edit' || mode !== 'chat' || isLoading) return;
 
-    let anchorNode = getNodeEntry(editor, {
+    let anchorNode = editor.read.nodes.find({
       at: [],
       reverse: true,
       match: (n) =>
@@ -217,8 +194,8 @@ export function AIMenu() {
 
     if (!anchorNode) return;
 
-    const block = getBlockEntry(editor, { at: anchorNode[1] });
-    const domNode = block ? getDomNode(editor, block[0]) : null;
+    const block = editor.read.nodes.block({ at: anchorNode[1] });
+    const domNode = block ? editor.api.dom.resolveDOMNode(block[0]) : null;
 
     if (!domNode) return;
 
@@ -341,11 +318,11 @@ const aiChatItems = {
     icon: <Check />,
     label: 'Accept',
     value: 'accept',
-    onSelect: ({ aiEditor, editor }) => {
+    onSelect: ({ editor }) => {
       const { mode, toolName } = editor.plugin(AIChatPlugin).store.get();
 
       if (mode === 'chat' && toolName === 'generate') {
-        return editor.plugin(AIChatPlugin).update.replaceSelection(aiEditor);
+        return editor.plugin(AIChatPlugin).update.replaceSelection();
       }
 
       editor.plugin(AIChatPlugin).update.accept();
@@ -377,7 +354,7 @@ const aiChatItems = {
     label: 'Continue writing',
     value: 'continueWrite',
     onSelect: ({ editor, input }) => {
-      const ancestorNode = getBlockEntry(editor);
+      const ancestorNode = editor.read.nodes.block();
 
       if (!ancestorNode) return;
 
@@ -481,11 +458,9 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     icon: <ListEnd />,
     label: 'Insert below',
     value: 'insertBelow',
-    onSelect: ({ aiEditor, editor }) => {
+    onSelect: ({ editor }) => {
       /** Format: 'none' Fix insert table */
-      editor
-        .plugin(AIChatPlugin)
-        .update.insertBelow(aiEditor, { format: 'none' });
+      editor.plugin(AIChatPlugin).update.insertBelow({ format: 'none' });
     },
   },
   makeLonger: {
@@ -516,8 +491,8 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     icon: <Check />,
     label: 'Replace selection',
     value: 'replace',
-    onSelect: ({ aiEditor, editor }) => {
-      editor.plugin(AIChatPlugin).update.replaceSelection(aiEditor);
+    onSelect: ({ editor }) => {
+      editor.plugin(AIChatPlugin).update.replaceSelection();
     },
   },
   simplifyLanguage: {
@@ -566,11 +541,9 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
     items?: { label: string; value: string }[];
     shortcut?: string;
     onSelect?: ({
-      aiEditor,
       editor,
       input,
     }: {
-      aiEditor: PlateEditor;
       editor: PlateEditor;
       input: string;
     }) => void;
@@ -637,7 +610,6 @@ export const AIMenuItems = ({
 }) => {
   const editor = useEditor();
   const messages = usePluginStore(AIChatPlugin, 'chat')?.messages;
-  const aiEditor = usePluginStore(AIChatPlugin, 'aiEditor')!;
   const isSelecting = useIsSelecting();
 
   const menuState: EditorChatState =
@@ -668,11 +640,7 @@ export const AIMenuItems = ({
               className="[&_svg]:text-muted-foreground"
               value={menuItem.value}
               onSelect={() => {
-                menuItem.onSelect?.({
-                  aiEditor,
-                  editor,
-                  input,
-                });
+                menuItem.onSelect?.({ editor, input });
                 setInput('');
               }}
             >

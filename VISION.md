@@ -153,8 +153,18 @@ selection, history, browser proof, package API, and benchmarks.
   extension groups, commit listeners, and projection sources.
 - Primary-root APIs do not expose a public `main` key. The primary document is
   addressed by omission; explicit roots are for additional roots only.
-- Slate stays unopinionated. Plate owns product opinion.
+- Plite stays unopinionated. Plate owns product opinion.
 - Do not keep legacy APIs alive just because they are familiar.
+- Plite extensions are exact, `name`-identified definitions. `type` remains
+  serialized node identity. They have no `config`; immutable construction
+  inputs and runtime resources stay in factory closures or honest host owners.
+- Extension-owned document capabilities are `read` and `update`; pure
+  core-read policy is `readMiddleware`. One descriptor-owned `api` projects to
+  `editor.api.<name>` and `editor.extension(Extension).api`; do not root-merge
+  methods or add `getApi`. The `api` field is always a one-context-object
+  factory, including for context-free values.
+- Lifecycle and host/DOM events share one root `on.*` family with prefixless
+  child names. There is no second `handlers` bucket.
 - Behavior specs define law; ordinary plugin and extension arrays compose
   accepted capabilities. Name a reusable kit only after real reuse, and treat
   runtime control as a separate proven job. Do not add a behavior-profile DSL.
@@ -187,6 +197,10 @@ on top of Slate-first primitives.
 - Plugin authoring keeps one-owner behavior colocated and inferred. Every
   public builder or configuration method must represent a distinct user job;
   current assembly machinery is never doctrine.
+- Plate plugins are exact opinionated definitions lowered onto Plite once.
+  Native Plite fields live directly at the plugin root; there is no nested
+  `extension` grammar, parallel `PluginConfig`, public `__config`, or
+  `pluginApi`.
 - Classify behavior before packaging it: invariants stay with their owner,
   runtime parameters stay in `initialState` and the scoped store, proven
   substitutable capabilities may become plugins, and product policy stays
@@ -194,12 +208,40 @@ on top of Slate-first primitives.
 - Plugin capability names encode execution boundaries: `selectors` are pure
   store projections, `read` is a pure supplied-state document query, `api` is a
   non-snapshot plugin service, `update` owns active-transaction document
-  mutation, and `extension` is genuine editor-wide substrate.
+  mutation, and flat native fields own genuine editor-wide substrate.
+- Public factories are one object call with no caller generics and preserve one
+  exact normalized definition. Their private typing may infer a small
+  dependency/initial-state environment beside the author input when TypeScript
+  needs that split for contextual callbacks; do not expose it or pretend one
+  self-referential generic can infer everything. `.extend()` widens the
+  definition and `.configure()` is terminal and non-widening. `component` is
+  ordinary render publication data accepted by Base and Plate constructors for
+  static/RSC and live consumers; Base extension stages reject it, while
+  terminal configuration may replace it. `toPlatePlugin()` belongs at the
+  owning React adapter when it publishes a reusable Plate-layer descriptor or
+  adds genuine Plate-only authoring; terminal consumers never insert it merely
+  to set `component`. Factories replace `clone()`.
+- `DefinitionOf<typeof FooPlugin>` is the sole public definition extractor,
+  and its alias is `FooDefinition`, never `FooConfig`. True domain/runtime
+  config types remain valid.
+- Root dependency references are shallow, non-generic identity values.
+  `EditorExtensionTypeProvider` is the sole public value-sensitive capability
+  bridge. Its higher-kinded encoding, normalized installed-capability carrier,
+  and transitive dependency expansion stay under `@platejs/plite/internal`,
+  never recursively encode exact ancestry, and never replace runtime
+  exact-descriptor identity. Plate's author-source to canonical-lowered type
+  split is internal too.
+- Low-level React composition is `react({ dom })`: one object, one exact DOM
+  descriptor, and at most one explicit erased implementation boundary for the
+  TypeScript 7 invariant-union reduction limit.
+- Format compilers own intrinsic syntax and compile installed feature-owned
+  codec declarations. Feature conversion tables do not belong in central
+  registries or mutable plugin state.
 - Plate can re-export Slate surface where it improves DX, but bugs that
   reproduce in plain Slate belong to Slate.
-- If a Plate public API collides with Slate v2 runtime names such as `api`,
-  `getApi`, `state`, or `tx`, cut or rename the Plate API. Do not compromise
-  Slate substrate names for Plate compatibility.
+- If a Plate public API collides with Plite runtime names such as `api`,
+  `read`, `update`, `state`, or `tx`, cut or rename the Plate API. Do not
+  compromise Plite substrate names for Plate compatibility.
 - Security is about explicit trust boundaries and sane defaults. Do not hide
   trust decisions behind convenience abstractions.
 - AI support stays optional, composable, and plugin-first.

@@ -4,7 +4,7 @@ import { useEditor, useElement } from '@platejs/core/react';
 import type { TMediaElement } from '@platejs/utils';
 import { useHotkeys } from '@udecode/react-hotkeys';
 
-import type { MediaPluginReference } from '../../lib/BaseMediaPlugin';
+import type { MediaPlugin } from '../plugins';
 import { FloatingMediaStore } from './FloatingMediaStore';
 
 export const useFloatingMediaEditButton = () => {
@@ -23,7 +23,7 @@ export const useFloatingMediaEditButton = () => {
 export const useFloatingMediaUrlInputState = ({
   plugin,
 }: {
-  plugin: MediaPluginReference;
+  plugin: MediaPlugin;
 }) => {
   const editor = useEditor();
   const element = useElement<TMediaElement>();

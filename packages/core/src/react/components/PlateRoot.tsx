@@ -2,7 +2,10 @@ import React from 'react';
 
 import { Plite } from '@platejs/plite-react';
 
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { usePlateRootProps } from '../hooks';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor } from '../stores/plate';
@@ -32,12 +35,14 @@ export function PlateRoot({
     </Plite>
   );
 
-  getPlateRuntime(editor).pluginCache.render.abovePlite.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
-    const AbovePlite = plugin.render.abovePlite!;
+  getPlateRuntime(editor).pluginCache.render.abovePlite.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      const AbovePlite = plugin.render.abovePlite!;
 
-    abovePlite = <AbovePlite>{abovePlite}</AbovePlite>;
-  });
+      abovePlite = <AbovePlite>{abovePlite}</AbovePlite>;
+    }
+  );
 
   return abovePlite;
 }

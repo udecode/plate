@@ -5,16 +5,16 @@ import type { PluginReference } from '../../lib/plugin';
 import { createBaseEditor } from '../../lib/editor';
 import { createBasePlugin } from '../../lib/plugin';
 import { BaseParagraphPlugin } from '../../lib/plugins';
-import { createPlatePlugin, toPlatePlugin } from '../../react/plugin';
+import { createPlatePlugin } from '../../react/plugin';
 import {
   getPlateRuntime,
   getPlateModelPublication,
   getResolvedPluginTargetBinding,
 } from './compilePlateModel';
 
-const createElementPlugin = (key: string, type = key) =>
+const createElementPlugin = (name: string, type = name) =>
   createBasePlugin({
-    key,
+    name,
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -26,15 +26,15 @@ const createElementPlugin = (key: string, type = key) =>
 describe('compilePlateModel', () => {
   it('projects one plugin-owned content-root slot onto targeted element plugins', () => {
     const ImagePlugin = createBasePlugin({
-      key: 'contentRootImage',
+      name: 'contentRootImage',
       schema: { element: { void: 'block' } },
     });
     const VideoPlugin = createBasePlugin({
-      key: 'contentRootVideo',
+      name: 'contentRootVideo',
       schema: { element: { void: 'block' } },
     });
     const CaptionPlugin = createBasePlugin({
-      key: 'caption',
+      name: 'caption',
       schema: ({ own, plugins }) => ({
         contentRoots: [
           own.contentRoot(
@@ -90,7 +90,7 @@ describe('compilePlateModel', () => {
     const semantic = createBaseEditor({
       plugins: [
         createBasePlugin({
-          key: 'derivedSemanticMark',
+          name: 'derivedSemanticMark',
           schema: {
             mark: property.boolean({ default: false, omitDefault: true }),
           },
@@ -109,7 +109,7 @@ describe('compilePlateModel', () => {
   it('publishes semantic schema projections from one descriptor', () => {
     const BlockPlugin = createElementPlugin('modelBlock', 'model-block');
     const MarkPlugin = createBasePlugin({
-      key: 'modelMark',
+      name: 'modelMark',
       schema: {
         mark: {
           inclusive: false,
@@ -121,7 +121,7 @@ describe('compilePlateModel', () => {
       render: { isDecoration: false },
     });
     const PropertyPlugin = createBasePlugin({
-      key: 'modelProperty',
+      name: 'modelProperty',
       initialState: { targets: [BlockPlugin] as const },
       schema: ({ initialState, own, plugins }) => ({
         properties: [
@@ -138,25 +138,25 @@ describe('compilePlateModel', () => {
     });
     const model = getPlateModelPublication(editor)!.model;
 
-    expect(model.byKey.modelBlock).toMatchObject({
+    expect(model.byName.modelBlock).toMatchObject({
       elementType: 'model-block',
       kind: 'element',
-      pluginKey: 'modelBlock',
+      pluginName: 'modelBlock',
       type: 'model-block',
     });
-    expect(model.byKey.modelMark?.textPropertyId).toMatch(/^text:model-mark@/);
-    expect(model.byKey.modelProperty?.propertyIds[0]).toMatch(
+    expect(model.byName.modelMark?.textPropertyId).toMatch(/^text:model-mark@/);
+    expect(model.byName.modelProperty?.propertyIds[0]).toMatch(
       /^element:model-property@/
     );
-    expect(model.byKey.modelProperty?.elementPropertyKeys).toEqual([
+    expect(model.byName.modelProperty?.elementPropertyKeys).toEqual([
       'model-property',
     ]);
-    expect(model.byKey.modelMark?.properties[0]).toBe(
+    expect(model.byName.modelMark?.properties[0]).toBe(
       model.contribution.properties?.find(
         (declaration) => declaration.key === 'model-mark'
       )
     );
-    expect(model.byKey.modelProperty?.properties[0]).toBe(
+    expect(model.byName.modelProperty?.properties[0]).toBe(
       model.contribution.properties?.find(
         (declaration) => declaration.key === 'model-property'
       )
@@ -165,8 +165,17 @@ describe('compilePlateModel', () => {
 
   it('accepts installed plugin descriptors as typed schema handles', () => {
     const BlockPlugin = createElementPlugin('descriptorBlock', 'descriptor');
+    const ContainerPlugin = createBasePlugin({
+      name: 'descriptorContainer',
+      schema: {
+        element: {
+          content: schema.content.type('descriptor', { min: 1 }),
+        },
+      },
+      type: 'descriptor-container',
+    });
     const ElementPropertyPlugin = createBasePlugin({
-      key: 'descriptorElementProperty',
+      name: 'descriptorElementProperty',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -176,7 +185,7 @@ describe('compilePlateModel', () => {
       type: 'descriptor-element-property',
     });
     const PropertyPlugin = createBasePlugin({
-      key: 'descriptorTone',
+      name: 'descriptorTone',
       schema: ({ own }) => ({
         properties: [
           own.elementProperty(property.string(), {
@@ -187,7 +196,7 @@ describe('compilePlateModel', () => {
       type: 'tone',
     });
     const MarkPlugin = createBasePlugin({
-      key: 'descriptorMark',
+      name: 'descriptorMark',
       schema: {
         mark: {
           inclusive: false,
@@ -198,7 +207,7 @@ describe('compilePlateModel', () => {
       type: 'descriptor-mark',
     });
     const AmbiguousPlugin = createBasePlugin({
-      key: 'descriptorAmbiguous',
+      name: 'descriptorAmbiguous',
       schema: {
         properties: [
           schema.elementProperty('first', property.string(), {
@@ -214,13 +223,14 @@ describe('compilePlateModel', () => {
     const editor = createBaseEditor({
       plugins: [
         BlockPlugin,
+        ContainerPlugin,
         ElementPropertyPlugin,
         MarkPlugin,
         PropertyPlugin,
         AmbiguousPlugin,
       ],
     });
-    const element = editor.read.schema.createAndFill(BlockPlugin, {
+    const element = editor.read.schema.create(BlockPlugin, {
       tone: 'warm',
     });
 
@@ -231,8 +241,11 @@ describe('compilePlateModel', () => {
     });
     expect(editor.read.schema.element(BlockPlugin)?.type).toBe('descriptor');
     expect(
-      editor.read.schema.createAndFill(editor.read.schema.handle(BlockPlugin))
-    ).toEqual({ children: [{ text: '' }], type: 'descriptor' });
+      editor.read.schema.allowsElementType(ContainerPlugin, BlockPlugin)
+    ).toBe(true);
+    expect(
+      editor.read.schema.isElementTypeInGroup(BlockPlugin, 'textBlock')
+    ).toBe(true);
     expect(editor.read.schema.getElementProperty(element, PropertyPlugin)).toBe(
       'warm'
     );
@@ -257,12 +270,12 @@ describe('compilePlateModel', () => {
     expect(() =>
       editor.read.schema.getElementProperty(element, AmbiguousPlugin as never)
     ).toThrow('cannot identify one element property');
-    expect(() =>
-      editor.read.schema.createAndFill(PropertyPlugin as never)
-    ).toThrow('does not declare schema.element');
+    expect(() => editor.read.schema.create(PropertyPlugin as never)).toThrow(
+      'does not declare schema.element'
+    );
 
     const UninstalledElementPropertyPlugin = createBasePlugin({
-      key: 'uninstalledDescriptorElementProperty',
+      name: 'uninstalledDescriptorElementProperty',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -282,23 +295,29 @@ describe('compilePlateModel', () => {
       editor.read.schema.property(UninstalledElementPropertyPlugin as never)
     ).toThrow('is not installed');
     expect(() =>
-      editor.read.schema.handle(UninstalledElementPropertyPlugin as never)
+      editor.read.schema.isElementTypeInGroup(
+        UninstalledElementPropertyPlugin as never,
+        'textBlock'
+      )
     ).toThrow('is not installed');
 
     const forgedDescriptor = {
-      key: BlockPlugin.key,
+      name: BlockPlugin.name,
       type: BlockPlugin.type,
     };
 
-    expect(() =>
-      editor.read.schema.createAndFill(forgedDescriptor as never)
-    ).toThrow('invalid plugin descriptor');
+    expect(() => editor.read.schema.create(forgedDescriptor as never)).toThrow(
+      'invalid plugin descriptor'
+    );
     expect(() => editor.read.schema.element(forgedDescriptor as never)).toThrow(
       'invalid plugin descriptor'
     );
-    expect(() => editor.read.schema.handle(forgedDescriptor as never)).toThrow(
-      'invalid plugin descriptor'
-    );
+    expect(() =>
+      editor.read.schema.isElementTypeInGroup(
+        forgedDescriptor as never,
+        'textBlock'
+      )
+    ).toThrow('invalid plugin descriptor');
     expect(() =>
       editor.read.schema.element(Object.create(BlockPlugin) as never)
     ).toThrow('invalid plugin descriptor');
@@ -307,11 +326,11 @@ describe('compilePlateModel', () => {
     const accessorDescriptor = Object.defineProperties(
       {},
       {
-        key: {
+        name: {
           get: () => {
             accessorReads++;
 
-            return BlockPlugin.key;
+            return BlockPlugin.name;
           },
         },
         type: { value: BlockPlugin.type },
@@ -324,7 +343,7 @@ describe('compilePlateModel', () => {
     expect(accessorReads).toBe(0);
 
     const StaleBlockPlugin = createElementPlugin(
-      BlockPlugin.key,
+      BlockPlugin.name,
       'stale-descriptor'
     );
     const staleEditor = createBaseEditor({
@@ -341,7 +360,7 @@ describe('compilePlateModel', () => {
     const MarkComponent = () => null;
     const ElementPlugin = createPlatePlugin({
       component: ElementComponent,
-      key: 'renderElement',
+      name: 'renderElement',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -351,7 +370,7 @@ describe('compilePlateModel', () => {
     });
     const MarkPlugin = createPlatePlugin({
       component: MarkComponent,
-      key: 'renderMark',
+      name: 'renderMark',
       render: {
         isDecoration: false,
         leafProps: { 'data-leaf': 'mark' },
@@ -364,7 +383,7 @@ describe('compilePlateModel', () => {
     });
     const RuntimeOnlyPlugin = createPlatePlugin({
       component: () => null,
-      key: 'runtimeOnly',
+      name: 'runtimeOnly',
       type: 'runtime-only',
     });
     const editor = createBaseEditor({
@@ -396,7 +415,7 @@ describe('compilePlateModel', () => {
       'container-block-child'
     );
     const InlineChildPlugin = createBasePlugin({
-      key: 'containerInlineChild',
+      name: 'containerInlineChild',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -406,7 +425,7 @@ describe('compilePlateModel', () => {
       type: 'container-inline-child',
     });
     const DirectContainerPlugin = createBasePlugin({
-      key: 'directBlockContainer',
+      name: 'directBlockContainer',
       schema: {
         element: {
           content: schema.content.type(BlockChildPlugin.type, {
@@ -417,7 +436,7 @@ describe('compilePlateModel', () => {
       },
     });
     const GroupContainerPlugin = createBasePlugin({
-      key: 'groupBlockContainer',
+      name: 'groupBlockContainer',
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
@@ -428,7 +447,7 @@ describe('compilePlateModel', () => {
       }),
     });
     const InlineContainerPlugin = createBasePlugin({
-      key: 'inlineOnlyContainer',
+      name: 'inlineOnlyContainer',
       schema: {
         element: {
           content: schema.content.any(
@@ -459,16 +478,16 @@ describe('compilePlateModel', () => {
       editor
     ).pluginCache.node.containerTypes.filter((key) =>
       [
-        DirectContainerPlugin.key,
-        GroupContainerPlugin.key,
-        InlineContainerPlugin.key,
-        TextOnlyPlugin.key,
+        DirectContainerPlugin.name,
+        GroupContainerPlugin.name,
+        InlineContainerPlugin.name,
+        TextOnlyPlugin.name,
       ].includes(key)
     );
 
     expect(customContainerTypes).toEqual([
-      DirectContainerPlugin.key,
-      GroupContainerPlugin.key,
+      DirectContainerPlugin.name,
+      GroupContainerPlugin.name,
     ]);
   });
 
@@ -484,7 +503,7 @@ describe('compilePlateModel', () => {
       targets: [TargetPlugin],
     };
     const plugin = createBasePlugin({
-      key: 'configuredModel',
+      name: 'configuredModel',
       initialState,
       schema: ({ initialState, own, plugins }) => ({
         properties: [
@@ -497,12 +516,12 @@ describe('compilePlateModel', () => {
     const editor = createBaseEditor({
       plugins: [TargetPlugin, plugin],
     });
-    const resolved = editor.getPlugin(plugin);
+    const resolved = editor.plugin(plugin).plugin;
 
     expect(resolved.initialState).toEqual({
       label: 'configured',
       nested: { value: 1 },
-      targets: [{ key: 'configuredTarget', type: 'configuredTarget' }],
+      targets: [{ name: 'configuredTarget', type: 'configuredTarget' }],
     });
   });
 
@@ -547,29 +566,26 @@ describe('compilePlateModel', () => {
     expect(updated.read.children()).toEqual(updatedValue);
   });
 
-  it('compiles top-level target keys into schema bindings', () => {
+  it('compiles top-level target names into schema bindings', () => {
     const HeadingPlugin = createElementPlugin('configuredHeading', 'heading');
     const PropertyPlugin = createBasePlugin({
-      key: 'configuredProperty',
-      schema: ({ own, plugins, targetPluginKeys }) => ({
+      name: 'configuredProperty',
+      schema: ({ own, plugins, targetPluginNames }) => ({
         properties: [
           own.elementProperty(property.string(), {
-            target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+            target: target.types(plugins.elementTypesByName(targetPluginNames)),
           }),
         ],
       }),
-      targetPluginKeys: [BaseParagraphPlugin.key],
+      targetPluginNames: [
+        HeadingPlugin.name,
+        'missingOptionalHeading',
+        HeadingPlugin.name,
+      ],
       inject: { nodeProps: {} },
     });
-    const configuredPropertyPlugin = PropertyPlugin.configure({
-      targetPluginKeys: [
-        HeadingPlugin.key,
-        'missingOptionalHeading',
-        HeadingPlugin.key,
-      ],
-    });
     const editor = createBaseEditor({
-      plugins: [HeadingPlugin, configuredPropertyPlugin],
+      plugins: [HeadingPlugin, PropertyPlugin],
     });
 
     expect(editor.read.schema.identity()?.kind).toBe('derived');
@@ -578,22 +594,22 @@ describe('compilePlateModel', () => {
       (editor.api as unknown as Record<string, unknown>).plateModel
     ).toBeUndefined();
 
-    const installedPropertyPlugin = editor.getPlugin(configuredPropertyPlugin);
+    const installedPropertyPlugin = editor.plugin(PropertyPlugin).plugin;
     const targetBinding = getResolvedPluginTargetBinding(
       editor,
       installedPropertyPlugin
     );
 
-    expect(installedPropertyPlugin.targetPluginKeys).toEqual([
+    expect(installedPropertyPlugin.targetPluginNames).toEqual([
       'configuredHeading',
       'missingOptionalHeading',
       'configuredHeading',
     ]);
-    expect(Object.isFrozen(installedPropertyPlugin.targetPluginKeys)).toBe(
+    expect(Object.isFrozen(installedPropertyPlugin.targetPluginNames)).toBe(
       true
     );
-    expect(targetBinding.keys).toEqual(['configuredHeading']);
-    expect(targetBinding.missingKeys).toEqual(['missingOptionalHeading']);
+    expect(targetBinding.names).toEqual(['configuredHeading']);
+    expect(targetBinding.missingNames).toEqual(['missingOptionalHeading']);
     expect(targetBinding.types).toEqual(['heading']);
     expect(editor.read.history().schema).toEqual(editor.read.schema.identity());
   });
@@ -604,17 +620,17 @@ describe('compilePlateModel', () => {
       enabled: false,
     });
     const MarkPlugin = createBasePlugin({
-      key: 'markTarget',
+      name: 'markTarget',
       schema: {
         mark: property.boolean({ default: false, omitDefault: true }),
       },
     });
     const createDependentPlugin = (
-      key: string,
+      name: string,
       referencedPlugin: PluginReference
     ) =>
       createBasePlugin({
-        key,
+        name,
         initialState: { referencedPlugin },
         schema: ({ initialState, own, plugins }) => ({
           properties: [
@@ -647,14 +663,14 @@ describe('compilePlateModel', () => {
     ).toThrow('schema reference "markTarget" is not an element plugin');
   });
 
-  it('never rewrites literal target types as plugin keys', () => {
-    const KeyAliasPlugin = createElementPlugin('literalAlias', 'other-type');
+  it('never rewrites literal target types as plugin names', () => {
+    const NameAliasPlugin = createElementPlugin('literalAlias', 'other-type');
     const LiteralTypePlugin = createElementPlugin(
       'literalTypeOwner',
       'literalAlias'
     );
     const PropertyPlugin = createBasePlugin({
-      key: 'literalPropertyOwner',
+      name: 'literalPropertyOwner',
       schema: {
         properties: [
           schema.elementProperty('literal-property', property.string(), {
@@ -664,7 +680,7 @@ describe('compilePlateModel', () => {
       },
     });
     const editor = createBaseEditor({
-      plugins: [KeyAliasPlugin, LiteralTypePlugin, PropertyPlugin],
+      plugins: [NameAliasPlugin, LiteralTypePlugin, PropertyPlugin],
     });
     const declaration = getPlateModelPublication(
       editor
@@ -678,10 +694,10 @@ describe('compilePlateModel', () => {
   it('keeps render-only changes out of the schema fingerprint', () => {
     const plugin = createElementPlugin('fingerprintElement');
     const first = createBaseEditor({
-      plugins: [toPlatePlugin(plugin).configure({ component: () => null })],
+      plugins: [plugin.configure({ component: () => null })],
     });
     const second = createBaseEditor({
-      plugins: [toPlatePlugin(plugin).configure({ component: () => null })],
+      plugins: [plugin.configure({ component: () => null })],
     });
 
     expect(first.read.schema.identity()?.fingerprint).toBe(
@@ -690,7 +706,7 @@ describe('compilePlateModel', () => {
   });
 
   it('rejects schema derivation from runtime extension callbacks', () => {
-    const plugin = (createBasePlugin({ key: 'runtimeSchema' }).extend as any)(
+    const plugin = (createBasePlugin({ name: 'runtimeSchema' }).extend as any)(
       () => ({
         schema: {
           mark: property.boolean({ default: false, omitDefault: true }),
@@ -699,7 +715,7 @@ describe('compilePlateModel', () => {
     );
 
     expect(() => createBaseEditor({ plugins: [plugin] })).toThrow(
-      'extension callbacks cannot define `schema`'
+      'Plate plugin .extend() cannot define `schema`'
     );
   });
 });

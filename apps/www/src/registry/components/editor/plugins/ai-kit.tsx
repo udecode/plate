@@ -2,7 +2,7 @@
 
 import cloneDeep from 'lodash/cloneDeep.js';
 import { AIChatPlugin, AIPlugin, useChatChunk } from '@platejs/ai/react';
-import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
+import { ElementApi, KEYS, PathApi } from 'platejs';
 import { usePluginStore } from 'platejs/react';
 
 import { AILoadingBar, AIMenu } from '@/registry/ui/ai-menu';
@@ -58,7 +58,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           editor.update({ history: 'skip' }).nodes.insert(
             {
               children: [{ text: '' }],
-              type: getPluginType(editor, KEYS.aiChat),
+              type: editor.plugin(KEYS.aiChat).type,
             },
             {
               at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -73,7 +73,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [getPluginType(editor, KEYS.ai)]: true,
+              [editor.plugin(KEYS.ai).type]: true,
             },
           });
         }
@@ -87,10 +87,10 @@ export const aiChatPlugin = AIChatPlugin.extend({
       },
     });
   },
-});
+}).configure({ component: AIAnchorElement });
 
 export const AIKit = [
   ...CursorOverlayKit,
   AIPlugin.configure({ component: AILeaf }),
-  aiChatPlugin.configure({ component: AIAnchorElement }),
+  aiChatPlugin,
 ];

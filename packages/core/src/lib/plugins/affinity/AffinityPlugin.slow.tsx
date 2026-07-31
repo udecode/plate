@@ -14,22 +14,22 @@ import { AffinityPlugin } from './AffinityPlugin';
 jsxt;
 
 const BaseBoldPlugin = createBasePlugin({
-  key: 'bold',
+  name: 'bold',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
 const BaseItalicPlugin = createBasePlugin({
-  key: 'italic',
+  name: 'italic',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
 const BaseCodePlugin = createBasePlugin({
-  key: 'code',
+  name: 'code',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
 const BaseLinkPlugin = createBasePlugin({
-  key: 'a',
+  name: 'a',
   type: 'a',
   schema: {
     element: {

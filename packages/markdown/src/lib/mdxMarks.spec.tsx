@@ -47,6 +47,28 @@ describe('mdx mark package surfaces', () => {
       ],
       title: 'round-trips superscript marks through mdx text elements',
     },
+    {
+      expected:
+        '<span style="background-color: #FE9900;"><span style="color: #FEFF00;"><span style="font-family: Inter;"><span style="font-size: 16px;"><span style="font-weight: bold;">Styled</span></span></span></span></span>\n',
+      input:
+        '<span style="background-color: #FE9900; color: #FEFF00; font-family: Inter; font-size: 16px; font-weight: bold;">Styled</span>',
+      output: [
+        {
+          children: [
+            {
+              backgroundColor: '#FE9900',
+              color: '#FEFF00',
+              fontFamily: 'Inter',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              text: 'Styled',
+            },
+          ],
+          type: 'p',
+        },
+      ],
+      title: 'composes every feature-owned span mark codec',
+    },
   ])('$title', ({ expected, input, output }) => {
     const value = editor.api.markdown.deserialize(input);
 

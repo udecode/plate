@@ -132,7 +132,7 @@ it('should collapse selection on backspace', () => {
 ```typescript
 import { createPlateEditor, createPlatePlugin } from 'platejs/react';
 
-it('should call the onKeyDown handler', () => {
+it('should call the keyDown handler', () => {
   const input = (
     <editor>
       <hp>
@@ -142,12 +142,12 @@ it('should call the onKeyDown handler', () => {
   ) as any as PlateEditor;
 
   // Create a mock handler to verify it's called
-  const onKeyDownMock = jest.fn();
+  const keyDownMock = jest.fn();
 
   const TestPlugin = createPlatePlugin({
-    key: 'test',
-    handlers: {
-      onKeyDown: onKeyDownMock,
+    name: 'test',
+    on: {
+      keyDown: keyDownMock,
     },
   });
 
@@ -165,13 +165,13 @@ it('should call the onKeyDown handler', () => {
   // 通过类型化 portal 解析已安装的描述符
   const testPlugin = editor.plugin(TestPlugin);
 
-  testPlugin.plugin.handlers.onKeyDown?.({
+  testPlugin.plugin.on.keyDown?.({
     ...testPlugin,
     event,
   });
 
   // Verify the handler was called
-  expect(onKeyDownMock).toHaveBeenCalled();
+  expect(keyDownMock).toHaveBeenCalled();
 });
 ```
 
@@ -269,7 +269,7 @@ describe('when keepSelectedTextOnPaste is disabled', () => {
       initialValue: input,
     });
 
-    editor.api.clipboard.insertData({
+    editor.api.dom.clipboard.insertData({
       getData: (type: string) => (type === 'text/plain' ? 'https://google.com' : ''),
     } as any);
 

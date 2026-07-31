@@ -109,7 +109,7 @@ BlockPlaceholderPlugin.configure({
 });
 ```
 
-- `placeholders`: 块类型与占位文本的映射
+- `placeholders`: 插件 name 与占位文本的映射
 - `className`: 应用于带占位符块的 CSS 类
 - `query`: 决定哪些块应显示占位符的函数
 
@@ -127,16 +127,16 @@ BlockPlaceholderPlugin.configure({
 2. 编辑器不是初始单空块状态；带可见结构状态的空列表项也符合条件
 3. 编辑器处于聚焦状态
 4. 块符合查询函数条件
-5. 块类型匹配 placeholders 映射中的键
+5. 块类型匹配 placeholders 映射中的插件 name
 
 初始空状态检查使用
 `editor.plugin(ElementStatePlugin).api.isEmpty`，因此只把 `type`
-和通过 `significant: false` 声明的已编译元素属性视为空状态元数据。
+和通过 `role: "metadata"` 声明的已编译元素属性视为空状态元数据。
 
 <API name="BlockPlaceholderPlugin">
 <APIOptions>
   <APIItem name="placeholders" type="Record<string, string>">
-    插件键与占位文本字符串的映射
+    插件 name 与占位文本字符串的映射
     - **默认值:** `{ [KEYS.p]: '输入内容...' }`
   </APIItem>
   <APIItem name="query" type="(context: PlatePluginContext & { node: Element; path: Path }) => boolean">

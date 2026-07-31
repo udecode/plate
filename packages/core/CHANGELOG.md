@@ -508,8 +508,8 @@
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
-  - `editor.getType()` now takes a `pluginKey: string` instead of a `plugin: PlatePlugin` instance.
-    - Example: Use `editor.getType(ParagraphPlugin.key)` instead of `editor.getType(ParagraphPlugin)`.
+  - `editor.plugin(Plugin).type` preserves exact descriptor typing; use
+    `editor.plugin(pluginName)` only for a runtime name.
   - Plugins without a `key` property will not be registered into the editor.
   - Passing `disabled: true` prop to `PlateContent` will now also set the editor to `readOnly: true` state internally.
   - Editor DOM state properties have been moved under `editor.dom` namespace:
@@ -1511,7 +1511,7 @@
             deserializer: {
               parse: ({ element, node }) => {
                 if (element.style.textAlign) {
-                  node[editor.getType(plugin)] = element.style.textAlign;
+                  node[editor.plugin(plugin).type] = element.style.textAlign;
                 }
               },
             },
@@ -1698,7 +1698,7 @@
   - NEW `getApi()` to get the editor API
   - NEW `getTransforms()` to get the editor transforms
   - Remove `getPlugin(editor, key)`, use `editor.getPlugin(plugin) or editor.getPlugin({ key })`
-  - Remove `getPluginType`, use `editor.getType(plugin)` to get node type
+  - Remove `getPluginType`, use `editor.plugin(plugin).type` to get node type
   - Remove `getPluginInjectProps(editor, key)`, use `editor.getPlugin(plugin).inject.props`
   - NEW `getOptionsStore()` to get a plugin options store
   - Remove `getPluginOptions`, use `getOptions()`

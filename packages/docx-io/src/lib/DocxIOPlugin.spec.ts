@@ -35,20 +35,19 @@ describe('DocxIOPlugin', () => {
     expect(document.querySelector('a[download="document.docx"]')).toBeNull();
   });
 
-  it('resolves configured plugin references for the export editor', async () => {
-    const SerializationPlugin = createBasePlugin({ key: 'serialization' });
+  it('uses explicit plugin descriptors for the export editor', async () => {
+    const SerializationPlugin = createBasePlugin({ name: 'serialization' });
     const editor = createBaseEditor({
-      plugins: [
-        SerializationPlugin,
-        DocxIOPlugin.configure({
-          initialState: { editorPlugins: [SerializationPlugin] },
-        }),
-      ],
+      plugins: [SerializationPlugin, DocxIOPlugin],
       initialValue: [{ children: [{ text: 'Export me' }], type: 'p' }],
     });
 
-    await expect(
-      editor.plugin(DocxIOPlugin).api.toBlob(editor.read.children())
-    ).resolves.toBeInstanceOf(Blob);
+    const blob = await editor
+      .plugin(DocxIOPlugin)
+      .api.toBlob(editor.read.children(), {
+        editorPlugins: [SerializationPlugin],
+      });
+
+    expect(blob).toBeInstanceOf(Blob);
   });
 });

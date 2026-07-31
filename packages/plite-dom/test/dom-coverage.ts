@@ -884,7 +884,9 @@ describe('DOM coverage boundaries', () => {
         });
       });
 
-      editor.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
+      editor.api.dom.clipboard.writeSelection(
+        clipboard as unknown as DataTransfer
+      );
 
       expect(clipboard.getData('text/plain')).toBe('Hidden alpha');
       expect(clipboard.getData('text/html')).toContain('Hidden alpha');
@@ -911,7 +913,9 @@ describe('DOM coverage boundaries', () => {
           anchor: { path: [0, 1, 0], offset: 0 },
           focus: { path: [0, 1, 0], offset: 12 },
         });
-        editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
+        editor.api.dom.clipboard.insertData(
+          clipboard as unknown as DataTransfer
+        );
       });
 
       expect(editorGetSnapshot(editor).children).toEqual([

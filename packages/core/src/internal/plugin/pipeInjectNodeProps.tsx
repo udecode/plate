@@ -4,13 +4,14 @@ import clsx from 'clsx';
 
 import type { BaseEditor } from '../../lib/editor';
 import type {
+  AnyResolvedBasePlugin,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
 } from '../../lib/plugin';
 
 import { isEditOnly } from './isEditOnlyDisabled';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
-import { getPlateRuntime } from './compilePlateModel';
+import { getCompiledPlatePlugin, getPlateRuntime } from './compilePlateModel';
 
 /** Inject plugin props, editor. */
 export const pipeInjectNodeProps = <
@@ -26,8 +27,11 @@ export const pipeInjectNodeProps = <
   let attributes: TNodeProps['attributes'] & GetInjectNodePropsReturnType =
     nodeProps.attributes;
 
-  getPlateRuntime(editor).pluginCache.inject.nodeProps.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.inject.nodeProps.forEach((pluginName) => {
+    const plugin = getCompiledPlatePlugin(
+      editor,
+      pluginName
+    ) as unknown as AnyResolvedBasePlugin;
 
     const newAttributes = pluginInjectNodeProps(
       editor,

@@ -8,48 +8,40 @@ import { createPlateEditor, extendPlateEditor } from './withPlate';
 
 describe('PlateEditor', () => {
   const MyCustomPlugin = createBasePlugin({
-    key: 'myCustom',
-    extension: { api: { myCustomMethod: () => {} } },
+    api: () => ({ myCustomMethod: () => {} }),
+    name: 'myCustom',
   });
 
   const TextFormattingPlugin = createBasePlugin({
-    key: 'textFormatting',
-    extension: {
-      api: {
-        bold: () => {},
-        italic: () => {},
-        underline: () => {},
-      },
-    },
+    api: () => ({
+      bold: () => {},
+      italic: () => {},
+      underline: () => {},
+    }),
+    name: 'textFormatting',
   });
 
   const ListPlugin = createBasePlugin({
-    key: 'list',
-    extension: {
-      api: {
-        createBulletedList: () => {},
-      },
-    },
+    api: () => ({
+      createBulletedList: () => {},
+    }),
+    name: 'list',
   });
 
   const TablePlugin = createBasePlugin({
-    key: 'table',
-    extension: {
-      api: {
-        addRow: () => {},
-        insertTable: () => {},
-      },
-    },
+    api: () => ({
+      addRow: () => {},
+      insertTable: () => {},
+    }),
+    name: 'table',
   });
 
   const ImagePlugin = createBasePlugin({
-    key: 'image',
-    extension: {
-      api: {
-        insertImage: () => {},
-        resizeImage: () => {},
-      },
-    },
+    api: () => ({
+      insertImage: () => {},
+      resizeImage: () => {},
+    }),
+    name: 'image',
   });
 
   describe('Core Plugins', () => {
@@ -72,11 +64,11 @@ describe('PlateEditor', () => {
       });
 
       expect(editor.plugin(DebugPlugin).api).toBeDefined();
-      expect(editor.api.bold).toBeInstanceOf(Function);
-      expect(editor.api.insertImage).toBeInstanceOf(Function);
+      expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
+      expect(editor.api.image.insertImage).toBeInstanceOf(Function);
 
       // @ts-expect-error
-      editor.api.createBulletedList;
+      editor.api.list;
     });
   });
 
@@ -85,14 +77,20 @@ describe('PlateEditor', () => {
       const singlePluginEditor = createPlateEditor({
         plugins: [MyCustomPlugin],
       });
-      expect(singlePluginEditor.api.myCustomMethod).toBeInstanceOf(Function);
+      expect(singlePluginEditor.api.myCustom.myCustomMethod).toBeInstanceOf(
+        Function
+      );
 
       const multiPluginEditor = createPlateEditor({
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
-      expect(multiPluginEditor.api.bold).toBeInstanceOf(Function);
-      expect(multiPluginEditor.api.createBulletedList).toBeInstanceOf(Function);
-      expect(multiPluginEditor.api.insertTable).toBeInstanceOf(Function);
+      expect(multiPluginEditor.api.textFormatting.bold).toBeInstanceOf(
+        Function
+      );
+      expect(multiPluginEditor.api.list.createBulletedList).toBeInstanceOf(
+        Function
+      );
+      expect(multiPluginEditor.api.table.insertTable).toBeInstanceOf(Function);
 
       // @ts-expect-error
       multiPluginEditor.api.nonExistentMethod;
@@ -103,12 +101,12 @@ describe('PlateEditor', () => {
         plugins: [MyCustomPlugin, ListPlugin, ImagePlugin],
       });
 
-      expect(editor.api.myCustomMethod).toBeInstanceOf(Function);
-      expect(editor.api.createBulletedList).toBeInstanceOf(Function);
-      expect(editor.api.insertImage).toBeInstanceOf(Function);
+      expect(editor.api.myCustom.myCustomMethod).toBeInstanceOf(Function);
+      expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
+      expect(editor.api.image.insertImage).toBeInstanceOf(Function);
 
       // @ts-expect-error
-      editor.api.insertTable;
+      editor.api.table;
     });
 
     it('extends a raw editor with all plugins atomically', () => {
@@ -116,33 +114,33 @@ describe('PlateEditor', () => {
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
 
-      expect(editor.api.bold).toBeInstanceOf(Function);
-      expect(editor.api.createBulletedList).toBeInstanceOf(Function);
-      expect(editor.api.insertTable).toBeInstanceOf(Function);
+      expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
+      expect(editor.api.list.createBulletedList).toBeInstanceOf(Function);
+      expect(editor.api.table.insertTable).toBeInstanceOf(Function);
 
       // @ts-expect-error
-      editor.api.insertImage;
+      editor.api.image;
     });
 
-    it('merges overlapping api names on extendPlateEditor', () => {
+    it('isolates overlapping API names by plugin namespace', () => {
       const OverlappingPlugin = createBasePlugin({
-        key: 'overlapping',
-        extension: {
-          api: {
-            bold: (_: number) => {},
-            insertImage: (_: number) => {},
-          },
-        },
+        api: () => ({
+          bold: (_: number) => {},
+          insertImage: (_: number) => {},
+        }),
+        name: 'overlapping',
       });
 
       const editor = createPlateEditor({
         plugins: [TextFormattingPlugin, OverlappingPlugin, ImagePlugin],
       });
 
-      expect(editor.api.bold).toBeInstanceOf(Function);
-      expect(editor.api.italic).toBeInstanceOf(Function);
-      expect(editor.api.insertImage).toBeInstanceOf(Function);
-      expect(editor.api.resizeImage).toBeInstanceOf(Function);
+      expect(editor.api.textFormatting.bold).toBeInstanceOf(Function);
+      expect(editor.api.textFormatting.italic).toBeInstanceOf(Function);
+      expect(editor.api.image.insertImage).toBeInstanceOf(Function);
+      expect(editor.api.image.resizeImage).toBeInstanceOf(Function);
+      expect(editor.api.overlapping.bold).toBeInstanceOf(Function);
+      expect(editor.api.overlapping.insertImage).toBeInstanceOf(Function);
 
       // @ts-expect-error
       editor.api.nonExistentMethod;
@@ -151,7 +149,7 @@ describe('PlateEditor', () => {
 
   describe('Plugin', () => {
     const BoldPlugin = createBasePlugin({
-      key: 'bold',
+      name: 'bold',
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       codecs: ({ defineCodecs }) =>
         defineCodecs({
@@ -177,7 +175,7 @@ describe('PlateEditor', () => {
         plugins: [BoldPlugin],
       });
 
-      expect(getPlateRuntime(editor).plugins[BoldPlugin.key]).toBeDefined();
+      expect(getPlateRuntime(editor).plugins[BoldPlugin.name]).toBeDefined();
     });
   });
 });

@@ -4,8 +4,11 @@ import { useAtomStoreSet, useAtomStoreValue } from 'jotai-x';
 
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';
 
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
-import { getEditorPlugin, getPlugin } from '../plugin';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
+import { createPluginContext } from '../plugin/createPluginContext.internal';
 import { useEditor, usePlateStore } from '../stores';
 
 export function EditorRefPluginEffect({
@@ -17,7 +20,7 @@ export function EditorRefPluginEffect({
 }) {
   const editor = useEditor({ id });
 
-  plugin.useHooks?.(getEditorPlugin(editor, plugin));
+  plugin.useHooks?.(createPluginContext(editor, plugin));
 
   return null;
 }
@@ -37,11 +40,13 @@ export function EditorRefEffect({ id }: { id?: string }) {
 
   return (
     <>
-      {getPlateRuntime(editor).pluginCache.useHooks.map((key) => (
+      {getPlateRuntime(editor).pluginCache.useHooks.map((pluginName) => (
         <EditorRefPluginEffect
           id={id}
-          key={key}
-          plugin={getPlugin(editor, { key })}
+          key={pluginName}
+          plugin={
+            getCompiledPlatePlugin(editor, pluginName) as AnyEditorPlatePlugin
+          }
         />
       ))}
     </>

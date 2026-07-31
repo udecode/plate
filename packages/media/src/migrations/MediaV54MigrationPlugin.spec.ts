@@ -12,13 +12,13 @@ import { BaseMediaEmbedPlugin } from '../lib/media-embed/BaseMediaEmbedPlugin';
 import { MediaV54MigrationPlugin } from './MediaV54MigrationPlugin';
 
 const TestBoldPlugin = createBasePlugin({
-  key: 'bold',
+  name: 'bold',
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 const TestMediaRootPlugin = createBasePlugin({
-  key: 'testMediaRoot',
+  name: 'testMediaRoot',
   schema: ({ own, plugins, type }) => ({
     contentRoots: [
       own.contentRoot(
@@ -115,30 +115,6 @@ describe('MediaV54MigrationPlugin', () => {
     });
   });
 
-  it('derives configured media types from installed plugins', () => {
-    const editor = createBaseEditor({
-      nodeId: false,
-      plugins: [
-        MediaV54MigrationPlugin,
-        BaseImagePlugin.configure({ type: 'customImage' }),
-      ],
-      initialValue: [
-        {
-          caption: [{ text: 'Legacy caption' }],
-          children: [{ text: '' }],
-          type: 'customImage',
-          url: 'https://platejs.org/media',
-        },
-      ],
-    });
-
-    expect(editor.read.children()[0]).toEqual({
-      children: [{ text: 'Legacy caption' }],
-      type: 'customImage',
-      url: 'https://platejs.org/media',
-    });
-  });
-
   it('migrates primary and named roots during deferred document loads', () => {
     const editor = createBaseEditor({
       nodeId: false,
@@ -200,7 +176,7 @@ describe('MediaV54MigrationPlugin', () => {
         MediaV54MigrationPlugin,
         BaseImagePlugin,
         createBasePlugin({
-          key: 'foreign',
+          name: 'foreign',
           schema: {
             element: {
               content: schema.content.text({ default: 'text', min: 1 }),

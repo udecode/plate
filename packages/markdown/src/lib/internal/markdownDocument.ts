@@ -103,7 +103,7 @@ export const toMarkdownBlockContent = (
 
     content.push({
       children: inline,
-      type: context.getPluginType(KEYS.p),
+      type: context.registry.getType(KEYS.p),
     });
     inline = [];
   };
@@ -129,7 +129,7 @@ export const toMarkdownBlockContent = (
     : [
         {
           children: [{ text: '' }],
-          type: context.getPluginType(KEYS.p),
+          type: context.registry.getType(KEYS.p),
         },
       ];
 };
@@ -140,7 +140,10 @@ export const toMarkdownCaptionContent = (
 ): readonly Descendant[] => {
   const blocks = toMarkdownBlockContent(context, children);
 
-  if (blocks.length !== 1 || blocks[0].type !== context.getPluginType(KEYS.p)) {
+  if (
+    blocks.length !== 1 ||
+    blocks[0].type !== context.registry.getType(KEYS.p)
+  ) {
     throw new Error('Media captions must contain one Markdown paragraph.');
   }
 

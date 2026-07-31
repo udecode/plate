@@ -64,13 +64,13 @@ editor.read.schema.identity();
 ```
 
 当文档用于持久化、历史序列化、schema 迁移或协作节点协商时，传入
-`schema: { id, version }`。这会创建命名谱系，而指纹仍只取决于编译后的
+`schemaIdentity: { id, version }`。这会创建命名谱系，而指纹仍只取决于编译后的
 schema：
 
 ```ts
 const editor = createPlateEditor({
   plugins: [H1Plugin],
-  schema: { id: 'acme-document', version: 3 },
+  schemaIdentity: { id: 'acme-document', version: 3 },
 });
 
 editor.read.schema.identity();
@@ -267,8 +267,8 @@ const editor = createPlateEditor({
 const editor = createPlateEditor({
   plugins: [H1Plugin],
   components: {
-    [ParagraphPlugin.key]: CustomParagraphComponent,
-    [H1Plugin.key]: CustomHeadingComponent,
+    [ParagraphPlugin.name]: CustomParagraphComponent,
+    [H1Plugin.name]: CustomHeadingComponent,
   },
 });
 ```
@@ -295,7 +295,7 @@ const editor = createPlateEditor({
 
 ```ts
 const SingleBlockPlugin = createPlatePlugin({
-  key: KEYS.singleBlock,
+  name: KEYS.singleBlock,
   override: {
     plugins: {
       [KEYS.trailingBlock]: {
@@ -306,13 +306,14 @@ const SingleBlockPlugin = createPlatePlugin({
 });
 ```
 
-仅当目标已安装时才应用覆盖；目标不存在时忽略。它不能修改 `key`、`dependencies`，
+仅当目标已安装时才应用覆盖；目标不存在时忽略。它不能修改 `name`、`dependencies`，
 也不能嵌套另一个 `override`。目标描述符的直接配置优先。
 
 ### 替换依赖默认定义
 
-完整的显式描述符可以替换具有相同 key 的低优先级 core 或 dependency 定义。数组
-顺序不决定结果；两个具有相同 key 的不同显式描述符会报错。
+完整的显式描述符可以替换具有相同名称的低优先级 core 或 dependency 定义。在同一
+插件数组内，从同一个已创作插件派生的终端配置会按顺序组合，后面定义的值优先。无关
+的插件和分叉的创作分支不能共享同一个名称。
 
 ```ts
 const AppParagraphPlugin = ParagraphPlugin.configure({
@@ -353,12 +354,12 @@ import { type PlateEditor, useEditor } from 'platejs/react';
 interface ParagraphElement extends Element {
   align?: 'left' | 'center' | 'right' | 'justify';
   children: RichText[];
-  type: typeof ParagraphPlugin.key;
+  type: typeof ParagraphPlugin.name;
 }
 
 interface ImageElement extends Element {
   children: [{ text: '' }]
-  type: typeof ImagePlugin.key;
+  type: typeof ImagePlugin.name;
   url: string;
 }
 

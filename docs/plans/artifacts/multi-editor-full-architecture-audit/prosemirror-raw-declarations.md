@@ -771,11 +771,11 @@ Generated from 19 package repositories, 74 source files, and 2180 source/test de
 - 114: property StateField.fromJSON
 - 117: variable keys
 - 119: function createKey
-- 129: export class PluginKey
-- 131: property PluginKey.key
-- 134: constructor PluginKey.constructor
-- 138: method PluginKey.get
-- 141: method PluginKey.getState
+- 129: export class PluginName
+- 131: property PluginName.key
+- 134: constructor PluginName.constructor
+- 138: method PluginName.get
+- 141: method PluginName.getState
 
 ### state/src/selection.ts
 

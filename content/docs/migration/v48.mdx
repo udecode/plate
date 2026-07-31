@@ -1284,7 +1284,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createCaptionPlugin` -> `CaptionPlugin`
   - `CaptionPlugin` options:
-    - Rename `pluginKeys` to `plugins`
+    - Rename `pluginNames` to `plugins`
     - Rename `focusEndCaptionPath` to `focusEndPath`
     - Rename `focusStartCaptionPath` to `focusStartPath`
     - Rename `showCaptionId` to `visibleId`
@@ -1302,7 +1302,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - `createCodeBlockPlugin` -> `CodeBlockPlugin`
   - NEW `CodeLinePlugin`
   - NEW `CodeSyntaxPlugin`
-  - Remove `getCodeLineType`, use `editor.getType(CodeLinePlugin)` instead
+  - Remove `getCodeLineType`, use `editor.plugin(CodeLinePlugin).type` instead
 
 ## @udecode/plate-combobox@37.0.0
 
@@ -1523,7 +1523,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
             deserializer: {
               parse: ({ element, node }) => {
                 if (element.style.textAlign) {
-                  node[editor.getType(plugin)] = element.style.textAlign;
+                  node[editor.plugin(plugin).type] = element.style.textAlign;
                 }
               },
             },
@@ -1575,7 +1575,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   - Update `BasePlugin`, `PlatePlugin` generics. `P, V, E` -> `C extends AnyPluginConfig = PluginConfig`
   - Remove `PluginOptions`
-  - Remove `PlatePluginKey`
+  - Remove `PlatePluginName`
   - Remove `HotkeyPlugin`, `ToggleMarkPlugin` in favor of `plugin.shortcuts`
   - `WithPlatePlugin` -> `BasePlugin`, `EditorPlatePlugin`
   - `PlatePluginComponent` -> `NodeComponent`
@@ -1611,7 +1611,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   **Plugin Context**
 
-  Each plugin method now receive the plugin context created with `getBasePlugin(editor, plugin)` as parameter:
+  Each plugin method receives its plugin context as the callback parameter:
 
   - `api`
   - `editor`
@@ -1708,9 +1708,9 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - Rename `pluginsByKey` to `plugins`
   - Plugin APIs live under `editor.api`.
   - Replayable document mutations live under transaction groups.
-  - Remove `getPlugin(editor, key)`, use `editor.getPlugin(plugin) or editor.getPlugin({ key })`
-  - Remove `getPluginType`, use `editor.getType(plugin)` to get node type
-  - Remove `getPluginInjectProps(editor, key)`, use `editor.getPlugin(plugin).inject.props`
+  - Use `editor.plugin(plugin).plugin` to read the compiled descriptor
+  - Use `editor.plugin(pluginName).type` to resolve a dynamic plugin name
+  - Read compiled injection data from `editor.plugin(plugin).plugin.inject.nodeProps`
   - NEW `getOptionsStore()` to get a plugin options store
   - Remove `getPluginOptions`, use `getOptions()`
   - NEW `getOption()` to get a plugin option
@@ -1787,7 +1787,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   - Move `TEditableProps`, `TRenderElementProps` to `@udecode/slate-react`
   - Remove `<V extends Value>` generic in all functions where not used
-  - Remove `PlatePluginKey`
+  - Remove `PlatePluginName`
   - Remove `OverrideByKey`
   - Remove `PlateId`
 
@@ -1952,7 +1952,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) –
   - `createMediaPlugin` -> `MediaPlugin`
-  - `FloatingMediaUrlInput`, `submitFloatingMedia` rename option `pluginKey` -> `plugin`
+  - `FloatingMediaUrlInput`, `submitFloatingMedia` rename option `pluginName` -> `plugin`
   - `insertMediaEmbed` remove `key` option
 
 ## @udecode/plate-mention@37.0.0
@@ -2341,7 +2341,7 @@ None (CI release issue)
   import { ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED } from '@udecode/plate-media';
 
   createCaptionPlugin({
-    options: { pluginKeys: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
+    options: { pluginNames: [ELEMENT_IMAGE, ELEMENT_MEDIA_EMBED] },
   });
   ```
 
@@ -3126,7 +3126,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   ### `PlatePlugin`
 
   - `key`
-    - replacing `pluginKey`
+    - replacing `pluginName`
     - is now required: each plugin needs a key to be retrieved by key.
   - all handlers have `plugin` as a second parameter:
 
@@ -3259,7 +3259,6 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 
   Renamed:
 
-  - `getPlatePluginType` to `getPluginType`
   - `getEditorOptions` to `getPlugins`
   - `getPlatePluginOptions` to `getPlugin`
   - `pipeOverrideProps` to `pipeInjectProps`
@@ -3289,7 +3288,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   - `getVoidTypes`
   - `getPlatePluginTypes`
   - `getPlatePluginWithOverrides`
-  - `mapPlatePluginKeysToOptions`
+  - `mapPlatePluginNamesToOptions`
   - `withDeserializeX` for `PlatePlugin.editor.insertData`
 
   Changed types:
@@ -3300,10 +3299,10 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   - `PlateState`
     - renamed `keyChange` to `keyEditor`
     - removed `plugins` for `editor.plugins`
-    - removed `pluginKeys`
+    - removed `pluginNames`
     - removed `selection` for `editor.selection`
     - actions:
-      - removed `setSelection`, `setPlugins`, `setPluginKeys`
+      - removed `setSelection`, `setPlugins`, `setPluginNames`
       - removed `incrementKeyChange` for
 
   Renamed types:
@@ -3364,7 +3363,6 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 
 - [#1234](https://github.com/udecode/plate/pull/1234) by [@zbeyens](https://github.com/zbeyens) – Removed:
   - `getMentionInputPluginOptions` for `getPlugin`
-  - `getMentionInputType` for `getPluginType`
   - `COMBOBOX_TRIGGER_MENTION`
 
 ## @udecode/plate-basic-marks@8.0.0
@@ -3400,7 +3398,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   - `createPlateComponents` to `createPlateUI`
   - all `getXY` handlers to `yX` (e.g. `getXOnKeyDown` to `onKeyDownX`)
   - all `XPluginOptions` to `XPlugin`
-  - all `pluginKey` parameter to `key` except in components
+  - all `pluginName` parameter to `key` except in components
 
   Renamed types:
 
@@ -3453,7 +3451,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   - `useStoreEditorValue` to `usePlateValue`
   - `useStoreEnabled` to `usePlateEnabled`
   - `useStorePlate` to `usePlatePlugins`
-  - `useStorePlatePluginKeys` to `usePlateKeys`
+  - `useStorePlatePluginNames` to `usePlateKeys`
   - `useStoreState` to `usePlateState`
 - `getPlateId`: Get the last focused editor id, else get the last blurred editor id, else get the first editor id, else `null`
 - `getPlateState`:
@@ -3516,7 +3514,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 The align plugin is no longer wrapping a block, but instead setting an `align` property to an existing block.
 
 - `createAlignPlugin`:
-  - removed `pluginKeys`, `renderElement` and `deserialize`
+  - removed `pluginNames`, `renderElement` and `deserialize`
 - removed:
   - `ELEMENT_ALIGN_LEFT`
   - `ELEMENT_ALIGN_CENTER`

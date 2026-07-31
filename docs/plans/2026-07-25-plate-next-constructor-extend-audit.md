@@ -107,7 +107,7 @@ Surviving direct creator stages:
 - Blockquote, Code Block, Indent, and Column shortcuts consume constructor-owned
   update method names.
 - Comment update consumes constructor-owned API.
-- List override consumes resolved consumer `targetPluginKeys`; its later update
+- List override consumes resolved consumer `targetPluginNames`; its later update
   and extension stages consume earlier inferred capabilities.
 - List Classic update and extension consume earlier inferred capabilities.
 - Table’s ordered API/update/extension stages are genuinely dependent.
@@ -119,7 +119,7 @@ Surviving direct creator stages:
 
 Key correction:
 The first List migration made its Indent override static. The full suite caught
-that configured `targetPluginKeys: ['callout']` stopped propagating. Restoring
+that configured `targetPluginNames: ['callout']` stopped propagating. Restoring
 `.extend(({ plugin }) => ({ override: ... }))` is correct because the stage
 reads resolved consumer configuration. The focused List file passes 48/48.
 

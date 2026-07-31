@@ -7,7 +7,7 @@ import {
 } from '@platejs/core';
 
 const ListInputRulePlugin = createBasePlugin({
-  key: 'listInputRule',
+  name: 'listInputRule',
   update: () => ({
     toggle: (style: 'decimal' | 'disc') => style,
   }),

@@ -4,18 +4,18 @@ import type { Element, NodeEntry } from '@platejs/plite';
 import { useElementStoreContext } from './useElementStore';
 
 type UseElementSelectorOptions<T> = {
-  key?: string;
+  name?: string;
   equalityFn?: (a: T, b: T) => boolean;
 };
 
 export const useElementSelector = <T>(
   selector: <N extends Element>(state: NodeEntry<N>, prev?: T) => T,
   {
-    key,
+    name,
     equalityFn = (a: T, b: T) => a === b,
   }: UseElementSelectorOptions<T> = {}
 ): T => {
-  const context = useElementStoreContext(key);
+  const context = useElementStoreContext(name);
   const cacheRef = React.useRef<{
     entry: NodeEntry<any> | null;
     hasValue: boolean;

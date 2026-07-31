@@ -45,9 +45,7 @@ const createBasicSchema = () =>
       paragraph: { content: schema.content.text() } as const,
     },
     id: 'article',
-    root: {
-      content: schema.content.type('paragraph', { min: 1 }),
-    } as const,
+    root: schema.content.type('paragraph', { min: 1 }),
     unknown: 'reject',
     version: 1,
   });
@@ -86,7 +84,7 @@ describe('schema compiler', () => {
           void: 'block',
         },
       },
-      root: { content: schema.content.types(['image', 'video']) },
+      root: schema.content.types(['image', 'video']),
       unknown: 'reject',
     });
     const editor = createEditor({ extensions: [Article] });
@@ -122,7 +120,7 @@ describe('schema compiler', () => {
             paragraph: { content: schema.content.text() },
             portal: { void: 'block' },
           },
-          root: { content: schema.content.type('portal') },
+          root: schema.content.type('portal'),
           unknown: 'reject',
         }),
         record('portal-content', {
@@ -156,7 +154,7 @@ describe('schema compiler', () => {
                 void: 'block',
               },
             },
-            root: { content: schema.content.type('portal') },
+            root: schema.content.type('portal'),
             unknown: 'reject',
           }),
           record('second-owner', {
@@ -285,9 +283,7 @@ describe('schema compiler', () => {
     const Closed = defineEditorSchema({
       elements: { paragraph: element },
       id: 'article',
-      root: {
-        content: schema.content.type('paragraph', { min: 1 }),
-      },
+      root: schema.content.type('paragraph', { min: 1 }),
       unknown: 'reject',
       version: 1,
     });
@@ -373,7 +369,7 @@ describe('schema compiler', () => {
   it('recognizes the primary root as the complete-schema discriminator', () => {
     const Article = createBasicSchema();
     const malformedComplete = {
-      root: { content: schema.content.type('paragraph') },
+      root: schema.content.type('paragraph'),
     } as unknown as EditorSchemaContributionRecord['contribution'];
 
     assert.throws(
@@ -386,11 +382,11 @@ describe('schema compiler', () => {
         assert.ok(error instanceof EditorSchemaCompileError);
         assert.deepEqual(error.diagnostics, [
           {
-            code: 'missing-complete-schema-field',
-            extensions: ['complete-without-unknown'],
+            code: 'duplicate-complete-schema',
+            extensions: ['complete-without-unknown', 'schema:article'],
             message:
-              'Complete schema definition "complete-without-unknown" must own schema field "unknown".',
-            path: 'schema.unknown',
+              'Schema contributions contain multiple complete schemas: complete-without-unknown, schema:article.',
+            path: 'schema',
           },
         ]);
 
@@ -402,7 +398,7 @@ describe('schema compiler', () => {
   it('requires complete and named schema fields to remain atomic', () => {
     const complete = createBasicSchema().schema;
 
-    for (const field of ['id', 'root', 'unknown', 'version'] as const) {
+    for (const field of ['id', 'root', 'version'] as const) {
       const malformed = { ...complete } as Record<string, unknown>;
 
       delete malformed[field];
@@ -419,19 +415,17 @@ describe('schema compiler', () => {
           assert.deepEqual(
             error.diagnostics,
             field === 'root'
-              ? (['id', 'unknown', 'version'] as const).map(
-                  (completeField) => ({
-                    code: 'partial-schema-complete-field',
-                    extensions: [`complete-without-${field}`],
-                    message: `Partial schema contribution "complete-without-${field}" cannot declare complete schema field "${completeField}".`,
-                    path: `schema.${completeField}`,
-                  })
-                )
+              ? (['id', 'version'] as const).map((completeField) => ({
+                  code: 'partial-schema-complete-field',
+                  extensions: [`complete-without-${field}`],
+                  message: `Partial schema contribution "complete-without-${field}" cannot declare complete schema field "${completeField}".`,
+                  path: `schema.${completeField}`,
+                }))
               : [
                   {
                     code: 'missing-complete-schema-field',
                     extensions: [`complete-without-${field}`],
-                    message: `${field === 'unknown' ? 'Complete' : 'Named'} schema definition "complete-without-${field}" must own schema field "${field}".`,
+                    message: `Named schema definition "complete-without-${field}" must own schema field "${field}".`,
                     path: `schema.${field}`,
                   },
                 ]
@@ -449,7 +443,7 @@ describe('schema compiler', () => {
       record(Article.name, Article.schema),
       record('comments-root', {
         roots: {
-          comments: { content: schema.content.type('paragraph') },
+          comments: schema.content.type('paragraph'),
         },
       }),
     ]);
@@ -527,7 +521,7 @@ describe('schema compiler', () => {
           } as const,
         },
         id: 'article',
-        root: { content: schema.content.type('paragraph') } as const,
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version: 3,
       });
@@ -597,9 +591,7 @@ describe('schema compiler', () => {
             target: target.types(types),
           }),
         ],
-        root: {
-          content: schema.content.types(['paragraph', 'quote']),
-        },
+        root: schema.content.types(['paragraph', 'quote']),
         unknown: 'reject',
         version: 1,
       });
@@ -637,7 +629,7 @@ describe('schema compiler', () => {
         indentable: { extends: ['block'] } as const,
       },
       id: 'article',
-      root: { content: schema.content.type('callout') } as const,
+      root: schema.content.type('callout'),
       unknown: 'reject',
       version: 1,
     });
@@ -678,7 +670,7 @@ describe('schema compiler', () => {
       elements: { paragraph: { content: schema.content.text() } },
       groups: { block: {} as const },
       id: 'reserved',
-      root: { content: schema.content.type('paragraph') } as const,
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -702,7 +694,7 @@ describe('schema compiler', () => {
         pretendsInline: { extends: ['inline'] } as const,
       },
       id: 'contradictory',
-      root: { content: schema.content.type('paragraph') } as const,
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -724,7 +716,7 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'redundant-block',
-      root: { content: schema.content.type('link') } as const,
+      root: schema.content.type('link'),
       unknown: 'reject',
       version: 1,
     });
@@ -753,12 +745,10 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'article',
-      root: {
-        content: schema.content.any(
-          [schema.content.type('image'), schema.content.type('paragraph')],
-          { default: { type: 'paragraph' }, min: 1 }
-        ),
-      } as const,
+      root: schema.content.any(
+        [schema.content.type('image'), schema.content.type('paragraph')],
+        { default: { type: 'paragraph' }, min: 1 }
+      ),
       unknown: 'reject',
       version: 1,
     });
@@ -802,7 +792,7 @@ describe('schema compiler', () => {
       const Invalid = defineEditorSchema({
         elements: { invalid: element },
         id,
-        root: { content: schema.content.type('invalid') },
+        root: schema.content.type('invalid'),
         unknown: 'reject',
         version: 1,
       });
@@ -834,12 +824,10 @@ describe('schema compiler', () => {
           } as const,
         },
         id,
-        root: {
-          content: schema.content.type('paragraph', {
-            default: { type: 'paragraph' },
-            min: 1,
-          }),
-        } as const,
+        root: schema.content.type('paragraph', {
+          default: { type: 'paragraph' },
+          min: 1,
+        }),
         unknown: 'reject',
         version: 1,
       });
@@ -968,12 +956,10 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'inline-with-block-child',
-      root: {
-        content: schema.content.type('block', {
-          default: { type: 'block' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.type('block', {
+        default: { type: 'block' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -1009,9 +995,7 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'inline-with-unknown-child',
-      root: {
-        content: schema.content.type('inline'),
-      } as const,
+      root: schema.content.type('inline'),
       unknown: 'preserve',
       version: 1,
     });
@@ -1052,12 +1036,10 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'declared-block-child',
-      root: {
-        content: schema.content.type('parent', {
-          default: { type: 'parent' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.type('parent', {
+        default: { type: 'parent' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -1083,12 +1065,10 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'unknown-block-child',
-      root: {
-        content: schema.content.type('parent', {
-          default: { type: 'parent' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.type('parent', {
+        default: { type: 'parent' },
+        min: 1,
+      }),
       unknown: 'preserve',
       version: 1,
     });
@@ -1120,7 +1100,7 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'ambiguous',
-      root: { content: schema.content.type('section') } as const,
+      root: schema.content.type('section'),
       unknown: 'reject',
       version: 1,
     });
@@ -1143,7 +1123,7 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'cyclic',
-      root: { content: schema.content.type('a', { min: 1 }) } as const,
+      root: schema.content.type('a', { min: 1 }),
       unknown: 'reject',
       version: 1,
     });
@@ -1185,9 +1165,9 @@ describe('schema compiler', () => {
           typeChange: 'preserve-if-allowed',
         }),
       ],
-      root: { content: schema.content.type('section') } as const,
+      root: schema.content.type('section'),
       roots: {
-        comments: { content: schema.content.type('paragraph') } as const,
+        comments: schema.content.type('paragraph'),
       },
       unknown: 'reject',
       version: 1,
@@ -1254,7 +1234,7 @@ describe('schema compiler', () => {
           exclusive: [ScriptPosition],
         }),
       ],
-      root: { content: schema.content.type('paragraph') },
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -1315,9 +1295,7 @@ describe('schema compiler', () => {
         groups: {},
         id: 'raw',
         properties: [],
-        root: {
-          content: { allowed: { kind: 'type', type: 'paragraph' } },
-        },
+        root: { allowed: { kind: 'type', type: 'paragraph' } },
         roots: {},
         unknown: 'reject',
         version: 1,
@@ -1353,7 +1331,7 @@ describe('schema compiler', () => {
         },
         id: 'selectors',
         properties,
-        root: { content: schema.content.type('paragraph') } as const,
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version: 1,
       });
@@ -1454,7 +1432,7 @@ describe('schema compiler', () => {
         b: { extends: ['a'] } as const,
       },
       id: 'groups',
-      root: { content: schema.content.type('paragraph') } as const,
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -1471,7 +1449,7 @@ describe('schema compiler', () => {
     const contribution = {
       elements: { quote: { content: schema.content.text() } },
       groups: { quoted: {} },
-      roots: { comments: { content: schema.content.type('paragraph') } },
+      roots: { comments: schema.content.type('paragraph') },
     } as const;
 
     assert.throws(
@@ -1527,7 +1505,7 @@ describe('schema compiler', () => {
         } as const,
       },
       id: 'article',
-      root: { content: schema.content.type('paragraph') } as const,
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -1580,7 +1558,7 @@ describe('schema compiler', () => {
           paragraph: { content: schema.content.text() } as const,
         },
         id: `invalid-${type}-slice-policy`,
-        root: { content: schema.content.type('paragraph') } as const,
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version: 1,
       });
@@ -1603,7 +1581,7 @@ describe('schema compiler', () => {
           paragraph: { content: schema.content.text() } as const,
         },
         id: 'article',
-        root: { content: schema.content.type('paragraph') } as const,
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version: 1,
       });
@@ -1644,7 +1622,7 @@ describe('schema compiler', () => {
           } as const,
         },
         id: 'article',
-        root: { content: schema.content.type('paragraph') } as const,
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version: 1,
       });
@@ -1725,7 +1703,7 @@ describe('schema compiler', () => {
           } as const,
         },
         id: 'article',
-        root: { content: schema.content.type('paragraph') } as const,
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version: 1,
       });
@@ -1775,7 +1753,7 @@ describe('schema compiler', () => {
           paragraph: { content: schema.content.text() },
         },
         id,
-        root: { content: schema.content.type('paragraph') },
+        root: schema.content.type('paragraph'),
         unknown: 'reject',
         version,
       });

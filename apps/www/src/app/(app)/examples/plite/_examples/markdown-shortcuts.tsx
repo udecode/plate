@@ -17,7 +17,6 @@ import {
 
 import type {
   BulletedListElement,
-  CustomEditor,
   CustomElement,
   CustomElementType,
   CustomValue,
@@ -100,7 +99,7 @@ const MarkdownShortcutsExample = () => {
 };
 
 const markdownShortcuts = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'markdown-shortcuts',
     commands: ({ around, handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {
@@ -328,9 +327,7 @@ const createListElement = (
   };
 };
 
-const mergeAdjacentBulletedLists = (
-  tx: EditorTransactionSpecBuilder<CustomValue>
-) => {
+const mergeAdjacentBulletedLists = (tx: EditorTransactionSpecBuilder) => {
   const selection = tx.selection();
 
   if (!selection) {
@@ -374,9 +371,7 @@ const mergeAdjacentBulletedLists = (
   }
 };
 
-const selectCurrentBlockStart = (
-  tx: EditorTransactionSpecBuilder<CustomValue>
-) => {
+const selectCurrentBlockStart = (tx: EditorTransactionSpecBuilder) => {
   const block = tx.nodes.above({
     match: (n) => NodeApi.isElement(n) && tx.nodes.isBlock(n),
   });

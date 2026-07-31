@@ -10,7 +10,7 @@ import { TabbablePlugin } from './TabbablePlugin';
 jsxt;
 
 const VoidPlugin = createPlatePlugin({
-  key: 'void',
+  name: 'void',
   schema: {
     element: {
       void: 'block',
@@ -27,7 +27,7 @@ describe('TabbablePlugin', () => {
         { children: [{ text: 'a' }], type: 'p' },
       ],
     });
-    const plugin = editor.getPlugin(TabbablePlugin);
+    const plugin = editor.plugin(TabbablePlugin).plugin;
     const voidEntry = editor.read.nodes.get([0]);
     const textEntry = editor.read.nodes.get([1, 0]);
     const { insertTabbableEntries, isTabbable, query } = plugin.initialState;

@@ -2,7 +2,7 @@ import { BaseParagraphPlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
-import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
+import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 import { CopilotPlugin } from './CopilotPlugin';
 
 const createEditor = () =>
@@ -64,7 +64,7 @@ describe('CopilotPlugin triggerSuggestion', () => {
     const editor = createEditor();
     const chat = {
       status: 'streaming',
-    } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
     editor.plugin(AIChatPlugin).store.set({ chat });
 
     await expect(

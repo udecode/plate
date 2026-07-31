@@ -1,25 +1,30 @@
 import type {
-  EditorSchemaSource,
   Element,
   SchemaElementFor,
   SchemaElementTypes,
 } from '@platejs/plite';
+import type { EditorSchemaSource } from '@platejs/plite/internal';
+
+import type { PlateSchemaSource, PluginReference } from '../../../lib';
+import type { InferPluginDocumentType } from '../../../lib/plugin/pluginSchemaModel.internal';
+import type { InternalPluginDefinitionOf } from '../../../lib/plugin/pluginDefinitionLookup.internal';
 
 import { useElementContext } from './useElementStore';
 
-export type PlateElementDescriptor = EditorSchemaSource &
-  Readonly<{
-    key: string;
-    type: string;
-  }>;
+export type PlateElementDescriptor = EditorSchemaSource & PluginReference;
 
 export type PlateElementForDescriptor<TPlugin extends PlateElementDescriptor> =
   SchemaElementFor<
-    TPlugin,
-    Extract<TPlugin['type'], SchemaElementTypes<TPlugin>>
+    PlateSchemaSource<InternalPluginDefinitionOf<TPlugin>>,
+    Extract<
+      SchemaElementTypes<
+        PlateSchemaSource<InternalPluginDefinitionOf<TPlugin>>
+      >,
+      InferPluginDocumentType<InternalPluginDefinitionOf<TPlugin>>
+    >
   >;
 
-const getElementScope = (plugin?: PlateElementDescriptor) => plugin?.key;
+const getElementScope = (plugin?: PlateElementDescriptor) => plugin?.name;
 
 export function useElement<TElement extends Element = Element>(): TElement;
 export function useElement<const TPlugin extends PlateElementDescriptor>(

@@ -19,9 +19,7 @@ import {
   type Path,
   PathApi,
 } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
-
-import type { DndConfig, DndPluginState } from './DndPlugin';
+import { DndStorePlugin, type DndPluginState } from './internal/DndStorePlugin';
 
 export const DRAG_ITEM_BLOCK = 'block';
 
@@ -115,7 +113,7 @@ export type DraggableState = {
 
 export const useDndPluginStore = <K extends keyof DndPluginState>(key: K) => {
   const editor = useEditor();
-  const store = editor.plugin<DndConfig>({ key: KEYS.dnd }).store;
+  const store = editor.plugin(DndStorePlugin).store;
 
   return React.useSyncExternalStore(
     store.subscribe,
@@ -126,7 +124,7 @@ export const useDndPluginStore = <K extends keyof DndPluginState>(key: K) => {
 
 export const useDndPlugin = () => {
   const editor = useEditor();
-  const store = editor.plugin<DndConfig>({ key: KEYS.dnd }).store;
+  const store = editor.plugin(DndStorePlugin).store;
 
   React.useEffect(() => {
     const handleDragLeave = (event: DragEvent) => {
@@ -358,16 +356,14 @@ const useDomDragNode = (
     },
     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
     end: () => {
-      editor
-        .plugin<DndConfig>({ key: KEYS.dnd })
-        .store.set({ isDragging: false });
+      editor.plugin(DndStorePlugin).store.set({ isDragging: false });
       document.body.classList.remove('dragging');
       setIsAboutToDrag(false);
     },
     item(monitor) {
       if (typeof elementId !== 'string') return null;
 
-      const store = editor.plugin<DndConfig>({ key: KEYS.dnd }).store;
+      const store = editor.plugin(DndStorePlugin).store;
 
       store.set({ isDragging: true });
       store.set({ _isOver: true });
@@ -453,7 +449,7 @@ const useDomDropNode = (
           orientation,
         });
         const onDropFiles = editor
-          .plugin<DndConfig>({ key: KEYS.dnd })
+          .plugin(DndStorePlugin)
           .store.get('onDropFiles');
 
         if (!result || !onDropFiles) return;
@@ -587,7 +583,7 @@ const useDomDropNode = (
       }
     },
     hover: (dragItem, monitor) => {
-      const store = editor.plugin<DndConfig>({ key: KEYS.dnd }).store;
+      const store = editor.plugin(DndStorePlugin).store;
       const { _isOver, dropTarget } = store.get();
       const currentId = dropTarget?.id ?? null;
       const currentLine = dropTarget?.line ?? '';

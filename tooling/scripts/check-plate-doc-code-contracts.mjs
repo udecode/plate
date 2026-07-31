@@ -32,14 +32,39 @@ const codeFencePattern =
 const whitespacePattern = /\s+/;
 const pluginFactoryNamePattern = /^(?:create|define).*(?:Extension|Plugin)$/;
 const pliteExtensionNamePattern = /^define.*Extension$/;
+const pliteDomModulePattern = /^@platejs\/plite-dom(?:\/|$)/;
+const pluginDescriptorOwnerPathPattern =
+  /(?:^|\.)(?:editor|plugin|[A-Za-z_$][\w$]*Plugin)$/;
+const prefixedOnListenerPattern = /^on[A-Z]/;
+const pliteModulePattern = /^@platejs\/plite(?:\/|$)/;
+const pliteReactModulePattern = /^@platejs\/plite-react$/;
+const pliteRootModulePattern = /^@platejs\/plite$/;
+const publicCoreModulePattern =
+  /^(?:@platejs\/core(?:\/react|\/static)?|platejs(?:\/react|\/static)?)$/;
+const plateModulePattern = /^(?:platejs|@platejs\/)/;
+const internalCoreContractTypeSymbols = new Set([
+  'InternalDefinitionOf',
+  'InternalPluginDefinitionOf',
+  'PluginDefinitionCarrier',
+  'StaticEditorExtensionTypeLambda',
+]);
+const internalPliteContractTypeSymbols = new Set([
+  'EditorExtensionDependencyReferenceFor',
+  'EditorExtensionTypeLambda',
+  'InternalEditorExtensionDependencyReference',
+  'InternalEditorExtensionInstalledCapabilitiesOf',
+  'InternalEditorExtensionTypeProviderOf',
+  'InternalEditorExtensionWitnessFor',
+]);
 const contextualConfigureKeys = new Set([
-  'handlers',
   'initialState',
+  'on',
   'override',
   'render',
   'shortcuts',
 ]);
 const deletedPluginBuilderMethods = new Set([
+  'clone',
   'extendApi',
   'extendCodecs',
   'extendEditorApi',
@@ -51,12 +76,43 @@ const deletedPluginBuilderMethods = new Set([
   'withComponent',
 ]);
 const pluginAuthoringMethods = new Set([
-  'clone',
   'configure',
   'configurePlugin',
   'extend',
   'extendPlugin',
   ...deletedPluginBuilderMethods,
+]);
+const deletedPlatePluginDefinitionKeys = new Set([
+  'clipboard',
+  'config',
+  'extension',
+  'handlers',
+  'pluginApi',
+  'targetPluginKeys',
+  'tx',
+  'validateConfiguration',
+]);
+const deletedPliteExtensionDefinitionKeys = new Set([
+  'config',
+  'state',
+  'tx',
+  'validateConfiguration',
+]);
+const deletedPluginContractSymbols = new Set(['InferConfig']);
+const factoryOnlyCapabilityKeys = new Set([
+  'api',
+  'commands',
+  'read',
+  'readMiddleware',
+  'update',
+]);
+const staleCapabilityFactoryContextBindings = new Set([
+  'editorApi',
+  'editorReads',
+  'editorTransforms',
+  'pluginApi',
+  'pluginReads',
+  'pluginTransforms',
 ]);
 const removedEditorConstructorKeys = new Set(['onReady', 'value']);
 
@@ -81,10 +137,11 @@ const getObjectProperty = (node, name) =>
 const getLineNumber = (source, offset) =>
   source.slice(0, offset).split('\n').length;
 
-const visit = (node, callback) => {
+const visit = (node, callback, ancestors = []) => {
   if (!node || typeof node !== 'object') return;
 
-  callback(node);
+  callback(node, ancestors);
+  const nextAncestors = [...ancestors, node];
 
   for (const [key, value] of Object.entries(node)) {
     if (
@@ -96,11 +153,34 @@ const visit = (node, callback) => {
     }
 
     if (Array.isArray(value)) {
-      for (const child of value) visit(child, callback);
+      for (const child of value) visit(child, callback, nextAncestors);
     } else if (value && typeof value === 'object' && value.type) {
-      visit(value, callback);
+      visit(value, callback, nextAncestors);
     }
   }
+};
+
+const containsDefinitionOfType = (node) => {
+  const value =
+    node?.type === 'TSParenthesizedType' ? node.typeAnnotation : node;
+
+  return (
+    value?.type === 'TSTypeReference' &&
+    value.typeName?.type === 'Identifier' &&
+    value.typeName.name === 'DefinitionOf'
+  );
+};
+
+const isDirectDefinitionOfDescriptor = (node) => {
+  const value =
+    node?.type === 'TSParenthesizedType' ? node.typeAnnotation : node;
+  const parameter = value?.typeParameters?.params?.[0];
+
+  return (
+    containsDefinitionOfType(value) &&
+    parameter?.type === 'TSTypeQuery' &&
+    parameter.exprName?.type === 'Identifier'
+  );
 };
 
 const parseCodeFence = (code) =>
@@ -221,6 +301,15 @@ const isFunction = (node) =>
   node?.type === 'ArrowFunctionExpression' ||
   node?.type === 'FunctionExpression' ||
   node?.type === 'ObjectMethod';
+const isStaticCapabilityDeclaration = (property) =>
+  property?.type === 'ObjectProperty' &&
+  property.value?.type === 'ObjectExpression';
+const getCapabilityFactoryParameterCount = (property) => {
+  if (property?.type === 'ObjectMethod') return property.params.length;
+  if (property?.type === 'ObjectProperty' && isFunction(property.value)) {
+    return property.value.params.length;
+  }
+};
 
 const getStaticFunctionResult = (node) => {
   if (!isFunction(node)) return;
@@ -235,6 +324,357 @@ const getStaticFunctionResult = (node) => {
   return returns.length === 1
     ? unwrapTypedExpression(returns[0].argument)
     : undefined;
+};
+
+const getStaticExpressionPath = (node) => {
+  const value = unwrapTypedExpression(node);
+
+  if (value?.type === 'Identifier') return value.name;
+  if (
+    value?.type !== 'MemberExpression' &&
+    value?.type !== 'OptionalMemberExpression'
+  ) {
+    return;
+  }
+
+  const object = getStaticExpressionPath(value.object);
+  const property = value.computed
+    ? value.property?.type === 'StringLiteral'
+      ? value.property.value
+      : undefined
+    : getPropertyName(value.property);
+
+  return object && property ? `${object}.${property}` : undefined;
+};
+
+const collectStaticDocValueBindings = (ast) => {
+  const candidates = new Map();
+  const add = (name, value) => {
+    if (!name) return;
+
+    const values = candidates.get(name) ?? [];
+
+    values.push(value);
+    candidates.set(name, values);
+  };
+
+  visit(ast, (node) => {
+    if (node.type === 'VariableDeclarator' && node.id?.type === 'Identifier') {
+      add(node.id.name, node.init);
+    }
+    if (
+      node.type === 'AssignmentExpression' &&
+      node.operator === '=' &&
+      node.left?.type === 'Identifier'
+    ) {
+      add(node.left.name, node.right);
+    }
+  });
+
+  return {
+    get(name) {
+      const values = candidates.get(name);
+
+      return values?.length === 1 ? values[0] : undefined;
+    },
+  };
+};
+
+const resolveStaticDocObjectProperties = (node, bindings, seen = new Set()) => {
+  let value = unwrapTypedExpression(node);
+
+  if (isFunction(value)) value = getStaticFunctionResult(value);
+  if (value?.type === 'ObjectExpression') {
+    return value.properties.flatMap((property) =>
+      property.type === 'SpreadElement'
+        ? resolveStaticDocObjectProperties(
+            property.argument,
+            bindings,
+            new Set(seen)
+          )
+        : [property]
+    );
+  }
+  if (value?.type !== 'Identifier' || seen.has(value.name)) return [];
+
+  const resolved = bindings.get(value.name);
+
+  if (!resolved) return [];
+
+  const nextSeen = new Set(seen);
+
+  nextSeen.add(value.name);
+
+  return resolveStaticDocObjectProperties(resolved, bindings, nextSeen);
+};
+
+const isFullyResolvedStaticDocObject = (node, bindings, seen = new Set()) => {
+  const value = unwrapTypedExpression(node);
+
+  if (value?.type === 'ObjectExpression') {
+    return value.properties.every(
+      (property) =>
+        property.type !== 'SpreadElement' ||
+        isFullyResolvedStaticDocObject(
+          property.argument,
+          bindings,
+          new Set(seen)
+        )
+    );
+  }
+  if (value?.type !== 'Identifier' || seen.has(value.name)) return false;
+
+  const resolved = bindings.get(value.name);
+
+  if (!resolved) return false;
+
+  const nextSeen = new Set(seen);
+
+  nextSeen.add(value.name);
+
+  return isFullyResolvedStaticDocObject(resolved, bindings, nextSeen);
+};
+
+const collectLocalPliteExtensionCreatorNames = (ast) => {
+  const creators = new Set(['defineEditorExtension']);
+  const namespaces = new Set(['Plite']);
+  const creatorCandidates = [];
+  const namespaceCandidates = [];
+  const destructuredCandidates = [];
+  const isNamespace = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return current?.type === 'Identifier' && namespaces.has(current.name);
+  };
+  const isCreator = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return (
+      (current?.type === 'Identifier' && creators.has(current.name)) ||
+      ((current?.type === 'MemberExpression' ||
+        current?.type === 'OptionalMemberExpression') &&
+        getPropertyName(current.property) === 'defineEditorExtension' &&
+        isNamespace(current.object))
+    );
+  };
+  const addBinding = (name, value) => {
+    if (!name) return;
+
+    creatorCandidates.push({ name, value });
+    namespaceCandidates.push({ name, value });
+  };
+  const addDestructure = (pattern, source) => {
+    if (pattern?.type !== 'ObjectPattern') return;
+
+    for (const property of pattern.properties) {
+      if (
+        property.type !== 'ObjectProperty' ||
+        getPropertyName(property.key) !== 'defineEditorExtension'
+      ) {
+        continue;
+      }
+
+      const value = unwrapTypedExpression(property.value);
+      const identifier =
+        value?.type === 'Identifier'
+          ? value
+          : value?.type === 'AssignmentPattern' &&
+              value.left?.type === 'Identifier'
+            ? value.left
+            : undefined;
+
+      if (identifier) {
+        destructuredCandidates.push({ name: identifier.name, source });
+      }
+    }
+  };
+
+  visit(ast, (node) => {
+    if (
+      node.type === 'ImportDeclaration' &&
+      pliteModulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        if (specifier.type === 'ImportNamespaceSpecifier') {
+          namespaces.add(specifier.local.name);
+        }
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          getPropertyName(specifier.imported) === 'defineEditorExtension'
+        ) {
+          creators.add(specifier.local.name);
+        }
+      }
+
+      return;
+    }
+    if (node.type === 'VariableDeclarator') {
+      if (node.id?.type === 'Identifier') {
+        addBinding(node.id.name, node.init);
+      } else {
+        addDestructure(node.id, node.init);
+      }
+
+      return;
+    }
+    if (node.type === 'AssignmentExpression' && node.operator === '=') {
+      if (node.left?.type === 'Identifier') {
+        addBinding(node.left.name, node.right);
+      } else {
+        addDestructure(node.left, node.right);
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const candidate of creatorCandidates) {
+      if (!creators.has(candidate.name) && isCreator(candidate.value)) {
+        creators.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of namespaceCandidates) {
+      if (!namespaces.has(candidate.name) && isNamespace(candidate.value)) {
+        namespaces.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of destructuredCandidates) {
+      if (!creators.has(candidate.name) && isNamespace(candidate.source)) {
+        creators.add(candidate.name);
+        changed = true;
+      }
+    }
+  }
+
+  return {
+    hasCall(node) {
+      if (node?.type !== 'CallExpression') return false;
+
+      return isCreator(node.callee);
+    },
+  };
+};
+
+const collectLocalModuleCallableNames = (
+  ast,
+  { exportedName, modulePattern }
+) => {
+  const callables = new Set();
+  const namespaces = new Set();
+  const callableCandidates = [];
+  const namespaceCandidates = [];
+  const destructuredCandidates = [];
+  const isNamespace = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return current?.type === 'Identifier' && namespaces.has(current.name);
+  };
+  const isCallable = (value) => {
+    const current = unwrapTypedExpression(value);
+
+    return (
+      (current?.type === 'Identifier' && callables.has(current.name)) ||
+      ((current?.type === 'MemberExpression' ||
+        current?.type === 'OptionalMemberExpression') &&
+        getPropertyName(current.property) === exportedName &&
+        isNamespace(current.object))
+    );
+  };
+
+  visit(ast, (node) => {
+    if (
+      node.type === 'ImportDeclaration' &&
+      modulePattern.test(node.source.value)
+    ) {
+      for (const specifier of node.specifiers) {
+        if (specifier.type === 'ImportNamespaceSpecifier') {
+          namespaces.add(specifier.local.name);
+        }
+        if (
+          specifier.type === 'ImportSpecifier' &&
+          getPropertyName(specifier.imported) === exportedName
+        ) {
+          callables.add(specifier.local.name);
+        }
+      }
+
+      return;
+    }
+    if (node.type !== 'VariableDeclarator') return;
+
+    if (node.id?.type === 'Identifier') {
+      callableCandidates.push({ name: node.id.name, value: node.init });
+      namespaceCandidates.push({ name: node.id.name, value: node.init });
+
+      return;
+    }
+    if (node.id?.type !== 'ObjectPattern') return;
+
+    for (const property of node.id.properties) {
+      if (
+        property.type !== 'ObjectProperty' ||
+        getPropertyName(property.key) !== exportedName
+      ) {
+        continue;
+      }
+
+      const value = unwrapTypedExpression(property.value);
+      const identifier =
+        value?.type === 'Identifier'
+          ? value
+          : value?.type === 'AssignmentPattern' &&
+              value.left?.type === 'Identifier'
+            ? value.left
+            : undefined;
+
+      if (identifier) {
+        destructuredCandidates.push({
+          name: identifier.name,
+          source: node.init,
+        });
+      }
+    }
+  });
+
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+
+    for (const candidate of callableCandidates) {
+      if (!callables.has(candidate.name) && isCallable(candidate.value)) {
+        callables.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of namespaceCandidates) {
+      if (!namespaces.has(candidate.name) && isNamespace(candidate.value)) {
+        namespaces.add(candidate.name);
+        changed = true;
+      }
+    }
+    for (const candidate of destructuredCandidates) {
+      if (!callables.has(candidate.name) && isNamespace(candidate.source)) {
+        callables.add(candidate.name);
+        changed = true;
+      }
+    }
+  }
+
+  return {
+    hasCall(node) {
+      return (
+        (node.type === 'CallExpression' ||
+          node.type === 'OptionalCallExpression') &&
+        isCallable(node.callee)
+      );
+    },
+  };
 };
 
 const isPromiseExpression = (node) =>
@@ -328,7 +768,11 @@ const inspectContextualConfigure = (callback) => {
   return { invalidReturns, properties };
 };
 
-const getStaticExtensionProperties = (contribution) => {
+const getStaticExtensionProperties = (contribution, bindings) => {
+  if (bindings) {
+    return resolveStaticDocObjectProperties(contribution, bindings);
+  }
+
   const value = unwrapTypedExpression(contribution);
 
   if (value?.type === 'ObjectExpression') return value.properties;
@@ -419,16 +863,310 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
       continue;
     }
 
-    visit(ast, (node) => {
+    const staticValueBindings = collectStaticDocValueBindings(ast);
+    const localPliteExtensionCreatorNames =
+      collectLocalPliteExtensionCreatorNames(ast);
+    const localReactFactoryNames = collectLocalModuleCallableNames(ast, {
+      exportedName: 'react',
+      modulePattern: pliteReactModulePattern,
+    });
+    const localClipboardHandlerNames = collectLocalModuleCallableNames(ast, {
+      exportedName: 'clipboardHandler',
+      modulePattern: pliteDomModulePattern,
+    });
+    const getAuthorProperties = (value) =>
+      getStaticExtensionProperties(value, staticValueBindings);
+    const reportPrefixedOnHandlers = (property) => {
+      if (
+        property.type !== 'ObjectProperty' ||
+        getPropertyName(property.key) !== 'on'
+      ) {
+        return;
+      }
+
+      for (const handler of resolveStaticDocObjectProperties(
+        property.value,
+        staticValueBindings
+      )) {
+        const handlerName =
+          handler.type === 'ObjectProperty' || handler.type === 'ObjectMethod'
+            ? getPropertyName(handler.key)
+            : undefined;
+
+        if (prefixedOnListenerPattern.test(handlerName ?? '')) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              handler,
+              `plugin on listeners are prefixless; use ${handlerName[2].toLowerCase()}${handlerName.slice(3)}`
+            )
+          );
+        }
+      }
+    };
+    const reportPliteConfigContext = (property) => {
+      const key =
+        property.type === 'ObjectProperty' || property.type === 'ObjectMethod'
+          ? getPropertyName(property.key)
+          : undefined;
+
+      if (!['activate', 'api', 'schema', 'validate'].includes(key)) return;
+
+      const callback =
+        property.type === 'ObjectMethod'
+          ? property
+          : isFunction(unwrapTypedExpression(property.value))
+            ? unwrapTypedExpression(property.value)
+            : undefined;
+      const parameter = callback?.params[key === 'activate' ? 1 : 0];
+
+      if (parameter?.type !== 'ObjectPattern') return;
+
+      for (const binding of parameter.properties) {
+        if (
+          binding.type === 'ObjectProperty' &&
+          getPropertyName(binding.key) === 'config'
+        ) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              binding,
+              'final Plite schema/API/activation/validation contexts have no config'
+            )
+          );
+        }
+      }
+    };
+    const reportStaleCapabilityFactoryContext = (property) => {
+      const key =
+        property.type === 'ObjectProperty' || property.type === 'ObjectMethod'
+          ? getPropertyName(property.key)
+          : undefined;
+
+      if (!['api', 'read', 'update'].includes(key)) return;
+
+      const callback =
+        property.type === 'ObjectMethod'
+          ? property
+          : isFunction(unwrapTypedExpression(property.value))
+            ? unwrapTypedExpression(property.value)
+            : undefined;
+      const parameter = callback?.params[0];
+
+      if (parameter?.type !== 'ObjectPattern') return;
+
+      for (const binding of parameter.properties) {
+        const bindingName =
+          binding.type === 'ObjectProperty'
+            ? getPropertyName(binding.key)
+            : undefined;
+
+        if (
+          bindingName &&
+          staleCapabilityFactoryContextBindings.has(bindingName)
+        ) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              binding,
+              `stale ${key} factory context binding ${bindingName}`
+            )
+          );
+        }
+      }
+    };
+
+    visit(ast, (node, ancestors) => {
+      if (
+        (localClipboardHandlerNames.hasCall(node) ||
+          (node.type === 'CallExpression' &&
+            node.callee.type === 'Identifier' &&
+            node.callee.name === 'clipboardHandler')) &&
+        node.arguments.length !== 1
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            'clipboardHandler accepts exactly one contextually typed handler argument'
+          )
+        );
+      }
+      if (
+        node.type === 'TSTypeAliasDeclaration' &&
+        containsDefinitionOfType(node.typeAnnotation) &&
+        (!node.id.name.endsWith('Definition') ||
+          (isDirectDefinitionOfDescriptor(node.typeAnnotation) &&
+            node.id.name.endsWith('PluginDefinition')))
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node.id,
+            'aliases derived with DefinitionOf use FooDefinition, never FooPluginDefinition'
+          )
+        );
+      }
+      if (
+        node.type === 'TSTypeReference' &&
+        node.typeName?.type === 'Identifier' &&
+        node.typeName.name === 'EditorExtension' &&
+        (node.typeParameters?.params.length ??
+          node.typeArguments?.params.length ??
+          0) > 1
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            'EditorExtension exposes one public Definition generic; transitive dependency requirements stay private'
+          )
+        );
+      }
+      if (
+        node.type === 'TSTypeReference' &&
+        node.typeName?.type === 'Identifier' &&
+        node.typeName.name === 'EditorExtensionDependencyReference' &&
+        (node.typeParameters?.params.length ??
+          node.typeArguments?.params.length ??
+          0) > 0
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            'EditorExtensionDependencyReference is a shallow non-generic root identity; capability/provider contracts stay internal'
+          )
+        );
+      }
+      if (
+        node.type === 'ImportDeclaration' &&
+        pliteRootModulePattern.test(node.source.value)
+      ) {
+        for (const specifier of node.specifiers) {
+          const importedName =
+            specifier.type === 'ImportSpecifier'
+              ? getPropertyName(specifier.imported)
+              : undefined;
+
+          if (internalPliteContractTypeSymbols.has(importedName)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                specifier,
+                `${importedName} is internal dependency typing; import it from @platejs/plite/internal`
+              )
+            );
+          }
+        }
+      }
+      if (
+        node.type === 'ImportDeclaration' &&
+        publicCoreModulePattern.test(node.source.value)
+      ) {
+        for (const specifier of node.specifiers) {
+          const importedName =
+            specifier.type === 'ImportSpecifier'
+              ? getPropertyName(specifier.imported)
+              : undefined;
+
+          if (internalCoreContractTypeSymbols.has(importedName)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                specifier,
+                `${importedName} is internal Core author-to-canonical typing and cannot be imported from a public entrypoint`
+              )
+            );
+          }
+        }
+      }
+      if (localReactFactoryNames.hasCall(node)) {
+        const options = node.arguments.length === 1 ? node.arguments[0] : null;
+        const properties = options ? getAuthorProperties(options) : [];
+        const propertyNames = properties.map((property) =>
+          property.type === 'ObjectProperty' || property.type === 'ObjectMethod'
+            ? getPropertyName(property.key)
+            : undefined
+        );
+
+        if (
+          properties.length !== 1 ||
+          propertyNames[0] !== 'dom' ||
+          node.arguments.length !== 1 ||
+          !isFullyResolvedStaticDocObject(options, staticValueBindings)
+        ) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              node,
+              'react requires exactly one { dom } object containing the exact DOM descriptor'
+            )
+          );
+        }
+      }
+
+      if (
+        node.type === 'Identifier' &&
+        deletedPluginContractSymbols.has(node.name) &&
+        ((ancestors.at(-1)?.type === 'TSTypeReference' &&
+          ancestors.at(-1).typeName === node) ||
+          (ancestors.at(-1)?.type === 'ImportSpecifier' &&
+            plateModulePattern.test(ancestors.at(-2)?.source?.value ?? '') &&
+            (ancestors.at(-1).imported === node ||
+              ancestors.at(-1).local === node)))
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            `deleted Plate plugin contract symbol ${node.name}; use DefinitionOf`
+          )
+        );
+      }
+
       const memberCallName = readMemberCallName(node);
       const memberCallOwner =
         node?.callee?.type === 'MemberExpression'
           ? unwrapTypedExpression(node.callee.object)
           : undefined;
+      const memberCallOwnerPath = getStaticExpressionPath(memberCallOwner);
+      const callsLikelyPluginBuilder =
+        pluginDescriptorOwnerPathPattern.test(memberCallOwnerPath ?? '') ||
+        pluginFactoryNamePattern.test(
+          readCallChainRootName(memberCallOwner) ?? ''
+        );
+
+      if (
+        memberCallName === 'assign' &&
+        memberCallOwnerPath === 'Object' &&
+        getStaticExpressionPath(node.arguments[0]) === 'editor.api'
+      ) {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            'extension APIs project through editor.api.<name>, not Object.assign(editor.api, extensionApi)'
+          )
+        );
+      }
 
       if (
         memberCallName &&
         deletedPluginBuilderMethods.has(memberCallName) &&
+        callsLikelyPluginBuilder &&
         !isForeignStoreSelectorExtension(node)
       ) {
         issues.push(
@@ -443,14 +1181,65 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         );
       }
 
+      if (memberCallName === 'getApi' && memberCallOwnerPath === 'editor') {
+        issues.push(
+          createIssue(
+            file,
+            fence,
+            node,
+            'extension APIs use editor.api.<name> or editor.extension(Extension).api'
+          )
+        );
+      }
+
       if (memberCallName === 'extend') {
-        for (const property of getStaticExtensionProperties(
-          node.arguments[0]
-        )) {
+        for (const property of getAuthorProperties(node.arguments[0])) {
+          const key = getPropertyName(property.key);
+
+          reportPrefixedOnHandlers(property);
+          reportStaleCapabilityFactoryContext(property);
+
+          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                `deleted Plate plugin definition field ${key}`
+              )
+            );
+          }
+
           if (
-            getPropertyName(property.key) === 'codecs' &&
-            !isDefineCodecsCall(property)
+            key &&
+            factoryOnlyCapabilityKeys.has(key) &&
+            isStaticCapabilityDeclaration(property)
           ) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                `plugin ${key} must be declared as a factory`
+              )
+            );
+          }
+
+          if (
+            key === 'api' &&
+            (getCapabilityFactoryParameterCount(property) ?? 0) > 1
+          ) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'plugin api factory receives one context object'
+              )
+            );
+          }
+
+          if (key === 'codecs' && !isDefineCodecsCall(property)) {
             issues.push(
               createIssue(
                 file,
@@ -463,18 +1252,117 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
         }
       }
 
+      if (memberCallName === 'configure') {
+        for (const property of getAuthorProperties(node.arguments[0])) {
+          const key = getPropertyName(property.key);
+
+          reportPrefixedOnHandlers(property);
+          reportStaleCapabilityFactoryContext(property);
+
+          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                `deleted Plate plugin definition field ${key}`
+              )
+            );
+          }
+
+          if (key === 'api') {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'plugin api is an author factory and cannot be configured'
+              )
+            );
+          }
+        }
+      }
+
       if (
         node.type === 'CallExpression' &&
         node.callee.type === 'Identifier' &&
         ['createBasePlugin', 'createPlatePlugin'].includes(node.callee.name) &&
-        node.arguments[0]?.type === 'ObjectExpression'
+        node.arguments[0]
       ) {
-        for (const property of node.arguments[0].properties) {
+        if (
+          node.typeParameters?.params.length > 0 ||
+          node.typeArguments?.params.length > 0
+        ) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              node,
+              'Plate plugin factory infers one definition from the author object'
+            )
+          );
+        }
+
+        for (const property of getAuthorProperties(node.arguments[0])) {
           const key =
             property.type === 'ObjectProperty' ||
             property.type === 'ObjectMethod'
               ? getPropertyName(property.key)
               : undefined;
+
+          reportPrefixedOnHandlers(property);
+          reportStaleCapabilityFactoryContext(property);
+
+          if (key === 'key') {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'Plate plugin identity uses name instead of key'
+              )
+            );
+          }
+
+          if (key && deletedPlatePluginDefinitionKeys.has(key)) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                `deleted Plate plugin definition field ${key}`
+              )
+            );
+          }
+
+          if (
+            key &&
+            factoryOnlyCapabilityKeys.has(key) &&
+            isStaticCapabilityDeclaration(property)
+          ) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                `plugin ${key} must be declared as a factory`
+              )
+            );
+          }
+
+          if (
+            key === 'api' &&
+            (getCapabilityFactoryParameterCount(property) ?? 0) > 1
+          ) {
+            issues.push(
+              createIssue(
+                file,
+                fence,
+                property,
+                'plugin api factory receives one context object'
+              )
+            );
+          }
 
           if (node.callee.name === 'createBasePlugin' && key === 'component') {
             issues.push(
@@ -496,6 +1384,76 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                 'plugin codec declarations must use the context-bound defineCodecs(...) helper'
               )
             );
+          }
+        }
+      }
+
+      if (localPliteExtensionCreatorNames.hasCall(node)) {
+        if (
+          node.typeParameters?.params.length > 0 ||
+          node.typeArguments?.params.length > 0
+        ) {
+          issues.push(
+            createIssue(
+              file,
+              fence,
+              node,
+              'defineEditorExtension infers one definition from its author object'
+            )
+          );
+        }
+
+        if (node.arguments[0]) {
+          for (const property of getAuthorProperties(node.arguments[0])) {
+            const key =
+              property.type === 'ObjectProperty' ||
+              property.type === 'ObjectMethod'
+                ? getPropertyName(property.key)
+                : undefined;
+
+            reportPrefixedOnHandlers(property);
+            reportPliteConfigContext(property);
+            reportStaleCapabilityFactoryContext(property);
+
+            if (key && deletedPliteExtensionDefinitionKeys.has(key)) {
+              issues.push(
+                createIssue(
+                  file,
+                  fence,
+                  property,
+                  `deleted Plite extension definition field ${key}`
+                )
+              );
+            }
+
+            if (
+              key &&
+              factoryOnlyCapabilityKeys.has(key) &&
+              isStaticCapabilityDeclaration(property)
+            ) {
+              issues.push(
+                createIssue(
+                  file,
+                  fence,
+                  property,
+                  `extension ${key} must be declared as a factory`
+                )
+              );
+            }
+
+            if (
+              key === 'api' &&
+              (getCapabilityFactoryParameterCount(property) ?? 0) > 1
+            ) {
+              issues.push(
+                createIssue(
+                  file,
+                  fence,
+                  property,
+                  'extension api factory receives one context object'
+                )
+              );
+            }
           }
         }
       }
@@ -622,7 +1580,7 @@ export function auditPlateDocCode(source, file = 'content/docs/example.mdx') {
                 file,
                 fence,
                 property,
-                'contextual plugin configure only accepts explicit initialState, handlers, override, render, and shortcuts overrides'
+                'contextual plugin configure only accepts explicit initialState, on, override, render, and shortcuts overrides'
               )
             );
           }

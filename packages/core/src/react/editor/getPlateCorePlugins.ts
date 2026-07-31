@@ -1,26 +1,40 @@
-import { DOMPluginBase, type CorePlugin } from '../../lib';
-import type { InferConfig, PlatePlugin } from '../plugin';
+import {
+  createBasePlugin,
+  DOMPlugin,
+  type CorePluginDefinition,
+  type DefinitionOf,
+} from '../../lib';
+import { plateReactExtension } from '../../internal/plugin/plateNativeExtensions';
+import type { ReactExtension } from '@platejs/plite-react';
 import { toPlatePlugin } from '../plugin/toPlatePlugin';
 import { ParagraphPlugin } from '../plugins';
 import { EventEditorPlugin } from '../plugins/event-editor/EventEditorPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 import type { NavigationFeedbackPluginState } from '../plugins/navigation-feedback/types';
 
-const ReactDOMPlugin = toPlatePlugin(DOMPluginBase, { key: 'dom' });
+const ReactDOMPlugin = toPlatePlugin(DOMPlugin);
+const ReactPlugin = toPlatePlugin(
+  createBasePlugin({
+    dependencies: [DOMPlugin],
+    name: 'react',
+  }).extend<ReactExtension>(plateReactExtension)
+);
 
 export type PlateCorePlugins = readonly [
-  PlatePlugin<InferConfig<typeof ReactDOMPlugin>>,
-  PlatePlugin<InferConfig<typeof EventEditorPlugin>>,
-  PlatePlugin<InferConfig<typeof NavigationFeedbackPlugin>>,
-  PlatePlugin<InferConfig<typeof ParagraphPlugin>>,
+  typeof ReactDOMPlugin,
+  typeof ReactPlugin,
+  typeof EventEditorPlugin,
+  ReturnType<typeof NavigationFeedbackPlugin.configure>,
+  typeof ParagraphPlugin,
 ];
 
 export type PlateCorePlugin =
-  | CorePlugin
-  | InferConfig<typeof EventEditorPlugin>
-  | InferConfig<typeof NavigationFeedbackPlugin>
-  | InferConfig<typeof ParagraphPlugin>
-  | InferConfig<typeof ReactDOMPlugin>;
+  | CorePluginDefinition
+  | DefinitionOf<typeof EventEditorPlugin>
+  | DefinitionOf<typeof NavigationFeedbackPlugin>
+  | DefinitionOf<typeof ParagraphPlugin>
+  | DefinitionOf<typeof ReactPlugin>
+  | DefinitionOf<typeof ReactDOMPlugin>;
 
 export const getPlateCorePlugins = ({
   navigationFeedback,
@@ -28,6 +42,7 @@ export const getPlateCorePlugins = ({
   navigationFeedback?: Partial<NavigationFeedbackPluginState> | boolean;
 } = {}): PlateCorePlugins => [
   ReactDOMPlugin,
+  ReactPlugin,
   EventEditorPlugin,
   NavigationFeedbackPlugin.configure({
     enabled: navigationFeedback !== false,

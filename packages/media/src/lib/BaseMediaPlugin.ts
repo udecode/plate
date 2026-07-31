@@ -1,11 +1,11 @@
 import {
   type BasePluginContext,
+  type BasePluginDefinition,
   createBasePlugin,
-  type PluginConfig,
-  type PluginReference,
-  type UnifiedRuntimeBasePluginConfig,
+  type PlatePluginTransaction,
 } from '@platejs/core';
 import {
+  type EditorUpdateContext,
   type NodeInsertNodesOptions,
   property,
   schema,
@@ -35,11 +35,6 @@ export const mediaElementProperties = {
     validationVersion: 1,
   }),
 } satisfies SchemaElementProperties;
-
-export const mediaElementContent = schema.content.any(
-  [schema.content.text(), schema.content.group('inline')],
-  { default: 'text', min: 1 }
-);
 
 export type MediaPluginState = {
   isUrl?: (text: string) => boolean;
@@ -83,27 +78,7 @@ export type ProviderMediaInsertInput = AlignedMediaInsertInput & {
   sourceUrl?: string;
 };
 
-export type MediaPluginConfig = PluginConfig<
-  string,
-  MediaPluginState,
-  {},
-  {},
-  {},
-  {},
-  readonly [],
-  unknown,
-  {
-    normalizeUrl: (url: string) => MediaUrlProperties | undefined;
-  }
->;
-
-/** Plugin descriptor carrying the scoped media URL API. */
-export type MediaPluginReference = Readonly<{
-  __config: MediaPluginConfig;
-}> &
-  PluginReference;
-
-type MediaElementForPluginKey<K extends string> = K extends typeof KEYS.img
+type MediaElementForPluginName<K extends string> = K extends typeof KEYS.img
   ? TImageElement
   : K extends typeof KEYS.audio
     ? TAudioElement
@@ -115,7 +90,7 @@ type MediaElementForPluginKey<K extends string> = K extends typeof KEYS.img
           ? TMediaEmbedElement
           : TMediaElement;
 
-type MediaInsertInputForPluginKey<K extends string> = K extends typeof KEYS.img
+type MediaInsertInputForPluginName<K extends string> = K extends typeof KEYS.img
   ? ImageInsertInput
   : K extends typeof KEYS.mediaEmbed | typeof KEYS.video
     ? ProviderMediaInsertInput
@@ -123,41 +98,27 @@ type MediaInsertInputForPluginKey<K extends string> = K extends typeof KEYS.img
       ? AlignedMediaInsertInput
       : MediaInsertInput;
 
-type MediaPluginInputConfig = {
-  api: object;
-  initialState: MediaPluginState;
-  key: string;
-  selectors: object;
-  tx: Record<string, unknown>;
-  dependencies?: readonly PluginReference[];
-  enabled?: boolean;
-  pluginApi: Record<string, never>;
-  schemaModel?: unknown;
-  state?: object;
-};
-
 type MediaPluginUpdate<K extends string> = {
   insert: (
-    input: MediaInsertInputForPluginKey<K>,
+    input: MediaInsertInputForPluginName<K>,
     options?: NodeInsertNodesOptions<TMediaElement>
   ) => boolean;
   setUrl: (input: {
-    element: MediaElementForPluginKey<K>;
+    element: MediaElementForPluginName<K>;
     url: string;
   }) => boolean;
 };
 
-type MediaPluginExtension<C extends MediaPluginInputConfig> =
-  UnifiedRuntimeBasePluginConfig<
-    C,
-    {},
-    MediaPluginConfig['pluginApi'],
-    {},
-    {},
-    MediaPluginUpdate<C['key']>,
-    {},
-    {}
-  >;
+type MediaPluginApi = {
+  normalizeUrl: (url: string) => MediaUrlProperties | undefined;
+};
+
+type MediaPluginBaseDefinition<K extends string = string> =
+  BasePluginDefinition &
+    Readonly<{
+      initialState: MediaPluginState;
+      name: K;
+    }>;
 
 /** Installs direct-child caption normalization and media construction. */
 export const defineMediaPlugin =
@@ -167,7 +128,18 @@ export const defineMediaPlugin =
       url: string
     ) => MediaUrlProperties
   ) =>
-  <C extends MediaPluginInputConfig>({ store, type }: BasePluginContext<C>) => {
+  <C extends MediaPluginBaseDefinition>({
+    store,
+    type,
+  }: BasePluginContext<C>): {
+    api: (context: BasePluginContext<C>) => MediaPluginApi;
+    update: (
+      context: BasePluginContext<C> & {
+        context: EditorUpdateContext;
+        tx: PlatePluginTransaction<C>;
+      }
+    ) => MediaPluginUpdate<C['name']>;
+  } => {
     const normalizeUrl = (url: string): MediaUrlProperties | undefined => {
       const state = store.get();
       const normalized = normalizeUrlInput?.(state, url) ?? {
@@ -179,71 +151,58 @@ export const defineMediaPlugin =
         : undefined;
     };
 
-    const update: NonNullable<MediaPluginExtension<C>['update']> = ({
-      tx,
-    }) => ({
-      insert(
-        input: MediaInsertInputForPluginKey<C['key']>,
-        options?: NodeInsertNodesOptions<TMediaElement>
-      ) {
-        if (!tx.selection() && options?.at === undefined) return false;
-
-        const normalized = normalizeUrl(input.url);
-
-        if (!normalized) return false;
-
-        const { caption, ...properties } = {
-          ...input,
-          ...normalized,
-        };
-        const children =
-          typeof caption === 'string'
-            ? [{ text: caption }]
-            : caption && caption.length > 0
-              ? caption
-              : [{ text: '' }];
-        const element: TMediaElement = {
-          ...properties,
-          children,
-          type,
-        };
-
-        if (options?.at === undefined) {
-          tx.blocks.insertAfter(element, options);
-        } else {
-          tx.nodes.insert(element, options);
-        }
-
-        return true;
-      },
-      setUrl({
-        element,
-        url,
-      }: {
-        element: MediaElementForPluginKey<C['key']>;
-        url: string;
-      }) {
-        const properties = normalizeUrl(url);
-        const at = tx.nodes.path(element);
-
-        if (!properties || !at) return false;
-
-        tx.nodes.set<TMediaElement>(
-          {
-            provider: properties.provider,
-            sourceUrl: properties.sourceUrl,
-            url: properties.url,
-          },
-          { at }
-        );
-
-        return true;
-      },
-    });
-
     return {
-      api: { normalizeUrl },
-      update,
+      api: () => ({ normalizeUrl }),
+      update: ({ tx }) => ({
+        insert(input, options) {
+          if (!tx.selection() && options?.at === undefined) return false;
+
+          const normalized = normalizeUrl(input.url);
+
+          if (!normalized) return false;
+
+          const { caption, ...properties } = {
+            ...input,
+            ...normalized,
+          };
+          const children =
+            typeof caption === 'string'
+              ? [{ text: caption }]
+              : caption && caption.length > 0
+                ? caption
+                : [{ text: '' }];
+          const element: TMediaElement = {
+            ...properties,
+            children,
+            type,
+          };
+
+          if (options?.at === undefined) {
+            tx.blocks.insertAfter(element, options);
+          } else {
+            tx.nodes.insert(element, options);
+          }
+
+          return true;
+        },
+        setUrl({ element, url }) {
+          const properties = normalizeUrl(url);
+          const at = tx.nodes.path(element);
+
+          if (!properties || !at) return false;
+
+          tx.nodes.set<TMediaElement>(
+            {
+              provider: properties.provider,
+              sourceUrl: properties.sourceUrl,
+              url: properties.url,
+            },
+            { at }
+          );
+
+          return true;
+        },
+      }),
     };
   };
 
@@ -252,37 +211,116 @@ export type FilePluginState = MediaPluginState;
 export type VideoPluginState = MediaPluginState;
 
 export const BaseAudioPlugin = createBasePlugin({
-  key: KEYS.audio,
+  name: KEYS.audio,
   initialState: (): AudioPluginState => ({}),
   schema: {
-    element: {
-      content: mediaElementContent,
+    element: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
       properties: mediaElementProperties,
-    },
+    }),
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'audio',
+        kind: 'node',
+        decode: ({ caption, decode, node, parseAttributes, type }) => {
+          const { src, ...props } = parseAttributes(node.attributes);
+
+          return {
+            ...props,
+            children: caption(decode(node.children)),
+            type,
+            url: typeof src === 'string' ? src : '',
+          };
+        },
+        encode: ({
+          encodePhrasing,
+          node,
+          propsToAttributes,
+          readPlainInline,
+          type,
+        }) => {
+          const { children, type: _, url, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes({ ...rest, src: url }),
+            children:
+              readPlainInline(children) !== ''
+                ? [
+                    {
+                      children: encodePhrasing(children),
+                      type: 'paragraph',
+                    },
+                  ]
+                : [],
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
 }).extend(defineMediaPlugin());
 
 export const BaseFilePlugin = createBasePlugin({
-  key: KEYS.file,
+  name: KEYS.file,
   initialState: (): FilePluginState => ({}),
   schema: {
-    element: {
-      content: mediaElementContent,
+    element: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
       properties: mediaElementProperties,
-    },
+    }),
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'file',
+        kind: 'node',
+        decode: ({ caption, decode, node, parseAttributes, type }) => {
+          const { src, ...props } = parseAttributes(node.attributes);
+
+          return {
+            ...props,
+            children: caption(decode(node.children)),
+            type,
+            url: typeof src === 'string' ? src : '',
+          };
+        },
+        encode: ({
+          encodePhrasing,
+          node,
+          propsToAttributes,
+          readPlainInline,
+          type,
+        }) => {
+          const { children, type: _, url, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes({ ...rest, src: url }),
+            children:
+              readPlainInline(children) !== ''
+                ? [
+                    {
+                      children: encodePhrasing(children),
+                      type: 'paragraph',
+                    },
+                  ]
+                : [],
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
 }).extend(defineMediaPlugin());
 
 export const BaseVideoPlugin = createBasePlugin({
-  key: KEYS.video,
+  name: KEYS.video,
   initialState: (): VideoPluginState => ({}),
   schema: {
-    element: {
-      content: mediaElementContent,
+    element: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
       properties: {
@@ -290,6 +328,47 @@ export const BaseVideoPlugin = createBasePlugin({
         provider: property.string(),
         sourceUrl: property.string(),
       },
-    },
+    }),
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'video',
+        kind: 'node',
+        decode: ({ caption, decode, node, parseAttributes, type }) => {
+          const { src, ...props } = parseAttributes(node.attributes);
+
+          return {
+            ...props,
+            children: caption(decode(node.children)),
+            type,
+            url: typeof src === 'string' ? src : '',
+          };
+        },
+        encode: ({
+          encodePhrasing,
+          node,
+          propsToAttributes,
+          readPlainInline,
+          type,
+        }) => {
+          const { children, type: _, url, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes({ ...rest, src: url }),
+            children:
+              readPlainInline(children) !== ''
+                ? [
+                    {
+                      children: encodePhrasing(children),
+                      type: 'paragraph',
+                    },
+                  ]
+                : [],
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
 }).extend(defineMediaPlugin());

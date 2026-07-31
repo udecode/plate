@@ -7,6 +7,7 @@ import {
   type EditorCommit,
   type EditorDocumentValue,
   type EditorEffect,
+  type EditorExtension,
   type EditorExtensionTypeProvider,
   type EditorStateView,
   type EditorUpdateTransaction,
@@ -92,13 +93,36 @@ export type HistoryOptions<TEnabled extends boolean | undefined = undefined> = {
 };
 
 export type HistoryExtensionTypes<V extends Value = Value> = {
-  state: {
+  read: {
     history: HistoryStateApi<V>;
   };
-  tx: {
+  update: {
     history: HistoryTxApi<V>;
   };
 };
+
+type HistoryExtensionDefinition<TEnabled extends boolean | undefined> = {
+  activate: true;
+  enabled: TEnabled;
+  name: 'history';
+  on: true;
+  read: HistoryStateApi;
+  update: HistoryTxApi;
+  validate: true;
+};
+
+interface HistoryExtensionTypeLambda {
+  readonly input: Value;
+  readonly output: HistoryExtensionTypes<this['input']>;
+}
+
+/** Value-sensitive history capability provider for extension composition. */
+export type HistoryExtensionTypeProvider =
+  EditorExtensionTypeProvider<HistoryExtensionTypeLambda>;
+
+export type HistoryExtension<TEnabled extends boolean | undefined = undefined> =
+  EditorExtension<HistoryExtensionDefinition<TEnabled>> &
+    HistoryExtensionTypeProvider;
 
 type HistoryMode = 'merge' | 'push' | 'skip';
 type HistoryAction = 'redo' | 'undo';
@@ -387,51 +411,44 @@ const createHistoryExtension = <
   const TEnabled extends boolean | undefined = undefined,
 >(
   options: HistoryOptions<TEnabled> = {}
-) =>
-  defineEditorExtension()({
+): HistoryExtension<TEnabled> =>
+  defineEditorExtension({
     enabled: options.enabled as TEnabled,
     name: 'history',
-    state: {
-      history(_state, editor) {
-        return Object.assign(() => getHistory(editor), {
-          redos: () => getHistory(editor).redos,
-          undos: () => getHistory(editor).undos,
-        }) satisfies HistoryStateApi;
-      },
+    read({ editor }) {
+      return Object.assign(() => getHistory(editor), {
+        redos: () => getHistory(editor).redos,
+        undos: () => getHistory(editor).undos,
+      }) satisfies HistoryStateApi;
     },
-    tx: {
-      history(tx, editor) {
-        return {
-          discardRedo() {
-            tx.annotations.set(historyDiscardRedo, true);
-          },
-          merge: createHistoryControl(tx, 'merge'),
-          newBatch: createHistoryControl(tx, 'push'),
-          redo() {
-            dispatchCommand(editor, historyRedoCommand, {
-              root: getEditorUpdateRoot(editor),
-            });
-          },
-          restore(value) {
-            if (!History.isHistory(value)) {
-              throw new Error('tx.history.restore requires decoded history.');
-            }
+    update({ editor, tx }) {
+      return {
+        discardRedo() {
+          tx.annotations.set(historyDiscardRedo, true);
+        },
+        merge: createHistoryControl(tx, 'merge'),
+        newBatch: createHistoryControl(tx, 'push'),
+        redo() {
+          dispatchCommand(editor, historyRedoCommand, {
+            root: getEditorUpdateRoot(editor),
+          });
+        },
+        restore(value) {
+          if (!History.isHistory(value)) {
+            throw new Error('tx.history.restore requires decoded history.');
+          }
 
-            tx.tags.add('history-skip');
-            tx.tags.add('history-restore');
-            tx.annotations.set(
-              historyRestore,
-              encodeHistoryValue(editor, value)
-            );
-          },
-          skip: createHistoryControl(tx, 'skip'),
-          undo() {
-            dispatchCommand(editor, historyUndoCommand, {
-              root: getEditorUpdateRoot(editor),
-            });
-          },
-        } satisfies HistoryTxApi;
-      },
+          tx.tags.add('history-skip');
+          tx.tags.add('history-restore');
+          tx.annotations.set(historyRestore, encodeHistoryValue(editor, value));
+        },
+        skip: createHistoryControl(tx, 'skip'),
+        undo() {
+          dispatchCommand(editor, historyUndoCommand, {
+            root: getEditorUpdateRoot(editor),
+          });
+        },
+      } satisfies HistoryTxApi;
     },
     activate(editor, context) {
       const previousActivation = HISTORY_ACTIVATION.get(editor);
@@ -601,16 +618,10 @@ const createHistoryExtension = <
         }
       },
     },
-    validateConfiguration() {
+    validate() {
       getHistoryMaxDepth(options);
     },
-  });
-
-export type HistoryExtension<TEnabled extends boolean | undefined = undefined> =
-  ReturnType<typeof createHistoryExtension<TEnabled>> &
-    EditorExtensionTypeProvider<
-      <V extends Value>(editor: Editor<V>) => HistoryExtensionTypes<V>
-    >;
+  }) as HistoryExtension<TEnabled>;
 
 /** Create the inverse-change history extension. */
 export const history = <const TEnabled extends boolean | undefined = undefined>(

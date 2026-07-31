@@ -37,7 +37,7 @@ const packageDirectoryByName = new Map([
 const blockVoidSchema = defineEditorSchema({
   elements: { image: { void: 'block' } },
   id: 'react-surface-block-void',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -50,7 +50,7 @@ const editableIslandSchema = defineEditorSchema({
     },
   },
   id: 'react-surface-editable-island',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -58,7 +58,7 @@ const editableIslandSchema = defineEditorSchema({
 const inlineVoidSchema = defineEditorSchema({
   elements: { mention: { void: 'inline' } },
   id: 'react-surface-inline-void',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });

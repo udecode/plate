@@ -457,8 +457,13 @@ const files = unique(scopedFiles.map(relative)).map((file) => {
 
 const includedFiles = files.filter((file) => !file.exclusion);
 const declarations = includedFiles.flatMap((file) => file.declarations);
-const sourceLines = (file) =>
-  fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/);
+const sourceLines = (file) => {
+  const absolute = path.join(root, file);
+
+  return fs.existsSync(absolute)
+    ? fs.readFileSync(absolute, 'utf8').split(/\r?\n/)
+    : [];
+};
 const countLineMatches = (paths, pattern, accept = () => true) =>
   paths.reduce(
     (count, file) =>
@@ -554,21 +559,17 @@ const pressure = {
     ),
   },
   queryMiddleware: {
-    executionOwnerLines:
-      fs
-        .readFileSync(
-          path.join(root, 'packages/plite/src/core/query-middleware.ts'),
-          'utf8'
-        )
-        .match(/\n/g)?.length ?? 0,
-    exportedTypes: 4,
-    plateRegistrationFiles: queryRegistrationPaths.length,
+    executionOwnerLines: 0,
+    exportedTypes: 0,
+    plateRegistrationFiles: queryRegistrationPaths.filter((file) =>
+      fs.existsSync(path.join(root, file))
+    ).length,
     plateRegistrations: countLineMatches(queryRegistrationPaths, /\bqueries:/),
     wrapperCalls: countLineMatches(
       queryReadPaths,
       /\bexecuteQueryMiddleware\(/
     ),
-    overridableMethods: 43,
+    overridableMethods: 0,
   },
 };
 const summary = {

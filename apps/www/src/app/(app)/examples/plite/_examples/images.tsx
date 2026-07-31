@@ -152,7 +152,7 @@ const ImagesEditor = ({ exampleCase }: { exampleCase: ImageExampleCase }) => {
 };
 
 const image = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'image',
     contributions: [
       clipboardHandler({

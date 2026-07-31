@@ -134,16 +134,16 @@ describe('SingleBlockPlugin', () => {
   it.each([
     [SingleBlockPlugin, 'singleBlock'],
     [SingleLinePlugin, 'singleLine'],
-  ] as const)('%s weakly disables trailing blocks regardless of plugin order', (plugin, key) => {
+  ] as const)('%s weakly disables trailing blocks regardless of plugin order', (plugin, pluginName) => {
     for (const plugins of [
       [plugin, TrailingBlockPlugin],
       [TrailingBlockPlugin, plugin],
     ]) {
       const editor = createPlateEditor({ plugins });
 
-      expect(getPlateRuntime(editor).plugins[key]).toBeDefined();
+      expect(getPlateRuntime(editor).plugins[pluginName]).toBeDefined();
       expect(
-        getPlateRuntime(editor).plugins[TrailingBlockPlugin.key]
+        getPlateRuntime(editor).plugins[TrailingBlockPlugin.name]
       ).toBeUndefined();
     }
   });

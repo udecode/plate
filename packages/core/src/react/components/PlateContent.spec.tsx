@@ -25,7 +25,7 @@ import { PlateContent } from './PlateContent';
 const value: Value = [{ children: [{ text: 'one' }], type: 'p' }];
 
 const VariantPlugin = createBasePlugin({
-  key: 'variant',
+  name: 'variant',
   schema: {
     properties: [
       schema.elementProperty('variant', property.string(), {
@@ -36,7 +36,7 @@ const VariantPlugin = createBasePlugin({
 });
 
 const AtomicParserBPlugin = createBasePlugin({
-  key: 'atomicParserB',
+  name: 'atomicParserB',
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -135,6 +135,7 @@ describe('PlateContent', () => {
     expect(getByTestId('plate-shell')).toContainElement(
       getByTestId('runtime-editable')
     );
+    expect(editor.api.dom.scroll()).toBe(getByTestId('plate-shell'));
     expect(Object.hasOwn(editor.runtime, 'uid')).toBe(false);
   });
 
@@ -294,7 +295,7 @@ describe('PlateContent', () => {
       nodeId: false,
       plugins: [
         createBasePlugin({
-          key: 'figure',
+          name: 'figure',
           schema: {
             element: {
               contentRoots: {
@@ -306,14 +307,15 @@ describe('PlateContent', () => {
                   ownership: 'exclusive',
                 },
               },
-              topLevel: true,
+              blockContent: true,
               void: 'block',
             },
           },
         }),
-        createBasePlugin({ key: 'documentState' })
-          .extend({ extension: revision })
-          .extend({ extension: localState }),
+        createBasePlugin({
+          name: 'documentState',
+          stateFields: [revision, localState],
+        }),
       ],
       initialValue: {
         children: [
@@ -510,7 +512,7 @@ describe('PlateContent', () => {
     let inserted = false;
 
     act(() => {
-      inserted = editor.api.clipboard.insertData({
+      inserted = editor.api.dom.clipboard.insertData({
         files: [],
         getData: (format: string) =>
           format === 'application/x-plate-atomic-parser' ? 'payload' : '',

@@ -64,7 +64,7 @@ Phase / pass table:
 |-------|--------|----------|------|
 | Requirements capture | done | Explicit requirements copied above | none |
 | API design | done | `extendExtension(extension)` primary, `extendExtension('subKey', extension)` secondary | keep |
-| Runtime normalization | done | plugin key + subkey normalizes to `pluginKey:subKey` | keep |
+| Runtime normalization | done | plugin key + subkey normalizes to `pluginName:subKey` | keep |
 | DOM migration | done | `DOMPlugin.extendExtension('autoScroll', ...)` | keep |
 | Test cleanup | done | Single-item extension array removed from `Plate.slow.tsx`; stale Plite assertions repaired | keep |
 | Verification | done | Proof table below | none |
@@ -98,7 +98,7 @@ Review matrix:
 | Path / API | Drift score | Verdict | Owner | Evidence | Next |
 |------------|-------------|---------|-------|----------|------|
 | `BasePlugin.extendExtension` | 0 | main-parity-cleanup | Plate plugin API | Adds keyed overload while preserving primary extension inference | keep |
-| `normalizePlateEditorExtensions` | 0 | main-parity-cleanup | Plate plugin API | `pluginKey:subKey` identity replaces fake `name` strings | keep |
+| `normalizePlateEditorExtensions` | 0 | main-parity-cleanup | Plate plugin API | `pluginName:subKey` identity replaces fake `name` strings | keep |
 | `DOMPlugin` | 0 | keep-in-plate | Plate DOM product behavior | Auto-scroll now lives under `dom:autoScroll` secondary extension | keep |
 | `createBasePlugin.spec.ts` | 0 | proof | Core tests | Locks plugin-scoped secondary keys and repeated-key merge | keep |
 | `Plate.slow.tsx` | 1 | main-parity-cleanup | Core React tests | Removed single-item extension array; updated stale Plite expectations found by focused test | keep |

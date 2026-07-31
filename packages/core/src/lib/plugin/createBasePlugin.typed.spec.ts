@@ -1,4 +1,3 @@
-import type { NodeComponent, PluginConfig } from './PluginConfig';
 import { property, schema, target } from '@platejs/plite';
 
 import { resolvePluginTest } from '../../internal/plugin/resolveCreatePluginTest';
@@ -8,11 +7,12 @@ import { createBaseEditor } from '../editor';
 import { createRuleFactory } from '../plugins/input-rules/createRuleFactory';
 import type { BasePluginOverride } from './BasePlugin';
 import { createBasePlugin } from './createBasePlugin';
+import type { DefinitionOf, NodeComponent } from './PluginDefinition';
 
 const assertTypedSchemaContributions = () => {
   createBasePlugin({
-    key: 'validSchema',
     initialState: { targetTypes: ['cell', 'header'] },
+    name: 'validSchema',
     schema: ({ initialState }) => ({
       properties: [
         schema.elementProperty('status', property.string(), {
@@ -23,13 +23,13 @@ const assertTypedSchemaContributions = () => {
   });
 
   createBasePlugin({
-    key: 'invalidSchema',
+    name: 'invalidSchema',
     // @ts-expect-error schema callbacks cannot access the editor runtime
     schema: ({ editor }) => ({ editor }),
   });
 
   const ParagraphPlugin = createBasePlugin({
-    key: 'typedContentRootParagraph',
+    name: 'typedContentRootParagraph',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -37,11 +37,11 @@ const assertTypedSchemaContributions = () => {
     },
   });
   const ImagePlugin = createBasePlugin({
-    key: 'typedContentRootImage',
+    name: 'typedContentRootImage',
     schema: { element: { void: 'block' } },
   });
   const CaptionPlugin = createBasePlugin({
-    key: 'typedCaption',
+    name: 'typedCaption',
     schema: ({ own, plugins }) => ({
       contentRoots: [
         own.contentRoot(
@@ -57,7 +57,7 @@ const assertTypedSchemaContributions = () => {
   const editor = createBaseEditor({
     plugins: [ParagraphPlugin, ImagePlugin, CaptionPlugin],
   });
-  const image = editor.read.schema.createAndFill(ImagePlugin);
+  const image = editor.read.schema.create(ImagePlugin);
   const captionRoot: string = image.childRoots.typedCaption;
 
   // @ts-expect-error targeted content-root slots stay exact
@@ -65,7 +65,7 @@ const assertTypedSchemaContributions = () => {
   void captionRoot;
 
   createBasePlugin({
-    key: 'invalidContentRootTarget',
+    name: 'invalidContentRootTarget',
     schema: ({ own }) => ({
       contentRoots: [
         own.contentRoot(schema.content.type('paragraph'), {
@@ -76,29 +76,23 @@ const assertTypedSchemaContributions = () => {
       ],
     }),
   });
-};
 
-void assertTypedSchemaContributions;
-
-const assertTypedNodeSchemas = () => {
   createBasePlugin({
-    key: 'booleanMark',
+    name: 'booleanMark',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   });
-
   createBasePlugin({
-    key: 'tone',
+    name: 'tone',
     schema: {
       mark: {
+        property: property.string(),
         split: 'drop',
         target: target.group('textBlock'),
-        property: property.string(),
       },
     },
   });
-
   createBasePlugin({
-    key: 'image',
+    name: 'image',
     schema: {
       element: {
         properties: {
@@ -111,17 +105,17 @@ const assertTypedNodeSchemas = () => {
   });
 };
 
-void assertTypedNodeSchemas;
+void assertTypedSchemaContributions;
 
 const assertTypedContextualConfiguration = () => {
   const BasePlugin = createBasePlugin({
-    key: 'baseContextual',
     initialState: { enabled: false },
+    name: 'baseContextual',
   });
 
   BasePlugin.configure(({ editor, plugin }) => {
     editor.id satisfies string;
-    plugin.key satisfies 'baseContextual';
+    plugin.name satisfies 'baseContextual';
 
     return { initialState: { enabled: true } };
   });
@@ -138,8 +132,8 @@ const assertTypedContextualConfiguration = () => {
 
   // @ts-expect-error Base-to-Plate wrapping preserves terminal authoring state
   WrappedConfiguredBasePlugin.configure({ component: () => null });
-  // @ts-expect-error React extension config must be applied before consumer configure
-  toPlatePlugin(ConfiguredBasePlugin, { render: { node: () => null } });
+  // @ts-expect-error React adaptation must happen before consumer configuration
+  toPlatePlugin(ConfiguredBasePlugin, { component: () => null });
 
   // @ts-expect-error contextual configure cannot add state fields
   BasePlugin.configure(() => ({ initialState: { missing: true } }));
@@ -147,13 +141,13 @@ const assertTypedContextualConfiguration = () => {
   BasePlugin.configure(() => ({ type: 'other' }));
 
   const PlatePlugin = createPlatePlugin({
-    key: 'plateContextual',
     initialState: { enabled: false },
+    name: 'plateContextual',
   });
 
   PlatePlugin.configure(({ editor, plugin }) => {
     editor.id satisfies string;
-    plugin.key satisfies 'plateContextual';
+    plugin.name satisfies 'plateContextual';
 
     return { initialState: { enabled: true } };
   });
@@ -164,7 +158,7 @@ const assertTypedContextualConfiguration = () => {
   // @ts-expect-error configured descriptors accept one consumer configuration
   ConfiguredPlatePlugin.configure({ initialState: { enabled: false } });
   // @ts-expect-error configured descriptors are terminal authoring inputs
-  ConfiguredPlatePlugin.configure({ component: () => null });
+  ConfiguredPlatePlugin.extend({ component: () => null });
 
   // @ts-expect-error contextual configure cannot add state fields
   PlatePlugin.configure(() => ({ initialState: { missing: true } }));
@@ -176,7 +170,7 @@ void assertTypedContextualConfiguration;
 
 const assertTypedInputRuleConfiguration = () => {
   const BaseRulePlugin = createBasePlugin({
-    key: 'typedInputRuleOwner',
+    name: 'typedInputRuleOwner',
     read: () => ({ enabled: () => true }),
   });
   const rule = createRuleFactory(BaseRulePlugin)({
@@ -192,23 +186,43 @@ const assertTypedInputRuleConfiguration = () => {
 
 void assertTypedInputRuleConfiguration;
 
-const assertTypedInitialAuthoringContext = () => {
+const assertTypedAuthoringContext = () => {
+  const FullSchemaPlugin = createBasePlugin({
+    api: () => ({
+      value: () => 1 as const,
+    }),
+    effectTypes: [],
+    name: 'fullSchemaConstructor',
+    read: () => ({
+      ready: () => true as const,
+    }),
+    render: { isDecoration: false },
+    rules: { selection: { affinity: 'outward' } },
+    schema: {
+      mark: property.boolean({ default: false, omitDefault: true }),
+    },
+    stateFields: [],
+    update: () => ({
+      run: () => 'done' as const,
+    }),
+  });
+  const fullSchemaEditor = createBaseEditor({
+    plugins: [FullSchemaPlugin],
+  });
+
+  fullSchemaEditor.api.fullSchemaConstructor.value() satisfies 1;
+  fullSchemaEditor.read.fullSchemaConstructor.ready() satisfies true;
+  fullSchemaEditor.update.fullSchemaConstructor.run() satisfies 'done';
+
   const BasePlugin = createBasePlugin({
-    key: 'baseInitialContext',
+    api: ({ editor, plugin, store, type }) => ({
+      label: () => `${editor.id}:${plugin.name}:${type}:${store.get('prefix')}`,
+    }),
     initialState: {
       prefix: 'base',
     },
-    api: ({ editor, store, plugin, type }) => ({
-      label: () => `${editor.id}:${plugin.key}:${type}:${store.get('prefix')}`,
-    }),
-    extension: ({ plugin }) => ({
-      api: {
-        baseInitialExtension: {
-          key: () => plugin.key,
-        },
-      },
-    }),
-    read: ({ editor, store, state }) => ({
+    name: 'baseInitialContext',
+    read: ({ editor, state, store }) => ({
       readLabel: () => {
         state satisfies object;
 
@@ -225,7 +239,13 @@ const assertTypedInitialAuthoringContext = () => {
         tx satisfies object;
       },
     }),
-  });
+  }).extend(({ plugin }) => ({
+    api: () => ({
+      baseInitialExtension: {
+        name: () => plugin.name,
+      },
+    }),
+  }));
   const baseEditor = createBaseEditor({
     id: 'base-constructor',
     plugins: [BasePlugin],
@@ -235,42 +255,40 @@ const assertTypedInitialAuthoringContext = () => {
   baseEditor.plugin(BasePlugin).store.get('label') satisfies string;
   baseEditor.read.baseInitialContext.readLabel() satisfies string;
   baseEditor.update.baseInitialContext.updateLabel() satisfies void;
-  baseEditor.api.baseInitialExtension.key() satisfies 'baseInitialContext';
+  baseEditor
+    .plugin(BasePlugin)
+    .api.baseInitialExtension.name() satisfies 'baseInitialContext';
 
   const BehaviorOnlyPlugin = createBasePlugin({
-    extension: {
-      on: {
-        commit: () => {},
-      },
+    name: 'behaviorOnly',
+    on: {
+      commit: () => {},
     },
-    key: 'behaviorOnly',
   });
   const ExactRootApiPlugin = createBasePlugin({
-    extension: {
-      api: {
-        exactRoot: {
-          value: () => 1 as const,
-        },
+    api: () => ({
+      exactRoot: {
+        value: () => 1 as const,
       },
-    },
-    key: 'exactRootApi',
+    }),
+    name: 'exactRootApi',
   });
   const exactEditor = createBaseEditor({
     plugins: [BehaviorOnlyPlugin, ExactRootApiPlugin],
   });
 
-  exactEditor.api.exactRoot.value() satisfies 1;
-  // @ts-expect-error behavior-only extensions cannot widen root API
+  exactEditor.plugin(ExactRootApiPlugin).api.exactRoot.value() satisfies 1;
+  // @ts-expect-error behavior-only plugins cannot widen root API
   exactEditor.api.missingRootApi;
 
   const PlatePlugin = createPlatePlugin({
-    key: 'plateInitialContext',
-    initialState: {
-      prefix: 'plate',
-    },
     api: ({ editor, store }) => ({
       label: () => `${editor.id}:${store.get('prefix')}`,
     }),
+    initialState: {
+      prefix: 'plate',
+    },
+    name: 'plateInitialContext',
     selectors: {
       label: (state) => state.prefix.toUpperCase(),
     },
@@ -285,21 +303,21 @@ const assertTypedInitialAuthoringContext = () => {
   PlatePlugin.initialState.prefix satisfies string;
 };
 
-void assertTypedInitialAuthoringContext;
+void assertTypedAuthoringContext;
 
 const assertTypedWeakPluginOverrides = () => {
-  type TargetConfig = PluginConfig<
-    'typedWeakTarget',
-    { allowed: boolean; requiredMode: string }
-  >;
+  const TargetPlugin = createBasePlugin({
+    initialState: { allowed: false, requiredMode: 'strict' },
+    name: 'typedWeakTarget',
+  });
+  type TargetDefinition = DefinitionOf<typeof TargetPlugin>;
 
-  // Foreign configuration patches only the initialState it owns.
   const exactOverride = {
     initialState: { allowed: true },
-  } satisfies BasePluginOverride<TargetConfig>;
+  } satisfies BasePluginOverride<TargetDefinition>;
 
   createBasePlugin({
-    key: 'typedWeakContributor',
+    name: 'typedWeakContributor',
     override: {
       plugins: {
         typedWeakTarget: exactOverride,
@@ -309,80 +327,50 @@ const assertTypedWeakPluginOverrides = () => {
 
   ({
     initialState: {
-      // @ts-expect-error exact weak override checking requires the target config
+      // @ts-expect-error exact weak override checking requires owned state keys
       missing: true,
     },
-  }) satisfies BasePluginOverride<TargetConfig>;
-
+  }) satisfies BasePluginOverride<TargetDefinition>;
   ({
     // @ts-expect-error weak overrides cannot mutate dependencies
     dependencies: [],
-  }) satisfies BasePluginOverride<TargetConfig>;
+  }) satisfies BasePluginOverride<TargetDefinition>;
   ({
-    // @ts-expect-error weak overrides cannot mutate the target key
-    key: 'other',
-  }) satisfies BasePluginOverride<TargetConfig>;
+    // @ts-expect-error weak overrides cannot mutate the target name
+    name: 'other',
+  }) satisfies BasePluginOverride<TargetDefinition>;
   ({
     // @ts-expect-error weak overrides cannot nest another override
     override: {},
-  }) satisfies BasePluginOverride<TargetConfig>;
-  ({
-    // @ts-expect-error erased weak overrides still cannot mutate the target key
-    key: 'other',
-  }) satisfies BasePluginOverride;
-  ({
-    // @ts-expect-error erased weak overrides still cannot mutate dependencies
-    dependencies: [],
-  }) satisfies BasePluginOverride;
-  ({
-    // @ts-expect-error erased weak overrides still cannot nest another override
-    override: {},
-  }) satisfies BasePluginOverride;
+  }) satisfies BasePluginOverride<TargetDefinition>;
   ({
     // @ts-expect-error weak overrides cannot replace schema
     schema: { mark: property.boolean() },
-  }) satisfies BasePluginOverride<TargetConfig>;
-  ({
-    // @ts-expect-error erased weak overrides cannot replace schema
-    schema: { mark: property.boolean() },
-  }) satisfies BasePluginOverride;
+  }) satisfies BasePluginOverride<TargetDefinition>;
 };
 
 void assertTypedWeakPluginOverrides;
 
 const assertTypedPlateShortcutTargets = () => {
   createPlatePlugin({
-    key: 'missingInitialShortcutTarget',
+    name: 'missingInitialShortcutTarget',
     shortcuts: {
-      // @ts-expect-error initial shortcuts without a command require a handler
+      // @ts-expect-error unknown shortcut names require a handler
       missing: { keys: 'mod+m' },
     },
   });
 
-  createPlatePlugin<
-    PluginConfig<
-      'explicitShortcutConfig',
-      {},
-      {},
-      { explicitShortcutConfig: { run: () => boolean } }
-    >
-  >({
-    key: 'explicitShortcutConfig',
-  }).extend({
-    shortcuts: { run: { keys: 'mod+r' } },
-  });
-
   const Plugin = createPlatePlugin({
-    key: 'plateShortcutTargets',
+    name: 'plateShortcutTargets',
     update: () => ({
       both: () => true,
       update: () => true,
     }),
   }).extend(() => ({
-    api: {
+    api: () => ({
       api: () => true,
       both: () => true,
-    },
+    }),
   }));
 
   Plugin.extend({
@@ -393,7 +381,6 @@ const assertTypedPlateShortcutTargets = () => {
       update: { keys: 'mod+u' },
     },
   });
-
   Plugin.extend({
     shortcuts: {
       // @ts-expect-error update/API collisions require an explicit target
@@ -422,127 +409,99 @@ const assertTypedPlateShortcutTargets = () => {
       },
     },
   });
-
-  const ApiScopeCollisionPlugin = Plugin.extend(() => ({
-    extension: {
-      api: {
-        api: () => true,
-      },
-    },
-  }));
-
-  ApiScopeCollisionPlugin.extend({
-    shortcuts: {
-      // @ts-expect-error plugin/editor API collisions require a custom handler
-      api: { keys: 'mod+a', target: 'api' },
-    },
-  });
 };
 
 void assertTypedPlateShortcutTargets;
 
 const assertTypedRenderOwnership = () => {
   const CustomNode: NodeComponent = () => null;
+  const StaticPlugin = createBasePlugin({ name: 'staticRender' });
 
+  createBasePlugin({ component: CustomNode, name: 'intrinsicRender' });
+  // @ts-expect-error component defaults belong in the constructor or terminal configuration
+  StaticPlugin.extend({ component: CustomNode });
   createBasePlugin({
-    // @ts-expect-error Base constructors stay renderer-neutral
-    component: CustomNode,
-    key: 'intrinsicRender',
+    name: 'invalidBaseRender',
     render: {
       // @ts-expect-error custom node components use the Plate component field
-      as: CustomNode,
+      node: CustomNode,
     },
   });
-  createBasePlugin({ key: 'staticRender' }).configure({
+  StaticPlugin.configure({
     component: CustomNode,
   });
   createPlatePlugin({
     component: CustomNode,
-    key: 'customRender',
+    name: 'customRender',
   });
 };
 
 void assertTypedRenderOwnership;
 
 describe('createBasePlugin', () => {
-  it('create a plugin with explicit types and cover various scenarios', () => {
-    type TestStoreState = {
-      valueA?: string;
-      valueB?: number;
-    };
-
-    type TestApi = {
-      testMethod: () => void;
-    };
-
-    const basePlugin = createPlatePlugin<
-      PluginConfig<'testPlugin', TestStoreState, TestApi>
-    >({
-      key: 'testPlugin',
-      type: 'test',
+  it('preserves inferred capabilities through author stages and configuration', () => {
+    const plugin = createPlatePlugin({
+      api: () => ({
+        testMethod: () => 'ok' as const,
+      }),
       initialState: {
         valueA: 'initial',
         valueB: 10,
       },
-      extension: {
-        api: {
-          testMethod: () => {},
-        },
-      },
+      name: 'testPlugin',
+      type: 'test',
+    });
+    const editor = createBaseEditor({
+      plugins: [plugin],
     });
 
-    const baseEditor = createBaseEditor({
-      plugins: [basePlugin],
-    });
-
-    // Test basic plugin creation
-    expect(baseEditor.getPlugin(basePlugin).key).toBe('testPlugin');
-    expect(baseEditor.getPlugin(basePlugin).type).toBe('test');
-    expect(baseEditor.getPlugin(basePlugin).initialState).toEqual({
+    expect(editor.plugin(plugin).plugin.name).toBe('testPlugin');
+    expect(editor.plugin(plugin).plugin.type).toBe('test');
+    expect(editor.plugin(plugin).api.testMethod()).toBe('ok');
+    expect(editor.plugin(plugin).plugin.initialState).toEqual({
       valueA: 'initial',
       valueB: 10,
     });
 
-    // Test configure method
-    const configuredPlugin = basePlugin.configure({
+    const configuredPlugin = plugin.configure({
       initialState: { valueA: 'modified' },
     });
     const configuredEditor = createBaseEditor({
       plugins: [configuredPlugin],
     });
-    expect(configuredEditor.getPlugin(configuredPlugin).initialState).toEqual({
+
+    expect(
+      configuredEditor.plugin(configuredPlugin).plugin.initialState
+    ).toEqual({
       valueA: 'modified',
       valueB: 10,
     });
 
-    // Test extend method
-    const extendedPlugin = basePlugin.extend({
-      type: 'extended',
+    const extendedPlugin = plugin.extend({
       initialState: { valueB: 20 },
     });
     const extendedEditor = createBaseEditor({
       plugins: [extendedPlugin],
     });
-    expect(extendedEditor.getPlugin(extendedPlugin).type).toBe('extended');
-    expect(extendedEditor.getPlugin(extendedPlugin).initialState).toEqual({
+
+    expect(extendedEditor.plugin(extendedPlugin).plugin.type).toBe('test');
+    expect(extendedEditor.plugin(extendedPlugin).plugin.initialState).toEqual({
       valueA: 'initial',
       valueB: 20,
     });
 
-    // Test multiple extensions before the one consumer configuration
-    const multiExtendedPlugin = basePlugin
-      .extend({ type: 'firstExtend' })
-      .extend({ type: 'secondExtend' })
+    const multiExtendedPlugin = plugin
+      .extend({ initialState: { valueA: 'extended' } })
+      .extend({ initialState: { valueB: 30 } })
       .configure({
         initialState: {
           valueA: 'configured',
-          valueB: 30,
         },
       });
+    const resolved = resolvePluginTest(multiExtendedPlugin);
 
-    const resolvedMultiExtended = resolvePluginTest(multiExtendedPlugin);
-    expect(resolvedMultiExtended.type).toBe('secondExtend');
-    expect(resolvedMultiExtended.initialState).toEqual({
+    expect(resolved.type).toBe('test');
+    expect(resolved.initialState).toEqual({
       valueA: 'configured',
       valueB: 30,
     });

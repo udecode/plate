@@ -14,8 +14,6 @@ import {
   type Editor,
   ElementApi,
   type Element,
-  type EditorExtension,
-  type EditorExtensionTypeProvider,
   PathApi,
   schema,
   SelectionApi,
@@ -145,7 +143,7 @@ describe('plite normalization contract', () => {
     const seen: string[] = [];
 
     editor.extend([
-      {
+      defineEditorExtension({
         name: 'first-correction',
         corrections: [
           {
@@ -157,8 +155,8 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-      },
-      {
+      }),
+      defineEditorExtension({
         name: 'second-correction',
         corrections: [
           {
@@ -170,7 +168,7 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-      },
+      }),
     ]);
 
     assert.equal(editorGetExtensionRegistry(editor).corrections.size, 2);
@@ -197,21 +195,23 @@ describe('plite normalization contract', () => {
       ],
     });
 
-    editor.extend({
-      name: 'automatic-closeout-correction',
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry, tx }) {
-            const [node, path] = entry;
+    editor.extend(
+      defineEditorExtension({
+        name: 'automatic-closeout-correction',
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry, tx }) {
+              const [node, path] = entry;
 
-            if ('invalid' in node && node.invalid === true) {
-              tx.nodes.set({ invalid: false }, { at: path });
-            }
+              if ('invalid' in node && node.invalid === true) {
+                tx.nodes.set({ invalid: false }, { at: path });
+              }
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     editor.update.nodes.set({ invalid: true }, { at: [0] });
 
@@ -227,21 +227,23 @@ describe('plite normalization contract', () => {
       })),
     });
 
-    editor.extend({
-      name: 'shifted-path-correction',
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry, tx }) {
-            const [node, path] = entry;
+    editor.extend(
+      defineEditorExtension({
+        name: 'shifted-path-correction',
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry, tx }) {
+              const [node, path] = entry;
 
-            if ('invalid' in node && node.invalid === true) {
-              tx.nodes.set({ invalid: false }, { at: path });
-            }
+              if ('invalid' in node && node.invalid === true) {
+                tx.nodes.set({ invalid: false }, { at: path });
+              }
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     editor.update((tx) => {
       tx.nodes.set({ invalid: true }, { at: [2] });
@@ -276,21 +278,23 @@ describe('plite normalization contract', () => {
 
     const editor = createEditor({ initialValue });
 
-    editor.extend({
-      name: 'direct-change-correction',
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry, tx }) {
-            const [node, path] = entry;
+    editor.extend(
+      defineEditorExtension({
+        name: 'direct-change-correction',
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry, tx }) {
+              const [node, path] = entry;
 
-            if ('invalid' in node && node.invalid === true) {
-              tx.nodes.set({ invalid: false }, { at: path });
-            }
+              if ('invalid' in node && node.invalid === true) {
+                tx.nodes.set({ invalid: false }, { at: path });
+              }
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
     editor.update((tx) => {
       tx.changes.apply(change);
     });
@@ -395,31 +399,33 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let sawPartiallyUnwrappedTree = false;
 
-    editor.extend({
-      ...defineTestSchema('unwrap-correction-schema', {
-        link: { inline: true },
-      }),
-      name: 'unwrap-correction-spy',
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct({ tx }) {
-            const paragraph = tx.value().children[0];
+    editor.extend(
+      defineEditorExtension({
+        ...defineTestSchema('unwrap-correction-schema', {
+          link: { inline: true },
+        }),
+        name: 'unwrap-correction-spy',
+        corrections: [
+          {
+            event: 'children',
+            query: 'root',
+            correct({ tx }) {
+              const paragraph = tx.value().children[0];
 
-            if (paragraph && 'children' in paragraph) {
-              const linkCount = paragraph.children.filter(
-                (child) => 'type' in child && child.type === 'link'
-              ).length;
+              if (paragraph && 'children' in paragraph) {
+                const linkCount = paragraph.children.filter(
+                  (child) => 'type' in child && child.type === 'link'
+                ).length;
 
-              if (linkCount === 1) {
-                sawPartiallyUnwrappedTree = true;
+                if (linkCount === 1) {
+                  sawPartiallyUnwrappedTree = true;
+                }
               }
-            }
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
     editorReplace(editor, {
       children: [
         {
@@ -448,24 +454,26 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    editor.extend({
-      name: 'split-corrections',
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct() {
-            seen.push('editor');
+    editor.extend(
+      defineEditorExtension({
+        name: 'split-corrections',
+        corrections: [
+          {
+            event: 'children',
+            query: 'root',
+            correct() {
+              seen.push('editor');
+            },
           },
-        },
-        {
-          event: 'content',
-          correct({ entry }) {
-            seen.push(`node:${entry[1].join('.')}`);
+          {
+            event: 'content',
+            correct({ entry }) {
+              seen.push(`node:${entry[1].join('.')}`);
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     editorReplace(editor, {
       children: [{ type: 'block', children: [] } as Descendant],
@@ -504,34 +512,38 @@ describe('plite normalization contract', () => {
       })),
     });
 
-    editor.extend({
-      corrections: [
-        {
-          event: 'children',
-          query: { type: 'paragraph' },
-          correct({ entry: [, path] }) {
-            visits.children.push(path.join('.'));
+    editor.extend(
+      defineEditorExtension({
+        corrections: [
+          {
+            event: 'children',
+            query: { type: 'paragraph' },
+            correct({ entry: [, path] }) {
+              visits.children.push(path.join('.'));
+            },
           },
-        },
-        {
-          event: 'content',
-          query: { type: 'paragraph' },
-          correct({ entry: [, path] }) {
-            visits.content.push(path.join('.'));
+          {
+            event: 'content',
+            query: { type: 'paragraph' },
+            correct({ entry: [, path] }) {
+              visits.content.push(path.join('.'));
+            },
           },
-        },
-        {
-          event: 'properties',
-          query: { type: 'paragraph' },
-          correct({ entry: [, path] }) {
-            visits.properties.push(path.join('.'));
-            classification ??=
-              getActiveTransactionDocumentChange(editor).primaryClassification;
+          {
+            event: 'properties',
+            query: { type: 'paragraph' },
+            correct({ entry: [, path] }) {
+              visits.properties.push(path.join('.'));
+              classification ??=
+                getActiveTransactionDocumentChange(
+                  editor
+                ).primaryClassification;
+            },
           },
-        },
-      ],
-      name: 'composed-sparse-correction-proof',
-    });
+        ],
+        name: 'composed-sparse-correction-proof',
+      })
+    );
 
     editor.update((tx) => {
       tx.nodes.set({ probe: 'first' }, { at: [0] });
@@ -604,7 +616,7 @@ describe('plite normalization contract', () => {
     const seen: string[] = [];
 
     editor.extend([
-      {
+      defineEditorExtension({
         name: 'same-lane-a',
         corrections: [
           {
@@ -616,8 +628,8 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-      },
-      {
+      }),
+      defineEditorExtension({
         name: 'same-lane-b',
         corrections: [
           {
@@ -629,7 +641,7 @@ describe('plite normalization contract', () => {
             },
           },
         ],
-      },
+      }),
     ]);
 
     assert.deepEqual(
@@ -649,30 +661,32 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let rootCalls = 0;
 
-    editor.extend({
-      name: 'layout-correction',
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct({ tx }) {
-            rootCalls += 1;
-            assert.equal(tx.schema.isInline(tx.nodes.children()[0]), false);
+    editor.extend(
+      defineEditorExtension({
+        name: 'layout-correction',
+        corrections: [
+          {
+            event: 'children',
+            query: 'root',
+            correct({ tx }) {
+              rootCalls += 1;
+              assert.equal(tx.schema.isInline(tx.nodes.children()[0]), false);
 
-            if (tx.nodes.children().length < 2) {
-              tx.nodes.insert(
-                {
-                  type: 'paragraph',
-                  children: [{ text: '' }],
-                } as Descendant,
-                { at: [1] }
-              );
-              return;
-            }
+              if (tx.nodes.children().length < 2) {
+                tx.nodes.insert(
+                  {
+                    type: 'paragraph',
+                    children: [{ text: '' }],
+                  } as Descendant,
+                  { at: [1] }
+                );
+                return;
+              }
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     editorReplace(editor, {
       children: [
@@ -698,19 +712,20 @@ describe('plite normalization contract', () => {
   });
 
   it('preserves installed transaction groups in correction tx', () => {
-    type ListTx = {
-      list: {
-        hasInvalid: () => boolean;
-        repair: () => void;
-      };
-    };
-    type ListTxProvider = EditorExtensionTypeProvider<() => { tx: ListTx }> & {
-      name: 'list-correction-tx';
-    };
-    type ListCorrectionEditor = Editor<Value, readonly [ListTxProvider]>;
-
     let correctionCalls = 0;
-    const extension = defineEditorExtension<ListCorrectionEditor>()({
+    const listExtension = defineEditorExtension({
+      name: 'list',
+      update({ tx }) {
+        return {
+          hasInvalid: () =>
+            tx.nodes
+              .children()
+              .some((node) => 'invalid' in node && node.invalid === true),
+          repair: () => tx.nodes.set({ invalid: false }, { at: [0] }),
+        };
+      },
+    });
+    const correctionExtension = defineEditorExtension({
       corrections: [
         {
           event: 'properties',
@@ -729,21 +744,11 @@ describe('plite normalization contract', () => {
           },
         },
       ],
-      name: 'list-correction-tx',
-      tx: {
-        list(tx) {
-          return {
-            hasInvalid: () =>
-              tx.nodes
-                .children()
-                .some((node) => 'invalid' in node && node.invalid === true),
-            repair: () => tx.nodes.set({ invalid: false }, { at: [0] }),
-          };
-        },
-      },
+      dependencies: [listExtension] as const,
+      name: 'list-correction',
     });
     const editor = createEditor({
-      extensions: [extension] as const,
+      extensions: [correctionExtension] as const,
       initialValue: [
         {
           type: 'paragraph',
@@ -763,17 +768,19 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let calls = 0;
 
-    const unextend = editor.extend({
-      name: 'temporary-correction',
-      corrections: [
-        {
-          event: 'content',
-          correct() {
-            calls += 1;
+    const unextend = editor.extend(
+      defineEditorExtension({
+        name: 'temporary-correction',
+        corrections: [
+          {
+            event: 'content',
+            correct() {
+              calls += 1;
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     editorReplace(editor, {
       children: [
@@ -941,29 +948,31 @@ describe('plite normalization contract', () => {
   it('fails deterministically when a correction revisits an earlier draft state', () => {
     const editor = createEditor();
 
-    editor.extend({
-      name: 'cycling-correction',
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct({ tx }) {
-            if (tx.nodes.children().length === 1) {
-              tx.nodes.insert(
-                {
-                  type: 'paragraph',
-                  children: [{ text: '' }],
-                },
-                { at: [1] }
-              );
-              return;
-            }
+    editor.extend(
+      defineEditorExtension({
+        name: 'cycling-correction',
+        corrections: [
+          {
+            event: 'children',
+            query: 'root',
+            correct({ tx }) {
+              if (tx.nodes.children().length === 1) {
+                tx.nodes.insert(
+                  {
+                    type: 'paragraph',
+                    children: [{ text: '' }],
+                  },
+                  { at: [1] }
+                );
+                return;
+              }
 
-            tx.nodes.remove({ at: [1] });
+              tx.nodes.remove({ at: [1] });
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     assert.throws(() => {
       editor.update((tx) => {
@@ -983,35 +992,37 @@ describe('plite normalization contract', () => {
   it('rechecks a corrected node until it reaches fixpoint', () => {
     const editor = createEditor();
 
-    editor.extend({
-      name: 'multi-pass-correction',
-      corrections: [
-        {
-          event: 'content',
-          correct({ entry: [node, path], tx }) {
-            if (
-              path.length === 1 &&
-              !editorIsEditor(node) &&
-              'children' in node &&
-              node.type === 'heading'
-            ) {
-              tx.nodes.set({ type: 'paragraph' }, { at: path });
-              return;
-            }
+    editor.extend(
+      defineEditorExtension({
+        name: 'multi-pass-correction',
+        corrections: [
+          {
+            event: 'content',
+            correct({ entry: [node, path], tx }) {
+              if (
+                path.length === 1 &&
+                !editorIsEditor(node) &&
+                'children' in node &&
+                node.type === 'heading'
+              ) {
+                tx.nodes.set({ type: 'paragraph' }, { at: path });
+                return;
+              }
 
-            if (
-              path.length === 1 &&
-              !editorIsEditor(node) &&
-              'children' in node &&
-              node.type === 'paragraph' &&
-              (node as Element & { normalized?: boolean }).normalized !== true
-            ) {
-              tx.nodes.set({ normalized: true }, { at: path });
-            }
+              if (
+                path.length === 1 &&
+                !editorIsEditor(node) &&
+                'children' in node &&
+                node.type === 'paragraph' &&
+                (node as Element & { normalized?: boolean }).normalized !== true
+              ) {
+                tx.nodes.set({ normalized: true }, { at: path });
+              }
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
 
     editor.update((tx) => {
       tx.value.replace({
@@ -1036,7 +1047,7 @@ describe('plite normalization contract', () => {
 
   it('converges to the same fixed point across correction registration order', () => {
     const create = (reverse: boolean) => {
-      const contentCorrection = {
+      const contentCorrection = defineEditorExtension({
         corrections: [
           {
             event: 'content',
@@ -1052,8 +1063,8 @@ describe('plite normalization contract', () => {
           },
         ],
         name: 'order-independent-content',
-      } satisfies EditorExtension;
-      const propertyCorrection = {
+      });
+      const propertyCorrection = defineEditorExtension({
         corrections: [
           {
             event: 'properties',
@@ -1070,7 +1081,7 @@ describe('plite normalization contract', () => {
           },
         ],
         name: 'order-independent-properties',
-      } satisfies EditorExtension;
+      });
       const editor = createEditor();
 
       editor.extend(
@@ -1103,44 +1114,46 @@ describe('plite normalization contract', () => {
   it('enqueues nodes generated by a correction', () => {
     const editor = createEditor();
 
-    editor.extend({
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct({ tx }) {
-            if (
-              tx.nodes
-                .children()
-                .some(
-                  (child) =>
-                    ElementApi.isElement(child) && child.type === 'generated'
-                )
-            ) {
-              return;
-            }
+    editor.extend(
+      defineEditorExtension({
+        corrections: [
+          {
+            event: 'children',
+            query: 'root',
+            correct({ tx }) {
+              if (
+                tx.nodes
+                  .children()
+                  .some(
+                    (child) =>
+                      ElementApi.isElement(child) && child.type === 'generated'
+                  )
+              ) {
+                return;
+              }
 
-            tx.nodes.insert(
-              { type: 'generated', children: [{ text: 'new' }] },
-              { at: [1] }
-            );
+              tx.nodes.insert(
+                { type: 'generated', children: [{ text: 'new' }] },
+                { at: [1] }
+              );
+            },
           },
-        },
-        {
-          event: 'content',
-          correct({ entry: [node, path], tx }) {
-            if (
-              ElementApi.isElement(node) &&
-              node.type === 'generated' &&
-              node.ready !== true
-            ) {
-              tx.nodes.set({ ready: true }, { at: path });
-            }
+          {
+            event: 'content',
+            correct({ entry: [node, path], tx }) {
+              if (
+                ElementApi.isElement(node) &&
+                node.type === 'generated' &&
+                node.ready !== true
+              ) {
+                tx.nodes.set({ ready: true }, { at: path });
+              }
+            },
           },
-        },
-      ],
-      name: 'generated-target-corrections',
-    });
+        ],
+        name: 'generated-target-corrections',
+      })
+    );
     editor.update((tx) => {
       tx.value.replace({
         children: [
@@ -1159,38 +1172,40 @@ describe('plite normalization contract', () => {
   it('rechecks parent cardinality after a child correction', () => {
     const editor = createEditor();
 
-    editor.extend({
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry: [node, path], tx }) {
-            if (
-              ElementApi.isElement(node) &&
-              node.type === 'slot' &&
-              node.remove === true
-            ) {
-              tx.nodes.remove({ at: path });
-            }
+    editor.extend(
+      defineEditorExtension({
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry: [node, path], tx }) {
+              if (
+                ElementApi.isElement(node) &&
+                node.type === 'slot' &&
+                node.remove === true
+              ) {
+                tx.nodes.remove({ at: path });
+              }
+            },
           },
-        },
-        {
-          event: 'children',
-          correct({ entry: [node, path], tx }) {
-            if (
-              ElementApi.isElement(node) &&
-              node.type === 'pair' &&
-              node.children.length < 2
-            ) {
-              tx.nodes.insert(
-                { type: 'slot', children: [{ text: 'replacement' }] },
-                { at: [...path, node.children.length] }
-              );
-            }
+          {
+            event: 'children',
+            correct({ entry: [node, path], tx }) {
+              if (
+                ElementApi.isElement(node) &&
+                node.type === 'pair' &&
+                node.children.length < 2
+              ) {
+                tx.nodes.insert(
+                  { type: 'slot', children: [{ text: 'replacement' }] },
+                  { at: [...path, node.children.length] }
+                );
+              }
+            },
           },
-        },
-      ],
-      name: 'parent-cardinality-corrections',
-    });
+        ],
+        name: 'parent-cardinality-corrections',
+      })
+    );
     editor.update((tx) => {
       tx.value.replace({
         children: [
@@ -1223,25 +1238,27 @@ describe('plite normalization contract', () => {
     const editor = createEditor();
     let rootCalls = 0;
 
-    editor.extend({
-      corrections: [
-        {
-          event: 'children',
-          query: 'root',
-          correct({ tx }) {
-            rootCalls += 1;
+    editor.extend(
+      defineEditorExtension({
+        corrections: [
+          {
+            event: 'children',
+            query: 'root',
+            correct({ tx }) {
+              rootCalls += 1;
 
-            if (tx.nodes.children().length === 0) {
-              tx.nodes.insert(
-                { type: 'paragraph', children: [{ text: 'default' }] },
-                { at: [0] }
-              );
-            }
+              if (tx.nodes.children().length === 0) {
+                tx.nodes.insert(
+                  { type: 'paragraph', children: [{ text: 'default' }] },
+                  { at: [0] }
+                );
+              }
+            },
           },
-        },
-      ],
-      name: 'root-lifecycle-correction',
-    });
+        ],
+        name: 'root-lifecycle-correction',
+      })
+    );
     editor.update((tx) => {
       tx.roots.create('sidebar', []);
     });
@@ -1263,26 +1280,28 @@ describe('plite normalization contract', () => {
     const cycleMessage = () => {
       const editor = createEditor();
 
-      editor.extend({
-        corrections: [
-          {
-            event: 'children',
-            query: 'root',
-            correct({ tx }) {
-              if (tx.nodes.children().length === 1) {
-                tx.nodes.insert(
-                  { type: 'paragraph', children: [{ text: '' }] },
-                  { at: [1] }
-                );
-                return;
-              }
+      editor.extend(
+        defineEditorExtension({
+          corrections: [
+            {
+              event: 'children',
+              query: 'root',
+              correct({ tx }) {
+                if (tx.nodes.children().length === 1) {
+                  tx.nodes.insert(
+                    { type: 'paragraph', children: [{ text: '' }] },
+                    { at: [1] }
+                  );
+                  return;
+                }
 
-              tx.nodes.remove({ at: [1] });
+                tx.nodes.remove({ at: [1] });
+              },
             },
-          },
-        ],
-        name: 'deterministic-cycle',
-      });
+          ],
+          name: 'deterministic-cycle',
+        })
+      );
 
       try {
         editor.update((tx) => {
@@ -1329,19 +1348,21 @@ describe('plite normalization contract', () => {
       },
     });
 
-    editor.extend({
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry: [node, path], tx }) {
-            if (ElementApi.isElement(node) && node.invalid === true) {
-              tx.nodes.set({ invalid: false }, { at: path });
-            }
+    editor.extend(
+      defineEditorExtension({
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry: [node, path], tx }) {
+              if (ElementApi.isElement(node) && node.invalid === true) {
+                tx.nodes.set({ invalid: false }, { at: path });
+              }
+            },
           },
-        },
-      ],
-      name: 'multi-root-correction',
-    });
+        ],
+        name: 'multi-root-correction',
+      })
+    );
     editor.update.value.repair();
 
     assert.equal(editor.read.children()[0]?.invalid, false);
@@ -1358,19 +1379,21 @@ describe('plite normalization contract', () => {
       })),
     });
 
-    editor.extend({
-      corrections: [
-        {
-          event: 'properties',
-          correct({ entry: [node, path] }) {
-            if (path.length === 1 && ElementApi.isElement(node)) {
-              visits.push(path[0]!);
-            }
+    editor.extend(
+      defineEditorExtension({
+        corrections: [
+          {
+            event: 'properties',
+            correct({ entry: [node, path] }) {
+              if (path.length === 1 && ElementApi.isElement(node)) {
+                visits.push(path[0]!);
+              }
+            },
           },
-        },
-      ],
-      name: 'large-document-target-probe',
-    });
+        ],
+        name: 'large-document-target-probe',
+      })
+    );
     editor.update.nodes.set({ inspected: true }, { at: [target] });
 
     assert.deepEqual(visits, [target]);
@@ -1390,17 +1413,19 @@ describe('plite normalization contract', () => {
         })),
       });
 
-      editor.extend({
-        corrections: [
-          {
-            event: 'content',
-            correct({ entry: [, path] }) {
-              visits.push(path.join('.'));
+      editor.extend(
+        defineEditorExtension({
+          corrections: [
+            {
+              event: 'content',
+              correct({ entry: [, path] }) {
+                visits.push(path.join('.'));
+              },
             },
-          },
-        ],
-        name,
-      });
+          ],
+          name,
+        })
+      );
 
       return { editor, visits };
     };

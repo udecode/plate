@@ -36,12 +36,10 @@ const articleSchema = (version: number, paragraphReadOnly: boolean) =>
       },
     },
     id: 'react-schema-runtime-invalidation',
-    root: {
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    },
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
     unknown: 'reject',
     version,
   });
@@ -85,7 +83,7 @@ const projectedSchema = (version: number, paragraphReadOnly: boolean) =>
       },
     },
     id: 'react-projected-schema-runtime-invalidation',
-    root: { content: schema.content.type('content-card') },
+    root: schema.content.type('content-card'),
     unknown: 'preserve',
     version,
   });
@@ -147,7 +145,7 @@ const propertySchema = (
         target: target.type('paragraph'),
       }),
     ],
-    root: { content: schema.content.types(['heading', 'paragraph']) },
+    root: schema.content.types(['heading', 'paragraph']),
     unknown: 'reject',
     version,
   });
@@ -220,7 +218,7 @@ const constructionPropertySchema = (version: number, defaultAlign: string) =>
         { target: target.type('paragraph') }
       ),
     ],
-    root: { content: schema.content.type('paragraph') },
+    root: schema.content.type('paragraph'),
     unknown: 'reject',
     version,
   });
@@ -252,15 +250,11 @@ const rootedSchema = (version: number, mainMax: number, notesMax: number) =>
       paragraph: { content: schema.content.text() },
     },
     id: 'react-schema-root-invalidation',
-    root: {
-      content: schema.content.types(['heading', 'paragraph'], { max: mainMax }),
-    },
+    root: schema.content.types(['heading', 'paragraph'], { max: mainMax }),
     roots: {
-      notes: {
-        content: schema.content.types(['heading', 'paragraph'], {
-          max: notesMax,
-        }),
-      },
+      notes: schema.content.types(['heading', 'paragraph'], {
+        max: notesMax,
+      }),
     },
     unknown: 'reject',
     version,

@@ -16,7 +16,7 @@
   "conclusions": {
     "pluginAuthoring": "Use one .extend() author contribution by default; declare codec maps with its context-bound defineCodecs helper.",
     "htmlInput": "Keep whole-input query, transformData, and transformFragment hooks flat under parsers.html.",
-    "normalAppApi": "Use inferred editor.api.<pluginKey> and editor.update.<pluginKey> namespaces in user-app code whose editor type contains the plugin.",
+    "normalAppApi": "Use inferred editor.api.<pluginName> and editor.update.<pluginName> namespaces in user-app code whose editor type contains the plugin.",
     "decoupledPortal": "Use editor.plugin(Plugin).api/update in decoupled registry and reusable package code that owns the descriptor but not the concrete editor type.",
     "residualAdoption": "The public API migration is landed; remaining product work is bounded caller conversion, duplicate deletion, and proof."
   },

@@ -34,7 +34,7 @@ const contentRootExtension = defineEditorSchema({
     },
   },
   id: 'content-root-navigation-test',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -212,7 +212,7 @@ describe('content root navigation', () => {
         },
       },
       id: 'content-root-navigation-multi-slot-test',
-      root: { content: schema.content.not(schema.content.text()) },
+      root: schema.content.not(schema.content.text()),
       unknown: 'preserve',
       version: 1,
     });

@@ -52,16 +52,15 @@ describe('ElementStatePlugin', () => {
     ).toBe(false);
   });
 
-  it('uses compiled property significance for element state', () => {
+  it('uses compiled metadata roles for element state', () => {
     const StatePropertiesPlugin = createBasePlugin({
-      key: 'stateProperties',
+      name: 'stateProperties',
       schema: {
         properties: [
-          schema.elementProperty(
-            'ephemeral',
-            property.string({ significant: false }),
-            { target: target.type('p') }
-          ),
+          schema.elementProperty('ephemeral', property.string(), {
+            role: 'metadata',
+            target: target.type('p'),
+          }),
           schema.elementProperty('visible', property.string(), {
             target: target.type('p'),
           }),

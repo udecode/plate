@@ -21,7 +21,7 @@ describe('getRenderNodeProps', () => {
     const result = getRenderNodeProps({
       disableInjectNodeProps: true,
       editor,
-      plugin: editor.getPlugin({ key: 'p' }) as any,
+      plugin: editor.plugin('p').plugin as any,
       props: {
         attributes: {
           className: 'attr-class',
@@ -44,7 +44,7 @@ describe('getRenderNodeProps', () => {
 
   it('keeps plugin props, allowed attrs, and injected node props on the full path', () => {
     const ParagraphPlugin = createBasePlugin({
-      key: 'p',
+      name: 'p',
       type: 'p',
       schema: {
         element: {
@@ -65,8 +65,8 @@ describe('getRenderNodeProps', () => {
       },
     });
     const AlignPlugin = createBasePlugin({
-      targetPluginKeys: ['p'],
-      key: 'align',
+      targetPluginNames: ['p'],
+      name: 'align',
       schema: {
         properties: [
           schema.elementProperty('align', property.string(), {
@@ -97,7 +97,7 @@ describe('getRenderNodeProps', () => {
 
     const result = getRenderNodeProps({
       editor,
-      plugin: editor.getPlugin(ParagraphPlugin as any) as any,
+      plugin: editor.plugin(ParagraphPlugin as any).plugin as any,
       props: {
         attributes: { 'data-plite-align': 'center' },
         children: null,

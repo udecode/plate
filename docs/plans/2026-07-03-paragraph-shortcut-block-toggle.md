@@ -101,7 +101,7 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | Current, Plite API, input-rules, and `origin/main` read. | implementation |
-| Implementation | complete | `ParagraphPlugin` shortcut now calls `editor.update.blocks.toggle(type, { defaultType: editor.getType('p') })`. | verification |
+| Implementation | complete | `ParagraphPlugin` shortcut now calls `editor.update.blocks.toggle(type, { defaultType: editor.plugin('p').type })`. | verification |
 | Verification | complete | Source audit, focused tests, and Core typecheck passed. | closeout |
 | Closeout | complete | Final evidence recorded. | final response |
 
@@ -112,7 +112,7 @@ Findings:
 - `origin/main` paragraph shortcut used `editor.tf.toggleBlock(type)`, so the migration should preserve toggle semantics.
 
 Decisions and tradeoffs:
-- Decision: use `editor.update.blocks.toggle(type, { defaultType: editor.getType('p') })`.
+- Decision: use `editor.update.blocks.toggle(type, { defaultType: editor.plugin('p').type })`.
 - Reason: this is the Plite-native replacement for `editor.tf.toggleBlock(type)`.
 - Risk: none expected; this is command semantics cleanup.
 

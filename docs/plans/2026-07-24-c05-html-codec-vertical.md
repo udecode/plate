@@ -282,7 +282,7 @@ Findings:
   mark, and property declarations compile through `.extendHtmlCodec()`; the
   legacy node-rule registry/runtime is deleted.
 - `CompiledPlateModelBinding` already exposes element type, kind, property
-  declarations/IDs, and model revision. Configured `targetPluginKeys` remain on
+  declarations/IDs, and model revision. Configured `targetPluginNames` remain on
   resolved descriptors; no Paragraph-specific compiler branch is needed.
 - Runtime schema APIs expose `property(...)` and `validateFragment(...)`, so
   unsupported significant claims and decoded fragment validity are observable.

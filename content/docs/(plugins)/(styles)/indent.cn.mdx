@@ -90,10 +90,10 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
-        BlockquotePlugin.key,
+        ParagraphPlugin.name,
+        BlockquotePlugin.name,
       ],
       inject: {
         nodeProps: {
@@ -111,7 +111,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.nodeProps.styleKey`：将注入的属性映射到 CSS `marginLeft` 属性。
-- `targetPluginKeys`：可存储缩进属性的元素插件键。
+- `targetPluginNames`：可存储缩进属性的元素插件 name。
 - `initialState.offset`：缩进偏移量（像素）（默认：`24`）。
 - `initialState.unit`：缩进值的单位（默认：`'px'`）。
 - `initialState.indentMax`：允许的最大缩进次数。
@@ -126,7 +126,7 @@ const editor = createPlateEditor({
 
 ### `IndentPlugin`
 
-用于缩进块级元素的插件。它向 `targetPluginKeys` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
+用于缩进块级元素的插件。它向 `targetPluginNames` 指定的元素注入 `indent` 属性并应用 `marginLeft` 样式。
 
 <API name="IndentPlugin">
   <APIOptions type="object">
@@ -136,9 +136,9 @@ const editor = createPlateEditor({
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
       用于样式的 CSS 属性名称。 - **默认值：** `'marginLeft'`
     </APIItem>
-    <APIItem name="targetPluginKeys" type="string[]" optional>
-      用于缩进存储和注入的元素插件键。 - **默认值：**
-      `[BaseParagraphPlugin.key]`
+    <APIItem name="targetPluginNames" type="string[]" optional>
+      用于缩进存储和注入的元素插件 name。 - **默认值：**
+      `[BaseParagraphPlugin.name]`
     </APIItem>
     <APIItem name="initialState.offset" type="number" optional>
       在 `(offset * element.indent) + unit` 中使用的缩进偏移量。 - **默认值：**

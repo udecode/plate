@@ -15,7 +15,7 @@ import {
 } from './createTriggerComboboxExtension';
 
 const ExampleComboboxInputPlugin = createBasePlugin({
-  key: 'mentionInput',
+  name: 'mentionInput',
   schema: {
     element: {
       inline: true,
@@ -29,22 +29,22 @@ const ExampleComboboxInputPlugin = createBasePlugin({
   type: 'mention_input',
 });
 
-const createExampleComboboxPlugin = <const K extends string>(
-  key: K,
+const createExampleComboboxPlugin = <const TName extends string>(
+  name: TName,
   initialState: TriggerComboboxPluginState
 ) =>
   createBasePlugin({
-    extension: ({ editor, plugin, store, type }) =>
-      createTriggerComboboxExtension({
-        editor,
-        getState: () => store.get(),
-        name: plugin.key,
-        type,
-      }),
-    key,
+    name,
     dependencies: [ExampleComboboxInputPlugin],
     initialState,
-  });
+  }).extend(({ editor, plugin, store, type }) =>
+    createTriggerComboboxExtension({
+      editor,
+      getState: () => store.get(),
+      name: plugin.name,
+      type,
+    })
+  );
 
 const readonlyTriggers = ['@', '#'] as const;
 
@@ -73,14 +73,7 @@ const plugins = [
 ];
 
 const RegexComboboxPlugin = createBasePlugin({
-  extension: ({ editor, plugin, store, type }) =>
-    createTriggerComboboxExtension({
-      editor,
-      getState: () => store.get(),
-      name: plugin.key,
-      type,
-    }),
-  key: 'regexCombobox',
+  name: 'regexCombobox',
   dependencies: [ExampleComboboxInputPlugin],
   initialState: {
     trigger: /[@#]/,
@@ -97,7 +90,14 @@ const RegexComboboxPlugin = createBasePlugin({
     },
   },
   type: 'exampleCombobox',
-});
+}).extend(({ editor, plugin, store, type }) =>
+  createTriggerComboboxExtension({
+    editor,
+    getState: () => store.get(),
+    name: plugin.name,
+    type,
+  })
+);
 
 const QueryComboboxPlugin = createExampleComboboxPlugin('queryCombobox', {
   trigger: '@',

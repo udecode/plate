@@ -90,10 +90,10 @@ const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
     IndentPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
-        BlockquotePlugin.key,
+        ParagraphPlugin.name,
+        BlockquotePlugin.name,
       ],
       inject: {
         nodeProps: {
@@ -111,7 +111,7 @@ const editor = createPlateEditor({
 ```
 
 - `inject.nodeProps.styleKey`: Maps the injected prop to the CSS `marginLeft` property.
-- `targetPluginKeys`: Element plugin keys whose types can store indentation.
+- `targetPluginNames`: Element plugin names whose types can store indentation.
 - `initialState.offset`: Indentation offset in pixels (default: `24`).
 - `initialState.unit`: Unit for indentation values (default: `'px'`).
 - `initialState.indentMax`: Maximum number of indentations allowed.
@@ -126,7 +126,7 @@ You can add [`IndentToolbarButton`](/docs/components/indent-toolbar-button) to y
 
 ### `IndentPlugin`
 
-Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPluginKeys` and applies `marginLeft` styling.
+Plugin for indenting block elements. It injects an `indent` prop into the elements specified by `targetPluginNames` and applies `marginLeft` styling.
 
 <API name="IndentPlugin">
   <APIOptions type="object">
@@ -136,9 +136,9 @@ Plugin for indenting block elements. It injects an `indent` prop into the elemen
     <APIItem name="inject.nodeProps.styleKey" type="string" optional>
       CSS property name for styling. - **Default:** `'marginLeft'`
     </APIItem>
-    <APIItem name="targetPluginKeys" type="string[]" optional>
-      Element plugin keys targeted for indent storage and injection. -
-      **Default:** `[BaseParagraphPlugin.key]`
+    <APIItem name="targetPluginNames" type="string[]" optional>
+      Element plugin names targeted for indent storage and injection. -
+      **Default:** `[BaseParagraphPlugin.name]`
     </APIItem>
     <APIItem name="initialState.offset" type="number" optional>
       Indentation offset used in `(offset * element.indent) + unit`. -

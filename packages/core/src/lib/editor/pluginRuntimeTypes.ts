@@ -3,12 +3,17 @@ import type {
   EditorSchemaContribution,
   EditorSchemaElement,
   EditorSchemaProperty,
-  EditorSchemaSource,
-  EditorSchemaSourceProvider,
+  EditorExtensionPortal,
+  EditorExtensionReference,
   EditorStateView,
   EditorStateSchemaApi,
   EditorExtensionTypeProvider,
+  EditorReadMethods,
+  EditorTransactionSpecBuilder,
   EditorUpdateTransaction,
+  EditorUpdate,
+  EditorUpdateContext,
+  EditorUpdateMethods,
   Element,
   PropertyValueDescriptor,
   PropertyValueOf,
@@ -17,129 +22,282 @@ import type {
   SchemaContentRootSlotsFor,
   SchemaElement,
   SchemaElementFor,
-  SchemaElementHandle,
   SchemaElementPropertiesFor,
   SchemaElementProperty,
   SchemaElementTypes,
   SchemaProperty,
+  SchemaTypesTarget,
+  TransactionSpec,
   Value,
 } from '@platejs/plite';
 import type { UnionToIntersection } from '@udecode/utils';
-
-import type { BasePlugin } from '../plugin/BasePlugin';
 import type {
-  AnyPluginConfig,
+  EditorSchemaSourceProvider,
+  EditorExtensionDependencyReferenceFor,
+  InternalEditorStateViewProvider,
+  InternalEditorExtensionInstalledCapabilitiesOf,
+  InternalEditorUpdateTransactionProvider,
+} from '@platejs/plite/internal';
+
+import type { AnyBasePlugin } from '../plugin/BasePlugin';
+import type {
+  AnyBasePluginDefinition,
   InferApi,
+  InferDependencyDefinitions,
   InferDependencies,
   InferEnabled,
+  InferRead,
+  InferTargetPluginNames,
+  InferUpdate,
+  PluginReference,
+} from '../plugin/PluginDefinition';
+import type { InternalDefinitionOf } from '../plugin/pluginDefinitionCarrier.internal';
+import type {
   InferExactPluginSchemaContribution,
-  InferPluginApi,
   InferPluginDocumentType,
-  InferState,
-  InferTx,
-} from '../plugin/PluginConfig';
-import type { CorePluginApi, CorePluginState, CorePluginTx } from '../plugins';
+} from '../plugin/pluginSchemaModel.internal';
+import type {
+  CoreEditorApi,
+  CoreEditorRead,
+  CoreEditorTransaction,
+  CoreEditorUpdate,
+} from './coreEditorCapabilityDefinition.internal';
+import type { StaticEditorExtensionTypeLambda } from './pluginRuntimeTypes.internal';
 
-export type BasePluginInput =
-  | AnyPluginConfig
-  | Readonly<{
-      __config: AnyPluginConfig;
-      key: string;
-    }>;
+export type BasePluginInput = AnyBasePlugin | AnyBasePluginDefinition;
 
-export type InferPluginConfig<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : P extends BasePlugin<infer C>
-    ? C
-    : P extends AnyPluginConfig
-      ? P
-      : never;
+type PluginDefinitionOf<P> =
+  InternalDefinitionOf<P> extends infer D
+    ? [D] extends [never]
+      ? P extends AnyBasePluginDefinition
+        ? P
+        : P extends AnyBasePlugin
+          ? AnyBasePluginDefinition
+          : never
+      : Extract<D, AnyBasePluginDefinition>
+    : never;
 
 type IsAny<T> = 0 extends 1 & T ? true : false;
 
-type ExactPluginKey<C extends AnyPluginConfig> =
-  IsAny<C['key']> extends true
-    ? never
-    : string extends C['key']
-      ? never
-      : C['key'];
+type InstalledPluginNames<D> =
+  D extends Readonly<{ name: infer TName extends string }> ? TName : never;
 
-type ExplicitPluginKeys<T extends readonly unknown[]> =
+type ExcludeInstalledPluginNames<D, TNames extends PropertyKey> =
+  D extends Readonly<{ name: infer TName extends PropertyKey }>
+    ? TName extends TNames
+      ? never
+      : D
+    : D;
+
+export type MergeInstalledPluginDefinitions<D, TOverrides> =
+  | ExcludeInstalledPluginNames<D, InstalledPluginNames<TOverrides>>
+  | TOverrides;
+
+type ExactPluginName<D extends AnyBasePluginDefinition> =
+  IsAny<D['name']> extends true
+    ? never
+    : string extends D['name']
+      ? never
+      : D['name'];
+
+type NormalizeInstalledCapability<
+  TCapability,
+  TDocumentType extends string = TCapability extends Readonly<{
+    documentType: infer TExistingDocumentType extends string;
+  }>
+    ? TExistingDocumentType
+    : string,
+> =
+  TCapability extends Readonly<{ name: infer TName extends string }>
+    ? Readonly<{ documentType: TDocumentType; name: TName }> &
+        (TCapability extends Readonly<{ api: infer TApi extends object }>
+          ? Readonly<{ api: TApi }>
+          : {}) &
+        (TCapability extends Readonly<{
+          enabled: infer TEnabled extends boolean;
+        }>
+          ? Readonly<{ enabled: TEnabled }>
+          : {}) &
+        (TCapability extends Readonly<{ read: infer TRead extends object }>
+          ? Readonly<{ read: TRead }>
+          : {}) &
+        (TCapability extends Readonly<{
+          schemaContribution: infer TContribution extends
+            EditorSchemaContribution;
+        }>
+          ? Readonly<{ schemaContribution: TContribution }>
+          : TCapability extends Readonly<{
+                schema: infer TSchema extends EditorSchemaContribution;
+              }>
+            ? Readonly<{ schemaContribution: TSchema }>
+            : {}) &
+        (TCapability extends Readonly<{
+          targetPluginNames: infer TTargetPluginNames extends readonly string[];
+        }>
+          ? Readonly<{ targetPluginNames: TTargetPluginNames }>
+          : {}) &
+        (TCapability extends Readonly<{ type: infer TType extends string }>
+          ? Readonly<{ type: TType }>
+          : {}) &
+        (TCapability extends Readonly<{ update: infer TUpdate extends object }>
+          ? Readonly<{ update: TUpdate }>
+          : {})
+    : never;
+
+type DirectInstalledCapabilitiesOf<P> =
+  InternalEditorExtensionInstalledCapabilitiesOf<P>;
+
+type PliteInstalledCapabilitiesOf<P> = [
+  DirectInstalledCapabilitiesOf<P>,
+] extends [never]
+  ? InternalEditorExtensionInstalledCapabilitiesOf<
+      EditorExtensionDependencyReferenceFor<P>
+    >
+  : DirectInstalledCapabilitiesOf<P>;
+
+type InferenceIdentityOf<P> = [DirectInstalledCapabilitiesOf<P>] extends [never]
+  ? PluginDefinitionOf<P>
+  : P extends Readonly<{ name: infer TName extends string }>
+    ? Readonly<{ name: TName }> &
+        (P extends Readonly<{ enabled: infer TEnabled extends boolean }>
+          ? Readonly<{ enabled: TEnabled }>
+          : {})
+    : never;
+
+type DirectInstalledCapability<P, D extends AnyBasePluginDefinition> = [
+  PliteInstalledCapabilitiesOf<P>,
+] extends [never]
+  ? P extends Readonly<{ documentType: string }>
+    ? D
+    : never
+  : NormalizeInstalledCapability<
+      Extract<PliteInstalledCapabilitiesOf<P>, { name: D['name'] }>,
+      P extends PluginReference<string, infer TDocumentType>
+        ? TDocumentType
+        : InferPluginDocumentType<D>
+    >;
+
+type ExplicitPluginNames<T extends readonly unknown[]> =
   T[number] extends infer P
     ? P extends unknown
-      ? InferPluginConfig<P> extends infer C extends AnyPluginConfig
-        ? ExactPluginKey<C>
+      ? InferenceIdentityOf<P> extends infer D extends AnyBasePluginDefinition
+        ? ExactPluginName<D>
         : never
       : never
     : never;
 
-type DisabledExplicitPluginKeys<T extends readonly unknown[]> =
+type DisabledExplicitPluginNames<T extends readonly unknown[]> =
   T[number] extends infer P
     ? P extends unknown
-      ? InferPluginConfig<P> extends infer C extends AnyPluginConfig
-        ? IsLiteralDisabled<C> extends true
-          ? ExactPluginKey<C>
+      ? InferenceIdentityOf<P> extends infer D extends AnyBasePluginDefinition
+        ? IsLiteralDisabled<D> extends true
+          ? ExactPluginName<D>
           : never
         : never
       : never
     : never;
 
-type NextPluginKey<C extends AnyPluginConfig, Seen extends PropertyKey> =
-  | Seen
-  | ExactPluginKey<C>;
-
-type IsLiteralDisabled<C extends AnyPluginConfig> = [InferEnabled<C>] extends [
-  false,
-]
+type IsLiteralDisabled<D extends AnyBasePluginDefinition> = [
+  InferEnabled<D>,
+] extends [false]
   ? true
   : false;
 
-type InferHiddenPlugin<
-  P,
-  ExplicitKeys extends PropertyKey,
+type InferHiddenCapability<
+  D extends AnyBasePluginDefinition,
+  ExplicitNames extends PropertyKey,
   Seen extends PropertyKey,
 > =
-  InferPluginConfig<P> extends infer C extends AnyPluginConfig
-    ? IsBroadPluginConfig<C> extends true
+  IsBroadPluginDefinition<D> extends true
+    ? never
+    : D['name'] extends ExplicitNames | Seen
       ? never
-      : C['key'] extends ExplicitKeys | Seen
+      : IsLiteralDisabled<D> extends true
         ? never
-        : IsLiteralDisabled<C> extends true
-          ? never
-          : C | InferHiddenDependencies<C, ExplicitKeys, NextPluginKey<C, Seen>>
-    : never;
+        : D;
 
 type InferHiddenDependencies<
-  C extends AnyPluginConfig,
-  ExplicitKeys extends PropertyKey,
+  D extends AnyBasePluginDefinition,
+  ExplicitNames extends PropertyKey,
   Seen extends PropertyKey,
-> = InferDependencies<C>[number] extends infer P
+> = InferDependencies<D>[number] extends infer P
   ? P extends unknown
-    ? InferHiddenPlugin<P, ExplicitKeys, Seen>
+    ? InferHiddenDependency<P, ExplicitNames, Seen>
+    : never
+  : never;
+
+type InferHiddenDependency<
+  P,
+  ExplicitNames extends PropertyKey,
+  Seen extends PropertyKey,
+> = (
+  [PliteInstalledCapabilitiesOf<P>] extends [never]
+    ? InferDependencyDefinitions<
+        Readonly<{
+          dependencies: readonly [
+            Extract<P, EditorExtensionReference | PluginReference>,
+          ];
+          name: 'dependency';
+        }>
+      >
+    : NormalizeInstalledCapability<PliteInstalledCapabilitiesOf<P>>
+) extends infer D
+  ? D extends AnyBasePluginDefinition
+    ? InferHiddenCapability<D, ExplicitNames, Seen>
     : never
   : never;
 
 type InferExplicitPlugin<
   P,
-  ExplicitKeys extends PropertyKey,
-  DisabledKeys extends PropertyKey,
+  ExplicitNames extends PropertyKey,
+  DisabledNames extends PropertyKey,
 > =
-  InferPluginConfig<P> extends infer C extends AnyPluginConfig
-    ? C['key'] extends DisabledKeys
+  InferenceIdentityOf<P> extends infer D extends AnyBasePluginDefinition
+    ? D['name'] extends DisabledNames
       ? never
-      : C | InferHiddenDependencies<C, ExplicitKeys, ExactPluginKey<C>>
+      :
+          | InstalledPluginCapability<P, D>
+          | InferExplicitHiddenCapabilities<
+              P,
+              D,
+              ExplicitNames,
+              ExactPluginName<D>
+            >
     : never;
 
-/** Installed config union derived tuple-first so explicit descriptors shadow defaults. */
+type InferExplicitHiddenCapabilities<
+  P,
+  D extends AnyBasePluginDefinition,
+  ExplicitNames extends PropertyKey,
+  Seen extends PropertyKey,
+> = [DirectInstalledCapabilitiesOf<P>] extends [never]
+  ? InferHiddenDependencies<D, ExplicitNames, Seen>
+  : NormalizeInstalledCapability<
+        PliteInstalledCapabilitiesOf<P>
+      > extends infer TCapability
+    ? TCapability extends AnyBasePluginDefinition
+      ? InferHiddenCapability<TCapability, ExplicitNames, Seen>
+      : never
+    : never;
+
+type InstalledPluginCapability<P, D extends AnyBasePluginDefinition> = [
+  DirectInstalledCapability<P, D>,
+] extends [never]
+  ? D
+  : Extract<DirectInstalledCapability<P, D>, AnyBasePluginDefinition>;
+
+/**
+ * Finite installed capability union derived tuple-first so explicit descriptors
+ * shadow defaults. Authoring fields and dependency carriers are consumed during
+ * traversal but never become part of the editor type.
+ */
 export type InferPlugins<T extends readonly unknown[]> =
   T[number] extends infer P
     ? P extends unknown
       ? InferExplicitPlugin<
           P,
-          ExplicitPluginKeys<T>,
-          DisabledExplicitPluginKeys<T>
+          ExplicitPluginNames<T>,
+          DisabledExplicitPluginNames<T>
         >
       : never
     : never;
@@ -153,16 +311,6 @@ type IsUnknown<T> =
         : false
       : false;
 
-type WidenLiteral<T> = T extends string
-  ? string
-  : T extends number
-    ? number
-    : T extends boolean
-      ? boolean
-      : T extends bigint
-        ? bigint
-        : T;
-
 type IsUnion<T, U = T> = [T] extends [never]
   ? false
   : T extends unknown
@@ -171,129 +319,84 @@ type IsUnion<T, U = T> = [T] extends [never]
       : true
     : false;
 
-type KeysOfUnion<T> = T extends unknown ? keyof T : never;
-
-type PickUnionKey<T, K extends PropertyKey> = T extends unknown
-  ? K extends keyof T
-    ? Pick<T, K>
-    : never
-  : never;
-
-type ValueOfUnionKey<T, K extends PropertyKey> = T extends unknown
-  ? K extends keyof T
-    ? T[K]
-    : never
-  : never;
-
-type WidenDuplicateApiMember<T> = T extends (...args: infer A) => infer R
-  ? (...args: A) => WidenLiteral<R>
-  : T extends object
-    ? MergeEditorApiUnion<T>
-    : WidenLiteral<T>;
-
-type OptionalKeysOfUnion<T> = {
-  [K in KeysOfUnion<T>]: undefined extends ValueOfUnionKey<T, K> ? K : never;
-}[KeysOfUnion<T>];
-
-type RequiredKeysOfUnion<T> = Exclude<KeysOfUnion<T>, OptionalKeysOfUnion<T>>;
-
-type MergeApiUnionMember<T, K extends PropertyKey> =
-  Exclude<ValueOfUnionKey<T, K>, undefined> extends infer TValue
-    ? [TValue] extends [object]
-      ? [TValue] extends [(...args: any[]) => any]
-        ? IsUnion<PickUnionKey<T, K>> extends true
-          ? WidenDuplicateApiMember<TValue>
-          : ValueOfUnionKey<T, K>
-        : MergeEditorApiUnion<TValue>
-      : IsUnion<PickUnionKey<T, K>> extends true
-        ? WidenDuplicateApiMember<TValue>
-        : ValueOfUnionKey<T, K>
-    : never;
-
-type MergeEditorApiUnion<T> = {
-  readonly [K in RequiredKeysOfUnion<T>]: MergeApiUnionMember<T, K>;
-} & {
-  readonly [K in OptionalKeysOfUnion<T>]?: MergeApiUnionMember<T, K>;
-};
-
-export type IsBroadPluginConfig<P> =
+export type IsBroadPluginDefinition<P> =
   IsAny<P> extends true
     ? true
-    : P extends { key: infer K }
-      ? IsAny<K> extends true
+    : P extends { name: infer N }
+      ? IsAny<N> extends true
         ? true
-        : string extends K
+        : string extends N
           ? true
           : false
       : false;
 
-type KnownPluginConfig<P> = P extends unknown
-  ? InferPluginConfig<P> extends infer C
-    ? IsBroadPluginConfig<C> extends true
+type KnownPluginDefinition<P> = P extends unknown
+  ? PluginDefinitionOf<P> extends infer D
+    ? IsBroadPluginDefinition<D> extends true
       ? never
-      : C
+      : D
     : never
   : never;
 
-type OwnInferencePluginConfig<P> = [KnownPluginConfig<P>] extends [never]
+type OwnInferencePluginDefinition<P> = [KnownPluginDefinition<P>] extends [
+  never,
+]
   ? never
-  : IsUnknown<KnownPluginConfig<P>> extends true
+  : IsUnknown<KnownPluginDefinition<P>> extends true
     ? never
-    : KnownPluginConfig<P>;
+    : KnownPluginDefinition<P>;
 
-type InferencePluginConfig<P> =
-  InferPluginConfig<P> extends infer C
-    ? [C] extends [never]
-      ? never
-      : IsAny<C> extends true
-        ? never
-        : [C] extends [AnyPluginConfig]
-          ? IsUnion<C> extends true
-            ? OwnInferencePluginConfig<C>
-            : OwnInferencePluginConfig<
-                InferPlugins<readonly [Extract<C, AnyPluginConfig>]>
-              >
-          : never
-    : never;
+/** Compile raw definitions once before projecting installed editor capabilities. */
+type InstalledPluginDefinition<P> =
+  IsAny<P> extends true
+    ? any
+    : true extends IsBroadPluginDefinition<P>
+      ? any
+      : InferPlugins<readonly [P]>;
 
-type InferApiFromPluginConfig<C> = [C] extends [never]
+type InferApiGroup<D> = [D] extends [never]
   ? never
-  : C extends AnyPluginConfig
-    ? InferApi<C>
-    : never;
-
-type InferPluginApiFromPluginConfig<C> = [C] extends [never]
-  ? never
-  : C extends AnyPluginConfig
-    ? keyof InferPluginApi<C> extends never
+  : D extends AnyBasePluginDefinition
+    ? keyof InferApi<D> extends never
       ? never
       : {
-          [K in ExactPluginKey<C>]: InferPluginApi<C>;
+          readonly [K in ExactPluginName<D>]: InferApi<D>;
         }
     : never;
 
-type InferTxFromPluginConfig<C> = [C] extends [never]
+type InferReadGroup<D> = [D] extends [never]
   ? never
-  : C extends AnyPluginConfig
-    ? InferTx<C>
+  : D extends AnyBasePluginDefinition
+    ? keyof InferRead<D> extends never
+      ? never
+      : {
+          readonly [K in ExactPluginName<D>]: InferRead<D>;
+        }
     : never;
 
-type InferStateFromPluginConfig<C> = [C] extends [never]
+type InferUpdateGroup<D> = [D] extends [never]
   ? never
-  : C extends AnyPluginConfig
-    ? InferState<C>
+  : D extends AnyBasePluginDefinition
+    ? keyof InferUpdate<D> extends never
+      ? never
+      : {
+          readonly [K in ExactPluginName<D>]: InferUpdate<D>;
+        }
+    : never;
+
+type InferTransactionGroup<D> = [D] extends [never]
+  ? never
+  : D extends AnyBasePluginDefinition
+    ? keyof (InferRead<D> & InferUpdate<D>) extends never
+      ? never
+      : {
+          readonly [K in ExactPluginName<D>]: InferRead<D> & InferUpdate<D>;
+        }
     : never;
 
 type Materialize<T> = {
   [K in keyof T]: T[K];
 };
-
-type MergeObjectApi<T> =
-  MergeEditorApiUnion<T> extends infer TApi
-    ? TApi extends object
-      ? Materialize<TApi>
-      : {}
-    : {};
 
 type MergeObjectIntersection<T> = [T] extends [never]
   ? {}
@@ -303,9 +406,19 @@ type MergeObjectIntersection<T> = [T] extends [never]
       : {}
     : {};
 
-type ExactSchemaContribution<C> = C extends AnyPluginConfig
-  ? InferExactPluginSchemaContribution<C>
-  : never;
+type ExactSchemaContribution<C> =
+  C extends Readonly<{
+    schemaContribution: infer TContribution extends EditorSchemaContribution;
+  }>
+    ? TContribution
+    : C extends AnyBasePluginDefinition
+      ? InferExactPluginSchemaContribution<C>
+      : never;
+
+type InstalledPluginDocumentType<C extends AnyBasePluginDefinition> =
+  C extends Readonly<{ documentType: infer TDocumentType extends string }>
+    ? TDocumentType
+    : InferPluginDocumentType<C>;
 
 type SchemaContributionElements<TContribution> =
   TContribution extends Readonly<{ elements?: infer TElements }>
@@ -326,8 +439,8 @@ type SchemaContributionContentRoot<TContribution> =
     ? Extract<TContentRoot, SchemaContentRootContribution>
     : never;
 
-type SchemaContributionElementProperty<C extends AnyPluginConfig> =
-  InferPluginDocumentType<C> extends infer TType extends string
+type SchemaContributionElementProperty<C extends AnyBasePluginDefinition> =
+  InstalledPluginDocumentType<C> extends infer TType extends string
     ? SchemaContributionElements<
         ExactSchemaContribution<C>
       > extends infer TElements
@@ -353,58 +466,120 @@ type SchemaContributionElementProperty<C extends AnyPluginConfig> =
       : never
     : never;
 
-type DirectSchemaProperty<C extends AnyPluginConfig> =
+type DirectSchemaProperty<C extends AnyBasePluginDefinition> =
   | SchemaContributionElementProperty<C>
   | SchemaContributionProperty<ExactSchemaContribution<C>>;
 
-type PlateRawSchemaDeclaration<P> =
-  true extends IsBroadPluginConfig<P>
+type InstalledPluginDefinitionForName<
+  D,
+  TName extends string,
+> = D extends AnyBasePluginDefinition
+  ? D['name'] extends TName
+    ? D
+    : never
+  : never;
+
+type InstalledPluginDocumentTypeForName<D, TName extends string> =
+  InstalledPluginDefinitionForName<D, TName> extends infer TDefinition
+    ? TDefinition extends AnyBasePluginDefinition
+      ? InstalledPluginDocumentType<TDefinition>
+      : never
+    : never;
+
+type InstalledPluginDocumentTypesForNames<
+  D,
+  TNames extends readonly string[],
+> = {
+  readonly [TIndex in keyof TNames]: TNames[TIndex] extends string
+    ? InstalledPluginDocumentTypeForName<D, TNames[TIndex]>
+    : never;
+};
+
+type ResolvePluginTargetProperty<
+  TInstalledDefinition,
+  D extends AnyBasePluginDefinition,
+  TProperty,
+> =
+  TProperty extends SchemaElementProperty<
+    infer TKey,
+    infer TDescriptor,
+    infer TTarget
+  >
+    ? TTarget extends SchemaTypesTarget<infer TTypes>
+      ? string extends TTypes[number]
+        ? InferTargetPluginNames<D> extends infer TNames extends
+            readonly string[]
+          ? TNames extends readonly []
+            ? TProperty
+            : SchemaElementProperty<
+                TKey,
+                TDescriptor,
+                SchemaTypesTarget<
+                  InstalledPluginDocumentTypesForNames<
+                    TInstalledDefinition,
+                    TNames
+                  >
+                >
+              >
+          : never
+        : TProperty
+      : TProperty
+    : TProperty;
+
+type ExactComposedSchemaProperty<TProperty> = TProperty extends SchemaProperty
+  ? string extends TProperty['key']
+    ? never
+    : TProperty
+  : never;
+
+type ResolvedSchemaContributionProperty<D> = D extends AnyBasePluginDefinition
+  ? SchemaContributionProperty<
+      ExactSchemaContribution<D>
+    > extends infer TProperty
+    ? ExactComposedSchemaProperty<ResolvePluginTargetProperty<D, D, TProperty>>
+    : never
+  : never;
+
+type PlateRawSchemaDeclaration<D> =
+  true extends IsBroadPluginDefinition<D>
     ? EditorSchemaContribution
     : EditorSchemaContribution<
         MergeObjectIntersection<
-          SchemaContributionElements<
-            ExactSchemaContribution<InferencePluginConfig<P>>
-          >
+          SchemaContributionElements<ExactSchemaContribution<D>>
         >,
-        readonly SchemaContributionProperty<
-          ExactSchemaContribution<InferencePluginConfig<P>>
-        >[]
+        readonly ResolvedSchemaContributionProperty<D>[]
       >;
 
-type PlateRawSchemaSource<P> = EditorSchemaSourceProvider<
-  PlateRawSchemaDeclaration<P>
+type PlateRawSchemaSource<D> = EditorSchemaSourceProvider<
+  PlateRawSchemaDeclaration<D>
 >;
 
-type PlateContentRootSchemaSource<P> = EditorSchemaSourceProvider<
+type PlateContentRootSchemaSource<D> = EditorSchemaSourceProvider<
   EditorSchemaContribution<
     MergeObjectIntersection<
-      SchemaContributionElements<
-        ExactSchemaContribution<InferencePluginConfig<P>>
-      >
+      SchemaContributionElements<ExactSchemaContribution<D>>
     >,
     readonly [],
     NonNullable<EditorSchemaContribution['groups']>,
     NonNullable<EditorSchemaContribution['roots']>,
-    readonly SchemaContributionContentRoot<
-      ExactSchemaContribution<InferencePluginConfig<P>>
-    >[]
+    readonly SchemaContributionContentRoot<ExactSchemaContribution<D>>[]
   >
 >;
 
 type PlateElementPropertyValues<
-  P,
-  TType extends SchemaElementTypes<PlateRawSchemaSource<P>>,
-> = SchemaElementPropertiesFor<PlateRawSchemaSource<P>, TType>;
+  D,
+  TType extends SchemaElementTypes<PlateRawSchemaSource<D>>,
+> = SchemaElementPropertiesFor<PlateRawSchemaSource<D>, TType>;
 
 type PlateElementPropertyDescriptors<
-  P,
-  TType extends SchemaElementTypes<PlateRawSchemaSource<P>>,
+  D,
+  TType extends SchemaElementTypes<PlateRawSchemaSource<D>>,
 > = {
   [TKey in keyof PlateElementPropertyValues<
-    P,
+    D,
     TType
   >]-?: PropertyValueDescriptor<
-    Exclude<PlateElementPropertyValues<P, TType>[TKey], undefined>
+    Exclude<PlateElementPropertyValues<D, TType>[TKey], undefined>
   >;
 };
 
@@ -413,70 +588,54 @@ type PlateElementPropertyDescriptors<
  * exact handle inference while making plugin additions monotonic structural
  * capabilities, so specialized editors remain assignable to broad boundaries.
  */
-type PlateSchemaElements<P> = {
-  [TType in SchemaElementTypes<PlateRawSchemaSource<P>>]: SchemaElement<{
+type PlateSchemaElements<D> = {
+  [TType in SchemaElementTypes<PlateRawSchemaSource<D>>]: SchemaElement<{
     contentRoots: Readonly<
       Record<
         SchemaContentRootSlotsFor<
-          PlateContentRootSchemaSource<P>,
-          Extract<TType, SchemaElementTypes<PlateContentRootSchemaSource<P>>>
+          PlateContentRootSchemaSource<D>,
+          Extract<TType, SchemaElementTypes<PlateContentRootSchemaSource<D>>>
         >,
         SchemaContentRoot
       >
     >;
-    properties: PlateElementPropertyDescriptors<P, TType>;
+    properties: PlateElementPropertyDescriptors<D, TType>;
   }>;
 };
 
-type PlateSchemaDeclaration<P> =
-  true extends IsBroadPluginConfig<P>
+type PlateSchemaDeclaration<D> =
+  true extends IsBroadPluginDefinition<D>
     ? EditorSchemaContribution
-    : EditorSchemaContribution<PlateSchemaElements<P>, readonly []>;
+    : EditorSchemaContribution<PlateSchemaElements<D>, readonly []>;
 
-export type PlateSchemaSource<P> = EditorSchemaSourceProvider<
-  PlateSchemaDeclaration<P>
+type PlateSchemaSourceForInstalledDefinitions<D> = EditorSchemaSourceProvider<
+  PlateSchemaDeclaration<D>
 >;
 
-type PlateSchemaPluginDescriptor<C extends AnyPluginConfig> = Readonly<{
-  __config: C;
-  key: C['key'];
-  type: InferPluginDocumentType<C>;
-}>;
+export type PlateSchemaSource<P> = PlateSchemaSourceForInstalledDefinitions<
+  InstalledPluginDefinition<P>
+>;
 
-type ElementPluginConfig<C extends AnyPluginConfig> =
-  SchemaContributionElements<ExactSchemaContribution<C>> extends infer TElements
-    ? [TElements] extends [never]
-      ? never
-      : InferPluginDocumentType<C> extends keyof TElements
-        ? C
-        : never
+type ElementPluginDefinition<D extends AnyBasePluginDefinition> =
+  D extends unknown
+    ? SchemaContributionElements<
+        ExactSchemaContribution<D>
+      > extends infer TElements
+      ? [TElements] extends [never]
+        ? never
+        : InstalledPluginDocumentType<D> extends keyof TElements
+          ? D
+          : never
+      : never
     : never;
 
-type PlateElementPlugin<P> =
-  true extends IsBroadPluginConfig<P>
-    ? PlateSchemaPluginDescriptor<AnyPluginConfig>
-    : InferencePluginConfig<P> extends infer C
-      ? C extends AnyPluginConfig
-        ? PlateSchemaPluginDescriptor<ElementPluginConfig<C>>
-        : never
-      : never;
-
-type PlateSchemaPlugin<P> =
-  true extends IsBroadPluginConfig<P>
-    ? PlateSchemaPluginDescriptor<AnyPluginConfig>
-    : InferencePluginConfig<P> extends infer C
-      ? C extends AnyPluginConfig
-        ? PlateSchemaPluginDescriptor<C>
-        : never
-      : never;
-
-type ElementPropertyForConfig<C extends AnyPluginConfig> = Extract<
-  DirectSchemaProperty<C>,
+type ElementPropertyForDefinition<D extends AnyBasePluginDefinition> = Extract<
+  DirectSchemaProperty<D>,
   SchemaElementProperty
 >;
 
-type SoleDirectElementProperty<C extends AnyPluginConfig> =
-  ElementPropertyForConfig<C> extends infer TProperty
+type SoleDirectElementProperty<D extends AnyBasePluginDefinition> =
+  ElementPropertyForDefinition<D> extends infer TProperty
     ? [TProperty] extends [never]
       ? never
       : IsUnion<TProperty> extends true
@@ -484,8 +643,8 @@ type SoleDirectElementProperty<C extends AnyPluginConfig> =
         : Extract<TProperty, SchemaElementProperty>
     : never;
 
-type SoleDirectSchemaProperty<C extends AnyPluginConfig> =
-  DirectSchemaProperty<C> extends infer TProperty
+type SoleDirectSchemaProperty<D extends AnyBasePluginDefinition> =
+  DirectSchemaProperty<D> extends infer TProperty
     ? [TProperty] extends [never]
       ? never
       : IsUnion<TProperty> extends true
@@ -496,175 +655,362 @@ type SoleDirectSchemaProperty<C extends AnyPluginConfig> =
 type PluginDocumentType<P> =
   P extends Readonly<{ type: infer TType }> ? Extract<TType, string> : never;
 
-type PluginConfigOf<P> =
-  P extends Readonly<{
-    __config: infer C extends AnyPluginConfig;
-  }>
-    ? C
+type DescriptorPluginDefinition<P> = Extract<
+  PluginDefinitionOf<P>,
+  AnyBasePluginDefinition
+>;
+
+type InstalledPluginName<D> = D extends AnyBasePluginDefinition
+  ? D['name']
+  : never;
+
+type InstalledPluginGuard<D, TPlugin> =
+  true extends IsBroadPluginDefinition<D>
+    ? unknown
+    : DescriptorPluginDefinition<TPlugin>['name'] extends InstalledPluginName<D>
+      ? unknown
+      : never;
+
+type ElementPluginGuard<TPlugin> =
+  DescriptorPluginDefinition<TPlugin> extends infer D extends
+    AnyBasePluginDefinition
+    ? [ElementPluginDefinition<D>] extends [never]
+      ? never
+      : unknown
     : never;
 
 type DirectPropertyValue<P> =
-  SoleDirectElementProperty<PluginConfigOf<P>> extends SchemaElementProperty<
-    any,
-    infer TDescriptor
-  >
+  SoleDirectElementProperty<
+    PluginDefinitionOf<P>
+  > extends SchemaElementProperty<any, infer TDescriptor>
     ? PropertyValueOf<TDescriptor>
     : never;
 
-type PlateSchemaCreateAndFill<P> = EditorStateSchemaApi['createAndFill'] &
-  (<TPlugin extends PlateElementPlugin<P>>(
-    plugin: TPlugin,
-    properties?: NoInfer<
-      SchemaElementPropertiesFor<
-        PlateSchemaSource<P>,
-        Extract<
-          PluginDocumentType<TPlugin>,
-          SchemaElementTypes<PlateSchemaSource<P>>
-        >
+type PlateSchemaElementFor<D, TPlugin extends PluginReference> =
+  IsAny<D> extends true
+    ? Element
+    : true extends IsBroadPluginDefinition<D>
+      ? Element
+      : SchemaElementFor<
+          PlateSchemaSourceForInstalledDefinitions<D>,
+          Extract<
+            PluginDocumentType<TPlugin>,
+            SchemaElementTypes<PlateSchemaSourceForInstalledDefinitions<D>>
+          >
+        >;
+
+type PlateSchemaCreate<D> = (<const TPlugin extends PluginReference>(
+  plugin: TPlugin &
+    InstalledPluginGuard<D, TPlugin> &
+    ElementPluginGuard<TPlugin>,
+  properties?: NoInfer<
+    SchemaElementPropertiesFor<
+      PlateSchemaSourceForInstalledDefinitions<D>,
+      Extract<
+        PluginDocumentType<TPlugin>,
+        SchemaElementTypes<PlateSchemaSourceForInstalledDefinitions<D>>
       >
     >
-  ) => SchemaElementFor<
-    PlateSchemaSource<P>,
-    Extract<
-      PluginDocumentType<TPlugin>,
-      SchemaElementTypes<PlateSchemaSource<P>>
-    >
-  >);
+  >
+) => PlateSchemaElementFor<D, TPlugin>) &
+  EditorStateSchemaApi['create'];
 
-type PlateSchemaElement<P> = EditorStateSchemaApi['element'] &
-  (<TPlugin extends PlateElementPlugin<P>>(
-    plugin: TPlugin
-  ) => EditorSchemaElement | null);
+type PlateSchemaAllowsElementType<D> = (<
+  const TParent extends PluginReference,
+  const TChild extends PluginReference,
+>(
+  parent: TParent &
+    InstalledPluginGuard<D, TParent> &
+    ElementPluginGuard<TParent>,
+  child: TChild & InstalledPluginGuard<D, TChild> & ElementPluginGuard<TChild>
+) => boolean) &
+  EditorStateSchemaApi['allowsElementType'];
 
-type PlateSchemaGetElementProperty<P> =
-  EditorStateSchemaApi['getElementProperty'] &
-    (<TPlugin extends PlateSchemaPlugin<P>>(
-      element: Element,
-      plugin: TPlugin &
-        ([SoleDirectElementProperty<PluginConfigOf<TPlugin>>] extends [never]
-          ? never
-          : unknown)
-    ) => DirectPropertyValue<TPlugin> | undefined);
+type PlateSchemaElement<D> = (<const TPlugin extends PluginReference>(
+  plugin: TPlugin &
+    InstalledPluginGuard<D, TPlugin> &
+    ElementPluginGuard<TPlugin>
+) => EditorSchemaElement | null) &
+  EditorStateSchemaApi['element'];
 
-type PlateSchemaProperty<P> = EditorStateSchemaApi['property'] &
-  (<TPlugin extends PlateSchemaPlugin<P>>(
-    plugin: TPlugin &
-      ([SoleDirectSchemaProperty<PluginConfigOf<TPlugin>>] extends [never]
-        ? never
-        : unknown)
-  ) => EditorSchemaProperty | null);
+type PlateSchemaIsElementTypeInGroup<D> = (<
+  const TPlugin extends PluginReference,
+>(
+  plugin: TPlugin &
+    InstalledPluginGuard<D, TPlugin> &
+    ElementPluginGuard<TPlugin>,
+  group: string
+) => boolean) &
+  EditorStateSchemaApi['isElementTypeInGroup'];
 
-type PlateEditorStateSchemaApi<V extends Value, P> = Omit<
+type PlateSchemaGetElementProperty<D> = (<
+  const TPlugin extends PluginReference,
+>(
+  element: Element,
+  plugin: TPlugin &
+    InstalledPluginGuard<D, TPlugin> &
+    ([SoleDirectElementProperty<DescriptorPluginDefinition<TPlugin>>] extends [
+      never,
+    ]
+      ? never
+      : unknown)
+) => DirectPropertyValue<TPlugin> | undefined) &
+  EditorStateSchemaApi['getElementProperty'];
+
+type PlateSchemaProperty<D> = (<const TPlugin extends PluginReference>(
+  plugin: TPlugin &
+    InstalledPluginGuard<D, TPlugin> &
+    ([SoleDirectSchemaProperty<DescriptorPluginDefinition<TPlugin>>] extends [
+      never,
+    ]
+      ? never
+      : unknown)
+) => EditorSchemaProperty | null) &
+  EditorStateSchemaApi['property'];
+
+type PlateEditorStateSchemaApi<V extends Value, D> = Omit<
   EditorStateSchemaApi<V>,
-  'createAndFill' | 'element' | 'getElementProperty' | 'property'
+  | 'allowsElementType'
+  | 'create'
+  | 'element'
+  | 'getElementProperty'
+  | 'isElementTypeInGroup'
+  | 'property'
 > & {
-  createAndFill: PlateSchemaCreateAndFill<P>;
-  element: PlateSchemaElement<P>;
-  getElementProperty: PlateSchemaGetElementProperty<P>;
-  property: PlateSchemaProperty<P>;
-  /** Create a typed Plite element handle from an installed Plate descriptor. */
-  handle<TPlugin extends PlateElementPlugin<P> & EditorSchemaSource>(
-    plugin: TPlugin &
-      (PluginDocumentType<TPlugin> extends SchemaElementTypes<TPlugin>
-        ? unknown
-        : never)
-  ): SchemaElementHandle<
-    PlateSchemaSource<P>,
-    Extract<PluginDocumentType<TPlugin>, SchemaElementTypes<TPlugin>>
-  >;
+  allowsElementType: PlateSchemaAllowsElementType<D>;
+  create: PlateSchemaCreate<D>;
+  element: PlateSchemaElement<D>;
+  getElementProperty: PlateSchemaGetElementProperty<D>;
+  isElementTypeInGroup: PlateSchemaIsElementTypeInGroup<D>;
+  property: PlateSchemaProperty<D>;
 };
 
-type InstalledPluginApi<P> =
-  IsAny<P> extends true
+type InstalledPluginApi<D> =
+  IsAny<D> extends true
     ? Record<string, any>
-    : MergeObjectApi<
-        | InferApiFromPluginConfig<InferencePluginConfig<P>>
-        | InferPluginApiFromPluginConfig<InferencePluginConfig<P>>
-      >;
+    : MergeObjectIntersection<InferApiGroup<D>>;
 
-type InstalledPluginTx<P> =
-  IsAny<P> extends true
+type InstalledPluginRead<D> =
+  IsAny<D> extends true
     ? Record<string, any>
-    : MergeObjectIntersection<
-        InferTxFromPluginConfig<InferencePluginConfig<P>>
-      >;
+    : MergeObjectIntersection<InferReadGroup<D>>;
 
-export type InstalledPluginState<P> =
-  IsAny<P> extends true
+type InstalledPluginTransaction<D> =
+  IsAny<D> extends true
     ? Record<string, any>
-    : MergeObjectIntersection<
-        InferStateFromPluginConfig<InferencePluginConfig<P>>
-      >;
+    : MergeObjectIntersection<InferTransactionGroup<D>>;
 
-type PlateInstalledExtension<P> = {
+type InstalledPluginUpdate<D> =
+  IsAny<D> extends true
+    ? Record<string, any>
+    : MergeObjectIntersection<InferUpdateGroup<D>>;
+
+type MergeCapabilityGroups<TBase, TOverrides> = Omit<TBase, keyof TOverrides> &
+  TOverrides;
+
+type PlateInstalledExtension<D> = {
   name: 'plate';
 } & EditorExtensionTypeProvider<
-  () => {
-    api: Materialize<CorePluginApi & InstalledPluginApi<P>>;
-    state: CorePluginState & InstalledPluginState<P>;
-    tx: CorePluginTx & InstalledPluginTx<P>;
-  }
+  StaticEditorExtensionTypeLambda<{
+    api: Materialize<
+      MergeCapabilityGroups<CoreEditorApi, InstalledPluginApi<D>>
+    >;
+    read: Materialize<
+      MergeCapabilityGroups<CoreEditorRead, InstalledPluginRead<D>>
+    >;
+    update: Materialize<
+      MergeCapabilityGroups<CoreEditorUpdate, InstalledPluginUpdate<D>>
+    >;
+  }>
 >;
 
-type PlatePluginTransactionExtension<P> = {
+type PlatePluginExtensionPortalResult<D, TPlugin> =
+  IsAny<D> extends true
+    ? EditorExtensionPortal<TPlugin>
+    : true extends IsBroadPluginDefinition<D>
+      ? EditorExtensionPortal<TPlugin>
+      : [
+            Extract<D, { name: TPlugin extends { name: infer N } ? N : never }>,
+          ] extends [never]
+        ? never
+        : EditorExtensionPortal<TPlugin>;
+
+type PlatePluginExtensionPortal<D> = <
+  const TPlugin extends AnyBasePlugin & PluginReference,
+>(
+  plugin: TPlugin
+) => PlatePluginExtensionPortalResult<D, TPlugin>;
+
+type PlatePluginDependencyExtension<D> = {
   name: 'plate-dependencies';
 } & EditorExtensionTypeProvider<
-  () => {
-    api: Materialize<InstalledPluginApi<P>>;
-    state: InstalledPluginState<P>;
-    tx: InstalledPluginTx<P>;
-  }
+  StaticEditorExtensionTypeLambda<{
+    api: Materialize<InstalledPluginApi<D>>;
+    read: Materialize<InstalledPluginRead<D>>;
+    update: Materialize<InstalledPluginUpdate<D>>;
+  }>
 >;
+
+type PlateTransactionExtension<D> = {
+  name: 'plate-transaction';
+} & EditorExtensionTypeProvider<
+  StaticEditorExtensionTypeLambda<{
+    update: Materialize<
+      MergeCapabilityGroups<
+        CoreEditorTransaction,
+        InstalledPluginTransaction<D>
+      >
+    >;
+  }>
+>;
+
+type BivariantFunction<TFunction> = TFunction extends (
+  ...args: infer TArgs
+) => infer TResult
+  ? { bivarianceHack(...args: TArgs): TResult }['bivarianceHack']
+  : never;
+
+type PlateEditorTransactionBuilder<
+  V extends Value,
+  D,
+> = EditorTransactionSpecBuilder<V, readonly [PlateTransactionExtension<D>]>;
+
+type PlateEditorStateView<V extends Value, D> = EditorReadMethods<
+  V,
+  readonly [PlateInstalledExtension<D>]
+> & {
+  transaction: BivariantFunction<
+    (
+      fn: (transaction: PlateEditorTransactionBuilder<V, D>) => void
+    ) => TransactionSpec
+  > & {
+    extend: BivariantFunction<
+      (
+        base: TransactionSpec,
+        fn: (transaction: PlateEditorTransactionBuilder<V, D>) => void
+      ) => TransactionSpec
+    >;
+  };
+};
+
+/** Installed editor state visible while a plugin registers editor behavior. */
+export type PlatePluginState<P extends AnyBasePluginDefinition> =
+  PlateEditorStateView<Value, InstalledPluginDefinition<P>>;
+
+type PlateEditorRead<V extends Value, D> = EditorReadMethods<
+  V,
+  readonly [PlateInstalledExtension<D>]
+> &
+  (<T>(fn: (state: PlateEditorStateView<V, D>) => T) => T);
+
+type PlateEditorUpdatePolicy<V extends Value, D> = Parameters<
+  EditorUpdate<V, readonly [PlateInstalledExtension<D>]>
+>[0];
+
+type PlateEditorUpdate<V extends Value, D> = {
+  <TTx extends object = {}>(
+    fn: (
+      transaction: EditorUpdateTransaction<
+        V,
+        readonly [PlateTransactionExtension<D>]
+      > &
+        TTx,
+      context: EditorUpdateContext<
+        PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<D>]>
+      >
+    ) => void
+  ): void;
+  <TTx extends object = {}>(
+    policy: PlateEditorUpdatePolicy<V, D>,
+    fn: (
+      transaction: EditorUpdateTransaction<
+        V,
+        readonly [PlateTransactionExtension<D>]
+      > &
+        TTx,
+      context: EditorUpdateContext<
+        PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<D>]>
+      >
+    ) => void
+  ): void;
+  (
+    policy: PlateEditorUpdatePolicy<V, D>
+  ): EditorUpdateMethods<V, readonly [PlateInstalledExtension<D>]>;
+} & EditorUpdateMethods<V, readonly [PlateInstalledExtension<D>]>;
 
 /** Dependency capabilities visible while a plugin registers editor behavior. */
-export type PlatePluginExtensionEditor<P extends AnyPluginConfig> =
-  PliteRuntimeBaseEditor<Value, readonly [PlatePluginTransactionExtension<P>]>;
+type PlatePluginExtensionEditorForInstalledDefinitions<D> =
+  PliteRuntimeBaseEditor<Value, readonly [PlatePluginDependencyExtension<D>]>;
 
-export type PlatePluginTransaction<P extends AnyPluginConfig> =
-  EditorUpdateTransaction<Value, readonly [PlateInstalledExtension<P>]>;
+export type PlatePluginExtensionEditor<P extends AnyBasePluginDefinition> =
+  PlatePluginExtensionEditorForInstalledDefinitions<
+    InstalledPluginDefinition<P>
+  >;
+
+type PlatePluginTransactionForInstalledDefinitions<D> = EditorUpdateTransaction<
+  Value,
+  readonly [PlateTransactionExtension<D>]
+>;
+
+export type PlatePluginTransaction<P extends AnyBasePluginDefinition> =
+  PlatePluginTransactionForInstalledDefinitions<InstalledPluginDefinition<P>>;
 
 /** Installed state capabilities visible while a plugin constructs a read group. */
-export type PlatePluginReadState<P extends AnyPluginConfig> = EditorStateView<
+type PlatePluginReadStateForInstalledDefinitions<D> = EditorStateView<
   Value,
-  readonly [PlatePluginTransactionExtension<P>]
+  readonly [PlatePluginDependencyExtension<D>]
 >;
+
+export type PlatePluginReadState<P extends AnyBasePluginDefinition> =
+  PlatePluginReadStateForInstalledDefinitions<InstalledPluginDefinition<P>>;
 
 type PlateOwnInstalledExtension<P> = {
   name: 'plate';
 } & EditorExtensionTypeProvider<
-  () => {
-    api: Materialize<
-      CorePluginApi &
-        MergeObjectApi<
-          | InferApiFromPluginConfig<OwnInferencePluginConfig<P>>
-          | InferPluginApiFromPluginConfig<OwnInferencePluginConfig<P>>
-        >
+  StaticEditorExtensionTypeLambda<{
+    update: Materialize<
+      MergeObjectIntersection<InferUpdateGroup<OwnInferencePluginDefinition<P>>>
     >;
-    state: CorePluginState &
-      MergeObjectIntersection<
-        InferStateFromPluginConfig<OwnInferencePluginConfig<P>>
-      >;
-    tx: CorePluginTx &
-      MergeObjectIntersection<
-        InferTxFromPluginConfig<OwnInferencePluginConfig<P>>
-      >;
-  }
+  }>
 >;
 
-export type PlatePluginOwnUpdate<P extends AnyPluginConfig> =
+export type PlatePluginOwnUpdate<P extends AnyBasePluginDefinition> =
   PliteRuntimeBaseEditor<
     Value,
-    readonly [PlateOwnInstalledExtension<P>]
-  >['update'];
+    readonly [PlateInstalledExtension<AnyBasePluginDefinition>]
+  >['update'] &
+    PliteRuntimeBaseEditor<
+      Value,
+      readonly [PlateOwnInstalledExtension<P>]
+    >['update'];
+
+/** @internal Editor projection for definitions already lowered by `InferPlugins`. */
+export type InternalPliteEditorWithInstalledPlateDefinitions<
+  V extends Value,
+  D,
+> = {
+  extension: PlatePluginExtensionPortal<D> &
+    PliteRuntimeBaseEditor<
+      V,
+      readonly [PlateInstalledExtension<D>]
+    >['extension'];
+  read: PlateEditorRead<V, D> & {
+    schema: PlateEditorStateSchemaApi<V, D>;
+  };
+  update: PlateEditorUpdate<V, D>;
+} & InternalEditorStateViewProvider<PlateEditorStateView<V, D>> &
+  InternalEditorUpdateTransactionProvider<
+    PlatePluginTransactionForInstalledDefinitions<D>
+  > &
+  Omit<
+    PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<D>]>,
+    'extension' | 'read' | 'update'
+  >;
 
 export type PliteEditorWithPlatePlugins<
   V extends Value,
-  P extends AnyPluginConfig,
-> = PliteRuntimeBaseEditor<V, readonly [PlateInstalledExtension<P>]> & {
-  read: PliteRuntimeBaseEditor<
-    V,
-    readonly [PlateInstalledExtension<P>]
-  >['read'] & {
-    schema: PlateEditorStateSchemaApi<V, P>;
-  };
-};
+  P extends AnyBasePluginDefinition,
+> = InternalPliteEditorWithInstalledPlateDefinitions<
+  V,
+  InstalledPluginDefinition<P>
+>;

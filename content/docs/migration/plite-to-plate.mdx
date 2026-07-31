@@ -3,7 +3,7 @@ title: From Plite to Plate
 description: Move a Plite React editor to Plate's editor, plugin, and rendering model.
 ---
 
-Plate keeps Plite's document model and moves editor setup, rendering, handlers,
+Plate keeps Plite's document model and moves editor setup, rendering, events,
 and command wiring into plugins. Migrate the editor shell first, then move
 custom rendering and behavior into plugins.
 
@@ -24,8 +24,8 @@ instead of rebuilding every component by hand.
 | `createEditor()` plus `withReact()` | `usePlateEditor({ ... })` in React components, or `createPlateEditor({ ... })` in factories and tests. |
 | `<Plite>` plus `<Editable>` | `<Plate>` plus `<PlateContent>`. |
 | `renderElement` / `renderLeaf` switch statements | Plugin components through `.configure({ component })`. |
-| `withX(editor)` plugin functions | Constructor `api`, `read`, `selectors`, or `update`; Plite `extension`; and constructor codec declarations built by `defineCodecs`. |
-| Top-level event handlers on `Editable` | Plugin `handlers` or `shortcuts`. |
+| `withX(editor)` plugin functions | Constructor `api`, `read`, `selectors`, `update`, native Plite fields, and codec declarations built by `defineCodecs`. |
+| Top-level event handlers on `Editable` | Plugin `on` or `shortcuts`. |
 | `Transforms.*` imports | `editor.update((tx) => tx.*)`. |
 | `Editor.*` imports | `editor.read((state) => state.*)`, or a plugin-owned `editor.api.*` service. |
 
@@ -110,13 +110,13 @@ export const AppParagraphPlugin = ParagraphPlugin.configure({
 ## Custom Behavior
 
 Put a reusable document command under the plugin's `update` contribution. The
-command is available inside `editor.update(...)` under the plugin key.
+command is available inside `editor.update(...)` under the plugin name.
 
 ```tsx title="components/editor/limit-exclamation-plugin.tsx" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
-  key: 'signature',
+  name: 'signature',
   update: ({ tx }) => ({
     insert() {
       tx.text.insert(' - Plate');
@@ -140,7 +140,7 @@ plugin noun, so a separate shared insert group adds taxonomy without clarity.
 import { createPlatePlugin } from 'platejs/react';
 
 export const CalloutPlugin = createPlatePlugin({
-  key: 'callout',
+  name: 'callout',
   update: ({ tx }) => ({
     insertCallout() {
       tx.nodes.insert({
@@ -159,13 +159,13 @@ editor.update((tx) => {
 ```
 
 Use `api` for plugin-scoped immutable services, `read` for snapshot-local
-queries, and `extension` for true editor-wide groups or behavior that
-participates in Plite's command, correction, or query pipeline. Combine
-independent fields in the constructor. Use `.extend()` only for an
+queries, and the root native Plite fields for commands, corrections, read
+middleware, lifecycle, activation, validation, and other substrate behavior.
+Combine independent fields in the constructor. Use `.extend()` only for an
 imported/prebuilt declaration, a shared factory the constructor cannot access,
 or an earlier-stage type dependency.
 
-## Handlers And Shortcuts
+## Events And Shortcuts
 
 Move editor events into the plugin that owns the behavior.
 
@@ -173,9 +173,9 @@ Move editor events into the plugin that owns the behavior.
 import { createPlatePlugin } from 'platejs/react';
 
 export const TabPlugin = createPlatePlugin({
-  key: 'tab',
-  handlers: {
-    onKeyDown: ({ event }) => {
+  name: 'tab',
+  on: {
+    keyDown: ({ event }) => {
       if (event.key !== 'Tab') return false;
 
       event.preventDefault();
@@ -192,7 +192,7 @@ Use `shortcuts` when the key combination should call a plugin API, transform, or
 import { createPlatePlugin } from 'platejs/react';
 
 export const SavePlugin = createPlatePlugin({
-  key: 'save',
+  name: 'save',
   shortcuts: {
     draft: {
       keys: 'mod+s',

@@ -20,10 +20,6 @@ import { defineCommand as defineEditorCommand } from '../core/command-definition
 import { dispatchCommand } from '../core/command-registry';
 import { editorCommands } from '../core/editor-commands';
 import type { Anchor, AnchorOptions, AnchorValue } from '../core/anchor';
-import {
-  defineEditorExtension as defineEditorExtensionCore,
-  extendEditor as extendEditorCore,
-} from '../core/editor-extension';
 import type { DocumentChange } from '../core/change/document-change';
 import {
   getEditorRuntime,
@@ -108,7 +104,6 @@ import type {
   EditorSchemaIdentity,
   EditorSchemaProperty,
   EditorSchemaPropertyQuery,
-  EditorSchemaSource,
   SchemaElementFor,
   SchemaElementHandle,
   SchemaElementPropertiesFor,
@@ -118,6 +113,7 @@ import type {
   SchemaDescendantInValue,
   SchemaValueFromExtensions,
 } from './schema';
+import type { EditorSchemaSource } from '../core/schema-source.internal';
 
 export type { Selection } from './selection';
 
@@ -256,13 +252,14 @@ export type StateFieldTransition<TValue> = Readonly<{
   value: TValue;
 }>;
 
-export type EditorStateField<TValue = unknown> = EditorExtension<Editor> &
-  Omit<StateFieldDescriptor<TValue>, 'compare'> & {
-    compare: (left: TValue, right: TValue) => boolean;
-    deserialize: (value: unknown) => TValue;
-    effect: EditorEffectType<StateFieldTransition<TValue>>;
-    serialize: (value: TValue) => SerializedEditorValue;
-  };
+export type EditorStateField<TValue = unknown> =
+  EditorExtensionDefinitionInput &
+    Omit<StateFieldDescriptor<TValue>, 'compare'> & {
+      compare: (left: TValue, right: TValue) => boolean;
+      deserialize: (value: unknown) => TValue;
+      effect: EditorEffectType<StateFieldTransition<TValue>>;
+      serialize: (value: TValue) => SerializedEditorValue;
+    };
 
 /** Yjs-agnostic helpers supplied by a collaboration adapter while encoding. */
 export type EditorEffectCollabEncodeContext = Readonly<{
@@ -899,7 +896,7 @@ type WithoutInternalPrimaryRoot<TQuery> = TQuery extends {
       : unknown
   : unknown;
 
-export type EditorSchemaCreateAndFill = {
+export type EditorSchemaCreate = {
   <
     TSchema extends EditorSchemaSource,
     TType extends SchemaElementTypes<TSchema>,
@@ -945,7 +942,8 @@ export type EditorSchemaGetProperty = {
 export type EditorStateSchemaApi<V extends Value = Value> = {
   /** Whether one child element type is accepted directly by one parent type. */
   allowsElementType: (parentType: string, childType: string) => boolean;
-  createAndFill: EditorSchemaCreateAndFill;
+  /** Create one valid canonical element with every required default child. */
+  create: EditorSchemaCreate;
   /** Create the declared default child for one document root. */
   createDefaultRootChild: <TRoot extends RootKey>(
     root?: NamedRootKey<TRoot>
@@ -987,7 +985,7 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
   isReadOnly: (element: Node) => boolean;
   isSelectable: (element: Node) => boolean;
   isVoid: (element: Node) => boolean;
-  markableVoid: (element: Node) => boolean;
+  isMarkableVoid: (element: Node) => boolean;
   /**
    * Resolve one compiled property declaration for an exact runtime context.
    * Omitting `type` succeeds only when the key has one unambiguous declaration.
@@ -999,14 +997,16 @@ export type EditorStateSchemaApi<V extends Value = Value> = {
    * Throws `EditorSchemaValidationError` with immutable root/path/property
    * diagnostics on failure.
    */
-  validateDocument: (value: EditorDocumentValue) => void;
+  assertDocument(value: unknown): asserts value is EditorDocumentValue<V>;
   /**
    * Validate an external fragment against the compiled schema.
    *
    * Throws `EditorSchemaValidationError` with immutable path/property
    * diagnostics on failure.
    */
-  validateFragment: (children: readonly Descendant[]) => void;
+  assertFragment(
+    children: unknown
+  ): asserts children is readonly DescendantIn<V>[];
 };
 
 /** Immutable open document content carried across host and insertion boundaries. */
@@ -1078,7 +1078,7 @@ export type EditorStateView<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = EditorCoreStateView<V> &
-  EditorInstalledStateGroups<V, TExtensions> & {
+  EditorInstalledReadGroups<V, TExtensions> & {
     /**
      * Build an immutable transaction without mutating or publishing editor
      * state. An empty spec represents an intentionally handled no-op.
@@ -1134,19 +1134,19 @@ export type EditorUpdateTransaction<
 > = EditorCoreUpdateTransaction<V> & {
   /** Dispatch a typed semantic command inside this active update. */
   command: EditorCommandDispatch<BaseEditor<V, TExtensions>>;
-} & EditorInstalledTxGroups<V, TExtensions>;
+} & EditorInstalledUpdateGroups<V, TExtensions>;
 
 /** Pure transaction builder available while producing a command spec. */
 export type EditorTransactionSpecBuilder<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = Omit<EditorCoreUpdateTransaction<V>, 'anchor' | 'extensions'> &
-  EditorExtensionSpecMethods<EditorInstalledTxGroups<V, TExtensions>>;
+  EditorExtensionSpecMethods<EditorInstalledUpdateGroups<V, TExtensions>>;
 
 export type EditorReadMethods<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = EditorCoreStateView<V> & EditorInstalledStateGroups<V, TExtensions>;
+> = EditorCoreStateView<V> & EditorInstalledReadGroups<V, TExtensions>;
 
 export type EditorRead<
   V extends Value = Value,
@@ -1248,7 +1248,7 @@ export type EditorUpdateMethods<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = EditorCoreUpdateMethods<V, TExtensions> &
-  EditorExtensionUpdateMethods<EditorInstalledTxGroups<V, TExtensions>>;
+  EditorExtensionUpdateMethods<EditorInstalledUpdateGroups<V, TExtensions>>;
 
 export type EditorUpdate<
   V extends Value = Value,
@@ -1262,7 +1262,7 @@ export type EditorUpdate<
   ): void;
   <TTx extends object = {}>(
     policy: EditorAvailableUpdatePolicy<
-      EditorInstalledTxGroups<V, TExtensions>
+      EditorInstalledUpdateGroups<V, TExtensions>
     >,
     fn: (
       transaction: EditorUpdateTransaction<V, TExtensions> & TTx,
@@ -1270,7 +1270,9 @@ export type EditorUpdate<
     ) => void
   ): void;
   (
-    policy: EditorAvailableUpdatePolicy<EditorInstalledTxGroups<V, TExtensions>>
+    policy: EditorAvailableUpdatePolicy<
+      EditorInstalledUpdateGroups<V, TExtensions>
+    >
   ): EditorUpdateMethods<V, TExtensions>;
 } & EditorUpdateMethods<V, TExtensions>;
 
@@ -1288,17 +1290,21 @@ export interface BaseEditor<
   anchor: EditorAnchorApi;
   /** Stable logical identity for this editor instance. */
   id: string;
-  getApi: <
-    TExtension extends EditorResolvedInstalledExtensions<TExtensions>[number],
-  >(
-    extension: TExtension
-  ) => EditorApiValueFromExtension<TExtension>;
+  extension: <const TExtension extends EditorExtensionReference>(
+    extension: TExtension,
+    ...guard: EditorInstalledExtensionGuard<
+      TExtension,
+      TExtensions
+    > extends never
+      ? [never]
+      : []
+  ) => EditorExtensionPortal<TExtension>;
   read: EditorRead<V, TExtensions>;
   subscribe: (listener: SnapshotListener<any>) => () => void;
   subscribeCommit: (listener: EditorCommitListener<any>) => () => void;
   update: EditorUpdate<V, TExtensions>;
   extend: (
-    extension: EditorExtensionInput<any>,
+    extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => () => void;
 }
@@ -1309,7 +1315,7 @@ export type EditorUpdatePolicyFor<TEditor extends BaseEditor<any, any>> =
     infer V,
     infer TExtensions extends readonly unknown[]
   >
-    ? EditorAvailableUpdatePolicy<EditorInstalledTxGroups<V, TExtensions>>
+    ? EditorAvailableUpdatePolicy<EditorInstalledUpdateGroups<V, TExtensions>>
     : never;
 
 export type EditorRuntime<
@@ -1319,8 +1325,8 @@ export type EditorRuntime<
   BaseEditor<V, TExtensions>,
   | 'anchor'
   | 'api'
+  | 'extension'
   | 'extend'
-  | 'getApi'
   | 'read'
   | 'subscribe'
   | 'subscribeCommit'
@@ -1373,9 +1379,13 @@ export type CreateEditorOptions<
 
 /** Default document value inferred from complete installed schema extensions. */
 export type EditorValueFromExtensions<TExtensions extends readonly unknown[]> =
-  [SchemaValueFromExtensions<TExtensions>] extends [never]
+  [
+    SchemaValueFromExtensions<EditorResolvedInstalledExtensions<TExtensions>>,
+  ] extends [never]
     ? Value
-    : SchemaValueFromExtensions<TExtensions> extends infer V extends Value
+    : SchemaValueFromExtensions<
+          EditorResolvedInstalledExtensions<TExtensions>
+        > extends infer V extends Value
       ? V
       : Value;
 
@@ -1499,9 +1509,30 @@ export type TransactionSpec<TRoot extends RootKey = RootKey> = Readonly<{
 
 export type EditorCommandResult = false | TransactionSpec;
 
+/** @internal Exact state-view carrier for editor layers with richer transactions. */
+export type InternalEditorStateViewProvider<TState> = Readonly<{
+  readonly __editorStateViewTypes?: TState;
+}>;
+
+/** @internal Exact update-transaction carrier for layered editor types. */
+export type InternalEditorUpdateTransactionProvider<TTransaction> = Readonly<{
+  readonly __editorUpdateTransactionTypes?: TTransaction;
+}>;
+
+/** @internal Resolve a layered editor's exact live update transaction. */
+export type InternalEditorUpdateTransactionOf<TEditor> =
+  TEditor extends InternalEditorUpdateTransactionProvider<infer TTransaction>
+    ? TTransaction
+    : EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+
+type EditorStateViewOf<TEditor> =
+  TEditor extends InternalEditorStateViewProvider<infer TState>
+    ? TState
+    : EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+
 export type EditorCommandContext<Input, TEditor = Editor> = {
   input: Readonly<Input>;
-  state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+  state: EditorStateViewOf<TEditor>;
   /** Frozen semantic tags visible across the active update/spec stack. */
   tags: readonly EditorUpdateTag[];
 };
@@ -1580,7 +1611,7 @@ export type EditorReadCapabilities<TEditor> =
     infer TExtensions extends readonly unknown[]
   >
     ? Readonly<{
-        state: EditorInstalledStateGroups<V, TExtensions>;
+        state: EditorInstalledReadGroups<V, TExtensions>;
         value: V;
       }>
     : never;
@@ -1636,7 +1667,7 @@ export type EditorExtensionReadContext<
   ) => EditorReadRegistration<TEditor>;
 }>;
 
-export type EditorExtensionReadFactory<
+export type EditorExtensionReadMiddlewareFactory<
   TEditor extends BaseEditor<any, any> = Editor,
 > = BivariantMethod<
   [context: EditorExtensionReadContext<TEditor>],
@@ -1654,12 +1685,7 @@ export type EditorCommand<
   }>;
   /** Build only the descriptor default without running installed handlers. */
   build: (
-    state: TEditor extends BaseEditor<
-      infer V extends Value,
-      infer TExtensions extends readonly unknown[]
-    >
-      ? EditorStateView<V, TExtensions>
-      : EditorStateView,
+    state: EditorStateViewOf<TEditor>,
     ...input: [Input] extends [void] ? [] | [input: Input] : [input: Input]
   ) => EditorCommandResult;
   /** Stable configuration and diagnostics identity. */
@@ -1691,9 +1717,9 @@ export type EditorCommandCapabilities<TEditor> =
     infer TExtensions extends readonly unknown[]
   >
     ? Readonly<{
-        state: EditorInstalledStateGroups<V, TExtensions>;
+        state: EditorInstalledReadGroups<V, TExtensions>;
         transaction: EditorExtensionSpecMethods<
-          EditorInstalledTxGroups<V, TExtensions>
+          EditorInstalledUpdateGroups<V, TExtensions>
         >;
         value: V;
       }>
@@ -1734,7 +1760,7 @@ export type EditorCorrectionTransaction<
   | 'tags'
   | 'text'
 > &
-  EditorInstalledTxGroups<V, TExtensions> & {
+  EditorInstalledUpdateGroups<V, TExtensions> & {
     value: EditorStateValueApi<V>;
   };
 
@@ -1758,66 +1784,95 @@ export type EditorCorrection<TEditor extends BaseEditor<any> = Editor> = {
   query?: EditorCorrectionQuery;
 };
 
-export type EditorExtensionStateGroup<
+export type EditorExtensionReadFactoryContext<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = Readonly<{
+  editor: TEditor;
+  state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+}>;
+
+export type EditorExtensionUpdateFactoryContext<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = Readonly<{
+  context: EditorUpdateContext<TEditor>;
+  editor: TEditor;
+  tx: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+}>;
+
+export type EditorExtensionReadFactory<
   TEditor extends BaseEditor<any> = Editor,
   TResult = unknown,
-> = (
-  state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
-  editor: TEditor
-) => TResult;
-
-export type EditorExtensionTxGroup<
-  TEditor extends BaseEditor<any> = Editor,
-  TResult = unknown,
-> = (
-  transaction: EditorUpdateTransaction<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
-  editor: TEditor,
-  context: EditorUpdateContext<TEditor>
-) => TResult;
-
-export type EditorExtensionStateGroups<
-  TEditor extends BaseEditor<any> = Editor,
-> = Record<string, EditorExtensionStateGroup<TEditor> | undefined>;
-
-export type EditorExtensionTxGroups<TEditor extends BaseEditor<any> = Editor> =
-  Record<string, EditorExtensionTxGroup<TEditor> | undefined>;
-
-export type EditorExtensionApiMap = Record<
-  string,
-  unknown | readonly unknown[]
+> = BivariantMethod<
+  [context: EditorExtensionReadFactoryContext<TEditor>],
+  TResult
 >;
 
-export type EditorExtensionConfigurationEditor<
+export type EditorExtensionUpdateFactory<
+  TEditor extends BaseEditor<any> = Editor,
+  TResult = unknown,
+> = BivariantMethod<
+  [context: EditorExtensionUpdateFactoryContext<TEditor>],
+  TResult
+>;
+
+/** @internal Runtime storage keyed by the owning extension name. */
+export type EditorExtensionApiMap = Record<string, unknown>;
+
+export type EditorExtensionCandidateEditor<
   TEditor extends BaseEditor<any> = Editor,
 > = TEditor & {
-  getApi: <TExtension extends EditorExtension<any, any>>(
-    extension: TExtension
-  ) => EditorApiValueFromExtension<TExtension>;
+  extension: TEditor['extension'];
 };
 
-export type EditorExtensionContribution<TValue> = Readonly<{
-  point: EditorExtensionPoint<TValue>;
-}>;
+declare const EDITOR_EXTENSION_REQUIRED_EDITOR: unique symbol;
 
 export type EditorExtensionPoint<TValue> = Readonly<{
   id: string;
   of: (value: TValue) => EditorExtensionContribution<TValue>;
 }>;
 
+/** Contextual installation requirement for one opaque extension contribution. */
+export type EditorExtensionContributionInput<TRequiredEditor = unknown> =
+  Readonly<{
+    point: Readonly<{ id: string }>;
+    /** @internal Contravariant proof of the editor capabilities this value needs. */
+    [EDITOR_EXTENSION_REQUIRED_EDITOR]?: (editor: TRequiredEditor) => void;
+  }>;
+
+export type EditorExtensionContribution<
+  TValue,
+  TRequiredEditor = unknown,
+> = EditorExtensionContributionInput<TRequiredEditor> &
+  Readonly<{
+    point: EditorExtensionPoint<TValue>;
+  }>;
+
 /**
- * Resolve host APIs against one stable declarative configuration candidate.
+ * Resolve host APIs against one stable extension candidate.
  * API-factory results become visible only after every factory has resolved.
  */
+export type EditorExtensionApiFactoryContext<
+  TEditor extends BaseEditor<any> = Editor,
+> = Readonly<{
+  editor: EditorExtensionCandidateEditor<TEditor>;
+  getContributions: <TValue>(
+    point: EditorExtensionPoint<TValue>
+  ) => readonly Readonly<TValue>[];
+  /** Named view root, or `undefined` for the primary document. */
+  root: NamedRootKey | undefined;
+}>;
+
 export type EditorExtensionApiFactory<
   TEditor extends BaseEditor<any> = Editor,
-  TConfig = unknown,
+  TResult = unknown,
 > = BivariantMethod<
-  [
-    editor: EditorExtensionConfigurationEditor<TEditor>,
-    context: EditorExtensionConfigurationContext<TEditor, TConfig>,
-  ],
-  EditorExtensionApiMap
+  [context: EditorExtensionApiFactoryContext<TEditor>],
+  TResult
 >;
+
+export type EditorExtensionPortal<TExtension> = Readonly<{
+  api: EditorApiValueFromExtension<TExtension>;
+}>;
 
 export type EditorAnchorApi = <
   TValue extends AnchorValue,
@@ -1833,9 +1888,8 @@ export type EditorExtensionCleanupContext = Readonly<{
   reason: 'remove' | 'replace' | 'rollback';
 }>;
 
-export type EditorExtensionActivationContext<TConfig = unknown> = Readonly<{
+export type EditorExtensionActivationContext = Readonly<{
   afterPublish: (callback: () => void) => void;
-  config: EditorImmutableConfig<TConfig>;
   name: string;
   onCleanup: (
     cleanup: (context: EditorExtensionCleanupContext) => void
@@ -1865,20 +1919,13 @@ export type EditorLifecycleError =
 
 export type EditorLifecycleErrorSink = (error: EditorLifecycleError) => void;
 
-export type EditorExtensionConfigurationContext<
+export type EditorExtensionCandidateContext<
   TEditor extends BaseEditor<any> = Editor,
-  TConfig = unknown,
-> = Readonly<{
-  config: EditorImmutableConfig<TConfig>;
-  editor: EditorExtensionConfigurationEditor<TEditor>;
-  getContributions: <TValue>(
-    point: EditorExtensionPoint<TValue>
-  ) => readonly Readonly<TValue>[];
-  name: string;
-  /** Named view root, or `undefined` for the primary document. */
-  root: NamedRootKey | undefined;
-  schema: EditorStateSchemaApi<ValueOf<TEditor>>;
-}>;
+> = EditorExtensionApiFactoryContext<TEditor> &
+  Readonly<{
+    name: string;
+    schema: EditorStateSchemaApi<ValueOf<TEditor>>;
+  }>;
 
 export type EditorCommitContext<TEditor extends BaseEditor<any, any> = Editor> =
   {
@@ -1957,54 +2004,368 @@ export type EditorExtensionChangeHandlers<
   transactionChange?: EditorTransactionChangeHandler<TEditor>;
 }>;
 
-export type EditorImmutableConfig<TValue> = TValue extends bigint | symbol
-  ? never
-  : TValue extends (...args: any[]) => any
-    ? never
-    : TValue extends readonly unknown[]
-      ? {
-          readonly [TKey in keyof TValue]: EditorImmutableConfig<TValue[TKey]>;
-        }
-      : TValue extends object
-        ? {
-            readonly [TKey in keyof TValue]: EditorImmutableConfig<
-              TValue[TKey]
-            >;
-          }
-        : TValue;
-
-export type EditorExtensionSchemaFactoryContext<TConfig = unknown> = Readonly<{
-  config: EditorImmutableConfig<TConfig>;
+export type EditorExtensionSchemaFactoryContext = Readonly<{
   name: string;
 }>;
 
-export type EditorExtensionSchemaFactory<TConfig = unknown> = (
-  context: EditorExtensionSchemaFactoryContext<TConfig>
+export type EditorExtensionSchemaFactory = (
+  context: EditorExtensionSchemaFactoryContext
 ) => EditorSchemaDeclaration;
 
-export type EditorExtension<
-  TEditor extends BaseEditor<any> = Editor,
-  TConfig = unknown,
-> = {
-  /** Stable identity used for ordering, dependencies, and diagnostics. */
+/**
+ * Erased runtime descriptor reference. Exact author capabilities live only in
+ * `EditorExtension<D>`'s private invariant witness.
+ */
+export type EditorExtensionReference = Readonly<{
   name: string;
   enabled?: boolean;
-  dependencies?: readonly EditorExtension<any, any>[];
-  conflicts?: readonly EditorExtension<any, any>[];
-  /** Immutable input shared by schema, API, validation, and activation. */
-  config?: TConfig & EditorImmutableConfig<TConfig>;
-  /** Immutable partial/complete declaration or pure immutable-config factory. */
-  schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory<TConfig>;
-  /** Read helpers added to `editor.read(...)`. */
-  state?: EditorExtensionStateGroups<TEditor>;
-  /** Write helpers added to transactions and direct-safe `editor.update` groups. */
-  tx?: EditorExtensionTxGroups<TEditor>;
-  /** Typed middleware over core-owned `editorReads` descriptors. */
+  dependencies?: readonly EditorExtensionReference[];
+  conflicts?: readonly EditorExtensionReference[];
+  schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory;
+  api?: unknown;
+  read?: unknown;
+  update?: unknown;
+  readMiddleware?: unknown;
+  commands?: unknown;
+  corrections?: unknown;
+  stateFields?: unknown;
+  effectTypes?: unknown;
+  facetProviders?: unknown;
+  selectionKinds?: unknown;
+  contributions?: unknown;
+  on?: unknown;
+  activate?: unknown;
+  validate?: unknown;
+}>;
+
+type EditorExtensionShallowReference = Readonly<{
+  enabled?: boolean;
+  name: string;
+}>;
+
+export type EditorExtensionDefinition = Readonly<{
+  api?: unknown;
+  activate?: true;
+  commands?: true;
+  conflicts?: readonly EditorExtensionShallowReference[];
+  contributions?: true;
+  corrections?: true;
+  dependencies?: readonly EditorExtensionShallowReference[];
+  effectTypes?: true;
+  enabled?: boolean;
+  facetProviders?: true;
+  name: string;
+  on?: true;
+  read?: unknown;
+  readMiddleware?: true;
+  schema?: EditorSchemaDeclaration;
+  selectionKinds?: true;
+  stateFields?: true;
+  update?: unknown;
+  validate?: true;
+}>;
+
+declare class PrivateEditorExtensionWitness<TWitness> {
+  protected readonly witness: TWitness;
+}
+
+type EditorExtensionWitnessOf<TExtension> =
+  TExtension extends PrivateEditorExtensionWitness<infer TWitness>
+    ? TWitness
+    : never;
+
+type EditorExtensionCapabilityOf<TExtension> = TExtension extends unknown
+  ? [EditorExtensionWitnessOf<TExtension>] extends [never]
+    ? TExtension extends EditorExtensionDefinition
+      ? TExtension
+      : never
+    : EditorExtensionWitnessOf<TExtension> extends {
+          capability: infer TCapability;
+        }
+      ? TCapability
+      : never
+  : never;
+
+type EditorExtensionInternalDefinitionOf<TExtension> =
+  TExtension extends unknown
+    ? EditorExtensionWitnessOf<TExtension> extends {
+        internalDefinition: (
+          definition: infer TDefinition
+        ) => infer TDefinition;
+      }
+      ? TDefinition
+      : never
+    : never;
+
+type EditorExtensionDependencyReferences<TInput> =
+  TInput extends readonly unknown[]
+    ? {
+        readonly [TIndex in keyof TInput]: EditorExtensionShallowReferenceOf<
+          TInput[TIndex]
+        >;
+      }
+    : never;
+
+type EditorExtensionPublicDefinition<TDefinition> = Readonly<{
+  [TKey in keyof TDefinition]: TKey extends 'conflicts' | 'dependencies'
+    ? EditorExtensionDependencyReferences<TDefinition[TKey]>
+    : TDefinition[TKey];
+}>;
+
+export type DefinitionOf<TExtension> = TExtension extends unknown
+  ? EditorExtensionWitnessOf<TExtension> extends {
+      definition: (definition: infer TDefinition) => infer TDefinition;
+    }
+    ? TDefinition
+    : never
+  : never;
+
+type EditorExtensionCapabilityFromPublicDefinition<TDefinition> = Readonly<
+  Pick<
+    TDefinition,
+    Extract<
+      keyof TDefinition,
+      'api' | 'enabled' | 'name' | 'read' | 'schema' | 'update'
+    >
+  >
+>;
+
+type EditorExtensionCapabilityDefinition<TDefinition> =
+  EditorExtensionCapabilityFromPublicDefinition<
+    EditorExtensionPublicDefinition<TDefinition>
+  >;
+
+/** Shallow public reference to an extension dependency. */
+export interface EditorExtensionDependencyReference {
+  readonly enabled?: boolean;
+  readonly name: string;
+}
+
+type EditorExtensionDependencyContract = Readonly<{
+  direct: EditorExtensionDefinition;
+  installed: unknown;
+}>;
+
+declare class PrivateEditorExtensionDependencyWitness<TContract> {
+  protected readonly dependencyContract: TContract;
+}
+
+/** @internal Named declaration carrier for one finite dependency contract. */
+export interface InternalEditorExtensionDependencyReference<
+  in out TContract extends EditorExtensionDependencyContract,
+> extends EditorExtensionDependencyReference,
+    PrivateEditorExtensionDependencyWitness<TContract> {}
+
+type EditorExtensionDependencyContractOf<TReference> =
+  TReference extends PrivateEditorExtensionDependencyWitness<
+    infer TContract extends EditorExtensionDependencyContract
+  >
+    ? TContract
+    : never;
+
+type EditorExtensionShallowReferenceFromDefinition<TDefinition> = Readonly<{
+  name: TDefinition extends {
+    name: infer TName extends string;
+  }
+    ? TName
+    : string;
+}> &
+  (TDefinition extends {
+    enabled: infer TEnabled extends boolean;
+  }
+    ? Readonly<{ enabled: TEnabled }>
+    : Readonly<Record<never, never>>);
+
+type EditorExtensionShallowReferenceOf<TReference> =
+  EditorExtensionDependencyContractOf<TReference> extends infer TContract
+    ? TContract extends EditorExtensionDependencyContract
+      ? EditorExtensionShallowReferenceFromDefinition<TContract['direct']>
+      : EditorExtensionShallowReferenceFromDefinition<TReference>
+    : EditorExtensionShallowReferenceFromDefinition<TReference>;
+
+type EditorExtensionInstalledFromReference<TReference> =
+  EditorExtensionDependencyContractOf<TReference> extends infer TContract
+    ? TContract extends EditorExtensionDependencyContract
+      ? TContract['installed']
+      : never
+    : never;
+
+type EditorExtensionDirectFromReference<TReference> =
+  EditorExtensionDependencyContractOf<TReference> extends infer TContract
+    ? TContract extends EditorExtensionDependencyContract
+      ? TContract['direct']
+      : never
+    : never;
+
+type EditorExtensionRequirementNames<TRequirement> =
+  TRequirement extends unknown
+    ? TRequirement extends { name: infer TName extends PropertyKey }
+      ? TName
+      : never
+    : never;
+
+type EditorExtensionExcludeRequirementNames<
+  TRequirement,
+  TNames extends PropertyKey,
+> = TRequirement extends unknown
+  ? TRequirement extends { name: infer TName extends PropertyKey }
+    ? TName extends TNames
+      ? never
+      : TRequirement
+    : TRequirement
+  : never;
+
+type EditorExtensionRequirementsFromReferences<
+  TReferences extends readonly unknown[],
+> = number extends TReferences['length']
+  ? EditorExtensionInstalledFromReference<TReferences[number]>
+  : TReferences extends readonly [
+        ...infer TPrevious extends readonly unknown[],
+        infer TLast,
+      ]
+    ? EditorExtensionInstalledFromReference<TLast> extends infer TInstalledLast
+      ?
+          | TInstalledLast
+          | EditorExtensionExcludeRequirementNames<
+              EditorExtensionRequirementsFromReferences<TPrevious>,
+              EditorExtensionRequirementNames<
+                EditorExtensionDirectFromReference<TLast>
+              >
+            >
+      : never
+    : never;
+
+type EditorExtensionRequirementsOf<TExtension> = TExtension extends unknown
+  ? [EditorExtensionDependencyContractOf<TExtension>] extends [never]
+    ? EditorExtensionInternalDefinitionOf<TExtension> extends {
+        dependencies: infer TDependencies extends readonly unknown[];
+      }
+      ? EditorExtensionRequirementsFromReferences<TDependencies>
+      : never
+    : EditorExtensionDependencyContractOf<TExtension>['installed']
+  : never;
+
+type EditorExtensionTypeProviderOf<TExtension> = TExtension extends unknown
+  ? '__editorExtensionTypes' extends keyof TExtension
+    ? TExtension extends {
+        readonly __editorExtensionTypes?: infer TProvider;
+      }
+      ? Readonly<{ __editorExtensionTypes?: TProvider }>
+      : Readonly<Record<never, never>>
+    : Readonly<Record<never, never>>
+  : never;
+
+/** @internal Preserve only one extension's finite type-provider projection. */
+export type InternalEditorExtensionTypeProviderOf<TExtension> =
+  EditorExtensionTypeProviderOf<TExtension>;
+
+type EditorExtensionDirectCapability<TExtension> = TExtension extends unknown
+  ? EditorExtensionCapabilityOf<TExtension> extends infer TCapability extends
+      EditorExtensionDefinition
+    ? TCapability & EditorExtensionTypeProviderOf<TExtension>
+    : never
+  : never;
+
+type EditorExtensionDirectDependencyCapability<TExtension> =
+  TExtension extends unknown
+    ? EditorExtensionCapabilityOf<TExtension> extends infer TCapability extends
+        EditorExtensionDefinition
+      ? TCapability extends { enabled: false }
+        ? Readonly<Pick<TCapability, 'enabled' | 'name'>>
+        : EditorExtensionDirectCapability<TExtension>
+      : never
+    : never;
+
+type EditorExtensionInstallRequirement<TExtension> = TExtension extends unknown
+  ? EditorExtensionCapabilityOf<TExtension> extends { enabled: false }
+    ? never
+    : EditorExtensionDirectCapability<TExtension> extends infer TDirect
+      ?
+          | TDirect
+          | EditorExtensionExcludeRequirementNames<
+              EditorExtensionRequirementsOf<TExtension>,
+              EditorExtensionRequirementNames<TDirect>
+            >
+      : never
+  : never;
+
+type EditorExtensionDependencyContractFor<TExtension> =
+  TExtension extends unknown
+    ? [EditorExtensionDependencyContractOf<TExtension>] extends [never]
+      ? Readonly<{
+          direct: EditorExtensionDirectDependencyCapability<TExtension>;
+          installed: EditorExtensionInstallRequirement<TExtension>;
+        }>
+      : EditorExtensionDependencyContractOf<TExtension>
+    : never;
+
+/** @internal Compact install contract for one direct dependency. */
+export type EditorExtensionDependencyReferenceFor<TExtension> =
+  TExtension extends unknown
+    ? InternalEditorExtensionDependencyReference<
+        EditorExtensionDependencyContractFor<TExtension>
+      >
+    : never;
+
+/** @internal Finite installed capability carried by one dependency reference. */
+export type InternalEditorExtensionInstalledCapabilitiesOf<TReference> =
+  EditorExtensionDependencyContractOf<TReference> extends infer TContract
+    ? TContract extends Readonly<{ installed: infer TInstalled }>
+      ? TInstalled
+      : never
+    : never;
+
+type EditorExtensionRuntimeReferences<TInput> =
+  TInput extends readonly unknown[]
+    ? {
+        readonly [TIndex in keyof TInput]: EditorExtensionShallowReferenceOf<
+          TInput[TIndex]
+        >;
+      }
+    : never;
+
+type EditorExtensionRuntimeField<
+  TDefinition,
+  TKey extends keyof TDefinition,
+> = TKey extends 'conflicts' | 'dependencies'
+  ? EditorExtensionRuntimeReferences<TDefinition[TKey]>
+  : TKey extends 'enabled' | 'name' | 'schema'
+    ? TDefinition[TKey]
+    : unknown;
+
+/** @internal Exact type witness without public runtime descriptor fields. */
+export type InternalEditorExtensionWitnessFor<
+  TDefinition extends EditorExtensionDefinition,
+> = PrivateEditorExtensionWitness<{
+  capability: EditorExtensionCapabilityDefinition<TDefinition>;
+  definition: (
+    definition: EditorExtensionPublicDefinition<TDefinition>
+  ) => EditorExtensionPublicDefinition<TDefinition>;
+  internalDefinition: (definition: TDefinition) => TDefinition;
+}>;
+
+export type EditorExtension<TDefinition extends EditorExtensionDefinition> =
+  Readonly<{
+    [TKey in keyof TDefinition]: EditorExtensionRuntimeField<TDefinition, TKey>;
+  }> &
+    InternalEditorExtensionWitnessFor<TDefinition>;
+
+/**
+ * Contextually typed author input. `defineEditorExtension` normalizes this
+ * callback-rich shape to the compact definition carried by `DefinitionOf`.
+ */
+export type EditorExtensionDefinitionInput<
+  TEditor extends BaseEditor<any, any> = Editor,
+> = {
+  name: string;
+  enabled?: boolean;
+  dependencies?: readonly EditorExtensionReference[];
+  conflicts?: readonly EditorExtensionReference[];
+  schema?: EditorSchemaDeclaration | EditorExtensionSchemaFactory;
+  api?: EditorExtensionApiFactory<TEditor>;
   read?: EditorExtensionReadFactory<TEditor>;
-  /**
-   * Declare semantic command policy with the installed editor type already
-   * bound. Pass the descriptor first so input and state namespaces infer.
-   */
+  update?: EditorExtensionUpdateFactory<TEditor>;
+  readMiddleware?: EditorExtensionReadMiddlewareFactory<TEditor>;
   commands?: (
     context: EditorExtensionCommandContext<TEditor>
   ) => readonly EditorCommandRegistration<TEditor>[];
@@ -2013,33 +2374,27 @@ export type EditorExtension<
   effectTypes?: readonly EditorEffectType[];
   facetProviders?: readonly EditorFacetProvider[];
   selectionKinds?: readonly EditorSelectionSpec[];
-  /** Declarative capabilities. Factory evaluation must not mutate the editor. */
-  api?: EditorExtensionApiFactory<TEditor, TConfig> | EditorExtensionApiMap;
-  /** Ordered host values bound to typed extension points. */
-  contributions?: readonly EditorExtensionContribution<any>[];
-  /** Editor change observation grouped by lifecycle family. */
+  contributions?: readonly EditorExtensionContributionInput<NoInfer<TEditor>>[];
   on?: EditorExtensionChangeHandlers<TEditor>;
-  /** Own synchronous resources; defer published-state work with `afterPublish`. */
   activate?: (
     editor: TEditor,
-    context: EditorExtensionActivationContext<TConfig>
+    context: EditorExtensionActivationContext
   ) => void;
-  /** Validate the provisional immutable configuration before activation. */
-  validateConfiguration?: BivariantMethod<
-    [context: EditorExtensionConfigurationContext<TEditor, TConfig>],
+  validate?: BivariantMethod<
+    [context: EditorExtensionCandidateContext<TEditor>],
     void
   >;
 };
 
-export type EditorExtensionInput<TEditor extends BaseEditor<any> = Editor> =
-  | EditorExtension<TEditor, any>
-  | readonly EditorExtension<TEditor, any>[];
+export type EditorExtensionInput =
+  | EditorExtensionReference
+  | readonly EditorExtensionReference[];
 
 export type EditorExtensionSlotLike = Readonly<{
   key: string;
   of: <const TInput extends EditorExtensionInput>(
     input: TInput
-  ) => EditorExtension;
+  ) => EditorExtensionReference;
 }>;
 
 export type EditorSelectionMapContext = Readonly<{
@@ -2096,14 +2451,18 @@ export type EditorSelectionSpec<
 
 export type EditorExtensionTypes = {
   api?: Record<string, unknown>;
-  state?: Record<string, unknown>;
-  tx?: Record<string, unknown>;
+  read?: Record<string, unknown>;
+  update?: Record<string, unknown>;
 };
 
+/** Type lambda for value-sensitive extension capabilities. */
+export interface EditorExtensionTypeLambda {
+  readonly input: Value;
+  readonly output: EditorExtensionTypes;
+}
+
 export type EditorExtensionTypeProvider<
-  TProvider extends (editor: any) => EditorExtensionTypes = (
-    editor: Editor
-  ) => EditorExtensionTypes,
+  TProvider extends EditorExtensionTypeLambda,
 > = {
   readonly __editorExtensionTypes?: TProvider;
 };
@@ -2115,15 +2474,6 @@ type UnionToIntersection<T> = (
 ) extends (value: infer TIntersection) => void
   ? TIntersection
   : never;
-
-type EditorLiteralExtensionSlot<TSlot> =
-  NonNullable<TSlot> extends infer TNonNullable
-    ? TNonNullable extends object
-      ? string extends keyof TNonNullable
-        ? unknown
-        : TNonNullable
-      : unknown
-    : unknown;
 
 type EditorExtensionName<TExtension> = TExtension extends {
   name: infer TName extends PropertyKey;
@@ -2153,6 +2503,37 @@ type IsEqual<TLeft, TRight> =
     ? true
     : false;
 
+type EditorInstalledCapabilityForName<
+  TExtensions extends readonly unknown[],
+  TName extends PropertyKey,
+> = EditorResolvedInstalledExtensions<TExtensions>[number] extends infer TInstalled
+  ? TInstalled extends unknown
+    ? EditorExtensionCapabilityOf<TInstalled> extends infer TCapability
+      ? TCapability extends { name: TName }
+        ? TCapability
+        : never
+      : never
+    : never
+  : never;
+
+type EditorInstalledExtensionGuard<
+  TExtension,
+  TExtensions extends readonly unknown[],
+> =
+  EditorExtensionCapabilityOf<TExtension> extends infer TCapability
+    ? TCapability extends { name: infer TName extends PropertyKey }
+      ? [TCapability] extends [
+          EditorInstalledCapabilityForName<TExtensions, TName>,
+        ]
+        ? [EditorInstalledCapabilityForName<TExtensions, TName>] extends [
+            TCapability,
+          ]
+          ? unknown
+          : never
+        : never
+      : never
+    : never;
+
 type EditorExtensionEnabled<TExtension> = TExtension extends {
   enabled: infer TEnabled;
 }
@@ -2170,20 +2551,20 @@ type EditorResolvedExtensionAndDependencies<TExtension> =
   EditorExtensionEnabled<TExtension> extends infer TEnabled
     ? [TEnabled] extends [never]
       ? readonly []
-      : TEnabled extends {
-            dependencies?: infer TDependencies extends readonly unknown[];
-          }
-        ? readonly [
-            ...EditorResolvedInstalledExtensions<TDependencies>,
-            TEnabled,
-          ]
-        : readonly [TEnabled]
+      : readonly [EditorExtensionRequirementsOf<TEnabled> | TEnabled]
     : readonly [];
+
+type EditorResolvedArrayExtensionAndDependencies<TExtension> =
+  EditorExtensionEnabled<TExtension> extends infer TEnabled
+    ? TEnabled extends unknown
+      ? EditorExtensionRequirementsOf<TEnabled> | TEnabled
+      : never
+    : never;
 
 export type EditorResolvedInstalledExtensions<
   TExtensions extends readonly unknown[],
 > = number extends TExtensions['length']
-  ? readonly EditorExtensionEnabled<TExtensions[number]>[]
+  ? readonly EditorResolvedArrayExtensionAndDependencies<TExtensions[number]>[]
   : TExtensions extends readonly []
     ? readonly []
     : TExtensions extends readonly [
@@ -2209,36 +2590,24 @@ export type EditorResolvedInstalledExtensions<
                 ]
       : readonly [];
 
-type EditorStateSlotsFromExtension<TExtension> = TExtension extends {
-  state?: infer TState;
-}
-  ? EditorLiteralExtensionSlot<TState>
-  : unknown;
+type EditorDefinitionSlot<TExtension, TSlot extends 'api' | 'read' | 'update'> =
+  EditorExtensionCapabilityOf<TExtension> extends infer TDefinition
+    ? TDefinition extends object
+      ? TSlot extends keyof TDefinition
+        ? TDefinition[TSlot]
+        : unknown
+      : unknown
+    : unknown;
 
-type EditorTxSlotsFromExtension<TExtension> = TExtension extends {
-  tx?: infer TTx;
-}
-  ? EditorLiteralExtensionSlot<TTx>
-  : unknown;
-
-type EditorApiSlotsFromExtension<TExtension> = TExtension extends {
-  api?: infer TApi;
-}
-  ? TApi extends (...args: any[]) => infer TResult
-    ? EditorLiteralExtensionSlot<TResult>
-    : EditorLiteralExtensionSlot<TApi>
-  : unknown;
-
-type EditorProvidedTypesFromExtension<
-  V extends Value,
-  TExtension,
-> = TExtension extends {
-  readonly __editorExtensionTypes?: infer TProvider;
-}
-  ? TProvider extends (editor: Editor<V>) => infer TTypes
-    ? TTypes
-    : never
-  : never;
+type EditorProvidedTypesFromExtension<V extends Value, TExtension> =
+  IsAny<TExtension> extends true
+    ? never
+    : TExtension extends {
+          readonly __editorExtensionTypes?: infer TProvider extends
+            EditorExtensionTypeLambda;
+        }
+      ? (TProvider & Readonly<{ input: V }>)['output']
+      : never;
 
 type EditorProvidedSlot<
   V extends Value,
@@ -2253,85 +2622,72 @@ type EditorProvidedSlot<
       : never
     : never;
 
-type EditorStateGroupResult<TFactory> = TFactory extends (
-  ...args: any[]
-) => infer TResult
-  ? TResult
-  : never;
-
-type EditorTxGroupResult<TFactory> = TFactory extends (
-  ...args: any[]
-) => infer TResult
-  ? TResult
-  : never;
-
-type EditorStateGroupsFromExtension<
+type EditorReadGroupsFromExtension<
   V extends Value,
   TExtension,
 > = TExtension extends unknown
-  ? EditorProvidedSlot<V, TExtension, 'state'> extends infer TProvidedState
+  ? EditorProvidedSlot<V, TExtension, 'read'> extends infer TProvidedState
     ? [TProvidedState] extends [never]
-      ? EditorStateSlotsFromExtension<TExtension> extends infer TState
-        ? keyof TState extends never
+      ? EditorDefinitionSlot<TExtension, 'read'> extends infer TRead
+        ? [unknown] extends [TRead]
           ? never
-          : {
-              [K in keyof TState]: EditorStateGroupResult<TState[K]>;
-            }
+          : EditorLiteralExtensionName<TExtension> extends infer TName extends
+                PropertyKey
+            ? { [K in TName]: TRead }
+            : never
         : never
       : TProvidedState
     : never
   : never;
 
-type EditorTxGroupsFromExtension<
+type EditorUpdateGroupsFromExtension<
   V extends Value,
   TExtension,
 > = TExtension extends unknown
-  ? EditorProvidedSlot<V, TExtension, 'tx'> extends infer TProvidedTx
+  ? EditorProvidedSlot<V, TExtension, 'update'> extends infer TProvidedTx
     ? [TProvidedTx] extends [never]
-      ? EditorTxSlotsFromExtension<TExtension> extends infer TTx
-        ? keyof TTx extends never
+      ? EditorDefinitionSlot<TExtension, 'update'> extends infer TUpdate
+        ? [unknown] extends [TUpdate]
           ? never
-          : {
-              [K in keyof TTx]: EditorTxGroupResult<TTx[K]>;
-            }
+          : EditorLiteralExtensionName<TExtension> extends infer TName extends
+                PropertyKey
+            ? { [K in TName]: TUpdate }
+            : never
         : never
       : TProvidedTx
     : never
   : never;
 
-type EditorApiValue<TValue> = TValue extends readonly (infer TItem)[]
-  ? TItem
-  : TValue;
-
 type EditorApiGroupsFromExtension<TExtension> = TExtension extends unknown
   ? EditorProvidedSlot<Value, TExtension, 'api'> extends infer TProvidedApi
     ? [TProvidedApi] extends [never]
-      ? EditorApiSlotsFromExtension<TExtension> extends infer TApi
-        ? keyof TApi extends never
+      ? EditorDefinitionSlot<TExtension, 'api'> extends infer TApi
+        ? [unknown] extends [TApi]
           ? never
-          : {
-              [K in keyof TApi]: EditorApiValue<TApi[K]>;
-            }
+          : EditorLiteralExtensionName<TExtension> extends infer TName extends
+                PropertyKey
+            ? { [K in TName]: TApi }
+            : never
         : never
       : TProvidedApi
     : never
   : never;
 
-export type EditorInstalledStateGroups<
+export type EditorInstalledReadGroups<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = UnionToIntersection<
-  EditorStateGroupsFromExtension<
+  EditorReadGroupsFromExtension<
     V,
     EditorResolvedInstalledExtensions<TExtensions>[number]
   >
 >;
 
-export type EditorInstalledTxGroups<
+export type EditorInstalledUpdateGroups<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = UnionToIntersection<
-  EditorTxGroupsFromExtension<
+  EditorUpdateGroupsFromExtension<
     V,
     EditorResolvedInstalledExtensions<TExtensions>[number]
   >
@@ -2350,17 +2706,17 @@ export type EditorApiValueFromExtension<TExtension> =
     ? TExtension extends { name: infer TName }
       ? TName extends keyof TApi
         ? TApi[TName]
-        : TApi[keyof TApi]
-      : TApi[keyof TApi]
+        : never
+      : never
     : never;
 
 export type RegisteredEditorExtension = {
-  conflicts: readonly EditorExtension[];
-  dependencies: readonly EditorExtension[];
-  descriptor: EditorExtension;
+  conflicts: readonly EditorExtensionReference[];
+  dependencies: readonly EditorExtensionReference[];
+  descriptor: EditorExtensionReference;
   name: string;
   order: number;
-  requiredBy: ReadonlySet<EditorExtension>;
+  requiredBy: ReadonlySet<EditorExtensionReference>;
 };
 
 export type EditorExtensionRegistry = {
@@ -2379,10 +2735,10 @@ export type EditorExtensionRegistry = {
   }>;
   commitListeners: Set<EditorCommitListener>;
   contributions: Map<object, readonly unknown[]>;
-  dependencyOrder: readonly EditorExtension[];
+  dependencyOrder: readonly EditorExtensionReference[];
   extensions: Map<string, RegisteredEditorExtension>;
   extensionsByDescriptor: ReadonlyMap<
-    EditorExtension,
+    EditorExtensionReference,
     RegisteredEditorExtension
   >;
   nodeChangeListeners: Set<EditorNodeChangeHandler>;
@@ -3009,13 +3365,9 @@ export interface EditorStaticApi {
 
   extend: <TEditor extends Editor>(
     editor: TEditor,
-    extension: EditorExtensionInput<TEditor>,
+    extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => () => void;
-
-  defineEditorExtension: <TEditor extends BaseEditor<any> = Editor>(
-    extension: EditorExtension<TEditor>
-  ) => EditorExtension<TEditor>;
 
   replace: <V extends Value>(
     editor: Editor<V> | EditorView<V, any>,
@@ -3513,13 +3865,7 @@ const editorInternalApi: EditorInternalApiTable = {
   defineCommand: defineEditorCommand,
 
   extend(editor, extension, options) {
-    return extendEditorCore(editor, extension, options);
-  },
-
-  defineEditorExtension(extension) {
-    return defineEditorExtensionCore(
-      extension as EditorExtension<any, any>
-    ) as never;
+    return editor.extend(extension, options);
   },
 
   replace(editor, input) {
@@ -3711,7 +4057,6 @@ const {
   range,
   defineCommand,
   extend,
-  defineEditorExtension,
   replace,
   reset,
   removeMark,
@@ -3746,7 +4091,6 @@ export {
   before,
   collapse,
   defineCommand,
-  defineEditorExtension,
   deleteBackward,
   deleteEditor as delete,
   deleteForward,

@@ -108,7 +108,7 @@ export const MarkComboRules = {
 
 /** Enables support for bold formatting. */
 export const BaseBoldPlugin = createBasePlugin({
-  key: KEYS.bold,
+  name: KEYS.bold,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -125,6 +125,14 @@ export const BaseBoldPlugin = createBasePlugin({
           { style: { fontWeight: ['600', '700', 'bold'] } },
         ],
       },
+
+      'text/markdown': {
+        from: 'strong',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, { ...decoration, [type]: true }),
+      },
     }),
   render: { as: 'strong' },
   update: ({ tx, type }) => ({
@@ -136,7 +144,7 @@ export const BaseBoldPlugin = createBasePlugin({
 
 /** Enables support for code formatting. */
 export const BaseCodePlugin = createBasePlugin({
-  key: KEYS.code,
+  name: KEYS.code,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -154,6 +162,17 @@ export const BaseCodePlugin = createBasePlugin({
         encode: ({ value }) => (value ? { tag: 'code' } : null),
         match: [{ tag: 'code' }, { style: { fontFamily: 'Consolas' } }],
       },
+
+      'text/markdown': {
+        from: 'inlineCode',
+        kind: 'node',
+        mark: true,
+        decode: ({ decoration, node, type }) => ({
+          ...decoration,
+          [type]: true,
+          text: node.value,
+        }),
+      },
     }),
   render: { as: 'code' },
   rules: { selection: { affinity: 'hard' } },
@@ -169,7 +188,7 @@ export const BaseCodePlugin = createBasePlugin({
  * it for future reference.
  */
 export const BaseHighlightPlugin = createBasePlugin({
-  key: KEYS.highlight,
+  name: KEYS.highlight,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -179,6 +198,20 @@ export const BaseHighlightPlugin = createBasePlugin({
         decode: () => true,
         encode: ({ value }) => (value ? { tag: 'mark' } : null),
         match: [{ tag: 'mark' }],
+      },
+
+      'text/markdown': {
+        from: 'mark',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, { ...decoration, [type]: true }),
+        encode: ({ node }) => ({
+          attributes: [],
+          children: [{ type: 'text', value: node.text }],
+          name: 'mark',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   render: { as: 'mark' },
@@ -192,7 +225,7 @@ export const BaseHighlightPlugin = createBasePlugin({
 
 /** Enables support for italic formatting. */
 export const BaseItalicPlugin = createBasePlugin({
-  key: KEYS.italic,
+  name: KEYS.italic,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -206,6 +239,14 @@ export const BaseItalicPlugin = createBasePlugin({
         encode: ({ value }) => (value ? { tag: 'em' } : null),
         match: [{ tag: ['em', 'i'] }, { style: { fontStyle: 'italic' } }],
       },
+
+      'text/markdown': {
+        from: 'emphasis',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, { ...decoration, [type]: true }),
+      },
     }),
   render: { as: 'em' },
   update: ({ tx, type }) => ({
@@ -217,7 +258,7 @@ export const BaseItalicPlugin = createBasePlugin({
 
 /** Enables support for keyboard-input formatting. */
 export const BaseKbdPlugin = createBasePlugin({
-  key: KEYS.kbd,
+  name: KEYS.kbd,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -227,6 +268,20 @@ export const BaseKbdPlugin = createBasePlugin({
         decode: () => true,
         encode: ({ value }) => (value ? { tag: 'kbd' } : null),
         match: [{ tag: 'kbd' }],
+      },
+
+      'text/markdown': {
+        from: 'kbd',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, { ...decoration, [type]: true }),
+        encode: ({ node }) => ({
+          attributes: [],
+          children: [{ type: 'text', value: node.text }],
+          name: 'kbd',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   render: { as: 'kbd' },
@@ -240,7 +295,7 @@ export const BaseKbdPlugin = createBasePlugin({
 
 /** Enables subscript and superscript through one enum-valued mark. */
 export const BaseScriptPlugin = createBasePlugin({
-  key: KEYS.script,
+  name: KEYS.script,
   schema: {
     mark: property.enum(['sub', 'sup']),
   },
@@ -264,6 +319,28 @@ export const BaseScriptPlugin = createBasePlugin({
           { style: { verticalAlign: 'super' } },
         ],
       },
+
+      'text/markdown': [
+        {
+          from: 'sub',
+          kind: 'node',
+          mark: true,
+          decode: ({ decode, decoration, node, type }) =>
+            decode(node.children, { ...decoration, [type]: 'sub' }),
+          encode: ({ node, type }) => ({
+            attributes: [],
+            children: [{ type: 'text', value: node.text }],
+            name: node[type] === 'sub' ? 'sub' : 'sup',
+            type: 'mdxJsxTextElement',
+          }),
+        },
+        {
+          from: 'sup',
+          kind: 'node',
+          decode: ({ decode, decoration, node, type }) =>
+            decode(node.children, { ...decoration, [type]: 'sup' }),
+        },
+      ],
     }),
   rules: { selection: { affinity: 'directional' } },
   update: ({ tx, type }) => ({
@@ -275,7 +352,7 @@ export const BaseScriptPlugin = createBasePlugin({
 
 /** Enables support for strikethrough formatting. */
 export const BaseStrikethroughPlugin = createBasePlugin({
-  key: KEYS.strikethrough,
+  name: KEYS.strikethrough,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -295,6 +372,22 @@ export const BaseStrikethroughPlugin = createBasePlugin({
           { style: { textDecoration: 'line-through' } },
         ],
       },
+
+      'text/markdown': [
+        {
+          from: 'delete',
+          kind: 'node',
+          mark: true,
+          decode: ({ decode, decoration, node, type }) =>
+            decode(node.children, { ...decoration, [type]: true }),
+        },
+        {
+          from: 'del',
+          kind: 'node',
+          decode: ({ decode, decoration, node, type }) =>
+            decode(node.children, { ...decoration, [type]: true }),
+        },
+      ],
     }),
   render: { as: 's' },
   rules: { selection: { affinity: 'directional' } },
@@ -307,7 +400,7 @@ export const BaseStrikethroughPlugin = createBasePlugin({
 
 /** Enables support for underline formatting. */
 export const BaseUnderlinePlugin = createBasePlugin({
-  key: KEYS.underline,
+  name: KEYS.underline,
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -323,6 +416,20 @@ export const BaseUnderlinePlugin = createBasePlugin({
             : true,
         encode: ({ value }) => (value ? { tag: 'u' } : null),
         match: [{ tag: 'u' }, { style: { textDecoration: 'underline' } }],
+      },
+
+      'text/markdown': {
+        from: 'u',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, { ...decoration, [type]: true }),
+        encode: ({ node }) => ({
+          attributes: [],
+          children: [{ type: 'text', value: node.text }],
+          name: 'u',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   render: { as: 'u' },

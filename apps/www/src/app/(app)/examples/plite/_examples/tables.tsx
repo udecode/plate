@@ -12,7 +12,7 @@ import {
   Plite,
   usePliteEditor,
 } from '@platejs/plite-react';
-import type { CustomEditor, CustomValue } from './custom-types.d';
+import type { CustomValue } from './custom-types.d';
 
 const initialValue: CustomValue = [
   {
@@ -190,7 +190,7 @@ const TablesExample = () => {
 };
 
 const table = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'table',
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {

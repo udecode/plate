@@ -7,7 +7,6 @@ import {
   createTestEditor,
   getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
-import { defaultRules } from '../rules';
 import { buildMdastNode, convertNodesSerialize } from './convertNodesSerialize';
 
 describe('convertNodesSerialize', () => {
@@ -70,9 +69,7 @@ describe('convertNodesSerialize', () => {
     mockBoldNodeMd,
   ];
 
-  const baseOptions: SerializeMdContext = getTestSerializeOptions(editor, {
-    rules: defaultRules,
-  });
+  const baseOptions: SerializeMdContext = getTestSerializeOptions(editor);
 
   const expectMdNodes = (actual: MdRootContent[], expected: MdRootContent[]) =>
     expect(actual).toEqual(expected);
@@ -240,7 +237,7 @@ describe('convertNodesSerialize', () => {
   });
 
   describe('buildMdastNode', () => {
-    it('normalizes heading plugin keys before selecting the serializer', () => {
+    it('normalizes heading plugin names before selecting the serializer', () => {
       expect(
         buildMdastNode(
           {
@@ -260,7 +257,7 @@ describe('convertNodesSerialize', () => {
       ['h4', 4],
       ['h5', 5],
       ['h6', 6],
-    ] as const)('normalizes %s plugin keys before selecting the serializer', (type, depth) => {
+    ] as const)('normalizes %s plugin names before selecting the serializer', (type, depth) => {
       expect(
         buildMdastNode(
           {

@@ -14,7 +14,7 @@ describe('pipeRenderElementStatic', () => {
 
   it('uses the element plugin renderer before the fallback renderElement prop', () => {
     const ParagraphPlugin = createBasePlugin({
-      key: 'p',
+      name: 'p',
       type: 'p',
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
@@ -81,7 +81,7 @@ describe('pipeRenderElementStatic', () => {
 
   it('renders belowRootNodes around the default PliteElement output', () => {
     const RootPlugin = createBasePlugin({
-      key: 'root-extra',
+      name: 'root-extra',
       render: {
         belowRootNodes: () => <aside data-role="root" />,
       },

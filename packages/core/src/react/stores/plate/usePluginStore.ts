@@ -1,7 +1,10 @@
 import { useStoreWithEqualityFn } from 'zustand/traditional';
 
 import type {
-  AnyPluginConfig,
+  AnyBasePlugin,
+  AnyBasePluginDefinition,
+  AnyResolvedBasePlugin,
+  DefinitionOf,
   InferPluginStoreState,
   InferSelectors,
   PluginSelectorArgs,
@@ -9,21 +12,25 @@ import type {
   PluginReference,
 } from '../../../lib';
 import type { PlateEditor } from '../../editor';
+import type { AnyEditorPlatePlugin, AnyPlatePlugin } from '../../plugin';
 
 import { getPluginStore as getInternalPluginStore } from '../../../internal/plugin/pluginStore';
 import { useEditor } from './createPlateStore';
 
-type PluginStoreDescriptor<C extends AnyPluginConfig = AnyPluginConfig> =
-  PluginReference & {
-    readonly __config: C;
-  };
+type PluginStoreDescriptor = (
+  | AnyBasePlugin
+  | AnyEditorPlatePlugin
+  | AnyPlatePlugin
+  | AnyResolvedBasePlugin
+) &
+  PluginReference;
 
-type PluginStoreKey<C extends AnyPluginConfig> =
+type PluginStoreKey<C extends AnyBasePluginDefinition> =
   | keyof InferPluginStoreState<C>
   | keyof InferSelectors<C>;
 
 type PluginStoreValue<
-  C extends AnyPluginConfig,
+  C extends AnyBasePluginDefinition,
   K,
 > = K extends keyof InferSelectors<C>
   ? PluginSelectorReturn<InferSelectors<C>[K]>
@@ -32,16 +39,20 @@ type PluginStoreValue<
     : never;
 
 type PluginStoreArgs<
-  C extends AnyPluginConfig,
+  C extends AnyBasePluginDefinition,
   K,
 > = K extends keyof InferSelectors<C>
   ? PluginSelectorArgs<InferSelectors<C>[K]>
   : [];
 
+type ErasedPluginStateSelector = {
+  bivarianceHack(state: unknown): unknown;
+}['bivarianceHack'];
+
 /**
  * Subscribe to one plugin state field or named selector. Pass a selector
  * callback to derive directly from the plugin state. The plugin descriptor
- * carries the state and selector contract, so key-only objects are rejected.
+ * carries the state and selector contract, so name-only objects are rejected.
  *
  * @example
  *   const value = usePluginStore(plugin, 'value');
@@ -50,15 +61,15 @@ type PluginStoreArgs<
  */
 export function usePluginStore<
   P extends PluginStoreDescriptor,
-  K extends PluginStoreKey<P['__config']> = PluginStoreKey<P['__config']>,
+  K extends PluginStoreKey<DefinitionOf<P>> = PluginStoreKey<DefinitionOf<P>>,
 >(
   plugin: P,
   key: K,
-  ...args: PluginStoreArgs<P['__config'], K>
-): PluginStoreValue<P['__config'], K>;
+  ...args: PluginStoreArgs<DefinitionOf<P>, K>
+): PluginStoreValue<DefinitionOf<P>, K>;
 export function usePluginStore<P extends PluginStoreDescriptor, U = unknown>(
   plugin: P,
-  selector: (state: InferPluginStoreState<P['__config']>) => U,
+  selector: (state: InferPluginStoreState<DefinitionOf<P>>) => U,
   options?: {
     // Editor id. Default is the closest one.
     id?: string;
@@ -69,7 +80,7 @@ export function usePluginStore<P extends PluginStoreDescriptor, U = unknown>(
 
 export function usePluginStore(
   plugin: PluginStoreDescriptor,
-  keyOrSelector: PropertyKey | ((state: object) => unknown),
+  keyOrSelector: PropertyKey | ErasedPluginStateSelector,
   ...args: unknown[]
 ): unknown {
   const options =
@@ -83,20 +94,20 @@ export function usePluginStore(
 
 export function useEditorPluginStore<
   P extends PluginStoreDescriptor,
-  K extends PluginStoreKey<P['__config']> = PluginStoreKey<P['__config']>,
+  K extends PluginStoreKey<DefinitionOf<P>> = PluginStoreKey<DefinitionOf<P>>,
 >(
   editor: PlateEditor,
   plugin: P,
   key: K,
-  ...args: PluginStoreArgs<P['__config'], K>
-): PluginStoreValue<P['__config'], K>;
+  ...args: PluginStoreArgs<DefinitionOf<P>, K>
+): PluginStoreValue<DefinitionOf<P>, K>;
 export function useEditorPluginStore<
   P extends PluginStoreDescriptor,
   U = unknown,
 >(
   editor: PlateEditor,
   plugin: P,
-  selector: (state: InferPluginStoreState<P['__config']>) => U,
+  selector: (state: InferPluginStoreState<DefinitionOf<P>>) => U,
   options?: {
     // Equality function. Default is strict equality.
     equalityFn?: (a: U, b: U) => boolean;
@@ -105,7 +116,7 @@ export function useEditorPluginStore<
 export function useEditorPluginStore(
   editor: PlateEditor,
   plugin: PluginStoreDescriptor,
-  keyOrSelector: PropertyKey | ((state: object) => unknown),
+  keyOrSelector: PropertyKey | ErasedPluginStateSelector,
   ...args: unknown[]
 ): unknown {
   return useResolvedPluginStore(editor, plugin, keyOrSelector, args);
@@ -114,14 +125,18 @@ export function useEditorPluginStore(
 function useResolvedPluginStore(
   editor: PlateEditor,
   plugin: PluginStoreDescriptor,
-  keyOrSelector: PropertyKey | ((state: object) => unknown),
+  keyOrSelector: PropertyKey | ErasedPluginStateSelector,
   args: readonly unknown[]
 ): unknown {
-  const installed = editor.getPlugin(plugin);
-  const store = getInternalPluginStore(editor, installed.key);
+  const portal = editor.plugin(plugin);
+
+  if (!portal.installed) {
+    throw new Error(`Plate plugin "${plugin.name}" is not installed.`);
+  }
+  const store = getInternalPluginStore(editor, portal.plugin.name);
 
   if (!store) {
-    throw new Error(`Plate plugin "${plugin.key}" store is not installed.`);
+    throw new Error(`Plate plugin "${plugin.name}" store is not installed.`);
   }
 
   if (typeof keyOrSelector === 'function') {
@@ -132,15 +147,20 @@ function useResolvedPluginStore(
     return useStoreWithEqualityFn(store.base.store, keyOrSelector, equalityFn);
   }
 
-  const namedSelector = store.selectors[keyOrSelector as never] as
-    | ((state: object, ...selectorArgs: unknown[]) => unknown)
-    | undefined;
+  const namedSelector = (store.selectors as Record<PropertyKey, unknown>)[
+    keyOrSelector
+  ] as ((state: unknown, ...selectorArgs: unknown[]) => unknown) | undefined;
   const selector = namedSelector
-    ? (state: object) => namedSelector(state, ...args)
-    : (state: object) => {
+    ? (state: unknown) => namedSelector(state, ...args)
+    : (state: unknown) => {
+        if (typeof state !== 'object' || state === null) {
+          throw new Error(
+            `Plate plugin "${plugin.name}" store state must be an object.`
+          );
+        }
         if (!Object.hasOwn(state, keyOrSelector)) {
           throw new Error(
-            `Plate plugin "${plugin.key}" has no state field or selector "${String(keyOrSelector)}".`
+            `Plate plugin "${plugin.name}" has no state field or selector "${String(keyOrSelector)}".`
           );
         }
 

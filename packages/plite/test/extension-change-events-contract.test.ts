@@ -25,6 +25,37 @@ const section = (text: string) => ({
 });
 
 describe('extension change events', () => {
+  it('runs every installed lifecycle listener', () => {
+    const calls: string[] = [];
+    const editor = createEditor({
+      extensions: [
+        defineEditorExtension({
+          name: 'first-lifecycle-listener',
+          on: {
+            commit() {
+              calls.push('first');
+            },
+          },
+        }),
+        defineEditorExtension({
+          name: 'second-lifecycle-listener',
+          on: {
+            commit() {
+              calls.push('second');
+            },
+          },
+        }),
+      ],
+      initialValue: [paragraph('one')],
+    });
+
+    editor.update.text.insert('!', {
+      at: { offset: 3, path: [0, 0] },
+    });
+
+    assert.deepEqual(calls, ['first', 'second']);
+  });
+
   it('notifies node changes from committed semantic intents', () => {
     const events: unknown[] = [];
     const editor = createEditor({
@@ -313,7 +344,7 @@ describe('extension change events', () => {
         } as const,
       },
       id: 'change-event-default-insertion',
-      root: { content: schema.content.type('section') } as const,
+      root: schema.content.type('section'),
       unknown: 'reject',
       version: 1,
     });

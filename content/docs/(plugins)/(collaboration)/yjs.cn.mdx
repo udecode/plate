@@ -57,7 +57,7 @@ import { YjsPlugin } from "@platejs/yjs/react";
 import { createPlateEditor } from "platejs/react";
 
 const editor = createPlateEditor({
-  schema: { id: "yjs-example", version: 1 },
+  schemaIdentity: { id: "yjs-example", version: 1 },
   plugins: [
     YjsPlugin.configure({
       initialState: {
@@ -79,7 +79,7 @@ const editor = createPlateEditor({
 
 ### 配置提供者和光标
 
-把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `options` 配置。远程光标 hooks 从同一个 React 子路径导入。
+把你的提供者包装成 `YjsProviderLike`，然后通过插件的 `initialState` 配置。远程光标 hooks 从同一个 React 子路径导入。
 
 ```tsx
 import { useYjsRemoteCursors, YjsPlugin } from "@platejs/yjs/react";

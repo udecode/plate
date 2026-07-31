@@ -10,7 +10,7 @@ import {
 
 describe('pluginRenderTextStatic', () => {
   const CommentPlugin = createBasePlugin({
-    key: 'comment',
+    name: 'comment',
     type: 'comment',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -30,7 +30,7 @@ describe('pluginRenderTextStatic', () => {
     expect(
       pluginRenderTextStatic(
         editor,
-        editor.getPlugin(CommentPlugin)
+        editor.plugin(CommentPlugin).plugin
       )({
         attributes: { 'data-plite-node': 'text', ref: null },
         children: 'plain',
@@ -51,7 +51,7 @@ describe('pluginRenderTextStatic', () => {
     });
     const result = pluginRenderTextStatic(
       editor,
-      editor.getPlugin(CommentPlugin)
+      editor.plugin(CommentPlugin).plugin
     )({
       attributes: { 'data-plite-node': 'text', ref: null },
       children: 'hi',

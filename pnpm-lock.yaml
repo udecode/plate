@@ -1010,6 +1010,9 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
@@ -1134,6 +1137,12 @@ importers:
       '@platejs/plite-react':
         specifier: workspace:^
         version: link:../plite-react
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
+      '@types/unist':
+        specifier: ^3.0.3
+        version: 3.0.3
       '@udecode/react-hotkeys':
         specifier: workspace:*
         version: link:../udecode/react-hotkeys
@@ -1164,6 +1173,12 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
+      mdast-util-math:
+        specifier: 3.0.0
+        version: 3.0.0
+      mdast-util-mdx:
+        specifier: 3.0.0
+        version: 3.0.0
       mutative:
         specifier: ^1.1.0
         version: 1.3.0
@@ -1684,9 +1699,6 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
-      '@platejs/date':
-        specifier: workspace:*
-        version: link:../date
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
@@ -1699,9 +1711,6 @@ importers:
       '@udecode/utils':
         specifier: workspace:^
         version: link:../udecode/utils
-      lodash:
-        specifier: ^4.17.23
-        version: 4.17.23
       marked:
         specifier: ^15.0.12
         version: 15.0.12
@@ -1733,9 +1742,60 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/basic-nodes':
+        specifier: workspace:^
+        version: link:../basic-nodes
+      '@platejs/basic-styles':
+        specifier: workspace:^
+        version: link:../basic-styles
+      '@platejs/callout':
+        specifier: workspace:^
+        version: link:../callout
+      '@platejs/code-block':
+        specifier: workspace:^
+        version: link:../code-block
+      '@platejs/comment':
+        specifier: workspace:^
+        version: link:../comment
+      '@platejs/date':
+        specifier: workspace:^
+        version: link:../date
+      '@platejs/footnote':
+        specifier: workspace:^
+        version: link:../footnote
+      '@platejs/layout':
+        specifier: workspace:^
+        version: link:../layout
+      '@platejs/link':
+        specifier: workspace:^
+        version: link:../link
+      '@platejs/list':
+        specifier: workspace:^
+        version: link:../list
+      '@platejs/list-classic':
+        specifier: workspace:^
+        version: link:../list-classic
+      '@platejs/math':
+        specifier: workspace:^
+        version: link:../math
+      '@platejs/media':
+        specifier: workspace:^
+        version: link:../media
+      '@platejs/mention':
+        specifier: workspace:^
+        version: link:../mention
+      '@platejs/suggestion':
+        specifier: workspace:^
+        version: link:../suggestion
+      '@platejs/table':
+        specifier: workspace:^
+        version: link:../table
       '@platejs/test-utils':
         specifier: workspace:^
         version: link:../test-utils
+      '@platejs/toc':
+        specifier: workspace:^
+        version: link:../toc
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
@@ -1791,6 +1851,9 @@ importers:
       '@platejs/plite':
         specifier: workspace:^
         version: link:../plite
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../plite-dom
       '@platejs/plite-react':
         specifier: workspace:^
         version: link:../plite-react

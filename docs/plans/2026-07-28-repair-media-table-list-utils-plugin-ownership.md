@@ -492,7 +492,7 @@ Review matrix:
 | table test plugin factory | 4 | repaired | package test utility | plugin array and special override infer without callback `any` | done |
 | `list/BaseListPlugin` + React adapter | 4 | split | Base/React owners | Base is renderer-neutral `.ts`; live JSX wrapper belongs to `ListPlugin.tsx` | root reruns focused suites |
 | `list/useTodoListElement` | 3 | repaired | hook family | consuming hook acquires editor directly | done |
-| `utils/BlockPlaceholderPlugin` | 4 | split hook family | plugin plus `useBlockPlaceholder` | hook family extracted; exact context comes from reusable base descriptor plus `WithAnyKey` | root reruns focused suite |
+| `utils/BlockPlaceholderPlugin` | 4 | split hook family | plugin plus `useBlockPlaceholder` | hook family extracted; exact context comes from reusable base descriptor plus `WithAnyName` | root reruns focused suite |
 
 Best Plate v2 recommendation:
 | Target | Recommended shape | Rejected legacy/hack alternatives | Reason | User-review need |
@@ -616,7 +616,7 @@ Decisions and tradeoffs:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| Utils hook manual `PluginConfig` narrowed contextual `read`/schema | 3 | derive exact base config and apply `WithAnyKey` | resolved without casts |
+| Utils hook manual `PluginConfig` narrowed contextual `read`/schema | 3 | derive exact base config and apply `WithAnyName` | resolved without casts |
 | Focused runtime suites stop on missing Core source barrels | 3 | do not patch foreign owner; hand exact blocker to root | pending root regeneration |
 | Four package typechecks stop on Core input-rule/barrel and Plite React errors | 3 | filter package-local diagnostics and freeze assigned source | no Media/Table/Utils local errors; List React split files clean |
 

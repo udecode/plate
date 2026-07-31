@@ -30,7 +30,7 @@ const createSeededRandom = (initialSeed: number) => {
 const assertEditorIntegrity = (editor: Editor) => {
   const value = editor.read.value();
 
-  editor.read.schema.validateDocument(value);
+  editor.read.schema.assertDocument(value);
 
   const selection = editor.read.selection();
 

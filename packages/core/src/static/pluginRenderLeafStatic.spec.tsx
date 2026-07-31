@@ -10,7 +10,7 @@ import {
 
 describe('pluginRenderLeafStatic', () => {
   const HighlightPlugin = createBasePlugin({
-    key: 'highlight',
+    name: 'highlight',
     type: 'highlight',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -29,7 +29,7 @@ describe('pluginRenderLeafStatic', () => {
     expect(
       pluginRenderLeafStatic(
         editor,
-        editor.getPlugin(HighlightPlugin)
+        editor.plugin(HighlightPlugin).plugin
       )({
         attributes: {},
         children: 'plain',
@@ -50,7 +50,7 @@ describe('pluginRenderLeafStatic', () => {
     });
     const result = pluginRenderLeafStatic(
       editor,
-      editor.getPlugin(CustomLeafPlugin)
+      editor.plugin(CustomLeafPlugin).plugin
     )({
       attributes: {},
       children: 'hi',
@@ -61,7 +61,7 @@ describe('pluginRenderLeafStatic', () => {
     expect(result).toEqual(
       expect.objectContaining({
         props: expect.objectContaining({ children: 'hi' }),
-        type: editor.getPlugin(CustomLeafPlugin).render.leaf,
+        type: editor.plugin(CustomLeafPlugin).plugin.render.leaf,
       })
     );
   });

@@ -13,7 +13,6 @@ registries finish a descriptor with one terminal `.configure()` call, including
 | --- | --- | --- |
 | `.extend()` | Adapt an imported/prebuilt descriptor, use a constructor-inaccessible shared factory, or consume an earlier-stage type. | Widens the plugin type. |
 | `.configure()` | Override existing fields for one consumer. | Terminal and non-widening. |
-| `.clone()` | Copy a plugin definition. | Returns a new plugin object. |
 
 `createBasePlugin()` and `createPlatePlugin()` own every independent author
 contribution:
@@ -21,11 +20,11 @@ contribution:
 | Field | Owns |
 | --- | --- |
 | `initialState` | The seed for this plugin's editor-local store. |
-| `api` | Immutable plugin-scoped services and queries. |
+| `api` | Factory for immutable plugin-scoped services and queries. |
 | `read` | Snapshot or transaction-local reads. |
 | `selectors` | Pure state-first derivations, including React subscriptions. |
 | `update` | Transaction-bound plugin mutations. |
-| `extension` | Plite runtime capabilities, including editor-wide groups. |
+| Native Plite fields | Read middleware, commands, corrections, state/effect/facet/selection descriptors, contributions, lifecycle, activation, and validation. |
 | `codecs` | Plugin-owned format decoding and encoding. |
 
 Callbacks receive the inferred [Plugin Context](/docs/plugin-context), including
@@ -45,29 +44,19 @@ export type CounterPluginState = {
   value: number;
 };
 
-type CounterApi = {
-  isEmpty: () => boolean;
-};
-
-type CounterUpdate = {
-  insertLabel: () => void;
-};
-
-const initialState: CounterPluginState = {
-  value: 0,
-};
-
 export const CounterPlugin = createPlatePlugin({
-  api: ({ store }): CounterApi => ({
+  api: ({ store }) => ({
     isEmpty: () => store.get('value') === 0,
   }),
-  initialState,
-  key: 'counter',
+  initialState: {
+    value: 0,
+  } satisfies CounterPluginState,
+  name: 'counter',
   selectors: {
     doubled: (state, factor: number) => state.value * factor,
     isEven: (state) => state.value % 2 === 0,
   },
-  update: ({ store, tx }): CounterUpdate => ({
+  update: ({ store, tx }) => ({
     insertLabel: () => {
       tx.text.insert(`Count: ${store.get('value')}`);
     },
@@ -86,11 +75,10 @@ export function CounterValue() {
 }
 ```
 
-Optional return annotations describe each contributed field. For `update`, the
-annotation is the command object returned by the callback, not the callback
-itself. Omit it when the full contract is inferred.
+Let the constructor infer contributed API, read, selector, and update groups.
+Keep an exported state type only when package consumers need that contract.
 
-After resolution, concrete editors expose the plugin API on its readable key.
+After resolution, concrete editors expose the plugin API under its readable name.
 Generic package code uses the typed portal.
 
 ```ts
@@ -106,8 +94,8 @@ transaction group:
 .extend(({ plugin }) => ({
   update: ({ tx }) => ({
     insertPair: () => {
-      tx[plugin.key].insertLabel();
-      tx[plugin.key].insertLabel();
+      tx[plugin.name].insertLabel();
+      tx[plugin.name].insertLabel();
     },
   }),
 }))
@@ -117,57 +105,52 @@ Calling a portal one-shot update there would open a nested transaction.
 
 ## Install Plite Capabilities
 
-Put generic editor substrate under the `extension` field: schema facts, state,
-commands, corrections, query middleware, and runtime services. Raw extension
-options without `name` inherit the plugin key.
+Declare generic editor substrate directly on the plugin: schema, commands,
+corrections, read middleware, state/effect/facet/selection descriptors,
+contributions, lifecycle, activation, and validation.
 
 ```ts title="single-line-plugin.ts" showLineNumbers
 import { createBasePlugin, editorCommands } from 'platejs';
 
 export const SingleLinePlugin = createBasePlugin({
-  extension: {
-    commands: ({ handle }) => [
-      handle(editorCommands.insertBreak, ({ state }) =>
-        state.transaction(() => {})
-      ),
-    ],
-  },
-  key: 'singleLine',
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) =>
+      state.transaction(() => {})
+    ),
+  ],
+  name: 'singleLine',
 });
 ```
 
-Plate context-dependent extension callbacks stay inside the `extension` field,
-where commands, inputs, state, transactions, dependencies, and plugin state are
-contextually typed. Extract domain logic instead of passing the plugin context
-through a typing factory:
+Native callbacks receive only their Plite capability context. When one needs
+an earlier plugin-owned store, read, API, or update group, add one staged
+`.extend()` and close over that capability. Do not pass owner context through a
+new helper parameter:
 
 ```ts title="trigger-plugin.ts" showLineNumbers
 import { createBasePlugin, editorCommands } from 'platejs';
 
-const shouldHandleTrigger = (enabled: boolean) => enabled;
-
 export const TriggerPlugin = createBasePlugin({
   initialState: { enabled: true },
-  key: 'trigger',
-  extension: ({ store }) => ({
-    commands: ({ handle }) => [
-      handle(editorCommands.insertBreak, ({ state }) => {
-        if (!shouldHandleTrigger(store.get('enabled'))) return false;
+  name: 'trigger',
+}).extend(({ store }) => ({
+  commands: ({ handle }) => [
+    handle(editorCommands.insertBreak, ({ state }) => {
+      if (!store.get('enabled')) return false;
 
-        return state.transaction(() => {});
-      }),
-    ],
-  }),
-});
+      return state.transaction(() => {});
+    }),
+  ],
+}));
 ```
 
 For an independently reusable Plite descriptor, import
-`defineEditorExtension` from `@platejs/plite` and pass the descriptor to the
-plugin's `extension` field.
+`defineEditorExtension` from `@platejs/plite` and list the descriptor in
+`dependencies`.
 
-A genuinely unkeyed editor-wide capability also belongs under `extension`.
-Plugin-specific API stays under `api`; do not publish the same implementation
-twice.
+Plugin-specific and editor-wide host services share the root `api` channel;
+Plite projects that API under the plugin name. Do not publish the same
+implementation twice.
 
 ## Declare Product Codecs
 
@@ -187,7 +170,7 @@ export const RecordsPlugin = createBasePlugin({
         encode: ({ slice }) => JSON.stringify(slice),
       },
     }),
-  key: 'records',
+  name: 'records',
 });
 ```
 
@@ -258,11 +241,11 @@ const initialState: CellPluginState = {
 
 const CellPlugin = createPlatePlugin({
   initialState,
-  key: 'cell',
+  name: 'cell',
 });
 
 const GridPlugin = createPlatePlugin({
-  key: 'grid',
+  name: 'grid',
   dependencies: [CellPlugin],
 });
 
@@ -272,33 +255,34 @@ export const AppGridPlugins = [
 ];
 ```
 
-Optional capabilities are ordinary array entries. Two explicit descriptors
-with the same key are an error; array order is not an override mechanism.
+Optional capabilities are ordinary array entries. Terminal configurations
+derived from the same authored plugin compose in array order: earlier fields
+survive unless a later configuration defines the same field. Unrelated plugins
+and divergent authoring branches cannot share a name.
 
 ## Convert Plite Plugins
 
-Use `toPlatePlugin()` for a semantic base whose remaining work is React-only.
+Use `toPlatePlugin()` in the owning React entrypoint to publish a reusable
+Plate descriptor or add Plate-only behavior. App consumers do not insert a
+conversion merely to set a component.
 
-```tsx title="mention-plugin.tsx" showLineNumbers
-import { createBasePlugin, schema } from 'platejs';
-import { toPlatePlugin } from 'platejs/react';
+```tsx title="script-plugin.tsx" showLineNumbers
+import { BaseScriptPlugin } from '@platejs/basic-nodes';
+import { KEYS } from 'platejs';
+import { PlateLeaf, toPlatePlugin } from 'platejs/react';
 
-import { MentionElement } from '@/components/ui/mention-node';
-
-const BaseMentionPlugin = createBasePlugin({
-  key: 'mention',
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-      inline: true,
-    },
-  },
+export const ScriptPlugin = toPlatePlugin(BaseScriptPlugin, {
+  component: (props) => (
+    <PlateLeaf
+      {...props}
+      as={props.leaf[KEYS.script] === 'sub' ? 'sub' : 'sup'}
+    >
+      {props.children}
+    </PlateLeaf>
+  ),
 });
-
-export const MentionPlugin =
-  toPlatePlugin(BaseMentionPlugin).configure({ component: MentionElement });
 ```
 
-The converted plugin keeps the same authoring model: initial behavior in the
-constructor, imported or staged work in `.extend()`, then one terminal
-`.configure({ component })`.
+The package's React owner publishes `ScriptPlugin`; static/RSC code can bind a
+server-safe component directly on `BaseScriptPlugin` without importing
+`platejs/react`.

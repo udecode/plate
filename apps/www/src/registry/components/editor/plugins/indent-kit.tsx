@@ -8,7 +8,7 @@ export const IndentKit = [
     initialState: {
       offset: 24,
     },
-    targetPluginKeys: [
+    targetPluginNames: [
       ...KEYS.heading,
       KEYS.p,
       KEYS.blockquote,

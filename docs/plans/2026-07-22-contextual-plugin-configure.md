@@ -53,7 +53,7 @@ Constraints:
 - Keep one plan as the default artifact; add a machine-readable artifact only
   when it materially improves a large audit.
 - Contextual configuration cannot define `config`, `schema`, `type`,
-  `targetPluginKeys`, parsers, host semantics, nested plugins, or decoration
+  `targetPluginNames`, parsers, host semantics, nested plugins, or decoration
   classification.
 - Do not edit generated registry output, templates, or unrelated migration
   surfaces.

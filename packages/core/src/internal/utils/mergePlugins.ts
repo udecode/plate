@@ -2,7 +2,7 @@ import mergeWith from 'lodash/mergeWith.js';
 
 import type { BasePlugin } from '../../lib';
 
-type NominalPluginReference = Readonly<{ key: string; type: string }>;
+type NominalPluginReference = Readonly<{ name: string; type: string }>;
 
 const pluginDescriptors = new WeakSet<object>();
 const pluginSchemaFamilies = new WeakMap<object, object>();
@@ -147,13 +147,13 @@ export const getHtmlCodecSchemaFamilies = (
 ) => htmlCodecSchemaFamilies.get(extension);
 
 const hasStringIdentity = (value: object): value is NominalPluginReference => {
-  const key = Object.getOwnPropertyDescriptor(value, 'key');
+  const name = Object.getOwnPropertyDescriptor(value, 'name');
   const type = Object.getOwnPropertyDescriptor(value, 'type');
 
   return (
-    !!key &&
-    Object.hasOwn(key, 'value') &&
-    typeof key.value === 'string' &&
+    !!name &&
+    Object.hasOwn(name, 'value') &&
+    typeof name.value === 'string' &&
     !!type &&
     Object.hasOwn(type, 'value') &&
     typeof type.value === 'string'
@@ -212,8 +212,45 @@ const cloneFrozenPluginDescriptor = <T>(
   return Object.freeze(clone) as T;
 };
 
+const isDeepFrozenDataValue = (
+  value: unknown,
+  seen = new WeakSet<object>()
+): boolean => {
+  if (!value || typeof value !== 'object') return true;
+  if (seen.has(value)) return true;
+
+  const prototype = Object.getPrototypeOf(value);
+
+  if (
+    prototype !== Object.prototype &&
+    prototype !== null &&
+    !Array.isArray(value)
+  ) {
+    return true;
+  }
+  if (!Object.isFrozen(value)) return false;
+
+  seen.add(value);
+
+  return Reflect.ownKeys(value).every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+
+    return (
+      !!descriptor &&
+      Object.hasOwn(descriptor, 'value') &&
+      isDeepFrozenDataValue(descriptor.value, seen)
+    );
+  });
+};
+
 export const freezePluginDescriptorValue = <T>(value: T): T =>
-  typeof value === 'function' ? value : cloneFrozenPluginDescriptor(value);
+  typeof value === 'function' ||
+  (value !== null &&
+    typeof value === 'object' &&
+    typeof Reflect.get(value, 'name') === 'string' &&
+    isDeepFrozenDataValue(value))
+    ? value
+    : cloneFrozenPluginDescriptor(value);
 
 function lockPluginSchema(value: object) {
   const descriptor = Object.getOwnPropertyDescriptor(value, 'schema');

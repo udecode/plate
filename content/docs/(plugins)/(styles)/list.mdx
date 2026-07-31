@@ -73,11 +73,11 @@ import { ParagraphPlugin } from 'platejs/react';
 import { BlockList } from '@/components/ui/block-list';
 
 const CustomListPlugin = ListPlugin.configure({
-  targetPluginKeys: [
+  targetPluginNames: [
     ...KEYS.heading,
-    ParagraphPlugin.key,
-    BlockquotePlugin.key,
-    CodeBlockPlugin.key,
+    ParagraphPlugin.name,
+    BlockquotePlugin.name,
+    CodeBlockPlugin.name,
   ],
   inputRules: [
     BulletedListRules.markdown({ variant: '-' }),

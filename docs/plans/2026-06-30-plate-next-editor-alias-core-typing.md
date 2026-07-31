@@ -16,7 +16,7 @@ Completion threshold:
   `api.debug.log` and tx groups such as `tx.history.undo`.
 - Unparameterized `BaseEditor` and `PlateEditor` reject fake API/tx property
   access in `packages/core/type-tests`.
-- `KeyofPlugins` includes core plugin keys again.
+- `NameofPlugins` includes core plugin keys again.
 - Broad runtime/helper sites that intentionally need open plugin typing say
   `<any, any>` explicitly instead of relying on unsafe alias defaults.
 - Focused type proof, Core typecheck, Core lint, turbo Core typecheck, and
@@ -29,7 +29,7 @@ Verification surface:
 - `pnpm turbo typecheck --filter=./packages/core`
 - `pnpm check:core`
 - Source audit:
-  `rg --pcre2 -n "P extends AnyPluginConfig = any|V extends Value = any|= PlateEditor;$|= BaseEditor;$|: PlateEditor(?!<)|: BaseEditor(?!<)|extends PlateEditor(?!<)|extends BaseEditor(?!<)|notARealCoreApi|notARealCoreTx|KeyofPlugins" packages/core/src packages/core/type-tests --glob '!**/dist/**'`
+  `rg --pcre2 -n "P extends AnyPluginConfig = any|V extends Value = any|= PlateEditor;$|= BaseEditor;$|: PlateEditor(?!<)|: BaseEditor(?!<)|extends PlateEditor(?!<)|extends BaseEditor(?!<)|notARealCoreApi|notARealCoreTx|NameofPlugins" packages/core/src packages/core/type-tests --glob '!**/dist/**'`
 
 Constraints:
 - Best Plate v2 shape only: no legacy compatibility alias, no fake public shim.
@@ -63,7 +63,7 @@ Start Gates:
 | Broad Core drift ledger initialized when in scope | no | N/A: broad sweep not requested. |
 | Source of truth recorded | yes | `/Users/zbeyens/git/plate-2`, source under `packages/core`. |
 | Gap policy checked | yes | No Plite/Plate capability gap found. |
-| Related Core sweep policy checked | yes | Swept unsafe plugin defaults, bare editor alias sites, fake API/tx contracts, and `KeyofPlugins`. |
+| Related Core sweep policy checked | yes | Swept unsafe plugin defaults, bare editor alias sites, fake API/tx contracts, and `NameofPlugins`. |
 | Review-mode rename freeze checked | yes | No renames. |
 
 Work Checklist:
@@ -99,7 +99,7 @@ Completion Gates:
 | Related Core sweep after correction | yes | Run same-class search/review | Unsafe default and bare alias audit completed; broad sites made explicit. |
 | Package/API proof | yes | Run focused type/lint/check proof | All named commands pass. |
 | Non-Core package error triage | no | Record N/A | Core-only packet. |
-| Source audit | yes | Run exact audit for unsafe defaults and fake API probes | Audit only returns expected generic defaults, `KeyofPlugins`, and intentional negative type-test probes. |
+| Source audit | yes | Run exact audit for unsafe defaults and fake API probes | Audit only returns expected generic defaults, `NameofPlugins`, and intentional negative type-test probes. |
 | Rename ledger | no | Record N/A | No rename pass. |
 | Extracted-file inventory | yes | Record new file bucket | `editor-alias-core-contracts.ts` is justified new proof tooling. |
 | Autoreview / review | no | Record N/A | Focused type-only fix; package proof substituted. |
@@ -111,7 +111,7 @@ Phase / pass table:
 | Phase | Status | Evidence |
 |-------|--------|----------|
 | checkpoint zero | done | Prompt requirements copied before closeout. |
-| type design | done | Plugin generic default changed from unsafe `any` to strict `unknown`; core plugins restored into `KeyofPlugins`. |
+| type design | done | Plugin generic default changed from unsafe `any` to strict `unknown`; core plugins restored into `NameofPlugins`. |
 | implementation | done | Editor aliases patched and broad runtime/helper type positions made explicit. |
 | proof | done | Core type/lint/check commands pass. |
 | handoff | done | Changed list, risks, and next owner recorded. |
@@ -141,7 +141,7 @@ Related Core sweep ledger:
 |--------------------|----------------------|---------|---------|----------|----------------|
 | Unsafe plugin default | `rg "P extends AnyPluginConfig = any"` in Core src/type-tests | 0 after patch | `BaseEditor` / `PlateEditor` defaults changed to `unknown` | 0 | None known. |
 | Bare alias sites now strict | PCRE audit for bare `BaseEditor` / `PlateEditor` type positions | All broad helper/store sites reviewed by compiler | Broad sites changed to explicit `<any, any>` | 0 | Some broad sites could later become stricter, but not required for this packet. |
-| Core plugin keys missing | `KeyofPlugins` source review and type contract | 1 owner | `KeyofPlugins` includes `CorePluginConfig` | 0 | None known. |
+| Core plugin keys missing | `NameofPlugins` source review and type contract | 1 owner | `NameofPlugins` includes `CorePluginConfig` | 0 | None known. |
 | Fake API/tx accepted | Negative type-test probes | 4 probes | Added `@ts-expect-error` contract | 0 | None known. |
 
 Core drift ledger:
@@ -163,7 +163,7 @@ Extracted file ledger:
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | Tightened `BaseEditor` / `PlateEditor` plugin defaults; restored core plugin keys in `KeyofPlugins`; made broad editor type sites explicit. |
+| code/runtime/API | Tightened `BaseEditor` / `PlateEditor` plugin defaults; restored core plugin keys in `NameofPlugins`; made broad editor type sites explicit. |
 | tests/proof | Added `editor-alias-core-contracts.ts` type contract. |
 | docs/templates/skills | Updated this autogoal plan only. |
 | reverted/quarantined packets | None. |
@@ -178,7 +178,7 @@ Findings:
   plugin API/tx surface and made fake APIs compile.
 - Keeping `V = any` is still pragmatic because many Core runtime surfaces need
   broad value assignability while package migration is active.
-- `KeyofPlugins<T>` must include `CorePluginConfig | T`, or unparameterized
+- `NameofPlugins<T>` must include `CorePluginConfig | T`, or unparameterized
   editor aliases lose core plugin keys.
 
 Decisions and tradeoffs:
@@ -202,11 +202,11 @@ Verification evidence:
 - `pnpm turbo typecheck --filter=./packages/core` passed.
 - `pnpm check:core` passed with `1872 pass`, `85 skip`, `0 fail`.
 - Source audit passed with only expected matches: value generic defaults,
-  `KeyofPlugins`, comments, and intentional negative type-test probes.
+  `NameofPlugins`, comments, and intentional negative type-test probes.
 
 Final handoff contract:
 - target surface and mode: named Core editor alias type packet.
-- files/APIs reviewed: `BaseEditor`, `PlateEditor`, `KeyofPlugins`, broad
+- files/APIs reviewed: `BaseEditor`, `PlateEditor`, `NameofPlugins`, broad
   Core editor type slots, and new type contract.
 - broad Core drift score coverage: N/A, not requested.
 - best Plate v2 recommendation: strict plugin generic default `unknown`; broad
@@ -214,7 +214,7 @@ Final handoff contract:
 - verdict matrix summary: keep all changes.
 - Plite/Plate gaps or blockers: none.
 - related Core sweep query/matches/patched/deferred: unsafe generic, bare alias,
-  `KeyofPlugins`, and fake API/tx probes swept with no deferred blockers.
+  `NameofPlugins`, and fake API/tx probes swept with no deferred blockers.
 - changes made: see Changed list.
 - tests/proof commands: see Verification evidence.
 - old compatibility names audited: unsafe plugin default and bare broad aliases

@@ -3,20 +3,20 @@ title: 插件配置
 description: 如何配置和自定义Plate插件。
 ---
 
-Plate插件具有高度可配置性，允许您根据需要定制其行为。本指南将介绍最常见的配置选项及使用方法。
+Plate 插件具有高度可配置性，允许您根据需要定制其行为。本指南将介绍最常见的配置选项及使用方法。
 
 - [入门指南：组件](/docs/installation#components) - 添加插件到编辑器的说明
-- [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整API参考
+- [PlatePlugin API](/docs/api/core/plate-plugin) - 创建插件的完整 API 参考
 
 ## 基础插件配置
 
 ### 新建插件
 
-最基本的插件配置只需一个`key`：
+最基本的插件配置只需一个`name`：
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'minimal',
+  name: "minimal",
 });
 ```
 
@@ -29,7 +29,7 @@ const MyPlugin = createPlatePlugin({
 ```ts
 const ConfiguredPlugin = MyPlugin.configure({
   initialState: {
-    myOption: 'new value',
+    myOption: "new value",
   },
 });
 ```
@@ -44,13 +44,13 @@ Schema 插件在顶层声明文档类型，并在 `schema` 下声明模型行为
 使用 `schema.element` 声明新元素类型：
 
 ```ts
-import { schema } from 'platejs';
+import { schema } from "platejs";
 
 const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  type: 'p',
+  name: "p",
+  type: "p",
   schema: {
-    element: { content: schema.content.text({ default: 'text', min: 1 }) },
+    element: { content: schema.content.text({ default: "text", min: 1 }) },
   },
 });
 ```
@@ -58,13 +58,13 @@ const ParagraphPlugin = createPlatePlugin({
 您可以为元素关联组件。详见[插件组件](/docs/plugin-components)。
 
 ```ts
-import { schema } from 'platejs';
+import { schema } from "platejs";
 
 const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
-  type: 'p',
+  name: "p",
+  type: "p",
   schema: {
-    element: { content: schema.content.text({ default: 'text', min: 1 }) },
+    element: { content: schema.content.text({ default: "text", min: 1 }) },
   },
 }).configure({ component: ParagraphElement });
 ```
@@ -74,27 +74,27 @@ const ParagraphPlugin = createPlatePlugin({
 元素行为位于 `schema.element` 中。使用 `schema.mark` 下的属性描述符声明布尔文本属性：
 
 ```ts
-import { property, schema } from 'platejs';
+import { property, schema } from "platejs";
 
 const LinkPlugin = createPlatePlugin({
-  key: 'link',
-  type: 'a',
+  name: "link",
+  type: "a",
   schema: {
     element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
+      content: schema.content.text({ default: "text", min: 1 }),
       inline: true,
     },
   },
 });
 
 const ImagePlugin = createPlatePlugin({
-  key: 'image',
-  type: 'img',
-  schema: { element: { void: 'block' } },
+  name: "image",
+  type: "img",
+  schema: { element: { void: "block" } },
 });
 
 const BoldPlugin = createPlatePlugin({
-  key: 'bold',
+  name: "bold",
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -103,7 +103,7 @@ const BoldPlugin = createPlatePlugin({
 
 ## 行为插件
 
-除了声明元素或文本属性外，您可能还想自定义编辑器的行为。Plate提供了多种插件选项来修改编辑器行为。
+除了声明元素或文本属性外，您可能还想自定义编辑器的行为。Plate 提供了多种插件选项来修改编辑器行为。
 
 ### 插件规则
 
@@ -112,11 +112,11 @@ const BoldPlugin = createPlatePlugin({
 例如，您可以定义当用户在空标题中按`Enter`或在块引用开头按`Backspace`时发生的情况。
 
 ```ts
-import { H1Plugin } from '@platejs/heading/react';
+import { H1Plugin } from "@platejs/heading/react";
 
 H1Plugin.configure({
   rules: {
-    break: { empty: 'reset' },
+    break: { empty: "reset" },
   },
 });
 ```
@@ -125,41 +125,43 @@ H1Plugin.configure({
 
 ### 事件处理器
 
-推荐通过`handlers`插件选项响应插件内部用户生成的事件。处理器应是一个接收`PlatePluginContext & { event }`对象的函数。
+插件的 `on` 字段同时管理 editor lifecycle 和 React DOM 事件。DOM handler
+接收 `PlatePluginContext & { event }` 对象。
 
-`onChange`处理器（当编辑器值变化时调用）是个例外，其上下文对象包含变化的`value`而非`event`。
+子项名称不重复 `on` 前缀。Lifecycle handler 使用 `commit`、`nodeChange`
+和 `textChange`；DOM handler 使用 `keyDown`、`paste` 和 `click`。
 
 ```ts showLineNumbers
 const ExamplePlugin = createPlatePlugin({
-  handlers: {
-    onChange: ({ editor, value })  => {
-      console.info(editor, value);
+  on: {
+    commit: ({ editor, snapshot }) => {
+      console.info(editor, snapshot.children);
     },
-    onKeyDown: ({ editor, event }) => {
+    keyDown: ({ editor, event }) => {
       console.info(`You pressed ${event.key}`);
     },
   },
-  key: 'example',
+  name: "example",
 });
 ```
 
 ### 注入属性
 
-您可能希望向具有特定属性的任何节点注入类名或CSS属性。例如，以下插件为具有`align`属性的段落设置`textAlign` CSS属性。
+您可能希望向具有特定属性的任何节点注入类名或 CSS 属性。例如，以下插件为具有`align`属性的段落设置`textAlign` CSS 属性。
 
 ```ts showLineNumbers
-import { KEYS, property, target } from 'platejs';
+import { KEYS, property, target } from "platejs";
 
 const TextAlignPlugin = createPlatePlugin({
   codecs: ({ defineCodecs }) =>
     defineCodecs({
-      'text/html': {
+      "text/html": {
         decode: ({ element }) => element.style.textAlign || undefined,
         encode: ({ value }) => ({ style: { textAlign: value } }),
         match: [
           {
             style: {
-              textAlign: ['start', 'left', 'center', 'right', 'end', 'justify'],
+              textAlign: ["start", "left", "center", "right", "end", "justify"],
             },
           },
         ],
@@ -168,28 +170,28 @@ const TextAlignPlugin = createPlatePlugin({
   inject: {
     isBlock: true,
     nodeProps: {
-      defaultNodeValue: 'start',
-      styleKey: 'textAlign',
-      validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
+      defaultNodeValue: "start",
+      styleKey: "textAlign",
+      validNodeValues: ["start", "left", "center", "right", "end", "justify"],
     },
   },
-  key: 'align',
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  name: "align",
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
-        typeChange: 'preserve-if-allowed',
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
+        typeChange: "preserve-if-allowed",
       }),
     ],
   }),
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
 });
 ```
 
 `inject.nodeProps` 负责渲染，constructor 的 `codecs` callback 把双向 HTML
 声明绑定到插件 schema。`defineCodecs` 根据 property 声明推断 `value`。两条
 路径都使用插件解析后的 `type`，因此最终的 `.configure({ type })` 可以修改
-存储属性，而不需要在 codec 中重复 key。
+存储属性，而不需要在 codec 中重复插件名称。
 
 受该插件影响的段落节点如下：
 
@@ -207,64 +209,73 @@ const TextAlignPlugin = createPlatePlugin({
 直接接收 plugin context。
 
 ```ts
-type CustomPluginState = {
-  allowDelete: boolean;
-};
-
-const initialState: CustomPluginState = {
-  allowDelete: true,
+export type CustomPluginState = {
+  prefix: string;
 };
 
 const CustomPlugin = createPlatePlugin({
   api: ({ store }) => ({
-    canDelete: () => store.get('allowDelete'),
+    getPrefix: () => store.get("prefix"),
   }),
-  initialState,
-  key: 'custom',
+  initialState: {
+    prefix: "Note: ",
+  } satisfies CustomPluginState,
+  name: "custom",
   update: ({ store, tx }) => ({
-    deleteBackward() {
-      if (!store.get('allowDelete')) return;
-
-      tx.text.delete({ reverse: true, unit: 'character' });
+    insertPrefix: () => {
+      tx.text.insert(store.get("prefix"));
     },
   }),
 });
-
-editor.api.canDelete();
-editor.update((tx) => tx.custom.deleteBackward());
 ```
 
-### 安装 Plite 扩展（高级）
+插件解析后，具体 editor 会在 root API 推断其 read；一次性 write 使用
+name-scoped update helper：
 
-Plate 插件的 Plite 底层能力放在 `extension` 贡献中：schema、state、
-transaction、command、correction 或运行时服务。
+```ts
+editor.api.custom.getPrefix();
+editor.update.custom.insertPrefix();
+```
+
+通用包代码可以通过 `editor.plugin(CustomPlugin).api.getPrefix()` 访问同一个
+immutable API object。
+
+### 原生 Plite 能力
+
+Plate 插件直接在插件根级声明 Plite 能力。使用 `readMiddleware`、`commands`、
+`corrections`、`stateFields`、`effectTypes`、`facetProviders`、
+`selectionKinds`、`contributions`、`on`、`activate` 和 `validate`，
+不再添加第二层 wrapper。
 
 ```ts showLineNumbers
-import { createPlatePlugin } from 'platejs/react';
+import { createPlatePlugin, defineStateField } from "platejs";
+
+const enabledField = defineStateField({
+  initial: false,
+  key: "customState.enabled",
+});
 
 const CustomStatePlugin = createPlatePlugin({
-  extension: {
-    state: {
-      customState() {
-        return {
-          enabled: () => true,
-        };
-      },
+  name: "customState",
+  stateFields: [enabledField],
+  read: ({ state }) => ({
+    enabled: () => state.getField(enabledField),
+  }),
+  on: {
+    commit: ({ commit }) => {
+      console.info(commit.changed);
     },
   },
-  key: 'customState',
 });
 ```
 
 <Callout type="info" title="扩展、API 与事务">
-- 互相独立的 `extension`、`api`、`read` 和 `update` 放进 constructor。
-  只有 import/prebuilt descriptor、constructor 无法访问的 shared factory
-  或前一阶段类型才使用 `.extend()`。
+  - 每个独立能力直接放进 constructor。只有 import/prebuilt descriptor、
+  constructor 无法访问的 shared factory 或前一阶段类型才使用 `.extend()`。
 </Callout>
 
-Plate constructor 和 `.extend()` callback 直接返回 extension object。Plate
-context 保持在 callback 内，只抽取 domain input。独立复用的 standalone Plite
-descriptor 使用从 `@platejs/plite` import 的 `defineEditorExtension`。详见
+独立复用的 standalone Plite descriptor 使用从 `@platejs/plite` import 的
+`defineEditorExtension`。详见
 [插件方法](/docs/plugin-methods#install-plite-capabilities)。
 
 ## 高级插件配置
@@ -284,9 +295,9 @@ const initialState: MyPluginState = {
 
 const MyPlugin = createPlatePlugin({
   initialState,
-  key: 'myPlugin',
-  handlers: {
-    onClick: ({ store }) => {
+  name: "myPlugin",
+  on: {
+    click: ({ store }) => {
       store.set({ count: 1 });
     },
   },
@@ -297,7 +308,7 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 // 获取当前值
-const count = editor.plugin(MyPlugin).store.get('count');
+const count = editor.plugin(MyPlugin).store.get("count");
 
 // 设置新值
 editor.plugin(MyPlugin).store.set({ count: 5 });
@@ -312,7 +323,7 @@ editor.plugin(MyPlugin).store.set((state) => {
 
 ```tsx
 const MyComponent = () => {
-  const count = usePluginStore(MyPlugin, 'count');
+  const count = usePluginStore(MyPlugin, "count");
   return <div>计数: {count}</div>;
 };
 ```
@@ -321,11 +332,11 @@ const MyComponent = () => {
 
 ### 依赖项
 
-使用插件对象声明所需依赖项。Plate 会递归安装依赖图，按插件 key 去重，并在依赖插件之后加载当前插件。
+使用插件对象声明所需依赖项。Plate 会递归安装依赖图，按插件名称去重，并在依赖插件之后加载当前插件。
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+  name: "myPlugin",
   dependencies: [ParagraphPlugin, ListPlugin],
 });
 ```
@@ -336,7 +347,7 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+  name: "myPlugin",
   enabled: true, // 或false禁用
 });
 ```
@@ -348,7 +359,7 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 const CodeHighlightPlugin = createPlatePlugin({
-  key: 'codeHighlight',
+  name: "codeHighlight",
   dependencies: [CodeBlockPlugin],
 });
 
@@ -375,13 +386,13 @@ const plugins = [LinkPlugin, MentionPlugin, CommentPlugin];
 
 ```ts
 const HtmlCleanupPlugin = createPlatePlugin({
-  key: 'htmlCleanup',
+  name: "htmlCleanup",
   parsers: {
     html: {
       query: ({ data, format }) =>
-        format === 'text/html' && data.includes('<!--StartFragment-->'),
+        format === "text/html" && data.includes("<!--StartFragment-->"),
       transformData: ({ data }) =>
-        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ''),
+        data.replaceAll(/<!--(?:Start|End)Fragment-->/g, ""),
     },
   },
 });
@@ -392,13 +403,13 @@ const HtmlCleanupPlugin = createPlatePlugin({
 
 ## 类型化插件
 
-使用上述方法时，插件类型会根据给定配置自动推断。
+`createPlatePlugin` 会从 author object 推断一个精确 definition。通过带类型的
+`initialState` 值或 `satisfies` 固定 state contract；不要向 factory 传入调用方
+泛型。
 
-如果需要显式传递泛型类型，可以使用`createPlatePlugin`。
+### 使用 createPlatePlugin
 
-### 使用createPlatePlugin
-
-`createPlatePlugin`函数允许创建类型化插件：
+推断后的 definition 会携带插件 name、state、API、read 和 update：
 
 ```ts
 export type CodeBlockPluginState = {
@@ -408,25 +419,25 @@ export type CodeBlockPluginState = {
 };
 
 const initialState: CodeBlockPluginState = {
-  language: 'typescript',
+  language: "typescript",
   syntax: true,
   syntaxPopularFirst: false,
 };
 
 export const CodeBlockPlugin = createPlatePlugin({
   api: ({ store }) => ({
-    getLanguage: () => store.get('language'),
-    getSyntaxState: () => store.get('syntax'),
+    getLanguage: () => store.get("language"),
+    getSyntaxState: () => store.get("syntax"),
   }),
   initialState,
-  key: 'codeBlock',
-  type: 'code_block',
+  name: "codeBlock",
+  type: "code_block",
   update: ({ store, tx }) => ({
     insertCodeBlock: () => {
       tx.nodes.insert({
-        type: 'code_block',
-        language: store.get('language'),
-        children: [{ text: '' }],
+        type: "code_block",
+        language: store.get("language"),
+        children: [{ text: "" }],
       });
     },
   }),

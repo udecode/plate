@@ -3,6 +3,7 @@ import type {
   Editor,
   EditorCommand,
   EditorCommandDescriptor,
+  EditorCommandContext,
   EditorCommandInput,
   EditorCommandContinuation,
   EditorCommandDispatch,
@@ -144,10 +145,7 @@ const runCommandChain = <Input, TEditor extends BaseEditor<any, any>>(
   const readState = () =>
     withTransactionSpecDraftRead(owner, () =>
       editor.read((state) => state as EditorStateView)
-    ) as unknown as EditorStateView<
-      import('../interfaces/editor').ValueOf<TEditor>,
-      import('../interfaces/editor').ExtensionsOf<TEditor>
-    >;
+    ) as unknown as EditorCommandContext<Input, TEditor>['state'];
   const tags = () => getActiveEditorUpdateTags(owner);
 
   const dispatch = (

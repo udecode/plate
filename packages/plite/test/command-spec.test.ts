@@ -14,7 +14,8 @@ import {
   editorCommands,
   type Editor,
   type EditorCommand,
-  type EditorExtension,
+  type EditorExtensionDefinitionInput,
+  type EditorExtensionReference,
   type EditorTransactionDraftRef,
   type Point,
   property,
@@ -39,7 +40,7 @@ type InsertCommand = {
 };
 
 const createTextEditorWithExtensions = (
-  extensions: readonly EditorExtension<any, any>[] = []
+  extensions: readonly EditorExtensionReference[] = []
 ): Editor<Value> =>
   createEditor({
     extensions,
@@ -50,7 +51,9 @@ const createTextEditorWithExtensions = (
     initialValue: [{ type: 'paragraph', children: [{ text: 'ab' }] }] as Value,
   }) as unknown as Editor<Value>;
 
-type CommandDeclarations = NonNullable<EditorExtension['commands']>;
+type CommandDeclarations = NonNullable<
+  EditorExtensionDefinitionInput['commands']
+>;
 
 const createTextEditor = (commands?: CommandDeclarations) =>
   createTextEditorWithExtensions(
@@ -90,7 +93,7 @@ const CommandScriptSchema = defineEditorSchema({
       exclusive: [CommandScriptPosition],
     }),
   ],
-  root: { content: schema.content.type('paragraph') },
+  root: schema.content.type('paragraph'),
   unknown: 'reject',
   version: 1,
 });
@@ -1639,12 +1642,10 @@ describe('pure command transaction specs', () => {
               content: schema.content.text({ default: 'text', min: 1 }),
             } as const,
           },
-          root: {
-            content: schema.content.types(['heading', 'paragraph'], {
-              default: { type: 'paragraph' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.types(['heading', 'paragraph'], {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
           unknown: 'reject',
         }),
       ],
@@ -1694,12 +1695,10 @@ describe('pure command transaction specs', () => {
           },
           groups: { 'list-item': {} as const },
           id: 'test.structural-blocks',
-          root: {
-            content: schema.content.group('block', {
-              default: { type: 'paragraph' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
           unknown: 'reject',
           version: 1,
         }),

@@ -42,13 +42,9 @@ describe('transaction-local facet caching', () => {
             : { content: schema.content.text() },
         },
         id: 'draft-schema',
-        root: {
-          content: schema.content.types(['paragraph', 'quote']),
-        } as const,
+        root: schema.content.types(['paragraph', 'quote']),
         roots: {
-          sidebar: {
-            content: schema.content.types(['paragraph', 'quote']),
-          } as const,
+          sidebar: schema.content.types(['paragraph', 'quote']),
         },
         unknown: 'reject',
         version: voidKind ? 2 : 1,

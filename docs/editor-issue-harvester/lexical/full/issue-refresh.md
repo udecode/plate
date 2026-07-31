@@ -1,22 +1,18 @@
 # Lexical Issue Refresh
 
-status: current at `2026-07-25T22:59:04Z`
+status: current at `2026-07-29T13:25:57.084Z`
 repository: `facebook/lexical`
 state coverage: `all`
-provider: `gitcrawl 0.5.0 backed by GitHub REST metadata`
-limit: `10000` (not reached)
-raw cursor: `b613b4f64dd8794c4b010fcbfabddab47719042f4c2f9f19c1c6f1884d13f9aa`
-host verification: `GitHub GraphQL v4 metadata` at `2026-07-25T23:13:33Z`
+provider: `GitHub GraphQL v4`
+raw cursor: `431f2d1104a59400bcf06186d75ce5084b664548cc2ab0b38451e480ac7953e9`
 
 | Result | Count |
 | --- | ---: |
-| Provider issues | 2775 |
-| Host all-state issues | 2782 |
-| Preserved historical ledger rows | 2741 |
-| Added unchecked | 41 |
-| Metadata changed; decision preserved, re-read required | 132 |
-| Provider omissions verified directly with source host | 7 |
+| Provider and host issues | 2786 |
+| Preserved historical ledger rows | 2782 |
+| Added unchecked | 4 |
+| Metadata changed; decision preserved, re-read required | 0 |
+| Provider omissions | 0 |
 
-This is refresh-only. No issue was hydrated, reclassified, closed, or used
-to create a local test. Existing decisions remain intact; new issues are
+This is refresh-only. Existing decisions remain intact. New issues are
 unchecked and changed metadata is marked for a later issue-harvester pass.

@@ -12,6 +12,7 @@ import {
   defineEditorExtension,
   defineEditorSchema,
   defineValueCodec,
+  type EditorSelectionSpec,
   property,
   type Range,
   schema,
@@ -74,43 +75,45 @@ const cellSelectionCodec = defineValueCodec<CellSelection>({
   version: 1,
 });
 
+const cellSelectionKinds = [
+  {
+    codec: cellSelectionCodec,
+    primaryRange(selection) {
+      return selection.cells[1] ?? null;
+    },
+    kind: 'cell',
+    map(selection, context) {
+      const primary = context.mapRange(selection, {
+        association: 'outward',
+      });
+      const cells = selection.cells.flatMap((cell) => {
+        const mapped = context.mapRange(cell, { association: 'outward' });
+
+        return mapped ? [mapped] : [];
+      });
+
+      return primary && cells.length > 0
+        ? { ...selection, ...primary, cells }
+        : null;
+    },
+    ranges(selection) {
+      return selection.cells;
+    },
+    replacementRange(selection) {
+      return selection.cells[0] ?? null;
+    },
+    validate: isCellSelection,
+  },
+] satisfies readonly EditorSelectionSpec<CellSelection>[];
+
 const cellSelectionExtension = defineEditorExtension({
   name: 'cell-selection',
-  selectionKinds: [
-    {
-      codec: cellSelectionCodec,
-      primaryRange(selection) {
-        return selection.cells[1] ?? null;
-      },
-      kind: 'cell',
-      map(selection, context) {
-        const primary = context.mapRange(selection, {
-          association: 'outward',
-        });
-        const cells = selection.cells.flatMap((cell) => {
-          const mapped = context.mapRange(cell, { association: 'outward' });
-
-          return mapped ? [mapped] : [];
-        });
-
-        return primary && cells.length > 0
-          ? { ...selection, ...primary, cells }
-          : null;
-      },
-      ranges(selection) {
-        return selection.cells;
-      },
-      replacementRange(selection) {
-        return selection.cells[0] ?? null;
-      },
-      validate: isCellSelection,
-    },
-  ],
+  selectionKinds: cellSelectionKinds,
 });
 
 const conflictingCellSelectionExtension = defineEditorExtension({
   name: 'other-cell-selection',
-  selectionKinds: cellSelectionExtension.selectionKinds,
+  selectionKinds: cellSelectionKinds,
 });
 
 const initialValue = [
@@ -133,19 +136,15 @@ const selectionMarksSchema = defineEditorSchema({
       target: target.type('paragraph'),
     }),
   ],
-  root: {
-    content: schema.content.group('block', {
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
+  roots: {
+    header: schema.content.group('block', {
       default: { type: 'paragraph' },
       min: 1,
     }),
-  } as const,
-  roots: {
-    header: {
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    } as const,
   },
   unknown: 'reject',
   version: 1,

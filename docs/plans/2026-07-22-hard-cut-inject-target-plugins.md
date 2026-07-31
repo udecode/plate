@@ -1,7 +1,7 @@
 # Hard-cut plugin target configuration
 
 Objective:
-Replace every live `inject.targetPlugins` and nested target configuration shape with one top-level immutable `targetPluginKeys` descriptor field, including runtime reconfiguration, schema compilation, package adoption, and registry examples.
+Replace every live `inject.targetPlugins` and nested target configuration shape with one top-level immutable `targetPluginNames` descriptor field, including runtime reconfiguration, schema compilation, package adoption, and registry examples.
 
 Completion threshold:
 One authored API owns plugin targets; old live authoring shapes have zero matches outside historical release material; target changes compile and publish atomically; lifecycle resources invalidate correctly; package, app, browser, release, lint, and review gates pass.
@@ -28,12 +28,12 @@ Start Gates:
 
 Work Checklist:
 
-- [x] Add top-level readonly `targetPluginKeys` with a frozen empty default.
+- [x] Add top-level readonly `targetPluginNames` with a frozen empty default.
 - [x] Delete public `inject.targetPlugins` and nested target alternatives.
 - [x] Resolve installed target keys to configured element types for schema compilation.
 - [x] Use the same field for runtime injection matching.
 - [x] Preserve the field through descriptor snapshots, configuration publication, and rollback.
-- [x] Support typed and runtime-validated `editor.configure(plugin, { targetPluginKeys })`.
+- [x] Support typed and runtime-validated `editor.configure(plugin, { targetPluginNames })`.
 - [x] Invalidate plugin lifecycle extensions when target keys change.
 - [x] Migrate affected packages, registry kits, tests, current docs, audits, and changesets.
 - [x] Repair registry fixtures discovered by browser proof without touching generated output.

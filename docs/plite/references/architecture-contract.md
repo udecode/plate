@@ -31,7 +31,7 @@ The root editor exposes lifecycle primitives only:
 - `editor.read` for committed state
 - `editor.update` for atomic writes
 - `editor.subscribe` and `editor.subscribeCommit`
-- `editor.extend` for atomic runtime configuration and optional schema migration
+- `editor.extend` for atomic runtime extension installation and optional schema migration
 - `editor.api` for installed host/runtime services
 
 One-shot reads and writes live on the `read` and `update` facades. Product
@@ -130,16 +130,23 @@ and mapping behavior.
 
 Effects represent state and integration events inside the same atomic commit.
 Annotations combine transaction metadata without becoming document state.
-Facets derive configuration from installed providers. Named slots make
+Facets derive values from installed providers. Named slots make
 reconfiguration deterministic and typed.
 
 Extension declarations compile and validate against a detached immutable
 candidate. Synchronous activation owns resources and registers cleanup before
-publication; ready callbacks run after publication. Replacing a named slot
-through `tx.extensions.reconfigure(...)` commits the configuration revision
+publication; `context.afterPublish(...)` schedules publication-dependent work.
+Replacing a named slot through `tx.extensions.reconfigure(...)` commits the extension revision
 atomically with document and state changes. Dynamic `editor.extend(...)` and
 its cleanup use the same lifecycle; installation may publish a candidate-schema
-document migration in the same configuration commit.
+document migration in the same commit.
+
+The public `EditorExtensionDependencyReference` is shallow and non-generic:
+`name` plus optional `enabled`. Finite direct capability/provider typing and its
+value-sensitive HKT are available only from `@platejs/plite/internal`; the type
+graph does not recursively reproduce exact dependency ancestry. Static portal
+access proves one literal-name match with an equivalent capability. Runtime
+portal access separately verifies the exact installed descriptor identity.
 
 There is no public state-patch replay channel.
 

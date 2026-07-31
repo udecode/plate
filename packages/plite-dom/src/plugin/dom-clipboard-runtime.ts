@@ -1,10 +1,17 @@
-import { dispatchCommand, void as editorVoid } from '@platejs/plite/internal';
 import {
+  dispatchCommand,
+  type InternalEditorUpdateTransactionOf,
+  void as editorVoid,
+} from '@platejs/plite/internal';
+import {
+  type BaseEditor,
   ContentSlice,
   type ContentSlice as ContentSliceValue,
   type Descendant,
   defineExtensionPoint,
-  type EditorCoreUpdateTransaction,
+  type Editor,
+  type EditorExtensionContribution,
+  type EditorExtensionPoint,
   editorCommands,
   type EditorUpdateTransaction,
   NodeApi as PliteNode,
@@ -40,34 +47,48 @@ export type ClipboardSliceWrite<V extends Value = Value> = Readonly<{
   slice: ContentSliceValue<V>;
 }>;
 
-export type DOMClipboardInsertContext<V extends Value = Value> = Readonly<{
+export type DOMClipboardInsertContext<
+  TEditor extends BaseEditor<any> = Editor,
+> = Readonly<{
   next: (data?: DataTransfer) => boolean;
-  transaction: Pick<
-    EditorCoreUpdateTransaction<V>,
-    'fragment' | 'nodes' | 'selection' | 'tags' | 'text'
-  >;
+  transaction: InternalEditorUpdateTransactionOf<TEditor>;
 }>;
 
-export type DOMClipboardHandler<V extends Value = Value> = Readonly<{
-  insertData(
-    data: DataTransfer,
-    context: DOMClipboardInsertContext<V>
-  ): boolean;
-}>;
+export type DOMClipboardHandler<TEditor extends BaseEditor<any> = Editor> =
+  Readonly<{
+    insertData(
+      data: DataTransfer,
+      context: DOMClipboardInsertContext<TEditor>
+    ): boolean;
+  }>;
 
-export const DOM_CLIPBOARD_HANDLERS = defineExtensionPoint<
+export const DOM_CLIPBOARD_HANDLERS: EditorExtensionPoint<
   DOMClipboardHandler<any>
->('plite-dom:clipboard-handler');
+> = defineExtensionPoint<DOMClipboardHandler<any>>(
+  'plite-dom:clipboard-handler'
+);
 
 /** Contribute one DOM clipboard ingress handler from an editor extension. */
-export const clipboardHandler = DOM_CLIPBOARD_HANDLERS.of;
+export const clipboardHandler = <
+  TEditor extends BaseEditor<any> = Editor,
+  const TInsertData extends (
+    ...args: any[]
+  ) => boolean = DOMClipboardHandler<TEditor>['insertData'],
+>(
+  handler: DOMClipboardHandler<TEditor> & Readonly<{ insertData: TInsertData }>
+): EditorExtensionContribution<
+  DOMClipboardHandler<TEditor>,
+  Parameters<TInsertData> extends [] | [DataTransfer]
+    ? BaseEditor<any, any>
+    : TEditor
+> => DOM_CLIPBOARD_HANDLERS.of(handler);
 
 /** @internal Run the DOM-owned clipboard chain inside an existing transaction. */
 export const dispatchDOMClipboardHandlers = <
   V extends Value,
   TExtensions extends readonly unknown[],
 >(
-  handlers: readonly DOMClipboardHandler<NoInfer<V>>[],
+  handlers: readonly DOMClipboardHandler<any>[],
   data: DataTransfer,
   transaction: EditorUpdateTransaction<V, TExtensions>,
   fallback: (data: DataTransfer) => boolean

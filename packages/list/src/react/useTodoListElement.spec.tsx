@@ -1,56 +1,51 @@
-import { renderHook } from '@testing-library/react';
+import { createPlateEditor, Plate } from '@platejs/core/react';
+import type { Element } from '@platejs/plite';
+import { KEYS } from '@platejs/utils';
+import { act, renderHook } from '@testing-library/react';
+import React from 'react';
 
-const useEditorMock = mock();
-const useReadOnlyMock = mock();
-
-mock.module('@platejs/core/react', () => ({
-  useEditor: useEditorMock,
-}));
-
-mock.module('@platejs/plite-react', () => ({
-  useEditorReadOnly: useReadOnlyMock,
-}));
-
-const { useTodoListElement, useTodoListElementState } = await import(
-  './useTodoListElement'
-);
+import { ListPlugin } from './ListPlugin';
+import {
+  useTodoListElement,
+  useTodoListElementState,
+} from './useTodoListElement';
 
 describe('useTodoListElement', () => {
-  beforeEach(() => {
-    useEditorMock.mockReset();
-    useReadOnlyMock.mockReset();
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
   it('updates checked state by live element when editable', () => {
-    const setNodes = mock();
-    const element = {
-      checked: false,
-      children: [{ text: '' }],
-      id: 'todo-1',
-      type: 'p',
-    };
-
-    useEditorMock.mockReturnValue({
-      update: {
-        nodes: {
-          set: setNodes,
-        },
+    const initialValue: Element[] = [
+      {
+        checked: false,
+        children: [{ text: '' }],
+        id: 'todo-1',
+        indent: 1,
+        listStyleType: KEYS.listTodo,
+        type: KEYS.p,
       },
+    ];
+    const editor = createPlateEditor({
+      initialValue,
+      plugins: [ListPlugin],
     });
-    useReadOnlyMock.mockReturnValue(false);
+    const element = editor.read.children()[0];
+    const { result } = renderHook(
+      () => {
+        const state = useTodoListElementState({ element });
 
-    const { result } = renderHook(() => {
-      const state = useTodoListElementState({ element });
+        return useTodoListElement(state);
+      },
+      {
+        wrapper: ({ children }) => (
+          <Plate editor={editor} suppressInstanceWarning>
+            {children}
+          </Plate>
+        ),
+      }
+    );
 
-      return useTodoListElement(state);
+    act(() => {
+      result.current.checkboxProps.onCheckedChange(true);
     });
 
-    result.current.checkboxProps.onCheckedChange(true);
-
-    expect(setNodes).toHaveBeenCalledWith({ checked: true }, { at: element });
+    expect(editor.read.children()[0]).toMatchObject({ checked: true });
   });
 });

@@ -1,11 +1,10 @@
-import { type InferConfig, createBasePlugin } from '@platejs/core';
-import { property } from '@platejs/plite';
+import { type DefinitionOf, createBasePlugin } from '@platejs/core';
+import { property, schema } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 import { sanitizeUrl } from '@udecode/utils';
 
 import {
   defineMediaPlugin,
-  mediaElementContent,
   mediaElementProperties,
   type MediaPluginState,
 } from '../BaseMediaPlugin';
@@ -51,10 +50,9 @@ const initialState: MediaEmbedPluginState = {
  * Instagram posts and tweets or Google Maps.
  */
 export const BaseMediaEmbedPlugin = createBasePlugin({
-  key: KEYS.mediaEmbed,
+  name: KEYS.mediaEmbed,
   schema: {
-    element: {
-      content: mediaElementContent,
+    element: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
       properties: {
@@ -62,7 +60,7 @@ export const BaseMediaEmbedPlugin = createBasePlugin({
         provider: property.string(),
         sourceUrl: property.string(),
       },
-    },
+    }),
   },
   type: NODES.mediaEmbed,
   initialState,
@@ -158,6 +156,44 @@ export const BaseMediaEmbedPlugin = createBasePlugin({
           match: [{ tag: 'iframe' }],
         },
       ],
+      'text/markdown': {
+        from: 'media_embed',
+        kind: 'node',
+        decode: ({ caption, decode, node, parseAttributes, type }) => {
+          const { src, ...props } = parseAttributes(node.attributes);
+
+          return {
+            ...props,
+            children: caption(decode(node.children)),
+            type,
+            url: typeof src === 'string' ? src : '',
+          };
+        },
+        encode: ({
+          encodePhrasing,
+          node,
+          propsToAttributes,
+          readPlainInline,
+          type,
+        }) => {
+          const { children, type: _, url, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes({ ...rest, src: url }),
+            children:
+              readPlainInline(children) !== ''
+                ? [
+                    {
+                      children: encodePhrasing(children),
+                      type: 'paragraph',
+                    },
+                  ]
+                : [],
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
     }),
 }).extend(
   defineMediaPlugin((options, url) => {
@@ -178,4 +214,4 @@ export const BaseMediaEmbedPlugin = createBasePlugin({
   })
 );
 
-export type MediaEmbedConfig = InferConfig<typeof BaseMediaEmbedPlugin>;
+export type MediaEmbedDefinition = DefinitionOf<typeof BaseMediaEmbedPlugin>;

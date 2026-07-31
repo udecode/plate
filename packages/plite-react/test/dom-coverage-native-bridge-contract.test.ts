@@ -35,7 +35,7 @@ import {
 const blockImageSchema = defineEditorSchema({
   elements: { image: { void: 'block' } },
   id: 'dom-coverage-block-image',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -43,7 +43,7 @@ const blockImageSchema = defineEditorSchema({
 const blockVideoSchema = defineEditorSchema({
   elements: { video: { void: 'block' } },
   id: 'dom-coverage-block-video',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });

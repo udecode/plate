@@ -8,7 +8,7 @@ import type { TTagElement, TTagProps } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
 
 export const BaseTagPlugin = createBasePlugin({
-  key: KEYS.tag,
+  name: KEYS.tag,
   read: ({ state, type }) => ({
     getSelectedItems: () =>
       Array.from(
@@ -46,7 +46,7 @@ export const BaseTagPlugin = createBasePlugin({
   read: ({ state }) => ({
     isEqual: (tags: readonly TTagProps[] = []) => {
       const current = new Set(
-        state[plugin.key].getSelectedItems().map((item) => item.value)
+        state[plugin.name].getSelectedItems().map((item) => item.value)
       );
       const next = new Set(tags.map((item) => item.value));
 

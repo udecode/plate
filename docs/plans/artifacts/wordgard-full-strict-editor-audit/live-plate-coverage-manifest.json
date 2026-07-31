@@ -5400,7 +5400,7 @@
           "exported": false,
           "kind": "variable",
           "line": 17,
-          "name": "pluginKeys"
+          "name": "pluginNames"
         }
       ],
       "exclusion": null,
@@ -30164,7 +30164,7 @@
           "exported": false,
           "kind": "variable",
           "line": 257,
-          "name": "resolvePluginKeys"
+          "name": "resolvePluginNames"
         },
         {
           "concepts": [
@@ -31437,7 +31437,7 @@
           "exported": false,
           "kind": "variable",
           "line": 1332,
-          "name": "getPresentPluginKeys"
+          "name": "getPresentPluginNames"
         },
         {
           "concepts": ["PL-BND-01", "PL-DESC-05", "PL-DESC-06"],
@@ -31873,14 +31873,14 @@
           "exported": true,
           "kind": "type",
           "line": 78,
-          "name": "KeyofPlugins"
+          "name": "NameofPlugins"
         },
         {
           "concepts": ["PL-BND-01"],
           "exported": true,
           "kind": "type",
           "line": 82,
-          "name": "KeyofNodePlugins"
+          "name": "NameofNodePlugins"
         },
         {
           "concepts": ["PL-BND-01"],
@@ -31960,28 +31960,28 @@
           "exported": false,
           "kind": "type",
           "line": 62,
-          "name": "ExactPluginKey"
+          "name": "ExactPluginName"
         },
         {
           "concepts": ["PL-BND-01"],
           "exported": false,
           "kind": "type",
           "line": 65,
-          "name": "ExplicitPluginKeys"
+          "name": "ExplicitPluginNames"
         },
         {
           "concepts": ["PL-BND-01"],
           "exported": false,
           "kind": "type",
           "line": 74,
-          "name": "DisabledExplicitPluginKeys"
+          "name": "DisabledExplicitPluginNames"
         },
         {
           "concepts": ["PL-BND-01"],
           "exported": false,
           "kind": "type",
           "line": 85,
-          "name": "NextPluginKey"
+          "name": "NextPluginName"
         },
         {
           "concepts": ["PL-BND-01"],
@@ -36284,7 +36284,7 @@
           "exported": true,
           "kind": "type",
           "line": 618,
-          "name": "InferKey"
+          "name": "InferName"
         },
         {
           "concepts": [
@@ -36434,7 +36434,7 @@
           "exported": false,
           "kind": "type",
           "line": 708,
-          "name": "NextSeenPluginKey"
+          "name": "NextSeenPluginName"
         },
         {
           "concepts": [
@@ -36869,7 +36869,7 @@
           "exported": true,
           "kind": "type",
           "line": 930,
-          "name": "WithAnyKey"
+          "name": "WithAnyName"
         },
         {
           "concepts": [
@@ -36884,7 +36884,7 @@
           "exported": true,
           "kind": "type",
           "line": 946,
-          "name": "WithRequiredKey"
+          "name": "WithRequiredName"
         }
       ],
       "exclusion": null,
@@ -37874,7 +37874,7 @@
           "exported": true,
           "kind": "variable",
           "line": 38,
-          "name": "getPluginKey"
+          "name": "getPluginName"
         },
         {
           "concepts": [
@@ -37889,7 +37889,7 @@
           "exported": true,
           "kind": "variable",
           "line": 43,
-          "name": "getPluginKeys"
+          "name": "getPluginNames"
         },
         {
           "concepts": [
@@ -43540,7 +43540,7 @@
           "exported": true,
           "kind": "type",
           "line": 27,
-          "name": "KeyofPlugins"
+          "name": "NameofPlugins"
         }
       ],
       "exclusion": null,
@@ -52572,7 +52572,7 @@
           "exported": false,
           "kind": "variable",
           "line": 159,
-          "name": "configuredTargetPluginKey"
+          "name": "configuredTargetPluginName"
         },
         {
           "concepts": [
@@ -61783,7 +61783,7 @@
           "exported": false,
           "kind": "variable",
           "line": 48,
-          "name": "defaultTargetPluginKeys"
+          "name": "defaultTargetPluginNames"
         },
         {
           "concepts": ["PL-BND-01", "PL-LIST-01"],
@@ -68063,14 +68063,14 @@
           "exported": false,
           "kind": "type",
           "line": 102,
-          "name": "MediaElementForPluginKey"
+          "name": "MediaElementForPluginName"
         },
         {
           "concepts": ["PL-BND-01", "PL-MEDIA-01"],
           "exported": false,
           "kind": "type",
           "line": 114,
-          "name": "MediaInsertInputForPluginKey"
+          "name": "MediaInsertInputForPluginName"
         },
         {
           "concepts": ["PL-BND-01", "PL-MEDIA-01"],

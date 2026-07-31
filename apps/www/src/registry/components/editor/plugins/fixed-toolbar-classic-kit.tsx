@@ -7,7 +7,7 @@ import { FixedToolbarButtons } from '@/registry/ui/fixed-toolbar-classic-buttons
 
 export const FixedToolbarKit = [
   createPlatePlugin({
-    key: 'fixed-toolbar',
+    name: 'fixed-toolbar',
     render: {
       beforeEditable: () => (
         <FixedToolbar>

@@ -45,7 +45,7 @@ describe('ElementProvider', () => {
   }
 
   const NamePlugin = createBasePlugin({
-    key: 'name',
+    name: 'name',
     schema: {
       element: {
         content: schema.content.text(),
@@ -54,7 +54,7 @@ describe('ElementProvider', () => {
     },
   });
   const AgePlugin = createBasePlugin({
-    key: 'age',
+    name: 'age',
     schema: {
       element: {
         content: schema.content.text(),
@@ -63,7 +63,7 @@ describe('ElementProvider', () => {
     },
   });
   const MissingPlugin = createBasePlugin({
-    key: 'missing',
+    name: 'missing',
     schema: { element: { content: schema.content.text() } },
   });
 

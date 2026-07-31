@@ -15,6 +15,8 @@ Export `MarkdownPluginState` as the complete mutable state contract for
   direct caption children; preserve rich MDX media content in those children
 - Seed Markdown conversion and rule behavior through
   `MarkdownPlugin.initialState`
+- Expose plugin name/type mapping to conversion callbacks through
+  `registry.{getType,getName,has}`
 - Round-trip `<sub>` and `<sup>` through one `script: 'sub' | 'sup'` text
   property
 - Remove `MarkdownPlugin.parser`, `DeserializeMdOptions.memoize`, and

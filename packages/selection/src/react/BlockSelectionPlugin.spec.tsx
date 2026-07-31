@@ -12,33 +12,28 @@ import type { BaseEditor } from '@platejs/core';
 import { getPlateRuntime } from '@platejs/core/internal';
 import { createPlateEditor } from '@platejs/core/react';
 import type { PlateEditor } from '@platejs/core/react';
-import {
-  defineEditorExtension,
-  NodeApi,
-  property,
-  schema,
-  target,
-} from '@platejs/plite';
+import { NodeApi, property, schema, target } from '@platejs/plite';
 import type { NodeEntry, Value } from '@platejs/plite';
 import * as PliteDOM from '@platejs/plite-dom';
+import { EDITOR_TO_WINDOW } from '@platejs/plite-dom/internal';
 import { jsxt } from '@platejs/test-utils';
 import type { TIdElement } from '@platejs/utils';
 
 import { BlockMenuPlugin } from './BlockMenuPlugin';
 import {
-  type BlockSelectionConfig,
+  type BlockSelectionDefinition,
   BlockSelectionPlugin,
 } from './BlockSelectionPlugin';
 
 const createTestContainerPlugin = <
-  const TKey extends string,
+  const TName extends string,
   const TChild extends PluginReference,
 >(
-  key: TKey,
+  name: TName,
   child: TChild
 ) =>
   createBasePlugin({
-    key,
+    name,
     schema: ({ plugins }) => {
       const childType = plugins.elementType(child);
 
@@ -53,9 +48,11 @@ const createTestContainerPlugin = <
     },
   });
 
-const createTestBlockContainerPlugin = <const TKey extends string>(key: TKey) =>
+const createTestBlockContainerPlugin = <const TName extends string>(
+  name: TName
+) =>
   createBasePlugin({
-    key,
+    name,
     schema: ({ plugins }) => ({
       element: {
         content: plugins.blockContent({
@@ -67,14 +64,14 @@ const createTestBlockContainerPlugin = <const TKey extends string>(key: TKey) =>
   });
 
 const TestBoldPlugin = createBasePlugin({
-  key: 'bold',
+  name: 'bold',
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
 });
 
 const TestElementPropertiesPlugin = createBasePlugin({
-  key: 'testElementProperties',
+  name: 'testElementProperties',
   schema: {
     properties: [
       schema.elementProperty('align', property.string(), {
@@ -1437,7 +1434,7 @@ describe('shiftSelection', () => {
 
 const createDocumentTransformEditor = (): BaseEditor<
   Value,
-  BlockSelectionConfig
+  BlockSelectionDefinition
 > =>
   createBaseEditor({
     plugins: [
@@ -1603,21 +1600,22 @@ describe('block selection document transforms', () => {
 
 describe('duplicateBlockSelectionNodes', () => {
   it('duplicates selected blocks through the editor update transaction', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-        {
-          id: 'block2',
-          children: [{ text: 'Two' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+          {
+            id: 'block2',
+            children: [{ text: 'Two' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1653,16 +1651,17 @@ describe('duplicateBlockSelectionNodes', () => {
   });
 
   it('does not schedule plugin state after a rolled-back duplicate', async () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1688,21 +1687,22 @@ describe('duplicateBlockSelectionNodes', () => {
 
 describe('selectBlockSelectionNodes', () => {
   it('sets the editor selection through the editor update transaction', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-        {
-          id: 'block2',
-          children: [{ text: 'Two' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+          {
+            id: 'block2',
+            children: [{ text: 'Two' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1723,21 +1723,22 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('sets a range across all selected blocks', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-        {
-          id: 'block2',
-          children: [{ text: 'Two' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+          {
+            id: 'block2',
+            children: [{ text: 'Two' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1758,16 +1759,17 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('does not mutate plugin state when no model range is found', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1788,16 +1790,17 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('keeps plugin selection intact when publication rolls back', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1819,16 +1822,17 @@ describe('selectBlockSelectionNodes', () => {
   });
 
   it('reads blocks inserted earlier in the same transaction', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [
-        {
-          id: 'block1',
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-      ],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [
+          {
+            id: 'block1',
+            children: [{ text: 'One' }],
+            type: 'p',
+          },
+        ],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -1873,29 +1877,29 @@ const createDataTransfer = () => {
 };
 
 const CopyTableCellPlugin = createBasePlugin({
-  key: 'td',
+  name: 'td',
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
-      topLevel: false,
+      blockContent: false,
     },
   }),
 });
 
 const CopyTableRowPlugin = createBasePlugin({
   dependencies: [CopyTableCellPlugin],
-  key: 'tr',
+  name: 'tr',
   schema: {
     element: {
       content: schema.content.type('td', { min: 1 }),
-      topLevel: false,
+      blockContent: false,
     },
   },
 });
 
 const CopyTablePlugin = createBasePlugin({
   dependencies: [CopyTableRowPlugin],
-  key: 'table',
+  name: 'table',
   schema: {
     element: {
       content: schema.content.type('tr', { min: 1 }),
@@ -1931,16 +1935,7 @@ const createCopyEditor = (
         : [{ children: [{ text: '' }], type: 'p' }],
   });
 
-  editor.extend(
-    defineEditorExtension({
-      api: {
-        dom: {
-          getWindow: () => window,
-        },
-      },
-      name: 'test:block-selection-copy-window',
-    })
-  );
+  EDITOR_TO_WINDOW.set(editor, window);
 
   return editor;
 };
@@ -2105,10 +2100,11 @@ describe('selection block utils', () => {
 
   describe('update.selectInserted', () => {
     it('selects blocks introduced by the last canonical change', () => {
-      const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      });
+      const editor: BaseEditor<Value, BlockSelectionDefinition> =
+        createBaseEditor({
+          plugins: [BlockSelectionPlugin],
+          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        });
 
       editor.update.nodes.insert(
         [
@@ -2126,10 +2122,11 @@ describe('selection block utils', () => {
     });
 
     it('does not select existing blocks changed by the last commit', () => {
-      const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-        plugins: [BlockSelectionPlugin, TestElementPropertiesPlugin],
-        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      });
+      const editor: BaseEditor<Value, BlockSelectionDefinition> =
+        createBaseEditor({
+          plugins: [BlockSelectionPlugin, TestElementPropertiesPlugin],
+          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        });
 
       editor.update.nodes.set({ variant: 'lead' }, { at: [0] });
 
@@ -2143,10 +2140,11 @@ describe('selection block utils', () => {
 
   describe('update.paste', () => {
     it('inserts a spacer block after the last non-empty selected block and pastes clipboard data', () => {
-      const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-        plugins: [BlockSelectionPlugin],
-        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      });
+      const editor: BaseEditor<Value, BlockSelectionDefinition> =
+        createBaseEditor({
+          plugins: [BlockSelectionPlugin],
+          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        });
       const initialValue = editor.read.children();
       let commits = 0;
       const unsubscribe = editor.subscribeCommit(() => commits++);
@@ -2177,19 +2175,20 @@ describe('selection block utils', () => {
 
     it('rolls back the spacer and block-selection side effect when clipboard insertion throws', () => {
       const throwingClipboardPlugin = createBasePlugin({
-        key: 'throwing-clipboard',
-        extension: {
-          clipboard: {
+        contributions: [
+          PliteDOM.clipboardHandler({
             insertData() {
               throw new Error('clipboard failed');
             },
-          },
-        },
+          }),
+        ],
+        name: 'throwing-clipboard',
       });
-      const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-        plugins: [BlockSelectionPlugin, throwingClipboardPlugin],
-        initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      });
+      const editor: BaseEditor<Value, BlockSelectionDefinition> =
+        createBaseEditor({
+          plugins: [BlockSelectionPlugin, throwingClipboardPlugin],
+          initialValue: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
+        });
       const initialValue = editor.read.children();
       const selectedIds = new Set(['p1']);
       let commits = 0;
@@ -2218,24 +2217,26 @@ describe('selection block utils', () => {
 
 describe('isSelecting', () => {
   it('returns true when the editor selection is expanded', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        selection: {
+          kind: 'text',
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        },
+        initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+      });
 
     expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(true);
   });
 
   it('returns true when block selection says some blocks are being selected', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+      });
 
     editor
       .plugin(BlockSelectionPlugin)
@@ -2245,10 +2246,11 @@ describe('isSelecting', () => {
   });
 
   it('returns false when neither selection state is active', () => {
-    const editor: BaseEditor<Value, BlockSelectionConfig> = createBaseEditor({
-      plugins: [BlockSelectionPlugin],
-      initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
-    });
+    const editor: BaseEditor<Value, BlockSelectionDefinition> =
+      createBaseEditor({
+        plugins: [BlockSelectionPlugin],
+        initialValue: [{ children: [{ text: 'a' }], id: 'block1', type: 'p' }],
+      });
 
     expect(editor.plugin(BlockSelectionPlugin).read.isSelecting()).toBe(false);
   });

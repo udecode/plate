@@ -64,7 +64,7 @@ export const trailingBlockPlugin = TrailingBlockPlugin.configure({
 });
 ```
 
-The default is already `editor.getType(KEYS.p)`, so most editors can use the plugin directly.
+The default is already `editor.plugin(KEYS.p).type`, so most editors can use the plugin directly.
 
 ## Match The Previous Block
 
@@ -149,7 +149,7 @@ through the active transaction.
 | API | Package | Use |
 |-----|---------|-----|
 | `TrailingBlockPlugin` | `platejs` / `@platejs/utils` | Normalizer that ensures a trailing block exists. |
-| `TrailingBlockConfig.initialState.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
-| `TrailingBlockConfig.initialState.level` | `@platejs/utils` | Depth used by `tx.nodes.last`. Defaults to `0`. |
-| `TrailingBlockConfig.initialState.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
-| `TrailingBlockConfig.initialState.match` | `@platejs/plite` node match | Limits insertion to matching last nodes. |
+| `TrailingBlockPluginState.type` | `@platejs/utils` | Block type to insert. Defaults to the editor paragraph type. |
+| `TrailingBlockPluginState.level` | `@platejs/utils` | Depth used by `tx.nodes.last`. Defaults to `0`. |
+| `TrailingBlockPluginState.insert` | `@platejs/utils` | Custom wrapper around the generated insertion. |
+| `TrailingBlockPluginState.match` | `@platejs/plite` node match | Limits insertion to matching last nodes. |

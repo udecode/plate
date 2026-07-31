@@ -3,7 +3,6 @@ import { clipboardHandler, parseDOMClipboardHtml } from '@platejs/plite-dom';
 import { jsx } from '@platejs/plite-hyperscript';
 
 import type {
-  CustomEditor,
   CustomElement,
   CustomElementType,
   CustomText,
@@ -671,7 +670,7 @@ export const deserialize = (
 };
 
 export const html = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'paste-html',
     contributions: [
       clipboardHandler({
@@ -707,10 +706,7 @@ export const html = () =>
       elements: {
         image: { void: 'block' },
         link: {
-          content: schema.content.any(
-            [schema.content.text(), schema.content.group('inline')],
-            { default: 'text', min: 1 }
-          ),
+          content: schema.content.text({ default: 'text', min: 1 }),
           inline: true,
         },
       },

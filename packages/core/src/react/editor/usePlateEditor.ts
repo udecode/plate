@@ -45,7 +45,7 @@ type UsePlateEditorResult<
  *
  * // Name the schema only when persisted or collaborative state needs lineage.
  * const persistedEditor = usePlateEditor({
- *   schema: { id: 'acme-document', version: 1 },
+ *   schemaIdentity: { id: 'acme-document', version: 1 },
  * });
  * ```
  *

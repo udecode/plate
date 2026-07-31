@@ -1,11 +1,16 @@
 import React, { type HTMLAttributes } from 'react';
 import {
   useEditorViewState,
+  useEditorScrollElementRef,
   useOptionalEditorReadOnly,
 } from '@platejs/plite-react';
+import { useComposedRef } from '@udecode/react-utils';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
 import { useEditor, usePlateValue } from '../stores';
 
@@ -24,43 +29,49 @@ export const PlateContainer = ({
   const readOnly = plateReadOnly ?? editorReadOnly;
 
   const containerRef = usePlateValue('containerRef');
+  const scrollElementRef = useEditorScrollElementRef(editor);
+  const ref = useComposedRef(containerRef, scrollElementRef);
 
   let afterContainer: React.ReactNode = null;
   let beforeContainer: React.ReactNode = null;
 
   const mainContainer = (
-    <div ref={containerRef} {...props}>
+    <div ref={ref} {...props}>
       {children}
     </div>
   );
 
-  getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
-    if (isEditOnly(readOnly, plugin, 'render')) return;
+  getPlateRuntime(editor).pluginCache.render.beforeContainer.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      if (isEditOnly(readOnly, plugin, 'render')) return;
 
-    const BeforeContainer = plugin.render.beforeContainer!;
+      const BeforeContainer = plugin.render.beforeContainer!;
 
-    beforeContainer = (
-      <>
-        {beforeContainer}
-        <BeforeContainer {...props} />
-      </>
-    );
-  });
+      beforeContainer = (
+        <>
+          {beforeContainer}
+          <BeforeContainer {...props} />
+        </>
+      );
+    }
+  );
 
-  getPlateRuntime(editor).pluginCache.render.afterContainer.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
-    if (isEditOnly(readOnly, plugin, 'render')) return;
+  getPlateRuntime(editor).pluginCache.render.afterContainer.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      if (isEditOnly(readOnly, plugin, 'render')) return;
 
-    const AfterContainer = plugin.render.afterContainer!;
+      const AfterContainer = plugin.render.afterContainer!;
 
-    afterContainer = (
-      <>
-        {afterContainer}
-        <AfterContainer {...props} />
-      </>
-    );
-  });
+      afterContainer = (
+        <>
+          {afterContainer}
+          <AfterContainer {...props} />
+        </>
+      );
+    }
+  );
 
   return (
     <>

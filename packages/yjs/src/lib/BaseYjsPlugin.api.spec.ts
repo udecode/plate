@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { createBaseEditor } from '@platejs/core';
+import { BaseParagraphPlugin, createBaseEditor } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { createEditor } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import { createYjsExtension } from '../core/extension';
 import { YjsPlugin } from '../react/YjsPlugin';
+import { FakeProvider } from '../../test/support/provider';
 import { BaseYjsPlugin } from './BaseYjsPlugin';
 
 const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
@@ -42,7 +43,7 @@ describe('BaseYjsPlugin', () => {
           },
         }),
       ],
-      schema: TestSchema,
+      schemaIdentity: TestSchema,
     });
 
     assert.equal(
@@ -63,6 +64,7 @@ describe('BaseYjsPlugin', () => {
     const doc = new Y.Doc();
     const editor = createPlateEditor({
       plugins: [
+        BaseParagraphPlugin,
         YjsPlugin.configure({
           initialState: {
             clientId: 'react-user',
@@ -71,7 +73,7 @@ describe('BaseYjsPlugin', () => {
           },
         }),
       ],
-      schema: TestSchema,
+      schemaIdentity: TestSchema,
     });
 
     assert.equal(
@@ -82,6 +84,35 @@ describe('BaseYjsPlugin', () => {
       editor.read((state) => state.yjs.clientId()),
       'react-user'
     );
+  });
+
+  it('publishes Plate selection commits through the configured provider', () => {
+    const provider = new FakeProvider({
+      awarenessClientId: 101,
+      status: 'connected',
+      synced: true,
+    });
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: 'react' }], type: 'p' }],
+      plugins: [
+        BaseParagraphPlugin,
+        YjsPlugin.configure({
+          initialState: {
+            clientId: 'react-user',
+            provider,
+            rootName: 'react-room',
+          },
+        }),
+      ],
+      schemaIdentity: TestSchema,
+    });
+
+    editor.update.selection.set({
+      anchor: { offset: 1, path: [0, 0] },
+      focus: { offset: 1, path: [0, 0] },
+    });
+
+    assert.notEqual(provider.awareness.getLocalState()?.selection, undefined);
   });
 
   it('resolves Yjs state while a seeded document initializes', () => {

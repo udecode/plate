@@ -1,5 +1,7 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
-import { ContentSlice, property } from '@platejs/plite';
+import { createBaseEditor } from '@platejs/core';
+import { BaseBoldPlugin } from '@platejs/basic-nodes';
+import { BaseFontColorPlugin } from '@platejs/basic-styles';
+import { ContentSlice } from '@platejs/plite';
 import { writeHostFragmentData } from '@platejs/plite-dom';
 import { KEYS } from '@platejs/utils';
 import type { Pluggable, Preset, Settings } from 'unified';
@@ -9,13 +11,6 @@ import { createTestEditor } from './__tests__/createTestEditor';
 import { createMarkdownRuntime } from './internal/markdownConversion';
 import { remarkMdx } from './plugins';
 import { materializeRemarkPlugins } from './utils/getRemarkPluginsWithoutMdx';
-
-const BoldPlugin = createBasePlugin({
-  key: 'bold',
-  schema: {
-    mark: property.boolean({ default: false, omitDefault: true }),
-  },
-});
 
 const createDataTransfer = ({
   files = [],
@@ -156,9 +151,9 @@ describe('MarkdownPlugin', () => {
 
   it('exposes default options, root markdown api, and codec deserialization', () => {
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin],
+      plugins: [BaseBoldPlugin, MarkdownPlugin],
     });
-    const plugin = editor.getPlugin(MarkdownPlugin);
+    const plugin = editor.plugin(MarkdownPlugin).plugin;
 
     expect(editor.plugin(MarkdownPlugin).store.get()).toMatchObject({
       allowedNodes: null,
@@ -166,7 +161,6 @@ describe('MarkdownPlugin', () => {
       plainMarks: null,
       remarkPlugins: [],
       remarkStringifyOptions: null,
-      rules: null,
     });
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
@@ -185,6 +179,34 @@ describe('MarkdownPlugin', () => {
         {
           children: [{ bold: true, text: 'bold' }],
           type: 'p',
+        },
+      ],
+    });
+  });
+
+  it('applies one-operation overrides by installed feature name', () => {
+    const editor = createTestEditor();
+
+    expect(
+      editor.api.markdown.deserialize('```ts\nconst answer = 42;\n```', {
+        rules: {
+          [KEYS.codeBlock]: {
+            deserialize: () => ({
+              children: [{ text: '' }],
+              lang: 'ts',
+              rawCode: 'const answer = 42;',
+              type: KEYS.codeBlock,
+            }),
+          },
+        },
+      })
+    ).toEqual({
+      children: [
+        {
+          children: [{ text: '' }],
+          lang: 'ts',
+          rawCode: 'const answer = 42;',
+          type: KEYS.codeBlock,
         },
       ],
     });
@@ -219,7 +241,7 @@ describe('MarkdownPlugin', () => {
     });
 
     expect(
-      editor.api.clipboard.insertData(
+      editor.api.dom.clipboard.insertData(
         createDataTransfer({
           html: '<p>paste me</p>',
           text: '**plain text**',
@@ -237,7 +259,7 @@ describe('MarkdownPlugin', () => {
     });
 
     expect(
-      editor.api.clipboard.insertData(
+      editor.api.dom.clipboard.insertData(
         createDataTransfer({ text: 'https://platejs.org/docs' })
       )
     ).toBe(true);
@@ -252,7 +274,7 @@ describe('MarkdownPlugin', () => {
     });
 
     expect(
-      editor.api.clipboard.insertData(
+      editor.api.dom.clipboard.insertData(
         createDataTransfer({
           files: [new File([''], 'attachment.txt')],
           text: 'https://platejs.org/docs',
@@ -266,11 +288,13 @@ describe('MarkdownPlugin', () => {
 
   it('parses non-url plain text by default', () => {
     const editor = createBaseEditor({
-      plugins: [BoldPlugin, MarkdownPlugin],
+      plugins: [BaseBoldPlugin, MarkdownPlugin],
     });
 
     expect(
-      editor.api.clipboard.insertData(createDataTransfer({ text: '**bold**' }))
+      editor.api.dom.clipboard.insertData(
+        createDataTransfer({ text: '**bold**' })
+      )
     ).toBe(true);
     expect(editor.read.children()).toEqual([
       { children: [{ bold: true, text: 'bold' }], type: 'p' },
@@ -279,7 +303,7 @@ describe('MarkdownPlugin', () => {
 
   it('registers Markdown serialization with the host codec registry', () => {
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin],
+      plugins: [BaseBoldPlugin, MarkdownPlugin],
     });
     const data = new DataTransfer();
     const fragment = editor.api.markdown.deserialize('**bold**');
@@ -342,7 +366,7 @@ describe('MarkdownPlugin', () => {
     target.update.selection.set({ offset: 0, path: [0, 0] });
     markdownData.setData('text/markdown', data.getData('text/markdown'));
 
-    expect(target.api.clipboard.insertData(markdownData)).toBe(true);
+    expect(target.api.dom.clipboard.insertData(markdownData)).toBe(true);
 
     const value = target.read.value();
     const image = value.children[0];
@@ -358,7 +382,7 @@ describe('MarkdownPlugin', () => {
 
   it('deserializes partially styled MDX spans into JSON-compatible content', () => {
     const editor = createBaseEditor({
-      plugins: [MarkdownPlugin],
+      plugins: [BaseFontColorPlugin, MarkdownPlugin],
     });
     const value = editor.api.markdown.deserialize(
       '<span style="color: #93C47D;">colored</span>',
@@ -378,14 +402,14 @@ describe('MarkdownPlugin', () => {
 
   it('parses the registered Markdown clipboard format', () => {
     const editor = createBaseEditor({
-      plugins: [BoldPlugin, MarkdownPlugin],
+      plugins: [BaseBoldPlugin, MarkdownPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const data = new DataTransfer();
 
     data.setData('text/markdown', '**bold**');
 
-    expect(editor.api.clipboard.insertData(data)).toBe(true);
+    expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     expect(editor.read.children()).toEqual(
       editor.api.markdown.deserialize('**bold**').children
     );
@@ -394,18 +418,18 @@ describe('MarkdownPlugin', () => {
   it('round-trips a leaf property through the Markdown host codec', () => {
     const value = [{ children: [{ bold: true, text: 'bold' }], type: 'p' }];
     const source = createBaseEditor({
-      plugins: [BoldPlugin, MarkdownPlugin],
+      plugins: [BaseBoldPlugin, MarkdownPlugin],
       initialValue: value,
     });
     const target = createBaseEditor({
-      plugins: [BoldPlugin, MarkdownPlugin],
+      plugins: [BaseBoldPlugin, MarkdownPlugin],
       initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
     const data = new DataTransfer();
 
     writeHostFragmentData(source, data, ContentSlice.closed(value));
 
-    expect(target.api.clipboard.insertData(data)).toBe(true);
+    expect(target.api.dom.clipboard.insertData(data)).toBe(true);
     expect(target.read.children()).toEqual(value);
   });
 });

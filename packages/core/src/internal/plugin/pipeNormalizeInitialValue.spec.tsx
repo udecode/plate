@@ -13,9 +13,9 @@ describe('pipeNormalizeInitialValue', () => {
   const createLoosePlugin = (config: Record<string, unknown>) =>
     createBasePlugin(config as any) as any;
 
-  const createTestPlugin = (key: string) =>
+  const createTestPlugin = (name: string) =>
     createBasePlugin({
-      key,
+      name,
       transformInitialValue: ({ value: initialValue }: any) =>
         ({
           ...initialValue,
@@ -36,7 +36,7 @@ describe('pipeNormalizeInitialValue', () => {
     });
 
   const CountPlugin = createBasePlugin({
-    key: 'count',
+    name: 'count',
     schema: {
       properties: [
         schema.elementProperty('count', property.number(), {
@@ -194,7 +194,7 @@ describe('pipeNormalizeInitialValue', () => {
     const editor = createBaseEditor({
       plugins: [
         createLoosePlugin({
-          key: 'bad',
+          name: 'bad',
           transformInitialValue: () => [],
         }),
       ],
@@ -216,7 +216,7 @@ describe('pipeNormalizeInitialValue', () => {
     const editor = createBaseEditor({
       plugins: [
         createLoosePlugin({
-          key: 'skip',
+          name: 'skip',
           editOnly: { transformInitialValue: true },
           transformInitialValue: ({
             value,

@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { assertNoPrivatePlateDeclarationBrands } from './check-package-declaration-brands.mjs';
 
 const runtimeExtensionPattern = /\.(?:c|m)?js$/;
+const anyPluginDeclarationPattern =
+  /\bdeclare\s+const\s+[A-Za-z_$][\w$]*Plugin\s*:\s*any\s*;/gu;
 
 export function getPackageBuildArtifacts(packageJson) {
   const artifacts = new Set();
@@ -41,12 +43,31 @@ export function assertPackageBuildArtifacts(packageRoot = process.cwd()) {
   const packageJson = JSON.parse(
     readFileSync(join(packageRoot, 'package.json'), 'utf8')
   );
-  const missing = getPackageBuildArtifacts(packageJson).filter(
+  const artifacts = getPackageBuildArtifacts(packageJson);
+  const missing = artifacts.filter(
     (artifact) => !existsSync(join(packageRoot, artifact))
   );
 
   if (missing.length > 0) {
     throw new Error(`Missing public build artifacts: ${missing.join(', ')}`);
+  }
+
+  const erasedPlugins = artifacts
+    .filter((artifact) => artifact.endsWith('.d.ts'))
+    .flatMap((artifact) => {
+      const source = readFileSync(join(packageRoot, artifact), 'utf8');
+
+      return [...source.matchAll(anyPluginDeclarationPattern)].map(
+        (match) => `${artifact}: ${match[0]}`
+      );
+    });
+
+  if (erasedPlugins.length > 0) {
+    throw new Error(
+      `Public plugin declarations collapsed to any:\n${erasedPlugins
+        .map((entry) => `- ${entry}`)
+        .join('\n')}`
+    );
   }
 
   assertNoPrivatePlateDeclarationBrands(packageRoot);

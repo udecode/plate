@@ -52,7 +52,7 @@ For a comprehensive list of plugins that support HTML string deserialization, re
 
 ### Schema Identity
 
-Plate compiles the document schema from the installed plugins. Omit `schema`
+Plate compiles the document schema from the installed plugins. Omit `schemaIdentity`
 for ordinary editors. `editor.read.schema.identity()` returns a derived
 identity with the exact compiled fingerprint:
 
@@ -65,7 +65,7 @@ editor.read.schema.identity();
 // { kind: 'derived', fingerprint: '...' }
 ```
 
-Pass `schema: { id, version }` when a document participates in durable
+Pass `schemaIdentity: { id, version }` when a document participates in durable
 persistence, history serialization, schema migration, or collaboration peer
 negotiation. That creates a named lineage while keeping the fingerprint tied
 only to the compiled schema:
@@ -73,7 +73,7 @@ only to the compiled schema:
 ```ts
 const editor = createPlateEditor({
   plugins: [H1Plugin],
-  schema: { id: 'acme-document', version: 3 },
+  schemaIdentity: { id: 'acme-document', version: 3 },
 });
 
 editor.read.schema.identity();
@@ -280,8 +280,8 @@ Override default components for plugins:
 const editor = createPlateEditor({
   plugins: [H1Plugin],
   components: {
-    [ParagraphPlugin.key]: CustomParagraphComponent,
-    [H1Plugin.key]: CustomHeadingComponent,
+    [ParagraphPlugin.name]: CustomParagraphComponent,
+    [H1Plugin.name]: CustomHeadingComponent,
   },
 });
 ```
@@ -309,7 +309,7 @@ it or controlling the consumer's editor kit:
 
 ```ts
 const SingleBlockPlugin = createPlatePlugin({
-  key: KEYS.singleBlock,
+  name: KEYS.singleBlock,
   override: {
     plugins: {
       [KEYS.trailingBlock]: {
@@ -321,14 +321,16 @@ const SingleBlockPlugin = createPlatePlugin({
 ```
 
 The override applies only when the target is installed; a missing target is
-ignored. It cannot change `key`, `dependencies`, or nest another `override`.
+ignored. It cannot change `name`, `dependencies`, or nest another `override`.
 Direct target configuration wins.
 
 ### Replace Dependency Defaults
 
 A complete explicit descriptor can replace a lower-precedence core or
-dependency definition with the same key. Array order does not choose the
-winner, and two distinct explicit descriptors with the same key are an error.
+dependency definition with the same name. Inside one plugin array, terminal
+configurations derived from the same authored plugin compose in order and later
+defined values win. Unrelated plugins and divergent authoring branches cannot
+share a name.
 
 ```ts
 const AppParagraphPlugin = ParagraphPlugin.configure({
@@ -369,12 +371,12 @@ import { type PlateEditor, useEditor } from 'platejs/react';
 interface ParagraphElement extends Element {
   align?: 'left' | 'center' | 'right' | 'justify';
   children: RichText[];
-  type: typeof ParagraphPlugin.key;
+  type: typeof ParagraphPlugin.name;
 }
 
 interface ImageElement extends Element {
   children: [{ text: '' }]
-  type: typeof ImagePlugin.key;
+  type: typeof ImagePlugin.name;
   url: string;
 }
 

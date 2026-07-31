@@ -46,8 +46,8 @@ describe('BaseTablePlugin', () => {
     const editor = createPlateEditor({
       plugins: [BaseTablePlugin],
     });
-    const tdProps = editor.getPlugin(BaseTableCellPlugin).render?.nodeProps;
-    const thProps = editor.getPlugin(BaseTableCellHeaderPlugin).render
+    const tdProps = editor.plugin(BaseTableCellPlugin).plugin.render?.nodeProps;
+    const thProps = editor.plugin(BaseTableCellHeaderPlugin).plugin.render
       ?.nodeProps;
     const decoded = editor.api.html.deserialize({
       element: `
@@ -109,13 +109,13 @@ describe('BaseTablePlugin', () => {
       children: [{ text: '' }],
       colSpan: 2,
       rowSpan: 3,
-      type: editor.getType(KEYS.td),
+      type: editor.plugin(KEYS.td).type,
     };
     const thElement: TTableCellElement = {
       children: [{ text: '' }],
       colSpan: 4,
       rowSpan: 5,
-      type: editor.getType(KEYS.th),
+      type: editor.plugin(KEYS.th).type,
     };
 
     expect(getProps(tdProps, tdElement)).toEqual({
@@ -161,7 +161,7 @@ describe('BaseTablePlugin', () => {
     });
     const data = new DataTransfer();
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const table = new DOMParser()
       .parseFromString(data.getData('text/html'), 'text/html')

@@ -1,6 +1,6 @@
 'use client';
 
-import type { InferConfig, Path } from 'platejs';
+import type { DefinitionOf, Path } from 'platejs';
 
 import { TextApi } from 'platejs';
 import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
@@ -22,8 +22,8 @@ const initialState: CommentPluginState = {
 };
 
 export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
-  handlers: {
-    onClick: ({ api, event, read, store, type }) => {
+  on: {
+    click: ({ api, event, read, store, type }) => {
       const activeTarget = getDiscussionClickTarget({
         selector: `.plite-${type}`,
         target: event.target,
@@ -77,6 +77,6 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
     },
   });
 
-export type CommentConfig = InferConfig<typeof commentPlugin>;
+export type CommentDefinition = DefinitionOf<typeof commentPlugin>;
 
 export const CommentKit = [commentPlugin];

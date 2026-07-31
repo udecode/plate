@@ -66,7 +66,7 @@ export function ReadOnlyEditor() {
 | Component        | Use For                                                                                          |
 | ---------------- | ------------------------------------------------------------------------------------------------ |
 | `Plate`          | Store provider for one editor instance.                                                          |
-| `PlateContent`   | Editable Plite surface with plugin handlers, decorators, renderers, hotkeys, and editor effects. |
+| `PlateContent`   | Editable Plite surface with plugin `on` callbacks, decorators, renderers, hotkeys, and editor effects. |
 | `PlateView`      | Static read-only rendering with Plate fragment copy support.                                     |
 | `PlateContainer` | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots.                 |
 | `Plite`          | Plite provider wrapper used by `PlateContent`; also applies `abovePlite` plugin wrappers.        |
@@ -77,12 +77,12 @@ export function ReadOnlyEditor() {
 
 ## Render Pipeline
 
-`PlateContent` builds the editable props with `useEditableProps`. That pipeline combines store-level renderers, `PlateContent` render props, plugin decorators, and plugin DOM handlers.
+`PlateContent` builds the editable props with `useEditableProps`. That pipeline combines store-level renderers, `PlateContent` render props, plugin decorators, and plugin DOM events.
 
 | Stage           | Source                                                                                                                  |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Plite provider  | `Plite` receives the editor instance and store callbacks.                                                               |
-| Editable props  | `useEditableProps` pipes decorators, DOM handlers, `renderElement`, `renderLeaf`, and `renderText`.                     |
+| Editable props  | `useEditableProps` pipes decorators, DOM events, `renderElement`, `renderLeaf`, and `renderText`.                       |
 | Plugin slots    | `beforeEditable`, `aboveEditable`, and `afterEditable` wrap or sit around the editable surface.                         |
 | Effects         | `EditorShortcutDispatcher`, `EditorRefEffect`, and `PlateControllerEffect` run inside `PlateContent`. |
 | Read-only state | `disabled` forces read-only; `readOnly` syncs back into the Plate store.                                                |

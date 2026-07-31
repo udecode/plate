@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-07-31-simplify-ai-chat-source-commands",
+  "status": "draft",
+  "source": {
+    "kind": "entry-mdx",
+    "path": "apps/www/src/registry/changelog/entries/2026-07-31-simplify-ai-chat-source-commands.mdx"
+  },
+  "change": {
+    "type": "source",
+    "date": "2026-07-31",
+    "commits": []
+  },
+  "release": {
+    "status": "unresolved"
+  },
+  "kind": "wiring",
+  "summary": "Read AI previews from plugin state",
+  "targets": [
+    {
+      "name": "ai-menu",
+      "files": ["apps/www/src/registry/ui/ai-menu.tsx"],
+      "definitionFiles": ["apps/www/src/registry/registry-ui.ts"],
+      "diagnostics": []
+    }
+  ],
+  "entries": [
+    {
+      "id": "2026-07-31-ai-menu-preview-state-6f3fd453",
+      "kind": "wiring",
+      "summary": "Read the stored AI preview when insert or replace commands run, so custom commands pass only formatting options.",
+      "details": [],
+      "migrationNotes": [],
+      "targets": ["ai-menu"],
+      "source": {
+        "line": 12,
+        "row": 1,
+        "legacyRelease": {
+          "date": "2026-07-31",
+          "entry": "2026-07-31-simplify-ai-chat-source-commands",
+          "section": null
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

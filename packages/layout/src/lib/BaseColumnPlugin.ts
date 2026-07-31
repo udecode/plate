@@ -1,7 +1,7 @@
 import {
   BaseParagraphPlugin,
   createBasePlugin,
-  type InferConfig,
+  type DefinitionOf,
 } from '@platejs/core';
 import {
   type Element,
@@ -45,7 +45,7 @@ export type ToggleColumnGroupOptions = {
 };
 
 export const BaseColumnItemPlugin = createBasePlugin({
-  key: KEYS.column,
+  name: KEYS.column,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent({
@@ -53,49 +53,50 @@ export const BaseColumnItemPlugin = createBasePlugin({
         min: 1,
       }),
       properties: { width: property.string() },
-      topLevel: false,
+      blockContent: false,
     },
   }),
-  extension: ({ editor }) => ({
-    corrections: [
-      {
-        event: 'content',
-        correct({ entry: [node, path], tx }) {
-          const columnGroupType = editor.getType(KEYS.columnGroup);
+  corrections: [
+    {
+      event: 'content',
+      correct({ editor, entry: [node, path], tx }) {
+        const columnGroup = editor.plugin(KEYS.columnGroup);
+        const columnGroupType = columnGroup.installed
+          ? columnGroup.type
+          : KEYS.columnGroup;
 
-          if (
-            !ElementApi.isElementType<TColumnGroupElement>(
-              node,
-              columnGroupType
-            )
-          ) {
-            return;
-          }
+        if (
+          !ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType)
+        ) {
+          return;
+        }
 
-          const widths = node.children.map((column) => {
-            const parsed = Number.parseFloat(column.width);
+        const widths = node.children.map((column) => {
+          const parsed = Number.parseFloat(column.width);
 
-            return Number.isNaN(parsed) ? 0 : parsed;
-          });
-          const sum = widths.reduce((total, width) => total + width, 0);
+          return Number.isNaN(parsed) ? 0 : parsed;
+        });
+        const sum = widths.reduce((total, width) => total + width, 0);
 
-          if (sum === 100) return;
+        if (sum === 100) return;
 
-          const adjustment = (100 - sum) / node.children.length;
+        const adjustment = (100 - sum) / node.children.length;
 
-          widths.forEach((width, index) => {
-            tx.nodes.set<TColumnElement>(
-              { width: `${width + adjustment}%` },
-              { at: path.concat([index]) }
-            );
-          });
-        },
+        widths.forEach((width, index) => {
+          tx.nodes.set<TColumnElement>(
+            { width: `${width + adjustment}%` },
+            { at: path.concat([index]) }
+          );
+        });
       },
-    ],
-  }),
+    },
+  ],
   update: ({ editor, tx, type }) => {
     const columnType = type;
-    const columnGroupType = editor.getType(KEYS.columnGroup);
+    const columnGroup = editor.plugin(KEYS.columnGroup);
+    const columnGroupType = columnGroup.installed
+      ? columnGroup.type
+      : KEYS.columnGroup;
     const columnsToWidths = (columns = 2) =>
       new Array(columns).fill(null).map(() => `${100 / columns}%`);
     const set = ({ at, columns, widths }: SetColumnsOptions) => {
@@ -127,7 +128,7 @@ export const BaseColumnItemPlugin = createBasePlugin({
             children: [
               {
                 children: [{ text: '' }],
-                type: editor.getType(KEYS.p),
+                type: editor.plugin(KEYS.p).type,
               },
             ],
             type: columnType,
@@ -169,7 +170,7 @@ export const BaseColumnItemPlugin = createBasePlugin({
             children: [
               {
                 children: [{ text: '' }],
-                type: editor.getType(KEYS.p),
+                type: editor.plugin(KEYS.p).type,
               },
             ],
             type: columnType,
@@ -191,7 +192,7 @@ export const BaseColumnItemPlugin = createBasePlugin({
               children: [
                 {
                   children: [{ text: '' }],
-                  type: editor.getType(KEYS.p),
+                  type: editor.plugin(KEYS.p).type,
                 },
               ],
               type: columnType,
@@ -297,7 +298,7 @@ export const BaseColumnItemPlugin = createBasePlugin({
                 ? node
                 : {
                     children: [{ text: '' }],
-                    type: editor.getType(KEYS.p),
+                    type: editor.plugin(KEYS.p).type,
                   },
             ],
             type: columnType,
@@ -322,12 +323,33 @@ export const BaseColumnItemPlugin = createBasePlugin({
       },
     };
   },
-}).extend({
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'column',
+        kind: 'node',
+        decode: ({ decode, decoration, node, parseAttributes, type }) => ({
+          children: decode(node.children, decoration),
+          type,
+          ...parseAttributes(node.attributes),
+        }),
+        encode: ({ encodeFlow, node, propsToAttributes }) => {
+          const { children, id: _, type, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes(rest),
+            children: encodeFlow(children),
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
   shortcuts: { selectAll: { keys: 'mod+a' } },
 });
 
 export const BaseColumnPlugin = createBasePlugin({
-  key: KEYS.columnGroup,
+  name: KEYS.columnGroup,
   dependencies: [BaseColumnItemPlugin],
   schema: ({ plugins }) => {
     const columnType = plugins.elementType(BaseColumnItemPlugin);
@@ -351,7 +373,29 @@ export const BaseColumnPlugin = createBasePlugin({
       },
     };
   },
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'column_group',
+        kind: 'node',
+        decode: ({ decode, decoration, node, parseAttributes, type }) => ({
+          children: decode(node.children, decoration),
+          type,
+          ...parseAttributes(node.attributes),
+        }),
+        encode: ({ encodeFlow, node, propsToAttributes }) => {
+          const { children, id: _, type, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes(rest),
+            children: encodeFlow(children),
+            name: type,
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
   type: NODES.columnGroup,
 });
 
-export type ColumnConfig = InferConfig<typeof BaseColumnItemPlugin>;
+export type ColumnDefinition = DefinitionOf<typeof BaseColumnItemPlugin>;

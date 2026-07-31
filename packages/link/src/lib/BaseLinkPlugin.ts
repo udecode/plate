@@ -1,6 +1,6 @@
 import {
   type BaseEditor,
-  type InferConfig,
+  type DefinitionOf,
   createBasePlugin,
   createRuleFactory,
 } from '@platejs/core';
@@ -21,6 +21,8 @@ import {
 import { KEYS } from '@platejs/utils';
 import type { TLinkElement } from '@platejs/utils';
 import { isDefined, isUrl as defaultIsUrl, sanitizeUrl } from '@udecode/utils';
+
+const BARE_AUTOLINK_LITERAL_RE = /^https?:\/\//i;
 
 export type BaseLinkPluginState = {
   /** List of allowed URL schemes. */
@@ -192,7 +194,7 @@ export const BaseLinkPlugin = createBasePlugin({
     },
   }),
   initialState,
-  key: 'link',
+  name: 'link',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -236,6 +238,38 @@ export const BaseLinkPlugin = createBasePlugin({
           };
         },
         match: [{ tag: 'a' }],
+      },
+      'text/markdown': {
+        from: 'link',
+        kind: 'node',
+        decode: ({ decode, decoration, node, type }) => ({
+          children: decode(node.children, decoration),
+          type,
+          url: node.url,
+        }),
+        encode: ({ encodePhrasing, node, resourceLink }) => {
+          const children = encodePhrasing(node.children);
+          const url = typeof node.url === 'string' ? node.url : '';
+          const isBareAutolinkLiteral =
+            children.length === 1 &&
+            children[0]?.type === 'text' &&
+            children[0].value === url &&
+            !resourceLink &&
+            BARE_AUTOLINK_LITERAL_RE.test(url);
+
+          if (isBareAutolinkLiteral) {
+            return {
+              type: 'html',
+              value: url,
+            };
+          }
+
+          return {
+            children,
+            type: 'link',
+            url,
+          };
+        },
       },
     }),
 
@@ -544,37 +578,35 @@ export const BaseLinkPlugin = createBasePlugin({
     }),
   }))
   .extend(({ plugin, type }) => ({
-    extension: {
-      commands: ({ around }) => [
-        around(editorCommands.insertText, ({ input, state, next }) => {
-          if (input.options?.at) return next();
+    commands: ({ around }) => [
+      around(editorCommands.insertText, ({ input, state, next }) => {
+        if (input.options?.at) return next();
 
-          const selection = state.selection();
+        const selection = state.selection();
 
-          if (!selection || !state.selection.isCollapsed()) {
-            return next();
-          }
+        if (!selection || !state.selection.isCollapsed()) {
+          return next();
+        }
 
-          const link = state.nodes.above<Element>({
-            at: selection,
-            match: { type },
-          });
+        const link = state.nodes.above<Element>({
+          at: selection,
+          match: { type },
+        });
 
-          if (!link || !state.points.isEnd(selection.focus, link[1])) {
-            return next();
-          }
+        if (!link || !state.points.isEnd(selection.focus, link[1])) {
+          return next();
+        }
 
-          const prefix = state.transaction((tx) => {
-            tx[plugin.key].exitEnd();
-          });
+        const prefix = state.transaction((tx) => {
+          tx[plugin.name].exitEnd();
+        });
 
-          return next.after(prefix);
-        }),
-      ],
-    },
+        return next.after(prefix);
+      }),
+    ],
   }));
 
-export type BaseLinkConfig = InferConfig<typeof BaseLinkPlugin>;
+export type BaseLinkDefinition = DefinitionOf<typeof BaseLinkPlugin>;
 
 const createLinkRule = createRuleFactory(BaseLinkPlugin);
 
@@ -619,11 +651,15 @@ const pasteAutolinkRule = createLinkRule<
     const selection = context.editor.read.selection();
     let shouldLink = false;
 
+    const codeBlock = context.editor.plugin(KEYS.codeBlock);
+
     if (
       selection &&
       !context.editor.read.nodes.above({
         at: selection,
-        match: { type: context.editor.getType(KEYS.codeBlock) },
+        match: {
+          type: codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+        },
       })
     ) {
       shouldLink =
@@ -694,13 +730,15 @@ export const LinkRules = {
         const selection = editor.read.selection();
 
         if (!selection || !editor.read.selection.isCollapsed()) return;
+        const codeBlock = editor.plugin(KEYS.codeBlock);
+
         if (
           editor.read.nodes.above({
             at: selection,
             match: {
               type: [
-                editor.getType(KEYS.codeBlock),
-                editor.getType(BaseLinkPlugin.key),
+                codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+                editor.plugin(BaseLinkPlugin.name).type,
               ],
             },
           })

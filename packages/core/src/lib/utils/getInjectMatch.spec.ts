@@ -6,7 +6,7 @@ import { createBasePlugin } from '../plugin';
 import { getInjectMatch } from './getInjectMatch';
 
 const ParagraphPlugin = createBasePlugin({
-  key: 'paragraph',
+  name: 'paragraph',
   type: 'paragraph-test',
   schema: {
     element: { content: schema.content.open({ default: 'text', min: 1 }) },
@@ -14,8 +14,8 @@ const ParagraphPlugin = createBasePlugin({
 });
 
 const QuotePlugin = createBasePlugin({
-  key: 'quote',
-  type: 'quote',
+  name: 'quote',
+  type: 'blockquote-test',
   schema: {
     element: {
       content: schema.content.group('block'),
@@ -24,7 +24,7 @@ const QuotePlugin = createBasePlugin({
 });
 
 const LinkPlugin = createBasePlugin({
-  key: 'link',
+  name: 'link',
   type: 'a',
   schema: {
     element: {
@@ -40,7 +40,7 @@ const createMatchEditor = (plugin: AnyBasePlugin) =>
     initialValue: [
       {
         children: [{ children: [{ text: 'nested' }], type: 'paragraph-test' }],
-        type: 'quote',
+        type: 'blockquote-test',
       },
     ],
   });
@@ -48,30 +48,30 @@ const createMatchEditor = (plugin: AnyBasePlugin) =>
 describe('getInjectMatch', () => {
   it('respects isElement, isBlock, and isLeaf filters', () => {
     const elementPlugin = createBasePlugin({
-      key: 'elementFilter',
+      name: 'elementFilter',
       inject: { isElement: true },
     });
     const blockPlugin = createBasePlugin({
-      key: 'blockFilter',
+      name: 'blockFilter',
       inject: { isBlock: true },
     });
     const leafPlugin = createBasePlugin({
-      key: 'leafFilter',
+      name: 'leafFilter',
       inject: { isLeaf: true },
     });
 
     const editor = createMatchEditor(elementPlugin);
     const elementMatch = getInjectMatch(
       editor,
-      editor.getPlugin(elementPlugin)
+      editor.plugin(elementPlugin).plugin
     );
     const blockMatch = getInjectMatch(
       createMatchEditor(blockPlugin),
-      createMatchEditor(blockPlugin).getPlugin(blockPlugin)
+      createMatchEditor(blockPlugin).plugin(blockPlugin).plugin
     );
     const leafMatch = getInjectMatch(
       createMatchEditor(leafPlugin),
-      createMatchEditor(leafPlugin).getPlugin(leafPlugin)
+      createMatchEditor(leafPlugin).plugin(leafPlugin).plugin
     );
 
     expect(elementMatch({ text: 'leaf' } as any, [0, 0])).toBe(false);
@@ -99,34 +99,34 @@ describe('getInjectMatch', () => {
     expect(leafMatch({ text: 'leaf' } as any, [0, 0])).toBe(true);
   });
 
-  it('respects targetPluginKeys and excludePlugins', () => {
+  it('respects targetPluginNames and excludePlugins', () => {
     const targetPlugin = createBasePlugin({
-      targetPluginKeys: ['paragraph'],
-      key: 'targetFilter',
+      targetPluginNames: ['paragraph'],
+      name: 'targetFilter',
     });
     const excludePlugin = createBasePlugin({
-      key: 'excludeFilter',
+      name: 'excludeFilter',
       inject: { excludePlugins: ['quote'] },
     });
     const missingTargetPlugin = createBasePlugin({
-      key: 'missingTargetFilter',
-      targetPluginKeys: ['missingOptionalPlugin'],
+      name: 'missingTargetFilter',
+      targetPluginNames: ['missingOptionalPlugin'],
     });
 
     const targetEditor = createMatchEditor(targetPlugin);
     const excludeEditor = createMatchEditor(excludePlugin);
     const targetMatch = getInjectMatch(
       targetEditor,
-      targetEditor.getPlugin(targetPlugin)
+      targetEditor.plugin(targetPlugin).plugin
     );
     const excludeMatch = getInjectMatch(
       excludeEditor,
-      excludeEditor.getPlugin(excludePlugin)
+      excludeEditor.plugin(excludePlugin).plugin
     );
     const missingTargetEditor = createMatchEditor(missingTargetPlugin);
     const missingTargetMatch = getInjectMatch(
       missingTargetEditor,
-      missingTargetEditor.getPlugin(missingTargetPlugin)
+      missingTargetEditor.plugin(missingTargetPlugin).plugin
     );
 
     expect(
@@ -136,10 +136,16 @@ describe('getInjectMatch', () => {
       )
     ).toBe(true);
     expect(
-      targetMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
+      targetMatch(
+        { children: [{ text: 'leaf' }], type: 'blockquote-test' } as any,
+        [0]
+      )
     ).toBe(false);
     expect(
-      excludeMatch({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
+      excludeMatch(
+        { children: [{ text: 'leaf' }], type: 'blockquote-test' } as any,
+        [0]
+      )
     ).toBe(false);
     expect(
       excludeMatch(
@@ -157,7 +163,7 @@ describe('getInjectMatch', () => {
 
   it('respects excludeBelowPlugins and maxLevel', () => {
     const plugin = createBasePlugin({
-      key: 'depthFilter',
+      name: 'depthFilter',
       inject: {
         excludeBelowPlugins: ['quote'],
         maxLevel: 1,
@@ -165,7 +171,7 @@ describe('getInjectMatch', () => {
     });
 
     const editor = createMatchEditor(plugin);
-    const match = getInjectMatch(editor, editor.getPlugin(plugin));
+    const match = getInjectMatch(editor, editor.plugin(plugin).plugin);
 
     expect(
       match(
@@ -174,7 +180,10 @@ describe('getInjectMatch', () => {
       )
     ).toBe(false);
     expect(
-      match({ children: [{ text: 'leaf' }], type: 'quote' } as any, [0])
+      match(
+        { children: [{ text: 'leaf' }], type: 'blockquote-test' } as any,
+        [0]
+      )
     ).toBe(true);
     expect(
       match(

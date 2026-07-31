@@ -346,7 +346,7 @@ const fillDefaultRootChild = (
 
   const child = wrapping.reduceRight<Descendant>(
     (nested, type) => ({
-      ...state.schema.createAndFill(type),
+      ...state.schema.create(type),
       children: [nested],
     }),
     textNode

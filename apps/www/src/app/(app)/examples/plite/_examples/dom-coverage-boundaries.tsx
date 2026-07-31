@@ -190,7 +190,7 @@ const DomCoverageBoundariesExample = () => {
   const copySelection = useCallback(() => {
     const data = new DataTransfer();
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
     setCopyPreview(
       [
         `text/plain: ${data.getData('text/plain')}`,

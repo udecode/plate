@@ -9,12 +9,13 @@ type ExpectedEditorApiKeys =
   | 'audio'
   | 'blockMenu'
   | 'blockSelection'
-  | 'clipboard'
   | 'comment'
   | 'csv'
   | 'cursorOverlay'
+  | 'debug'
   | 'docxIO'
   | 'dom'
+  | 'elementState'
   | 'file'
   | 'html'
   | 'img'
@@ -29,8 +30,8 @@ type ExpectedEditorApiKeys =
   | 'toggle'
   | 'video';
 
-type _EveryInstalledApiIsDiscoverable = Assert<
-  ExpectedEditorApiKeys extends EditorApiKeys ? true : false
+type _EveryInstalledApiIsDiscoverable = AssertNever<
+  Exclude<ExpectedEditorApiKeys, EditorApiKeys>
 >;
 type _NoPhantomApiKeys = AssertNever<
   Exclude<EditorApiKeys, ExpectedEditorApiKeys>
@@ -50,6 +51,9 @@ type _CsvApiKeepsItsMethods = Assert<
 >;
 type _MediaApiKeepsItsMethods = Assert<
   'normalizeUrl' extends keyof MyEditor['api']['img'] ? true : false
+>;
+type _DomApiKeepsClipboardMethods = Assert<
+  'insertData' extends keyof MyEditor['api']['dom']['clipboard'] ? true : false
 >;
 type _SuggestionApiKeepsItsMethods = Assert<
   'untracked' extends keyof MyEditor['api']['suggestion'] ? true : false

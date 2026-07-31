@@ -104,9 +104,9 @@ export const suggestionPlugin = SuggestionPlugin.configure({
 
 ```tsx
 export const suggestionPlugin = SuggestionPlugin.configure({
-  handlers: {
+  on: {
     // 当点击建议外部时取消活跃建议
-    onClick: ({ api, editor, event, store, type }) => {
+    click: ({ api, editor, event, store, type }) => {
       let leaf = event.target as HTMLElement;
       let isSet = false;
 
@@ -161,7 +161,7 @@ import { createPlateEditor, createPlatePlugin } from 'platejs/react';
 import { SuggestionLineBreak } from '@/components/ui/suggestion-node';
 
 const suggestionLineBreakPlugin = createPlatePlugin({
-  key: 'suggestionLineBreak',
+  name: 'suggestionLineBreak',
   render: { belowNodes: SuggestionLineBreak as any },
 });
 

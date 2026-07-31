@@ -238,7 +238,7 @@ plugin may stay as a direct list-item child:
 `ListItemPlugin.configure({ initialState: { validLiChildren: [ImagePlugin] } })`
 
 Add the configured `ListItemPlugin` beside `ListPlugin` in the editor plugin
-array. The explicit descriptor replaces the required default with the same key.
+array. The explicit descriptor replaces the required default with the same name.
 
 ### `ListItemContentPlugin`
 
@@ -443,7 +443,7 @@ A behavior hook for a list toolbar button.
   </APIItem>
   <APIItem name="nodeType" type="string">
     List node type.
-    - **Default:** `BulletedListPlugin.key`
+    - **Default:** `BulletedListPlugin.name`
   </APIItem>
 </APIState>
 

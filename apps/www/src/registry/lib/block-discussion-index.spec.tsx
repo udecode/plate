@@ -73,7 +73,7 @@ const getBlockSuggestionData = (node: Node) =>
     : undefined;
 
 const MentionPlugin = createBasePlugin({
-  key: KEYS.mention,
+  name: KEYS.mention,
   schema: {
     element: {
       inline: true,
@@ -87,7 +87,7 @@ const MentionPlugin = createBasePlugin({
 });
 
 const InlineEquationPlugin = createBasePlugin({
-  key: KEYS.inlineEquation,
+  name: KEYS.inlineEquation,
   schema: {
     element: {
       inline: true,

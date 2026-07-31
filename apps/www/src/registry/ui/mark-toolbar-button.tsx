@@ -46,25 +46,25 @@ function toggleMark(
   plugin: BooleanMarkPlugin | typeof ScriptPlugin,
   value?: TScriptValue
 ) {
-  switch (plugin.key) {
-    case BoldPlugin.key:
+  switch (plugin.name) {
+    case BoldPlugin.name:
       return editor.plugin(plugin).update.toggle();
-    case CodePlugin.key:
+    case CodePlugin.name:
       return editor.plugin(plugin).update.toggle();
-    case HighlightPlugin.key:
+    case HighlightPlugin.name:
       return editor.plugin(plugin).update.toggle();
-    case ItalicPlugin.key:
+    case ItalicPlugin.name:
       return editor.plugin(plugin).update.toggle();
-    case KbdPlugin.key:
+    case KbdPlugin.name:
       return editor.plugin(plugin).update.toggle();
-    case StrikethroughPlugin.key:
+    case StrikethroughPlugin.name:
       return editor.plugin(plugin).update.toggle();
-    case ScriptPlugin.key: {
+    case ScriptPlugin.name: {
       if (value === undefined) return;
 
       return editor.plugin(ScriptPlugin).update.toggle(value);
     }
-    case UnderlinePlugin.key:
+    case UnderlinePlugin.name:
       return editor.plugin(plugin).update.toggle();
   }
 }

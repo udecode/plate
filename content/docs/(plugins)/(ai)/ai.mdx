@@ -115,7 +115,7 @@ import {
   AIPlugin,
   useChatChunk,
 } from '@platejs/ai/react';
-import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
+import { ElementApi, KEYS, PathApi } from 'platejs';
 import { usePluginStore } from 'platejs/react';
 
 export const aiChatPlugin = AIChatPlugin.extend({
@@ -156,7 +156,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
             tx.nodes.insert(
               {
                 children: [{ text: '' }],
-                type: getPluginType(editor, KEYS.aiChat),
+                type: editor.plugin(KEYS.aiChat).type,
               },
               {
                 at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -172,7 +172,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [getPluginType(editor, KEYS.ai)]: true,
+              [editor.plugin(KEYS.ai).type]: true,
             },
           });
         }
@@ -408,6 +408,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
     <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
+    <APIItem name="previewValue" type="Value" optional>Generated preview nodes registered by `useAIChatEditor` for insert and replace commands (managed internally).</APIItem>
     <APIItem name="streaming" type="boolean" optional>True while a response is streaming. Defaults to `false`.</APIItem>
     <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>Active tool used to interpret the response.</APIItem>
   </APIOptions>
@@ -477,24 +478,22 @@ Closes the AI menu, optionally undoing the last AI batch and refocusing the edit
 
 Accepts the latest response. In insert mode it removes AI marks and places the caret at the end of the streamed content. In chat mode it applies the pending suggestions.
 
-### `editor.update.aiChat.insertBelow(sourceEditor, options?)`
+### `editor.update.aiChat.insertBelow(options?)`
 
-Inserts the chat preview (`sourceEditor`) below the current selection or block selection.
+Inserts the stored chat preview below the current selection or block selection.
 
 <API name="insertBelow">
 <APIParameters>
-  <APIItem name="sourceEditor" type="BaseEditor">Editor containing the generated content.</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>Copy formatting from the source selection. Defaults to `'single'`.</APIItem>
 </APIParameters>
 </API>
 
-### `editor.update.aiChat.replaceSelection(sourceEditor, options?)`
+### `editor.update.aiChat.replaceSelection(options?)`
 
-Replaces the current selection or block selection with the chat preview.
+Replaces the current selection or block selection with the stored chat preview.
 
 <API name="replaceSelection">
 <APIParameters>
-  <APIItem name="sourceEditor" type="BaseEditor">Editor containing the generated content.</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>Controls how much formatting from the original selection should be applied.</APIItem>
 </APIParameters>
 </API>
@@ -654,7 +653,7 @@ It returns a Plite `Range` or `null`.
 
 <ComponentSource name="ai-menu" />
 
-Extend the `aiChatItems` map to add new commands. Each command receives `{ aiEditor, editor, input }` and can call `editor.plugin(AIChatPlugin).api.submit` with custom prompts or transforms.
+Extend the `aiChatItems` map to add new commands. Each command receives `{ editor, input }` and can call `editor.plugin(AIChatPlugin).api.submit` with custom prompts or transforms.
 
 #### Simple Custom Command
 

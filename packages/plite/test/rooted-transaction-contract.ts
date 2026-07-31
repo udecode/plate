@@ -23,13 +23,9 @@ const voidBlock = defineEditorSchema({
     'void-block': { void: 'block' } as const,
   },
   id: 'test-void-block',
-  root: {
-    content: schema.content.types(['paragraph', 'void-block']),
-  } as const,
+  root: schema.content.types(['paragraph', 'void-block']),
   roots: {
-    header: {
-      content: schema.content.types(['paragraph', 'void-block']),
-    } as const,
+    header: schema.content.types(['paragraph', 'void-block']),
   },
   unknown: 'preserve',
   version: 1,

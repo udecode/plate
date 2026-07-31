@@ -221,8 +221,8 @@ Phase / pass table:
 Review matrix:
 | Path / API | Drift score | Verdict | Owner | Evidence | Next |
 |------------|-------------|---------|-------|----------|------|
-| `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx` shortcut handler | 0 | main-parity-cleanup already applied before this sweep | Core React paragraph plugin | Uses `editor.update.blocks.toggle(type, { defaultType: editor.getType('p') })` for semantic toggle. | keep |
-| `packages/core/src/lib/plugins/input-rules/createInputRules.ts` mode `wrap` / `toggle` | 0 | keep-in-plate with Plite API | Core input-rules plugin | Explicit modes already call `editor.update.blocks.toggle(node, { defaultType: editor.getType('p'), wrap })`. | keep |
+| `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx` shortcut handler | 0 | main-parity-cleanup already applied before this sweep | Core React paragraph plugin | Uses `editor.update.blocks.toggle(type, { defaultType: editor.plugin('p').type })` for semantic toggle. | keep |
+| `packages/core/src/lib/plugins/input-rules/createInputRules.ts` mode `wrap` / `toggle` | 0 | keep-in-plate with Plite API | Core input-rules plugin | Explicit modes already call `editor.update.blocks.toggle(node, { defaultType: editor.plugin('p').type, wrap })`. | keep |
 | `packages/core/src/lib/plugins/input-rules/createInputRules.ts` default conversion path | 0 | keep-in-plate direct conversion | Core input-rules plugin | `origin/main` used `editor.tf.setNodes({ type: node })`; this is conversion, not toggle. | keep |
 | Core `nodes.set` property writes (`Plate.slow`, `PlateContent.spec`, `plateChangeHandlers.spec`, `NodeIdPlugin`) | 0 | keep-in-plate / test proof writes | Core tests/plugins | Writes `path`, `variant`, or node-id props, not block type toggles. | keep |
 | Plite / Plite React `nodes.set` contract tests | 0 | keep-in-plite | Plite package tests | Tests direct set-node primitive behavior; converting to toggle would destroy coverage. | keep |
@@ -230,7 +230,7 @@ Review matrix:
 Best Plate v2 recommendation:
 | Target | Recommended shape | Rejected legacy/hack alternatives | Reason | User-review need |
 |--------|-------------------|-----------------------------------|--------|------------------|
-| Semantic block toolbar/shortcut toggles | `editor.update.blocks.toggle(type, { defaultType: editor.getType('p') })` in Plate call sites until Plite owns the default block type. | `editor.update.nodes.set({ type })`; old `editor.tf.toggleBlock`; hardcoded fallback to raw `'p'` in Plate. | Toggle must flip active type back to the configured paragraph type. | None for this sweep. |
+| Semantic block toolbar/shortcut toggles | `editor.update.blocks.toggle(type, { defaultType: editor.plugin('p').type })` in Plate call sites until Plite owns the default block type. | `editor.update.nodes.set({ type })`; old `editor.tf.toggleBlock`; hardcoded fallback to raw `'p'` in Plate. | Toggle must flip active type back to the configured paragraph type. | None for this sweep. |
 | Input-rule direct conversion | `editor.update.nodes.set({ type: node }, { match: block })` | `blocks.toggle` for non-toggle conversion. | Markdown/input conversion should set the target type; it should not toggle off when the block is already active. | None. |
 
 Plite / Plate gap ledger:
@@ -290,7 +290,7 @@ Changed list:
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Optional default block type ergonomics | Plate call sites still need `defaultType: editor.getType('p')` for semantic toggles. | `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx` | Not needed for this sweep; consider later Plite/Plate default-block-type install so call sites can omit the option. |
+| 1 | Optional default block type ergonomics | Plate call sites still need `defaultType: editor.plugin('p').type` for semantic toggles. | `packages/core/src/react/plugins/paragraph/ParagraphPlugin.tsx` | Not needed for this sweep; consider later Plite/Plate default-block-type install so call sites can omit the option. |
 
 Findings:
 - `createInputRules.ts` has the only Core `nodes.set({ type })` call after paragraph; it is a direct conversion path, not a toggle.
@@ -299,7 +299,7 @@ Findings:
 Decisions and tradeoffs:
 - Keep `nodes.set` for direct set-node primitive coverage and one-way block conversion.
 - Use `blocks.toggle` for user-facing semantic toggle shortcuts/actions.
-- Keep `defaultType: editor.getType('p')` in Plate toggle call sites for now because Plite's raw default is `'p'`.
+- Keep `defaultType: editor.plugin('p').type` in Plate toggle call sites for now because Plite's raw default is `'p'`.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |

@@ -22,7 +22,7 @@ jsxt;
 describe('input rules', () => {
   it('retains element schema contributions after configuring input rules', () => {
     const CalloutPlugin = createPlatePlugin({
-      key: 'callout',
+      name: 'callout',
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
       },
@@ -40,7 +40,7 @@ describe('input rules', () => {
     });
 
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [{ children: [{ text: '' }], type: 'callout' }],
       })
     ).not.toThrow();
@@ -55,7 +55,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [strongRule],
         }),
@@ -78,7 +78,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -104,7 +104,7 @@ describe('input rules', () => {
         const editor = createPlateEditor({
           plugins: [
             createPlatePlugin({
-              key: 'testPlugin',
+              name: 'testPlugin',
             }).configure({
               inputRules: Array.from({ length: 8 }, (_, index) =>
                 defineInputRule({
@@ -149,7 +149,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -186,7 +186,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -217,7 +217,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -257,7 +257,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -281,7 +281,7 @@ describe('input rules', () => {
     let inserted: unknown;
 
     editor.update(() => {
-      inserted = editor.api.clipboard.insertData(dataTransfer);
+      inserted = editor.api.dom.clipboard.insertData(dataTransfer);
     });
 
     expect(inserted).toBe(true);
@@ -297,7 +297,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -322,7 +322,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
           inputRules: [
             defineInputRule({
               apply: () => true,
@@ -353,11 +353,11 @@ describe('input rules', () => {
     ).toHaveLength(1);
   });
 
-  it('provides lazy cached selection getters and pluginKey to insertText resolve', () => {
+  it('provides lazy cached selection getters and pluginName to insertText resolve', () => {
     const apply = mock(() => true);
     const resolve = mock(
-      ({ getBlockStartRange, getBlockStartText, pluginKey }) => {
-        expect(pluginKey).toBe('h2');
+      ({ getBlockStartRange, getBlockStartText, pluginName }) => {
+        expect(pluginName).toBe('h2');
         expect(getBlockStartRange()).toBe(getBlockStartRange());
         expect(getBlockStartText()).toBe('##');
         expect(getBlockStartText()).toBe('##');
@@ -368,7 +368,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'h2',
+          name: 'h2',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -407,7 +407,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'testPlugin',
+          name: 'testPlugin',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -445,12 +445,12 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'alpha',
+          name: 'alpha',
         }).configure({
           inputRules: [first, second],
         }),
         createPlatePlugin({
-          key: 'beta',
+          name: 'beta',
         }).configure({
           inputRules: [high],
         }),
@@ -468,7 +468,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'bold',
+          name: 'bold',
           schema: {
             mark: property.boolean({ default: false, omitDefault: true }),
           },
@@ -509,7 +509,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'bold',
+          name: 'bold',
           inputRules: ({ rule }) => [
             rule.mark({
               end: '*',
@@ -539,7 +539,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'codeBlock',
+          name: 'codeBlock',
           inputRules: ({ rule }) => [
             rule.blockFence({
               apply,
@@ -574,7 +574,7 @@ describe('input rules', () => {
       plugins: [
         BaseParagraphPlugin,
         createPlatePlugin({
-          key: 'codeBlock',
+          name: 'codeBlock',
           type: 'code_block',
         }).configure({
           inputRules: [
@@ -608,7 +608,7 @@ describe('input rules', () => {
       plugins: [
         BaseParagraphPlugin,
         createPlatePlugin({
-          key: 'equation',
+          name: 'equation',
         }).configure({
           inputRules: [
             defineInputRule({
@@ -625,7 +625,7 @@ describe('input rules', () => {
       getPlateRuntime(editor).inputRules.plugins.equation.rules
     ).toHaveLength(1);
     expect(getPlateRuntime(editor).inputRules.insertBreak).toContainEqual(
-      expect.objectContaining({ pluginKey: 'equation' })
+      expect.objectContaining({ pluginName: 'equation' })
     );
   });
 
@@ -640,7 +640,7 @@ describe('input rules', () => {
     const editor = createPlateEditor({
       plugins: [
         createPlatePlugin({
-          key: 'blockquote',
+          name: 'blockquote',
           schema: {
             element: {
               content: schema.content.group('block'),
@@ -680,7 +680,7 @@ describe('input rules', () => {
       plugins: [
         BaseParagraphPlugin,
         createPlatePlugin({
-          key: 'heading',
+          name: 'heading',
           schema: {
             element: {
               content: schema.content.open({ default: 'text', min: 1 }),
@@ -710,14 +710,14 @@ describe('input rules', () => {
       createPlateEditor({
         plugins: [
           createPlatePlugin({
-            key: 'testPlugin',
+            name: 'testPlugin',
           }).configure({
             inputRules: { markdown: true } as any,
           }),
         ],
       })
     ).toThrow(
-      'inputRules config must be an array of explicit rule instances or a factory.'
+      'inputRules must be an array of explicit rule instances or a factory.'
     );
   });
 });

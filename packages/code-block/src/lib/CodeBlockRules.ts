@@ -13,7 +13,7 @@ export const CodeBlockRules = {
     block: KEYS.p,
     enabled: ({ editor }) =>
       !editor.read.nodes.some({
-        match: { type: editor.getType(KEYS.codeBlock) },
+        match: { type: editor.plugin(KEYS.codeBlock).type },
       }),
     priority: 100,
     apply: ({ editor, tx }, match) => {
@@ -22,10 +22,10 @@ export const CodeBlockRules = {
           children: [
             {
               children: [{ text: '' }],
-              type: editor.getType(KEYS.codeLine),
+              type: editor.plugin(KEYS.codeLine).type,
             },
           ],
-          type: editor.getType(KEYS.codeBlock),
+          type: editor.plugin(KEYS.codeBlock).type,
         },
         { at: match.path }
       );

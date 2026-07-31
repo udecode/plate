@@ -71,7 +71,7 @@ const normalized = normalizeDateValue(date ?? new Date());
 
 {
   ...normalized,
-  type: editor.getType(KEYS.date),
+  type: editor.plugin(KEYS.date).type,
 }
 ```
 

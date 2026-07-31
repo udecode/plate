@@ -126,12 +126,10 @@ const createCollaborationSchema = (version: number) =>
         property.boolean({ default: false, omitDefault: true })
       ),
     ],
-    root: {
-      content: schema.content.types(['block-quote', 'paragraph'], {
-        default: { type: 'paragraph' },
-        min: 1,
-      }),
-    },
+    root: schema.content.types(['block-quote', 'paragraph'], {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
     unknown: 'preserve',
     version,
   });

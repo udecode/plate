@@ -26,7 +26,7 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
 });
 
 const MentionPlugin = createBasePlugin({
-  key: KEYS.mention,
+  name: KEYS.mention,
   schema: {
     element: {
       properties: {
@@ -39,7 +39,7 @@ const MentionPlugin = createBasePlugin({
 });
 
 const DatePlugin = createBasePlugin({
-  key: KEYS.date,
+  name: KEYS.date,
   schema: {
     element: {
       properties: {
@@ -52,14 +52,14 @@ const DatePlugin = createBasePlugin({
 });
 
 const TocPlugin = createBasePlugin({
-  key: KEYS.toc,
+  name: KEYS.toc,
   schema: {
     element: { void: 'block' },
   },
 });
 
 const BlockquotePlugin = createBasePlugin({
-  key: KEYS.blockquote,
+  name: KEYS.blockquote,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
@@ -68,7 +68,7 @@ const BlockquotePlugin = createBasePlugin({
 });
 
 const SlashInputPlugin = createBasePlugin({
-  key: 'slashInput',
+  name: 'slashInput',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -78,7 +78,7 @@ const SlashInputPlugin = createBasePlugin({
 });
 
 const MetadataMarkPlugin = createBasePlugin({
-  key: 'metadata',
+  name: 'metadata',
   schema: { mark: property.json() },
 });
 
@@ -204,7 +204,7 @@ describe('BaseSuggestionPlugin behavior', () => {
           editor.update.text.insert('test');
 
           expect(
-            editor.read.children()[0].children[1][BaseSuggestionPlugin.key]
+            editor.read.children()[0].children[1][BaseSuggestionPlugin.name]
           ).toBeTruthy();
 
           const data = inlineData(

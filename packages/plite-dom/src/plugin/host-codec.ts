@@ -184,13 +184,13 @@ const createPlainTextFallbackBlocks = <V extends Value>(
         }) as DescendantIn<V>
     );
   }
-  const block = state.schema.createAndFill(blockType);
+  const block = state.schema.create(blockType);
   const wrapping = state.schema.findWrapping(block, createText(''));
 
   if (!wrapping) return null;
 
   const wrapperProperties = wrapping.map((type) => {
-    const wrapper = state.schema.createAndFill(type);
+    const wrapper = state.schema.create(type);
     const { children: _children, ...properties } = wrapper;
 
     return properties;
@@ -250,7 +250,7 @@ const createPlainTextInlineSlice = <V extends Value>(
   const child = inlineSpine.reduceRight<DescendantIn<V>>(
     (nested, [inline]) => {
       const { children: _children, type, ...properties } = inline;
-      const wrapper = state.schema.createAndFill(type, properties);
+      const wrapper = state.schema.create(type, properties);
       const children = Object.freeze([nested]);
 
       return Object.freeze({ ...wrapper, children }) as DescendantIn<V>;
@@ -537,23 +537,29 @@ const compileHostCodecs = <V extends Value>(
   );
 };
 
+type HostCodecsExtensionDefinition<TName extends string> = {
+  contributions: true;
+  name: TName;
+  validate: true;
+};
+
 /** Install one or more host codecs as a named editor extension. */
-export const hostCodecs = <V extends Value = Value>(
-  name: string,
+export const hostCodecs = <const TName extends string, V extends Value = Value>(
+  name: TName,
   codecs: readonly HostCodec<V>[]
-): EditorExtension<BaseEditor<V, any>> => {
+): EditorExtension<HostCodecsExtensionDefinition<TName>> => {
   const registrations = Object.freeze(
     codecs.map((codec) =>
       Object.freeze({ codec: defineHostCodec(codec), owner: name })
     )
   );
 
-  return defineEditorExtension<BaseEditor<V, any>>()({
+  return defineEditorExtension({
     name,
     contributions: registrations.map((registration) =>
       HOST_CODECS.of(registration)
     ),
-    validateConfiguration(context) {
+    validate(context) {
       compileHostCodecs(
         withDefaultHostCodec(
           context.getContributions(
@@ -563,7 +569,7 @@ export const hostCodecs = <V extends Value = Value>(
         getCompiledEditorSchemaFromApi(context.schema)
       );
     },
-  });
+  }) as EditorExtension<HostCodecsExtensionDefinition<TName>>;
 };
 
 // The registry key retains the editor-specific value type at runtime. The

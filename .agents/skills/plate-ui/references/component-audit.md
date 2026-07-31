@@ -76,7 +76,7 @@ Copy:
 
 Registry UI is generic by definition, even when its current host has a complete
 inferred kit. Do not copy a host editor type or root
-`editor.api.<pluginKey>` access into it. Root plugin APIs belong to host-owned
+`editor.api.<pluginName>` access into it. Root plugin APIs belong to host-owned
 code; registry code gets inference from the descriptor portal.
 
 ## Registry wiring reminders

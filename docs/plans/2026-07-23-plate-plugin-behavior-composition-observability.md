@@ -397,7 +397,7 @@ Decision brief:
     omitted behaviors are never evaluated. Singular `extendBehavior` is
     optional sugar only if real usage justifies it.
   - `plugin.behaviors[key]` is a frozen typed semantic handle
-    `(pluginKey, localKey)`, not an executable descriptor and not object
+    `(pluginName, localKey)`, not an executable descriptor and not object
     identity. Replaceable public handles expose one pure
     `.variant(definition)` constructor, matching Plite's existing
     `defineExtensionSlot(...).of(...)` handle pattern while preserving the
@@ -415,7 +415,7 @@ Decision brief:
     ```ts
     type BehaviorPolicyDecision = {
       activation?: "enabled" | "disabled";
-      behavior: { behaviorKey: string; pluginKey: string };
+      behavior: { behaviorKey: string; pluginName: string };
       implementation?: null | {
         fingerprint: string;
         id: string;
@@ -426,13 +426,13 @@ Decision brief:
     type BehaviorPolicy = {
       bindings?: {
         capabilityId: string;
-        provider: { behaviorKey: string; pluginKey: string };
+        provider: { behaviorKey: string; pluginName: string };
       }[];
       decisions: BehaviorPolicyDecision[];
       exact?: {
         axis: "activation" | "implementation";
         behaviorKeys: string[];
-        pluginKey: string;
+        pluginName: string;
       }[];
       formatVersion: 1;
       id: string;
@@ -487,7 +487,7 @@ Decision brief:
     same precedence and multiple replacements fail instead of depending on
     array accident. Plate may still merge repeated compatible plugin
     descriptors by key: one nominal catalog owner exists per
-    `(pluginKey, behaviorKey)`, and repeated descriptors contribute ordered
+    `(pluginName, behaviorKey)`, and repeated descriptors contribute ordered
     policy layers only when catalog identity matches.
   - `defineBehaviorProfile` is the typed authoring form of the normalized IR.
     Its ordinary input is ergonomic `enable`, `disable`, and `use` collections
@@ -622,7 +622,7 @@ Decision ledger:
 | Authoring API                     | Repeated keyed `.extendExtension` accepts a literal but discards it from the returned type and copies the accumulated array      | One `.extendBehaviors(record)` retains every key, contract, dependency, and policy before evaluating factories                                                                                                   | Plate Core                      | New manifest generic/compiler; keep singular form only as justified sugar    | compile-only inference/scale fixtures                                                   | Type-instantiation growth                                 | adopt batch record                          |
 | Static selection                  | `.configure()` cannot remove one fragment                                                                                        | One sparse `.withBehaviors({ paste: false })` authoring map before terminal consumer configuration                                                                                                               | Plate Core                      | Builder/compiler/docs/Table example                                          | valid/unknown/required/internal key and post-config terminal tests                      | Policy layering ambiguity                                 | adopt with explicit layer provenance        |
 | Static replacement                | Raw same-name Plite replacement conflates logical slot and implementation                                                        | `withBehaviors` accepts one-use inferred inline definitions; `handle.variant(...)` names only reused or portable replacements                                                                                    | Plate Core                      | Behavior contract type, editor-local catalog, outer slot                     | inline inference plus replacement/provenance/round-trip/type tests                      | Anonymous code is not reproducible                        | inline local by default; name on reuse      |
-| Behavior handle                   | No typed plugin-facing semantic handle                                                                                           | `plugin.behaviors[key]` identifies `(pluginKey, localKey)` and compatible public handles expose one pure `.variant(...)` constructor                                                                             | Plate Core                      | Manifest generics, frozen typed handle, barrels                              | literal-key, permission-sensitive method, and rename fixtures                           | Leaking executable descriptors or method soup             | adopt one constructor only                  |
+| Behavior handle                   | No typed plugin-facing semantic handle                                                                                           | `plugin.behaviors[key]` identifies `(pluginName, localKey)` and compatible public handles expose one pure `.variant(...)` constructor                                                                             | Plate Core                      | Manifest generics, frozen typed handle, barrels                              | literal-key, permission-sensitive method, and rename fixtures                           | Leaking executable descriptors or method soup             | adopt one constructor only                  |
 | Identity/provenance               | Extension name currently conflates semantic address and concrete code                                                            | Separate behavior/slot identity, implementation identity, installed revision, and resource identity; version/build/layer are provenance                                                                          | Plate Core + Plite              | Catalog and compiled record metadata                                         | replacement metrics never aggregate across implementations                              | Version used as identity                                  | adopt four-level model                      |
 | Composition permission            | Named fragments are implicitly addressable but not classified                                                                    | Independent exposure, presence, activation, and replacement axes; tracing grants no operation                                                                                                                    | Feature owner + Core            | Manifest metadata and public-handle filtering                                | forbidden selection/activation/replacement tests                                        | Permanent exposure of internals                           | adopt                                       |
 | Profile                           | No cross-plugin behavior policy                                                                                                  | `defineBehaviorProfile({ enable, disable, use, ...advanced })` lowers typed handles to the normalized JSON-safe decision IR                                                                                      | Plate Core                      | Profile/compiler/serialization/fingerprint                                   | ergonomic-input/layering/exact/round-trip/init/live tests                               | Executable closures in JSON                               | named variants only at portability boundary |
@@ -864,7 +864,7 @@ Decisions and tradeoffs:
 - File, plugin, capability, behavior, Plite extension, implementation,
   installed revision, and resource identities are distinct. One owner file can
   declare many behaviors and extensions.
-- Public behavior identity is stable `(pluginKey, localKey)`. Package/build/
+- Public behavior identity is stable `(pluginName, localKey)`. Package/build/
   version/policy layer are provenance, never identity. Replacements preserve
   the logical handle and change implementation/revision identity.
 - A name makes work inspectable; it does not make it publicly selectable.

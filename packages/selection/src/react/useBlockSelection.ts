@@ -12,7 +12,6 @@ import {
 } from '@platejs/core/react';
 import { useElementContext } from '@platejs/core/react/internal';
 import { type Element, ElementApi, type Path } from '@platejs/plite';
-import { KEYS } from '@platejs/utils';
 
 import {
   type PartialSelectionAreaOptions,
@@ -20,7 +19,7 @@ import {
   type SelectionAreaTarget,
   type SelectionAreaTrigger,
 } from '../SelectionArea';
-import type { BlockSelectionConfig } from './BlockSelectionPlugin';
+import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
 const EMPTY_SELECTED_IDS = new Set<string>();
 
@@ -34,9 +33,7 @@ export const useBlockSelectable = ({
   const elementContext = useElementContext();
   const element = elementProp ?? elementContext?.element;
   const path = pathProp ?? elementContext?.path;
-  const { api } = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
+  const { api } = useEditorPlugin(BlockSelectionPlugin);
 
   return {
     props:
@@ -53,9 +50,7 @@ export const useBlockSelectable = ({
 
 export const useBlockSelected = (id?: string) => {
   const element = useElementContext()?.element;
-  const blockSelection = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
+  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
   const selectedIds = useSyncExternalStore(
     blockSelection.store.subscribe,
     () => blockSelection.store.get('selectedIds'),
@@ -69,9 +64,7 @@ export const useBlockSelected = (id?: string) => {
 
 export function useBlockSelectionNodes() {
   const editor = useEditor();
-  const blockSelection = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
+  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
   const selectedIds = useSyncExternalStore(
     blockSelection.store.subscribe,
     () => blockSelection.store.get('selectedIds'),
@@ -106,9 +99,7 @@ export function useBlockSelectionFragmentProp(
 }
 
 export const useIsSelecting = () => {
-  const blockSelection = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
+  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
   const isSelectingSome = useSyncExternalStore(
     blockSelection.store.subscribe,
     () => blockSelection.store.get('isSelectingSome'),
@@ -167,9 +158,7 @@ const toMutableSelectionAreaOptions = (
 });
 
 export const useSelectionArea = () => {
-  const { api, editor, store } = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
+  const { api, editor, store } = useEditorPlugin(BlockSelectionPlugin);
   const { areaOptions } = store.get();
   const areaRef = React.useRef({ ids: new Set<string>() });
   const trsRef = React.useRef({ ids: new Set<string>() });

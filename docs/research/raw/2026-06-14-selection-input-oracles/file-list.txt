@@ -1668,7 +1668,7 @@
 /Users/zbeyens/git/tiptap/packages/react/src/menus/BubbleMenu.spec.ts
 /Users/zbeyens/git/tiptap/packages/react/src/menus/FloatingMenu.spec.ts
 /Users/zbeyens/git/tiptap/packages/react/src/menus/index.ts
-/Users/zbeyens/git/tiptap/packages/react/src/menus/getAutoPluginKey.ts
+/Users/zbeyens/git/tiptap/packages/react/src/menus/getAutoPluginName.ts
 /Users/zbeyens/git/tiptap/packages/react/src/Context.tsx
 /Users/zbeyens/git/tiptap/packages/react/src/NodeViewWrapper.tsx
 /Users/zbeyens/git/tiptap/packages/react/src/index.ts

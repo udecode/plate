@@ -123,7 +123,7 @@ Hard-cut ledger:
 
 Scoped sweep:
 - Legacy names and internal subpath: `withPlateYjs|withTYjs|withTYHistory|withTCursors|WithYjs|@platejs/yjs/internal`; 0 current matches.
-- Fake capability and cast smells: `DOMCapableEditor|YjsDOMApi|plugin(...).editor|.editorApi|as WithRequiredKey|as PluginConfig|as any`; 0 current matches.
+- Fake capability and cast smells: `DOMCapableEditor|YjsDOMApi|plugin(...).editor|.editorApi|as WithRequiredName|as PluginConfig|as any`; 0 current matches.
 - Direct callback writes: 107 one-statement callbacks replaced; 13 current callbacks are grouped multi-operation transactions or the test helper that exposes one Yjs transaction.
 - Direct callback reads: the history count uses `editor.read.history.undos()`; the one remaining source callback is the generic React selector adapter over installed Yjs extension state.
 - Explicit `EditorUpdateTransaction`: one public controller method boundary receives the operation middleware transaction; no callback annotation hides inference.

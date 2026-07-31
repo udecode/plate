@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { MediaPluginReference } from '@platejs/media';
+import type { MediaPlugin } from '@platejs/media/react';
 import {
   FloatingMedia as FloatingMediaPrimitive,
   FloatingMediaStore,
@@ -39,7 +39,7 @@ export function MediaToolbar({
   selected,
 }: {
   children: React.ReactNode;
-  plugin: MediaPluginReference;
+  plugin: MediaPlugin;
   selected: boolean;
 }) {
   const editor = useEditor();

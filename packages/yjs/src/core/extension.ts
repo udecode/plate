@@ -2,6 +2,7 @@ import {
   defineEditorExtension,
   type Descendant,
   type Editor,
+  type EditorExtension,
 } from '@platejs/plite';
 import {
   getCompiledEditorSchemaFromApi,
@@ -17,6 +18,17 @@ import type {
 } from './types';
 
 const activeControllers = new WeakMap<Editor, YjsController>();
+
+type YjsExtensionDefinition = {
+  activate: true;
+  name: 'yjs';
+  on: true;
+  read: YjsState;
+  update: YjsTx;
+  validate: true;
+};
+
+export type YjsExtension = EditorExtension<YjsExtensionDefinition>;
 
 const createDeferredYjsState = (getController: () => YjsController) => {
   const state: YjsState = {
@@ -64,7 +76,9 @@ const createDeferredYjsTx = (getController: () => YjsController): YjsTx =>
       getController().tx().sendSelection(range, data),
   });
 
-export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
+export const createYjsExtension = (
+  options: YjsExtensionOptions = {}
+): YjsExtension => {
   const activationErrors = new WeakMap<Editor, unknown>();
   const controllers = new WeakMap<Editor, YjsController>();
   const getController = (editor: Editor) => {
@@ -211,18 +225,14 @@ export const createYjsExtension = (options: YjsExtensionOptions = {}) => {
       },
     },
 
-    state: {
-      yjs(_state, editor) {
-        return createDeferredYjsState(() => getController(editor));
-      },
+    read({ editor }) {
+      return createDeferredYjsState(() => getController(editor));
     },
-    tx: {
-      yjs(_tx, editor) {
-        return createDeferredYjsTx(() => getController(editor));
-      },
+    update({ editor }) {
+      return createDeferredYjsTx(() => getController(editor));
     },
-    validateConfiguration({ editor, schema }) {
+    validate({ editor, schema }) {
       controllers.get(editor)?.assertSchemaIdentity(schema.identity());
     },
-  });
+  }) as YjsExtension;
 };

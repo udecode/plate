@@ -35,7 +35,7 @@ const parseCodecProofPayload = (data: string): CodecProofPayload =>
   JSON.parse(data) as CodecProofPayload;
 
 const CodecProofFallbackPlugin = createPlatePlugin({
-  key: 'codecProofFallback',
+  name: 'codecProofFallback',
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       [CODEC_PROOF_FORMAT]: {
@@ -62,7 +62,7 @@ const codecProofInitialState: CodecProofPluginState = {
 
 const CodecProofPlugin = createPlatePlugin({
   initialState: codecProofInitialState,
-  key: 'codecProof',
+  name: 'codecProof',
   codecs: ({ defineCodecs, editor, store }) =>
     defineCodecs({
       [CODEC_PROOF_FORMAT]: {
@@ -95,10 +95,10 @@ const CodecProofPlugin = createPlatePlugin({
                   children: [
                     {
                       children: [{ text: `${label}:code` }],
-                      type: editor.getType(CodeLinePlugin.key),
+                      type: editor.plugin(CodeLinePlugin.name).type,
                     },
                   ],
-                  type: editor.getType(CodeBlockPlugin.key),
+                  type: editor.plugin(CodeBlockPlugin.name).type,
                 },
               ],
               openEnd: 2,
@@ -127,7 +127,7 @@ const CodecProofPlugin = createPlatePlugin({
 });
 
 const AdvancedMarkPlugin = createPlatePlugin({
-  key: 'schemaAdvanced',
+  name: 'schemaAdvanced',
   schema: {
     mark: {
       inclusive: false,
@@ -164,14 +164,14 @@ const PlateSchemaDescriptorControls = () => {
     const data = new DataTransfer();
 
     data.setData(CODEC_PROOF_FORMAT, JSON.stringify({ kind }));
-    editor.api.clipboard.insertData(data);
+    editor.api.dom.clipboard.insertData(data);
   };
   const insertMarkdownMime = () => {
     const data = new DataTransfer();
 
     data.setData('text/markdown', '**Markdown MIME**');
     data.setData('text/plain', 'plain loser');
-    editor.api.clipboard.insertData(data);
+    editor.api.dom.clipboard.insertData(data);
   };
   const resetInlineTarget = () => {
     editor.update.value.replace({
@@ -212,7 +212,7 @@ const PlateSchemaDescriptorControls = () => {
             {
               children: [{ text: 'a link' }],
               target: '_self',
-              type: editor.getType(LinkPlugin.key),
+              type: editor.plugin(LinkPlugin.name).type,
               url: 'https://example.com/docs',
             },
           ],
@@ -259,22 +259,22 @@ const PlateSchemaDescriptorControls = () => {
           children: [
             {
               children: [{ text: 'const codec = true;' }],
-              type: editor.getType(CodeLinePlugin.key),
+              type: editor.plugin(CodeLinePlugin.name).type,
             },
             {
               children: [{ text: '' }],
-              type: editor.getType(CodeLinePlugin.key),
+              type: editor.plugin(CodeLinePlugin.name).type,
             },
           ],
           lang: 'typescript',
-          type: editor.getType(CodeBlockPlugin.key),
+          type: editor.plugin(CodeBlockPlugin.name).type,
         },
         {
           alt: 'Plate codec image',
           children: [{ text: 'Image caption' }],
           initialHeight: 180,
           initialWidth: 320,
-          type: editor.getType(ImagePlugin.key),
+          type: editor.plugin(ImagePlugin.name).type,
           url: 'https://example.com/plate-codec.png',
           width: '50%',
         },
@@ -282,7 +282,7 @@ const PlateSchemaDescriptorControls = () => {
           children: [{ text: 'Media caption' }],
           provider: 'youtube',
           sourceUrl: 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-          type: editor.getType(MediaEmbedPlugin.key),
+          type: editor.plugin(MediaEmbedPlugin.name).type,
           url: 'https://www.youtube.com/embed/M7lc1UVf-VE',
           width: 480,
         },
@@ -297,10 +297,10 @@ const PlateSchemaDescriptorControls = () => {
           children: [
             {
               children: [{ text: 'left  right' }],
-              type: editor.getType(CodeLinePlugin.key),
+              type: editor.plugin(CodeLinePlugin.name).type,
             },
           ],
-          type: editor.getType(CodeBlockPlugin.key),
+          type: editor.plugin(CodeBlockPlugin.name).type,
         },
       ],
       selection: {

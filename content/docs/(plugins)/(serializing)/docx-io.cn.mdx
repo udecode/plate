@@ -119,17 +119,14 @@ import { createPlateEditor } from 'platejs/react';
 const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
-    DocxIOPlugin.configure({
-      initialState: {
-        editorPlugins: myPlugins,
-        editorStaticComponent: MyEditorStatic,
-      },
-    }),
+    DocxIOPlugin,
   ],
 });
 
 const docx = editor.plugin(DocxIOPlugin);
 const blob = await docx.api.toBlob(editor.read.children(), {
+  editorPlugins: myPlugins,
+  editorStaticComponent: MyEditorStatic,
   orientation: 'landscape',
 });
 
@@ -154,22 +151,16 @@ editor.update.value.replace({ children: imported.nodes });
 - **标注**: 图标+内容的表格布局
 - **目录**: 带正确段落分隔的锚点链接
 
-## 插件
+## 导出选项
 
-### DocxIOPlugin
-
-提供 DOCX 导入和明确快照导出的插件。
-
-<API name="DocxIOPlugin">
 <APIOptions>
-<APIItem name="editorPlugins" type="BasePlugin[]" optional>
-用于 HTML 序列化的插件。如未提供，则使用编辑器当前的插件。
+<APIItem name="editorPlugins" type="BasePluginInput[]" optional>
+用于 HTML 序列化的编辑器插件描述符。
 </APIItem>
 <APIItem name="editorStaticComponent" type="React.ComponentType<PlateStaticProps>" optional>
 用于静态渲染的 React 组件。
 </APIItem>
 </APIOptions>
-</API>
 
 ## API
 

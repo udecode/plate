@@ -27,45 +27,35 @@ const paragraph = (text: string): ParagraphElement => ({
 
 const createBlockSelectionExtension = () =>
   defineEditorExtension({
-    api: (editor) => ({
-      blockSelection: {
-        clear() {
-          selectedBlockPaths.set(editor, null);
-        },
-        select(path: Path) {
-          selectedBlockPaths.set(editor, [...path] as Path);
-        },
-        selectedPath() {
-          return selectedBlockPaths.get(editor) ?? null;
-        },
+    api: ({ editor }) => ({
+      clear() {
+        selectedBlockPaths.set(editor, null);
+      },
+      select(path: Path) {
+        selectedBlockPaths.set(editor, [...path] as Path);
+      },
+      selectedPath() {
+        return selectedBlockPaths.get(editor) ?? null;
       },
     }),
-    name: 'block-selection-contract',
-    state: {
-      blockSelection(_state, editor) {
-        return {
-          hasSelection: () => selectedBlockPaths.get(editor) != null,
-          selectedPath: () => selectedBlockPaths.get(editor) ?? null,
-        };
-      },
-    },
-    tx: {
-      blockSelection(tx, editor) {
-        return {
-          removeSelected() {
-            const path = selectedBlockPaths.get(editor);
+    name: 'blockSelection',
+    read: ({ editor }) => ({
+      hasSelection: () => selectedBlockPaths.get(editor) != null,
+      selectedPath: () => selectedBlockPaths.get(editor) ?? null,
+    }),
+    update: ({ editor, tx }) => ({
+      removeSelected() {
+        const path = selectedBlockPaths.get(editor);
 
-            if (!path) {
-              return;
-            }
+        if (!path) {
+          return;
+        }
 
-            tx.nodes.remove({ at: path });
-            selectedBlockPaths.set(editor, null);
-          },
-          selectedPath: () => selectedBlockPaths.get(editor) ?? null,
-        };
+        tx.nodes.remove({ at: path });
+        selectedBlockPaths.set(editor, null);
       },
-    },
+      selectedPath: () => selectedBlockPaths.get(editor) ?? null,
+    }),
   });
 
 const createBlockSelectionEditor = () =>

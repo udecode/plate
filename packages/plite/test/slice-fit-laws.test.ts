@@ -109,19 +109,15 @@ const createLawSchema = (grammar: number, policyIndex: number) => {
       } as const,
     },
     id: `slice-fit-laws-${grammar}-${policyIndex}`,
-    root: {
-      content: schema.content.group('block', {
-        default: { type: 'paragraph' },
+    root: schema.content.group('block', {
+      default: { type: 'paragraph' },
+      min: 1,
+    }),
+    roots: {
+      header: schema.content.type('heading', {
+        default: { type: 'heading' },
         min: 1,
       }),
-    } as const,
-    roots: {
-      header: {
-        content: schema.content.type('heading', {
-          default: { type: 'heading' },
-          min: 1,
-        }),
-      } as const,
     },
     unknown: 'reject',
     version: 1,
@@ -343,7 +339,7 @@ describe('slice fitter generated model laws', () => {
             before,
             'a fitted replacement must remain invertible'
           );
-          assert.doesNotThrow(() => editor.read.schema.validateDocument(after));
+          assert.doesNotThrow(() => editor.read.schema.assertDocument(after));
 
           for (const candidateRoot of ['main', 'header'] as const) {
             const children = rootChildren(after, candidateRoot);
@@ -607,7 +603,7 @@ describe('slice fitter generated model laws', () => {
             serializedB.invert(before).apply(serializedB.apply(before)),
             before
           );
-          assert.doesNotThrow(() => editor.read.schema.validateDocument(viaA));
+          assert.doesNotThrow(() => editor.read.schema.assertDocument(viaA));
         }
       ),
       4

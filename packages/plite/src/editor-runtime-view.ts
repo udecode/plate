@@ -40,6 +40,7 @@ import type {
   Editor,
   EditorAnchorApi,
   EditorCommitContext,
+  EditorExtensionReference,
   EditorRuntime,
   EditorRuntimeOptions,
   EditorSelectionBlockOptions,
@@ -961,8 +962,8 @@ export function createEditorRuntime<
     api: editor.api,
     anchor: editor.anchor,
     editor,
+    extension: editor.extension,
     extend: editor.extend,
-    getApi: editor.getApi,
     read: editor.read,
     subscribe: editor.subscribe,
     subscribeCommit: editor.subscribeCommit,
@@ -1030,7 +1031,7 @@ export const createEditorView = <
     extension,
     options
   ) => extendEditor(viewEditor!, extension, options);
-  let extensionApis: Pick<Editor<V, TExtensions>, 'api' | 'getApi'> | null =
+  let extensionApis: Pick<Editor<V, TExtensions>, 'api' | 'extension'> | null =
     null;
 
   const view = {
@@ -1052,11 +1053,12 @@ export const createEditorView = <
     focus: () => {
       viewState.focused = true;
     },
-    getApi: ((extension) =>
-      (extensionApis?.getApi ?? runtime.editor.getApi)(extension)) as Editor<
-      V,
-      TExtensions
-    >['getApi'],
+    extension: ((descriptor: EditorExtensionReference) =>
+      (
+        (extensionApis?.extension ?? runtime.editor.extension) as unknown as (
+          extension: EditorExtensionReference
+        ) => Readonly<{ api: unknown }>
+      )(descriptor)) as unknown as Editor<V, TExtensions>['extension'],
     id: runtime.editor.id,
     read: viewRead,
     root: toPublicRoot(viewState.root) as NamedRootKey | undefined,
@@ -1078,6 +1080,6 @@ export const createEditorView = <
   extensionApis = createEditorViewExtensionApis(
     viewEditor,
     runtime.editor
-  ) as Pick<Editor<V, TExtensions>, 'api' | 'getApi'>;
+  ) as Pick<Editor<V, TExtensions>, 'api' | 'extension'>;
   return Object.freeze(view);
 };

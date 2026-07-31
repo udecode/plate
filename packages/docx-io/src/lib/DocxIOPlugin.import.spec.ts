@@ -1,20 +1,8 @@
-import {
-  afterAll,
-  afterEach,
-  describe,
-  expect,
-  it,
-  mock,
-  spyOn,
-} from 'bun:test';
 import { createBaseEditor } from '@platejs/core';
+import * as docx from '@platejs/docx';
 
-const cleanDocxMock = mock((html: string) => html);
 const convertToHtmlMock = mock();
-
-mock.module('@platejs/docx', () => ({
-  cleanDocx: cleanDocxMock,
-}));
+let restoreCleanDocxSpy: (() => void) | undefined;
 
 mock.module('mammoth', () => ({
   default: {
@@ -26,7 +14,8 @@ const loadModule = async () => import('./DocxIOPlugin');
 
 describe('DocxIOPlugin import', () => {
   afterEach(() => {
-    cleanDocxMock.mockClear();
+    restoreCleanDocxSpy?.();
+    restoreCleanDocxSpy = undefined;
     convertToHtmlMock.mockReset();
   });
 
@@ -35,12 +24,14 @@ describe('DocxIOPlugin import', () => {
   });
 
   it('converts mammoth html, cleans it, deserializes nodes, and returns warnings', async () => {
+    const cleanDocxSpy = spyOn(docx, 'cleanDocx');
+    restoreCleanDocxSpy = () => cleanDocxSpy.mockRestore();
     const { DocxIOPlugin } = await loadModule();
     const editor = createBaseEditor({ plugins: [DocxIOPlugin] });
 
     convertToHtmlMock.mockImplementation(async () => ({
       messages: [{ message: 'warn-1' }],
-      value: '<p>Hello</p>',
+      value: '<p><span class="MsoFootnoteReference">[4]</span>Hello</p>',
     }));
     const arrayBuffer = new ArrayBuffer(8);
 
@@ -52,10 +43,13 @@ describe('DocxIOPlugin import', () => {
       { arrayBuffer, buffer: arrayBuffer },
       { styleMap: ['comment-reference => sup'] }
     );
-    expect(cleanDocxMock).toHaveBeenCalledWith('<p>Hello</p>', '{\\\\rtf1}');
+    expect(cleanDocxSpy).toHaveBeenCalledWith(
+      '<p><span class="MsoFootnoteReference">[4]</span>Hello</p>',
+      '{\\\\rtf1}'
+    );
     expect(result).toEqual({
       comments: [],
-      nodes: [{ type: 'p', children: [{ text: 'Hello' }] }],
+      nodes: [{ type: 'p', children: [{ text: '4Hello' }] }],
       warnings: ['warn-1'],
     });
   });

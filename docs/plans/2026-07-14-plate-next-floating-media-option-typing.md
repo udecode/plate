@@ -58,7 +58,7 @@ Timed checkpoint:
 Completion threshold:
 - `submitFloatingMedia` obtains `MediaPluginState` through a typed plugin
   portal with no `as` cast, `any`, or fake structural editor/plugin type.
-- The package-local `WithRequiredKey` / plugin-option cast class is fully
+- The package-local `WithRequiredName` / plugin-option cast class is fully
   audited and every match is repaired or justified.
 - Floating-media focused tests, media source-first typecheck/lint, scoped
   review, and the mechanical plan gate pass.
@@ -93,7 +93,7 @@ Verification surface:
 - package proof: `pnpm turbo typecheck --filter=./packages/media` and scoped
   media lint
 - shared Core gate: N/A unless the repair changes Core typing
-- source audits: `WithRequiredKey<PluginConfig`, `as WithRequiredKey`,
+- source audits: `WithRequiredName<PluginConfig`, `as WithRequiredName`,
   `plugin(... as`, and media `getOptions()` callers
 - related scoped sweep query / active scope / match count / patched count / deferred count:
   initial query found one cast match in `packages/media/src`; final counts will
@@ -215,7 +215,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types.
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
@@ -388,7 +388,7 @@ Completion Gates:
 | Package/API proof | yes | Run focused tests and typecheck | Media 93/93 tests; Turbo 12/12 tasks |
 | Shared Core gate coverage | no | Record N/A | No Core source or public Core contract changed |
 | Non-Core package error triage | no | Record N/A | Named package proof reported no external failure |
-| Source audit | yes | Audit cast and portal patterns | No `as WithRequiredKey`, `plugin(... as`, or generic `getOptions` cast remains in media |
+| Source audit | yes | Audit cast and portal patterns | No `as WithRequiredName`, `plugin(... as`, or generic `getOptions` cast remains in media |
 | Rename ledger | no | Record N/A | No rename or move |
 | Extracted-file inventory | yes | Classify every untracked in-scope file | One goal plan; zero untracked media source/spec/config files |
 | Autoreview / review | yes | Run scoped review until clean | Codex autoreview clean, correctness 0.84 |
@@ -400,14 +400,14 @@ Review matrix:
 | Path / API | Drift score | Verdict | Owner | Evidence | Next |
 |------------|-------------|---------|-------|----------|------|
 | `submitFloatingMedia.ts` plugin options | 0 | main-parity-cleanup | floating-media helper | Direct `editor.plugin(plugin).getOptions()` infers media options | keep |
-| `FloatingMediaUrlInput.tsx` plugin prop | 0 | main-parity-cleanup | floating-media component | Carries `WithRequiredKey<MediaPluginConfig>` to the helper | keep |
+| `FloatingMediaUrlInput.tsx` plugin prop | 0 | main-parity-cleanup | floating-media component | Carries `WithRequiredName<MediaPluginConfig>` to the helper | keep |
 | `lib/media/types.ts` | 0 | keep-in-plate | media public config | Named config composes existing options with `PluginConfig` | keep |
 | media changeset | 0 | keep-in-plate | `@platejs/media` release entry | Describes exported config from `origin/main` | keep |
 
 Best Plate v2 recommendation:
 | Target | Recommended shape | Rejected legacy/hack alternatives | Reason | User-review need |
 |--------|-------------------|-----------------------------------|--------|------------------|
-| Generic floating-media option lookup | Carry `MediaPluginConfig` through `WithRequiredKey`, then use the scoped portal directly | Local cast, `any`, key-only generic lookup, concrete image/embed union, or Core redesign | Existing portal already infers correctly when the boundary preserves its config | none |
+| Generic floating-media option lookup | Carry `MediaPluginConfig` through `WithRequiredName`, then use the scoped portal directly | Local cast, `any`, key-only generic lookup, concrete image/embed union, or Core redesign | Existing portal already infers correctly when the boundary preserves its config | none |
 
 Plite / Plate gap ledger:
 | Gap type | Missing capability | Why local workaround is a hack | Smallest owner | Proof needed | Decision |
@@ -417,7 +417,7 @@ Plite / Plate gap ledger:
 Related scoped sweep ledger:
 | Trigger correction | Active scope | Sweep query / method | Matches | Patched | Deferred | Remaining risk |
 |--------------------|--------------|----------------------|---------|---------|----------|----------------|
-| Remove floating-media plugin cast | `packages/media/src` | `as WithRequiredKey`, `plugin(... as`, `getOptions<PluginConfig`, and typed portal inventory | 1 | 1 | 0 | none |
+| Remove floating-media plugin cast | `packages/media/src` | `as WithRequiredName`, `plugin(... as`, `getOptions<PluginConfig`, and typed portal inventory | 1 | 1 | 0 | none |
 
 Core drift ledger:
 - Applies: no; no Core edit.
@@ -456,7 +456,7 @@ Package file rows:
 Packet ledger:
 | Packet | Owner | Hypothesis / smell | Files / commands | Decision | Next |
 |--------|-------|--------------------|------------------|----------|------|
-| Floating media option inference | `@platejs/media` | Untyped `WithRequiredKey` erased the option config and forced a cast | three media source files, media tests/typecheck/lint | preserve config at the prop boundary | keep |
+| Floating media option inference | `@platejs/media` | Untyped `WithRequiredName` erased the option config and forced a cast | three media source files, media tests/typecheck/lint | preserve config at the prop boundary | keep |
 
 Extracted file ledger:
 | Path | Bucket | Origin/main owner check | Decision | Proof |
@@ -488,9 +488,9 @@ Needs your attention:
 
 Findings:
 - The portal was not broken. The floating-media prop erased its config by using
-  bare `WithRequiredKey`, forcing the submit helper to reconstruct it with a
+  bare `WithRequiredName`, forcing the submit helper to reconstruct it with a
   cast.
-- `WithRequiredKey<MediaPluginConfig>` preserves the expected options through
+- `WithRequiredName<MediaPluginConfig>` preserves the expected options through
   the existing portal while still supporting installed plugin-key objects.
 - All other media option reads already infer through concrete plugin objects or
   extension contexts.

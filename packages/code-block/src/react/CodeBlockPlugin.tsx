@@ -19,18 +19,15 @@ export const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
 export const CodeHighlightPlugin = toPlatePlugin(BaseCodeHighlightPlugin, {
   dependencies: [CodeBlockPlugin],
 }).extend(({ editor, store }) => ({
-  extension: {
-    key: 'react',
-    on: {
-      transactionChange(context) {
-        if (!store.get().lowlight) return;
+  on: {
+    transactionChange(context) {
+      if (!store.get().lowlight) return;
 
-        if (
-          findCodeBlockLanguageChange(context, editor.getType(KEYS.codeBlock))
-        ) {
-          editor.api.react.refreshDecorations();
-        }
-      },
+      if (
+        findCodeBlockLanguageChange(context, editor.plugin(KEYS.codeBlock).type)
+      ) {
+        editor.api.react.refreshDecorations();
+      }
     },
   },
 }));

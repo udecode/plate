@@ -2,8 +2,16 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { RenderLeafProps, AnyBasePlugin, BaseEditor } from '../lib';
-import { getPlateRuntime } from '../internal/plugin/compilePlateModel';
+import type {
+  AnyBasePlugin,
+  AnyResolvedBasePlugin,
+  BaseEditor,
+  RenderLeafProps,
+} from '../lib';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../internal/plugin/compilePlateModel';
 
 import { PliteLeaf } from './components';
 import { getRenderNodeStaticProps } from './utils/getRenderNodeStaticProps';
@@ -14,14 +22,14 @@ export type PliteRenderLeaf = (
 
 export const pluginRenderLeafStatic = (
   editor: BaseEditor,
-  plugin: AnyBasePlugin
+  plugin: AnyResolvedBasePlugin
 ): PliteRenderLeaf =>
   function render(props) {
     const { children, leaf } = props;
 
     if (leaf[plugin.type]) {
       const Component = (plugin.render.leaf ??
-        getPlateRuntime(editor).components[plugin.key]) as any;
+        getPlateRuntime(editor).components[plugin.name]) as any;
       const Leaf = Component ?? PliteLeaf;
 
       const ctxProps = getRenderNodeStaticProps({
@@ -51,16 +59,18 @@ export const pipeRenderLeafStatic = (
   const renderLeafs: PliteRenderLeaf[] = [];
   const leafPropsPlugins: AnyBasePlugin[] = [];
 
-  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
 
-    if (plugin) {
-      renderLeafs.push(pluginRenderLeafStatic(editor, plugin as any));
+      if (plugin) {
+        renderLeafs.push(pluginRenderLeafStatic(editor, plugin as any));
+      }
     }
-  });
+  );
 
-  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((pluginName) => {
+    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
     if (plugin) {
       leafPropsPlugins.push(plugin as any);
     }

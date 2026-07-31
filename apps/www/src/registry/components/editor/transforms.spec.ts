@@ -2,13 +2,23 @@ import { CodeBlockPlugin } from '@platejs/code-block/react';
 import { LinkPlugin } from '@platejs/link/react';
 import { BasePlaceholderPlugin } from '@platejs/media';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
-import { type Selection, type Value, KEYS } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { type Selection, type Value, KEYS, schema } from 'platejs';
+import { createPlateEditor, createPlatePlugin } from 'platejs/react';
 
 import { BaseBasicBlocksKit } from './plugins/basic-blocks-base-kit';
 import { BaseListKit } from './plugins/list-base-kit';
 import { BaseToggleKit } from './plugins/toggle-base-kit';
 import { insertBlock, insertInlineElement, setBlockType } from './transforms';
+import {
+  insertBlock as insertClassicBlock,
+  setBlockType as setClassicBlockType,
+} from './transforms-classic';
+
+const CustomBlockPlugin = createPlatePlugin({
+  name: 'customOwner',
+  schema: { element: schema.element.textBlock() },
+  type: 'custom',
+});
 
 const createEditor = ({
   selection = {
@@ -33,6 +43,7 @@ const createEditor = ({
       LinkPlugin,
       BasePlaceholderPlugin,
       SuggestionPlugin,
+      CustomBlockPlugin,
     ],
     selection,
     initialValue,
@@ -252,6 +263,31 @@ describe('editor block transforms', () => {
         mediaType,
         type: KEYS.placeholder,
       },
+    ]);
+  });
+});
+
+describe('classic editor block transforms', () => {
+  it('keeps raw block types when no plugin owns the name', () => {
+    const editor = createEditor();
+
+    setClassicBlockType(editor, 'custom');
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'two' }], type: 'custom' },
+    ]);
+  });
+
+  it('inserts raw block types when no plugin owns the name', () => {
+    const editor = createEditor();
+
+    insertClassicBlock(editor, 'custom');
+
+    expect(editor.read.children()).toMatchObject([
+      { children: [{ text: 'one' }], type: 'p' },
+      { children: [{ text: 'two' }], type: 'p' },
+      { children: [{ text: '' }], type: 'custom' },
     ]);
   });
 });

@@ -21,11 +21,11 @@ import { render, waitFor } from '@testing-library/react';
 
 import {
   BlockPlaceholderPlugin,
-  type BlockPlaceholderConfig,
+  type BlockPlaceholderDefinition,
 } from './BlockPlaceholderPlugin';
 
 const BlockPlaceholderFixtureSchemaPlugin = createBasePlugin({
-  key: 'blockPlaceholderFixtureSchema',
+  name: 'blockPlaceholderFixtureSchema',
   schema: {
     properties: [
       schema.elementProperty('indent', property.number(), {
@@ -62,7 +62,7 @@ const createEditor = (options?: {
   className?: string;
   nodeId?: boolean;
   placeholders?: Record<string, string>;
-  query?: BlockPlaceholderConfig['initialState']['query'];
+  query?: BlockPlaceholderDefinition['initialState']['query'];
   readOnly?: boolean;
   selection?: TextSelection;
   value?: Value;
@@ -192,14 +192,13 @@ describe('BlockPlaceholderPlugin', () => {
 
   it('honors custom node metadata rules for pristine empty blocks', async () => {
     const CustomMetadataPlugin = createBasePlugin({
-      key: 'customMetadata',
+      name: 'customMetadata',
       schema: {
         properties: [
-          schema.elementProperty(
-            'data-test-id',
-            property.string({ significant: false }),
-            { target: target.type('p') }
-          ),
+          schema.elementProperty('data-test-id', property.string(), {
+            role: 'metadata',
+            target: target.type('p'),
+          }),
         ],
       },
     });

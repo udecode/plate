@@ -1,6 +1,8 @@
-import { BaseParagraphPlugin } from '@platejs/core';
+import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
 import { createPlateEditor } from '@platejs/core/react';
 import { MarkdownPlugin } from '@platejs/markdown';
+import { NodeApi, property, schema } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
 import remarkMath from 'remark-math';
 
 import { AI_PREVIEW_KEY } from '../lib/BaseAIPlugin';
@@ -10,6 +12,48 @@ const createEditor = () =>
   createPlateEditor({
     plugins: [
       BaseParagraphPlugin,
+      createBasePlugin({
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            'text/markdown': {
+              kind: 'node',
+              encode: ({ node }) => ({
+                lang: node.lang,
+                type: 'code',
+                value: node.children
+                  .map((child) => NodeApi.string(child))
+                  .join('\n'),
+              }),
+            },
+          }),
+        name: KEYS.codeBlock,
+        schema: {
+          element: {
+            content: schema.content.open(),
+            properties: { lang: property.string() },
+          },
+        },
+        type: NODES.codeBlock,
+      }),
+      createBasePlugin({
+        codecs: ({ defineCodecs }) =>
+          defineCodecs({
+            'text/markdown': {
+              kind: 'node',
+              encode: ({ node }) => ({
+                type: 'math',
+                value: node.texExpression ?? '',
+              }),
+            },
+          }),
+        name: KEYS.equation,
+        schema: {
+          element: {
+            properties: { texExpression: property.string() },
+            void: 'block',
+          },
+        },
+      }),
       MarkdownPlugin.configure({
         initialState: { remarkPlugins: [remarkMath] },
       }),

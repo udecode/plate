@@ -1,14 +1,7 @@
-import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { BLOCK_CONTEXT_MENU_ID, BlockMenuPlugin } from './BlockMenuPlugin';
-
-const BlockSelectionApiFixture = createPlatePlugin({
-  key: KEYS.blockSelection,
-  initialState: {
-    selectedIds: new Set<string>(),
-  },
-});
+import { BlockSelectionPlugin } from './BlockSelectionPlugin';
 
 describe('BlockMenuPlugin', () => {
   it('opens a context menu without BlockSelectionPlugin', () => {
@@ -28,7 +21,7 @@ describe('BlockMenuPlugin', () => {
 
   it('exposes option-state api on the Plite runtime route', () => {
     const editor = createPlateEditor({
-      plugins: [BlockSelectionApiFixture, BlockMenuPlugin],
+      plugins: [BlockSelectionPlugin, BlockMenuPlugin],
     });
     const api = editor.plugin(BlockMenuPlugin).api;
 
@@ -54,7 +47,7 @@ describe('BlockMenuPlugin', () => {
     });
     expect(
       [
-        ...(editor.plugin(BlockSelectionApiFixture).store.get().selectedIds ??
+        ...(editor.plugin(BlockSelectionPlugin).store.get().selectedIds ??
           new Set<string>()),
       ].sort()
     ).toEqual(['block-b']);

@@ -5,12 +5,12 @@ import type React from 'react';
 import {
   createPlateEditor,
   createPlatePlugin,
-  getEditorPlugin,
   type PlateEditor,
 } from '@platejs/core/react';
+import { createPluginContext } from '@platejs/core/react/internal';
 import { DebugPlugin } from '@platejs/core';
 import type { Element, Location, Range, Value } from '@platejs/plite';
-import { defineEditorExtension, NodeApi, schema } from '@platejs/plite';
+import { NodeApi, schema } from '@platejs/plite';
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 
 import { BaseTablePlugin } from '../lib/BaseTablePlugin';
@@ -180,7 +180,7 @@ const createRootMoveEditor = (
   direction: 'named-to-primary' | 'primary-to-named'
 ) => {
   const RootHolderPlugin = createPlatePlugin({
-    key: 'tableDropRootHolder',
+    name: 'tableDropRootHolder',
     schema: {
       element: {
         contentRoots: {
@@ -192,7 +192,7 @@ const createRootMoveEditor = (
             ownership: 'exclusive',
           },
         },
-        topLevel: true,
+        blockContent: true,
         void: 'block',
       },
     },
@@ -292,15 +292,8 @@ const installEventRangeApi = (
   const warn = mock();
 
   editor.plugin(DebugPlugin).store.set({ logger: { warn } });
-  editor.extend(
-    defineEditorExtension({
-      api: {
-        dom: {
-          resolveEventRange: () => eventRanges.shift() ?? null,
-        },
-      },
-      name: 'test:table-drop-event-range',
-    })
+  spyOn(editor.api.dom, 'resolveEventRange').mockImplementation(
+    () => eventRanges.shift() ?? null
   );
 
   return warn;
@@ -308,24 +301,26 @@ const installEventRangeApi = (
 
 const runHandler = (
   editor: TableEditor,
-  key: 'onDragEnd' | 'onDragStart' | 'onDrop' | 'onMouseUp',
-  event: React.SyntheticEvent
+  ...[key, event]:
+    | [key: 'dragEnd' | 'dragStart' | 'drop', event: React.DragEvent]
+    | [key: 'mouseUp', event: React.MouseEvent]
 ) => {
-  const plugin = editor.getPlugin(TablePlugin);
-  const handler = (
-    plugin.handlers as
-      | Partial<
-          Record<'onDragEnd' | 'onDragStart' | 'onDrop' | 'onMouseUp', unknown>
-        >
-      | undefined
-  )?.[key] as ((context: unknown) => unknown) | undefined;
+  const context = createPluginContext(editor, TablePlugin);
+  const plugin = editor.plugin(TablePlugin).plugin;
+
+  if (key === 'mouseUp') {
+    const handler = plugin.on.mouseUp;
+
+    if (!handler) throw new Error('Expected TablePlugin mouseUp handler');
+
+    return handler({ ...context, event });
+  }
+
+  const handler = plugin.on[key];
 
   if (!handler) throw new Error(`Expected TablePlugin ${key} handler`);
 
-  return handler({
-    ...getEditorPlugin(editor, plugin),
-    event,
-  });
+  return handler({ ...context, event });
 };
 
 const installDOMSelectionApi = (
@@ -344,20 +339,10 @@ const installDOMSelectionApi = (
     rangeCount,
   } as unknown as globalThis.Selection;
 
-  editor.extend(
-    defineEditorExtension({
-      api: {
-        dom: {
-          findDocumentOrShadowRoot: () =>
-            ({
-              getSelection: () => domSelection,
-            }) as unknown as Document,
-          resolvePliteRange: () => range,
-        },
-      },
-      name: 'test:table-native-selection',
-    })
-  );
+  spyOn(editor.api.dom, 'findDocumentOrShadowRoot').mockReturnValue({
+    getSelection: () => domSelection,
+  } as unknown as Document);
+  spyOn(editor.api.dom, 'resolvePliteRange').mockReturnValue(range);
 };
 
 const readTable = (editor: TableEditor, index: number) => {
@@ -412,12 +397,8 @@ const dragSelectedCells = (
     ? editor.subscribeCommit((commit) => commits.push(commit))
     : undefined;
 
-  const dragStartResult = runHandler(
-    editor,
-    'onDragStart',
-    dragStart
-  ) as unknown;
-  const dropResult = runHandler(editor, 'onDrop', drop) as unknown;
+  const dragStartResult = runHandler(editor, 'dragStart', dragStart) as unknown;
+  const dropResult = runHandler(editor, 'drop', drop) as unknown;
 
   unsubscribe?.();
   expect(dragStartResult).toBeUndefined();
@@ -439,7 +420,7 @@ describe('TablePlugin table drag/drop', () => {
     editor.update.selection.set(range);
     installDOMSelectionApi(editor, range, { collapsed: true });
 
-    const result = runHandler(editor, 'onMouseUp', {} as React.SyntheticEvent);
+    const result = runHandler(editor, 'mouseUp', {} as React.MouseEvent);
 
     expect(result).toBe(true);
     expect(editor.read.selection()).toMatchObject({
@@ -460,7 +441,7 @@ describe('TablePlugin table drag/drop', () => {
     editor.update.selection.set(range);
     installDOMSelectionApi(editor, range);
 
-    const result = runHandler(editor, 'onMouseUp', {} as React.SyntheticEvent);
+    const result = runHandler(editor, 'mouseUp', {} as React.MouseEvent);
 
     expect(result).toBeUndefined();
     expect(editor.read.selection()).toMatchObject({
@@ -603,9 +584,9 @@ describe('TablePlugin table drag/drop', () => {
 
     installEventRangeApi(editor, [[1, 0, 0]]);
 
-    runHandler(editor, 'onDragStart', dragStart);
+    runHandler(editor, 'dragStart', dragStart);
 
-    expect(runHandler(editor, 'onDrop', drop)).toBeUndefined();
+    expect(runHandler(editor, 'drop', drop)).toBeUndefined();
     expect(readTable(editor, 0)).toEqual([['A', 'B']]);
     expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
   });
@@ -623,10 +604,10 @@ describe('TablePlugin table drag/drop', () => {
 
     installEventRangeApi(editor, [[1, 0, 0]]);
 
-    runHandler(editor, 'onDragStart', dragStart);
-    runHandler(editor, 'onDragEnd', dragEnd);
+    runHandler(editor, 'dragStart', dragStart);
+    runHandler(editor, 'dragEnd', dragEnd);
 
-    expect(runHandler(editor, 'onDrop', drop)).toBeUndefined();
+    expect(runHandler(editor, 'drop', drop)).toBeUndefined();
     expect(readTable(editor, 0)).toEqual([['A', 'B']]);
     expect(readTable(editor, 1)).toEqual([['X', 'Y']]);
   });

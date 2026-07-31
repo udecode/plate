@@ -39,7 +39,7 @@ const buildSlateRoot = (
       results.push(
         ...Array.from({ length: count }).map(() => ({
           children: [{ text: '' }],
-          type: options.getPluginType(KEYS.p),
+          type: options.registry.getType(KEYS.p),
         }))
       );
     }

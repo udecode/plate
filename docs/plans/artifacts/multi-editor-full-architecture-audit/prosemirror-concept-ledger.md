@@ -234,12 +234,12 @@ export const BaseListItemPlugin = createBasePlugin({
   key: KEYS.li,
   schema: ({ options, plugins }) => {
     const contentType = plugins.elementType(BaseListItemContentPlugin);
-    const nestedListTypes = plugins.elementTypesByKey([
+    const nestedListTypes = plugins.elementTypesByName([
       KEYS.ulClassic,
       KEYS.olClassic,
       KEYS.taskList,
     ]);
-    const validBodyTypes = plugins.elementTypesByKey(
+    const validBodyTypes = plugins.elementTypesByName(
       (options.validLiChildren ?? []).map(({ key }) => key)
     );
 
@@ -293,10 +293,10 @@ export const BaseListItemPlugin = createBasePlugin({
   key: KEYS.li,
   schema: ({ options, plugins }) => {
     const contentType = plugins.elementType(BaseListItemContentPlugin);
-    const validBodyTypes = plugins.elementTypesByKey(
+    const validBodyTypes = plugins.elementTypesByName(
       (options.validLiChildren ?? []).map(({ key }) => key)
     );
-    const nestedListTypes = plugins.elementTypesByKey([
+    const nestedListTypes = plugins.elementTypesByName([
       KEYS.ulClassic,
       KEYS.olClassic,
       KEYS.taskList,
@@ -495,7 +495,7 @@ export const BaseSubscriptPlugin = createBasePlugin({
   update: ({ editor, tx, type }) => ({
     toggle: () => {
       tx.marks.toggle(type, true, {
-        clear: editor.getType("superscript"),
+        clear: editor.plugin("superscript").type,
       });
     },
   }),

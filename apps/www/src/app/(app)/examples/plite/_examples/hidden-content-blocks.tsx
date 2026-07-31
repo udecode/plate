@@ -285,7 +285,7 @@ const HiddenContentBlocksExample = () => {
 
       const data = new DataTransfer();
 
-      editor.api.clipboard.writeSelection(data);
+      editor.api.dom.clipboard.writeSelection(data);
       setCopyPreview(data.getData('text/plain'));
     },
     [editor]

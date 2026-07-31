@@ -23,7 +23,7 @@ const createValue = () =>
   ] as any;
 
 const MarkerPlugin = createBasePlugin({
-  key: 'marker',
+  name: 'marker',
   schema: {
     properties: [
       schema.elementProperty('marker', property.string(), {
@@ -35,7 +35,7 @@ const MarkerPlugin = createBasePlugin({
 
 const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
   const element = editor.read.children()[0] as any;
-  const plugin = editor.getPlugin({ key: element.type })!;
+  const plugin = editor.plugin(element.type).plugin!;
   const renderElement = pluginRenderElement(editor, plugin as any);
 
   const RenderProbe = () =>
@@ -87,7 +87,7 @@ describe('pluginRenderElement', () => {
               </p>
             );
           },
-          key: 'p',
+          name: 'p',
           type: 'p',
           schema: {
             element: {
@@ -106,10 +106,10 @@ describe('pluginRenderElement', () => {
 
   it('passes each wrapper its own plugin API', () => {
     const WrapperPlugin = createBasePlugin({
-      key: 'wrapper',
-      api: {
+      api: () => ({
         isMarked: (element: Element) => element.marker === 'yes',
-      },
+      }),
+      name: 'wrapper',
     }).extend({
       render: {
         belowNodes: ({ api, element }) =>
@@ -134,7 +134,7 @@ describe('pluginRenderElement', () => {
     const editor = createPlateEditor({
       plugins: [
         createBasePlugin({
-          key: 'hr',
+          name: 'hr',
           type: 'hr',
           schema: { element: { void: 'block' } },
           render: {

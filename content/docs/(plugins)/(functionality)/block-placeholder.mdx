@@ -98,7 +98,9 @@ export const editor = createPlateEditor({
 
 ### Add Type-Specific Copy
 
-Keys in `placeholders` are plugin keys. The plugin resolves each key with `editor.getType(key)` before matching the active block type.
+Names in `placeholders` are plugin names. The plugin resolves each
+`pluginName` with `editor.plugin(pluginName).type` before matching the active block
+type.
 
 ```tsx
 BlockPlaceholderPlugin.configure({
@@ -131,7 +133,7 @@ The plugin shows a placeholder only when every gate passes.
 
 The default `query` returns `true` for root blocks only. The whole-editor guard
 uses `editor.plugin(ElementStatePlugin).api.isEmpty`, so only `type` and
-compiled element properties declared with `significant: false` are treated as
+compiled element properties declared with `role: "metadata"` are treated as
 pristine metadata.
 
 ```tsx
@@ -161,7 +163,7 @@ className:
 | API | Package | Use |
 |-----|---------|-----|
 | `BlockPlaceholderPlugin` | `platejs/react` / `@platejs/utils/react` | Adds block placeholders through injected node props. |
-| `initialState.placeholders` | `Record<string, string>` | Maps plugin keys to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
+| `initialState.placeholders` | `Record<string, string>` | Maps plugin names to placeholder text. Default: `{ [KEYS.p]: 'Type something...' }`. |
 | `initialState.query` | `(context) => boolean` | Filters eligible blocks. Default: `({ path }) => path.length === 1`. |
 | `initialState.className` | `string` | Class applied to the block only while its placeholder is active. |
 | `initialState._target` | Internal runtime state | Stores the current target node and placeholder string. |

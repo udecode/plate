@@ -728,7 +728,7 @@ const manifest = {
     htmlInput:
       'Keep whole-input query, transformData, and transformFragment hooks flat under parsers.html.',
     normalAppApi:
-      'Use inferred editor.api.<pluginKey> and editor.update.<pluginKey> namespaces in user-app code whose editor type contains the plugin.',
+      'Use inferred editor.api.<pluginName> and editor.update.<pluginName> namespaces in user-app code whose editor type contains the plugin.',
     decoupledPortal:
       'Use editor.plugin(Plugin).api/update in decoupled registry and reusable package code that owns the descriptor but not the concrete editor type.',
     residualAdoption:

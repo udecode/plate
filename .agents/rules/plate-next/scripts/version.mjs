@@ -10,7 +10,63 @@ const defaultRoot = resolve(dirname(scriptPath), '../../../..');
 const doctrinePaths = [
   '.agents/rules/plate-next.mdc',
   '.agents/rules/plate-plugin-creator.mdc',
+  '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md',
+  '.agents/rules/plate-plugin-creator/rules/creation-flow.md',
+  '.agents/rules/plate-plugin-creator/rules/typing.md',
+  '.agents/rules/plate-ui.mdc',
+  '.agents/rules/plate-ui/rules/component-shape.md',
+  '.agents/rules/plate-next/scripts/sync-resources.mjs',
   'docs/plans/templates/plate-next.md',
+];
+const requiredGeneratedResources = [
+  [
+    '.agents/rules/plate-plugin-creator/references/plugin-authoring-audit.md',
+    '.agents/skills/plate-plugin-creator/references/plugin-authoring-audit.md',
+  ],
+  [
+    '.agents/rules/plate-plugin-creator/rules/creation-flow.md',
+    '.agents/skills/plate-plugin-creator/rules/creation-flow.md',
+  ],
+  [
+    '.agents/rules/plate-plugin-creator/rules/typing.md',
+    '.agents/skills/plate-plugin-creator/rules/typing.md',
+  ],
+  [
+    '.agents/rules/plate-ui/rules/component-shape.md',
+    '.agents/skills/plate-ui/rules/component-shape.md',
+  ],
+];
+const requiredGeneratedSkills = [
+  {
+    generatedPath: '.agents/skills/plate-next/SKILL.md',
+    heading: '# Plate Next',
+    name: 'plate-next',
+    sourcePath: '.agents/rules/plate-next.mdc',
+  },
+  {
+    generatedPath: '.agents/skills/plate-plugin-creator/SKILL.md',
+    heading: '# Plate Plugin Creator',
+    name: 'plate-plugin-creator',
+    sourcePath: '.agents/rules/plate-plugin-creator.mdc',
+  },
+  {
+    generatedPath: '.agents/skills/best-api/SKILL.md',
+    heading: '# Best API',
+    name: 'best-api',
+    sourcePath: '.agents/rules/best-api.mdc',
+  },
+  {
+    generatedPath: '.agents/skills/docs-creator/SKILL.md',
+    heading: '# Docs Creator',
+    name: 'docs-creator',
+    sourcePath: '.agents/rules/docs-creator.mdc',
+  },
+  {
+    generatedPath: '.agents/skills/plate-ui/SKILL.md',
+    heading: '# Plate UI',
+    name: 'plate-ui',
+    sourcePath: '.agents/rules/plate-ui.mdc',
+  },
 ];
 const ignoredDirectories = new Set([
   '.git',
@@ -35,14 +91,6 @@ const reviewedPackageBlockPattern =
   /const reviewedPackageSlugs = \[([\s\S]*?)\n\];/;
 const reviewedPackageSlugPattern = /'([^']+)'/g;
 const sha256Pattern = /^sha256:[a-f0-9]{64}$/;
-const expectedGeneratedFrontmatter = new Map([
-  [
-    'metadata',
-    'metadata:\n  skiller:\n    source: .agents/rules/plate-next.mdc',
-  ],
-  ['name', 'name: plate-next'],
-]);
-
 const compare = (left, right) => left.localeCompare(right);
 
 export const readDeclaredDoctrineVersion = (source) => {
@@ -72,6 +120,18 @@ export const computeDoctrineFingerprint = (root) => {
   return `sha256:${hash.digest('hex')}`;
 };
 
+export const haveMatchingRequiredResources = (root) =>
+  requiredGeneratedResources.every(([sourcePath, generatedPath]) => {
+    const source = join(root, sourcePath);
+    const generated = join(root, generatedPath);
+
+    return (
+      existsSync(source) &&
+      existsSync(generated) &&
+      readFileSync(source).equals(readFileSync(generated))
+    );
+  });
+
 const readFrontmatterGroups = (value) => {
   const frontmatter = value.match(frontmatterPattern)?.[1];
 
@@ -94,8 +154,19 @@ const readFrontmatterGroups = (value) => {
   return groups;
 };
 
-export const haveMatchingSkillSource = (source, generated) => {
-  const heading = '# Plate Next';
+export const haveMatchingSkillSource = (
+  source,
+  generated,
+  {
+    heading = '# Plate Next',
+    name = 'plate-next',
+    sourcePath = '.agents/rules/plate-next.mdc',
+  } = {}
+) => {
+  const expectedGeneratedFrontmatter = new Map([
+    ['metadata', `metadata:\n  skiller:\n    source: ${sourcePath}`],
+    ['name', `name: ${name}`],
+  ]);
   const sourceStart = source.indexOf(heading);
   const generatedStart = generated.indexOf(heading);
   const sourceFrontmatter = readFrontmatterGroups(source);
@@ -128,6 +199,24 @@ export const haveMatchingSkillSource = (source, generated) => {
 
   return source.slice(sourceStart) === generated.slice(generatedStart);
 };
+
+export const haveMatchingRequiredSkills = (root) =>
+  requiredGeneratedSkills.every(
+    ({ generatedPath, heading, name, sourcePath }) => {
+      const source = join(root, sourcePath);
+      const generated = join(root, generatedPath);
+
+      return (
+        existsSync(source) &&
+        existsSync(generated) &&
+        haveMatchingSkillSource(
+          readFileSync(source, 'utf8'),
+          readFileSync(generated, 'utf8'),
+          { heading, name, sourcePath }
+        )
+      );
+    }
+  );
 
 export const readReviewedPackageSlugs = (source) => {
   const body = source.match(reviewedPackageBlockPattern)?.[1];
@@ -195,7 +284,8 @@ const isPlainObject = (value) =>
 export const validateRegistry = ({
   currentDoctrineFingerprint,
   declaredVersion,
-  generatedSkillMatches,
+  generatedResourcesMatch,
+  generatedSkillsMatch,
   registry,
   reviewedSlugs,
   root,
@@ -278,9 +368,14 @@ export const validateRegistry = ({
       'Current Plate Next doctrine fingerprint does not match the latest version entry; bump the doctrine version.'
     );
   }
-  if (generatedSkillMatches === false) {
+  if (generatedSkillsMatch === false) {
     errors.push(
-      'Generated Plate Next skill is stale; run pnpm install and revalidate.'
+      'Required generated doctrine skills are stale; run pnpm install and revalidate.'
+    );
+  }
+  if (generatedResourcesMatch === false) {
+    errors.push(
+      'Required generated skill resources are missing or stale; run pnpm install and revalidate.'
     );
   }
 
@@ -477,13 +572,8 @@ const loadContext = (root = defaultRoot) => {
     join(root, '.agents/rules/plate-next.mdc'),
     'utf8'
   );
-  const generatedSkillPath = join(root, '.agents/skills/plate-next/SKILL.md');
-  const generatedSkillMatches =
-    existsSync(generatedSkillPath) &&
-    haveMatchingSkillSource(
-      ruleSource,
-      readFileSync(generatedSkillPath, 'utf8')
-    );
+  const generatedSkillsMatch = haveMatchingRequiredSkills(root);
+  const generatedResourcesMatch = haveMatchingRequiredResources(root);
   const currentDoctrineFingerprint = computeDoctrineFingerprint(root);
   const declaredVersion = readDeclaredDoctrineVersion(ruleSource);
   const reviewedSlugs = readReviewedPackageSlugs(
@@ -492,7 +582,8 @@ const loadContext = (root = defaultRoot) => {
   const errors = validateRegistry({
     currentDoctrineFingerprint,
     declaredVersion,
-    generatedSkillMatches,
+    generatedResourcesMatch,
+    generatedSkillsMatch,
     registry,
     reviewedSlugs,
     root,
@@ -501,7 +592,8 @@ const loadContext = (root = defaultRoot) => {
   return {
     currentDoctrineFingerprint,
     declaredVersion,
-    generatedSkillMatches,
+    generatedResourcesMatch,
+    generatedSkillsMatch,
     errors,
     registry,
     registryPath,

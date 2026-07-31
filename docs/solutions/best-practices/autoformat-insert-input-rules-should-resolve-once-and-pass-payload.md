@@ -59,7 +59,7 @@ const inlineEquationRule = {
   apply: ({ editor, tx }, match) => {
     tx.text.delete({ at: match.deleteRange });
     tx.selection.set(match.deleteRange.anchor);
-    insertInlineEquation(tx, editor.getType(KEYS.inlineEquation), {
+    insertInlineEquation(tx, editor.plugin(KEYS.inlineEquation).type, {
       texExpression: match.texExpression,
     });
 

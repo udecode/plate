@@ -34,8 +34,8 @@ export const TableCellHeaderPlugin = toPlatePlugin(BaseTableCellHeaderPlugin);
 /** Enables support for tables with React-specific features. */
 export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
   dependencies: [TableRowPlugin, TableCellPlugin, TableCellHeaderPlugin],
-  handlers: {
-    onCopy: ({ api, event }) => {
+  on: {
+    copy: ({ api, event }) => {
       if (!api.writeSelection(event.clipboardData)) {
         return;
       }
@@ -43,7 +43,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       event.preventDefault();
       return true;
     },
-    onCut: ({ api, editor, event }) => {
+    cut: ({ api, editor, event }) => {
       if (!api.writeSelection(event.clipboardData)) {
         return;
       }
@@ -52,10 +52,10 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
       editor.update.fragment.delete();
       return true;
     },
-    onDragEnd: ({ editor }) => {
+    dragEnd: ({ editor }) => {
       tableDragCaptures.delete(editor);
     },
-    onDragStart: ({ editor, event, read }) => {
+    dragStart: ({ editor, event, read }) => {
       tableDragCaptures.delete(editor);
 
       const dragCellId =
@@ -130,7 +130,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
         })
       );
     },
-    onDrop: ({ api, editor, event, read, store }) => {
+    drop: ({ api, editor, event, read, store }) => {
       const source = tableDragCaptures.get(editor);
 
       if (!source) return;
@@ -184,7 +184,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       return true;
     },
-    onMouseUp: ({ editor, read }) => {
+    mouseUp: ({ editor, read }) => {
       const domSelection = getSelection(
         editor.api.dom.findDocumentOrShadowRoot()
       );
@@ -202,7 +202,7 @@ export const TablePlugin = toPlatePlugin(BaseTablePlugin, {
 
       return true;
     },
-    onKeyDown: ({ api, editor, event, read, update }) => {
+    keyDown: ({ api, editor, event, read, update }) => {
       if (event.defaultPrevented) return;
 
       const cellTypes = api.getCellTypes();

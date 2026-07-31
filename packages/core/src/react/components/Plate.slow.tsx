@@ -144,7 +144,7 @@ describe('Plate', () => {
 
   describe('useEditor().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
-      const _plugins = [createBasePlugin({ key: 'test' })];
+      const _plugins = [createBasePlugin({ name: 'test' })];
       const editor = createPlateEditor({
         plugins: _plugins,
       });
@@ -158,7 +158,9 @@ describe('Plate', () => {
         { wrapper }
       );
 
-      expect(result.current.some((p: any) => p.key === 'test')).toBe(true);
+      expect(result.current.some((plugin: any) => plugin.name === 'test')).toBe(
+        true
+      );
     });
   });
 
@@ -317,24 +319,21 @@ describe('Plate', () => {
 
       const plugins = [
         createBasePlugin({
-          key: 'a',
-          extension: {
-            name: 'test:path-normalizer',
-            corrections: [
-              {
-                event: 'content',
-                correct({ entry, tx }) {
-                  const [node, path] = entry;
+          corrections: [
+            {
+              event: 'content',
+              correct({ entry, tx }) {
+                const [node, path] = entry;
 
-                  if (path.length && node.path !== path) {
-                    fn();
-                    tx.nodes.set({ path }, { at: path });
-                    return;
-                  }
-                },
+                if (path.length && node.path !== path) {
+                  fn();
+                  tx.nodes.set({ path }, { at: path });
+                  return;
+                }
               },
-            ],
-          },
+            },
+          ],
+          name: 'a',
         }),
       ];
 
@@ -360,7 +359,7 @@ describe('Plate', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
         createPlatePlugin({
-          key: 'a',
+          name: 'a',
           render: {
             abovePlite: () => null,
           },
@@ -440,7 +439,7 @@ describe('Plate', () => {
     const getParagraphPlugin = (projectAttributes: boolean) =>
       createPlatePlugin({
         component: ParagraphElement,
-        key: 'p',
+        name: 'p',
         render: {
           nodeProps: projectAttributes
             ? ({ element }) => {
@@ -471,7 +470,7 @@ describe('Plate', () => {
     const getBoldPlugin = (projectAttributes: boolean) =>
       createPlatePlugin({
         component: BoldLeaf,
-        key: 'bold',
+        name: 'bold',
         render: {
           nodeProps: projectAttributes
             ? ({ text }) => {
@@ -580,7 +579,7 @@ describe('Plate', () => {
       ];
 
       const UnknownElementSchemaPlugin = createBasePlugin({
-        key: 'unknown-element-schema',
+        name: 'unknown-element-schema',
         schema: {
           element: {
             content: schema.content.open({ default: 'text', min: 1 }),
@@ -618,10 +617,10 @@ describe('Plate', () => {
       ];
 
       const InitialValuePlugin = createPlatePlugin({
-        key: 'initial-value',
-        api: {
+        api: () => ({
           decode: () => syncValue,
-        },
+        }),
+        name: 'initial-value',
       });
 
       const SyncEditor = () => {

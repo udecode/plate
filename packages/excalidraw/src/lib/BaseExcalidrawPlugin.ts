@@ -23,7 +23,7 @@ type ExcalidrawElementData = Exclude<TExcalidrawElement['data'], undefined>;
 
 /** Enables support for Excalidraw drawing tool within a Slate document */
 export const BaseExcalidrawPlugin = createBasePlugin({
-  key: KEYS.excalidraw,
+  name: KEYS.excalidraw,
   schema: {
     element: {
       properties: {

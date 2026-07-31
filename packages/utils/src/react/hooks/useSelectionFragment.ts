@@ -1,14 +1,11 @@
-import {
-  getContainerTypes,
-  getFragmentProp,
-  type GetFragmentPropOptions,
-} from '@platejs/core';
+import { getFragmentProp, type GetFragmentPropOptions } from '@platejs/core';
+import { getCompiledPlateContainerTypes } from '@platejs/core/internal';
 import { useEditorSelector } from '@platejs/core/react';
 
 export const useSelectionFragment = () =>
   useEditorSelector((editor) =>
     editor.read.fragment({
-      unwrap: getContainerTypes(editor),
+      unwrap: getCompiledPlateContainerTypes(editor),
     })
   );
 
@@ -18,7 +15,7 @@ export const useSelectionFragmentProp = (
   useEditorSelector((editor) =>
     getFragmentProp(
       editor.read.fragment({
-        unwrap: getContainerTypes(editor),
+        unwrap: getCompiledPlateContainerTypes(editor),
       }),
       options
     )

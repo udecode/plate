@@ -1,5 +1,10 @@
 import { createBasePlugin } from '@platejs/core';
-import { type NodeInsertNodesOptions, property, schema } from '@platejs/plite';
+import {
+  ElementApi,
+  type NodeInsertNodesOptions,
+  property,
+  schema,
+} from '@platejs/plite';
 import { KEYS, type TCalloutElement } from '@platejs/utils';
 
 export type InsertCalloutOptions = NodeInsertNodesOptions<TCalloutElement> & {
@@ -8,19 +13,72 @@ export type InsertCalloutOptions = NodeInsertNodesOptions<TCalloutElement> & {
 };
 
 export const BaseCalloutPlugin = createBasePlugin({
-  key: KEYS.callout,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'callout',
+        kind: 'node',
+        decode: ({
+          decode,
+          decoration,
+          registry,
+          isInline,
+          node,
+          parseAttributes,
+          type,
+        }) => {
+          const props = parseAttributes(node.attributes);
+          const children = decode(node.children, decoration);
+          const paragraph = children.length === 1 ? children[0] : undefined;
+
+          if (
+            children.some(
+              (child) => ElementApi.isElement(child) && !isInline(child)
+            ) &&
+            (!ElementApi.isElement(paragraph) ||
+              paragraph.type !== registry.getType(KEYS.p))
+          ) {
+            throw new Error(
+              'Callout children must be inline Markdown content.'
+            );
+          }
+
+          return {
+            children:
+              ElementApi.isElement(paragraph) &&
+              paragraph.type === registry.getType(KEYS.p)
+                ? paragraph.children
+                : children,
+            type,
+            ...props,
+          };
+        },
+        encode: ({ encodePhrasing, node, propsToAttributes }) => {
+          const { children, type: _, ...rest } = node;
+
+          return {
+            attributes: propsToAttributes(rest),
+            children: [
+              {
+                children: encodePhrasing(children),
+                type: 'paragraph',
+              },
+            ],
+            name: 'callout',
+            type: 'mdxJsxFlowElement',
+          };
+        },
+      },
+    }),
+  name: KEYS.callout,
   schema: {
-    element: {
-      content: schema.content.any(
-        [schema.content.text(), schema.content.group('inline')],
-        { default: 'text', min: 1 }
-      ),
+    element: schema.element.textBlock({
       properties: {
         backgroundColor: property.string(),
         icon: property.string(),
         variant: property.string(),
       },
-    },
+    }),
   },
 
   rules: {

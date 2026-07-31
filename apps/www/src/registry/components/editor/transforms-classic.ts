@@ -37,13 +37,15 @@ const removeEmptySourceAfterInsert = (
   path: Path,
   currentBlockType: string
 ) => {
+  const insertedPlugin = editor.plugin(insertedType);
   const inserted = editor.read.nodes.get(PathApi.next(path));
   const source = editor.read.nodes.get(path);
 
   if (
     !inserted ||
     !ElementApi.isElement(inserted[0]) ||
-    inserted[0].type !== editor.getType(insertedType) ||
+    inserted[0].type !==
+      (insertedPlugin.installed ? insertedPlugin.type : insertedType) ||
     !source ||
     !ElementApi.isElement(source[0]) ||
     getBlockType(source[0]) !== currentBlockType ||
@@ -82,7 +84,8 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
-  const nodeType = editor.getType(type);
+  const plugin = editor.plugin(type);
+  const nodeType = plugin.installed ? plugin.type : type;
 
   if (type === KEYS.codeBlock) {
     editor.plugin(BaseCodeBlockPlugin).update.insert();
@@ -206,15 +209,15 @@ const setBlockMap: Record<string, (editor: PlateEditor, type: string) => void> =
     [KEYS.olClassic]: (editor) =>
       editor
         .plugin(BaseListPlugin)
-        .update.toggle({ type: editor.getType(KEYS.olClassic) }),
+        .update.toggle({ type: editor.plugin(KEYS.olClassic).type }),
     [KEYS.taskList]: (editor) =>
       editor
         .plugin(BaseListPlugin)
-        .update.toggle({ type: editor.getType(KEYS.taskList) }),
+        .update.toggle({ type: editor.plugin(KEYS.taskList).type }),
     [KEYS.ulClassic]: (editor) =>
       editor
         .plugin(BaseListPlugin)
-        .update.toggle({ type: editor.getType(KEYS.ulClassic) }),
+        .update.toggle({ type: editor.plugin(KEYS.ulClassic).type }),
   };
 
 export const setBlockType = (
@@ -227,7 +230,8 @@ export const setBlockType = (
     return;
   }
 
-  const nodeType = editor.getType(type);
+  const plugin = editor.plugin(type);
+  const nodeType = plugin.installed ? plugin.type : type;
 
   editor.update((tx) => {
     const setEntry = (entry: NodeEntry<Element>) => {

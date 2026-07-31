@@ -2,7 +2,7 @@ import {
   createBasePlugin,
   createRuleFactory,
   getInjectMatch,
-  type InferConfig,
+  type DefinitionOf,
 } from '@platejs/core';
 import {
   isHtmlBlockElement,
@@ -171,232 +171,34 @@ export type BaseListPluginState = {
 };
 
 export const BaseListPlugin = createBasePlugin({
-  api: ({ editor }) => {
-    const isHeading = (node: Element) =>
-      KEYS.heading.some(
-        (headingKey) => node.type === editor.getType(headingKey)
-      );
-    const isSequenceBoundary = (siblingNode: Element, currentNode: Element) => {
-      const siblingListType = siblingNode[KEYS.listType];
-
-      return (
-        siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
-        siblingListType != null &&
-        siblingListType === currentNode[KEYS.listType] &&
-        isHeading(siblingNode) !== isHeading(currentNode)
-      );
-    };
-    const getSequenceSiblingOptions = (
-      options?: Partial<GetSiblingListOptions<Element>>
-    ): Partial<GetSiblingListOptions<Element>> => {
-      const { breakQuery, query, ...rest } = options ?? {};
-
-      return {
-        ...rest,
-        breakQuery: (siblingNode, currentNode) =>
-          isSequenceBoundary(siblingNode, currentNode) ||
-          !!breakQuery?.(siblingNode, currentNode),
-        query: (siblingNode, currentNode) =>
-          siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
-          isHeading(siblingNode) === isHeading(currentNode) &&
-          (query ? !!query(siblingNode, currentNode) : true),
-      };
-    };
-
-    return {
-      getSequenceSiblingOptions,
-      isSequenceBoundary,
-    };
-  },
   dependencies: [BaseIndentPlugin],
-  key: KEYS.list,
+  name: KEYS.list,
   initialState: (): BaseListPluginState => ({}),
-  read: ({ state }) => {
-    const getSibling = <N extends Element = Element>(
-      [node, path]: NodeEntry<Element>,
-      {
-        breakOnEqIndentNeqListStyleType = true,
-        breakOnListRestart = false,
-        breakOnLowerIndent = true,
-        breakQuery,
-        eqIndent = true,
-        getNextEntry,
-        getPreviousEntry,
-        query,
-      }: GetSiblingListOptions<N>
-    ): NodeEntry<N> | undefined => {
-      const getSiblingEntry = getNextEntry ?? getPreviousEntry;
-
-      if (!getSiblingEntry) return;
-
-      let nextEntry = getSiblingEntry([node, path], state);
-
-      while (nextEntry) {
-        const [nextNode, nextPath] = nextEntry;
-        const indent = node[KEYS.indent];
-        const nextIndent = nextNode[KEYS.indent];
-
-        if (breakQuery?.(nextNode, node)) return;
-        if (typeof indent !== 'number' || typeof nextIndent !== 'number')
-          return;
-        if (
-          breakOnListRestart &&
-          ((getPreviousEntry && isDefined(node[KEYS.listRestart])) ||
-            (getNextEntry && isDefined(nextNode[KEYS.listRestart])))
-        ) {
-          return;
-        }
-        if (breakOnLowerIndent && nextIndent < indent) return;
-        if (
-          breakOnEqIndentNeqListStyleType &&
-          nextIndent === indent &&
-          nextNode[KEYS.listType] !== node[KEYS.listType]
-        ) {
-          return;
-        }
-        if (
-          (!query || query(nextNode, node)) &&
-          (!eqIndent || nextIndent === indent)
-        ) {
-          return [nextNode, nextPath];
-        }
-        nextEntry = getSiblingEntry(nextEntry, state);
-      }
-    };
-
-    return {
-      /** Get the next indent-list item. */
-      getNext: <N extends Element = Element>(
-        entry: NodeEntry<Element>,
-        options?: Partial<GetSiblingListOptions<N>>
-      ): NodeEntry<N> | undefined =>
-        getSibling(entry, {
-          getNextEntry: ([, currentPath]) => {
-            const nextPath = PathApi.next(currentPath);
-            const nextNode = state.nodes.get<N>(nextPath)?.[0];
-
-            if (!nextNode) return;
-
-            return [nextNode, nextPath];
-          },
-          ...options,
-          getPreviousEntry: undefined,
-        }),
-      /** Get the previous indent-list item. */
-      getPrevious: <N extends Element = Element>(
-        entry: NodeEntry<Element>,
-        options?: Partial<GetSiblingListOptions<N>>
-      ): NodeEntry<N> | undefined =>
-        getSibling(entry, {
-          getPreviousEntry: ([, currentPath]) => {
-            if (!PathApi.hasPrevious(currentPath)) return;
-            const previousPath = PathApi.previous(currentPath);
-            const previousNode = state.nodes.get<N>(previousPath)?.[0];
-
-            if (!previousNode) return;
-
-            return [previousNode, previousPath];
-          },
-          ...options,
-          getNextEntry: undefined,
-        }),
-      expandItemsWithChildren: <N extends Element = Element>(
-        entries: readonly NodeEntry<N>[]
-      ) => {
-        const expandedEntries: NodeEntry<N>[] = [];
-        const processedIds = new Set<string>();
-
-        entries.forEach((entry) => {
-          const [node, path] = entry;
-          const id = typeof node.id === 'string' ? node.id : undefined;
-
-          if (id && processedIds.has(id)) return;
-          expandedEntries.push(entry);
-          if (id) processedIds.add(id);
-          const parentIndent = node[KEYS.indent];
-
-          if (
-            typeof parentIndent !== 'number' ||
-            !isDefined(node[KEYS.listType])
-          ) {
-            return;
-          }
-          let currentPath = path;
-
-          while (true) {
-            const nextPath = PathApi.next(currentPath);
-            const nextNode = state.nodes.get<N>(nextPath)?.[0];
-
-            if (!nextNode) break;
-            const nextIndent = nextNode[KEYS.indent];
-
-            if (
-              typeof nextIndent !== 'number' ||
-              !isDefined(nextNode[KEYS.listType]) ||
-              nextIndent <= parentIndent
-            ) {
-              break;
-            }
-            const childId =
-              typeof nextNode.id === 'string' ? nextNode.id : undefined;
-
-            if (!childId || !processedIds.has(childId)) {
-              expandedEntries.push([nextNode, nextPath]);
-              if (childId) processedIds.add(childId);
-            }
-            currentPath = nextPath;
-          }
-        });
-
-        return expandedEntries;
-      },
-      isActive: (
-        style: ListStyleType | string | readonly string[]
-      ): boolean => {
-        const selection = state.selection();
-
-        if (!selection) return false;
-        const styles = Array.isArray(style) ? style : [style];
-
-        return state.nodes.some({
-          match: (node) => {
-            if (!ElementApi.isElement(node)) return false;
-            const isTodo = Object.hasOwn(node, KEYS.listChecked);
-
-            return (
-              styles.includes(node[KEYS.listType] as string) &&
-              (styles.includes(KEYS.listTodo) ? isTodo : !isTodo)
-            );
-          },
-        });
-      },
-    };
-  },
-  schema: ({ plugins, targetPluginKeys }) => ({
+  schema: ({ plugins, targetPluginNames }) => ({
     properties: [
       schema.elementProperty(KEYS.listChecked, property.boolean(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
       schema.elementProperty(KEYS.listRestart, property.number(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
       schema.elementProperty(KEYS.listRestartPolite, property.number(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
       schema.elementProperty(KEYS.listStart, property.number(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
       schema.elementProperty(KEYS.listType, property.string(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
     ],
   }),
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -505,6 +307,88 @@ export const BaseListPlugin = createBasePlugin({
           },
         ],
         priority: 40,
+      },
+
+      'text/markdown': {
+        from: 'list',
+        kind: 'node',
+        decode: ({ build, node, registry }) => {
+          const parseList = (
+            list: typeof node,
+            indent = 1,
+            startIndex = 1
+          ): Element[] => {
+            const items: Element[] = [];
+            const ordered = Boolean(list.ordered);
+            let listStyleType = ordered
+              ? registry.getType(KEYS.ol)
+              : registry.getType(KEYS.ul);
+
+            list.children.forEach((listItem, index) => {
+              const checked = listItem.checked;
+              const todo = typeof checked === 'boolean';
+
+              if (todo) listStyleType = registry.getType(KEYS.listTodo);
+
+              const [paragraph, ...nested] = listItem.children;
+              const nodes: Descendant[] = paragraph
+                ? build(paragraph)
+                : [
+                    {
+                      children: [{ text: '' }],
+                      type: registry.getType(KEYS.p),
+                    },
+                  ];
+
+              nodes.forEach((child, childIndex) => {
+                const element = TextApi.isText(child)
+                  ? {
+                      children: [child],
+                      type: registry.getType(KEYS.p),
+                    }
+                  : child;
+
+                items.push({
+                  ...element,
+                  ...(todo ? { checked } : {}),
+                  indent,
+                  listStyleType,
+                  ...(ordered
+                    ? {
+                        listStart: startIndex + index,
+                        ...(index === 0 &&
+                        childIndex === 0 &&
+                        startIndex + index > 1
+                          ? { listRestartPolite: startIndex + index }
+                          : {}),
+                      }
+                    : {}),
+                  type:
+                    element.type === registry.getType(KEYS.img)
+                      ? element.type
+                      : registry.getType(KEYS.p),
+                });
+              });
+
+              nested.forEach((child) => {
+                if (child.type === 'list') {
+                  items.push(...parseList(child, indent + 1, child.start || 1));
+                  return;
+                }
+
+                items.push(
+                  ...build(child)
+                    .filter((item): item is Element => !TextApi.isText(item))
+                    .map((item) => ({ ...item, indent: indent + 1 }))
+                );
+              });
+            });
+
+            return items;
+          };
+
+          return parseList(node, 1, node.start || 1);
+        },
       },
     }),
 
@@ -630,11 +514,216 @@ export const BaseListPlugin = createBasePlugin({
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
 })
+  .extend(({ editor }) => ({
+    api: () => {
+      const isHeading = (node: Element) =>
+        KEYS.heading.some((headingName) => {
+          const heading = editor.plugin(headingName);
+
+          return node.type === (heading.installed ? heading.type : headingName);
+        });
+      const isSequenceBoundary = (
+        siblingNode: Element,
+        currentNode: Element
+      ) => {
+        const siblingListType = siblingNode[KEYS.listType];
+
+        return (
+          siblingNode[KEYS.indent] === currentNode[KEYS.indent] &&
+          siblingListType != null &&
+          siblingListType === currentNode[KEYS.listType] &&
+          isHeading(siblingNode) !== isHeading(currentNode)
+        );
+      };
+      const getSequenceSiblingOptions = (
+        options?: Partial<GetSiblingListOptions<Element>>
+      ): Partial<GetSiblingListOptions<Element>> => {
+        const { breakQuery, query, ...rest } = options ?? {};
+
+        return {
+          ...rest,
+          breakQuery: (siblingNode, currentNode) =>
+            isSequenceBoundary(siblingNode, currentNode) ||
+            !!breakQuery?.(siblingNode, currentNode),
+          query: (siblingNode, currentNode) =>
+            siblingNode[KEYS.listType] === currentNode[KEYS.listType] &&
+            isHeading(siblingNode) === isHeading(currentNode) &&
+            (query ? !!query(siblingNode, currentNode) : true),
+        };
+      };
+
+      return {
+        getSequenceSiblingOptions,
+        isSequenceBoundary,
+      };
+    },
+    read: ({ state }) => {
+      const getSibling = <N extends Element = Element>(
+        [node, path]: NodeEntry<Element>,
+        {
+          breakOnEqIndentNeqListStyleType = true,
+          breakOnListRestart = false,
+          breakOnLowerIndent = true,
+          breakQuery,
+          eqIndent = true,
+          getNextEntry,
+          getPreviousEntry,
+          query,
+        }: GetSiblingListOptions<N>
+      ): NodeEntry<N> | undefined => {
+        const getSiblingEntry = getNextEntry ?? getPreviousEntry;
+
+        if (!getSiblingEntry) return;
+
+        let nextEntry = getSiblingEntry([node, path], state);
+
+        while (nextEntry) {
+          const [nextNode, nextPath] = nextEntry;
+          const indent = node[KEYS.indent];
+          const nextIndent = nextNode[KEYS.indent];
+
+          if (breakQuery?.(nextNode, node)) return;
+          if (typeof indent !== 'number' || typeof nextIndent !== 'number')
+            return;
+          if (
+            breakOnListRestart &&
+            ((getPreviousEntry && isDefined(node[KEYS.listRestart])) ||
+              (getNextEntry && isDefined(nextNode[KEYS.listRestart])))
+          ) {
+            return;
+          }
+          if (breakOnLowerIndent && nextIndent < indent) return;
+          if (
+            breakOnEqIndentNeqListStyleType &&
+            nextIndent === indent &&
+            nextNode[KEYS.listType] !== node[KEYS.listType]
+          ) {
+            return;
+          }
+          if (
+            (!query || query(nextNode, node)) &&
+            (!eqIndent || nextIndent === indent)
+          ) {
+            return [nextNode, nextPath];
+          }
+          nextEntry = getSiblingEntry(nextEntry, state);
+        }
+      };
+
+      return {
+        /** Get the next indent-list item. */
+        getNext: <N extends Element = Element>(
+          entry: NodeEntry<Element>,
+          options?: Partial<GetSiblingListOptions<N>>
+        ): NodeEntry<N> | undefined =>
+          getSibling(entry, {
+            getNextEntry: ([, currentPath]) => {
+              const nextPath = PathApi.next(currentPath);
+              const nextNode = state.nodes.get<N>(nextPath)?.[0];
+
+              if (!nextNode) return;
+
+              return [nextNode, nextPath];
+            },
+            ...options,
+            getPreviousEntry: undefined,
+          }),
+        /** Get the previous indent-list item. */
+        getPrevious: <N extends Element = Element>(
+          entry: NodeEntry<Element>,
+          options?: Partial<GetSiblingListOptions<N>>
+        ): NodeEntry<N> | undefined =>
+          getSibling(entry, {
+            getPreviousEntry: ([, currentPath]) => {
+              if (!PathApi.hasPrevious(currentPath)) return;
+              const previousPath = PathApi.previous(currentPath);
+              const previousNode = state.nodes.get<N>(previousPath)?.[0];
+
+              if (!previousNode) return;
+
+              return [previousNode, previousPath];
+            },
+            ...options,
+            getNextEntry: undefined,
+          }),
+        expandItemsWithChildren: <N extends Element = Element>(
+          entries: readonly NodeEntry<N>[]
+        ) => {
+          const expandedEntries: NodeEntry<N>[] = [];
+          const processedIds = new Set<string>();
+
+          entries.forEach((entry) => {
+            const [node, path] = entry;
+            const id = typeof node.id === 'string' ? node.id : undefined;
+
+            if (id && processedIds.has(id)) return;
+            expandedEntries.push(entry);
+            if (id) processedIds.add(id);
+            const parentIndent = node[KEYS.indent];
+
+            if (
+              typeof parentIndent !== 'number' ||
+              !isDefined(node[KEYS.listType])
+            ) {
+              return;
+            }
+            let currentPath = path;
+
+            while (true) {
+              const nextPath = PathApi.next(currentPath);
+              const nextNode = state.nodes.get<N>(nextPath)?.[0];
+
+              if (!nextNode) break;
+              const nextIndent = nextNode[KEYS.indent];
+
+              if (
+                typeof nextIndent !== 'number' ||
+                !isDefined(nextNode[KEYS.listType]) ||
+                nextIndent <= parentIndent
+              ) {
+                break;
+              }
+              const childId =
+                typeof nextNode.id === 'string' ? nextNode.id : undefined;
+
+              if (!childId || !processedIds.has(childId)) {
+                expandedEntries.push([nextNode, nextPath]);
+                if (childId) processedIds.add(childId);
+              }
+              currentPath = nextPath;
+            }
+          });
+
+          return expandedEntries;
+        },
+        isActive: (
+          style: ListStyleType | string | readonly string[]
+        ): boolean => {
+          const selection = state.selection();
+
+          if (!selection) return false;
+          const styles = Array.isArray(style) ? style : [style];
+
+          return state.nodes.some({
+            match: (node) => {
+              if (!ElementApi.isElement(node)) return false;
+              const isTodo = Object.hasOwn(node, KEYS.listChecked);
+
+              return (
+                styles.includes(node[KEYS.listType] as string) &&
+                (styles.includes(KEYS.listTodo) ? isTodo : !isTodo)
+              );
+            },
+          });
+        },
+      };
+    },
+  }))
   .extend(({ api, editor, store, plugin }) => ({
     override: {
       plugins: {
         [KEYS.indent]: {
-          targetPluginKeys: plugin.targetPluginKeys,
+          targetPluginNames: plugin.targetPluginNames,
         },
       },
     },
@@ -937,9 +1026,11 @@ export const BaseListPlugin = createBasePlugin({
         : 1;
     };
     const getSequenceKey = (node: Element) => {
-      const isHeading = KEYS.heading.some(
-        (headingKey) => node.type === editor.getType(headingKey)
-      );
+      const isHeading = KEYS.heading.some((headingName) => {
+        const heading = editor.plugin(headingName);
+
+        return node.type === (heading.installed ? heading.type : headingName);
+      });
       return `${node[KEYS.indent]}:${node[KEYS.listType]}:${isHeading}`;
     };
     const resolveAmbiguousListStyleType = (
@@ -993,607 +1084,600 @@ export const BaseListPlugin = createBasePlugin({
       }
     };
     return {
-      extension: {
-        commands: ({ around, handle }) => [
-          handle(editorCommands.delete, ({ input, state }) => {
-            if (input.direction !== 'backward') return false;
-            const nodeEntry = state.nodes.block<Element>();
-            const selection = state.selection();
-            const blockStart = nodeEntry
-              ? state.points.start(nodeEntry[1])
-              : undefined;
-            const isAtBlockStart =
-              !!nodeEntry &&
-              !!selection &&
-              (state.points.isStart(selection.anchor, nodeEntry[1]) ||
-                (!!blockStart &&
-                  state.text.string({
-                    anchor: blockStart,
-                    focus: selection.anchor,
-                  }) === ''));
-            if (
-              !nodeEntry ||
-              !selection ||
-              !nodeEntry[0][KEYS.listType] ||
-              state.selection.isExpanded() ||
-              !isAtBlockStart
-            ) {
-              return false;
-            }
+      commands: ({ around, handle }) => [
+        handle(editorCommands.delete, ({ input, state }) => {
+          if (input.direction !== 'backward') return false;
+          const nodeEntry = state.nodes.block<Element>();
+          const selection = state.selection();
+          const blockStart = nodeEntry
+            ? state.points.start(nodeEntry[1])
+            : undefined;
+          const isAtBlockStart =
+            !!nodeEntry &&
+            !!selection &&
+            (state.points.isStart(selection.anchor, nodeEntry[1]) ||
+              (!!blockStart &&
+                state.text.string({
+                  anchor: blockStart,
+                  focus: selection.anchor,
+                }) === ''));
+          if (
+            !nodeEntry ||
+            !selection ||
+            !nodeEntry[0][KEYS.listType] ||
+            state.selection.isExpanded() ||
+            !isAtBlockStart
+          ) {
+            return false;
+          }
+          return state.transaction((tx) => {
+            tx.list.outdent({
+              at: nodeEntry[1],
+            });
+          });
+        }),
+        around(editorCommands.insertBreak, ({ state, next }) => {
+          const nodeEntry = state.nodes.block<Element>();
+          const selection = state.selection();
+          if (
+            !nodeEntry ||
+            !selection ||
+            !nodeEntry[0][KEYS.listType] ||
+            state.selection.isExpanded()
+          ) {
+            return false;
+          }
+          if (state.nodes.isEmpty(nodeEntry[0])) {
             return state.transaction((tx) => {
               tx.list.outdent({
                 at: nodeEntry[1],
               });
             });
-          }),
-          around(editorCommands.insertBreak, ({ state, next }) => {
-            const nodeEntry = state.nodes.block<Element>();
-            const selection = state.selection();
-            if (
-              !nodeEntry ||
-              !selection ||
-              !nodeEntry[0][KEYS.listType] ||
-              state.selection.isExpanded()
-            ) {
-              return false;
-            }
-            if (state.nodes.isEmpty(nodeEntry[0])) {
-              return state.transaction((tx) => {
-                tx.list.outdent({
-                  at: nodeEntry[1],
-                });
+          }
+          const inserted = next();
+          if (inserted === false) return false;
+          return state.transaction.extend(inserted, (tx) => {
+            const nextPath = PathApi.next(nodeEntry[1]);
+            const nextNode = tx.nodes.get<Element>(nextPath)?.[0];
+            const staleRestartKeys = [
+              KEYS.listRestart,
+              KEYS.listRestartPolite,
+            ].filter((key) => nextNode && Object.hasOwn(nextNode, key));
+            if (staleRestartKeys.length > 0) {
+              tx.nodes.unset(staleRestartKeys, {
+                at: nextPath,
               });
             }
-            const inserted = next();
-            if (inserted === false) return false;
-            return state.transaction.extend(inserted, (tx) => {
-              const nextPath = PathApi.next(nodeEntry[1]);
-              const nextNode = tx.nodes.get<Element>(nextPath)?.[0];
-              const staleRestartKeys = [
-                KEYS.listRestart,
-                KEYS.listRestartPolite,
-              ].filter((key) => nextNode && Object.hasOwn(nextNode, key));
-              if (staleRestartKeys.length > 0) {
-                tx.nodes.unset(staleRestartKeys, {
-                  at: nextPath,
-                });
-              }
-            });
-          }),
-          around(editorCommands.insertBreak, ({ state, next }) => {
-            const nodeEntry = state.nodes.block<Element>();
-            if (!nodeEntry) return false;
-            const [node, path] = nodeEntry;
-            const selection = state.selection();
-            if (
-              node[KEYS.listType] !== KEYS.listTodo ||
-              !selection ||
-              state.selection.isExpanded() ||
-              !state.points.isEnd(selection.focus, path)
-            ) {
-              return false;
+          });
+        }),
+        around(editorCommands.insertBreak, ({ state, next }) => {
+          const nodeEntry = state.nodes.block<Element>();
+          if (!nodeEntry) return false;
+          const [node, path] = nodeEntry;
+          const selection = state.selection();
+          if (
+            node[KEYS.listType] !== KEYS.listTodo ||
+            !selection ||
+            state.selection.isExpanded() ||
+            !state.points.isEnd(selection.focus, path)
+          ) {
+            return false;
+          }
+          const result = next();
+          if (result === false) return false;
+          return state.transaction.extend(result, (tx) => {
+            const newEntry = tx.nodes.above<Element>();
+            if (newEntry) {
+              tx.nodes.set(
+                {
+                  checked: false,
+                },
+                {
+                  at: newEntry[1],
+                }
+              );
             }
-            const result = next();
-            if (result === false) return false;
-            return state.transaction.extend(result, (tx) => {
-              const newEntry = tx.nodes.above<Element>();
-              if (newEntry) {
-                tx.nodes.set(
-                  {
-                    checked: false,
-                  },
-                  {
-                    at: newEntry[1],
+          });
+        }),
+      ],
+      on: {
+        transactionChange({ after, before, change, changed, tx }) {
+          if (editor.runtime.isNormalizing || changeGuard.has(tx)) return;
+          changeGuard.add(tx);
+          try {
+            const { getSiblingListOptions } = store.get();
+            const roots = new Set<string | null>([
+              ...getInternalDocumentChangeRootKeys(change).map((root) =>
+                root === 'main' ? null : root
+              ),
+              ...change.createRoots,
+            ]);
+            for (const root of roots) {
+              const namedRoot = root ?? undefined;
+              const propertiesChanged = changed.has('properties', namedRoot);
+              const structureChanged = changed.has('structure', namedRoot);
+              if (!propertiesChanged && !structureChanged) continue;
+              const beforeChildren = (
+                root === null ? before.children : (before.roots?.[root] ?? [])
+              ) as readonly Descendant[];
+              const afterChildren = (
+                root === null ? after.children : (after.roots?.[root] ?? [])
+              ) as readonly Descendant[];
+              const paths = changed.paths(namedRoot);
+              const insertedIndices = new Set<number>();
+              if (structureChanged) {
+                const ranges = changed.topLevelRanges(namedRoot);
+                const windows =
+                  ranges.length > 0
+                    ? ranges
+                    : [
+                        {
+                          after:
+                            afterChildren.length > 0
+                              ? ([0, afterChildren.length - 1] as const)
+                              : null,
+                          before:
+                            beforeChildren.length > 0
+                              ? ([0, beforeChildren.length - 1] as const)
+                              : null,
+                        },
+                      ];
+                const getStructuralKey = (value: unknown): string => {
+                  if (Array.isArray(value)) {
+                    return `[${value.map(getStructuralKey).join(',')}]`;
                   }
-                );
-              }
-            });
-          }),
-        ],
-        key: 'behavior',
-        on: {
-          transactionChange({ after, before, change, changed, tx }) {
-            if (editor.runtime.isNormalizing || changeGuard.has(tx)) return;
-            changeGuard.add(tx);
-            try {
-              const { getSiblingListOptions } = store.get();
-              const roots = new Set<string | null>([
-                ...getInternalDocumentChangeRootKeys(change).map((root) =>
-                  root === 'main' ? null : root
-                ),
-                ...change.createRoots,
-              ]);
-              for (const root of roots) {
-                const namedRoot = root ?? undefined;
-                const propertiesChanged = changed.has('properties', namedRoot);
-                const structureChanged = changed.has('structure', namedRoot);
-                if (!propertiesChanged && !structureChanged) continue;
-                const beforeChildren = (
-                  root === null ? before.children : (before.roots?.[root] ?? [])
-                ) as readonly Descendant[];
-                const afterChildren = (
-                  root === null ? after.children : (after.roots?.[root] ?? [])
-                ) as readonly Descendant[];
-                const paths = changed.paths(namedRoot);
-                const insertedIndices = new Set<number>();
-                if (structureChanged) {
-                  const ranges = changed.topLevelRanges(namedRoot);
-                  const windows =
-                    ranges.length > 0
-                      ? ranges
-                      : [
-                          {
-                            after:
-                              afterChildren.length > 0
-                                ? ([0, afterChildren.length - 1] as const)
-                                : null,
-                            before:
-                              beforeChildren.length > 0
-                                ? ([0, beforeChildren.length - 1] as const)
-                                : null,
-                          },
-                        ];
-                  const getStructuralKey = (value: unknown): string => {
-                    if (Array.isArray(value)) {
-                      return `[${value.map(getStructuralKey).join(',')}]`;
+                  if (value && typeof value === 'object') {
+                    return `{${Object.keys(value)
+                      .sort()
+                      .map(
+                        (key) =>
+                          `${JSON.stringify(key)}:${getStructuralKey((value as Record<string, unknown>)[key])}`
+                      )
+                      .join(',')}}`;
+                  }
+                  return JSON.stringify(value) ?? 'undefined';
+                };
+                for (const range of windows) {
+                  if (!range.after) continue;
+                  const beforeIndices = range.before
+                    ? Array.from(
+                        {
+                          length: range.before[1] - range.before[0] + 1,
+                        },
+                        (_, offset) => range.before![0] + offset
+                      )
+                    : [];
+                  const afterIndices = Array.from(
+                    {
+                      length: range.after[1] - range.after[0] + 1,
+                    },
+                    (_, offset) => range.after![0] + offset
+                  );
+                  const availableBefore = new Set(beforeIndices);
+                  const unmatchedAfter = new Set(afterIndices);
+                  const claimByKey = (
+                    keyOf: (node: Descendant) => object | string | undefined
+                  ) => {
+                    const beforeByKey = new Map<object | string, number[]>();
+                    for (const beforeIndex of availableBefore) {
+                      const key = keyOf(beforeChildren[beforeIndex]!);
+                      if (key === undefined) continue;
+                      const candidates = beforeByKey.get(key) ?? [];
+                      candidates.push(beforeIndex);
+                      beforeByKey.set(key, candidates);
                     }
-                    if (value && typeof value === 'object') {
-                      return `{${Object.keys(value)
-                        .sort()
-                        .map(
-                          (key) =>
-                            `${JSON.stringify(key)}:${getStructuralKey((value as Record<string, unknown>)[key])}`
-                        )
-                        .join(',')}}`;
+                    for (const afterIndex of unmatchedAfter) {
+                      const key = keyOf(afterChildren[afterIndex]!);
+                      const beforeIndex =
+                        key === undefined
+                          ? undefined
+                          : beforeByKey.get(key)?.shift();
+                      if (beforeIndex === undefined) continue;
+                      availableBefore.delete(beforeIndex);
+                      unmatchedAfter.delete(afterIndex);
                     }
-                    return JSON.stringify(value) ?? 'undefined';
                   };
-                  for (const range of windows) {
-                    if (!range.after) continue;
-                    const beforeIndices = range.before
-                      ? Array.from(
-                          {
-                            length: range.before[1] - range.before[0] + 1,
-                          },
-                          (_, offset) => range.before![0] + offset
-                        )
-                      : [];
-                    const afterIndices = Array.from(
-                      {
-                        length: range.after[1] - range.after[0] + 1,
-                      },
-                      (_, offset) => range.after![0] + offset
-                    );
-                    const availableBefore = new Set(beforeIndices);
-                    const unmatchedAfter = new Set(afterIndices);
-                    const claimByKey = (
-                      keyOf: (node: Descendant) => object | string | undefined
-                    ) => {
-                      const beforeByKey = new Map<object | string, number[]>();
-                      for (const beforeIndex of availableBefore) {
-                        const key = keyOf(beforeChildren[beforeIndex]!);
-                        if (key === undefined) continue;
-                        const candidates = beforeByKey.get(key) ?? [];
-                        candidates.push(beforeIndex);
-                        beforeByKey.set(key, candidates);
-                      }
-                      for (const afterIndex of unmatchedAfter) {
-                        const key = keyOf(afterChildren[afterIndex]!);
-                        const beforeIndex =
-                          key === undefined
-                            ? undefined
-                            : beforeByKey.get(key)?.shift();
-                        if (beforeIndex === undefined) continue;
-                        availableBefore.delete(beforeIndex);
-                        unmatchedAfter.delete(afterIndex);
-                      }
-                    };
-                    claimByKey((node) => node);
-                    claimByKey((node) => {
-                      const id = (node as Record<string, unknown>).id;
-                      return id === undefined
-                        ? undefined
-                        : `${ElementApi.isElement(node) ? node.type : 'text'}:${String(id)}`;
-                    });
-                    claimByKey(getStructuralKey);
-                    for (const afterIndex of [...unmatchedAfter]) {
-                      if (!availableBefore.has(afterIndex)) continue;
-                      const afterNode = afterChildren[afterIndex]!;
-                      const beforeNode = beforeChildren[afterIndex]!;
-                      const sameNodeKind = TextApi.isText(afterNode)
-                        ? TextApi.isText(beforeNode)
-                        : ElementApi.isElement(beforeNode) &&
-                          afterNode.type === beforeNode.type;
-                      if (sameNodeKind) {
-                        availableBefore.delete(afterIndex);
-                        unmatchedAfter.delete(afterIndex);
-                      }
+                  claimByKey((node) => node);
+                  claimByKey((node) => {
+                    const id = (node as Record<string, unknown>).id;
+                    return id === undefined
+                      ? undefined
+                      : `${ElementApi.isElement(node) ? node.type : 'text'}:${String(id)}`;
+                  });
+                  claimByKey(getStructuralKey);
+                  for (const afterIndex of [...unmatchedAfter]) {
+                    if (!availableBefore.has(afterIndex)) continue;
+                    const afterNode = afterChildren[afterIndex]!;
+                    const beforeNode = beforeChildren[afterIndex]!;
+                    const sameNodeKind = TextApi.isText(afterNode)
+                      ? TextApi.isText(beforeNode)
+                      : ElementApi.isElement(beforeNode) &&
+                        afterNode.type === beforeNode.type;
+                    if (sameNodeKind) {
+                      availableBefore.delete(afterIndex);
+                      unmatchedAfter.delete(afterIndex);
                     }
-                    unmatchedAfter.forEach((index) => {
-                      insertedIndices.add(index);
-                    });
                   }
-                }
-                const sortedInsertedIndices = [...insertedIndices].sort(
-                  (left, right) => left - right
-                );
-                const affectedIndices = new Set<number>();
-                const affectAll =
-                  paths.length === 0 || paths.some((path) => path.length === 0);
-                if (affectAll) {
-                  afterChildren.forEach((_, index) => {
-                    affectedIndices.add(index);
-                  });
-                } else {
-                  paths.forEach((path) => {
-                    const index = path[0];
-                    if (index === undefined) return;
-                    affectedIndices.add(index);
-                    if (index > 0) affectedIndices.add(index - 1);
-                    if (index + 1 < afterChildren.length) {
-                      affectedIndices.add(index + 1);
-                    }
+                  unmatchedAfter.forEach((index) => {
+                    insertedIndices.add(index);
                   });
                 }
-                sortedInsertedIndices.forEach((index) => {
+              }
+              const sortedInsertedIndices = [...insertedIndices].sort(
+                (left, right) => left - right
+              );
+              const affectedIndices = new Set<number>();
+              const affectAll =
+                paths.length === 0 || paths.some((path) => path.length === 0);
+              if (affectAll) {
+                afterChildren.forEach((_, index) => {
                   affectedIndices.add(index);
                 });
-                withEditorUpdateRootScope(editor, root, () => {
-                  if (getSiblingListOptions) {
-                    const changedPaths: Path[] =
-                      paths.length && !paths.some((path) => path.length === 0)
-                        ? paths.map((path) => [...path])
-                        : [[]];
-                    for (const path of changedPaths) {
-                      const nodeEntry = tx.nodes.get(path);
-                      let entry =
-                        nodeEntry && ElementApi.isElement(nodeEntry[0])
-                          ? ([nodeEntry[0], nodeEntry[1]] as NodeEntry<Element>)
-                          : undefined;
-                      if (!entry || !isListItem(entry[0])) {
-                        entry = tx.nodes.find<Element>({
-                          at: path,
-                          match: (node): node is Element =>
-                            ElementApi.isElement(node) && isListItem(node),
-                        });
-                      }
-                      while (entry && isListItem(entry[0])) {
-                        const update = getListStartUpdate(
-                          entry,
-                          tx.list.getPrevious(
-                            entry,
-                            context.api.getSequenceSiblingOptions({
-                              breakOnEqIndentNeqListStyleType: false,
-                              ...getSiblingListOptions,
-                            })
-                          )
-                        );
-                        if (update?.type === 'unset') {
-                          tx.nodes.unset(KEYS.listStart, {
-                            at: entry[1],
-                          });
-                        } else if (update?.type === 'set') {
-                          tx.nodes.set(
-                            {
-                              [KEYS.listStart]: update.value,
-                            },
-                            {
-                              at: entry[1],
-                            }
-                          );
-                        }
-                        entry = tx.list.getNext<Element>(entry, {
-                          ...getSiblingListOptions,
-                          breakOnEqIndentNeqListStyleType: false,
-                          breakOnLowerIndent: false,
-                          eqIndent: false,
-                        });
-                      }
-                    }
-                    return;
+              } else {
+                paths.forEach((path) => {
+                  const index = path[0];
+                  if (index === undefined) return;
+                  affectedIndices.add(index);
+                  if (index > 0) affectedIndices.add(index - 1);
+                  if (index + 1 < afterChildren.length) {
+                    affectedIndices.add(index + 1);
                   }
-                  for (const index of sortedInsertedIndices) {
-                    if (index === 0) continue;
-                    const beforeNode = beforeChildren[index - 1];
-                    const leftNode = afterChildren[index - 1];
-                    const rightNode = afterChildren[index];
-                    const isSplit =
-                      !!beforeNode &&
-                      !!leftNode &&
-                      !!rightNode &&
-                      ElementApi.isElement(beforeNode) &&
-                      ElementApi.isElement(leftNode) &&
-                      ElementApi.isElement(rightNode) &&
-                      beforeNode.type === leftNode.type &&
-                      beforeNode.type === rightNode.type &&
-                      !isEqual(beforeNode, leftNode) &&
-                      isEqual(
-                        [...leftNode.children, ...rightNode.children],
-                        beforeNode.children
-                      );
-                    if (!isSplit) continue;
-                    const path: Path = [index];
-                    const node = tx.nodes.get<Element>(path)?.[0];
-                    const staleRestartKeys = [
-                      KEYS.listRestart,
-                      KEYS.listRestartPolite,
-                    ].filter((key) => node && Object.hasOwn(node, key));
-                    if (staleRestartKeys.length > 0) {
-                      tx.nodes.unset(staleRestartKeys, {
+                });
+              }
+              sortedInsertedIndices.forEach((index) => {
+                affectedIndices.add(index);
+              });
+              withEditorUpdateRootScope(editor, root, () => {
+                if (getSiblingListOptions) {
+                  const changedPaths: Path[] =
+                    paths.length && !paths.some((path) => path.length === 0)
+                      ? paths.map((path) => [...path])
+                      : [[]];
+                  for (const path of changedPaths) {
+                    const nodeEntry = tx.nodes.get(path);
+                    let entry =
+                      nodeEntry && ElementApi.isElement(nodeEntry[0])
+                        ? ([nodeEntry[0], nodeEntry[1]] as NodeEntry<Element>)
+                        : undefined;
+                    if (!entry || !isListItem(entry[0])) {
+                      entry = tx.nodes.find<Element>({
                         at: path,
+                        match: (node): node is Element =>
+                          ElementApi.isElement(node) && isListItem(node),
+                      });
+                    }
+                    while (entry && isListItem(entry[0])) {
+                      const update = getListStartUpdate(
+                        entry,
+                        tx.list.getPrevious(
+                          entry,
+                          context.api.getSequenceSiblingOptions({
+                            breakOnEqIndentNeqListStyleType: false,
+                            ...getSiblingListOptions,
+                          })
+                        )
+                      );
+                      if (update?.type === 'unset') {
+                        tx.nodes.unset(KEYS.listStart, {
+                          at: entry[1],
+                        });
+                      } else if (update?.type === 'set') {
+                        tx.nodes.set(
+                          {
+                            [KEYS.listStart]: update.value,
+                          },
+                          {
+                            at: entry[1],
+                          }
+                        );
+                      }
+                      entry = tx.list.getNext<Element>(entry, {
+                        ...getSiblingListOptions,
+                        breakOnEqIndentNeqListStyleType: false,
+                        breakOnLowerIndent: false,
+                        eqIndent: false,
                       });
                     }
                   }
-
-                  /**
-                   * Roman and alpha markers overlap. Resolve only canonical insertions
-                   * against the preceding sequence; existing nodes retain their style.
-                   */
-                  for (const index of sortedInsertedIndices) {
-                    const path: Path = [index];
-                    const entry = tx.nodes.get<Element>(path);
-                    const listStyleType = entry?.[0][KEYS.listType];
-                    if (
-                      !entry ||
-                      typeof listStyleType !== 'string' ||
-                      !['lower-roman', 'upper-roman'].includes(listStyleType)
-                    ) {
-                      continue;
-                    }
-                    const previousEntry = tx.list.getPrevious<Element>(entry, {
-                      breakOnEqIndentNeqListStyleType: false,
-                      eqIndent: false,
-                    });
-                    const resolvedListStyleType = resolveAmbiguousListStyleType(
-                      listStyleType,
-                      previousEntry?.[0][KEYS.listType]
+                  return;
+                }
+                for (const index of sortedInsertedIndices) {
+                  if (index === 0) continue;
+                  const beforeNode = beforeChildren[index - 1];
+                  const leftNode = afterChildren[index - 1];
+                  const rightNode = afterChildren[index];
+                  const isSplit =
+                    !!beforeNode &&
+                    !!leftNode &&
+                    !!rightNode &&
+                    ElementApi.isElement(beforeNode) &&
+                    ElementApi.isElement(leftNode) &&
+                    ElementApi.isElement(rightNode) &&
+                    beforeNode.type === leftNode.type &&
+                    beforeNode.type === rightNode.type &&
+                    !isEqual(beforeNode, leftNode) &&
+                    isEqual(
+                      [...leftNode.children, ...rightNode.children],
+                      beforeNode.children
                     );
-                    if (resolvedListStyleType !== listStyleType) {
-                      tx.nodes.set(
-                        {
-                          [KEYS.listType]: resolvedListStyleType,
-                        },
-                        {
-                          at: path,
-                        }
-                      );
+                  if (!isSplit) continue;
+                  const path: Path = [index];
+                  const node = tx.nodes.get<Element>(path)?.[0];
+                  const staleRestartKeys = [
+                    KEYS.listRestart,
+                    KEYS.listRestartPolite,
+                  ].filter((key) => node && Object.hasOwn(node, key));
+                  if (staleRestartKeys.length > 0) {
+                    tx.nodes.unset(staleRestartKeys, {
+                      at: path,
+                    });
+                  }
+                }
+
+                /**
+                 * Roman and alpha markers overlap. Resolve only canonical insertions
+                 * against the preceding sequence; existing nodes retain their style.
+                 */
+                for (const index of sortedInsertedIndices) {
+                  const path: Path = [index];
+                  const entry = tx.nodes.get<Element>(path);
+                  const listStyleType = entry?.[0][KEYS.listType];
+                  if (
+                    !entry ||
+                    typeof listStyleType !== 'string' ||
+                    !['lower-roman', 'upper-roman'].includes(listStyleType)
+                  ) {
+                    continue;
+                  }
+                  const previousEntry = tx.list.getPrevious<Element>(entry, {
+                    breakOnEqIndentNeqListStyleType: false,
+                    eqIndent: false,
+                  });
+                  const resolvedListStyleType = resolveAmbiguousListStyleType(
+                    listStyleType,
+                    previousEntry?.[0][KEYS.listType]
+                  );
+                  if (resolvedListStyleType !== listStyleType) {
+                    tx.nodes.set(
+                      {
+                        [KEYS.listType]: resolvedListStyleType,
+                      },
+                      {
+                        at: path,
+                      }
+                    );
+                  }
+                }
+                for (const index of [...affectedIndices].sort(
+                  (left, right) => left - right
+                )) {
+                  const affectedPath: Path = [index];
+                  let entry = tx.nodes.get<Element>(affectedPath);
+                  if (entry && !isListItem(entry[0])) {
+                    const [affectedNode] = entry;
+                    const staleListKeys = [
+                      KEYS.listChecked,
+                      KEYS.listRestart,
+                      KEYS.listRestartPolite,
+                      KEYS.listStart,
+                      KEYS.listType,
+                    ].filter((key) => Object.hasOwn(affectedNode, key));
+                    if (staleListKeys.length > 0) {
+                      tx.nodes.unset(staleListKeys, {
+                        at: affectedPath,
+                      });
                     }
                   }
-                  for (const index of [...affectedIndices].sort(
-                    (left, right) => left - right
-                  )) {
-                    const affectedPath: Path = [index];
-                    let entry = tx.nodes.get<Element>(affectedPath);
-                    if (entry && !isListItem(entry[0])) {
-                      const [affectedNode] = entry;
-                      const staleListKeys = [
-                        KEYS.listChecked,
-                        KEYS.listRestart,
-                        KEYS.listRestartPolite,
-                        KEYS.listStart,
-                        KEYS.listType,
-                      ].filter((key) => Object.hasOwn(affectedNode, key));
-                      if (staleListKeys.length > 0) {
-                        tx.nodes.unset(staleListKeys, {
-                          at: affectedPath,
-                        });
+                  if (!entry || !isListItem(entry[0])) {
+                    entry = tx.nodes.get<Element>(PathApi.next(affectedPath));
+                  }
+                  if (entry) {
+                    const firstEntry = entry;
+                    const previousBySequence = new Map<
+                      string,
+                      {
+                        entry: NodeEntry<Element>;
+                        indent: number;
                       }
-                    }
-                    if (!entry || !isListItem(entry[0])) {
-                      entry = tx.nodes.get<Element>(PathApi.next(affectedPath));
-                    }
-                    if (entry) {
-                      const firstEntry = entry;
-                      const previousBySequence = new Map<
-                        string,
-                        {
-                          entry: NodeEntry<Element>;
-                          indent: number;
-                        }
-                      >();
-                      let previousPath = firstEntry[1];
-                      let minimumIndent = Number.POSITIVE_INFINITY;
-                      const [firstNode] = firstEntry;
-                      let previousStyleEntry = tx.list.getPrevious<Element>(
-                        firstEntry,
-                        {
-                          breakOnEqIndentNeqListStyleType: false,
-                          eqIndent: false,
-                        }
+                    >();
+                    let previousPath = firstEntry[1];
+                    let minimumIndent = Number.POSITIVE_INFINITY;
+                    const [firstNode] = firstEntry;
+                    let previousStyleEntry = tx.list.getPrevious<Element>(
+                      firstEntry,
+                      {
+                        breakOnEqIndentNeqListStyleType: false,
+                        eqIndent: false,
+                      }
+                    );
+                    while (PathApi.hasPrevious(previousPath)) {
+                      previousPath = PathApi.previous(previousPath);
+                      const previousEntry = tx.nodes.get<Element>(previousPath);
+                      if (!previousEntry) break;
+                      const previousIndent = Number(
+                        previousEntry[0][KEYS.indent]
                       );
-                      while (PathApi.hasPrevious(previousPath)) {
-                        previousPath = PathApi.previous(previousPath);
-                        const previousEntry =
-                          tx.nodes.get<Element>(previousPath);
-                        if (!previousEntry) break;
-                        const previousIndent = Number(
-                          previousEntry[0][KEYS.indent]
-                        );
-                        if (!Number.isFinite(previousIndent)) break;
-                        if (
-                          context.api.isSequenceBoundary(
-                            previousEntry[0],
-                            firstNode
-                          )
-                        ) {
-                          break;
-                        }
-                        if (
-                          isListItem(previousEntry[0]) &&
-                          previousIndent <= minimumIndent
-                        ) {
-                          const key = getSequenceKey(previousEntry[0]);
-                          if (!previousBySequence.has(key)) {
-                            previousBySequence.set(key, {
-                              entry: previousEntry,
-                              indent: previousIndent,
-                            });
-                          }
-                        }
-                        minimumIndent = Math.min(minimumIndent, previousIndent);
+                      if (!Number.isFinite(previousIndent)) break;
+                      if (
+                        context.api.isSequenceBoundary(
+                          previousEntry[0],
+                          firstNode
+                        )
+                      ) {
+                        break;
                       }
-                      let suffixEntry: NodeEntry<Element> | undefined =
-                        firstEntry;
-                      while (suffixEntry) {
-                        let node = suffixEntry[0];
-                        const path: Path = suffixEntry[1];
-                        const indent = Number(node[KEYS.indent]);
-                        if (!Number.isFinite(indent)) break;
-                        const previousStyleNode = previousStyleEntry?.[0];
-                        const previousStyleIndent = Number(
-                          previousStyleNode?.[KEYS.indent]
+                      if (
+                        isListItem(previousEntry[0]) &&
+                        previousIndent <= minimumIndent
+                      ) {
+                        const key = getSequenceKey(previousEntry[0]);
+                        if (!previousBySequence.has(key)) {
+                          previousBySequence.set(key, {
+                            entry: previousEntry,
+                            indent: previousIndent,
+                          });
+                        }
+                      }
+                      minimumIndent = Math.min(minimumIndent, previousIndent);
+                    }
+                    let suffixEntry: NodeEntry<Element> | undefined =
+                      firstEntry;
+                    while (suffixEntry) {
+                      let node = suffixEntry[0];
+                      const path: Path = suffixEntry[1];
+                      const indent = Number(node[KEYS.indent]);
+                      if (!Number.isFinite(indent)) break;
+                      const previousStyleNode = previousStyleEntry?.[0];
+                      const previousStyleIndent = Number(
+                        previousStyleNode?.[KEYS.indent]
+                      );
+                      const resolvedListStyleType =
+                        resolveAmbiguousListStyleType(
+                          node[KEYS.listType],
+                          previousStyleIndent >= indent
+                            ? previousStyleNode?.[KEYS.listType]
+                            : undefined
                         );
-                        const resolvedListStyleType =
-                          resolveAmbiguousListStyleType(
-                            node[KEYS.listType],
-                            previousStyleIndent >= indent
-                              ? previousStyleNode?.[KEYS.listType]
-                              : undefined
-                          );
-                        if (resolvedListStyleType !== node[KEYS.listType]) {
-                          tx.nodes.set(
-                            {
-                              [KEYS.listType]: resolvedListStyleType,
-                            },
-                            {
-                              at: path,
-                            }
-                          );
-                          node = {
-                            ...node,
+                      if (resolvedListStyleType !== node[KEYS.listType]) {
+                        tx.nodes.set(
+                          {
                             [KEYS.listType]: resolvedListStyleType,
-                          };
-                        }
-                        const currentEntry: NodeEntry<Element> = [node, path];
-                        for (const [key, previous] of previousBySequence) {
-                          if (
-                            previous.indent > indent ||
-                            (isListItem(node) &&
-                              context.api.isSequenceBoundary(
-                                previous.entry[0],
-                                node
-                              ))
-                          ) {
-                            previousBySequence.delete(key);
+                          },
+                          {
+                            at: path,
                           }
-                        }
-                        if (!isListItem(node)) {
-                          previousStyleEntry = currentEntry;
-                          suffixEntry = tx.nodes.get<Element>(
-                            PathApi.next(path)
-                          );
-                          continue;
-                        }
-                        const key = getSequenceKey(node);
-                        const previousEntry =
-                          previousBySequence.get(key)?.entry;
-                        const expectedListStart = getListExpectedListStart(
-                          suffixEntry,
-                          previousEntry
                         );
-                        const listStyleType = node[KEYS.listType];
-                        const listStart = node[KEYS.listStart] as
-                          | number
-                          | undefined;
-                        const isUnordered = ULIST_STYLE_TYPES.some(
-                          (unorderedListStyleType) =>
-                            unorderedListStyleType === listStyleType
-                        );
+                        node = {
+                          ...node,
+                          [KEYS.listType]: resolvedListStyleType,
+                        };
+                      }
+                      const currentEntry: NodeEntry<Element> = [node, path];
+                      for (const [key, previous] of previousBySequence) {
                         if (
-                          isUnordered ||
-                          (isDefined(listStart) && expectedListStart === 1)
+                          previous.indent > indent ||
+                          (isListItem(node) &&
+                            context.api.isSequenceBoundary(
+                              previous.entry[0],
+                              node
+                            ))
                         ) {
-                          if (isDefined(listStart)) {
-                            tx.nodes.unset(KEYS.listStart, {
-                              at: path,
-                            });
-                          }
-                        } else if (
-                          typeof listStyleType === 'string' &&
-                          listStart !== expectedListStart &&
-                          expectedListStart > 1
-                        ) {
-                          tx.nodes.set(
-                            {
-                              [KEYS.listStart]: expectedListStart,
-                            },
-                            {
-                              at: path,
-                            }
-                          );
+                          previousBySequence.delete(key);
                         }
-                        previousBySequence.set(key, {
-                          entry: [
-                            {
-                              ...node,
-                              [KEYS.listStart]: isUnordered
-                                ? undefined
-                                : expectedListStart > 1
-                                  ? expectedListStart
-                                  : undefined,
-                            },
-                            path,
-                          ],
-                          indent,
-                        });
+                      }
+                      if (!isListItem(node)) {
                         previousStyleEntry = currentEntry;
                         suffixEntry = tx.nodes.get<Element>(PathApi.next(path));
+                        continue;
                       }
+                      const key = getSequenceKey(node);
+                      const previousEntry = previousBySequence.get(key)?.entry;
+                      const expectedListStart = getListExpectedListStart(
+                        suffixEntry,
+                        previousEntry
+                      );
+                      const listStyleType = node[KEYS.listType];
+                      const listStart = node[KEYS.listStart] as
+                        | number
+                        | undefined;
+                      const isUnordered = ULIST_STYLE_TYPES.some(
+                        (unorderedListStyleType) =>
+                          unorderedListStyleType === listStyleType
+                      );
+                      if (
+                        isUnordered ||
+                        (isDefined(listStart) && expectedListStart === 1)
+                      ) {
+                        if (isDefined(listStart)) {
+                          tx.nodes.unset(KEYS.listStart, {
+                            at: path,
+                          });
+                        }
+                      } else if (
+                        typeof listStyleType === 'string' &&
+                        listStart !== expectedListStart &&
+                        expectedListStart > 1
+                      ) {
+                        tx.nodes.set(
+                          {
+                            [KEYS.listStart]: expectedListStart,
+                          },
+                          {
+                            at: path,
+                          }
+                        );
+                      }
+                      previousBySequence.set(key, {
+                        entry: [
+                          {
+                            ...node,
+                            [KEYS.listStart]: isUnordered
+                              ? undefined
+                              : expectedListStart > 1
+                                ? expectedListStart
+                                : undefined,
+                          },
+                          path,
+                        ],
+                        indent,
+                      });
+                      previousStyleEntry = currentEntry;
+                      suffixEntry = tx.nodes.get<Element>(PathApi.next(path));
                     }
                   }
-                });
-              }
-            } finally {
-              changeGuard.delete(tx);
+                }
+              });
+            }
+          } finally {
+            changeGuard.delete(tx);
+          }
+        },
+      },
+      corrections: [
+        {
+          event: 'content',
+          correct({ entry, tx }) {
+            if (!ElementApi.isElement(entry[0])) return;
+            if (
+              !isDefined(entry[0][KEYS.indent]) &&
+              (entry[0][KEYS.listType] || entry[0][KEYS.listStart])
+            ) {
+              tx.nodes.unset([KEYS.listType, KEYS.listStart], {
+                at: entry[1],
+              });
+              return;
+            }
+            const update = getListStartUpdate(
+              [entry[0], entry[1]],
+              tx.list.getPrevious(
+                [entry[0], entry[1]],
+                context.api.getSequenceSiblingOptions({
+                  breakOnEqIndentNeqListStyleType: false,
+                  ...store.get().getSiblingListOptions,
+                })
+              )
+            );
+            if (update?.type === 'unset') {
+              tx.nodes.unset(KEYS.listStart, {
+                at: entry[1],
+              });
+            } else if (update?.type === 'set') {
+              tx.nodes.set(
+                {
+                  [KEYS.listStart]: update.value,
+                },
+                {
+                  at: entry[1],
+                }
+              );
             }
           },
         },
-        corrections: [
-          {
-            event: 'content',
-            correct({ entry, tx }) {
-              if (!ElementApi.isElement(entry[0])) return;
-              if (
-                !isDefined(entry[0][KEYS.indent]) &&
-                (entry[0][KEYS.listType] || entry[0][KEYS.listStart])
-              ) {
-                tx.nodes.unset([KEYS.listType, KEYS.listStart], {
-                  at: entry[1],
-                });
-                return;
-              }
-              const update = getListStartUpdate(
-                [entry[0], entry[1]],
-                tx.list.getPrevious(
-                  [entry[0], entry[1]],
-                  context.api.getSequenceSiblingOptions({
-                    breakOnEqIndentNeqListStyleType: false,
-                    ...store.get().getSiblingListOptions,
-                  })
-                )
-              );
-              if (update?.type === 'unset') {
-                tx.nodes.unset(KEYS.listStart, {
-                  at: entry[1],
-                });
-              } else if (update?.type === 'set') {
-                tx.nodes.set(
-                  {
-                    [KEYS.listStart]: update.value,
-                  },
-                  {
-                    at: entry[1],
-                  }
-                );
-              }
-            },
-          },
-        ],
-      },
+      ],
     };
   });
 
-export type BaseListConfig = InferConfig<typeof BaseListPlugin>;
+export type BaseListDefinition = DefinitionOf<typeof BaseListPlugin>;
 
 const createListRule = createRuleFactory(BaseListPlugin);
 
@@ -1601,10 +1685,15 @@ export const BulletedListRules = {
   markdown: createListRule<{}, { variant: '*' | '-' }>({
     type: 'blockStart',
     variant: '-',
-    enabled: ({ editor, tx }) =>
-      !tx.nodes.some({
-        match: { type: [editor.getType(KEYS.codeBlock)] },
-      }),
+    enabled: ({ editor, tx }) => {
+      const codeBlock = editor.plugin(KEYS.codeBlock);
+
+      return !tx.nodes.some({
+        match: {
+          type: [codeBlock.installed ? codeBlock.type : KEYS.codeBlock],
+        },
+      });
+    },
     trigger: ' ',
     match: ({ variant }) => variant,
     apply: ({ tx }, match) => {
@@ -1620,10 +1709,15 @@ export const OrderedListRules = {
   markdown: createListRule<{}, { variant: '.' | ')' }, { start: number }>({
     type: 'blockStart',
     variant: '.',
-    enabled: ({ editor, tx }) =>
-      !tx.nodes.some({
-        match: { type: [editor.getType(KEYS.codeBlock)] },
-      }),
+    enabled: ({ editor, tx }) => {
+      const codeBlock = editor.plugin(KEYS.codeBlock);
+
+      return !tx.nodes.some({
+        match: {
+          type: [codeBlock.installed ? codeBlock.type : KEYS.codeBlock],
+        },
+      });
+    },
     trigger: ' ',
     match: ({ variant }) =>
       new RegExp(`^(\\d+)${variant === ')' ? '\\)' : '\\.'}$`),
@@ -1646,10 +1740,15 @@ export const TaskListRules = {
   markdown: createListRule<{}, { checked: boolean }>({
     type: 'blockStart',
     checked: false,
-    enabled: ({ editor, tx }) =>
-      !tx.nodes.some({
-        match: { type: [editor.getType(KEYS.codeBlock)] },
-      }),
+    enabled: ({ editor, tx }) => {
+      const codeBlock = editor.plugin(KEYS.codeBlock);
+
+      return !tx.nodes.some({
+        match: {
+          type: [codeBlock.installed ? codeBlock.type : KEYS.codeBlock],
+        },
+      });
+    },
     trigger: ' ',
     match: ({ checked }) => (checked ? '[x]' : '[]'),
     apply: ({ checked, tx }, match) => {

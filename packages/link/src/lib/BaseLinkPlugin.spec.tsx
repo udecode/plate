@@ -12,8 +12,8 @@ import {
 import { jsxt, type TestEditor } from '@platejs/test-utils';
 import { KEYS, type TLinkElement } from '@platejs/utils';
 
-import { BaseLinkPlugin, type BaseLinkConfig } from './BaseLinkPlugin';
-import type { LinkConfig } from '../react/LinkPlugin';
+import { BaseLinkPlugin, type BaseLinkDefinition } from './BaseLinkPlugin';
+import type { LinkDefinition } from '../react/LinkPlugin';
 
 jsxt;
 
@@ -31,12 +31,12 @@ describe('BaseLinkPlugin', () => {
     const link = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
-    ).find((node) => node.type === editor.getType(BaseLinkPlugin.key));
+    ).find((node) => node.type === editor.plugin(BaseLinkPlugin.name).type);
 
     expect(link).toMatchObject({
       children: [{ text: 'Link' }],
       target: '_blank',
-      type: editor.getType(BaseLinkPlugin.key),
+      type: editor.plugin(BaseLinkPlugin.name).type,
       url: 'https://example.com',
     });
   });
@@ -49,7 +49,7 @@ describe('BaseLinkPlugin', () => {
     const hasLink = Array.from(
       NodeApi.elements({ children: fragment ?? [], type: 'root' }),
       ([node]) => node
-    ).some((node) => node.type === editor.getType(BaseLinkPlugin.key));
+    ).some((node) => node.type === editor.plugin(BaseLinkPlugin.name).type);
 
     expect(hasLink).toBe(false);
   });
@@ -78,7 +78,7 @@ describe('BaseLinkPlugin', () => {
     });
     const data = new DataTransfer();
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const anchor = new DOMParser()
       .parseFromString(data.getData('text/html'), 'text/html')
@@ -93,7 +93,7 @@ describe('BaseLinkPlugin', () => {
     const editor = createEditor();
 
     expect(
-      getPlateRuntime(editor).inputRules.plugins[BaseLinkPlugin.key].rules
+      getPlateRuntime(editor).inputRules.plugins[BaseLinkPlugin.name].rules
     ).toEqual([]);
   });
 });
@@ -103,13 +103,15 @@ const baseLink = {
   type: 'a',
 };
 
-const defaultOptions: Partial<LinkConfig['initialState']> = {
+const defaultOptions: Partial<LinkDefinition['initialState']> = {
   defaultLinkAttributes: {
     rel: 'noopener noreferrer',
   },
 };
 
-const createApiEditor = (options: Partial<LinkConfig['initialState']> = {}) =>
+const createApiEditor = (
+  options: Partial<LinkDefinition['initialState']> = {}
+) =>
   createBaseEditor({
     plugins: [
       BaseLinkPlugin.configure({
@@ -204,7 +206,7 @@ describe('BaseLinkPlugin.api.getAttributes', () => {
 
 describe('BaseLinkPlugin.api.validateUrl', () => {
   const createTestEditor = (
-    options: Partial<BaseLinkConfig['initialState']> = {}
+    options: Partial<BaseLinkDefinition['initialState']> = {}
   ) =>
     createBaseEditor({
       plugins: [
@@ -357,14 +359,14 @@ describe('BaseLinkPlugin.api.validateUrl', () => {
       Array.from(
         NodeApi.elements({ children: fragment ?? [], type: 'root' }),
         ([node]) => node
-      ).some((node) => node.type === editor.getType(BaseLinkPlugin.key))
+      ).some((node) => node.type === editor.plugin(BaseLinkPlugin.name).type)
     ).toBe(false);
   });
 });
 
-const mark = (key: string) =>
+const mark = (name: string) =>
   createBasePlugin({
-    key,
+    name,
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -377,7 +379,7 @@ const createEditingEditor = ({
 }: {
   selection?: Selection;
   value: Value;
-  options?: Partial<BaseLinkConfig['initialState']>;
+  options?: Partial<BaseLinkDefinition['initialState']>;
 }) =>
   createBaseEditor({
     plugins: [

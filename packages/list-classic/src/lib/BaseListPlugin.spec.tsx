@@ -103,16 +103,16 @@ describe('input rules', () => {
               children: [
                 {
                   children: [{ text: 'hello' }],
-                  type: editor.getType(KEYS.lic),
+                  type: editor.plugin(KEYS.lic).type,
                 },
               ],
-              type: editor.getType(KEYS.li),
+              type: editor.plugin(KEYS.li).type,
             },
           ],
           type:
             title === 'formats bullet shorthand'
-              ? editor.getType(KEYS.ulClassic)
-              : editor.getType(KEYS.olClassic),
+              ? editor.plugin(KEYS.ulClassic).type
+              : editor.plugin(KEYS.olClassic).type,
         },
       ]);
     });
@@ -222,10 +222,10 @@ describe('input rules', () => {
           children: [
             {
               children: [{ text: '- code' }],
-              type: editor.getType(KEYS.codeLine),
+              type: editor.plugin(KEYS.codeLine).type,
             },
           ],
-          type: editor.getType(KEYS.codeBlock),
+          type: editor.plugin(KEYS.codeBlock).type,
         },
       ]);
     });
@@ -238,7 +238,7 @@ describe('schema', () => {
       const editor = createBaseEditor({
         plugins: [BaseListPlugin],
       });
-      const list = editor.read.schema.createAndFill(BaseBulletedListPlugin);
+      const list = editor.read.schema.create(BaseBulletedListPlugin);
 
       if (!ElementApi.isElement(list)) {
         throw new Error(
@@ -287,19 +287,19 @@ describe('schema', () => {
         BaseListItemPlugin,
         BaseListItemContentPlugin,
       ]) {
-        expect(editor.getPlugin(dependency)).toBeDefined();
+        expect(editor.plugin(dependency).plugin).toBeDefined();
       }
-      expect(() => editor.read.schema.validateFragment([list])).not.toThrow();
+      expect(() => editor.read.schema.assertFragment([list])).not.toThrow();
       expect(() =>
-        editor.read.schema.validateDocument({ children: [listItem] })
+        editor.read.schema.assertDocument({ children: [listItem] })
       ).toThrow(/root.*cannot contain|cannot contain.*root/i);
       expect(() =>
-        editor.read.schema.validateDocument({
+        editor.read.schema.assertDocument({
           children: [listItemContent],
         })
       ).toThrow(/root.*cannot contain|cannot contain.*root/i);
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           {
             children: [{ children: [{ text: '' }], type: KEYS.p }],
             type: KEYS.ulClassic,
@@ -319,16 +319,16 @@ describe('schema', () => {
       };
 
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           { children: [item], type: KEYS.taskList },
         ])
       ).not.toThrow();
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           { children: [item], type: KEYS.ulClassic },
         ])
       ).toThrow(/property "checked" cannot target element "li"/i);
-      const taskList = editor.read.schema.createAndFill(BaseTaskListPlugin);
+      const taskList = editor.read.schema.create(BaseTaskListPlugin);
 
       expect(taskList).toMatchObject({
         children: [
@@ -342,22 +342,19 @@ describe('schema', () => {
       expect(Reflect.get(taskList.children[0]!, 'checked')).toBe(false);
     });
 
-    it('resolves configured valid list-item child plugin keys', () => {
+    it('resolves valid list-item child plugin names', () => {
       const EmbedPlugin = createBasePlugin({
-        key: 'embed',
+        name: 'embed',
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),
           },
         },
-        type: 'image-card',
-      });
-      const ConfiguredEmbedPlugin = EmbedPlugin.configure({
         type: 'custom-image-card',
       });
       const editor = createBaseEditor({
         plugins: [
-          ConfiguredEmbedPlugin,
+          EmbedPlugin,
           BaseListPlugin,
           BaseListItemPlugin.configure({
             initialState: { validLiChildren: [EmbedPlugin] },
@@ -366,7 +363,7 @@ describe('schema', () => {
       });
 
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           {
             children: [
               {
@@ -383,27 +380,6 @@ describe('schema', () => {
           },
         ])
       ).not.toThrow();
-    });
-
-    it('resolves configured structural list types by key', () => {
-      const ConfiguredBulletedListPlugin = BaseBulletedListPlugin.configure({
-        type: 'custom-bulleted-list',
-      });
-      const editor = createBaseEditor({
-        plugins: [BaseListPlugin, ConfiguredBulletedListPlugin],
-      });
-
-      expect(
-        editor.read.schema.createAndFill(ConfiguredBulletedListPlugin)
-      ).toMatchObject({
-        children: [
-          {
-            children: [{ children: [{ text: '' }], type: KEYS.lic }],
-            type: KEYS.li,
-          },
-        ],
-        type: 'custom-bulleted-list',
-      });
     });
 
     it('rejects disabling a required list descriptor', () => {
@@ -423,7 +399,7 @@ describe('list toggling', () => {
   jsxt;
 
   const BaseImagePlugin = createBasePlugin({
-    key: KEYS.img,
+    name: KEYS.img,
     schema: {
       element: {
         void: 'block',
@@ -443,7 +419,7 @@ describe('list toggling', () => {
     });
 
     editor.plugin(BaseListPlugin).update.toggle({
-      type: editor.getType(type),
+      type: editor.plugin(type).type,
     });
 
     return editor;
@@ -459,7 +435,7 @@ describe('list toggling', () => {
       const before = JSON.stringify(editor.read.children());
 
       editor.plugin(BaseListPlugin).update.toggle({
-        type: editor.getType(KEYS.ulClassic),
+        type: editor.plugin(KEYS.ulClassic).type,
       });
 
       expect(JSON.stringify(editor.read.children())).toBe(before);
@@ -583,7 +559,7 @@ describe('list toggling', () => {
 
         editor.plugin(BaseListPlugin).update.toggle({
           checked: true,
-          type: editor.getType(KEYS.taskList),
+          type: editor.plugin(KEYS.taskList).type,
         });
 
         expect(editor.read.children()).toMatchObject([
@@ -986,7 +962,7 @@ describe('backward deletion', () => {
   jsxt;
 
   const BaseBoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -1137,7 +1113,7 @@ describe('forward deletion', () => {
   jsxt;
 
   const BaseBoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -1535,7 +1511,7 @@ describe('fragment deletion', () => {
         type: 'list-test-root-owner',
       };
       const RootOwnerPlugin = createBasePlugin({
-        key: 'list-test-root-owner',
+        name: 'list-test-root-owner',
         schema: {
           element: {
             content: schema.content.text({ default: 'text', min: 1 }),
@@ -3380,7 +3356,7 @@ describe('editing', () => {
   jsxt;
 
   const BaseBlockquotePlugin = createBasePlugin({
-    key: 'blockquote',
+    name: 'blockquote',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),

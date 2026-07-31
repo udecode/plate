@@ -3,30 +3,26 @@ import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { KEYS } from '@platejs/utils';
 import { schema } from '@platejs/plite';
-import { BaseParagraphPlugin } from '@platejs/core';
-import { createPlateEditor, createPlatePlugin } from '@platejs/core/react';
+import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
+import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
-import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
+import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
-const TablePlugin = createPlatePlugin({
-  key: KEYS.table,
-  schema: ({ plugins }) => {
-    const rowType = plugins.elementType(TableRowPlugin);
-
-    return {
-      element: {
-        content: schema.content.type(rowType, {
-          default: { type: rowType },
-          min: 1,
-        }),
-      },
-    };
-  },
-  type: KEYS.table,
+const TableCellPlugin = createBasePlugin({
+  name: KEYS.td,
+  schema: ({ plugins }) => ({
+    element: {
+      content: plugins.blockContent({
+        default: { type: plugins.elementType(BaseParagraphPlugin) },
+        min: 1,
+      }),
+    },
+  }),
+  type: KEYS.td,
 });
-const TableRowPlugin = createPlatePlugin({
-  key: KEYS.tr,
+const TableRowPlugin = createBasePlugin({
+  name: KEYS.tr,
   schema: ({ plugins }) => {
     const cellType = plugins.elementType(TableCellPlugin);
 
@@ -41,17 +37,21 @@ const TableRowPlugin = createPlatePlugin({
   },
   type: KEYS.tr,
 });
-const TableCellPlugin = createPlatePlugin({
-  key: KEYS.td,
-  schema: ({ plugins }) => ({
-    element: {
-      content: plugins.blockContent({
-        default: { type: plugins.elementType(BaseParagraphPlugin) },
-        min: 1,
-      }),
-    },
-  }),
-  type: KEYS.td,
+const TablePlugin = createBasePlugin({
+  name: KEYS.table,
+  schema: ({ plugins }) => {
+    const rowType = plugins.elementType(TableRowPlugin);
+
+    return {
+      element: {
+        content: schema.content.type(rowType, {
+          default: { type: rowType },
+          min: 1,
+        }),
+      },
+    };
+  },
+  type: KEYS.table,
 });
 
 const createSuggestionEditor = (type: 'insert' | 'remove') => {
@@ -169,7 +169,7 @@ describe('ai chat action utils', () => {
       ],
       clear,
       stop,
-    } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+    } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
     editor.plugin(AIChatPlugin).store.set({
       _replaceIds: ['block'],
       chat,

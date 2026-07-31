@@ -1,26 +1,29 @@
 import React from 'react';
 
 import type {
-  EditorSchemaSource,
   Element,
   Path,
   SchemaElementFor,
   SchemaElementTypes,
   Text,
 } from '@platejs/plite';
+import type { EditorSchemaSource } from '@platejs/plite/internal';
 import type { UnknownObject } from '@udecode/utils';
 
 import { useComposedRef } from '@udecode/react-utils';
 import { clsx } from 'clsx';
 
 import type {
-  AnyPluginConfig,
-  PluginConfig,
+  AnyBasePluginDefinition,
+  PlateSchemaSource,
+  PluginReference,
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
-import type { PlatePluginContext } from '../plugin';
+import type { InferPluginDocumentType } from '../../lib/plugin/pluginSchemaModel.internal';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
+import type { AnyPlatePluginContext, PlatePluginContext } from '../plugin';
 
 const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
   'area',
@@ -69,38 +72,43 @@ export const useBlockIdAttributeRef = <T extends HTMLElement>(
   return useComposedRef(blockIdRef, ref);
 };
 
-type PlateElementPropsDescriptor = EditorSchemaSource &
-  Readonly<{
-    __config: AnyPluginConfig;
-    type: string;
-  }>;
+type PlateElementPropsDescriptor = EditorSchemaSource & PluginReference;
 
 type PlateElementPropsNode<
   TElementOrPlugin extends Element | PlateElementPropsDescriptor,
 > = TElementOrPlugin extends PlateElementPropsDescriptor
   ? SchemaElementFor<
-      TElementOrPlugin,
-      Extract<TElementOrPlugin['type'], SchemaElementTypes<TElementOrPlugin>>
+      PlateSchemaSource<InternalPluginDefinitionOf<TElementOrPlugin>>,
+      Extract<
+        SchemaElementTypes<
+          PlateSchemaSource<InternalPluginDefinitionOf<TElementOrPlugin>>
+        >,
+        InferPluginDocumentType<InternalPluginDefinitionOf<TElementOrPlugin>>
+      >
     >
   : Extract<TElementOrPlugin, Element>;
 
 type PlateElementPropsConfig<
   TElementOrPlugin extends Element | PlateElementPropsDescriptor,
 > = TElementOrPlugin extends PlateElementPropsDescriptor
-  ? TElementOrPlugin['__config']
-  : AnyPluginConfig;
+  ? InternalPluginDefinitionOf<TElementOrPlugin>
+  : never;
+
+type PlateNodeContext<C extends AnyBasePluginDefinition> = [C] extends [never]
+  ? AnyPlatePluginContext
+  : PlatePluginContext<C>;
 
 export type PlateElementProps<
   TElementOrPlugin extends Element | PlateElementPropsDescriptor = Element,
-  C extends AnyPluginConfig = PlateElementPropsConfig<TElementOrPlugin>,
+  C extends AnyBasePluginDefinition = PlateElementPropsConfig<TElementOrPlugin>,
 > = PlateNodeProps<C> &
   RenderElementProps<PlateElementPropsNode<TElementOrPlugin>> & {
     attributes: UnknownObject;
     path: Path;
   };
 
-export type PlateNodeProps<C extends AnyPluginConfig = AnyPluginConfig> =
-  PlatePluginContext<C> & {
+export type PlateNodeProps<C extends AnyBasePluginDefinition = never> =
+  PlateNodeContext<NoInfer<C>> & {
     /**
      * Optional ref to be merged with `attributes.ref`
      *
@@ -110,7 +118,7 @@ export type PlateNodeProps<C extends AnyPluginConfig = AnyPluginConfig> =
   };
 
 export type PlateHTMLProps<
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
   T extends
     | React.ComponentType<PlateElementProps>
     | keyof HTMLElementTagNameMap = 'div',
@@ -132,7 +140,7 @@ export type PlateHTMLProps<
 
 export type StyledPlateElementProps<
   N extends Element | PlateElementPropsDescriptor = Element,
-  C extends AnyPluginConfig = PlateElementPropsConfig<N>,
+  C extends AnyBasePluginDefinition = PlateElementPropsConfig<N>,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = PlateElementProps<N, C> &
   PlateHTMLProps<C, T> & {
@@ -165,9 +173,9 @@ export const PlateElement = React.forwardRef(function PlateElement(
       {children}
     </PlateElementBody>
   );
-}) as <
+}) as unknown as <
   N extends Element | PlateElementPropsDescriptor = Element,
-  C extends AnyPluginConfig = PlateElementPropsConfig<N>,
+  C extends AnyBasePluginDefinition = PlateElementPropsConfig<N>,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
   props: StyledPlateElementProps<N, C, T>
@@ -227,7 +235,7 @@ function PlateElementBody({
 
 export type PlateTextProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
 > = PlateNodeProps<C> &
   RenderTextProps<N> & {
     attributes: UnknownObject;
@@ -235,7 +243,7 @@ export type PlateTextProps<
 
 export type StyledPlateTextProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = PlateTextProps<N, C> & PlateHTMLProps<C, T>;
 
@@ -246,9 +254,9 @@ export const PlateText = React.forwardRef<
   const attributes = useNodeAttributes(props, ref);
 
   return <Tag {...attributes}>{children}</Tag>;
-}) as <
+}) as unknown as <
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
   props: StyledPlateTextProps<N, C, T>
@@ -256,13 +264,13 @@ export const PlateText = React.forwardRef<
 
 export type PlateLeafProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
 > = PlateNodeProps<C> &
   RenderLeafProps<N> & { attributes: UnknownObject; inset?: boolean };
 
 export type StyledPlateLeafProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = PlateLeafProps<N, C> & PlateHTMLProps<C, T>;
 
@@ -294,9 +302,9 @@ export const PlateLeaf = React.forwardRef<
   }
 
   return <Tag {...attributes}>{children}</Tag>;
-}) as <
+}) as unknown as <
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = never,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({
   className,

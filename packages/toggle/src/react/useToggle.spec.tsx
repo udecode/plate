@@ -10,7 +10,7 @@ const useEditorSelectorMock = mock();
 const usePluginStoreMock = mock();
 
 mock.module('../lib', () => ({
-  BaseTogglePlugin: { key: 'baseToggle' },
+  BaseTogglePlugin: { name: 'baseToggle' },
 }));
 
 mock.module('@platejs/core/react', () => ({

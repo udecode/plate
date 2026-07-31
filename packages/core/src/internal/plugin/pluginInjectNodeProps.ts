@@ -3,14 +3,13 @@ import type { Element, Path, Text } from '@platejs/plite';
 import { isDefined } from '@udecode/utils';
 
 import type { BaseEditor } from '../../lib/editor';
-import type { BasePlugin, TransformOptions } from '../../lib/plugin/BasePlugin';
-import type { AnyPluginConfig } from '../../lib/plugin/PluginConfig';
+import type { AnyResolvedBasePlugin } from '../../lib/plugin/BasePlugin';
 
-import {
-  type GetInjectNodePropsOptions,
-  type GetInjectNodePropsReturnType,
-  getEditorPlugin,
+import type {
+  GetInjectNodePropsOptions,
+  GetInjectNodePropsReturnType,
 } from '../../lib/plugin';
+import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 import { getInjectMatch } from '../../lib/utils/getInjectMatch';
 
 const getNodeProp = (node: Element | Text, key?: string) =>
@@ -23,20 +22,20 @@ const getNodePropClassValue = (value: unknown) =>
 
 /**
  * Return if `element`, `text`, `nodeKey` is defined. Return if `node.type` is
- * not in `targetPluginKeys` (when configured). Return if `value =
+ * not in `targetPluginNames` (when configured). Return if `value =
  * node[nodeKey]` is not in `validNodeValues` (if defined). If
  * `classNames[value]` is defined,
  * override `className` with it. If `styleKey` is defined, override `style` with
  * `[styleKey]: value`.
  */
-export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
+export const pluginInjectNodeProps = (
   editor: BaseEditor,
-  plugin: BasePlugin<C>,
+  plugin: AnyResolvedBasePlugin,
   nodeProps: GetInjectNodePropsOptions,
   getElementPath: (node: Element | Text) => Path | undefined
 ): GetInjectNodePropsReturnType | undefined => {
   const {
-    key,
+    name,
     inject: { excludeBelowPlugins, maxLevel, nodeProps: injectNodeProps },
   } = plugin;
 
@@ -50,7 +49,7 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
   const {
     classNames,
     defaultNodeValue,
-    nodeKey = editor.getType(key),
+    nodeKey = editor.plugin(name).type,
     query,
     styleKey = nodeKey,
     transformClassName,
@@ -63,8 +62,8 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
   const injectMatch = getInjectMatch(editor, plugin);
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
   const nodeValue = getNodeProp(node, nodeKey);
-  const editorPluginContext = getEditorPlugin(editor, plugin);
-  const getTransformOptions = (value?: unknown): TransformOptions<C> => ({
+  const editorPluginContext = createPluginContext(editor, plugin.name);
+  const getTransformOptions = (value?: unknown) => ({
     ...nodeProps,
     ...editorPluginContext,
     nodeValue,
@@ -73,7 +72,11 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
   const callTransformPropsWithoutInjecting = () => {
     // `transformProps` may call React hooks. Keep the call order stable even
     // when this node does not receive injected props.
-    transformProps?.({ ...getTransformOptions(), props: {} });
+    if (typeof transformProps === 'function') {
+      Reflect.apply(transformProps, undefined, [
+        { ...getTransformOptions(), props: {} },
+      ]);
+    }
   };
 
   const path = shouldResolvePathForMatch ? getElementPath(node) : undefined;
@@ -90,17 +93,22 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
     return;
   }
 
-  const queryResult = query?.({
-    classNames,
-    defaultNodeValue,
-    ...editorPluginContext,
-    nodeKey,
-    nodeProps,
-    styleKey,
-    validNodeValues,
-  });
+  const queryResult =
+    typeof query === 'function'
+      ? Reflect.apply(query, undefined, [
+          {
+            classNames,
+            defaultNodeValue,
+            ...editorPluginContext,
+            nodeKey,
+            nodeProps,
+            styleKey,
+            validNodeValues,
+          },
+        ])
+      : undefined;
 
-  if (query && !queryResult) {
+  if (typeof query === 'function' && !queryResult) {
     callTransformPropsWithoutInjecting();
 
     return;
@@ -108,7 +116,7 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
 
   // early return if there is no reason to inject props
   if (
-    !transformProps &&
+    typeof transformProps !== 'function' &&
     (!isDefined(nodeValue) ||
       (validNodeValues && !validNodeValues.includes(nodeValue)) ||
       nodeValue === defaultNodeValue)
@@ -116,7 +124,12 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
     return;
   }
 
-  const value = transformNodeValue?.(getTransformOptions()) ?? nodeValue;
+  const value =
+    typeof transformNodeValue === 'function'
+      ? (Reflect.apply(transformNodeValue, undefined, [
+          getTransformOptions(),
+        ]) ?? nodeValue)
+      : nodeValue;
   const transformOptions = getTransformOptions(value);
 
   let newProps: GetInjectNodePropsReturnType = {};
@@ -126,19 +139,28 @@ export const pluginInjectNodeProps = <C extends AnyPluginConfig>(
   if (element && nodeKey && nodeValueKey) {
     newProps.className = `plite-${nodeKey}-${nodeValueKey}`;
   }
-  if ((nodeValueKey && classNames?.[nodeValueKey]) || transformClassName) {
+  if (
+    (nodeValueKey && classNames?.[nodeValueKey]) ||
+    typeof transformClassName === 'function'
+  ) {
     newProps.className =
-      transformClassName?.(transformOptions) ??
-      (valueKey ? classNames?.[valueKey] : undefined);
+      typeof transformClassName === 'function'
+        ? Reflect.apply(transformClassName, undefined, [transformOptions])
+        : valueKey
+          ? classNames?.[valueKey]
+          : undefined;
   }
   if (styleKey) {
-    newProps.style = transformStyle?.(transformOptions) ?? {
-      [styleKey]: value,
-    };
+    newProps.style =
+      typeof transformStyle === 'function'
+        ? Reflect.apply(transformStyle, undefined, [transformOptions])
+        : { [styleKey]: value };
   }
-  if (transformProps) {
+  if (typeof transformProps === 'function') {
     newProps =
-      transformProps({ ...transformOptions, props: newProps }) ?? newProps;
+      Reflect.apply(transformProps, undefined, [
+        { ...transformOptions, props: newProps },
+      ]) ?? newProps;
   }
 
   return newProps;

@@ -2,16 +2,173 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
+  basePluginExtendComponentPattern,
   closureColumnIndexes,
   isActionableLedgerValue,
   isClosedLedgerValue,
   isCurrentSchemaAdoptionDoc,
+  removedExplicitExtensionGenericPattern,
+  removedDefinitionAliasNamePattern,
+  removedGenericDependencyReferencePattern,
+  removedRootInternalDependencyTypePattern,
+  removedZeroArgumentReactPattern,
+  removedExtensionApiPortalPattern,
+  removedExtensionValidationPattern,
+  removedLooseExtensionPortalSignaturePattern,
   removedCaptionTargetOptionsPattern,
   removedPlateNodeBagPattern,
+  removedPlatePluginShapePattern,
+  removedStaticCapabilityPattern,
   removedPlateSchemaFlagsPattern,
   removedRootMutationFacadePattern,
   removedSchemaTargetOptionsPattern,
+  staticBaseKitReactAdapterPattern,
+  staticEditorBaseReactAdapterPattern,
+  terminalComponentConversionPattern,
 } from './check-plite-docs.mjs';
+
+test('detects rejected final extension and Plate plugin shapes', () => {
+  assert.match(
+    'editor.getApi(HistoryExtension).undo()',
+    removedExtensionApiPortalPattern
+  );
+  assert.match(
+    'validateConfiguration(context) {}',
+    removedExtensionValidationPattern
+  );
+  assert.match(
+    'defineEditorExtension<Editor>()({ name: "typed" })',
+    removedExplicitExtensionGenericPattern
+  );
+  assert.match(
+    'extension<D extends EditorExtension<EditorExtensionDefinition>>(extension: D)',
+    removedLooseExtensionPortalSignaturePattern
+  );
+
+  for (const source of [
+    'type C = PluginConfig<"x">',
+    'type C = InferConfig<typeof Plugin>',
+    'type C = InferPluginDefinitionTree<Definition>',
+    'type C = MergePlatePluginDefinitions<Definition, Extension>',
+    'type C = UnifiedRuntimeBasePluginConfig',
+    'plugin.__config',
+    'pluginApi: {}',
+    'Plugin.clone()',
+    'extension: {}',
+    'handlers: {}',
+    'targetPluginKeys: []',
+  ]) {
+    assert.match(source, removedPlatePluginShapePattern, source);
+  }
+  for (const source of [
+    'api: { run() {} }',
+    'commands: {}',
+    'read: {}',
+    'readMiddleware: {}',
+    'update: {}',
+  ]) {
+    assert.match(source, removedStaticCapabilityPattern, source);
+  }
+
+  for (const source of [
+    'editor.extension(HistoryExtension).api.undo()',
+    'validate(context) {}',
+    'defineEditorExtension({ name: "typed" })',
+    'extension<const D extends EditorExtensionReference>(extension: D)',
+    'on: { keyDown() {} }',
+    'commands: () => []',
+    'api: () => ({ run() {} })',
+    'editor.api.pluginApi.run()',
+  ]) {
+    assert.doesNotMatch(source, removedPlatePluginShapePattern, source);
+    assert.doesNotMatch(source, removedStaticCapabilityPattern, source);
+  }
+});
+
+test('accepts Base constructor components and rejects terminal conversion', () => {
+  assert.doesNotMatch(
+    'createBasePlugin({ component: ParagraphStatic, name: "p" })',
+    terminalComponentConversionPattern
+  );
+  assert.match(
+    'BaseParagraphPlugin.extend({ component: ParagraphStatic })',
+    basePluginExtendComponentPattern
+  );
+  assert.match(
+    'toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement })',
+    terminalComponentConversionPattern
+  );
+  assert.doesNotMatch(
+    'toPlatePlugin(BaseParagraphPlugin, { component: ParagraphElement })',
+    terminalComponentConversionPattern
+  );
+  assert.doesNotMatch(
+    'BaseParagraphPlugin.configure({ component: ParagraphStatic })',
+    terminalComponentConversionPattern
+  );
+});
+
+test('keeps static/base owners free of Plate React adapters', () => {
+  assert.match(
+    '`basic-blocks-base-kit` adds `toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })`.',
+    staticBaseKitReactAdapterPattern
+  );
+  assert.match(
+    [
+      "import { createStaticEditor } from 'platejs/static';",
+      "import { toPlatePlugin } from 'platejs/react';",
+      'createStaticEditor({',
+      '  plugins: [toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
+      '});',
+    ].join('\n'),
+    staticEditorBaseReactAdapterPattern
+  );
+  assert.doesNotMatch(
+    'For live React, use toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement }).',
+    staticBaseKitReactAdapterPattern
+  );
+});
+
+test('names DefinitionOf aliases after the extracted definition', () => {
+  for (const source of [
+    'type MediaConfig = DefinitionOf<typeof MediaPlugin>',
+    'type Media = DefinitionOf<typeof MediaPlugin>',
+  ]) {
+    assert.match(source, removedDefinitionAliasNamePattern, source);
+  }
+
+  for (const source of [
+    'type MediaDefinition = DefinitionOf<typeof MediaPlugin>',
+    'type RuntimeConfig = { enabled: boolean }',
+  ]) {
+    assert.doesNotMatch(source, removedDefinitionAliasNamePattern, source);
+  }
+});
+
+test('keeps dependency internals private and React composition exact', () => {
+  assert.match(
+    'type Ref = EditorExtensionDependencyReference<Capability>',
+    removedGenericDependencyReferencePattern
+  );
+  assert.match(
+    "import type { InternalEditorExtensionTypeProviderOf } from '@platejs/plite'",
+    removedRootInternalDependencyTypePattern
+  );
+  assert.match('react()', removedZeroArgumentReactPattern);
+
+  assert.doesNotMatch(
+    'type Ref = EditorExtensionDependencyReference',
+    removedGenericDependencyReferencePattern
+  );
+  assert.doesNotMatch(
+    "import type { InternalEditorExtensionTypeProviderOf } from '@platejs/plite/internal'",
+    removedRootInternalDependencyTypePattern
+  );
+  assert.doesNotMatch(
+    'react({ dom: DOMExtension })',
+    removedZeroArgumentReactPattern
+  );
+});
 
 test('audits current schema docs but not historical migration snapshots', () => {
   assert.equal(
@@ -134,11 +291,11 @@ test('detects the deleted Plate node bag without matching unrelated node or mark
 
 test('detects schema target strings stored in runtime options', () => {
   assert.match(
-    'options: { targetPluginKeys: [KEYS.p] }',
+    'options: { targetPluginNames: [KEYS.p] }',
     removedSchemaTargetOptionsPattern
   );
   assert.doesNotMatch(
-    'targetPluginKeys: [KEYS.p]',
+    'targetPluginNames: [KEYS.p]',
     removedSchemaTargetOptionsPattern
   );
 });
@@ -149,7 +306,7 @@ test('detects caption targets stored in runtime query options', () => {
     removedCaptionTargetOptionsPattern
   );
   assert.doesNotMatch(
-    'targetPluginKeys: [KEYS.img]',
+    'targetPluginNames: [KEYS.img]',
     removedCaptionTargetOptionsPattern
   );
 });

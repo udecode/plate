@@ -767,8 +767,8 @@ if (exact.kind === "invalid") {
 if (exact.kind === "slice") {
   const table = getTablePasteElement(exact.slice, {
     cellTypes: tableApi.getCellTypes(),
-    rowType: editor.getType(KEYS.tr),
-    tableType: editor.getType(KEYS.table),
+    rowType: editor.plugin(KEYS.tr).type,
+    tableType: editor.plugin(KEYS.table).type,
   });
 
   if (table) {

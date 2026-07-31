@@ -19,7 +19,7 @@ import {
 jsxt;
 
 const CodeLinePlugin = createBasePlugin({
-  key: KEYS.codeLine,
+  name: KEYS.codeLine,
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -29,7 +29,7 @@ const CodeLinePlugin = createBasePlugin({
 });
 
 const CodeBlockPlugin = createBasePlugin({
-  key: KEYS.codeBlock,
+  name: KEYS.codeBlock,
   dependencies: [CodeLinePlugin],
   schema: ({ plugins }) => {
     const codeLineType = plugins.elementType(CodeLinePlugin);
@@ -125,10 +125,8 @@ describe('BaseEquationPlugin', () => {
     ]);
   });
 
-  it('respects the configured node type and explicit insertion target', () => {
-    const EquationPlugin = BaseEquationPlugin.configure({
-      type: 'custom-equation',
-    });
+  it('respects the explicit insertion target', () => {
+    const EquationPlugin = BaseEquationPlugin;
     const editor = createBaseEditor({
       plugins: [EquationPlugin],
       selection: {
@@ -154,7 +152,7 @@ describe('BaseEquationPlugin', () => {
       {
         children: [{ text: '' }],
         texExpression: '',
-        type: 'custom-equation',
+        type: NODES.equation,
       },
     ]);
   });
@@ -181,20 +179,20 @@ describe('BaseInlineEquationPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseInlineEquationPlugin],
     });
-    const plugin = editor.getPlugin(BaseInlineEquationPlugin);
+    const plugin = editor.plugin(BaseInlineEquationPlugin).plugin;
     const element = {
       children: [{ text: '' }],
       type: NODES.inlineEquation,
     };
 
-    expect(plugin.key).toBe('inlineEquation');
+    expect(plugin.name).toBe('inlineEquation');
     expect(plugin.type).toBe(NODES.inlineEquation);
     expect(editor.read.schema.isInline(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
       editor.read.schema.property(BaseInlineEquationPlugin)?.value.kind
     ).toBe('string');
-    expect(editor.getType(KEYS.inlineEquation)).toBe(NODES.inlineEquation);
+    expect(editor.plugin(KEYS.inlineEquation).type).toBe(NODES.inlineEquation);
     expect(typeof editor.plugin(BaseInlineEquationPlugin).update.insert).toBe(
       'function'
     );
@@ -278,10 +276,8 @@ describe('BaseInlineEquationPlugin', () => {
     ]);
   });
 
-  it('prefers the provided expression and configured node type', () => {
-    const InlineEquationPlugin = BaseInlineEquationPlugin.configure({
-      type: 'custom-inline-equation',
-    });
+  it('prefers the provided expression', () => {
+    const InlineEquationPlugin = BaseInlineEquationPlugin;
     const editor = createBaseEditor({
       plugins: [InlineEquationPlugin],
       selection: {
@@ -309,7 +305,7 @@ describe('BaseInlineEquationPlugin', () => {
           {
             children: [{ text: '' }],
             texExpression: 'x^2',
-            type: 'custom-inline-equation',
+            type: NODES.inlineEquation,
           },
           { text: 'y' },
         ],

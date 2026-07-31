@@ -1,4 +1,5 @@
 export * from '../components/EditorShortcutDispatcher';
+export { createPluginContext } from '../plugin/createPluginContext.internal';
 export * from '../components/EditorRefEffect';
 export * from '../components/PlateControllerEffect';
 export * from '../libs/index';

@@ -77,9 +77,9 @@ import { HeadingElementStatic } from '@/components/ui/heading-node-static';
 // For a styled static output, you might use a wrapper like EditorStatic
 import { EditorStatic } from '@/components/ui/editor-static';
 
-// Map plugin keys to their STATIC rendering components
+// Map plugin names to their STATIC rendering components
 const components = {
-  p: ParagraphElementStatic, // 'p' is the default key for paragraphs
+  p: ParagraphElementStatic, // 'p' is the default name for paragraphs
   h1: HeadingElementStatic,
   // ... add mappings for all your elements and marks
 };
@@ -253,7 +253,7 @@ handles decode and encode.
 | `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | Sets `lineHeight` property on block elements.                            |
 
 <Callout type="note" title="Plugin Configuration">
-  The exact Plate type (e.g., `ParagraphPlugin.key` vs. `'p'`) depends on how plugins are configured. The table shows typical associations. Ensure the corresponding Plate plugins are included in your editor for these rules to apply.
+  The exact Plate type (e.g., `ParagraphPlugin.name` vs. `'p'`) depends on how plugins are configured. The table shows typical associations. Ensure the corresponding Plate plugins are included in your editor for these rules to apply.
 </Callout>
 
 ### `defineCodecs`
@@ -297,7 +297,7 @@ const CalloutPlugin = createPlatePlugin({
         match: [{ tag: 'aside' }],
       },
     }),
-  key: 'callout',
+  name: 'callout',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -329,7 +329,7 @@ after node decoding; they do not declare node matches.
 
 ```ts title="lib/html-cleanup-plugin.ts"
 const HtmlCleanupPlugin = createPlatePlugin({
-  key: 'htmlCleanup',
+  name: 'htmlCleanup',
   parsers: {
     html: {
       query: ({ source }) => source.types.includes('text/html'),

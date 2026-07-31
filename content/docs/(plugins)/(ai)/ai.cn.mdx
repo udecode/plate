@@ -114,7 +114,7 @@ import {
   AIPlugin,
   useChatChunk,
 } from '@platejs/ai/react';
-import { ElementApi, getPluginType, KEYS, PathApi } from 'platejs';
+import { ElementApi, KEYS, PathApi } from 'platejs';
 import { usePluginStore } from 'platejs/react';
 
 export const aiChatPlugin = AIChatPlugin.extend({
@@ -155,7 +155,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
             tx.nodes.insert(
               {
                 children: [{ text: '' }],
-                type: getPluginType(editor, KEYS.aiChat),
+                type: editor.plugin(KEYS.aiChat).type,
               },
               {
                 at: PathApi.next(selection.focus.path.slice(0, 1)),
@@ -171,7 +171,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
           update.insertChunk(chunk, {
             autoScroll: true,
             textProps: {
-              [getPluginType(editor, KEYS.ai)]: true,
+              [editor.plugin(KEYS.ai).type]: true,
             },
           });
         }
@@ -485,6 +485,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
     <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>
+    <APIItem name="previewValue" type="Value" optional>由 `useAIChatEditor` 注册并供插入和替换命令使用的生成预览节点（内部管理）。</APIItem>
     <APIItem name="streaming" type="boolean" optional>响应流式传输时为 true。默认为 `false`。</APIItem>
     <APIItem name="toolName" type="'comment' | 'edit' | 'generate' | null" optional>用于解释响应的活动工具。</APIItem>
   </APIOptions>
@@ -558,24 +559,22 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 
 接受最新的响应。在插入模式下，它移除 AI 标记并将光标放置在流式内容的末尾。在聊天模式下，它应用待处理的建议。
 
-### `editor.update.aiChat.insertBelow(sourceEditor, options?)`
+### `editor.update.aiChat.insertBelow(options?)`
 
-在当前选择或块选择下方插入聊天预览（`sourceEditor`）。
+在当前选择或块选择下方插入存储的聊天预览。
 
 <API name="insertBelow">
 <APIParameters>
-  <APIItem name="sourceEditor" type="BaseEditor">包含生成内容的编辑器。</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>从源选择复制格式。默认为 `'single'`。</APIItem>
 </APIParameters>
 </API>
 
-### `editor.update.aiChat.replaceSelection(sourceEditor, options?)`
+### `editor.update.aiChat.replaceSelection(options?)`
 
-用聊天预览替换当前选择或块选择。
+用存储的聊天预览替换当前选择或块选择。
 
 <API name="replaceSelection">
 <APIParameters>
-  <APIItem name="sourceEditor" type="BaseEditor">包含生成内容的编辑器。</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>控制应应用原始选择的多少格式。</APIItem>
 </APIParameters>
 </API>
@@ -655,7 +654,7 @@ const range = editor.plugin(AIPlugin).api.findTextRangeInBlock({
 
 <ComponentSource name="ai-menu" />
 
-扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ aiEditor, editor, input }` 并可以使用自定义提示或变换调用 `editor.plugin(AIChatPlugin).api.submit`。
+扩展 `aiChatItems` 映射以添加新命令。每个命令接收 `{ editor, input }` 并可以使用自定义提示或变换调用 `editor.plugin(AIChatPlugin).api.submit`。
 
 #### 简单自定义命令
 

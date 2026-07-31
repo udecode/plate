@@ -17,7 +17,7 @@ import type {
   EditorCommitListener,
   EditorCommitSource,
   EditorCommandDispatch,
-  EditorExtension,
+  EditorExtensionReference,
   EditorExtensionInput,
   EditorExtensionReconfigureOptions,
   EditorDocumentValue,
@@ -125,7 +125,7 @@ export type InternalEditorTransactionRuntime<V extends Value = Value> = {
 
 export type InternalEditorExtensionRuntime<V extends Value = Value> = {
   extend: (
-    extension: EditorExtensionInput<Editor<V>>,
+    extension: EditorExtensionInput,
     options?: EditorExtensionReconfigureOptions
   ) => () => void;
   prepareExtensionPublication: (
@@ -147,7 +147,7 @@ export type InternalEditorExtensionRuntime<V extends Value = Value> = {
 
 export type InternalEditorExtensionPublicationEntry = Readonly<{
   editor?: Editor;
-  extension: EditorExtension<any, any>;
+  extension: EditorExtensionReference;
 }>;
 
 export type InternalEditorRuntime<V extends Value = Value> =

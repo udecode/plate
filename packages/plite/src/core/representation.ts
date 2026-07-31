@@ -217,7 +217,7 @@ const canonicalizeDirectChildren = (
         (children as Descendant[]).push({ text: '' });
       } else if (contentSpec.defaultPlan?.kind === 'element') {
         (children as Descendant[]).push(
-          schema.createAndFill(contentSpec.defaultPlan.type)
+          schema.create(contentSpec.defaultPlan.type)
         );
       } else {
         const owner = ElementApi.isElement(parent)
@@ -931,7 +931,7 @@ const replaceCanonicalChildWindow = (
     if (contentSpec.defaultPlan?.kind === 'text') {
       defaults.push({ text: '' });
     } else if (contentSpec.defaultPlan?.kind === 'element') {
-      defaults.push(schema.createAndFill(contentSpec.defaultPlan.type));
+      defaults.push(schema.create(contentSpec.defaultPlan.type));
     } else {
       throw new Error(
         ElementApi.isElement(node)

@@ -22,14 +22,14 @@ export const blockSelectionVariants = cva(
   }
 );
 
-export function BlockSelection(props: { plugin: { key: string } }) {
+export function BlockSelection(props: { plugin: { name: string } }) {
   const isBlockSelected = useBlockSelected();
   const isDragging = usePluginStore(DndPlugin, 'isDragging');
 
   if (
     !isBlockSelected ||
-    props.plugin.key === 'tr' ||
-    props.plugin.key === 'table'
+    props.plugin.name === 'tr' ||
+    props.plugin.name === 'table'
   )
     return null;
 

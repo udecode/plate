@@ -64,7 +64,7 @@ describe('ExitBreakPlugin', () => {
 
   it('exits after the nearest ancestor whose parent accepts a paragraph', () => {
     const CodeLinePlugin = createBasePlugin({
-      key: 'codeline',
+      name: 'codeline',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -73,7 +73,7 @@ describe('ExitBreakPlugin', () => {
       type: 'codeline',
     });
     const CodeBlockPlugin = createBasePlugin({
-      key: 'codeblock',
+      name: 'codeblock',
       schema: ({ plugins }) => {
         const codeLineType = plugins.elementType(CodeLinePlugin);
 
@@ -116,7 +116,7 @@ describe('ExitBreakPlugin', () => {
 
   it('exits after an outer structure whose grammar rejects paragraphs', () => {
     const TableCellPlugin = createBasePlugin({
-      key: 'td',
+      name: 'td',
       schema: ({ plugins }) => ({
         element: {
           content: plugins.blockContent({
@@ -128,7 +128,7 @@ describe('ExitBreakPlugin', () => {
       type: 'td',
     });
     const TableRowPlugin = createBasePlugin({
-      key: 'tr',
+      name: 'tr',
       schema: ({ plugins }) => {
         const cellType = plugins.elementType(TableCellPlugin);
 
@@ -144,7 +144,7 @@ describe('ExitBreakPlugin', () => {
       type: 'tr',
     });
     const TablePlugin = createBasePlugin({
-      key: 'table',
+      name: 'table',
       schema: ({ plugins }) => {
         const rowType = plugins.elementType(TableRowPlugin);
 

@@ -48,9 +48,7 @@ const createSchemaEditor = () =>
         },
         id: 'generated-schema-laws',
         properties: [schema.textProperty('bold', property.boolean())],
-        root: {
-          content: schema.content.types(['figure', 'paragraph', 'section']),
-        } as const,
+        root: schema.content.types(['figure', 'paragraph', 'section']),
         unknown: 'reject',
         version: 1,
       }),
@@ -146,7 +144,7 @@ describe('compiled schema and correction laws', () => {
         assert.ok(fitted);
         const after = fitted.changes.apply(value);
 
-        assert.doesNotThrow(() => editor.read.schema.validateDocument(after));
+        assert.doesNotThrow(() => editor.read.schema.assertDocument(after));
         assert.deepEqual(fitted.changes.apply(value), after);
         assertCanonical(after.children as readonly Descendant[]);
       }),
@@ -169,20 +167,16 @@ describe('compiled schema and correction laws', () => {
                 } as const,
               },
               id: `minimum-${minimum}`,
-              root: {
-                content: schema.content.type('generated'),
-              } as const,
+              root: schema.content.type('generated'),
               unknown: 'reject',
               version: 1,
             }),
           ],
         });
-        const filled = editor.read.schema.createAndFill('generated');
+        const filled = editor.read.schema.create('generated');
 
         assert.equal(filled.children.length, minimum);
-        assert.doesNotThrow(() =>
-          editor.read.schema.validateFragment([filled])
-        );
+        assert.doesNotThrow(() => editor.read.schema.assertFragment([filled]));
       }),
       { numRuns: 50 }
     );
@@ -243,9 +237,7 @@ describe('compiled schema and correction laws', () => {
                 },
                 id: 'generated-inline-construction',
                 properties: [schema.textProperty('bold', property.boolean())],
-                root: {
-                  content: schema.content.type('paragraph'),
-                } as const,
+                root: schema.content.type('paragraph'),
                 unknown: 'reject',
                 version: 1,
               }),
@@ -311,7 +303,7 @@ describe('compiled schema and correction laws', () => {
             block: { content: schema.content.open() },
           },
           id: 'open-content-construction',
-          root: { content: schema.content.type('block') },
+          root: schema.content.type('block'),
           unknown: 'reject',
           version: 1,
         }),

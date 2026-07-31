@@ -71,19 +71,15 @@ const createSchema = (profile: SchemaProfile) =>
               },
     },
     id: 'schema-reconfiguration-browser-proof',
-    root: {
-      content: schema.content.types(['content-card', 'line', 'probe'], {
+    root: schema.content.types(['content-card', 'line', 'probe'], {
+      default: { type: 'probe' },
+      min: 1,
+    }),
+    roots: {
+      notes: schema.content.types(['line', 'probe'], {
         default: { type: 'probe' },
         min: 1,
       }),
-    },
-    roots: {
-      notes: {
-        content: schema.content.types(['line', 'probe'], {
-          default: { type: 'probe' },
-          min: 1,
-        }),
-      },
     },
     unknown: 'reject',
     version: profileVersions[profile],

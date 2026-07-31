@@ -7,7 +7,7 @@ state contracts for the headless and React link descriptors.
 
 Move link behavior to `BaseLinkPlugin`, `LinkPlugin`, and the installed editor
 API, register link properties in compiled schemas, and use the readable
-descriptor key `link` while preserving the serialized element type `a`.
+descriptor name `link` while preserving the serialized element type `a`.
 
 **Migration:** Replace standalone link transforms with `editor.update.link`:
 

@@ -6,7 +6,7 @@ import { BaseScriptPlugin } from '../lib/BaseMarkPlugins';
 import { ScriptV54MigrationPlugin } from './ScriptV54MigrationPlugin';
 
 const TestRootPlugin = createBasePlugin({
-  key: 'testRoot',
+  name: 'testRoot',
   schema: ({ own, plugins, type }) => ({
     contentRoots: [
       own.contentRoot(plugins.blockContent(), {
@@ -95,29 +95,6 @@ describe('ScriptV54MigrationPlugin', () => {
     expect(editor.read.value().roots?.notes).toEqual([
       {
         children: [{ script: 'sup', text: 'root' }],
-        type: KEYS.p,
-      },
-    ]);
-  });
-
-  it('derives the configured target property from ScriptPlugin', () => {
-    const editor = createBaseEditor({
-      nodeId: false,
-      plugins: [
-        ScriptV54MigrationPlugin,
-        BaseScriptPlugin.configure({ type: 'verticalScript' }),
-      ],
-      initialValue: [
-        {
-          children: [{ subscript: true, text: 'configured' }],
-          type: KEYS.p,
-        },
-      ],
-    });
-
-    expect(editor.read.children()).toEqual([
-      {
-        children: [{ text: 'configured', verticalScript: 'sub' }],
         type: KEYS.p,
       },
     ]);

@@ -8,7 +8,7 @@ import { TogglePlugin } from './TogglePlugin';
 describe('TogglePlugin', () => {
   const plugins = [
     BaseIndentPlugin.configure({
-      targetPluginKeys: [BaseParagraphPlugin.key, TogglePlugin.key],
+      targetPluginNames: [BaseParagraphPlugin.name, TogglePlugin.name],
     }),
     TogglePlugin,
   ];
@@ -35,49 +35,6 @@ describe('TogglePlugin', () => {
         children: [{ text: 'Toggle' }],
         id: 't1',
         type: KEYS.toggle,
-      },
-      {
-        children: [{ text: '' }],
-        indent: 1,
-        type: KEYS.p,
-      },
-      {
-        children: [{ text: 'after' }],
-        type: KEYS.p,
-      },
-    ]);
-  });
-
-  it('handles Enter inside a configured toggle type', () => {
-    const CustomTogglePlugin = TogglePlugin.configure({
-      type: 'custom-toggle',
-    });
-    const editor = createPlateEditor({
-      plugins: [
-        BaseIndentPlugin.configure({
-          targetPluginKeys: [BaseParagraphPlugin.key, CustomTogglePlugin.key],
-        }),
-        CustomTogglePlugin,
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 6, path: [0, 0] },
-        focus: { offset: 6, path: [0, 0] },
-      },
-      initialValue: [
-        { children: [{ text: 'Toggle' }], id: 't1', type: 'custom-toggle' },
-        { children: [{ text: 'after' }], type: KEYS.p },
-      ],
-    });
-
-    editor.plugin(CustomTogglePlugin).api.toggleIds(['t1'], true);
-    editor.update.break.insert();
-
-    expect(editor.read.children()).toMatchObject([
-      {
-        children: [{ text: 'Toggle' }],
-        id: 't1',
-        type: 'custom-toggle',
       },
       {
         children: [{ text: '' }],

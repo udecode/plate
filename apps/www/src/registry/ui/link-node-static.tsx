@@ -3,13 +3,13 @@ import * as React from 'react';
 import type { TLinkElement } from 'platejs';
 import type { StyledPliteElementProps } from 'platejs/static';
 
-import { type BaseLinkConfig, BaseLinkPlugin } from '@platejs/link';
+import { type BaseLinkDefinition, BaseLinkPlugin } from '@platejs/link';
 import { PliteElement } from 'platejs/static';
 import { cn } from '@/lib/utils';
 import { inlineSuggestionVariants } from '@/registry/lib/suggestion';
 
 export function LinkElementStatic(
-  props: StyledPliteElementProps<TLinkElement, BaseLinkConfig, 'a'>
+  props: StyledPliteElementProps<TLinkElement, BaseLinkDefinition, 'a'>
 ) {
   return (
     <PliteElement

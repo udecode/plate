@@ -27,12 +27,12 @@ describe('BaseSlashPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseSlashPlugin],
     });
-    const plugin = editor.getPlugin(BaseSlashPlugin);
-    const inputPlugin = editor.getPlugin(BaseSlashInputPlugin);
+    const plugin = editor.plugin(BaseSlashPlugin).plugin;
+    const inputPlugin = editor.plugin(BaseSlashInputPlugin).plugin;
     const state = editor.plugin(BaseSlashPlugin).store.get();
 
-    expect(plugin.key).toBe('slashCommand');
-    expect(inputPlugin.key).toBe('slashInput');
+    expect(plugin.name).toBe('slashCommand');
+    expect(inputPlugin.name).toBe('slashInput');
     expect(inputPlugin.type).toBe(NODES.slashInput);
     expect(plugin.editOnly).toBe(true);
     expect(state.trigger).toBe('/');

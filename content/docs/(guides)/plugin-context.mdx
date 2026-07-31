@@ -4,7 +4,7 @@ description: Use editor, plugin, store, API, and transaction context inside Plat
 ---
 
 Plugin context is the object Plate passes to plugin configuration callbacks,
-handlers, extensions, transaction commands, and render components. It gives you
+events, native capabilities, transaction commands, and render components. It gives you
 the resolved editor, current plugin, node type, `api`, and plugin store
 without reaching through global state. Use it inside plugin-owned code; use
 editor methods or React hooks when code runs outside a plugin callback.
@@ -29,7 +29,7 @@ but the editor type is `BaseEditor`.
 
 ## Plugin Methods
 
-Handlers receive context plus the event or payload for that handler. Use the
+Event callbacks receive context plus the event or lifecycle payload. Use the
 context helpers instead of closing over editor state.
 
 ```ts title="counter-plugin.ts" showLineNumbers
@@ -47,9 +47,9 @@ const initialState: CounterPluginState = {
 
 export const CounterPlugin = createPlatePlugin({
   initialState,
-  key: 'counter',
-  handlers: {
-    onKeyDown: ({ event, store, type }) => {
+  name: 'counter',
+  on: {
+    keyDown: ({ event, store, type }) => {
       if (!store.get('enabled')) return;
 
       if (event.key === '+') {
@@ -67,7 +67,7 @@ export const CounterPlugin = createPlatePlugin({
 
 ## Extension Callbacks
 
-Configuration, extension, selector, API, transaction, and editor override
+Configuration, native capability, selector, API, transaction, and editor override
 callbacks also receive plugin context.
 
 ```ts title="counter-plugin.ts" showLineNumbers
@@ -83,7 +83,7 @@ const initialState: CounterPluginState = {
 
 export const CounterPlugin = createPlatePlugin({
   initialState,
-  key: 'counter',
+  name: 'counter',
   api: ({ store }) => ({
     isEmpty: () => store.get('count') === 0,
   }),
@@ -97,12 +97,12 @@ Selectors are readable through `store.get` and subscribable through
 `usePluginStore`. They are pure state-first functions and cannot read the
 editor or another plugin.
 
-## Extension Inference
+## Native Capability Inference
 
-Return plain extension objects from constructor and `.extend()` callbacks.
-Keep Plate context capture inside those callbacks so nested commands, inputs,
-state, transactions, dependencies, and plugin state stay contextually typed.
-Extract domain inputs instead of the Plate plugin context.
+Declare native Plite fields directly in the constructor or a staged
+`.extend()` callback. Their capability-specific helpers and Plate plugin
+context are inferred together. Extract domain inputs instead of the whole
+Plate plugin context.
 
 Use `defineEditorExtension` from `@platejs/plite` only for independently
 reusable standalone Plite descriptors. See
@@ -125,7 +125,7 @@ export const StrongPlugin = createBasePlugin({
         match: [{ tag: 'strong' }],
       },
     }),
-  key: 'strong',
+  name: 'strong',
   schema: { mark: property.boolean() },
 });
 ```
@@ -138,20 +138,20 @@ callbacks.
 
 ## Another Plugin
 
-Use `getBasePlugin(editor, Plugin)` when plugin-owned code needs another
-plugin's context. The editor argument is required.
+Use `editor.plugin(Plugin)` when plugin-owned code needs another plugin's
+consumer portal.
 
 ```ts title="link-aware-plugin.ts" showLineNumbers
 import { LinkPlugin } from '@platejs/link/react';
-import { createPlatePlugin, getBasePlugin } from 'platejs/react';
+import { createPlatePlugin } from 'platejs/react';
 
 export const LinkAwarePlugin = createPlatePlugin({
-  key: 'linkAware',
-  handlers: {
-    onKeyDown: ({ editor, event }) => {
+  name: 'linkAware',
+  on: {
+    keyDown: ({ editor, event }) => {
       if (event.key !== 'Enter') return;
 
-      const link = getBasePlugin(editor, LinkPlugin);
+      const link = editor.plugin(LinkPlugin);
 
       console.info(`Link node type: ${link.type}`);
     },
@@ -223,12 +223,12 @@ export const CounterPluginWithInitialCount = CounterPlugin.extend(
 `store.set` accepts either a partial object or a draft callback.
 
 ```ts title="counter-actions.ts" showLineNumbers
-import { getBasePlugin, type PlateEditor } from 'platejs/react';
+import type { PlateEditor } from 'platejs/react';
 
 import { CounterPlugin } from './counter-plugin';
 
 export function resetCounter(editor: PlateEditor) {
-  const { store } = getBasePlugin(editor, CounterPlugin);
+  const { store } = editor.plugin(CounterPlugin);
 
   store.set({
     count: 1,
@@ -244,14 +244,14 @@ Plate throws when `store.get` or `usePluginStore` targets a missing state field
 or selector.
 
 Always pass the plugin descriptor to `usePluginStore` and
-`useEditorPluginStore`. A key-only object has no state contract for TypeScript
+`useEditorPluginStore`. A name-only object has no state contract for TypeScript
 to infer.
 
 ## API Reference
 
 | Helper | Scope | Notes |
 | --- | --- | --- |
-| `getBasePlugin(editor, plugin)` | Any editor code. | Returns plugin context for the given editor and plugin. |
+| `editor.plugin(plugin)` | Any editor code. | Opens the installed plugin's typed consumer portal. |
 | `useEditorPlugin(plugin, id?)` | React under `<Plate>`. | Returns plugin context plus `store`. |
 | `usePluginStore(plugin, key, ...args)` | React under `<Plate>`. | Subscribes to one state field or named selector. |
 | `usePluginStore(plugin, selector, options?)` | React under `<Plate>`. | Subscribes to a value derived from plugin state. |

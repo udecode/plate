@@ -12695,7 +12695,7 @@
             },
             {
               "owner": null,
-              "name": "PluginKey",
+              "name": "PluginName",
               "kind": "class",
               "line": 129,
               "exported": true,
@@ -12703,7 +12703,7 @@
               "conceptIds": ["PM-C26", "PM-C27", "PM-C62"]
             },
             {
-              "owner": "PluginKey",
+              "owner": "PluginName",
               "name": "key",
               "kind": "property",
               "line": 131,
@@ -12712,7 +12712,7 @@
               "conceptIds": ["PM-C26", "PM-C27", "PM-C62"]
             },
             {
-              "owner": "PluginKey",
+              "owner": "PluginName",
               "name": "constructor",
               "kind": "constructor",
               "line": 134,
@@ -12721,7 +12721,7 @@
               "conceptIds": ["PM-C26", "PM-C27", "PM-C62"]
             },
             {
-              "owner": "PluginKey",
+              "owner": "PluginName",
               "name": "get",
               "kind": "method",
               "line": 138,
@@ -12730,7 +12730,7 @@
               "conceptIds": ["PM-C26", "PM-C27", "PM-C62"]
             },
             {
-              "owner": "PluginKey",
+              "owner": "PluginName",
               "name": "getState",
               "kind": "method",
               "line": 141,

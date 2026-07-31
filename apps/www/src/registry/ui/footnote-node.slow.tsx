@@ -11,8 +11,8 @@ let editorSelectorEditor: any;
 let lastPluginEditor: any;
 
 const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
-  const api = {
-    ...(editor.api ?? {}),
+  const readState = {
+    ...(editor.read ?? {}),
     footnote: {
       definitionText: () => {},
       hasDuplicateDefinitions: () => false,
@@ -21,32 +21,34 @@ const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
       isResolved: () => false,
       nextId: () => '1',
       references: () => [],
-      ...(editor.api?.footnote ?? {}),
+      ...(editor.read?.footnote ?? {}),
+    },
+    nodes: {
+      ...(editor.read?.nodes ?? {}),
+      parent: editor.read?.nodes?.parent ?? (() => {}),
+    },
+    points: {
+      ...(editor.read?.points ?? {}),
+      before: editor.read?.points?.before ?? (() => {}),
+    },
+    ranges: {
+      ...(editor.read?.ranges ?? {}),
+      get: editor.read?.ranges?.get ?? (() => {}),
+    },
+    selection: editor.read?.selection ?? (() => selection),
+    text: {
+      ...(editor.read?.text ?? {}),
+      string: editor.read?.text?.string ?? (() => ''),
     },
   };
-  const tx = {
-    ...(editor.tx ?? {}),
+  const updateCommands = {
+    ...(editor.update ?? {}),
     footnote: {
       createDefinition: () => {},
       focusDefinition: () => {},
       focusReference: () => {},
       normalizeDuplicateDefinition: () => {},
-      ...(editor.tx?.footnote ?? {}),
-    },
-  };
-  const readState = {
-    selection: () => selection,
-    nodes: {
-      parent: (path: number[]) => api.parent?.(path),
-    },
-    points: {
-      before: (at: unknown) => api.before?.(at),
-    },
-    ranges: {
-      get: (...args: unknown[]) => api.range?.(...args),
-    },
-    text: {
-      string: (path: number[]) => api.string?.(path) ?? '',
+      ...(editor.update?.footnote ?? {}),
     },
   };
 
@@ -55,14 +57,18 @@ const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
     readState
   );
   const update = Object.assign(
-    (callback: (transaction: typeof tx) => void) => callback(tx),
-    tx
+    (callback: (transaction: typeof updateCommands) => void) =>
+      callback(updateCommands),
+    updateCommands
   );
   const pluginEditor = Object.assign(editor, {
-    api,
-    plugin: () => ({ api, update: tx }),
-    read: editor.read ?? read,
-    update: editor.update ?? update,
+    plugin: () => ({
+      api: editor.api ?? {},
+      read: readState,
+      update: updateCommands,
+    }),
+    read,
+    update,
   });
 
   lastPluginEditor = pluginEditor;
@@ -100,15 +106,15 @@ mock.module('platejs/react', () => ({
     const currentEditor = editorSelectorEditor
       ? withPluginEditor(editorSelectorEditor)
       : (lastPluginEditor ?? withPluginEditor({}));
-    const api = {
-      ...(currentEditor.api ?? {}),
+    const read = {
+      ...(currentEditor.read ?? {}),
       footnote: {
-        ...(lastPluginEditor?.api?.footnote ?? {}),
-        ...(currentEditor.api?.footnote ?? {}),
+        ...(lastPluginEditor?.read?.footnote ?? {}),
+        ...(currentEditor.read?.footnote ?? {}),
       },
     };
 
-    const selectorEditor = withPluginEditor({ ...currentEditor, api });
+    const selectorEditor = withPluginEditor({ ...currentEditor, read });
 
     lastPluginEditor = activePluginEditor ?? selectorEditor;
 
@@ -226,14 +232,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -277,14 +283,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition,
             },
@@ -312,14 +318,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition: mock(),
             },
@@ -353,7 +359,7 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          tx: {
+          update: {
             footnote: {
               focusReference,
             },
@@ -393,8 +399,8 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          api: { footnote: { references: () => [] } },
-          tx: { footnote: {} },
+          read: { footnote: { references: () => [] } },
+          update: { footnote: {} },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '2' } as any}
         path={nodePath}
@@ -430,14 +436,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -461,22 +467,26 @@ describe('footnote node rendering', () => {
   it('opens a multi-reference picker instead of jumping blindly to the first reference', async () => {
     const focusReference = mock();
     editorSelectorEditor = {
-      api: {
+      read: {
         footnote: {
           references: () => [
             [{}, [0, 1]],
             [{}, [2, 1]],
           ],
         },
-        parent: (path: number[]) => {
-          if (path[0] === 0) {
-            return [{ children: [{ text: 'First paragraph ref' }] }, [0]];
-          }
+        nodes: {
+          parent: (path: number[]) => {
+            if (path[0] === 0) {
+              return [{ children: [{ text: 'First paragraph ref' }] }, [0]];
+            }
 
-          return [{ children: [{ text: 'Second paragraph ref' }] }, [2]];
+            return [{ children: [{ text: 'Second paragraph ref' }] }, [2]];
+          },
         },
-        string: (path: number[]) =>
-          path[0] === 0 ? 'First paragraph ref' : 'Second paragraph ref',
+        text: {
+          string: (path: number[]) =>
+            path[0] === 0 ? 'First paragraph ref' : 'Second paragraph ref',
+        },
       },
     };
     const { FootnoteDefinitionElement } = await import(
@@ -487,24 +497,28 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               references: () => [
                 [{}, [0, 1]],
                 [{}, [2, 1]],
               ],
             },
-            parent: (path: number[]) => {
-              if (path[0] === 0) {
-                return [{ children: [{ text: 'First paragraph ref' }] }, [0]];
-              }
+            nodes: {
+              parent: (path: number[]) => {
+                if (path[0] === 0) {
+                  return [{ children: [{ text: 'First paragraph ref' }] }, [0]];
+                }
 
-              return [{ children: [{ text: 'Second paragraph ref' }] }, [2]];
+                return [{ children: [{ text: 'Second paragraph ref' }] }, [2]];
+              },
             },
-            string: (path: number[]) =>
-              path[0] === 0 ? 'First paragraph ref' : 'Second paragraph ref',
+            text: {
+              string: (path: number[]) =>
+                path[0] === 0 ? 'First paragraph ref' : 'Second paragraph ref',
+            },
           },
-          tx: {
+          update: {
             footnote: {
               focusReference,
             },
@@ -541,7 +555,7 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          tx: { footnote: { focusReference: () => true } },
+          update: { footnote: { focusReference: () => true } },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '2' } as any}
       >
@@ -565,7 +579,7 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          tx: { footnote: { focusReference: () => true } },
+          update: { footnote: { focusReference: () => true } },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '2' } as any}
       >
@@ -589,14 +603,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -631,14 +645,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => false,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -666,14 +680,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => {},
               hasDuplicateDefinitions: () => false,
               isResolved: () => false,
             },
           },
-          tx: {
+          update: {
             footnote: {
               createDefinition,
               focusDefinition: () => true,
@@ -708,14 +722,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => {},
               hasDuplicateDefinitions: () => false,
               isResolved: () => false,
             },
           },
-          tx: {
+          update: {
             footnote: {
               createDefinition,
               focusDefinition,
@@ -745,14 +759,14 @@ describe('footnote node rendering', () => {
       <FootnoteReferenceElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               definitionText: () => 'Preview',
               hasDuplicateDefinitions: () => true,
               isResolved: () => true,
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusDefinition: () => true,
             },
@@ -773,7 +787,7 @@ describe('footnote node rendering', () => {
   it('renders later duplicate definitions with only a renumber repair action', async () => {
     nodePath = [5];
     editorSelectorEditor = {
-      api: {
+      read: {
         footnote: {
           isDuplicateDefinition: () => true,
           nextId: () => '7',
@@ -791,14 +805,14 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
+          read: {
             footnote: {
               isDuplicateDefinition: () => true,
               nextId: () => '7',
               references: () => [],
             },
           },
-          tx: {
+          update: {
             footnote: {
               focusReference: mock(),
               normalizeDuplicateDefinition,
@@ -834,14 +848,14 @@ describe('footnote node rendering', () => {
     const state = { preview: 'Old preview' };
 
     const editor = withPluginEditor({
-      api: {
+      read: {
         footnote: {
           definitionText: () => state.preview,
           hasDuplicateDefinitions: () => false,
           isResolved: () => true,
         },
       },
-      tx: {
+      update: {
         footnote: {
           focusDefinition: () => true,
         },
@@ -887,13 +901,17 @@ describe('footnote node rendering', () => {
   it('uses the current element path for duplicate-state lookup', async () => {
     nodePath = [1];
     editorSelectorEditor = {
-      api: {
+      read: {
         footnote: {
           isDuplicateDefinition: ({ path }: any) => path[0] === 2,
           references: () => [[{}, [0, 1]]],
         },
-        parent: () => [{ children: [{ text: 'Reference paragraph' }] }, [0]],
-        string: () => 'Reference paragraph',
+        nodes: {
+          parent: () => [{ children: [{ text: 'Reference paragraph' }] }, [0]],
+        },
+        text: {
+          string: () => 'Reference paragraph',
+        },
       },
     };
 
@@ -905,7 +923,7 @@ describe('footnote node rendering', () => {
       <FootnoteDefinitionElement
         attributes={{}}
         editor={withPluginEditor({
-          tx: { footnote: { focusReference: mock() } },
+          update: { footnote: { focusReference: mock() } },
         } as any)}
         element={{ children: [{ text: '' }], identifier: '3' } as any}
         path={nodePath}
@@ -939,20 +957,26 @@ describe('footnote node rendering', () => {
       <FootnoteInputElement
         attributes={{}}
         editor={withPluginEditor({
-          api: {
-            before: () => ({ offset: 0, path: [0, 0] }),
+          read: {
             footnote: {
               definitionText: ({ identifier }: any) =>
                 identifier === '1' ? 'hello there' : 'another',
               identifiers: () => ['1', '2'],
               nextId: () => '3',
             },
-            range: () => ({}),
-            string: () => '[',
+            points: {
+              before: () => ({ offset: 0, path: [0, 0] }),
+            },
+            ranges: {
+              get: () => ({}),
+            },
+            text: {
+              string: () => '[',
+            },
           },
-          tx: {
-            insert: {
-              footnote: insertFootnote,
+          update: {
+            footnote: {
+              insert: insertFootnote,
             },
             text: {
               deleteBackward,

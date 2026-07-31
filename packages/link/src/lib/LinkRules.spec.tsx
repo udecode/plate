@@ -3,23 +3,23 @@ import { schema, type Selection, type Value } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import type { TLinkElement } from '@platejs/utils';
 
-import type { BaseLinkConfig } from './BaseLinkPlugin';
+import type { BaseLinkDefinition } from './BaseLinkPlugin';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { LinkRules } from './BaseLinkPlugin';
 
 const BaseCodeLinePlugin = createBasePlugin({
-  key: 'codeLine',
+  name: 'codeLine',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
-      topLevel: false,
+      blockContent: false,
     },
   },
   type: 'code_line',
 });
 
 const BaseCodeBlockPlugin = createBasePlugin({
-  key: 'codeBlock',
+  name: 'codeBlock',
   dependencies: [BaseCodeLinePlugin],
   schema: ({ plugins }) => {
     const codeLineType = plugins.elementType(BaseCodeLinePlugin);
@@ -53,7 +53,7 @@ const createEditor = ({
   selection: Selection;
   value: Value;
   inputRules?: ReturnType<typeof createAutolinkRules>;
-  options?: Partial<BaseLinkConfig['initialState']>;
+  options?: Partial<BaseLinkDefinition['initialState']>;
   removeEmpty?: boolean;
 }) =>
   createBaseEditor({
@@ -76,7 +76,7 @@ const paste = (editor: ReturnType<typeof createEditor>, text: string) => {
   const data = createDataTransfer();
 
   data.setData('text/plain', text);
-  editor.api.clipboard.insertData(data);
+  editor.api.dom.clipboard.insertData(data);
 };
 
 const findLink = (editor: ReturnType<typeof createEditor>) =>

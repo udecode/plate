@@ -640,7 +640,7 @@ export const BaseSubscriptPlugin = createBasePlugin({
   update: ({ editor, tx, type }) => ({
     toggle: () =>
       tx.marks.toggle(type, true, {
-        clear: editor.getType(KEYS.sup),
+        clear: editor.plugin(KEYS.sup).type,
       }),
   }),
 });

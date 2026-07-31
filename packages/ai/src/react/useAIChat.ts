@@ -27,7 +27,7 @@ export const useAIChatEditor = (
 
   useEffect(() => {
     editor.update({ history: 'skip' }).value.replace(document);
-    store.set({ aiEditor: editor });
+    store.set({ previewValue: editor.read.children() });
   }, [document, editor, store]);
 
   return value;

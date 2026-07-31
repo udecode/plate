@@ -277,7 +277,8 @@ Accepted current shape:
 - Reads use state accessors and plain helper functions.
 - Writes use transaction methods.
 - Primitive editor methods live on the editor instance.
-- Extensions use named `editor`, `state`, and `tx` groups.
+- Extensions use owner-local `api`, `read`, and `update` factories. Plite
+  publishes their results under the extension name.
 - `EditorCommit` is the post-commit truth object for subscribers and integration
   layers.
 - Collaboration adapters lower canonical `DocumentChange` values into their
@@ -291,7 +292,8 @@ Accepted current shape:
 - Editors compose behavior through creation-time `extensions`, not public
   `with*` wrappers, `withEditor`, or author-facing `editor.extend`.
 - Built-in packages expose lowercase extension factories such as `history()`,
-  `dom()`, and `react()`.
+  `dom()`, and `react({ dom })`. React receives the exact DOM descriptor it
+  installs as a dependency.
 - Custom extension factories use the same lower camel-case singular shape, such
   as `editableVoid()`, `checklist()`, `mention()`, or `table()`. Plural names
   are reserved for naturally plural domains such as `shortcuts()` or
@@ -301,23 +303,22 @@ Accepted current shape:
 - Replayable extension reads live under `editor.read((state) => state.<group>)`;
   replayable extension writes/actions live under
   `editor.update((tx) => tx.<group>)`.
-- Installed runtime/control APIs live under `editor.api.<capability>`, so
+- Installed runtime/control APIs live under `editor.api.<extensionName>`, so
   history controls use `editor.api.history`, DOM/React runtime APIs use
   `editor.api.dom` / `editor.api.react`, clipboard APIs use
-  `editor.api.clipboard`, and public editor-bound helper namespaces such as
+  `editor.api.dom.clipboard`, and public editor-bound helper namespaces such as
   `HistoryEditor`, `DOMEditor`, and a runtime `ReactEditor` namespace are not
   app-facing APIs. The app-facing React editor instance type is the generic
   extension-derived `ReactEditor<Value, Extensions>`.
-- One extension may install multiple public API handles. `dom()` installs the
-  DOM projection/focus handle and may also install the clipboard handle. Public
-  API keys are capability names, not package names.
-- Generic extension-aware code may use `editor.getApi(extensionToken)` where the
-  token is the branded factory or static extension value. String lookup such as
-  `editor.getApi('history')` and fresh-instance lookup such as
-  `editor.getApi(history())` are not public APIs.
-- Type tests must include negative contracts for uninstalled APIs,
-  `editor.getApi('history')`, `editor.getApi(history())`,
-  `editor.api.history.undo`, and `editor.getApi(history).undo`.
+- Each extension installs one name-scoped API object. Split independently
+  installable capabilities into their own descriptors instead of publishing
+  parallel root handles.
+- Generic extension-aware code uses
+  `editor.extension(extensionToken).api`, where the token is the branded factory
+  or static extension value. String lookup and a fresh factory result are not
+  descriptor portals.
+- Type tests include negative contracts for uninstalled APIs, string-based
+  portal lookup, and fresh-instance lookup.
 - State node queries expose `state.nodes.entries(...)` for lazy all-match
   traversal, `state.nodes.find(...)` for first-match reads, and
   `state.nodes.some(...)` for boolean active checks. Use
@@ -477,9 +478,10 @@ Accepted current shape:
   HTML fragment transport, plain-text fallback, and DOM coverage copy/paste
   policy.
 - `plite-react` owns browser event dispatch for copy, cut, paste, drag, and
-  drop, then delegates payload work to `editor.api.clipboard`.
-- Low-level clipboard APIs stay under top-level `editor.api.clipboard`; raw
-  `editor` does not grow a public clipboard namespace.
+  drop, then delegates payload work to `editor.api.dom.clipboard`.
+- Low-level clipboard APIs stay under the DOM-owned
+  `editor.api.dom.clipboard`; raw `editor` does not grow a public clipboard
+  namespace.
 - App-owned rich HTML/image/custom paste behavior runs through typed clipboard
   ingress handlers; `insertData` stays input-only and does not own output
   serialization or product paste-rule policy.
@@ -714,17 +716,17 @@ Current implemented shape:
   `Editable`; reusable model behavior belongs in a command handler.
 - Rich product input-rule families remain Plate-owned and lower to Plite
   commands and transaction specs.
-- Grouped `extension.queries` covers accepted pure read methods across
+- `readMiddleware` wraps accepted pure `editorReads` methods across
   `fragment`, `marks`, `nodes`, `points`, `ranges`, and `text`, including
   static/read parity for keys such as `nodes.path`,
   `nodes.elementReadOnly`, and `points.positions`.
-- Query middleware is keyed by group/method, supports `next(overrides)`,
+- Read middleware is keyed by group/method, supports `next(overrides)`,
   preserves generator reads during default delegation, rejects double `next()`,
   and prevents `editor.update` from starting inside query middleware.
 - Deterministic structural repair belongs in extension `corrections` over
   canonical changed ranges.
-- `onTransactionChange` receives canonical incremental changes with the active
-  transaction, `onCommit` observes publication, and `activate` owns
+- `on.transactionChange` receives canonical incremental changes with the active
+  transaction, `on.commit` observes publication, and `activate` owns
   extension-local runtime resources.
 - Refs, raw snapshots, runtime IDs, and lifecycle controls remain engine-owned.
 

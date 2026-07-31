@@ -28,7 +28,7 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
       }
       return (
         !getEditorSchema(editor).isVoid(parentNode) ||
-        getEditorSchema(editor).markableVoid(parentNode)
+        getEditorSchema(editor).isMarkableVoid(parentNode)
       );
     };
     const expandedSelection = RangeApi.isExpanded(selection);
@@ -41,7 +41,7 @@ export const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
         const [parentNode] = editorParent(editor, path);
         markAcceptingVoidSelected =
           NodeApi.isElement(parentNode) &&
-          getEditorSchema(editor).markableVoid(parentNode);
+          getEditorSchema(editor).isMarkableVoid(parentNode);
       }
     }
     if (markAcceptingVoidSelected && selectedPath) {

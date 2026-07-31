@@ -7,7 +7,7 @@ description: 配置 Plate 插件的键盘快捷键。
 
 ## 快捷键解析规则
 
-每个插件拥有一个 `shortcuts` 对象。Plate 使用 `${plugin.key}.${shortcutName}` 作为编译后的快捷键标识。
+每个插件拥有一个 `shortcuts` 对象。Plate 使用 `${plugin.name}.${shortcutName}` 作为编译后的快捷键标识。
 
 没有 `handler` 时，Plate 查找同名的公开方法：
 
@@ -34,13 +34,13 @@ description: 配置 Plate 插件的键盘快捷键。
 
 ## 链接更新方法
 
-快捷键名称与插件事务命令名称相同时，可以直接链接：
+快捷键名称与插件 update method 名称相同时，可以直接链接：
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
-  key: 'signature',
+  name: 'signature',
   update: ({ tx }) => ({
     insertSignature: () => {
       tx.text.insert(' - Plate');
@@ -66,7 +66,7 @@ export const SignaturePlugin = createPlatePlugin({
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const InspectPlugin = createPlatePlugin({
-  key: 'inspect',
+  name: 'inspect',
   api: ({ editor }) => ({
     logText: () => {
       editor.api.debug.info('Editor text', editor.api.string([]));
@@ -85,7 +85,10 @@ export const InspectPlugin = createPlatePlugin({
 按下 `Mod+Alt+L` 会调用 `editor.api.inspect.logText()`。
 
 <Callout type="info" title="消除同名方法歧义">
-  更新方法和 API 方法同名时，设置 `target: 'update'` 或 `target: 'api'`。插件专属 API 与同一描述符贡献的根编辑器 API 都属于 `api`；如果名称相同，请重命名其中一个或使用自定义 `handler`。
+  Update method 和 API method 同名时，设置 `target: 'update'` 或
+  `target: 'api'`。每个插件只有一个 API group；`editor.api.inspect` 和
+  `editor.plugin(InspectPlugin).api` 是同一个 immutable object 的两个 typed
+  access path。
 </Callout>
 
 ## 自定义处理函数
@@ -96,7 +99,7 @@ export const InspectPlugin = createPlatePlugin({
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const DraftPlugin = createPlatePlugin({
-  key: 'draft',
+  name: 'draft',
   shortcuts: {
     saveDraft: {
       keys: [[Key.Mod, 's']],
@@ -164,7 +167,7 @@ export const AppItalicPlugin = ItalicPlugin.configure({
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const ReviewPlugin = createPlatePlugin({
-  key: 'review',
+  name: 'review',
   update: ({ tx }) => ({
     accept: () => tx.text.insert('Accepted'),
     reject: () => tx.text.insert('Rejected'),
@@ -188,7 +191,7 @@ export const ReviewPlugin = createPlatePlugin({
 import { createPlatePlugin } from 'platejs/react';
 
 export const PriorityPlugin = createPlatePlugin({
-  key: 'commandMenu',
+  name: 'commandMenu',
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',

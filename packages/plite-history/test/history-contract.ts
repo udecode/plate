@@ -73,12 +73,10 @@ const ContentRootHistorySchema = defineEditorSchema({
     },
   },
   id: 'content-root-history',
-  root: {
-    content: schema.content.types(['paragraph', 'portal'], {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.types(['paragraph', 'portal'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });

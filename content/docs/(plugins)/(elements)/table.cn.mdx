@@ -241,7 +241,7 @@ const editor = createPlateEditor({
 </APIItem>
 <APIItem name="children" type="Descendant[]" optional>
 新单元格节点的子元素
-- **默认值:** `[{ children: [{ text: '' }], type: editor.getType(KEYS.p) }]`
+- **默认值:** `[{ children: [{ text: '' }], type: editor.plugin(KEYS.p).type }]`
 </APIItem>
 </APIOptions>
 

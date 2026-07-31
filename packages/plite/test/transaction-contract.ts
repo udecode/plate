@@ -195,17 +195,19 @@ describe('plite transaction contract', () => {
     const targetRuntimeId = editorGetRuntimeId(editor, [1]);
     assert(targetRuntimeId);
 
-    const unextend = editor.extend({
-      name: 'atomic-replace-correction-spy',
-      corrections: [
-        {
-          event: 'content',
-          correct({ entry }) {
-            normalizedPaths.push(entry[1].join('.'));
+    const unextend = editor.extend(
+      defineEditorExtension({
+        name: 'atomic-replace-correction-spy',
+        corrections: [
+          {
+            event: 'content',
+            correct({ entry }) {
+              normalizedPaths.push(entry[1].join('.'));
+            },
           },
-        },
-      ],
-    });
+        ],
+      })
+    );
     const unsubscribe = editorSubscribe(editor, () => {
       publishedStates.push(getVisibleState(editor));
     });
@@ -444,14 +446,16 @@ describe('plite transaction contract', () => {
     replaceChildren(editor, [paragraph('one')]);
 
     const seenChanges: DocumentChange[] = [];
-    const unextend = editor.extend({
-      name: 'transaction-change-spy',
-      on: {
-        transactionChange({ change }) {
-          seenChanges.push(change);
+    const unextend = editor.extend(
+      defineEditorExtension({
+        name: 'transaction-change-spy',
+        on: {
+          transactionChange({ change }) {
+            seenChanges.push(change);
+          },
         },
-      },
-    });
+      })
+    );
 
     editor.update((tx) => {
       tx.text.insert('!', {
@@ -493,20 +497,22 @@ describe('plite transaction contract', () => {
       structure: boolean;
       text: boolean;
     }> = [];
-    const unextend = editor.extend({
-      name: 'lazy-transaction-change-spy',
-      on: {
-        transactionChange({ changed }) {
-          observations.push({
-            paths: changed.paths(),
-            properties: changed.has('properties'),
-            ranges: changed.topLevelRanges(),
-            structure: changed.has('structure'),
-            text: changed.has('text'),
-          });
+    const unextend = editor.extend(
+      defineEditorExtension({
+        name: 'lazy-transaction-change-spy',
+        on: {
+          transactionChange({ changed }) {
+            observations.push({
+              paths: changed.paths(),
+              properties: changed.has('properties'),
+              ranges: changed.topLevelRanges(),
+              structure: changed.has('structure'),
+              text: changed.has('text'),
+            });
+          },
         },
-      },
-    });
+      })
+    );
     const classified = DocumentChange.between(
       { children: [paragraph('one')] },
       { children: [paragraph('one!')] }
@@ -550,15 +556,17 @@ describe('plite transaction contract', () => {
       after: readonly [number, number] | null;
       before: readonly [number, number] | null;
     }> = [];
-    const unextend = editor.extend({
-      name: 'bounded-transaction-change-paths',
-      on: {
-        transactionChange({ changed }) {
-          paths.push(...changed.paths());
-          ranges.push(...changed.topLevelRanges());
+    const unextend = editor.extend(
+      defineEditorExtension({
+        name: 'bounded-transaction-change-paths',
+        on: {
+          transactionChange({ changed }) {
+            paths.push(...changed.paths());
+            ranges.push(...changed.topLevelRanges());
+          },
         },
-      },
-    });
+      })
+    );
 
     editor.update((tx) => {
       tx.text.insert('!', {
@@ -1466,7 +1474,7 @@ describe('plite transaction contract', () => {
 
     const cleanup = editor.extend(
       defineEditorExtension({
-        api: { inline: capability },
+        api: () => ({ inline: capability }),
         corrections: [correction],
         name: 'registry-slots',
         on: {
@@ -1476,7 +1484,14 @@ describe('plite transaction contract', () => {
     );
     const registry = editorGetExtensionRegistry(editor);
 
-    assert.equal((editor.api as { inline?: unknown }).inline, capability);
+    assert.equal(
+      (
+        editor.api as {
+          'registry-slots'?: { inline: typeof capability };
+        }
+      )['registry-slots']?.inline,
+      capability
+    );
     assert.equal(
       registry.corrections.get('registry-slots:corrections.0'),
       correction
@@ -1487,7 +1502,7 @@ describe('plite transaction contract', () => {
 
     const clearedRegistry = editorGetExtensionRegistry(editor);
 
-    assert.equal('inline' in editor.api, false);
+    assert.equal('registry-slots' in editor.api, false);
     assert.equal(
       clearedRegistry.corrections.has('registry-slots:corrections.0'),
       false
@@ -1507,20 +1522,22 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unextend = editor.extend({
-      activate: (_editor, context) => {
-        signal = context.signal;
-        context.onCleanup(() => {
-          cleanupCalls += 1;
-        });
-      },
-      name: 'lifecycle-extension',
-      on: {
-        commit({ commit }) {
-          commits.push(commit);
+    const unextend = editor.extend(
+      defineEditorExtension({
+        activate: (_editor, context) => {
+          signal = context.signal;
+          context.onCleanup(() => {
+            cleanupCalls += 1;
+          });
         },
-      },
-    });
+        name: 'lifecycle-extension',
+        on: {
+          commit({ commit }) {
+            commits.push(commit);
+          },
+        },
+      })
+    );
 
     const registeredSignal = signal as unknown as AbortSignal;
 
@@ -1551,22 +1568,20 @@ describe('plite transaction contract', () => {
 
     replaceChildren(editor, [paragraph('one')]);
 
-    const unextend = editor.extend({
-      name: 'group-extension',
-      state: {
-        mirror: (state) =>
+    const unextend = editor.extend(
+      defineEditorExtension({
+        name: 'group-extension',
+        read: ({ state }) =>
           Object.freeze({
             text: () => state.text.string([0]),
           }),
-      },
-      tx: {
-        mirror: (tx) =>
+        update: ({ tx }) =>
           Object.freeze({
             append: (text: string) =>
               tx.text.insert(text, { at: { path: [0, 0], offset: 3 } }),
           }),
-      },
-    });
+      })
+    );
 
     assert.equal(
       editor.read((state) => state.text.string([0])),
@@ -1575,8 +1590,10 @@ describe('plite transaction contract', () => {
 
     editor.update((tx) => {
       (
-        tx as typeof tx & { mirror: { append: (text: string) => void } }
-      ).mirror.append('!');
+        tx as typeof tx & {
+          'group-extension': { append: (text: string) => void };
+        }
+      )['group-extension'].append('!');
     });
 
     assert.equal(
@@ -1585,15 +1602,15 @@ describe('plite transaction contract', () => {
     );
 
     const registry = editorGetExtensionRegistry(editor);
-    assert.equal(registry.stateGroups.has('mirror'), true);
-    assert.equal(registry.txGroups.has('mirror'), true);
+    assert.equal(registry.stateGroups.has('group-extension'), true);
+    assert.equal(registry.txGroups.has('group-extension'), true);
 
     unextend();
 
     const clearedRegistry = editorGetExtensionRegistry(editor);
     assert.notEqual(clearedRegistry, registry);
-    assert.equal(clearedRegistry.stateGroups.has('mirror'), false);
-    assert.equal(clearedRegistry.txGroups.has('mirror'), false);
+    assert.equal(clearedRegistry.stateGroups.has('group-extension'), false);
+    assert.equal(clearedRegistry.txGroups.has('group-extension'), false);
   });
 
   it('routes slice replacement through pure command handlers and preserves commit metadata', () => {
@@ -1739,14 +1756,16 @@ describe('plite transaction contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unextendCommitListener = editor.extend({
-      name: 'command-commit-listener',
-      on: {
-        commit({ commit }) {
-          extensionCommits.push(commit);
+    const unextendCommitListener = editor.extend(
+      defineEditorExtension({
+        name: 'command-commit-listener',
+        on: {
+          commit({ commit }) {
+            extensionCommits.push(commit);
+          },
         },
-      },
-    });
+      })
+    );
     extensionCommits.length = 0;
     const unsubscribeSubscriber = editorSubscribe(
       editor,

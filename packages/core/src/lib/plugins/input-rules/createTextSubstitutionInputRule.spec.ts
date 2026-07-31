@@ -10,7 +10,7 @@ const createEditor = (
   createBaseEditor({
     plugins: [
       createBasePlugin({
-        key: 'shortcuts',
+        name: 'shortcuts',
         inputRules: [rule],
       }),
     ],

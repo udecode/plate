@@ -1,8 +1,11 @@
 import type { Point, Value } from '@platejs/plite';
 
 import type { BaseEditor } from '../../editor';
-import type { InferConfig } from '../../plugin/BasePlugin';
-import type { AnyPluginConfig } from '../../plugin/PluginConfig';
+import type { AnyBasePlugin } from '../../plugin/BasePlugin';
+import type {
+  DefinitionOf,
+  PluginReference,
+} from '../../plugin/PluginDefinition';
 import type {
   AnyInputRule,
   BlockFenceInputRuleConfig,
@@ -411,10 +414,7 @@ type RuleFromFactoryConfig<TConfig, TEditor> =
               ? InsertDataInputRule<TMatch, TEditor>
               : InsertTextInputRule<TextSubstitutionMatch, TEditor>;
 
-type RuleFactoryOwner = {
-  readonly __config: AnyPluginConfig;
-  key: string;
-};
+type RuleFactoryOwner = AnyBasePlugin & PluginReference;
 
 type BoundRuleFactory<TEditor> = {
   <TRequired extends object = {}, TDefaults extends object = {}>(
@@ -544,7 +544,7 @@ function assertRuleFactoryConfig(
 
 export function createRuleFactory<P extends RuleFactoryOwner>(
   plugin: P
-): BoundRuleFactory<BaseEditor<Value, InferConfig<P>>>;
+): BoundRuleFactory<BaseEditor<Value, DefinitionOf<P>>>;
 export function createRuleFactory<
   TRequired extends object = {},
   TDefaults extends object = {},
@@ -632,7 +632,7 @@ export function createRuleFactory(configOrBuilder: unknown): unknown {
     typeof configOrBuilder === 'object' &&
     configOrBuilder !== null &&
     typeof Reflect.get(configOrBuilder, 'configure') === 'function' &&
-    Array.isArray(Reflect.get(configOrBuilder, '__configurationLayers'))
+    typeof Reflect.get(configOrBuilder, 'extend') === 'function'
   ) {
     return createRuleFactory;
   }

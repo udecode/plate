@@ -403,7 +403,7 @@ describe('table clipboard', () => {
         editor.extend(
           defineEditorExtension({
             name: 'table-clipboard-export-projection',
-            read: ({ around }) => [
+            readMiddleware: ({ around }) => [
               around(editorReads.slice.export, ({ next }) => {
                 const slice = next();
 

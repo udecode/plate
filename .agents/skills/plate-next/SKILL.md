@@ -14,7 +14,7 @@ Handle $ARGUMENTS.
 
 ## Doctrine Version
 
-Current doctrine version: `23`.
+Current doctrine version: `40`.
 
 The machine-readable source is
 `.agents/rules/plate-next/versions.json`. It owns immutable doctrine history and
@@ -45,9 +45,15 @@ Version law:
 - The latest version entry stores a doctrine fingerprint over
   `.agents/rules/plate-next.mdc`,
   `.agents/rules/plate-plugin-creator.mdc`, and
+  the required `plate-plugin-creator` creation-flow, typing, and authoring-audit
+  adjuncts under `.agents/rules/plate-plugin-creator/`, plus the Plate UI rule,
+  its component-shape adjunct, the shared resource sync owner, and
   `docs/plans/templates/plate-next.md`. `validate` fails when any source
   changes without a version bump. Treat any edit to those doctrine surfaces as
   a bump; generated mirror regeneration is not a bump.
+- `validate` also requires exact generated main-skill parity for Plate Next,
+  Plate Plugin Creator, Best API, Docs Creator, and Plate UI, plus exact parity
+  for every resource owned by the shared sync script.
 - Never edit or reorder an older version entry. Correct a bad reusable rule by
   adding the next version.
 - A doctrine bump never mass-updates package entries. Packages remain at their
@@ -183,7 +189,7 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
   - reads/services on `editor.api.<owner>` or scoped
     `editor.plugin(FooPlugin).api`;
   - mutations/commands on `editor.update.<owner>` or scoped plugin tx groups;
-  - persistent editor state in Plite state fields or typed extension `state`;
+  - persistent substrate state in Plite state fields;
   - product/plugin runtime values in `initialState` and the scoped store;
   - React/UI render state in the owning store/hook/provider;
   - internal operation/session state in a returned session/controller object
@@ -198,9 +204,17 @@ Plite`, `keep in Plate`, `private bridge with deletion gate`, or `blocker`.
     If a concrete root-pollution field is in the active package/file scope, do
     not merely score or mention it. Fix it in the owner before closeout, or stop
     with a named Plite/Plate gap and deletion path.
-- On a concrete inferred editor, `editor.api.<pluginKey>` is the canonical
+- On a concrete inferred editor, `editor.api.<pluginName>` is the canonical
   discovery path. Keep `editor.plugin(FooPlugin).api` for generic package code
-  and exact descriptor ownership; both paths expose the same immutable API.
+  and exact Plate ownership; use `editor.extension(FooExtension).api` for exact
+  raw Plite ownership. All paths expose the same descriptor-owned API
+  contributed once at root `api` and projected under `name`. Reject root-merged
+  methods, `getApi`, and `pluginApi`.
+- The root `api` field is factory-only at Plite, Base, and Plate layers,
+  including context-free APIs: write `api: () => ({ ... })`, never
+  `api: { ... }`. The factory receives one context object; Base and Plate add
+  their authoring fields to that same object. Reject positional
+  `(editor, context)` factories and `.configure({ api })`.
 - When a generic caller legitimately accepts an optional descriptor, use
   `const foo = editor.plugin(FooPlugin)` and check `foo.installed` before any
   other portal access. Disabled plugins count as absent. Do not cast or probe
@@ -246,12 +260,71 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   constant. Keep a private descriptor only when it is itself installed or
   returned as a durable runtime identity, reused by multiple production
   owners, or required at a real external boundary.
-- Do not create empty plugin config aliases like
-  `type FooConfig = PluginConfig<'foo'>` just to pass
-  `createBasePlugin<FooConfig>({ key: 'foo' })`. If a plugin has no typed
-  initial state, API, read, update, selectors, dependencies, or extension
-  contract, let `createBasePlugin` infer from the declaration. Manual config
-  types are for real public contracts, not decoration.
+- Do not create `PluginConfig` aliases or pass a parallel config generic to a
+  factory. Let `createBasePlugin` infer its exact definition from the author
+  object. Keep explicit state, API, update, or domain types only for real
+  exported/reused contracts; they do not wrap the whole plugin.
+- `DefinitionOf<typeof FooPlugin>` is the sole public descriptor-definition
+  extractor. Export it as `FooDefinition`, never `FooConfig` or an unsuffixed
+  alias. Preserve real domain/runtime `*Config` types, but hard-cut
+  `InferConfig` and every competing extractor.
+- Plite, Base, and Plate public factories are one object call with no
+  caller-supplied generics. Internally, TypeScript may require a small inferred
+  environment parameter—Plite dependencies, or Plate dependencies plus
+  initial state—beside the author-input parameter to preserve contextual
+  callback inference. That is valid internal machinery; do not fake a
+  one-self-referential-generic claim, expose the environment, or compensate
+  with caller generics, annotations, casts, or `any`. Reject excess fields and
+  normalize one exact definition carried by a private invariant witness.
+  Reject public `__config`, raw callback/dependency graphs in declarations, or
+  another accumulator machine.
+- Raw `PluginReference` is nominal and carries only plugin identity; it has no
+  definition generic or private witness. Concrete Base and Plate descriptors
+  carry the single invariant definition witness. Plite's root
+  `EditorExtensionDependencyReference` is shallow and non-generic: only
+  `name` and optional `enabled`, with no capability, provider, witness, or
+  recursive exact ancestry.
+- `EditorExtensionTypeProvider` is the sole public value-sensitive capability
+  bridge. Keep its higher-kinded encoding, normalized installed-capability
+  carrier, and transitive dependency expansion exclusively in
+  `@platejs/plite/internal`; never root-export or teach those internals, and
+  never recursively materialize the complete dependency ancestry.
+  A static portal must prove literal-name uniqueness plus mutual capability
+  assignability. Runtime portal access must still prove exact descriptor
+  identity rather than accepting a same-name surrogate. Keep
+  `EditorExtension<Definition>` to one public definition parameter, and derive
+  official factory return types instead of reconstructing them with another
+  public generic.
+- Core may use internal aliases to translate the contextually typed author
+  source into the canonical lowered Plite definition. Do not export, document,
+  or make users name that compiler split: public authoring remains one object
+  call returning one exact descriptor.
+- The low-level React bridge is exactly `react({ dom })`: one required object
+  containing the exact DOM descriptor. Permit one explicit erased
+  implementation boundary only where TypeScript 7 cannot reduce the invariant
+  DOM-extension union. Reject zero-argument `react()`, flattened DOM options,
+  overload forests, caller generics, and additional casts.
+- `name` is descriptor identity; `type` is serialized node identity. Plate
+  exposes native Plite fields directly at the plugin root: dependencies,
+  conflicts, `readMiddleware`, commands, corrections, declarations,
+  contributions, `on`, activation, and config-free `validate`. Reject a nested
+  `extension` wrapper.
+- Clipboard ingress is a typed Plite DOM contribution, never a root
+  `clipboard` plugin field. Put `clipboardHandler(...)` directly in
+  `contributions`. `clipboardHandler(handler)` is the sole form; the owning
+  extension or Plate stage contextually infers the handler transaction from
+  its installed update capabilities. Never pass an editor to the helper.
+- All lifecycle and host/DOM events use one root `on` family with prefixless
+  child names such as `commit`, `keyDown`, `paste`, `nodeChange`,
+  `textChange`, and capture variants. Reject a second `handlers` bucket while
+  preserving any private runtime bridge required by Plate short-circuit versus
+  Plite run-all semantics.
+- Plite owner-local capability factories are `read` and `update`; pure
+  core-read policy is `readMiddleware`. Reject descriptor `state`/`tx`
+  authoring and the old middleware-overloaded `read`.
+- `.extend()` widens the exact definition; `.configure()` is terminal and
+  non-widening; `toPlatePlugin()` is the exact Base-to-React adapter. Factories
+  replace cloning, so hard-cut `clone()` and any third copy verb.
 - Use `plate-plugin-creator`'s Capability Boundary Protocol as the sole
   plugin-authoring owner. Plate Next audits each contribution into exactly one
   row:
@@ -262,11 +335,11 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
     transaction;
   - `read`: pure, replayable queries over supplied document state;
   - `update`: document mutation through the active transaction;
-  - `extension`: genuine editor-wide Plite substrate;
+  - flat native Plite fields: genuine editor-wide substrate;
   - `codecs`: format declarations.
   Reject document reads hidden in `api`, document mutations outside `update`,
-  impure selectors/reads, plugin-scoped behavior smuggled into `extension`, and
-  any contribution with no honest row.
+  impure selectors/reads, plugin-scoped behavior smuggled into native fields,
+  and any contribution with no honest row.
 - Enforce the creator's state mechanics without restating another model:
   every state-owning production descriptor has a named `*PluginState`, exported
   with an exported descriptor; owner defaults use a typed constant or explicit
@@ -275,21 +348,22 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   `.configure({ initialState })`; callbacks use inferred `store`; consumers use
   `editor.plugin(Plugin).store`; and React uses `usePluginStore` or
   `useEditorPluginStore`. Reject deleted option accessors and parallel top-level
-  `options` / immutable `config` channels. Plite extensions may keep their
-  unrelated `config` contract; operation parameters may still be named
+  `options` / immutable `config` channels. Plite extensions have no `config`;
+  immutable construction inputs and runtime resources stay in their factory
+  closure or honest host owner. Operation parameters may still be named
   `options`.
 - Audit current-owner context access before accepting plugin code. In any
   callback whose supplied context includes them, use `store`, `api`, `read`,
   `update`, `type`, `plugin`, and `installed` directly. Reject
-  `editor.plugin(currentPlugin).*`, current-key root API/read/update calls,
-  `editor.getPlugin(currentKey)`, and `editor.getType(currentKey)` in that
+  `editor.plugin(currentPlugin).*`, current-name root API/read/update calls,
+  standalone plugin lookup helpers, and `editor.plugin(currentName).type` in that
   callback. Keep `editor` for editor-wide substrate, cross-plugin access, or
   one-shot transaction metadata unavailable on scoped `update`; active
   transactions use `tx`. Specialized shortcut, input-rule, state-value, and
   render-prop callbacks may expose only `editor`, so keep an exact typed portal
   rather than moving or wrapping a coherent declaration just to capture a
-  shortcut. Never confuse an editor-wide extension such as `editor.api.dom`
-  with the current plugin's `api`.
+  shortcut. Never confuse another descriptor such as `editor.api.dom` with the
+  current plugin's `api`.
 - Colocation is the default. Plugin behavior with exactly one production owner
   belongs inline in that plugin's `create*Plugin` / `.extend()` chain. This
   includes one-use `with*`, `decorate*`, normalize, parser, command,
@@ -300,21 +374,25 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   to `best-api`; an accepted capability descriptor may remain colocated in the
   same plugin owner file. Do not force another file, and do not keep a real
   capability anonymous merely because it has one source owner.
-- Same-key cleanup across app or registry kits is not mechanical deduplication.
-  Before choosing which descriptor survives, map who owns membership and prove
-  each independently optional kit alone and in combination. Import access does
-  not establish membership ownership. A kit must not install an independently
-  optional peer merely to adapt it; route that public composition fork to
-  `best-api`, whose weak-peer path preserves adapting-only, target-only, both,
-  and explicit-target-configuration behavior.
+- Within one owned plugin array, terminal configurations derived from the same
+  authored plugin compose in source order; later defined values win and exact
+  identity deduplicates. Unrelated plugins and divergent authoring branches
+  sharing a name still conflict. Across independently optional app or registry
+  kits, map who owns membership and prove each kit alone and in combination.
+  Import access does not establish membership ownership. A kit must not install
+  an independently optional peer merely to adapt it; route that public
+  composition fork to `best-api`, whose weak-peer path preserves adapting-only,
+  target-only, both, and explicit-target-configuration behavior.
 - Registry examples are teaching and copied-install surfaces, not optimized
   app presets. Do not delete an explicit feature plugin, kit, renderer binding,
   or dependency merely because an aggregate EditorKit already installs the
   same descriptor. When registry metadata names the feature kit or the example
   intentionally demonstrates its binding, preserve that declaration and use
-  `plate-ui` as the registry owner. Filter the same descriptor from EditorKit
-  before explicitly adding/configuring it so transparency never creates
-  duplicate runtime membership.
+  `plate-ui` as the registry owner. Append a terminal configuration of the same
+  authored plugin directly after EditorKit; ordered composition preserves
+  earlier fields and lets the explicit later values win. Filter only when the
+  entries are unrelated, represent divergent authoring branches, or membership
+  itself must change.
 - There is no line-count ceiling. Do not split a coherent owner because the
   file is large, crosses a readability threshold, or looks tidier as a folder.
   One large owner is cheaper for humans and agents than a graph of one-use
@@ -349,11 +427,11 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   `hooks/`, `utils/`, nested family folders, and nested barrels are taxonomy,
   not ownership. Keep a nested directory only when it is itself a durable
   public subsystem with multiple cross-family owners.
-- Prefer inline one-use constants, config fragments, and inferred callback
-  types. Do not create context/config/extension ferry types merely to move an
-  inferred callback into another file. Keep explicit types when they are a real
-  exported contract, recursive shape, external boundary, or reused API/tx
-  contract.
+- Prefer inline one-use constants, initial-state fragments, and inferred
+  callback types. Do not create context/definition/native-field ferry types
+  merely to move an inferred callback into another file. Keep explicit types
+  when they are a real exported contract, recursive shape, external boundary,
+  or reused API/update contract.
 - Audit authoring stages against `plate-plugin-creator` instead of maintaining
   a second builder model. The constructor owns every independent contribution;
   `.extend()` survives only for imported/prebuilt adaptation, a shared factory
@@ -364,27 +442,22 @@ editor.plugin(...).api.blockSelection.getNodes(...)` is a regression: it
   external declaration it adapts. Keep the contribution inferred; when a real
   public contract needs an explicit generic, type the contribution object, not
   callback parameters or the plugin export. If that loses inference, fix Core.
-- Apply the creator's codec, extension-factory, and active-transaction laws
-  directly. In particular, keep independent codecs/extensions in the
+- Apply the creator's codec, flat-native-field, and active-transaction laws
+  directly. In particular, keep independent codecs and native fields in the
   constructor, keep private implementation fragments lexical, read staged API
-  lazily from extension runtime context, and reuse earlier mutations through
-  the active `tx[plugin.key]` group.
-- `createBasePlugin()` owns runtime-neutral declarations.
-  `createPlatePlugin()` accepts root-level `component`.
-  Existing Plate descriptors bind or replace it through one terminal
-  `.configure({ component })`. Base/static consumers bind a static component
-  directly through `BasePlugin.configure({ component })`;
-  `createBasePlugin()` itself stays renderer-neutral.
-  `toPlatePlugin(BasePlugin)` is only for live React adapter construction.
-  Never import `platejs/react`, `@platejs/core/react`, or any
-  `@platejs/*/react` entrypoint from a `*-base-kit`, `*-static`, server/static
-  renderer, or other Base/static module. Repair a missing Base/static Core
-  capability instead of crossing into the React layer.
-  A Base/static kit must bind the static renderer module, never a live/client
-  node component. Registry Base kits should import the owning `*-static`
-  component.
-  `.configure()` never widens. Hard-delete `.withComponent()` and do not
-  author, document, or preserve direct public `render.node` assignment.
+  lazily from runtime callback context, and reuse earlier mutations through the
+  active `tx[plugin.name]` group.
+- `component` is ordinary render publication data. Declare it in
+  `createBasePlugin()` or `createPlatePlugin()` so the descriptor renders in
+  static/RSC and live Plate consumers; replace it through one terminal
+  `.configure({ component })`. Base `.extend()` rejects it because independent
+  defaults belong in the constructor. Use `toPlatePlugin()` at the owning React
+  adapter to publish a reusable Plate-layer descriptor or add real Plate-only
+  authoring. A terminal consumer never inserts conversion merely to set
+  `component`. Static/base owners bind a server-safe component without
+  importing a Plate React entrypoint. `.configure()` never widens.
+  Hard-delete `.withComponent()` and do not author, document, or preserve
+  direct public `render.node` assignment.
 - Hard-delete `extendApi`, `extendEditorApi`, `extendSelectors`, `extendTx`,
   `extendTxGroup`, `extendExtension`, `extendCodecs`, and `extendHtmlCodec`.
   Do not keep aliases, shims, deprecations, forwarding wrappers, or old
@@ -565,12 +638,11 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   `editor.plugin(FooPlugin).store.get/set/subscribe`; React code uses
   `usePluginStore(FooPlugin, selector)` or
   `useEditorPluginStore(FooPlugin, selector)`. A fallback like
-  `editor.plugin<FooConfig>(KEYS.foo)` or
-  `{ key: KEYS.foo }` needs a concrete owner reason: plugin self-definition
+  `editor.plugin(KEYS.foo)` needs a concrete owner reason: plugin self-definition
   cycle, React hook/component imported by the plugin itself, non-React layer
   that must not import a React plugin, or intentionally decoupled cross-package
   code. For plugin-owned behavior whose callback supplies owner context, do not
-  look the plugin up by key. Do not pass `api`, `store`, resolved state, or `tx`
+  look the plugin up by name. Do not pass `api`, `store`, resolved state, or `tx`
   into another helper merely to preserve an extraction. Inline one-use
   machinery or stage the reusable capability in the owning plugin chain. Only
   a proven cross-owner algorithm keeps explicit plumbing.
@@ -583,12 +655,12 @@ editor.update.selection.set(...) })` are bugs, not style issues.
   `pre-renaming.md` merely to reduce diff noise.
 - Reject cosmetic synonym churn, but accept added/deleted pairs that prove a
   real merge, hard cut, or owner move. Preserve established public plugin
-  concepts and keys unless an accepted API decision changes them; that
+  concepts and names unless an accepted API decision changes them; that
   protection does not extend to one-use helper files or helper exports.
 - Compare the current owner/name/role with `origin/main` before suggesting
   renames, deletions, or new owner topology. `origin/main` is behavior and
   ownership evidence, not a veto on the best current path or filename.
-- Do not rename established public Core plugins, options, keys, or concepts
+- Do not rename established public Core plugins, options, names, or concepts
   unless the user explicitly asks for naming cleanup, full Plate v2 closure,
   or a public API redesign. Internal one-use helpers are governed by owner-first
   colocation, not public-name stability.
@@ -624,6 +696,20 @@ Concrete correction:
 - The drift to cut is duplicate API wrapping, `any`, stale `getPluginByType`
   runtime lookup, or a special installer in the huge editor file. The review
   target is main-parity ownership plus Plite-native implementation.
+- `editor.plugin(Plugin | pluginName)` is the only public imperative plugin
+  lookup. Descriptors keep exact inference; runtime names return erased portals;
+  use a name for dynamic input or a family-agnostic slot that intentionally
+  accepts whichever installed descriptor owns that name;
+  `{ name }` is not a public lookup input. The
+  consumer portal owns `api`, `read`, `update`, `store`, `type`, `installed`,
+  and the compiled descriptor, but never callback-only `editor` or
+  `defineCodecs`. Cut standalone/editor alternatives (`getBasePlugin`,
+  `getEditorPlugin`, `getPlugin`, type/name/container reverse lookups, and
+  `getInjectProps`). Use portal `.type` when descriptor identity matters and
+  `editor.plugin(name).type` when identity is intentionally erased. Missing runtime names expose
+  `installed: false`; other portal fields throw. Keep reverse/container/render caches private,
+  answer public node questions through schema, read injection from the
+  compiled descriptor, and group codec mapping under `registry`.
 - Existing public plugin concepts still need an API decision before renaming.
   One-use helpers such as `withScrolling`, `withPlate`, `withPlite`,
   `withStatic`, or `withHOC`, and helper-named tests, are not frozen: inline,
@@ -638,8 +724,8 @@ primitive, classify the blocker instead of patching around it:
   updates, transactions, schema, selection, ranges, paths, DOM runtime,
   extension install, history substrate, serialization, or proof harness.
 - `Plate gap`: product composition is missing or too weak: plugin typing,
-  plugin lifecycle, plugin API/tx extension, UI/default route, registry/docs,
-  product command ergonomics, or Plate package ownership.
+  plugin lifecycle, API/read/update projection, UI/default route,
+  registry/docs, product command ergonomics, or Plate package ownership.
 
 For each gap, name:
 
@@ -725,6 +811,17 @@ Plate Next means:
 - Plate owns product composition: plugins, UI, app/registry kits, product
   command ergonomics, docs/examples, and app-facing defaults.
 - Core must not wrap Plite editor APIs under Plate names.
+- Schema cleanup uses the final Plite vocabulary: direct complete/named roots,
+  safe omitted `elements`/`unknown` defaults, `schema.element.textBlock()`,
+  validator-backed narrow JSON properties, placement-owned
+  `role: "metadata"`, `schema.create`, assertion boundaries, and
+  `schema.isMarkableVoid`.
+- Plate creation calls the lineage option `schemaIdentity`; Plate element
+  membership is `blockContent`. Plate schema queries accept plugin descriptors
+  directly and do not expose `schema.handle(Plugin)`.
+- Normalized schema/compiler/provider witnesses are private implementation
+  machinery. If removing a public carrier breaks inference, fix the private
+  descriptor compiler rather than restoring the carrier.
 - Plate product APIs may compose Plite APIs, but they must not mirror Plite
   namespaces or create a second mutation/read layer.
 - No public compat aliases, old Slate shims, or docs for old API names.
@@ -769,7 +866,7 @@ Default suspicion list:
   schema/runtime behavior.
 - `any`/`unknown` casts hiding type loss from migration.
 - explicit callback/helper types in tests that replace inference from
-  `createBasePlugin`, `createBaseEditor`, plugin config, tx groups, or editor
+  `createBasePlugin`, `createBaseEditor`, exact definitions, update groups, or editor
   API calls.
 - local variable annotations that duplicate an obvious initializer type,
   especially `const x: NodeEntry<...>[] = editor.read...`,
@@ -780,15 +877,17 @@ Default suspicion list:
   `createBasePlugin`, `createPlatePlugin`, `toPlatePlugin`, or chained
   `.extend()` calls. They cap the file below `100` until removed or justified as
   a real external boundary.
-- empty config aliases such as `type FooConfig = PluginConfig<'foo'>` paired
-  with `createBasePlugin<FooConfig>`. They cap the file below `100` unless the
-  config type carries a real public contract.
-- imported Plite `defineEditorExtension({ name: plugin.key, ... })` or
+- any `PluginConfig` alias, public `__config`, caller-supplied whole-plugin
+  factory generic, `InferConfig`, or
+  `type FooConfig = DefinitionOf<typeof FooPlugin>`. Keep explicit domain
+  capability contracts separate, name extracted definitions `FooDefinition`,
+  and let the plugin definition infer.
+- imported Plite `defineEditorExtension({ name: plugin.name, ... })` or
   `defineEditorExtension({ name: KEYS.foo, ... })` around an inline plugin
-  `extension` contribution. The plugin builder owns inline contextual typing,
-  callback-return typing, default names, and raw option normalization.
+  native-field contribution. The plugin builder owns inline contextual typing,
+  callback-return typing, and exact definition normalization.
   Independently reusable standalone Plite descriptors may use the imported
-  helper. A Plate context identity helper that only recovers nested inference
+  helper and compose as dependencies. A Plate context identity helper that only recovers erased inference
   is leaked compiler machinery: fix the owning generic and delete it.
 - one-line `editor.read((state) => state.*())` or `editor.update((tx) => {
 tx.*(); })` wrappers when the direct one-shot method exists. These cap the
@@ -810,7 +909,7 @@ tx.*(); })` wrappers when the direct one-shot method exists. These cap the
   the helper.
 - later tx stages that call an earlier method through a portal one-shot,
   `context.update`, or `editor.update.*` instead of the active
-  `tx[plugin.key]` group.
+  `tx[plugin.name]` group.
 - nested `editor.update.*` calls inside any `editor.update` callback,
   especially `editor.update.withoutNormalizing(() => { editor.update.* })`.
   The owning API should pass `({ tx })`, and the callback must mutate through
@@ -963,9 +1062,9 @@ Rules:
     `as any`, or local helper types hiding weak owner types;
   - no plugin-owned helper threads editor/runtime plumbing that an earlier
     inferred API/tx stage can own;
-  - staged tx-to-tx reuse stays on the active `tx[plugin.key]` group and has
+  - staged tx-to-tx reuse stays on the active `tx[plugin.name]` group and has
     compile/runtime proof;
-  - an extension that consumes staged API has runtime proof for lazy
+  - a native runtime callback that consumes staged API has runtime proof for lazy
     `context.api` publication;
   - no legacy compat alias, shim, old command fallback, or duplicate wrapper
     around Plite APIs remains;

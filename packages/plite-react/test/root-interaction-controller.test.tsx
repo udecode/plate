@@ -104,15 +104,13 @@ const createCoordinateSelectionEditor = ({
   createEditor({
     extensions: [
       defineEditorExtension({
-        api: {
-          dom: {
-            assertDOMNode: () => editable,
-            focus: vi.fn(),
-            resolveDOMNode: () => editable,
-            resolveEventRange: () => resolvedRanges.shift() ?? null,
-          },
-        },
-        name: 'root-interaction-test-dom',
+        api: () => ({
+          assertDOMNode: () => editable,
+          focus: vi.fn(),
+          resolveDOMNode: () => editable,
+          resolveEventRange: () => resolvedRanges.shift() ?? null,
+        }),
+        name: 'dom',
       }),
     ],
     initialValue,

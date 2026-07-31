@@ -32,12 +32,10 @@ const NestedTargetSchema = defineEditorSchema({
       ),
     }),
   ],
-  root: {
-    content: schema.content.type('section', {
-      default: { type: 'section' },
-      min: 1,
-    }),
-  } as const,
+  root: schema.content.type('section', {
+    default: { type: 'section' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });

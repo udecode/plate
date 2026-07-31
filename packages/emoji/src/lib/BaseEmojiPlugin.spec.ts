@@ -21,12 +21,15 @@ describe('BaseEmojiPlugin', () => {
       plugins: [BaseEmojiPlugin],
     });
 
-    const inputPlugin = editor.getPlugin(BaseEmojiInputPlugin);
+    const inputPlugin = editor.plugin(BaseEmojiInputPlugin).plugin;
     const input = { children: [{ text: '' }], type: NODES.emojiInput };
-    const inputHandle = editor.read.schema.handle(BaseEmojiInputPlugin);
+    const inputHandle = schema.handle.element(
+      BaseEmojiInputPlugin,
+      BaseEmojiInputPlugin.type
+    );
     const value = schema.handle.property(inputHandle, 'value');
 
-    expect(inputPlugin.key).toBe('emojiInput');
+    expect(inputPlugin.name).toBe('emojiInput');
     expect(inputPlugin.type).toBe(NODES.emojiInput);
     expect(inputPlugin.editOnly).toBe(true);
     expect(editor.read.schema.isInline(input)).toBe(true);
@@ -55,7 +58,7 @@ describe('BaseEmojiPlugin', () => {
       plugins: [BaseEmojiPlugin],
     });
 
-    const plugin = editor.getPlugin(BaseEmojiPlugin);
+    const plugin = editor.plugin(BaseEmojiPlugin).plugin;
     const state = editor.plugin(BaseEmojiPlugin).store.get();
     const triggerPreviousCharPattern = state.triggerPreviousCharPattern;
     const createComboboxInput = state.createComboboxInput;
@@ -89,7 +92,9 @@ describe('BaseEmojiPlugin', () => {
       plugins: [BaseEmojiPlugin],
     });
 
-    expect(editor.getPlugin(BaseEmojiInputPlugin).key).toBe(KEYS.emojiInput);
+    expect(editor.plugin(BaseEmojiInputPlugin).plugin.name).toBe(
+      KEYS.emojiInput
+    );
   });
 
   it('inserts the first native skin text by default', () => {
@@ -110,7 +115,7 @@ describe('BaseEmojiPlugin', () => {
 
   it('uses the configured createEmojiNode override', () => {
     const EmojiChipPlugin = createBasePlugin({
-      key: 'emoji-chip',
+      name: 'emoji-chip',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -150,7 +155,7 @@ describe('BaseEmojiPlugin', () => {
 
   it('preserves custom properties on text emoji nodes', () => {
     const EmojiIdPlugin = createBasePlugin({
-      key: 'emojiId',
+      name: 'emojiId',
       schema: { mark: property.string() },
     });
     const editor = createBaseEditor({

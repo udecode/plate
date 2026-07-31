@@ -158,9 +158,14 @@ editor.plugin(BoldPlugin).update.toggle();
 | Method | Use for |
 | --- | --- |
 | `editor.plugin(plugin)` | Typed access to one plugin's API, updates, type, and store. |
-| `editor.getPlugin(plugin)` | The resolved plugin instance for a descriptor. |
-| `editor.getType(pluginKey)` | The node type registered for a plugin key. |
-| `editor.getInjectProps(plugin)` | Resolved injected node props for a plugin. |
+| `editor.plugin(plugin).plugin` | The resolved plugin instance for a descriptor. |
+| `editor.plugin(pluginName).type` | The node type registered for a plugin name. |
+| `editor.plugin(plugin).plugin.inject.nodeProps` | Compiled injected node props for a plugin. |
+
+Runtime-name portals are intentionally erased. Use them for dynamic names or
+family-agnostic slots that accept whichever installed descriptor owns the
+name. Check `.installed` before any other field when the named plugin is
+optional; other fields throw when the plugin is absent.
 
 ## Plugin Store
 

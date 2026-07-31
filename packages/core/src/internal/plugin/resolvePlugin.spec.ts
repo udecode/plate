@@ -11,7 +11,7 @@ describe('resolvePlugin', () => {
   it('exposes consumer configuration to extensions and keeps it final', () => {
     const seen: string[] = [];
     const plugin = createBasePlugin({
-      key: 'orderedConfiguration',
+      name: 'orderedConfiguration',
       initialState: { label: 'base', mode: 'base' },
     })
       .extend(({ plugin }) => {
@@ -28,7 +28,7 @@ describe('resolvePlugin', () => {
     const editor = createBaseEditor({ plugins: [plugin] });
 
     expect(seen).toEqual(['consumer']);
-    expect(editor.getPlugin(plugin).initialState).toEqual({
+    expect(editor.plugin(plugin).plugin.initialState).toEqual({
       label: 'consumer',
       mode: 'consumer',
     });
@@ -45,7 +45,7 @@ describe('resolvePlugin', () => {
       inputRules: [configuredRule],
     };
     const plugin = createBasePlugin({
-      key: 'inputRulesPlugin',
+      name: 'inputRulesPlugin',
     }).configure(config);
     const firstEditor = createBaseEditor({
       plugins: [plugin],
@@ -70,7 +70,7 @@ describe('resolvePlugin', () => {
       trigger: 'extension',
     });
     const plugin = createBasePlugin({
-      key: 'configuredInputRulesFinal',
+      name: 'configuredInputRulesFinal',
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -99,7 +99,7 @@ describe('resolvePlugin', () => {
       trigger: 'configured',
     });
     const plugin = createBasePlugin({
-      key: 'configuredInputRulesFactory',
+      name: 'configuredInputRulesFactory',
       inputRules: [
         defineInputRule({
           apply: () => true,
@@ -135,14 +135,14 @@ describe('resolvePlugin', () => {
         }),
       ],
     });
-    const plugin = createBasePlugin({ key: 'broken' });
+    const plugin = createBasePlugin({ name: 'broken' });
 
-    delete (plugin as any).__extensions;
+    delete (plugin as any).__stages;
 
     validatePlugin(editor, plugin as any);
 
     expect(errorLogger).toHaveBeenCalledWith(
-      "Invalid plugin 'broken', you should use createBasePlugin.",
+      "Invalid plugin 'broken', use createBasePlugin.",
       'USE_CREATE_PLUGIN',
       undefined
     );
@@ -150,7 +150,7 @@ describe('resolvePlugin', () => {
 
   it('does not mutate the configured plugin between editor instances', () => {
     const configured = createBasePlugin({
-      key: 'p',
+      name: 'p',
       type: 'p',
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },

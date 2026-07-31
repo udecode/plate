@@ -1,7 +1,7 @@
-import { BaseTablePlugin, type TableConfig } from '../BaseTablePlugin';
+import { BaseTablePlugin, type TableDefinition } from '../BaseTablePlugin';
 
 export const getTestTablePlugins = (
-  options?: Partial<TableConfig['initialState']>
+  options?: Partial<TableDefinition['initialState']>
 ) => [
   BaseTablePlugin.configure({
     initialState: {

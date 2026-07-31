@@ -21,7 +21,7 @@ describe('PlateTest', () => {
         rendered = render(
           <PlateTest
             editor={editor}
-            schema={{
+            schemaIdentity={{
               id: 'plate-test:core:react-components-platetest:editor-1',
               version: 1,
             }}
@@ -41,7 +41,7 @@ describe('PlateTest', () => {
 
     expect(getByTestId('plite-content-editable')).toBeInTheDocument();
     expect(
-      getPlateRuntime(editor).pluginList.some((plugin) => plugin.key === 'dom')
+      getPlateRuntime(editor).pluginList.some((plugin) => plugin.name === 'dom')
     ).toBe(true);
   });
 });

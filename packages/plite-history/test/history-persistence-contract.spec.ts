@@ -57,9 +57,7 @@ const editorSchema = ({
       },
     },
     id,
-    root: {
-      content: schema.content.type('paragraph', { min: 1 }),
-    },
+    root: schema.content.type('paragraph', { min: 1 }),
     unknown: 'reject',
     version,
   });
@@ -312,9 +310,7 @@ describe('versioned history persistence', () => {
           [type]: { content: schema.content.text() },
         },
         id: 'history-schema',
-        root: {
-          content: schema.content.type(type, { min: 1 }),
-        },
+        root: schema.content.type(type, { min: 1 }),
         unknown: 'reject',
         version,
       });
@@ -654,12 +650,10 @@ describe('versioned history persistence', () => {
         },
       },
       id: 'closed-history-paragraph',
-      root: {
-        content: schema.content.type('paragraph', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      },
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });

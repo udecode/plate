@@ -69,12 +69,14 @@ describe('model input strategy', () => {
     let insertCount = 0;
 
     (editor as any).api = {
-      clipboard: {
-        insertData(receivedData: DataTransfer) {
-          insertCount++;
-          expect(receivedData).toBe(data);
+      dom: {
+        clipboard: {
+          insertData(receivedData: DataTransfer) {
+            insertCount++;
+            expect(receivedData).toBe(data);
 
-          return true;
+            return true;
+          },
         },
       },
     };
@@ -94,12 +96,14 @@ describe('model input strategy', () => {
     let insertCount = 0;
 
     (editor as any).api = {
-      clipboard: {
-        insertData(receivedData: DataTransfer) {
-          insertCount++;
-          expect(receivedData).toBe(data);
+      dom: {
+        clipboard: {
+          insertData(receivedData: DataTransfer) {
+            insertCount++;
+            expect(receivedData).toBe(data);
 
-          return true;
+            return true;
+          },
         },
       },
     };

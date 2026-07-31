@@ -29,30 +29,22 @@ describe('editor extension namespaces', () => {
     return editor;
   };
 
-  it('installs state and tx groups without mutating the editor object', () => {
+  it('installs read and update groups without mutating the editor object', () => {
     const editor = createSeededEditor();
 
     editor.extend(
       defineEditorExtension({
         name: 'table',
-        state: {
-          table(state) {
-            return {
-              selectedText() {
-                return state.text.string(state.selection() ?? []);
-              },
-            };
+        read: ({ state }) => ({
+          selectedText() {
+            return state.text.string(state.selection() ?? []);
           },
-        },
-        tx: {
-          table(tx) {
-            return {
-              makeHeading() {
-                tx.nodes.set({ type: 'heading-one' }, { at: [0] });
-              },
-            };
+        }),
+        update: ({ tx }) => ({
+          makeHeading() {
+            tx.nodes.set({ type: 'heading-one' }, { at: [0] });
           },
-        },
+        }),
       })
     );
 
@@ -73,35 +65,58 @@ describe('editor extension namespaces', () => {
     assert.equal(editorGetSnapshot(editor).children[0]?.type, 'heading-one');
   });
 
-  it('lets plugin-style tx groups read transaction-local state', () => {
+  it('exposes read-only groups on the active transaction', () => {
+    const editor = createSeededEditor();
+    let leakedRead: (() => string) | undefined;
+
+    editor.extend(
+      defineEditorExtension({
+        name: 'selectionInfo',
+        read: ({ state }) => ({
+          selectedText() {
+            return state.text.string(state.selection() ?? []);
+          },
+        }),
+      })
+    );
+
+    editor.update((tx) => {
+      const selectionInfo = (
+        tx as typeof tx & {
+          selectionInfo: { selectedText(): string };
+        }
+      ).selectionInfo;
+
+      assert.equal(selectionInfo.selectedText(), 'one');
+      leakedRead = selectionInfo.selectedText;
+    });
+
+    assert.throws(
+      () => leakedRead?.(),
+      /editor transaction is no longer active/
+    );
+  });
+
+  it('composes same-name read and update groups against the active draft', () => {
     const editor = createSeededEditor();
 
     editor.extend(
       defineEditorExtension({
-        name: 'table-foundation',
-        state: {
-          table(state) {
-            return {
-              rowCount() {
-                return state.nodes.children().length;
-              },
-            };
+        name: 'table',
+        read: ({ state }) => ({
+          owner: () => 'read',
+          rowCount() {
+            return state.nodes.children().length;
           },
-        },
-        tx: {
-          table(tx) {
-            return {
-              insertRow(text = 'row') {
-                tx.nodes.insert(paragraph(text), {
-                  at: [tx.nodes.children().length],
-                });
-              },
-              rowCount() {
-                return tx.nodes.children().length;
-              },
-            };
+        }),
+        update: ({ tx }) => ({
+          insertRow(text = 'row') {
+            tx.nodes.insert(paragraph(text), {
+              at: [tx.nodes.children().length],
+            });
           },
-        },
+          owner: () => 'update',
+        }),
       })
     );
 
@@ -116,9 +131,14 @@ describe('editor extension namespaces', () => {
 
     editor.update((tx) => {
       const table = tx as typeof tx & {
-        table: { insertRow(text?: string): void; rowCount(): number };
+        table: {
+          insertRow(text?: string): void;
+          owner(): string;
+          rowCount(): number;
+        };
       };
 
+      assert.equal(table.table.owner(), 'update');
       observedCounts.push(table.table.rowCount());
       table.table.insertRow('three');
       observedCounts.push(table.table.rowCount());
@@ -135,11 +155,7 @@ describe('editor extension namespaces', () => {
     const unextend = editor.extend(
       defineEditorExtension({
         name: 'mentions',
-        state: {
-          mentions() {
-            return { count: () => 1 };
-          },
-        },
+        read: () => ({ count: () => 1 }),
       })
     );
 
@@ -153,63 +169,6 @@ describe('editor extension namespaces', () => {
     assert.equal(
       editor.read((state) => 'mentions' in state),
       false
-    );
-  });
-
-  it('rejects duplicate extension state and tx group names', () => {
-    const editor = createSeededEditor();
-    const first = defineEditorExtension({
-      name: 'first-table',
-      state: { table: () => ({}) },
-    });
-    const second = defineEditorExtension({
-      name: 'second-table',
-      state: { table: () => ({}) },
-    });
-
-    assert.throws(
-      () => editor.extend([first, second]),
-      /state group "table".*conflicts/
-    );
-
-    const txFirst = defineEditorExtension({
-      name: 'first-media',
-      tx: { media: () => ({}) },
-    });
-    const txSecond = defineEditorExtension({
-      name: 'second-media',
-      tx: { media: () => ({}) },
-    });
-
-    assert.throws(
-      () => editor.extend([txFirst, txSecond]),
-      /tx group "media".*conflicts/
-    );
-  });
-
-  it('rejects extension groups that collide with core state or tx groups', () => {
-    const editor = createSeededEditor();
-
-    assert.throws(
-      () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'bad-state',
-            state: { selection: () => ({}) },
-          })
-        ),
-      /state group "selection" is reserved/
-    );
-
-    assert.throws(
-      () =>
-        editor.extend(
-          defineEditorExtension({
-            name: 'bad-tx',
-            tx: { nodes: () => ({}) },
-          })
-        ),
-      /tx group "nodes" is reserved/
     );
   });
 });

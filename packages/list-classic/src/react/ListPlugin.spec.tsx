@@ -1,95 +1,130 @@
-import { renderHook } from '@testing-library/react';
-import * as actualCoreReact from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
+import { createPlateEditor, Plate } from '@platejs/core/react';
+import type { Element } from '@platejs/plite';
+import { KEYS, NODES } from '@platejs/utils';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 
-const useEditorMock = mock();
-const useEditorSelectorMock = mock();
-
-mock.module('@platejs/core/react', () => ({
-  ...actualCoreReact,
-  useEditor: useEditorMock,
-  useEditorSelector: useEditorSelectorMock,
-}));
-
-mock.module('./ListPlugin', () => ({
-  ListPlugin: { key: 'listClassic' },
-}));
+import { ListPlugin, TodoListPlugin } from './ListPlugin';
+import {
+  useListToolbarButton,
+  useListToolbarButtonState,
+} from './useListToolbarButton';
+import {
+  useTodoListElement,
+  useTodoListElementState,
+} from './useTodoListElement';
 
 describe('list-classic hooks', () => {
-  beforeEach(() => {
-    useEditorMock.mockReset();
-    useEditorSelectorMock.mockReset();
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
   it('builds classic list toolbar button props from the current selection', async () => {
-    const { useListToolbarButton, useListToolbarButtonState } = await import(
-      `./useListToolbarButton?test=${Math.random().toString(36).slice(2)}`
-    );
-    const listToggle = mock();
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      plugins: [ListPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+    });
+    const { result } = renderHook(
+      () => {
+        const state = useListToolbarButtonState();
 
-    useEditorSelectorMock.mockImplementation((selector: any) =>
-      selector({
-        read: {
-          selection: () => ({}),
-          nodes: {
-            some: () => true,
-          },
-        },
-        getType: (type: string) => type,
-      })
+        return {
+          ...state,
+          ...useListToolbarButton(state).props,
+        };
+      },
+      {
+        wrapper: ({ children }) => (
+          <Plate editor={editor} suppressInstanceWarning>
+            {children}
+          </Plate>
+        ),
+      }
     );
-    useEditorMock.mockReturnValue({
-      getType: (type: string) =>
-        type === KEYS.ulClassic ? 'custom-bulleted-list' : type,
-      plugin: () => ({
-        update: { toggle: listToggle },
-      }),
+
+    expect(result.current.pressed).toBe(false);
+
+    act(() => {
+      result.current.onClick();
     });
 
-    const { result } = renderHook(() => {
-      const state = useListToolbarButtonState();
-
-      return useListToolbarButton(state);
+    expect(editor.read.children()[0]).toMatchObject({
+      type: editor.plugin(KEYS.ulClassic).type,
     });
-
-    result.current.props.onClick();
-
-    expect(result.current.props.pressed).toBe(true);
-    expect(listToggle).toHaveBeenCalledWith({
-      type: 'custom-bulleted-list',
+    await waitFor(() => {
+      expect(result.current.pressed).toBe(true);
     });
   });
 
-  it('toggles classic todo items by element reference when editable', async () => {
-    const { useTodoListElement, useTodoListElementState } = await import(
-      `./useTodoListElement?test=${Math.random().toString(36).slice(2)}`
+  it('toggles classic todo items by element reference when editable', () => {
+    const initialValue: Element[] = [
+      {
+        checked: false,
+        children: [{ text: 'Task' }],
+        type: NODES.listTodoClassic,
+      },
+    ];
+    const editor = createPlateEditor({
+      initialValue,
+      plugins: [TodoListPlugin],
+    });
+    const element = editor.read.children()[0];
+    const { result } = renderHook(
+      () => {
+        const state = useTodoListElementState({ element });
+
+        return useTodoListElement(state);
+      },
+      {
+        wrapper: ({ children }) => (
+          <Plate editor={editor} suppressInstanceWarning>
+            {children}
+          </Plate>
+        ),
+      }
     );
-    const setNodes = mock();
-    const element = { checked: false, id: 'todo-1' };
-    let readOnly = false;
 
-    useEditorMock.mockReturnValue({
-      read: { view: { isReadOnly: () => readOnly } },
-      update: { nodes: { set: setNodes } },
+    act(() => {
+      result.current.checkboxProps.onCheckedChange(true);
     });
 
-    const { result } = renderHook(() => {
-      const state = useTodoListElementState({ element } as any);
+    expect(editor.read.children()[0]).toMatchObject({ checked: true });
+  });
 
-      return useTodoListElement(state);
+  it('keeps classic todo items unchanged when read-only', () => {
+    const initialValue: Element[] = [
+      {
+        checked: false,
+        children: [{ text: 'Task' }],
+        type: NODES.listTodoClassic,
+      },
+    ];
+    const editor = createPlateEditor({
+      initialValue,
+      plugins: [TodoListPlugin],
+      readOnly: true,
+    });
+    const element = editor.read.children()[0];
+    const { result } = renderHook(
+      () => {
+        const state = useTodoListElementState({ element });
+
+        return useTodoListElement(state);
+      },
+      {
+        wrapper: ({ children }) => (
+          <Plate editor={editor} readOnly suppressInstanceWarning>
+            {children}
+          </Plate>
+        ),
+      }
+    );
+
+    act(() => {
+      result.current.checkboxProps.onCheckedChange(true);
     });
 
-    result.current.checkboxProps.onCheckedChange(true);
-
-    expect(setNodes).toHaveBeenCalledWith({ checked: true }, { at: element });
-
-    readOnly = true;
-    result.current.checkboxProps.onCheckedChange(false);
-
-    expect(setNodes).toHaveBeenCalledTimes(1);
+    expect(editor.read.children()[0]).toMatchObject({ checked: false });
   });
 });

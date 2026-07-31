@@ -1,4 +1,5 @@
-import { defineEditorExtension, DocumentChange } from '@platejs/plite';
+import { DocumentChange } from '@platejs/plite';
+import { DOMEditor } from '@platejs/plite-dom/internal';
 
 import { createBaseEditor } from '../../editor';
 import { DOMPlugin } from './DOMPlugin';
@@ -11,7 +12,9 @@ describe('DOMPlugin', () => {
   });
 
   it('scrolls enabled canonical changes while auto-scrolling is active', () => {
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -20,17 +23,6 @@ describe('DOMPlugin', () => {
       },
       initialValue: value,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
-    );
-
     editor.update((tx) => {
       tx.dom.autoScroll(
         (scrollTx) => {
@@ -45,7 +37,7 @@ describe('DOMPlugin', () => {
     });
 
     expect(scrollSpy).toHaveBeenCalledTimes(2);
-    expect(scrollSpy.mock.calls).toEqual([
+    expect(scrollSpy.mock.calls.map((call) => call.slice(1))).toEqual([
       [
         { offset: 1, path: [0, 0] },
         { block: 'center', scrollMode: 'if-needed' },
@@ -58,7 +50,9 @@ describe('DOMPlugin', () => {
   });
 
   it('skips scrolling when the current change kind is disabled', () => {
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -67,17 +61,6 @@ describe('DOMPlugin', () => {
       },
       initialValue: value,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
-    );
-
     editor.update((tx) => {
       tx.dom.autoScroll(
         (scrollTx) => {
@@ -93,7 +76,9 @@ describe('DOMPlugin', () => {
   });
 
   it('scrolls inserted nodes when structure changes are enabled', () => {
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -102,17 +87,6 @@ describe('DOMPlugin', () => {
       },
       initialValue: value,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
-    );
-
     editor.update((tx) => {
       tx.dom.autoScroll((scrollTx) => {
         scrollTx.nodes.insert(
@@ -122,13 +96,16 @@ describe('DOMPlugin', () => {
       });
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith([1], {
-      scrollMode: 'if-needed',
-    });
+    expect(scrollSpy.mock.calls.at(-1)?.slice(1)).toEqual([
+      [1],
+      { scrollMode: 'if-needed' },
+    ]);
   });
 
   it('scrolls an explicit text target instead of an unrelated selection', () => {
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -140,26 +117,16 @@ describe('DOMPlugin', () => {
         { children: [{ text: '' }], type: 'p' },
       ],
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
-    );
-
     editor.update((tx) => {
       tx.dom.autoScroll((scrollTx) => {
         scrollTx.text.insert('x', { at: { offset: 0, path: [1, 0] } });
       });
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith([1, 0], {
-      scrollMode: 'if-needed',
-    });
+    expect(scrollSpy.mock.calls.at(-1)?.slice(1)).toEqual([
+      [1, 0],
+      { scrollMode: 'if-needed' },
+    ]);
   });
 
   it('scrolls the exact target of a classification-free change', () => {
@@ -176,7 +143,9 @@ describe('DOMPlugin', () => {
     const change = DocumentChange.fromJSON(
       source.read.lastCommit()!.changes.toJSON()
     );
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -185,25 +154,21 @@ describe('DOMPlugin', () => {
       },
       initialValue: twoBlocks,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: { dom: { scrollIntoView: scrollSpy } },
-        name: 'test:scroll-service',
-      })
-    );
-
     expect(change.primaryClassification).toBeNull();
     editor.update((tx) => {
       tx.dom.autoScroll((scrollTx) => scrollTx.changes.apply(change));
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith([1, 0], {
-      scrollMode: 'if-needed',
-    });
+    expect(scrollSpy.mock.calls.at(-1)?.slice(1)).toEqual([
+      [1, 0],
+      { scrollMode: 'if-needed' },
+    ]);
   });
 
   it('passes explicit scroll options through to Plite DOM', () => {
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -212,17 +177,6 @@ describe('DOMPlugin', () => {
       },
       initialValue: value,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
-    );
-
     editor.update((tx) => {
       tx.dom.autoScroll(
         (scrollTx) => {
@@ -234,14 +188,16 @@ describe('DOMPlugin', () => {
       );
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith(
+    expect(scrollSpy.mock.calls.at(-1)?.slice(1)).toEqual([
       { offset: 1, path: [0, 0] },
-      { block: 'end', scrollMode: 'always' }
-    );
+      { block: 'end', scrollMode: 'always' },
+    ]);
   });
 
   it('passes boolean scroll options through to Plite DOM', () => {
-    const scrollSpy = mock((..._args: unknown[]) => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createBaseEditor({
       selection: {
         kind: 'text',
@@ -250,17 +206,6 @@ describe('DOMPlugin', () => {
       },
       initialValue: value,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            scrollIntoView: scrollSpy,
-          },
-        },
-        name: 'test:scroll-service',
-      })
-    );
-
     editor.update((tx) => {
       tx.dom.autoScroll(
         (scrollTx) => {
@@ -272,7 +217,10 @@ describe('DOMPlugin', () => {
       );
     });
 
-    expect(scrollSpy).toHaveBeenCalledWith({ offset: 1, path: [0, 0] }, false);
+    expect(scrollSpy.mock.calls.at(-1)?.slice(1)).toEqual([
+      { offset: 1, path: [0, 0] },
+      false,
+    ]);
   });
 
   it('maps temporary scrolling options and restores them after the callback', () => {
@@ -351,23 +299,12 @@ describe('DOMPlugin', () => {
   });
 
   it('preserves host DOM focus API', () => {
-    const focusSpy = mock(() => {});
+    const focusSpy = spyOn(DOMEditor, 'focus').mockImplementation(() => {});
     const editor = createBaseEditor({
       initialValue: value,
     });
-    editor.extend(
-      defineEditorExtension({
-        api: {
-          dom: {
-            focus: focusSpy,
-          },
-        },
-        name: 'test:host-dom',
-      })
-    );
-
     editor.api.dom.focus({ retries: 1 });
 
-    expect(focusSpy).toHaveBeenCalledWith({ retries: 1 });
+    expect(focusSpy.mock.calls.at(-1)?.slice(1)).toEqual([{ retries: 1 }]);
   });
 });

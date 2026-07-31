@@ -75,7 +75,7 @@ export interface TCodeDrawingElement extends Element {
 
 /** Enables support for PlantUML, Graphviz, Flowchart, and Mermaid drawings. */
 export const BaseCodeDrawingPlugin = createBasePlugin({
-  key: KEYS.codeDrawing,
+  name: KEYS.codeDrawing,
   schema: {
     element: {
       properties: {

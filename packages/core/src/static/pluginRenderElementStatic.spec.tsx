@@ -10,7 +10,7 @@ import { pluginRenderElementStatic } from './pluginRenderElementStatic';
 describe('pluginRenderElementStatic', () => {
   it('applies above/below wrappers and below-root renderers around the element output', () => {
     const ParagraphPlugin = createBasePlugin({
-      key: 'p',
+      name: 'p',
       type: 'p',
       schema: {
         element: { content: schema.content.open({ default: 'text', min: 1 }) },
@@ -18,7 +18,7 @@ describe('pluginRenderElementStatic', () => {
       render: { as: 'article' },
     });
     const AbovePlugin = createBasePlugin({
-      key: 'above',
+      name: 'above',
       render: {
         aboveNodes:
           () =>
@@ -26,7 +26,7 @@ describe('pluginRenderElementStatic', () => {
       },
     });
     const BelowPlugin = createBasePlugin({
-      key: 'below',
+      name: 'below',
       render: {
         belowNodes:
           () =>
@@ -34,7 +34,7 @@ describe('pluginRenderElementStatic', () => {
       },
     });
     const RootPlugin = createBasePlugin({
-      key: 'root-extra',
+      name: 'root-extra',
       render: {
         belowRootNodes: ({ element }) => (
           <aside data-id={element.id} data-role="root" />
@@ -47,7 +47,7 @@ describe('pluginRenderElementStatic', () => {
     const markup = ReactDOMServer.renderToStaticMarkup(
       pluginRenderElementStatic(
         editor,
-        editor.getPlugin(ParagraphPlugin)
+        editor.plugin(ParagraphPlugin).plugin
       )({
         attributes: { 'data-plite-node': 'element' },
         children: 'Body',

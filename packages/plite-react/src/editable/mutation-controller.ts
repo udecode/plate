@@ -7,7 +7,11 @@ import {
   type Range,
   RangeApi,
 } from '@platejs/plite';
-import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
+import {
+  ReactEditor,
+  type ReactRuntimeEditor,
+  toReactRuntimeEditor,
+} from '../plugin/react-editor';
 import {
   createMainRootPliteViewSelection,
   isPliteViewSelectionCollapsed,
@@ -405,11 +409,9 @@ const applyProjectedViewSelectionDataCommand = ({
         });
       } else {
         withProjectedMutationRoot(runtimeEditor, target.start.root, () => {
-          (
-            runtimeEditor.api as unknown as {
-              clipboard: { insertTextData: (data: DataTransfer) => boolean };
-            }
-          ).clipboard.insertTextData(data);
+          toReactRuntimeEditor(runtimeEditor).api.dom.clipboard.insertTextData(
+            data
+          );
         });
       }
     } catch (error) {
@@ -738,11 +740,9 @@ export const applyEditableCommand = ({
         return true;
       }
 
-      return (
-        editor.api as unknown as {
-          clipboard: { insertData: (data: DataTransfer) => boolean };
-        }
-      ).clipboard.insertData(command.data);
+      return toReactRuntimeEditor(editor).api.dom.clipboard.insertData(
+        command.data
+      );
 
     case 'insert-text':
       if (

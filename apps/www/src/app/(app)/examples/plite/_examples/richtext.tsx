@@ -113,12 +113,10 @@ const RichTextSchema = defineEditorSchema({
       )
     ),
   ],
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
 });
 

@@ -1,11 +1,8 @@
 import type {
-  EditorExtension,
+  EditorResolvedInstalledExtensions,
+  InternalEditorExtensionDependencyReference,
+  EditorExtensionReference,
   EditorExtensionInput,
-  EditorExtensionTypeProvider,
-  EditorInstalledApiGroups,
-  EditorInstalledStateGroups,
-  EditorInstalledTxGroups,
-  Value,
 } from '../interfaces/editor';
 import type {
   EditorSchemaExtensionProvider,
@@ -18,23 +15,19 @@ type ExtensionTuple<TInput> = TInput extends readonly unknown[]
   ? TInput
   : readonly [TInput];
 
-type ExtensionGroups<TGroups> =
-  TGroups extends Record<string, unknown> ? TGroups : Record<never, never>;
-
 export type EditorExtensionSlotValue<
   TKey extends string,
   TInput extends EditorExtensionInput,
-> = EditorExtension &
-  EditorSchemaExtensionProvider<SchemaExtensionsOf<TInput>> &
-  EditorExtensionTypeProvider<
-    <V extends Value>() => {
-      api: ExtensionGroups<EditorInstalledApiGroups<ExtensionTuple<TInput>>>;
-      state: ExtensionGroups<
-        EditorInstalledStateGroups<V, ExtensionTuple<TInput>>
-      >;
-      tx: ExtensionGroups<EditorInstalledTxGroups<V, ExtensionTuple<TInput>>>;
-    }
-  > & {
+> = InternalEditorExtensionDependencyReference<
+  Readonly<{
+    direct: Readonly<{ name: `slot:${TKey}` }>;
+    installed: EditorResolvedInstalledExtensions<
+      ExtensionTuple<TInput>
+    >[number];
+  }>
+> &
+  EditorExtensionReference &
+  EditorSchemaExtensionProvider<SchemaExtensionsOf<TInput>> & {
     name: `slot:${TKey}`;
   };
 
@@ -45,7 +38,7 @@ export type EditorExtensionSlot<TKey extends string> = Readonly<{
   ) => EditorExtensionSlotValue<TKey, TInput>;
 }>;
 
-export type InternalEditorExtensionSlotValue = EditorExtension & {
+export type InternalEditorExtensionSlotValue = EditorExtensionReference & {
   readonly [EDITOR_EXTENSION_SLOT_INPUT]?: EditorExtensionInput;
 };
 

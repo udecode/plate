@@ -9,7 +9,7 @@ export const useListToolbarButtonState = ({
   const pressed = useEditorSelector(
     (editor) =>
       !!editor.read.selection() &&
-      editor.read.nodes.some({ match: { type: editor.getType(nodeType) } })
+      editor.read.nodes.some({ match: { type: editor.plugin(nodeType).type } })
   );
 
   return {
@@ -28,7 +28,7 @@ export const useListToolbarButton = (
       pressed: state.pressed,
       onClick: () => {
         editor.plugin(ListPlugin).update.toggle({
-          type: editor.getType(state.nodeType),
+          type: editor.plugin(state.nodeType).type,
         });
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {

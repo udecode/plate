@@ -136,7 +136,7 @@ content/docs/(guides)/controlled.cn.mdx:21:或者，您可以使用 `editor.tf.r
 content/docs/(guides)/controlled.cn.mdx:25:您可以使用 `skipInitialization` 延迟编辑器初始化，直到异步数据准备就绪。然后调用 `editor.tf.init` 并传入您的值：
 content/docs/(guides)/controlled.cn.mdx:50:      editor.tf.init({ value: initialValue, autoSelect: 'end' });
 content/docs/(guides)/plugin-shortcuts.cn.mdx:34:    editor.tf.normalize({ force: true });
-content/docs/(guides)/plugin-shortcuts.cn.mdx:112:其他插件，如 `CodePlugin`、`StrikethroughPlugin` 等，提供可以轻松链接到快捷键的 transform（例如，`toggle` 快捷键将链接到 `editor.tf.<pluginKey>.toggle()`），但您需要为它们明确定义快捷键 `keys`。
+content/docs/(guides)/plugin-shortcuts.cn.mdx:112:其他插件，如 `CodePlugin`、`StrikethroughPlugin` 等，提供可以轻松链接到快捷键的 transform（例如，`toggle` 快捷键将链接到 `editor.tf.<pluginName>.toggle()`），但您需要为它们明确定义快捷键 `keys`。
 content/docs/(guides)/plugin-shortcuts.cn.mdx:127:  // 假设存在 transform 如 editor.tf.myFormatting.applyHeader
 content/docs/(guides)/plugin-shortcuts.cn.mdx:128:  // 和 editor.tf.myFormatting.applyCodeStyle。
 content/docs/api/core/plate-editor.cn.mdx:73:  <APIItem name="getPluginApi" type="(plugin: PlatePlugin) => PlateEditor['api'] & PlatePlugin['api']">

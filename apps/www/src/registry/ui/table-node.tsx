@@ -639,7 +639,7 @@ export const TableElement = withHOC(
       (colSizes?.length ?? 0) * (props.element.children?.length ?? 0) >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
     const tablePath = useElementSelector(([, path]) => path, {
-      key: KEYS.table,
+      name: KEYS.table,
     });
     const tableRef = React.useRef<HTMLTableElement>(null);
     const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -1226,12 +1226,12 @@ export function TableRowElement({
   const { element } = props;
   const readOnly = useEditorReadOnly();
   const rowIndex = useElementSelector(([, path]) => path.at(-1) as number, {
-    key: KEYS.tr,
+    name: KEYS.tr,
   });
   const rowSize = useElementSelector(
     ([node]) => (node as TTableRowElement).size,
     {
-      key: KEYS.tr,
+      name: KEYS.tr,
     }
   );
   const rowSizeOverrides = useTableValue('rowSizeOverrides');
@@ -1371,10 +1371,10 @@ export function TableCellElement({
   const element = props.element;
 
   const tableId = useElementSelector(([node]) => node.id as string, {
-    key: KEYS.table,
+    name: KEYS.table,
   });
   const rowId = useElementSelector(([node]) => node.id as string, {
-    key: KEYS.tr,
+    name: KEYS.tr,
   });
   const isSelectingTable = useBlockSelected(tableId);
   const isSelectingRow = useBlockSelected(rowId) || isSelectingTable;

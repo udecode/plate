@@ -14,7 +14,7 @@ type ExitBreakOptions = {
  * Inserts an exit block before or after the current block structure.
  */
 export const ExitBreakPlugin = createBasePlugin({
-  key: KEYS.exitBreak,
+  name: KEYS.exitBreak,
 
   editOnly: true,
   update: ({ editor, tx }) => {
@@ -27,7 +27,7 @@ export const ExitBreakPlugin = createBasePlugin({
 
       if (!block) return;
 
-      const paragraphType = editor.getType(KEYS.p);
+      const paragraphType = editor.plugin(KEYS.p).type;
 
       const target = tx.nodes.above({
         at: block[1],

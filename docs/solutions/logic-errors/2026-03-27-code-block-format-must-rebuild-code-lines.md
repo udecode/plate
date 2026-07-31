@@ -47,7 +47,7 @@ export const setCodeBlockContent = (
   tx.nodes.replaceChildren(
     code.split('\n').map((line) => ({
       children: [{ text: line }],
-      type: editor.getType(KEYS.codeLine),
+      type: editor.plugin(KEYS.codeLine).type,
     })),
     {
       at: element,

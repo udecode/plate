@@ -3,12 +3,10 @@ import { createBasePlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
 const SamplePlugin = createBasePlugin({
-  key: 'sample',
-  extension: {
-    api: {
-      sampleMethod: () => {},
-    },
-  },
+  api: () => ({
+    sampleMethod: () => {},
+  }),
+  name: 'sample',
 });
 
 describe('DebugPlugin', () => {
@@ -37,7 +35,7 @@ describe('DebugPlugin', () => {
     expect(typeof editor.plugin(DebugPlugin).api.error).toBe('function');
     expect(typeof editor.plugin(DebugPlugin).api.info).toBe('function');
     expect(typeof editor.plugin(DebugPlugin).api.warn).toBe('function');
-    expect(typeof editor.api.sampleMethod).toBe('function');
+    expect(typeof editor.api.sample.sampleMethod).toBe('function');
 
     editor.plugin(DebugPlugin).api.log('Test message', 'TEST');
 

@@ -30,7 +30,7 @@ const concepts = Object.freeze({
   'PL-13': 'extension configuration and atomic publication',
   'PL-14': 'typed extension API, state, and transaction groups',
   'PL-15': 'typed command descriptors and dispatch',
-  'PL-16': 'query middleware',
+  'PL-16': 'typed editor reads and descriptor-owned read middleware',
   'PL-17': 'facets and dependency-aware derived state',
   'PL-18': 'state fields, effects, annotations, and value codecs',
   'PL-19': 'commits, lazy impact queries, and subscriptions',
@@ -148,7 +148,8 @@ const inferTestConcepts = (relative, set) => {
     add(set, 'PL-05', 'PL-06', 'PL-12');
   }
   if (/command/.test(lower)) add(set, 'PL-15');
-  if (/query/.test(lower)) add(set, 'PL-02', 'PL-16');
+  if (/query|editor-read|read-(?:definition|registry)/.test(lower))
+    add(set, 'PL-02', 'PL-16');
   if (/facet/.test(lower)) add(set, 'PL-17');
   if (/effect|field|annotation|codec/.test(lower)) add(set, 'PL-18');
   if (/commit|subscription|selector|render/.test(lower)) add(set, 'PL-19');
@@ -258,7 +259,8 @@ const inferConcepts = (relative) => {
     if (/representation|correction|normaliz/.test(lower)) add(set, 'PL-12');
     if (/extension/.test(lower)) add(set, 'PL-13', 'PL-14');
     if (/command/.test(lower)) add(set, 'PL-15');
-    if (/query-middleware/.test(lower)) add(set, 'PL-16');
+    if (/query-middleware|editor-read|read-(?:definition|registry)/.test(lower))
+      add(set, 'PL-16');
     if (/facet/.test(lower)) add(set, 'PL-17');
     if (/effect|field|codec|transaction-values/.test(lower)) add(set, 'PL-18');
     if (/commit|subscription|change-impact/.test(lower)) add(set, 'PL-19');

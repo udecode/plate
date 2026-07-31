@@ -44,14 +44,14 @@ test('names CI-owned generated output excluded from source adoption proof', () =
 
 test('rejects every deleted Plate schema authoring shape', () => {
   for (const source of [
-    `createBasePlugin({ key: 'p', node: { element: true } })`,
+    `createBasePlugin({ name: 'p', node: { element: true } })`,
     `ParagraphPlugin.configure({ node: { type: 'p' } })`,
-    `createBasePlugin({ key: 'p', node: { component: Paragraph } })`,
-    `createBasePlugin({ key: 'p', schema: { mark: true } })`,
-    `const schemaKey = 'schema'; createBasePlugin({ key: 'p', [schemaKey]: { mark: true } })`,
-    `let schemaKey; schemaKey = 'schema'; createBasePlugin({ key: 'p', [schemaKey]: { element: {} } })`,
-    `const schemaKey = 'schema'; function helper() { const schemaKey = 'notSchema'; return schemaKey } createBasePlugin({ key: 'p', [schemaKey]: { element: {} } })`,
-    `createBasePlugin({ key: 'p', schema: () => ({ mark: true }) })`,
+    `createBasePlugin({ name: 'p', node: { component: Paragraph } })`,
+    `createBasePlugin({ name: 'p', schema: { mark: true } })`,
+    `const schemaKey = 'schema'; createBasePlugin({ name: 'p', [schemaKey]: { mark: true } })`,
+    `let schemaKey; schemaKey = 'schema'; createBasePlugin({ name: 'p', [schemaKey]: { element: {} } })`,
+    `const schemaKey = 'schema'; function helper() { const schemaKey = 'notSchema'; return schemaKey } createBasePlugin({ name: 'p', [schemaKey]: { element: {} } })`,
+    `createBasePlugin({ name: 'p', schema: () => ({ mark: true }) })`,
     `schema.contribution({ elements: {} })`,
     `schema.element({ content: schema.content.text() })`,
     `schema.group({ name: 'flow' })`,
@@ -63,34 +63,34 @@ test('rejects every deleted Plate schema authoring shape', () => {
     `const name = 'plate:plugin-schema:paragraph'`,
     `const group = 'plate:block-content'`,
     'const group = `plate:block-content`',
-    `createBasePlugin({ key: 'p', schema: ({ editor }) => ({ editor }) })`,
-    `createBasePlugin({ config: { schemes: ['https'] }, key: 'link' })`,
-    `const configKey = 'config'; createPlatePlugin({ [configKey]: {}, key: 'link' })`,
+    `createBasePlugin({ name: 'p', schema: ({ editor }) => ({ editor }) })`,
+    `createBasePlugin({ config: { schemes: ['https'] }, name: 'link' })`,
+    `const configKey = 'config'; createPlatePlugin({ [configKey]: {}, name: 'link' })`,
     `ParagraphPlugin.configure({ config: { topLevel: true } })`,
-    `createBasePlugin({ key: 'p', schema: { element: { groups: ['block'] } } })`,
-    `createBasePlugin({ key: 'p', schema: { element: {} } })`,
-    `createBasePlugin({ key: 'link', schema: { element: { inline: true } } })`,
+    `createBasePlugin({ name: 'p', schema: { element: { groups: ['block'] } } })`,
+    `createBasePlugin({ name: 'p', schema: { element: {} } })`,
+    `createBasePlugin({ name: 'link', schema: { element: { inline: true } } })`,
     `defineEditorExtension({ name: 'paragraph', schema: { elements: { paragraph: {} } } })`,
     `defineEditorSchema({ id: 'app', version: 1, elements: { paragraph: {} } })`,
     `const elementsKey = 'elements'; defineEditorSchema({ id: 'app', version: 1, [elementsKey]: { paragraph: {} } })`,
     `const schemaKey = 'schema'; const elementsKey = 'elements'; defineEditorExtension({ name: 'paragraph', [schemaKey]: { [elementsKey]: { paragraph: {} } } })`,
-    `createBasePlugin<ParagraphConfig>({ key: 'p', schema: { element: { content: schema.content.text() } } })`,
-    `createPlatePlugin<LinkConfig>({ key: 'link', schema: { element: { content: schema.content.text(), inline: true } } })`,
-    `createBasePlugin({ key: 'p', schema: { element: { content: schema.content.type(KEYS.p) } } })`,
-    `IndentPlugin.configure({ initialState: { targetPluginKeys: ['p'] } })`,
+    `createBasePlugin<ParagraphConfig>({ name: 'p', schema: { element: { content: schema.content.text() } } })`,
+    `createPlatePlugin<LinkConfig>({ name: 'link', schema: { element: { content: schema.content.text(), inline: true } } })`,
+    `createBasePlugin({ name: 'p', schema: { element: { content: schema.content.type(KEYS.p) } } })`,
+    `IndentPlugin.configure({ initialState: { targetPluginNames: ['p'] } })`,
     `ParagraphPlugin.configure(() => ({ schema: { element: {} } }))`,
     `ParagraphPlugin.configure(() => { return { type: 'other' } })`,
     `const badRuntimeConfig = { schema: { element: {} } }; ParagraphPlugin.configure(() => badRuntimeConfig)`,
-    `// @ts-expect-error deleted shape\ncreateBasePlugin({ key: 'p', node: { element: true } })`,
-    `// @ts-expect-error deleted shape\ncreateBasePlugin({ key: 'p', schema: { mark: true } })`,
+    `// @ts-expect-error deleted shape\ncreateBasePlugin({ name: 'p', node: { element: true } })`,
+    `// @ts-expect-error deleted shape\ncreateBasePlugin({ name: 'p', schema: { mark: true } })`,
     `node.element`,
     `node.mark`,
     `plugin.node.element`,
     `plugin.node.mark`,
     `node.component`,
     `plugin.node.component`,
-    `createBasePlugin({ key: 'p', render: { node: ParagraphElement } })`,
-    `createPlatePlugin({ key: 'p' }).extend({ render: { node: ParagraphElement } })`,
+    `createBasePlugin({ name: 'p', render: { node: ParagraphElement } })`,
+    `createPlatePlugin({ name: 'p' }).extend({ render: { node: ParagraphElement } })`,
     `ParagraphPlugin.configure({ render: { node: ParagraphElement } })`,
     `toPlatePlugin(BaseParagraphPlugin, { render: { node: ParagraphElement } })`,
     `state.schema.getElementProperty(element, 'colSpan')`,
@@ -112,6 +112,7 @@ test('allows the private block-content group only in its compiler owner', () => 
 
 test('rejects deleted plugin builders while allowing the foreign Zustand selector method', () => {
   for (const method of [
+    'clone',
     'extendApi',
     'extendCodecs',
     'extendEditorApi',
@@ -142,6 +143,7 @@ test('rejects deleted plugin builders while allowing the foreign Zustand selecto
     ),
     []
   );
+  assert.deepEqual(auditPlateSchemaSource(`request.nextUrl.clone()`), []);
 
   for (const source of [
     `Plugin.extendApi?.(() => ({}))`,
@@ -154,40 +156,20 @@ test('rejects deleted plugin builders while allowing the foreign Zustand selecto
 
 test('accepts the full independent plugin declaration vocabulary in constructors', () => {
   for (const source of [
-    `createBasePlugin({ api: {}, extension: {}, handlers: {}, key: 'p', read: {}, render: { leaf: Leaf }, selectors: {}, update: () => ({}) })`,
-    `createPlatePlugin({ component: ParagraphElement, handlers: {}, key: 'p' })`,
-    `createBasePlugin({ key: 'p', ...behavior })`,
+    `createBasePlugin({ api: () => ({}), commands: () => [], component: ParagraphElement, name: 'p', on: {}, read: () => ({}), readMiddleware: () => [], render: { leaf: Leaf }, selectors: {}, update: () => ({}) })`,
+    `createPlatePlugin({ component: ParagraphElement, name: 'p', on: {} })`,
+    `createBasePlugin({ name: 'p', ...behavior })`,
+    `const componentKey = 'component'; createBasePlugin({ [componentKey]: ParagraphElement, name: 'p' })`,
+    `const createPlugin = createBasePlugin; createPlugin({ component: ParagraphElement, name: 'p' })`,
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source), []);
   }
 
   assert.match(
-    auditPlateSchemaSource(
-      `createBasePlugin({ component: ParagraphElement, key: 'p' })`
-    )[0]?.reason ?? '',
-    /stays renderer-neutral/
-  );
-
-  assert.match(
-    auditPlateSchemaSource(
-      `const componentKey = 'component'; createBasePlugin({ [componentKey]: ParagraphElement, key: 'p' })`
-    )[0]?.reason ?? '',
-    /stays renderer-neutral/
-  );
-
-  assert.match(
-    auditPlateSchemaSource(`
-      const createPlugin = createBasePlugin;
-      createPlugin({ component: ParagraphElement, key: 'p' });
-    `)[0]?.reason ?? '',
-    /stays renderer-neutral/
-  );
-
-  assert.match(
     auditPlateSchemaSource(`
       Core.createBasePlugin({
         codecs: { 'text/html': rule },
-        key: 'p',
+        name: 'p',
       });
     `)[0]?.reason ?? '',
     /context-bound defineCodecs/
@@ -195,17 +177,727 @@ test('accepts the full independent plugin declaration vocabulary in constructors
 
   assert.deepEqual(
     auditPlateSchemaSource(
-      `(createBasePlugin as any)({ codecs: {}, key: 'negative' })`,
-      'packages/core/src/lib/plugin/createBasePlugin.spec.ts'
+      `(createBasePlugin as any)({ codecs: {}, name: 'negative' })`,
+      'packages/core/src/lib/plugin/other.spec.ts'
     ),
     []
   );
 });
 
+test('rejects deleted Plate and Plite definition fields', () => {
+  const plateIssues = auditPlateSchemaSource(
+    `createBasePlugin({
+      clipboard: {},
+      config: {},
+      extension: {},
+      handlers: {},
+      name: 'p',
+      pluginApi: {},
+      targetPluginKeys: [],
+      tx: {},
+      validateConfiguration() {},
+    })`
+  );
+
+  assert.equal(
+    plateIssues.filter((issue) =>
+      issue.reason.includes('deleted Plate plugin definition field')
+    ).length,
+    8
+  );
+
+  for (const source of [
+    `Plugin.extend(() => ({ extension: {} }))`,
+    `Plugin.configure({ handlers: {} })`,
+  ]) {
+    assert.match(
+      auditPlateSchemaSource(source)[0]?.reason ?? '',
+      /deleted Plate plugin definition field/
+    );
+  }
+
+  const pliteIssues = auditPlateSchemaSource(
+    `defineEditorExtension({
+      config: {},
+      name: 'raw',
+      state: {},
+      tx: {},
+      validateConfiguration() {},
+    })`
+  );
+
+  assert.equal(
+    pliteIssues.filter((issue) =>
+      issue.reason.includes('deleted Plite extension definition field')
+    ).length,
+    4
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `defineEditorExtension<Editor>()({ name: 'typed' })`
+    )[0]?.reason ?? '',
+    /infers one definition/
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `createBasePlugin<Definition>({ name: 'typedPlate' })`
+    )[0]?.reason ?? '',
+    /infer one definition/
+  );
+  assert.match(
+    auditPlateSchemaSource(`editor.getApi(RawExtension).run()`)[0]?.reason ??
+      '',
+    /editor.extension\(Extension\)\.api/
+  );
+});
+
+test('rejects the deleted root editor tx channel in test fixtures', () => {
+  for (const source of [
+    `editor.tx.footnote.focusDefinition({ identifier: '1' })`,
+    `editor.tx?.footnote.focusDefinition({ identifier: '1' })`,
+  ]) {
+    assert.match(
+      auditPlateSchemaSource(
+        source,
+        'apps/www/src/registry/ui/footnote-node.slow.tsx'
+      )[0]?.reason ?? '',
+      /root editor\.update channel/
+    );
+  }
+  expectAccepted(`editor.update.footnote.focusDefinition({ identifier: '1' })`);
+});
+
+test('requires prefixless on listeners only inside resolved plugin declarations', () => {
+  const issues = auditPlateSchemaSource(`
+    const legacy = { onKeyDown() {}, onNodeChange() {} };
+    const on = { onPasteCapture() {}, onTextChange() {} };
+    createPlatePlugin({ name: 'plate', on: { ...legacy } });
+    createBasePlugin({ name: 'base', on });
+    defineEditorExtension({ name: 'plite', on: { onKeyDown() {} } });
+  `);
+
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('listeners are prefixless'))
+      .length,
+    5
+  );
+  expectAccepted(`
+    createPlatePlugin({
+      name: 'current',
+      on: {
+        domBeforeInput() {},
+        keyDown() {},
+        nodeChange() {},
+        pasteCapture() {},
+        textChange() {},
+      },
+    });
+    const editableProps = { onKeyDown() {}, onPasteCapture() {} };
+  `);
+});
+
+test('recognizes aliased and namespace Plite extension factories', () => {
+  const issues = auditPlateSchemaSource(`
+    const directAlias = defineEditorExtension;
+    directAlias({ config: {}, name: 'a' });
+    import { defineEditorExtension as importedAlias } from '@platejs/plite';
+    importedAlias({ name: 'b', state: {} });
+    const { defineEditorExtension: destructuredAlias } = Plite;
+    destructuredAlias({ name: 'c', tx: {} });
+    Plite.defineEditorExtension({
+      name: 'd',
+      validateConfiguration() {},
+    });
+    directAlias<Definition>({ name: 'typed' });
+    importedAlias({
+      api: (editor, context) => ({ editor, context }),
+      name: 'arity',
+      read: {},
+    });
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('deleted Plite extension definition field')
+    ).length,
+    4
+  );
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('infers one definition'))
+      .length,
+    1
+  );
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('must be declared as a factory')
+    ).length,
+    1
+  );
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('receives one context object')
+    ).length,
+    1
+  );
+});
+
+test('resolves local objects, spreads, and returned objects before auditing author fields', () => {
+  const issues = auditPlateSchemaSource(`
+    const definition = { extension: {}, name: 'base' };
+    createBasePlugin(definition);
+    const stale = { handlers: {} };
+    createPlatePlugin({ name: 'plate', ...stale });
+    const staleStage = { pluginApi: {} };
+    Plugin.extend(() => ({ ...staleStage }));
+    const on = { onPaste() {} };
+    Plugin.configure({ on });
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('deleted Plate plugin definition field')
+    ).length,
+    3
+  );
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('listeners are prefixless'))
+      .length,
+    1
+  );
+  expectAccepted(`
+    const unknown = getRuntimeDefinition();
+    createBasePlugin({ name: 'base', ...unknown });
+  `);
+});
+
+test('rejects config only in final Plite callback contexts', () => {
+  const issues = auditPlateSchemaSource(`
+    defineEditorExtension({
+      name: 'contexts',
+      schema: ({ config }) => ({}),
+      api: ({ config }) => ({}),
+      activate(editor, { config }) {},
+      validate({ config }) {},
+    });
+    const config = {};
+    const runtime = ({ config }) => config;
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes(
+        'schema/API/activation/validation contexts have no config'
+      )
+    ).length,
+    4
+  );
+});
+
+test('allows only the exact marked Plite config negative contract', () => {
+  const file = 'packages/plite/test/generic-extension-contract.ts';
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `
+        defineEditorExtension({
+          name: 'bad-validation-config',
+          // @ts-expect-error Plite extensions validate the candidate context, not Plate config
+          validate: ({ config }) => {
+            void config;
+          },
+        });
+      `,
+      file
+    ),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `
+        defineEditorExtension({
+          name: 'bad-validation-config',
+          validate: ({ config }) => {
+            void config;
+          },
+        });
+      `,
+      file
+    )[0]?.reason ?? '',
+    /contexts have no config/
+  );
+});
+
+test('rejects stale names only in capability factory contexts', () => {
+  const issues = auditPlateSchemaSource(`
+    createBasePlugin({
+      name: 'legacy',
+      read: ({ editorReads }) => ({ value: () => editorReads.value() }),
+      update: ({ editorTransforms }) => ({ run: editorTransforms.run }),
+    });
+    const inspect = ({ editorReads, editorTransforms }) => ({
+      editorReads,
+      editorTransforms,
+    });
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('stale read factory context binding editorReads')
+    ).length,
+    1
+  );
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes(
+        'stale update factory context binding editorTransforms'
+      )
+    ).length,
+    1
+  );
+});
+
+test('rejects only proven API root merges', () => {
+  assert.match(
+    auditPlateSchemaSource(`Object.assign(editor.api, extensionApi);`)[0]
+      ?.reason ?? '',
+    /project through editor\.api\.<name>/
+  );
+  assert.match(
+    auditPlateSchemaSource(`editor.api.clipboard.insertData(data);`)[0]
+      ?.reason ?? '',
+    /editor\.api\.dom\.clipboard/
+  );
+  expectAccepted(`
+    editor.api.block.insert();
+    editor.api.dom.clipboard.insertData(data);
+    editor.api.string();
+    editor.api.undo();
+    Object.assign(editor, attributes);
+    service.getApi();
+  `);
+});
+
+test('rejects the deleted parallel plugin generic machine', () => {
+  const issues = auditPlateSchemaSource(
+    `
+      type A = AnyPluginConfig;
+      type B = BasePluginExtensionContract;
+      type C = EffectiveExtensionContractField;
+      type D = EffectivePlateContractField;
+      type E = InferConfig;
+      type F = PluginConfig;
+      type G = TPlatePluginConfig;
+      type H = UnifiedRuntimeBasePluginConfig;
+      type I = UnifiedRuntimePlatePluginConfig;
+      plugin.__config;
+      plugin.pluginApi;
+    `,
+    'packages/example/src/plugin-contract.ts'
+  );
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('deleted Plate plugin contract symbol')
+    ).length,
+    11
+  );
+  expectAccepted(`
+    type PluginConfig = { enabled: boolean };
+    const pluginApi = createRuntimeApi();
+    const PluginConfig = Symbol('domain-config');
+    editor.api.pluginApi.run();
+  `);
+});
+
+test('names DefinitionOf aliases after the extracted definition', () => {
+  const issues = auditPlateSchemaSource(
+    `
+      type MediaConfig = DefinitionOf<typeof MediaPlugin>;
+      type Media = DefinitionOf<typeof MediaPlugin>;
+      type MediaPluginDefinition = DefinitionOf<typeof MediaPlugin>;
+      type MediaDefinition = DefinitionOf<typeof MediaPlugin>;
+      type RuntimeConfig = { enabled: boolean };
+    `,
+    'packages/example/src/plugin-contract.ts'
+  );
+
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('use FooDefinition')).length,
+    3
+  );
+  expectAccepted(`
+    type MediaApi = Pick<DefinitionOf<typeof MediaPlugin>, 'api'>;
+    type CorePluginDefinition = DefinitionOf<CorePlugins[number]>;
+    type WrappedMedia = Readonly<DefinitionOf<typeof MediaPlugin>>;
+  `);
+});
+
+test('rejects explicit descriptor annotations on exported package plugins', () => {
+  const issues = auditPlateSchemaSource(
+    `
+      type ExamplePluginDefinition = Readonly<{
+        name: 'example';
+      }>;
+
+      const examplePlugin = createBasePlugin({ name: 'example' });
+
+      export const ExamplePlugin: BasePlugin<ExamplePluginDefinition> =
+        examplePlugin;
+    `,
+    'packages/example/src/ExamplePlugin.ts'
+  );
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('infer their exact descriptor')
+    ).length,
+    1
+  );
+});
+
+test('rejects static plugin API references in current docs and release prose', () => {
+  for (const file of ['.changeset/docx.md', 'content/docs/plugins/docx.mdx']) {
+    assert.match(
+      auditNamedSchemaLineageDocument(
+        'Use `DocxIOPlugin.api.import` for DOCX input.',
+        file
+      )[0]?.reason ?? '',
+      /installed editor portal/
+    );
+  }
+  assert.deepEqual(
+    auditNamedSchemaLineageDocument(
+      'Use `editor.plugin(DocxIOPlugin).api.import` for DOCX input.',
+      '.changeset/docx.md'
+    ),
+    []
+  );
+});
+
+test('keeps Base component docs native and terminal conversion-free', () => {
+  for (const file of [
+    '.changeset/base-component.md',
+    'content/docs/plugins/base-component.mdx',
+  ]) {
+    assert.deepEqual(
+      auditNamedSchemaLineageDocument(
+        '`BaseParagraphPlugin.configure({ component: ParagraphStatic })`',
+        file
+      ),
+      []
+    );
+    assert.deepEqual(
+      auditNamedSchemaLineageDocument(
+        '`createBasePlugin({ component: ParagraphStatic, name: "p" })`',
+        file
+      ),
+      []
+    );
+    assert.deepEqual(
+      auditNamedSchemaLineageDocument(
+        '`toPlatePlugin(BaseParagraphPlugin, { component: ParagraphElement })`',
+        file
+      ),
+      []
+    );
+    assert.match(
+      auditNamedSchemaLineageDocument(
+        '`toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement })`',
+        file
+      )[0]?.reason ?? '',
+      /terminal consumers configure the Base descriptor directly/
+    );
+    assert.match(
+      auditNamedSchemaLineageDocument(
+        '`BaseParagraphPlugin.extend({ component: ParagraphStatic })`',
+        file
+      )[0]?.reason ?? '',
+      /\.extend\(\) cannot define component/
+    );
+    assert.match(
+      auditNamedSchemaLineageDocument(
+        '`basic-blocks-base-kit` adds `toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })`.',
+        file
+      )[0]?.reason ?? '',
+      /terminal consumers configure the Base descriptor directly/
+    );
+  }
+
+  assert.match(
+    auditNamedSchemaLineageDocument(
+      [
+        '```tsx',
+        "import { createStaticEditor } from 'platejs/static';",
+        "import { toPlatePlugin } from 'platejs/react';",
+        'createStaticEditor({',
+        '  plugins: [toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic })],',
+        '});',
+        '```',
+      ].join('\n')
+    )[0]?.reason ?? '',
+    /terminal consumers configure the Base descriptor directly/
+  );
+});
+
+test('keeps Plite dependency requirements behind one public extension generic', () => {
+  assert.match(
+    auditPlateSchemaSource(
+      `type Bad = EditorExtension<ExampleDefinition, readonly [Dependency]>;`
+    )[0]?.reason ?? '',
+    /one public Definition generic/
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`type Good = EditorExtension<ExampleDefinition>;`),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `type Leaked = typeof editorExtensionDefinition;`,
+      'packages/example/src/types.ts'
+    )[0]?.reason ?? '',
+    /private Plite definition witness leaked/
+  );
+});
+
+test('keeps root dependency references shallow and internal carriers internal', () => {
+  const genericIssue = auditPlateSchemaSource(
+    `type Bad = EditorExtensionDependencyReference<Capability>;`
+  )[0];
+
+  assert.match(genericIssue?.reason ?? '', /shallow non-generic root identity/);
+  assert.deepEqual(
+    auditPlateSchemaSource(`type Good = EditorExtensionDependencyReference;`),
+    []
+  );
+
+  const rootImportIssues = auditPlateSchemaSource(`
+    import type {
+      EditorExtensionDependencyReferenceFor,
+      EditorExtensionTypeLambda,
+      InternalEditorExtensionDependencyReference,
+      InternalEditorExtensionTypeProviderOf,
+    } from '@platejs/plite';
+  `);
+
+  assert.equal(
+    rootImportIssues.filter((issue) =>
+      issue.reason.includes('internal dependency typing')
+    ).length,
+    4
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`
+      import type {
+        EditorExtensionDependencyReferenceFor,
+        EditorExtensionTypeLambda,
+        InternalEditorExtensionDependencyReference,
+        InternalEditorExtensionTypeProviderOf,
+      } from '@platejs/plite/internal';
+    `),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `export type { InternalEditorExtensionTypeProviderOf } from './interfaces/editor';`,
+      'packages/plite/src/index.ts'
+    )[0]?.reason ?? '',
+    /cannot be root-exported/
+  );
+});
+
+test('keeps Core author-to-canonical carriers internal', () => {
+  const issues = auditPlateSchemaSource(`
+    import type {
+      InternalDefinitionOf,
+      InternalPluginDefinitionOf,
+      PluginDefinitionCarrier,
+      StaticEditorExtensionTypeLambda,
+    } from '@platejs/core';
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('internal Core author-to-canonical carrier')
+    ).length,
+    4
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(`
+      import type { PluginReference, DefinitionOf } from '@platejs/core';
+    `),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `export type { PluginDefinitionCarrier } from './lib/plugin/pluginDefinitionCarrier.internal';`,
+      'packages/core/src/index.ts'
+    )[0]?.reason ?? '',
+    /cannot be root-exported/
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `export type { InternalPluginDefinitionOf } from '../lib/plugin/pluginDefinitionLookup.internal';`,
+      'packages/core/src/internal/index.ts'
+    )[0]?.reason ?? '',
+    /DefinitionOf is the sole public extractor/
+  );
+});
+
+test('keeps Core compiler aliases in internal modules', () => {
+  const issues = auditPlateSchemaSource(`
+    import type {
+      LowerBasePlugin,
+      NormalizeBasePluginInput,
+      NormalizePlatePluginInput,
+    } from '@platejs/core';
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('internal Core compiler typing')
+    ).length,
+    3
+  );
+
+  for (const [source, file] of [
+    [
+      `export type LowerBasePlugin<C> = C;`,
+      'packages/core/src/lib/plugin/BasePlugin.ts',
+    ],
+    [
+      `export type NormalizePlatePluginInput<C> = C;`,
+      'packages/core/src/react/plugin/PlatePlugin.ts',
+    ],
+    [
+      `export type { NormalizeBasePluginInput } from './basePluginCompiler.internal';`,
+      'packages/core/src/lib/plugin/index.ts',
+    ],
+    [
+      `export * from './basePluginCompiler.internal';`,
+      'packages/core/src/lib/plugin/index.ts',
+    ],
+  ]) {
+    assert.notEqual(auditPlateSchemaSource(source, file).length, 0, file);
+  }
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `export type LowerBasePlugin<C> = C;`,
+      'packages/core/src/lib/plugin/basePluginCompiler.internal.ts'
+    ),
+    []
+  );
+});
+
+test('requires the exact react({ dom }) factory input', () => {
+  const issues = auditPlateSchemaSource(`
+    import * as PliteReact from '@platejs/plite-react';
+    import { react as installReact } from '@platejs/plite-react';
+    const alias = installReact;
+    const namespaceAlias = PliteReact;
+    installReact();
+    alias({ dom: DOMExtension, readOnly: true });
+    namespaceAlias.react({ dom: DOMExtension, clipboardFormatKey: 'x' });
+    PliteReact.react(options);
+    PliteReact.react({ ...unknownOptions, dom: DOMExtension });
+  `);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('exactly one { dom } object')
+    ).length,
+    5
+  );
+  expectAccepted(`
+    import * as PliteReact from '@platejs/plite-react';
+    import { react as installReact } from '@platejs/plite-react';
+    const shared = { dom: DOMExtension };
+    const options = { dom: DOMExtension };
+    installReact({ dom: DOMExtension });
+    PliteReact.react(options);
+    PliteReact.react({ ...shared });
+  `);
+});
+
+test('allows only the exact marked React factory negative contracts', () => {
+  const file = 'packages/plite-react/test/generic-react-editor-contract.tsx';
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `
+        import { react } from '@platejs/plite-react';
+        // @ts-expect-error react requires an exact DOM descriptor
+        const invalidZeroArgumentReact = react();
+        // @ts-expect-error react does not accept flattened DOM options
+        const invalidFlattenedReact = react({ clipboardFormatKey: 'x-test' });
+      `,
+      file
+    ),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `
+        import { react } from '@platejs/plite-react';
+        const invalidZeroArgumentReact = react();
+        const invalidFlattenedReact = react({ clipboardFormatKey: 'x-test' });
+      `,
+      file
+    )[0]?.reason ?? '',
+    /exactly one \{ dom \} object/
+  );
+});
+
+test('requires API factories and keeps API out of consumer configuration', () => {
+  const rejected = [
+    "createBasePlugin({ api: {}, name: 'base' });",
+    "createPlatePlugin({ api: {}, name: 'react' });",
+    "defineEditorExtension({ api: {}, name: 'raw' });",
+    'Plugin.extend({ api: {} });',
+    'Plugin.configure({ api: () => ({}) });',
+    "createBasePlugin({ name: 'groups', read: {}, update: {} });",
+    "defineEditorExtension({ commands: {}, name: 'middleware', readMiddleware: {} });",
+    "createBasePlugin({ api: (editor, store) => ({ editor, store }), name: 'twoPlateContexts' });",
+    "defineEditorExtension({ api: (editor, context) => ({ editor, context }), name: 'twoPliteContexts' });",
+  ].join('\n');
+  const accepted = [
+    "createBasePlugin({ api: () => ({}), name: 'base', read: () => ({}), update: () => ({}) });",
+    "createPlatePlugin({ api() { return {}; }, name: 'react' });",
+    "defineEditorExtension({ api: ({ editor, getContributions, root }) => ({ editor, getContributions, root }), commands: () => [], name: 'raw', readMiddleware: () => [] });",
+    'Plugin.extend({ api: () => ({}) });',
+  ].join('\n');
+  const issues = auditPlateSchemaSource(rejected);
+
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('api must be declared as a factory')
+    ).length,
+    4
+  );
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('must be declared as a factory')
+    ).length,
+    8
+  );
+  assert.equal(
+    issues.filter((issue) =>
+      issue.reason.includes('receives one context object')
+    ).length,
+    2
+  );
+  assert.equal(
+    issues.filter((issue) => issue.reason.includes('cannot be configured'))
+      .length,
+    1
+  );
+  assert.deepEqual(auditPlateSchemaSource(accepted), []);
+});
+
 test('rejects unaudited direct constructor extend stages', () => {
   assert.match(
     auditPlateSchemaSource(
-      `createBasePlugin({ key: 'example' }).extend(() => ({ api: {} }))`,
+      `createBasePlugin({ name: 'example' }).extend(() => ({ api: () => ({}) }))`,
       'packages/example/src/ExamplePlugin.ts'
     )[0]?.reason ?? '',
     /not an audited constructor-inaccessible shared factory, resolved consumer configuration, or earlier-stage type dependency/
@@ -213,71 +905,91 @@ test('rejects unaudited direct constructor extend stages', () => {
 
   assert.deepEqual(
     auditPlateSchemaSource(
-      `Plugin.extend(() => ({ api: {}, handlers: {} }))`,
+      `Plugin.extend(() => ({ api: () => ({}), on: {} }))`,
       'packages/example/src/ExamplePlugin.ts'
     ),
     []
   );
 });
 
+test('keeps replacement command declarations in one owner factory', () => {
+  const issues = auditPlateSchemaSource(
+    `
+      createBasePlugin({
+        commands: () => [],
+        name: 'example',
+      }).extend({
+        commands: () => [],
+      });
+    `,
+    'packages/example/src/BaseExamplePlugin.ts'
+  );
+
+  assert.match(
+    issues.find((issue) => issue.reason.includes('replacement plugin commands'))
+      ?.reason ?? '',
+    /one ordered owner factory/
+  );
+});
+
 test('rejects unaudited extend stages through local descriptor bindings', () => {
   for (const source of [
     `
-      export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       export const ExamplePlugin = BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       export const ExamplePlugin = BaseExamplePlugin['extend'](() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       const ExamplePluginAlias = BaseExamplePlugin;
       export const ExamplePlugin = ExamplePluginAlias.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
       let BaseExamplePlugin;
-      BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      BaseExamplePlugin = createBasePlugin({ name: 'example' });
       export const ExamplePlugin = BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
       import { createBasePlugin as createPlugin } from '@platejs/core';
-      export const BaseExamplePlugin = createPlugin({ key: 'example' });
+      export const BaseExamplePlugin = createPlugin({ name: 'example' });
       export const ExamplePlugin = BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
       const createPlugin = createBasePlugin;
-      export const ExamplePlugin = createPlugin({ key: 'example' }).extend(
-        () => ({ api: {} })
+      export const ExamplePlugin = createPlugin({ name: 'example' }).extend(
+        () => ({ api: () => ({}) })
       );
     `,
     `
       let createPlugin;
       createPlugin = createBasePlugin;
-      export const ExamplePlugin = createPlugin({ key: 'example' }).extend(
-        () => ({ api: {} })
+      export const ExamplePlugin = createPlugin({ name: 'example' }).extend(
+        () => ({ api: () => ({}) })
       );
     `,
     `
       import * as Core from '@platejs/core';
       export const ExamplePlugin = Core.createBasePlugin({
-        key: 'example',
-      }).extend(() => ({ api: {} }));
+        name: 'example',
+      }).extend(() => ({ api: () => ({}) }));
     `,
     `
       const { createBasePlugin: createPlugin } = Core;
-      export const ExamplePlugin = createPlugin({ key: 'example' }).extend(
-        () => ({ api: {} })
+      export const ExamplePlugin = createPlugin({ name: 'example' }).extend(
+        () => ({ api: () => ({}) })
       );
     `,
   ]) {
@@ -292,9 +1004,9 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
     auditPlateSchemaSource(
       `
         const method = 'extend';
-        export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+        export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
         export const ExamplePlugin = BaseExamplePlugin[method](() => ({
-          api: {},
+          api: () => ({}),
         }));
       `,
       'packages/example/src/ExamplePlugin.ts'
@@ -303,14 +1015,14 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   );
 
   for (const optionalCall of [
-    `BaseExamplePlugin?.extend(() => ({ api: {} }))`,
-    `BaseExamplePlugin.extend?.(() => ({ api: {} }))`,
-    `BaseExamplePlugin?.['extend'](() => ({ api: {} }))`,
+    `BaseExamplePlugin?.extend(() => ({ api: () => ({}) }))`,
+    `BaseExamplePlugin.extend?.(() => ({ api: () => ({}) }))`,
+    `BaseExamplePlugin?.['extend'](() => ({ api: () => ({}) }))`,
   ]) {
     assert.match(
       auditPlateSchemaSource(
         `
-          export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+          export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
           export const ExamplePlugin = ${optionalCall};
         `,
         'packages/example/src/ExamplePlugin.ts'
@@ -322,31 +1034,31 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   for (const extraction of [
     `
       const extractedExtend = BaseExamplePlugin.extend;
-      export const ExamplePlugin = extractedExtend(() => ({ api: {} }));
+      export const ExamplePlugin = extractedExtend(() => ({ api: () => ({}) }));
     `,
     `
       const { extend } = BaseExamplePlugin;
-      export const ExamplePlugin = extend(() => ({ api: {} }));
+      export const ExamplePlugin = extend(() => ({ api: () => ({}) }));
     `,
     `
       const method = 'extend';
       const { [method]: extractedExtend } = BaseExamplePlugin;
-      export const ExamplePlugin = extractedExtend(() => ({ api: {} }));
+      export const ExamplePlugin = extractedExtend(() => ({ api: () => ({}) }));
     `,
     `
-      const { key, ...pluginMethods } = BaseExamplePlugin;
-      export const ExamplePlugin = pluginMethods.extend(() => ({ api: {} }));
+      const { name, ...pluginMethods } = BaseExamplePlugin;
+      export const ExamplePlugin = pluginMethods.extend(() => ({ api: () => ({}) }));
     `,
     `
       let extractedExtend;
       extractedExtend = BaseExamplePlugin['extend'];
-      export const ExamplePlugin = extractedExtend(() => ({ api: {} }));
+      export const ExamplePlugin = extractedExtend(() => ({ api: () => ({}) }));
     `,
   ]) {
     assert.match(
       auditPlateSchemaSource(
         `
-          export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+          export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
           ${extraction}
         `,
         'packages/example/src/ExamplePlugin.ts'
@@ -365,7 +1077,7 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
     assert.match(
       auditPlateSchemaSource(
         `
-          export const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+          export const BaseExamplePlugin = createBasePlugin({ name: 'example' });
           const extractedMethod = BaseExamplePlugin.${method};
           export const ExamplePlugin = extractedMethod();
         `,
@@ -378,9 +1090,9 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   assert.deepEqual(
     auditPlateSchemaSource(
       `
-        export const BaseTagPluginOwner = createBasePlugin({ key: 'tag' });
+        export const BaseTagPluginOwner = createBasePlugin({ name: 'tag' });
         export const BaseTagPlugin = BaseTagPluginOwner.extend(() => ({
-          read: {},
+          read: () => ({}),
         }));
       `,
       'packages/tag/src/lib/BaseTagPlugin.ts'
@@ -391,89 +1103,89 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   for (const source of [
     `
       const owners = {
-        BaseExamplePlugin: createBasePlugin({ key: 'example' }),
+        BaseExamplePlugin: createBasePlugin({ name: 'example' }),
       };
       export const ExamplePlugin = owners.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       const owners = { BaseExamplePlugin };
       export const ExamplePlugin = owners.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       const owners = {};
       owners.BaseExamplePlugin = BaseExamplePlugin;
       export const ExamplePlugin = owners.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       const owners = { BaseExamplePlugin };
       const alias = owners;
       export const ExamplePlugin = alias.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       const owners = { BaseExamplePlugin };
       const { BaseExamplePlugin: alias } = owners;
-      export const ExamplePlugin = alias.extend(() => ({ api: {} }));
+      export const ExamplePlugin = alias.extend(() => ({ api: () => ({}) }));
     `,
     `
-      const owners = [createBasePlugin({ key: 'example' })];
+      const owners = [createBasePlugin({ name: 'example' })];
       const alias = owners;
-      export const ExamplePlugin = alias[0].extend(() => ({ api: {} }));
+      export const ExamplePlugin = alias[0].extend(() => ({ api: () => ({}) }));
     `,
     `
-      const owners = [createBasePlugin({ key: 'example' })];
+      const owners = [createBasePlugin({ name: 'example' })];
       const [BaseExamplePlugin] = owners;
       export const ExamplePlugin = BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      const owners = [OtherPlugin, createBasePlugin({ key: 'example' })];
+      const owners = [OtherPlugin, createBasePlugin({ name: 'example' })];
       const [, ...rest] = owners;
-      export const ExamplePlugin = rest[0].extend(() => ({ api: {} }));
+      export const ExamplePlugin = rest[0].extend(() => ({ api: () => ({}) }));
     `,
     `
       const owners = {
-        nested: { BaseExamplePlugin: createBasePlugin({ key: 'example' }) },
+        nested: { BaseExamplePlugin: createBasePlugin({ name: 'example' }) },
       };
       const { ['nested']: { BaseExamplePlugin = OtherPlugin } } = owners;
       export const ExamplePlugin = BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
-      const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+      const BaseExamplePlugin = createBasePlugin({ name: 'example' });
       const owners = { BaseExamplePlugin };
       const aliases = { ...owners };
       export const ExamplePlugin = aliases.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
       const owners = flag
-        ? { BaseExamplePlugin: createBasePlugin({ key: 'example' }) }
+        ? { BaseExamplePlugin: createBasePlugin({ name: 'example' }) }
         : {};
       export const ExamplePlugin = owners.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
     `
       const key = 'BaseExamplePlugin';
       const owners = {};
-      owners[key] = createBasePlugin({ key: 'example' });
+      owners[key] = createBasePlugin({ name: 'example' });
       export const ExamplePlugin = owners.BaseExamplePlugin.extend(() => ({
-        api: {},
+        api: () => ({}),
       }));
     `,
   ]) {
@@ -491,7 +1203,7 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   assert.deepEqual(
     auditPlateSchemaSource(
       `
-        const InternalRootPlugin = createBasePlugin({ key: 'root' });
+        const InternalRootPlugin = createBasePlugin({ name: 'root' });
         snapshotSources({ internalRoot: InternalRootPlugin });
       `,
       'packages/core/src/lib/editor/withPlite.ts'
@@ -502,12 +1214,12 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
   assert.equal(
     auditPlateSchemaSource(
       `
-        const BaseExamplePlugin = createBasePlugin({ key: 'example' });
+        const BaseExamplePlugin = createBasePlugin({ name: 'example' });
         const owners = { BaseExamplePlugin };
-        const pluginKey = 'BaseExamplePlugin';
-        const aliases = { ...owners, [pluginKey]: ExternalPlugin };
+        const pluginName = 'BaseExamplePlugin';
+        const aliases = { ...owners, [pluginName]: ExternalPlugin };
         export const ExamplePlugin = aliases.BaseExamplePlugin.extend(() => ({
-          api: {},
+          api: () => ({}),
         }));
       `,
       'packages/example/src/ExamplePlugin.ts'
@@ -520,9 +1232,9 @@ test('rejects unaudited extend stages through local descriptor bindings', () => 
 
 test('rejects one-use private plugin descriptor scaffolding', () => {
   const source = `
-    const ExamplePluginDefinition = createBasePlugin({ key: 'example' });
+    const ExamplePluginDefinition = createBasePlugin({ name: 'example' });
     export const ExamplePlugin = ExamplePluginDefinition.extend(() => ({
-      api: {},
+      api: () => ({}),
     }));
   `;
 
@@ -534,9 +1246,9 @@ test('rejects one-use private plugin descriptor scaffolding', () => {
   assert.equal(
     auditPlateSchemaSource(
       `
-        export const ExamplePluginBase = createBasePlugin({ key: 'example' });
+        export const ExamplePluginBase = createBasePlugin({ name: 'example' });
         export const ExamplePlugin = ExamplePluginBase.extend(() => ({
-          api: {},
+          api: () => ({}),
         }));
       `,
       'packages/example/src/ExamplePlugin.ts'
@@ -548,7 +1260,7 @@ test('rejects one-use private plugin descriptor scaffolding', () => {
 });
 
 test('excludes non-production plugin chains from the constructor-stage rule', () => {
-  const source = `createBasePlugin({ key: 'example' }).extend(() => ({ api: {} }))`;
+  const source = `createBasePlugin({ name: 'example' }).extend(() => ({ api: () => ({}) }))`;
 
   for (const file of [
     'packages/example/src/ExamplePlugin.spec.ts',
@@ -570,7 +1282,7 @@ test('excludes non-production plugin chains from the constructor-stage rule', ()
 test('keeps locally created descriptor identity lexical', () => {
   assert.deepEqual(
     auditPlateSchemaSource(
-      `const BaseExamplePlugin = createBasePlugin({ key: 'example' }); export function adapt(BaseExamplePlugin) { return BaseExamplePlugin.extend(() => ({ api: {} })); }`,
+      `const BaseExamplePlugin = createBasePlugin({ name: 'example' }); export function adapt(BaseExamplePlugin) { return BaseExamplePlugin.extend(() => ({ api: () => ({}) })); }`,
       'packages/example/src/lib/BaseExamplePlugin.ts'
     ),
     []
@@ -579,10 +1291,14 @@ test('keeps locally created descriptor identity lexical', () => {
 
 test('allows only exact audited production extend stages at their owner path', () => {
   const exact = `
-    createBasePlugin({ key: 'code', update: {} }).extend({
-      shortcuts: {},
+    createBasePlugin({ name: 'code' }).extend({
+      commands: () => [],
+      contributions: [],
     });
-    createBasePlugin({ key: 'highlight', decorate: {}, extension: {} });
+    createBasePlugin({ name: 'highlight' }).extend({
+      corrections: [],
+      on: {},
+    });
   `;
   const owner = 'packages/code-block/src/lib/BaseCodeBlockPlugin.ts';
 
@@ -590,10 +1306,10 @@ test('allows only exact audited production extend stages at their owner path', (
   assert.match(
     auditPlateSchemaSource(
       `
-        createBasePlugin({ key: 'code', update: {} })
-          .extend({ shortcuts: {} });
-        createBasePlugin({ key: 'highlight', decorate: {}, extension: {} })
-          .extend(() => ({ api: {} }));
+        createBasePlugin({ name: 'code' })
+          .extend({ commands: () => [], contributions: [] });
+        createBasePlugin({ name: 'highlight' })
+          .extend(() => ({ api: () => ({}) }));
       `,
       owner
     )[0]?.reason ?? '',
@@ -602,14 +1318,18 @@ test('allows only exact audited production extend stages at their owner path', (
 
   for (const [source, file, expected] of [
     [
-      `createBasePlugin({ key: 'code' }).extend({
+      `createBasePlugin({ name: 'code' }).extend({
         rules: {},
-        update: {},
-      }).extend({ shortcuts: {} }).extend(() => ({ render: {} }))`,
+        update: () => ({}),
+      }).extend({ commands: () => [], contributions: [] }).extend(() => ({ render: {} }))`,
       owner,
       /\[rules, update\]/,
     ],
-    [exact, 'packages/example/src/BaseCodeBlockPlugin.ts', /\[shortcuts\]/],
+    [
+      exact,
+      'packages/example/src/BaseCodeBlockPlugin.ts',
+      /\[commands, contributions\]/,
+    ],
   ]) {
     const issue = auditPlateSchemaSource(source, file).find((item) =>
       item.reason.includes('direct constructor .extend() chain')
@@ -620,16 +1340,16 @@ test('allows only exact audited production extend stages at their owner path', (
   }
 
   assert.match(
-    auditPlateSchemaSource(`createBasePlugin({ key: 'code' })`, owner).at(-1)
+    auditPlateSchemaSource(`createBasePlugin({ name: 'code' })`, owner).at(-1)
       ?.reason ?? '',
-    /expects exact 1 audited chain but found 0/
+    /expects exact 2 audited chains but found 0/
   );
 
   assert.match(
     auditPlateSchemaSource(
       `
-        createBasePlugin({ key: 'code' }).extend({ shortcuts: {} });
-        createBasePlugin({ key: 'duplicate' }).extend({ shortcuts: {} });
+        createBasePlugin({ name: 'code' }).extend({ commands: () => [], contributions: [] });
+        createBasePlugin({ name: 'duplicate' }).extend({ commands: () => [], contributions: [] });
       `,
       owner
     ).at(-1)?.reason ?? '',
@@ -638,13 +1358,11 @@ test('allows only exact audited production extend stages at their owner path', (
 
   for (const file of [
     'packages/core/src/lib/plugins/affinity/AffinityPlugin.ts',
-    'packages/core/src/lib/plugins/dom/DOMPlugin.ts',
-    'packages/core/src/lib/plugins/override/OverridePlugin.ts',
   ]) {
     assert.deepEqual(
       auditPlateSchemaSource(
-        `createBasePlugin({ key: 'owner', update: {} }).extend(() => ({
-          extension: {},
+        `createBasePlugin({ name: 'owner', update: () => ({}) }).extend(() => ({
+          commands: () => [],
         }))`,
         file
       ),
@@ -652,82 +1370,146 @@ test('allows only exact audited production extend stages at their owner path', (
     );
   }
 
-  assert.deepEqual(
+  for (const [source, file] of [
+    [
+      `createBasePlugin({ name: 'history' }).extend(history())`,
+      'packages/core/src/lib/plugins/HistoryPlugin.ts',
+    ],
+    [
+      `createBasePlugin({ name: 'dom' }).extend(plateDOMExtension)`,
+      'packages/core/src/lib/plugins/dom/DOMPlugin.ts',
+    ],
+    [
+      `createBasePlugin({ name: 'inputRules' }).extend(() => ({
+        commands: () => [],
+        contributions: [],
+      }))`,
+      'packages/core/src/lib/plugins/input-rules/InputRulesPlugin.ts',
+    ],
+    [
+      `createBasePlugin({ name: 'override' }).extend(() => ({
+        commands: () => [],
+        corrections: [],
+        readMiddleware: () => ({}),
+      }))`,
+      'packages/core/src/lib/plugins/override/OverridePlugin.ts',
+    ],
+    [
+      `createBasePlugin({ name: 'react' }).extend(plateReactExtension)`,
+      'packages/core/src/react/editor/getPlateCorePlugins.ts',
+    ],
+  ]) {
+    assert.deepEqual(auditPlateSchemaSource(source, file), []);
+  }
+
+  assert.match(
     auditPlateSchemaSource(
-      `createBasePlugin({ key: 'indent', schema: {}, update: {} }).extend(
-        ({ defineCodecs }) => ({
-          codecs: defineCodecs({}),
-          shortcuts: {},
-        })
-      )`,
+      `createBasePlugin({ name: 'indent' }).extend({ shortcuts: {} })`,
       'packages/indent/src/lib/BaseIndentPlugin.ts'
-    ),
-    []
-  );
-  assert.deepEqual(
-    auditPlateSchemaSource(
-      `createBasePlugin({ key: 'column', update: {} }).extend({
-        shortcuts: {},
-      })`,
-      'packages/layout/src/lib/BaseColumnPlugin.ts'
-    ),
-    []
+    )[0]?.reason ?? '',
+    /found \[shortcuts\]/
   );
 
   const listOwner = 'packages/list/src/lib/BaseListPlugin.ts';
-  const listStages = `createBasePlugin({ key: 'list' })
-    .extend(() => ({ override: {}, update: {} }))
-    .extend(() => ({ extension: {} }))`;
+  const listStages = `createBasePlugin({ name: 'list' })
+    .extend(() => ({ api: () => ({}), read: () => ({}) }))
+    .extend(() => ({ override: {}, update: () => ({}) }))
+    .extend(() => ({ commands: () => [], corrections: [], on: {} }))`;
 
   assert.deepEqual(auditPlateSchemaSource(listStages, listOwner), []);
   assert.match(
     auditPlateSchemaSource(
-      `createBasePlugin({ key: 'list' })
+      `createBasePlugin({ name: 'list' })
         .extend(() => ({ override: {} }))
-        .extend(() => ({ update: {} }))
-        .extend(() => ({ extension: {} }))`,
+        .extend(() => ({ update: () => ({}) }))
+        .extend(() => ({ commands: () => [], corrections: [], on: {} }))`,
       listOwner
     )[0]?.reason ?? '',
-    /\[override\] -> \[update\] -> \[extension\]/
+    /\[override\] -> \[update\] -> \[commands, corrections, on\]/
   );
 
   for (const [file, source] of [
     [
+      'packages/basic-styles/src/lib/BaseStylePlugins.ts',
+      `createBasePlugin({ name: 'textIndent' })
+        .extend(() => ({ update: () => ({}) }))`,
+    ],
+    [
+      'packages/csv/src/lib/CsvPlugin.ts',
+      `createBasePlugin({ name: 'csv' })
+        .extend(() => ({ api: () => ({}) }))
+        .extend(({ defineCodecs }) => ({
+          codecs: defineCodecs({ 'text/plain': rule }),
+        }))`,
+    ],
+    [
       'packages/list-classic/src/lib/BaseListPlugin.ts',
-      `createBasePlugin({ key: 'list' })
-        .extend(() => ({ read: {} }))
-        .extend(() => ({ update: {} }))
-        .extend(() => ({ extension: {} }))`,
+      `createBasePlugin({ name: 'todo' }).extend(() => ({ commands: () => [] }));
+      createBasePlugin({ name: 'list' })
+        .extend(() => ({ read: () => ({}) }))
+        .extend(() => ({ update: () => ({}) }))
+        .extend(() => ({ commands: () => [], corrections: [] }))`,
     ],
     [
       'packages/link/src/lib/BaseLinkPlugin.ts',
-      `createBasePlugin({ key: 'link' })
-        .extend(() => ({ update: {} }))
-        .extend(() => ({ extension: {} }))`,
+      `createBasePlugin({ name: 'link' })
+        .extend(() => ({ update: () => ({}) }))
+        .extend(() => ({ commands: () => [] }))`,
+    ],
+    [
+      'packages/markdown/src/lib/MarkdownPlugin.ts',
+      `createBasePlugin({ name: 'markdown' })
+        .extend(() => ({ api: () => ({}) }))`,
     ],
     [
       'packages/suggestion/src/lib/BaseSuggestionPlugin.ts',
-      `createBasePlugin({ key: 'suggestion' })
-        .extend(() => ({ read: {} }))
-        .extend(() => ({ update: {} }))
-        .extend(() => ({ extension: {} }))`,
+      `createBasePlugin({ name: 'suggestion' })
+        .extend(() => ({ read: () => ({}) }))
+        .extend(() => ({ update: () => ({}) }))
+        .extend(() => ({ commands: () => [], corrections: [] }))`,
     ],
     [
       'packages/ai/src/react/AIChatPlugin.ts',
-      `createPlatePlugin({ key: 'aiChat' })
-        .extend(() => ({ api: {}, read: {}, selectors: {}, update: {} }))
-        .extend(() => ({ extension: {} }))`,
+      `createPlatePlugin({ name: 'aiChat' })
+        .extend(() => ({ api: () => ({}), read: () => ({}), selectors: {}, update: () => ({}) }))
+        .extend(() => ({ commands: () => [], corrections: [], effectTypes: [], on: {} }))`,
     ],
     [
       'packages/table/src/lib/BaseTablePlugin.ts',
-      `createBasePlugin({ key: 'table' })
-        .extend(() => ({ api: {} }))
-        .extend(() => ({ api: {}, read: {} }))
-        .extend(() => ({ read: {} }))
-        .extend(() => ({ read: {} }))
-        .extend(() => ({ api: {}, read: {} }))
-        .extend(() => ({ update: {} }))
-        .extend(() => ({ extension: {}, update: {} }))`,
+      `createBasePlugin({ name: 'table' })
+        .extend(() => ({ api: () => ({}) }))
+        .extend(() => ({ api: () => ({}), read: () => ({}) }))
+        .extend(() => ({ read: () => ({}) }))
+        .extend(() => ({ read: () => ({}) }))
+        .extend(() => ({ api: () => ({}), read: () => ({}) }))
+        .extend(() => ({ update: () => ({}) }))
+        .extend(() => ({ update: () => ({}) }))
+        .extend(() => ({ contributions: [] }))
+        .extend(() => ({ corrections: [] }))
+        .extend(() => ({
+          commands: () => [],
+          readMiddleware: () => [],
+          selectionKinds: [],
+        }))`,
+    ],
+    [
+      'packages/tabbable/src/react/TabbablePlugin.tsx',
+      `createPlatePlugin({ name: 'tabbable' })
+        .extend(() => ({ read: () => ({}) }))`,
+    ],
+    [
+      'packages/toc/src/lib/BaseTocPlugin.ts',
+      `createBasePlugin({ name: 'toc' })
+        .extend(() => ({ read: () => ({}), update: () => ({}) }))`,
+    ],
+    [
+      'packages/toggle/src/lib/BaseTogglePlugin.ts',
+      `createBasePlugin({ name: 'toggle' })
+        .extend(() => ({
+          api: () => ({}),
+          read: () => ({}),
+          selectors: {},
+        }))`,
     ],
   ]) {
     assert.deepEqual(auditPlateSchemaSource(source, file), [], file);
@@ -735,22 +1517,78 @@ test('allows only exact audited production extend stages at their owner path', (
 
   assert.deepEqual(
     auditPlateSchemaSource(
+      `
+        const BlockPlaceholderPluginBase = createPlatePlugin({
+          name: 'blockPlaceholder',
+        }).extend({ selectors: {} });
+        type BlockPlaceholderHookDefinition =
+          DefinitionOf<typeof BlockPlaceholderPluginBase>;
+        export const BlockPlaceholderPlugin =
+          BlockPlaceholderPluginBase.extend({ inject: {}, useHooks });
+      `,
+      'packages/utils/src/react/plugins/BlockPlaceholderPlugin.tsx'
+    ),
+    []
+  );
+
+  assert.match(
+    auditPlateSchemaSource(
+      `createBasePlugin({ name: 'markdown' })
+        .extend(() => ({ read: () => ({}) }))`,
+      'packages/markdown/src/lib/MarkdownPlugin.ts'
+    )[0]?.reason ?? '',
+    /found \[read\]/
+  );
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
       `createPlatePlugin({
-        api: {},
-        extension: {},
-        handlers: {},
-        key: 'blockSelection',
-        read: {},
+        api: () => ({}),
+        name: 'blockSelection',
+        on: {},
+        read: () => ({}),
         selectors: {},
         shortcuts: {},
-        update: {},
+        update: () => ({}),
       })
-        .extend(() => ({ api: {}, extension: {} }))
-        .extend(() => ({ inject: {}, shortcuts: {}, update: {} }))
+        .extend(() => ({ api: () => ({}), commands: () => [], on: {} }))
+        .extend(() => ({ inject: {}, shortcuts: {}, update: () => ({}) }))
         .extend(() => ({ render: {} }))`,
       'packages/selection/src/react/BlockSelectionPlugin.tsx'
     ),
     []
+  );
+
+  for (const [source, file] of [
+    [
+      `createPlatePlugin({ name: 'blockMenu' }).extend(() => ({ on: {} }))`,
+      'packages/selection/src/react/BlockMenuPlugin.tsx',
+    ],
+    [
+      `createPlatePlugin({ name: 'cursorOverlay' }).extend(() => ({ on: {} }))`,
+      'packages/selection/src/react/CursorOverlayPlugin.tsx',
+    ],
+  ]) {
+    assert.deepEqual(auditPlateSchemaSource(source, file), []);
+  }
+});
+
+test('matches opaque shared-factory stages by exact callee identity', () => {
+  const owner = 'apps/www/src/registry/examples/version-history-demo.tsx';
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `createPlatePlugin({ name: 'diff' }).extend(createExcludeDiffFragmentExtension())`,
+      owner
+    ),
+    []
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      `createPlatePlugin({ name: 'diff' }).extend(createUnrelatedExtension())`,
+      owner
+    )[0]?.reason ?? '',
+    /\$factory:createUnrelatedExtension/
   );
 });
 
@@ -761,7 +1599,7 @@ test('requires context-bound codec declarations', () => {
     `Plugin.extend?.(() => ({ codecs: { 'text/html': rule } }))`,
     `Plugin?.extend(() => ({ codecs: { 'text/html': rule } }))`,
     `Plugin.extend({ codecs: productCodecs })`,
-    `const codecsKey = 'codecs'; createBasePlugin({ [codecsKey]: { 'text/html': rule }, key: 'p' })`,
+    `const codecsKey = 'codecs'; createBasePlugin({ [codecsKey]: { 'text/html': rule }, name: 'p' })`,
   ]) {
     assert.match(
       auditPlateSchemaSource(source)[0]?.reason ?? '',
@@ -770,8 +1608,8 @@ test('requires context-bound codec declarations', () => {
   }
 
   for (const source of [
-    `createBasePlugin({ key: 'p', codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) })`,
-    `createPlatePlugin({ key: 'p', codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': rule }) })`,
+    `createBasePlugin({ name: 'p', codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) })`,
+    `createPlatePlugin({ name: 'p', codecs: ({ defineCodecs }) => defineCodecs(TargetPlugin, { 'text/html': rule }) })`,
     `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }))`,
     `Plugin.extend(({ defineCodecs }) => ({ codecs: defineCodecs(TargetPlugin, { 'text/html': rule }) }))`,
   ]) {
@@ -786,7 +1624,7 @@ test('keeps independent production codecs in the constructor', () => {
   ]) {
     assert.match(
       auditPlateSchemaSource(
-        `createBasePlugin({ key: 'example' }).extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }))`,
+        `createBasePlugin({ name: 'example' }).extend(({ defineCodecs }) => ({ codecs: defineCodecs({ 'text/html': rule }) }))`,
         file
       )[0]?.reason ?? '',
       /constructor callback/
@@ -794,7 +1632,7 @@ test('keeps independent production codecs in the constructor', () => {
   }
   assert.deepEqual(
     auditPlateSchemaSource(
-      `createBasePlugin({ key: 'example', codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) })`,
+      `createBasePlugin({ name: 'example', codecs: ({ defineCodecs }) => defineCodecs({ 'text/html': rule }) })`,
       'packages/example/src/lib/BaseExamplePlugin.ts'
     ),
     []
@@ -804,7 +1642,7 @@ test('keeps independent production codecs in the constructor', () => {
 test('keeps independent production fields in the constructor', () => {
   const file = 'packages/example/src/lib/BaseExamplePlugin.ts';
   const issues = auditPlateSchemaSource(
-    `createBasePlugin({ key: 'example' }).extend(({ type }) => ({
+    `createBasePlugin({ name: 'example' }).extend(({ type }) => ({
       render: { as: 'p' },
       update: ({ tx }) => ({ set: () => tx.nodes.set({ type }) }),
     }))`,
@@ -872,7 +1710,7 @@ test('allows render.node only in Core resolved-slot owners', () => {
   }
 });
 
-test('keeps Base and static modules out of the React plugin layer', () => {
+test('keeps static/base component bindings free of Plate React adapters', () => {
   const file =
     'apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx';
 
@@ -881,7 +1719,7 @@ test('keeps Base and static modules out of the React plugin layer', () => {
       [
         `import { BaseParagraphPlugin } from 'platejs';`,
         `import { ParagraphStatic } from '@/registry/ui/paragraph-node-static';`,
-        `const kit = [BaseParagraphPlugin.configure({ component: ParagraphStatic })];`,
+        `const kit = [createBasePlugin({ component: ParagraphStatic, name: 'p' })];`,
       ].join('\n'),
       file
     ),
@@ -889,27 +1727,45 @@ test('keeps Base and static modules out of the React plugin layer', () => {
   );
 
   for (const source of [
-    `import { toPlatePlugin } from '@platejs/core/react';`,
     `import { ParagraphPlugin } from 'platejs/react';`,
     `import { H1Plugin } from '@platejs/basic-nodes/react';`,
     `import { CodeDrawingElement } from '@/registry/ui/code-drawing-node';`,
+    `import { toPlatePlugin } from 'platejs/react';`,
     `toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphStatic });`,
+    `ParagraphPlugin.configure({ component: ParagraphStatic });`,
   ]) {
     assert.equal(
       auditPlateSchemaSource(source, file).some((issue) =>
-        issue.reason.includes('Base/static')
+        /static\/base|terminal consumers/.test(issue.reason)
       ),
       true
     );
   }
+
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `BaseParagraphPlugin.configure({ initialState: { enabled: true } });`,
+      file
+    ),
+    []
+  );
 });
 
-test('keeps Base constructors renderer-neutral', () => {
+test('accepts Base constructor components and rejects extension-stage components', () => {
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `createBasePlugin({ component: ParagraphStatic, name: 'p' });`,
+      'packages/example/src/lib/BaseParagraphPlugin.ts'
+    ),
+    []
+  );
   assert.equal(
     auditPlateSchemaSource(
-      `createBasePlugin({ component: ParagraphStatic, key: 'p' });`,
-      'packages/example/src/lib/BaseParagraphPlugin.ts'
-    ).some((issue) => issue.reason.includes('renderer-neutral')),
+      `BaseParagraphPlugin.extend({ component: ParagraphStatic });`,
+      'apps/www/src/registry/components/editor/plugins/basic-blocks-base-kit.tsx'
+    ).some((issue) =>
+      issue.reason.includes('.extend() cannot define component')
+    ),
     true
   );
   assert.deepEqual(
@@ -919,12 +1775,42 @@ test('keeps Base constructors renderer-neutral', () => {
     ),
     []
   );
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      `toPlatePlugin(BaseParagraphPlugin, { component: ParagraphElement });`,
+      'packages/example/src/react/ParagraphPlugin.tsx'
+    ),
+    []
+  );
+  assert.equal(
+    auditPlateSchemaSource(
+      `toPlatePlugin(BaseParagraphPlugin).configure({ component: ParagraphElement });`,
+      'apps/www/src/registry/examples/example.tsx'
+    ).some((issue) =>
+      issue.reason.includes(
+        'terminal consumers configure the Base descriptor directly'
+      )
+    ),
+    true
+  );
+  assert.deepEqual(
+    auditPlateSchemaSource(
+      [
+        '// @ts-expect-error configured descriptors are terminal authoring inputs',
+        'ConfiguredPlatePlugin.extend({ component: ParagraphElement });',
+      ].join('\n'),
+      'packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts'
+    ),
+    []
+  );
 });
 
 test('allows only the exact typed negative render.node contract', () => {
   const source = [
-    '// @ts-expect-error React extension config must be applied before consumer configure',
-    'toPlatePlugin(ConfiguredBasePlugin, { render: { node: Component } });',
+    "createBasePlugin({ name: 'negative', render: {",
+    '  // @ts-expect-error custom node components use the Plate component field',
+    '  node: Component,',
+    '} });',
   ].join('\n');
   const file = 'packages/core/src/lib/plugin/createBasePlugin.typed.spec.ts';
 
@@ -936,7 +1822,7 @@ test('allows only the exact typed negative render.node contract', () => {
   );
   assert.equal(
     auditPlateSchemaSource(
-      'toPlatePlugin(ConfiguredBasePlugin, { render: { node: Component } });',
+      "createBasePlugin({ name: 'negative', render: { node: Component } });",
       file
     ).some((issue) => issue.reason.includes('root-level component')),
     true
@@ -950,36 +1836,118 @@ test('allows only the exact typed negative render.node contract', () => {
   );
 });
 
+test('allows only the exact marked runtime negative render.node contract', () => {
+  const source = `
+    Reflect.apply(createBasePlugin, undefined, [
+      {
+        name: 'invalid-render-node',
+        render: {
+          // @plate-schema-adoption-negative-render-node
+          node: () => null,
+        },
+      },
+    ]);
+  `;
+  const file = 'packages/core/src/lib/plugin/createBasePlugin.spec.ts';
+
+  assert.deepEqual(auditPlateSchemaSource(source, file), []);
+
+  const unmarkedIssues = auditPlateSchemaSource(
+    source.replace(
+      '          // @plate-schema-adoption-negative-render-node\n',
+      ''
+    ),
+    file
+  );
+
+  assert.equal(
+    unmarkedIssues.some((issue) =>
+      issue.reason.includes('root-level component')
+    ),
+    true
+  );
+  assert.equal(
+    unmarkedIssues.some((issue) =>
+      issue.reason.includes(
+        'runtime render.node negative-contract allowlist expects 1 marked declaration but found 0'
+      )
+    ),
+    true
+  );
+  assert.equal(
+    auditPlateSchemaSource(
+      source,
+      'packages/core/src/lib/plugin/other.spec.ts'
+    ).some((issue) => issue.reason.includes('root-level component')),
+    true
+  );
+  assert.equal(
+    auditPlateSchemaSource(`${source}\n${source}`, file).filter((issue) =>
+      issue.reason.includes('root-level component')
+    ).length,
+    1
+  );
+});
+
+test('allows only the exact runtime API negative fixture', () => {
+  const source = `
+    const createRuntime = createPlatePlugin as unknown as (
+      definition: unknown
+    ) => unknown;
+    createRuntime({
+      api: { label: () => 'invalid' },
+      name: 'invalidApi',
+    });
+  `;
+  const file = 'packages/core/src/react/plugin/createPlatePlugin.spec.ts';
+
+  assert.deepEqual(auditPlateSchemaSource(source, file), []);
+  assert.match(
+    auditPlateSchemaSource(
+      source.replace("name: 'invalidApi'", "name: 'different'"),
+      file
+    )[0]?.reason ?? '',
+    /plugin api must be declared as a factory/
+  );
+  assert.match(
+    auditPlateSchemaSource(
+      source,
+      'packages/core/src/react/plugin/other.spec.ts'
+    )[0]?.reason ?? '',
+    /plugin api must be declared as a factory/
+  );
+});
+
 test('accepts current plugin syntax and unrelated document or Markdown AST shapes', () => {
   for (const source of [
-    `createPlatePlugin({ component: Paragraph, key: 'p', type: 'paragraph', schema: { element: { content: schema.content.text() } } })`,
-    `createBasePlugin({ key: 'hr', schema: { element: { void: 'block' } } })`,
-    `createBasePlugin({ key: 'p', schema: { element: { ...elementSchema } } })`,
+    `createPlatePlugin({ component: Paragraph, name: 'p', type: 'paragraph', schema: { element: { content: schema.content.text() } } })`,
+    `createBasePlugin({ name: 'hr', schema: { element: { void: 'block' } } })`,
+    `createBasePlugin({ name: 'p', schema: { element: { ...elementSchema } } })`,
     `defineEditorExtension({ name: 'paragraph', schema: { elements: { paragraph: { content: schema.content.text() } } } })`,
     `defineEditorSchema({ id: 'app', version: 1, elements: { horizontalRule: { void: true } } })`,
     `defineEditorExtension({ name: 'dynamic', schema: { elements } })`,
     `defineEditorExtension({ name: 'spread', schema: { elements: { paragraph: { ...definition } } } })`,
-    `createBasePlugin<RuntimeConfig>({ key: 'runtime', initialState: { enabled: true } })`,
-    `ParagraphPlugin.configure(({ editor }) => ({ initialState: { editor }, handlers: {}, override: { plugins: {} }, render: {}, shortcuts: {} }))`,
+    `createBasePlugin({ name: 'runtime', initialState: { enabled: true } })`,
+    `ParagraphPlugin.configure(({ editor }) => ({ initialState: { editor }, on: {}, override: { plugins: {} }, render: {}, shortcuts: {} }))`,
     `ParagraphPlugin.configure(() => ({}))`,
-    `createBasePlugin({ initialState: { isUrl: () => true, schemes: ['https'] }, key: 'link', schema: ({ initialState, key, own, plugins, type }) => ({ properties: [] }) })`,
+    `createBasePlugin({ initialState: { isUrl: () => true, schemes: ['https'] }, name: 'link', schema: ({ initialState, name, own, plugins, type }) => ({ properties: [] }) })`,
     `const event = { node: { type: 'paragraph' } }`,
-    `createBasePlugin({ key: 'analytics', initialState: { event: { node: { type: 'paragraph' } } } })`,
+    `createBasePlugin({ name: 'analytics', initialState: { event: { node: { type: 'paragraph' } } } })`,
     `const rules = { emphasis: { mark: true } }`,
     `const parser = { isElement: true, isLeaf: false }`,
     `defineEditorSchema({ elements: { paragraph: { content: schema.content.text(), groups: ['block'] } } })`,
     `state.schema.element('paragraph')`,
-    `createBasePlugin({ initialState: { targets: [ParagraphPlugin] }, key: 'align' })`,
-    `createBasePlugin({ key: 'generic', targetPluginKeys: ['p'] })`,
+    `createBasePlugin({ initialState: { targets: [ParagraphPlugin] }, name: 'align' })`,
+    `createBasePlugin({ name: 'generic', targetPluginNames: ['p'] })`,
     `ParagraphPlugin.configure({ initialState: { topLevel: true } })`,
     `ParagraphPlugin.configure({ schema: { element: { properties: { id: property.string() } } } })`,
     `ParagraphPlugin.extend(({ editor }) => ({ initialState: { editor } }))`,
     `ParagraphPlugin.configure({ component: ParagraphElement })`,
-    `createPlatePlugin({ component: ParagraphElement, key: 'p' })`,
-    `createPlatePlugin({ key: 'leaf' }).extend({ render: { leaf: Leaf, aboveNodes } })`,
+    `createPlatePlugin({ component: ParagraphElement, name: 'p' })`,
+    `createPlatePlugin({ name: 'leaf' }).extend({ render: { leaf: Leaf, aboveNodes } })`,
     `const component = editor.getPlugin(ParagraphPlugin).render.node`,
-    `createBasePlugin({ key: 'link', initialState: { isUrl: () => true } })`,
-    `createBasePlugin({ key: 'negative', /* @ts-expect-error runtime access */ schema: ({ editor }) => ({ editor }) })`,
+    `createBasePlugin({ name: 'link', initialState: { isUrl: () => true } })`,
+    `createBasePlugin({ name: 'negative', /* @ts-expect-error runtime access */ schema: ({ editor }) => ({ editor }) })`,
     `state.schema.getElementProperty(element, colSpanHandle)`,
     `editor.read.schema.property(AdvancedMarkPlugin)`,
     `createPlateEditor(getOptions())`,
@@ -1009,12 +1977,12 @@ test('accepts current plugin syntax and unrelated document or Markdown AST shape
 
 test('reserves package configure calls for reviewed consumer installation owners', () => {
   for (const source of [
-    `createBasePlugin({ key: 'example' }).configure({ initialState: { enabled: true } })`,
-    `createBasePlugin({ key: 'example' }).configurePlugin(OtherPlugin, { initialState: { enabled: true } })`,
-    `createBasePlugin({ key: 'example' }).configurePlugin?.(OtherPlugin, { initialState: { enabled: true } })`,
-    `createBasePlugin({ key: 'example' }).extendPlugin(OtherPlugin, { shortcuts: {} })`,
-    `createBasePlugin({ key: 'example' })?.extendPlugin(OtherPlugin, { shortcuts: {} })`,
-    `createBasePlugin({ key: 'example' }).clone()`,
+    `createBasePlugin({ name: 'example' }).configure({ initialState: { enabled: true } })`,
+    `createBasePlugin({ name: 'example' }).configurePlugin(OtherPlugin, { initialState: { enabled: true } })`,
+    `createBasePlugin({ name: 'example' }).configurePlugin?.(OtherPlugin, { initialState: { enabled: true } })`,
+    `createBasePlugin({ name: 'example' }).extendPlugin(OtherPlugin, { shortcuts: {} })`,
+    `createBasePlugin({ name: 'example' })?.extendPlugin(OtherPlugin, { shortcuts: {} })`,
+    `createBasePlugin({ name: 'example' }).clone()`,
   ]) {
     assert.ok(
       auditPlateSchemaSource(
@@ -1030,7 +1998,7 @@ test('reserves package configure calls for reviewed consumer installation owners
 
   for (const [source, file] of [
     [
-      `export const ExamplePlugin = createBasePlugin({ key: 'example', initialState: { enabled: true } });`,
+      `export const ExamplePlugin = createBasePlugin({ name: 'example', initialState: { enabled: true } });`,
       'packages/example/src/ExamplePlugin.ts',
     ],
     [
@@ -1042,7 +2010,10 @@ test('reserves package configure calls for reviewed consumer installation owners
       'packages/core/src/lib/plugins/getCorePlugins.ts',
     ],
     [
-      `ExamplePlugin.configure({ initialState: { enabled: true } })`,
+      `
+        createBasePlugin({ name: 'react' }).extend(plateReactExtension);
+        ExamplePlugin.configure({ initialState: { enabled: true } });
+      `,
       'packages/core/src/react/editor/getPlateCorePlugins.ts',
     ],
     [
@@ -1231,6 +2202,7 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
     [
       `const TestSchema = { id: 'plate:yjs-api-test', version: 1 } as const;
        createBaseEditor({ schema: TestSchema });
+       createBaseEditor({ schema: TestSchema });
        createBaseEditor({ schema: TestSchema });`,
       'packages/yjs/src/lib/BaseYjsPlugin.api.spec.ts',
     ],
@@ -1239,7 +2211,7 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
       'packages/plite/test/named-lineage-guard.spec.ts',
     ],
     [
-      `createBasePlugin({ key: 'paragraph', schema: { element: { content: schema.content.text(), properties: { id: property.string(), version: property.number() } } } })`,
+      `createBasePlugin({ name: 'paragraph', schema: { element: { content: schema.content.text(), properties: { id: property.string(), version: property.number() } } } })`,
       'packages/example/src/plugin.spec.ts',
     ],
   ]) {
@@ -1248,21 +2220,6 @@ test('accepts reviewed named lineage without banning schema declarations', () =>
 });
 
 test('allows only the exact reviewed raw-query count in an owning file', () => {
-  const file = 'packages/basic-styles/src/lib/BaseStylePlugins.spec.ts';
-  const rawQueries = new Array(6)
-    .fill(
-      `editor.read.schema.property({ key: 'align', placement: 'element', type: 'custom-paragraph' })`
-    )
-    .join(';');
-
-  assert.deepEqual(auditPlateSchemaSource(rawQueries, file), []);
-  assert.notEqual(
-    auditPlateSchemaSource(
-      `editor.read.schema.property({ key, placement, type })`,
-      file
-    ).length,
-    0
-  );
   expectRejected(`editor.read.schema.property({ key, placement, type })`);
 
   const htmlOwner = 'packages/core/src/lib/plugins/html/HtmlPlugin.ts';

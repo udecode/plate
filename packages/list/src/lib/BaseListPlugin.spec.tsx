@@ -33,7 +33,7 @@ import {
 jsxt;
 
 const FixtureHeadingPlugin = createBasePlugin({
-  key: KEYS.h1,
+  name: KEYS.h1,
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -91,7 +91,7 @@ describe('BaseListPlugin', () => {
     const createContext = prepareHtmlPluginContext(editor, BaseListPlugin);
     const context = editor.read((state) => createContext(state));
     const transformData =
-      editor.getPlugin(BaseListPlugin).parsers.html?.transformData;
+      editor.plugin(BaseListPlugin).plugin.parsers.html?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');
@@ -130,13 +130,13 @@ describe('BaseListPlugin', () => {
     );
     expect(editor.read.schema.isBlock(paragraph)).toBe(true);
     expect(() =>
-      editor.read.schema.validateDocument(editor.read.value())
+      editor.read.schema.assertDocument(editor.read.value())
     ).not.toThrow();
   });
 
   it('uses configured targets for both model validation and injection', () => {
     const CalloutPlugin = createBasePlugin({
-      key: 'callout',
+      name: 'callout',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -145,7 +145,7 @@ describe('BaseListPlugin', () => {
       type: 'note',
     });
     const ListCalloutPlugin = BaseListPlugin.configure({
-      targetPluginKeys: ['callout'],
+      targetPluginNames: ['callout'],
     });
     const editor = createBaseEditor({
       plugins: [CalloutPlugin, ListCalloutPlugin],
@@ -158,12 +158,12 @@ describe('BaseListPlugin', () => {
       ],
     });
 
-    expect(editor.getPlugin(BaseListPlugin).targetPluginKeys).toEqual([
-      'callout',
-    ]);
-    expect(editor.getPlugin(BaseIndentPlugin).targetPluginKeys).toEqual([
-      'callout',
-    ]);
+    expect(editor.plugin(BaseListPlugin).plugin.targetPluginNames.join()).toBe(
+      'callout'
+    );
+    expect(
+      editor.plugin(BaseIndentPlugin).plugin.targetPluginNames.join()
+    ).toBe('callout');
     expect(editor.read.children()[0]).toMatchObject({
       listStyleType: 'disc',
       type: 'note',
@@ -177,7 +177,7 @@ describe('BaseListPlugin', () => {
       type: 'note',
     });
     expect(() =>
-      editor.read.schema.validateDocument(editor.read.value())
+      editor.read.schema.assertDocument(editor.read.value())
     ).not.toThrow();
     expect(
       editor.api.html.deserialize({
@@ -195,7 +195,7 @@ describe('BaseListPlugin', () => {
       plugins: [
         CalloutPlugin,
         BaseListPlugin.configure({
-          targetPluginKeys: ['callout', KEYS.p],
+          targetPluginNames: ['callout', KEYS.p],
         }),
       ],
     });
@@ -211,7 +211,7 @@ describe('BaseListPlugin', () => {
       },
     ]);
     expect(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           children: [{ text: 'Paragraph' }],
           listStyleType: 'disc',
@@ -234,12 +234,12 @@ describe('BaseListPlugin', () => {
       initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
     });
     const list = editor.plugin(BaseListPlugin);
-    const pluginKeys = getPlateRuntime(editor).pluginList.map(
-      (plugin) => plugin.key
+    const pluginNames = getPlateRuntime(editor).pluginList.map(
+      (plugin) => plugin.name
     );
 
-    expect(pluginKeys.indexOf(KEYS.indent)).toBeLessThan(
-      pluginKeys.indexOf(KEYS.list)
+    expect(pluginNames.indexOf(KEYS.indent)).toBeLessThan(
+      pluginNames.indexOf(KEYS.list)
     );
     expect(list.read.isActive('disc')).toBe(false);
 
@@ -264,7 +264,7 @@ describe('BaseListPlugin', () => {
         },
       }),
       dependencies: [BaseListPlugin],
-      key: 'listDependent',
+      name: 'listDependent',
     });
     const editor = createBaseEditor({
       plugins: [ListDependentPlugin],
@@ -471,7 +471,7 @@ describe('BaseListPlugin', () => {
         children: [{ text: 'Parsed' }],
         indent: 2,
         listStyleType: 'circle',
-        type: editor.getType(KEYS.p),
+        type: editor.plugin(KEYS.p).type,
       },
     ]);
   });
@@ -630,7 +630,7 @@ describe('list input rules', () => {
 });
 
 const InlinePlugin = createBasePlugin({
-  key: 'inline',
+  name: 'inline',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),

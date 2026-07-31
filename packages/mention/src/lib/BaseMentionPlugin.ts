@@ -2,7 +2,7 @@ import {
   createTriggerComboboxExtension,
   type TriggerComboboxPluginState,
 } from '@platejs/combobox';
-import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, createBasePlugin } from '@platejs/core';
 import { property } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
@@ -38,7 +38,7 @@ const initialState: MentionPluginState = {
 };
 
 export const BaseMentionInputPlugin = createBasePlugin({
-  key: KEYS.mentionInput,
+  name: KEYS.mentionInput,
   schema: {
     element: {
       properties: {
@@ -54,7 +54,7 @@ export const BaseMentionInputPlugin = createBasePlugin({
 
 /** Enables support for autocompleting @mentions. */
 export const BaseMentionPlugin = createBasePlugin({
-  key: KEYS.mention,
+  name: KEYS.mention,
   dependencies: [BaseMentionInputPlugin],
   schema: {
     element: {
@@ -66,12 +66,30 @@ export const BaseMentionPlugin = createBasePlugin({
     },
   },
   initialState,
-  extension: ({ editor, plugin, store, type }) =>
-    createTriggerComboboxExtension({
-      editor,
-      getState: () => store.get(),
-      name: plugin.key,
-      type,
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        decode: ({ node, type }) => ({
+          children: [{ text: '' }],
+          type,
+          value: node.displayText || node.username,
+          ...(node.displayText && { key: node.username }),
+        }),
+        encode: ({ node }) => {
+          const mentionId = node.key || node.value;
+          const encodedId = encodeURIComponent(String(mentionId))
+            .replace(/\(/g, '%28')
+            .replace(/\)/g, '%29');
+
+          return {
+            children: [{ type: 'text', value: String(node.value ?? '') }],
+            type: 'link',
+            url: `mention:${encodedId}`,
+          };
+        },
+        from: 'mention',
+        kind: 'node',
+      },
     }),
   update: ({ store, tx, type }) => ({
     insert: ({ key, value }: InsertMentionOptions) => {
@@ -100,6 +118,13 @@ export const BaseMentionPlugin = createBasePlugin({
       }
     },
   }),
-});
+}).extend(({ editor, plugin, store, type }) =>
+  createTriggerComboboxExtension({
+    editor,
+    getState: () => store.get(),
+    name: plugin.name,
+    type,
+  })
+);
 
-export type MentionConfig = InferConfig<typeof BaseMentionPlugin>;
+export type MentionDefinition = DefinitionOf<typeof BaseMentionPlugin>;

@@ -72,7 +72,6 @@ npm install @platejs/comment @platejs/plite-dom
 import { isString } from '@platejs/plite-dom';
 import { TextApi, type Path } from 'platejs';
 import { BaseCommentPlugin, getDraftCommentKey } from '@platejs/comment';
-import { toPlatePlugin } from 'platejs/react';
 import { CommentLeaf } from '@/components/ui/comment-node';
 
 const initialState: {
@@ -85,15 +84,16 @@ const initialState: {
   hoverId: null,
 };
 
-export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
+export const commentPlugin = BaseCommentPlugin.configure({
+  component: CommentLeaf,
   initialState,
-}).configure({ component: CommentLeaf });
+});
 ```
 
 - `initialState.activeId`: 当前激活的评论 ID,用于视觉高亮
 - `initialState.commentingBlock`: 当前正在评论的块的路径
 - `initialState.hoverId`: 当前悬停的评论 ID,用于悬停效果
-- `.configure({ component: CommentLeaf })`：使用
+- `component: CommentLeaf`：使用
   [`CommentLeaf`](/docs/components/comment-node) 渲染评论文本标记
 
 ### 添加点击处理器
@@ -103,9 +103,9 @@ export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
 ```tsx
 export const commentPlugin = toPlatePlugin(BaseCommentPlugin, {
     initialState,
-    handlers: {
+    on: {
       // Set active comment when clicking on comment marks
-      onClick: ({ api, event, store, type }) => {
+      click: ({ api, event, store, type }) => {
         let leaf = event.target as HTMLElement;
         let isSet = false;
 

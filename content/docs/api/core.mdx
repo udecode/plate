@@ -106,11 +106,9 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   <APIItem name="decorate" type="function" optional>
     Decoration function for the editor.
   </APIItem>
-  <APIItem name="extensions" type="PluginEditorExtensions" optional>
-    Plite editor extensions installed by the root plugin.
-  </APIItem>
-  <APIItem name="handlers" type="object" optional>
-    Event handlers for the editor.
+  <APIItem name="on" type="EditorExtensionChangeHandlers & DOMHandlers" optional>
+    Lifecycle and DOM events. Child names are prefixless, such as `commit`,
+    `nodeChange`, `keyDown`, and `paste`.
   </APIItem>
   <APIItem name="inject" type="object" optional>
     Injection configuration for the editor.
@@ -124,9 +122,6 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
   </APIItem>
   <APIItem name="override" type="object" optional>
     Override configuration for the editor.
-  </APIItem>
-  <APIItem name="priority" type="number" optional>
-    Priority of the editor plugin.
   </APIItem>
   <APIItem name="readOnly" type="boolean" optional>
     Editor read-only initial state. For dynamic value, use
@@ -155,37 +150,18 @@ For more details on editor configuration, refer to the [Editor Configuration](/d
 
 ### `createPlatePlugin`
 
-Creates a new Plate plugin with typed dependencies, extensions, and runtime
-configuration.
+Creates a React Plate plugin from one inferred definition.
 
 <API name="createPlatePlugin">
 <APIParameters>
-  <APIItem name="config" type="PlatePluginConfig | ((editor: PlateEditor) => PlatePluginConfig)">
-    The configuration object for the plugin, or a function that returns the configuration. If a function is provided, it will be executed when the plugin is resolved with the editor.
-
-    For details on the `PlatePluginConfig` type, refer to the [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties).
+  <APIItem name="definition" type="PlatePluginDefinition">
+    The plugin definition. The factory infers its name, initial state, API,
+    read and update methods, schema, dependencies, native Plite capabilities,
+    and React fields from this object.
   </APIItem>
 </APIParameters>
 
 <APIReturns type="PlatePlugin">
-  A new plugin instance.
-</APIReturns>
-</API>
-
-### `createPlatePlugin`
-
-Explicitly typed version of `createPlatePlugin`.
-
-<API name="createPlatePlugin">
-<APIParameters>
-  <APIItem name="config" type="TPlatePluginConfig<C> | ((editor: PlateEditor) => TPlatePluginConfig<C>)">
-    The configuration object for the plugin, or a function that returns the configuration. This version requires an explicit type parameter `C` extending `AnyPluginConfig`.
-
-    For details on the `TPlatePluginConfig` type, refer to the [PlatePlugin API](/docs/api/core/plate-plugin#plugin-properties).
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="PlatePlugin<C>">
   A new plugin instance.
 </APIReturns>
 </API>
@@ -199,32 +175,14 @@ Extends a BasePlugin to create a React PlatePlugin.
   <APIItem name="basePlugin" type="BasePlugin">
     The base BasePlugin to be extended.
   </APIItem>
-  <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
-    A function or object that provides the extension configuration. If a function, it receives the plugin context and should return a partial PlatePlugin. If an object, it should be a partial PlatePlugin configuration.
+  <APIItem name="reactFields" type="PlatePluginReactFields | ((ctx: PlatePluginContext) => PlatePluginReactFields)" optional>
+    React-specific fields to add to the exact Base plugin definition.
   </APIItem>
 </APIParameters>
 
 <APIReturns type="PlatePlugin">
-  A new plugin instance that combines the base BasePlugin functionality with React-specific features defined in the extension configuration.
-</APIReturns>
-</API>
-
-### `toPlatePlugin`
-
-Explicitly typed version of `toPlatePlugin`.
-
-<API name="toPlatePlugin">
-<APIParameters>
-  <APIItem name="basePlugin" type="BasePlugin<TContext>">
-    The base BasePlugin to be extended.
-  </APIItem>
-  <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
-    A function or object that provides the extension configuration. This version requires explicit type parameters for both the base plugin configuration (`TContext`) and the extension configuration (`C`).
-  </APIItem>
-</APIParameters>
-
-<APIReturns type="PlatePlugin<C>">
-  A new plugin instance with precise type control.
+  A new plugin descriptor that preserves the exact Base definition and adds the
+  supplied React fields.
 </APIReturns>
 </API>
 
@@ -257,33 +215,33 @@ Creates a memoized Plate editor for React components.
 ### `useEditorRootElement`
 
 <API name="useEditorRootElement">
-<APIReturns type="HTMLElement | null">
-  The mounted editor root element.
-</APIReturns>
+  <APIReturns type="HTMLElement | null">
+    The mounted editor root element.
+  </APIReturns>
 </API>
 
 ### `useEditorEditableElement`
 
 <API name="useEditorEditableElement">
-<APIReturns type="HTMLElement | null">
-  The mounted editable element for the current Plite root.
-</APIReturns>
+  <APIReturns type="HTMLElement | null">
+    The mounted editable element for the current Plite root.
+  </APIReturns>
 </API>
 
 ### `useEditorScrollElement`
 
 <API name="useEditorScrollElement">
-<APIReturns type="HTMLElement | null">
-  The element Plite uses as the editor scroll container.
-</APIReturns>
+  <APIReturns type="HTMLElement | null">
+    The element Plite uses as the editor scroll container.
+  </APIReturns>
 </API>
 
 ### `useEditorScrollElementRef`
 
 <API name="useEditorScrollElementRef">
-<APIReturns type="(element: HTMLElement | null) => void">
-  A callback ref that registers a custom editor scroll container.
-</APIReturns>
+  <APIReturns type="(element: HTMLElement | null) => void">
+    A callback ref that registers a custom editor scroll container.
+  </APIReturns>
 </API>
 
 ### `useEditorPlugin`
@@ -292,8 +250,8 @@ Get editor and plugin context.
 
 <API name="useEditorPlugin">
 <APIParameters>
-  <APIItem name="p" type="WithRequiredKey<P>">
-    The plugin or plugin configuration with a required key.
+  <APIItem name="p" type="WithRequiredName<P>">
+    The plugin or plugin configuration with a required name.
   </APIItem>
 </APIParameters>
 
@@ -351,10 +309,12 @@ Subscribe to a specific property of the editor.
 
 <APIOptions>
   <APIItem name="id" type="string" optional>
-    The ID of the plate editor. Useful only when nesting editors. Default is using the closest editor id.
+    The ID of the plate editor. Useful only when nesting editors. Default is
+    using the closest editor id.
   </APIItem>
   <APIItem name="equalityFn" type="(a: T, b: T) => boolean" optional>
-    Equality function to determine whether the result of the selector function has changed. Default is `(a, b) => a === b`.
+    Equality function to determine whether the result of the selector function
+    has changed. Default is `(a, b) => a === b`.
   </APIItem>
 </APIOptions>
 
@@ -384,28 +344,25 @@ Get the Plate editor reference with re-rendering.
 Get the editor's `composing` state.
 
 <API name="useEditorComposing">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the editor is composing.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string" optional>
+      The ID of the plate editor.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">Whether the editor is composing.</APIReturns>
 </API>
 
 ### `useEditorReadOnly`
 
 Get the editor's `readOnly` state.
+
 <API name="useEditorReadOnly">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the editor is read-only.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string" optional>
+      The ID of the plate editor.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">Whether the editor is read-only.</APIReturns>
 </API>
 
 ### `useEditorMounted`
@@ -413,14 +370,12 @@ Get the editor's `readOnly` state.
 Get the editor's `isMounted` state.
 
 <API name="useEditorMounted">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns type="boolean">
-  Whether the editor is mounted.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string" optional>
+      The ID of the plate editor.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="boolean">Whether the editor is mounted.</APIReturns>
 </API>
 
 ### `useEditorSelection`
@@ -428,14 +383,14 @@ Get the editor's `isMounted` state.
 Get the editor's selection. Memoized so it does not re-render if the range is the same.
 
 <API name="useEditorSelection">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns type="Range | null">
-The current selection in the editor.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string" optional>
+      The ID of the plate editor.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="Range | null">
+    The current selection in the editor.
+  </APIReturns>
 </API>
 
 ### `useEditorVersion`
@@ -443,61 +398,61 @@ The current selection in the editor.
 Get the version of the editor value. That version is incremented on each editor change.
 
 <API name="useEditorVersion">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns type="number">
-The current version of the editor value.
-</APIReturns>
-</API>  
+  <APIParameters>
+    <APIItem name="id" type="string" optional>
+      The ID of the plate editor.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="number">
+    The current version of the editor value.
+  </APIReturns>
+</API>{" "}
 
 ### `useSelectionVersion`
 
 Get the version of the editor selection. That version is incremented on each selection change (the range being different).
 
 <API name="useSelectionVersion">
-<APIParameters>
-  <APIItem name="id" type="string" optional>
-    The ID of the plate editor.
-  </APIItem>
-</APIParameters>
-<APIReturns type="number">
-The current version of the editor selection.
-</APIReturns>
+  <APIParameters>
+    <APIItem name="id" type="string" optional>
+      The ID of the plate editor.
+    </APIItem>
+  </APIParameters>
+  <APIReturns type="number">
+    The current version of the editor selection.
+  </APIReturns>
 </API>
 
 ### `useSelectionCollapsed`
 
 <API name="useSelectionCollapsed">
-<APIReturns type="boolean">
-Whether the current selection is collapsed.
-</APIReturns>
+  <APIReturns type="boolean">
+    Whether the current selection is collapsed.
+  </APIReturns>
 </API>
 
 ### `useSelectionExpanded`
 
 <API name="useSelectionExpanded">
-<APIReturns type="boolean">
-Whether the current selection is expanded.
-</APIReturns>
+  <APIReturns type="boolean">
+    Whether the current selection is expanded.
+  </APIReturns>
 </API>
 
 ### `useSelectionWithinBlock`
 
 <API name="useSelectionWithinBlock">
-<APIReturns type="boolean">
-Whether the current selection is within a single block.
-</APIReturns>
+  <APIReturns type="boolean">
+    Whether the current selection is within a single block.
+  </APIReturns>
 </API>
 
 ### `useSelectionAcrossBlocks`
 
 <API name="useSelectionAcrossBlocks">
-<APIReturns type="boolean">
-Whether the current selection spans across multiple blocks.
-</APIReturns>
+  <APIReturns type="boolean">
+    Whether the current selection spans across multiple blocks.
+  </APIReturns>
 </API>
 
 ### `useSelectionFragment`
@@ -505,15 +460,16 @@ Whether the current selection spans across multiple blocks.
 Returns the fragment of the current selection, optionally unwrapping structural nodes.
 
 <API name="useSelectionFragment">
-<APIReturns type="Element[]">
-  The fragment of the current selection. Returns an empty array if the selection is not expanded or if no fragment is found.
-</APIReturns>
+  <APIReturns type="Element[]">
+    The fragment of the current selection. Returns an empty array if the
+    selection is not expanded or if no fragment is found.
+  </APIReturns>
 </API>
 
 ### `useSelectionFragmentProp`
 
 Returns a prop value derived from the current selection fragment.
-    
+
 <API name="useSelectionFragmentProp">
 <APIOptions type="GetSelectionFragmentOptions & GetFragmentPropOptions" optional>
 <APIItem name="key" type="string" optional>
@@ -567,7 +523,7 @@ returns `null` instead of manufacturing a path for an arbitrary node object.
 Subscribe to a plugin state field, named selector, or selector callback inside
 `<Plate>`.
 
-Pass the plugin descriptor itself—not a `{ key }` object. The descriptor carries
+Pass the plugin descriptor itself—not a `{ name }` object. The descriptor carries
 the state fields, selector arguments, and return types, so no generic arguments
 are needed.
 
@@ -585,13 +541,11 @@ are needed.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="T">
-  The selected field or derived value.
-</APIReturns>
+<APIReturns type="T">The selected field or derived value.</APIReturns>
 
 ```tsx
-const value = usePluginStore(plugin, 'value');
-const doubleValue = usePluginStore(plugin, 'doubleValue', 2);
+const value = usePluginStore(plugin, "value");
+const doubleValue = usePluginStore(plugin, "doubleValue", 2);
 const state = usePluginStore(plugin, (state) => state);
 const pair = usePluginStore(
   plugin,
@@ -623,17 +577,15 @@ Explicit-editor variant of `usePluginStore`.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="T">
-  The selected field or derived value.
-</APIReturns>
+<APIReturns type="T">The selected field or derived value.</APIReturns>
 
 ```tsx
-const value = useEditorPluginStore(editor, plugin, 'value');
-const doubleValue = useEditorPluginStore(editor, plugin, 'doubleValue', 2);
+const value = useEditorPluginStore(editor, plugin, "value");
+const doubleValue = useEditorPluginStore(editor, plugin, "doubleValue", 2);
 const state = useEditorPluginStore(editor, plugin, (state) => state);
 ```
-</API>
 
+</API>
 
 ### `useElement`
 
@@ -655,11 +607,11 @@ a generic in reusable component code.
 </API>
 
 ```tsx
-import { BlockquotePlugin } from '@platejs/basic-nodes/react';
-import type { Element } from 'platejs';
-import { useElement } from 'platejs/react';
+import { BlockquotePlugin } from "@platejs/basic-nodes/react";
+import type { Element } from "platejs";
+import { useElement } from "platejs/react";
 
-type MyElement = Element & { type: 'my-element' };
+type MyElement = Element & { type: "my-element" };
 
 const quote = useElement(BlockquotePlugin);
 const generic = useElement<MyElement>();
@@ -674,42 +626,44 @@ element.
 ## Core plugins
 
 ### `DebugPlugin`
-Provides debugging capabilities with configurable log levels and error handling. 
+
+Provides debugging capabilities with configurable log levels and error handling.
 
 See [Debugging](/docs/debugging) for more details.
 
 ### `ElementStatePlugin`
+
 Extend Plate editor behavior on top of Plite.
 
 `ElementStatePlugin` exposes
 `editor.plugin(ElementStatePlugin).api.isEmpty(element)`. It checks the
 element's own props, not its text content. By default, only `type` and compiled
-element properties declared with `significant: false` are ignored; any other
-prop means the element carries state. `NodeIdPlugin` declares its configured ID
-property as non-significant.
+element properties declared with `role: "metadata"` are ignored; any other prop
+means the element carries state. `NodeIdPlugin` declares its configured ID
+property as metadata.
 
 ```tsx
 const elementState = editor.plugin(ElementStatePlugin);
 
 elementState.api.isEmpty({
-  children: [{ text: '' }],
-  type: 'p',
+  children: [{ text: "" }],
+  type: "p",
 }); // true
 
 elementState.api.isEmpty({
-  children: [{ text: '' }],
-  listStyleType: 'disc',
-  type: 'p',
+  children: [{ text: "" }],
+  listStyleType: "disc",
+  type: "p",
 }); // false
 
 const CustomMetadataPlugin = createBasePlugin({
-  key: 'customMetadata',
+  name: "customMetadata",
   schema: {
     properties: [
       schema.elementProperty(
-        'customId',
-        property.string({ significant: false }),
-        { target: target.group('block') }
+        "customId",
+        property.string(),
+        { role: "metadata", target: target.group("block") }
       ),
     ],
   },
@@ -717,21 +671,27 @@ const CustomMetadataPlugin = createBasePlugin({
 ```
 
 ### `DOMPlugin`
+
 Exposes DOM helpers for Plate and composes with Plite React on editable surfaces.
 
 ### `HistoryPlugin`
+
 Enables undo and redo functionality for the editor.
 
 ### `InlineVoidPlugin`
+
 Manages inline and void elements in the editor.
 
 ### `HtmlPlugin`
+
 Enables HTML serialization and deserialization.
 
 ### `ParagraphPlugin`
+
 Provides paragraph formatting functionality.
 
 ### `EventEditorPlugin`
+
 Manages editor events such as focus and blur.
 
 ## Components
@@ -741,41 +701,56 @@ Manages editor events such as focus and blur.
 Generic component for rendering an element.
 
 <API name="PlateElement">
-<APIProps>
-  <APIItem name="className" type="string" optional>
-    The CSS class to apply to the component.
-  </APIItem>
-  <APIItem name="editor" type="E">
-    The editor instance. Also available using the strict `useEditor` hook.
-  </APIItem>
-  <APIItem name="element" type="Element">
-    The element node. Also available using `useElement` hook.
-  </APIItem>
-  <APIItem name="path" type="Path">
-    The path of the element in the editor tree. Also available using `usePath` hook.
-  </APIItem>
-  <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
-    Attributes of the element to be spread on the top-level element.
-    <APISubList>
-      <APISubListItem parent="attributes" name="data-plite-node" type="'element'">
-        Always set to `'element'`.
-      </APISubListItem>
-      <APISubListItem parent="attributes" name="data-plite-inline" type="boolean" optional />
-      <APISubListItem parent="attributes" name="data-plite-void" type="boolean" optional />
-      <APISubListItem parent="attributes" name="dir" type="string" optional />
-      <APISubListItem parent="attributes" name="ref" type="any">
-        The reference to the element. If using your own reference, merge it with this one.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="children" type="any">
-    Necessary for rendering the node children.
-  </APIItem>
-  <APIItem name="as" type="React.ElementType" optional>
-    The component type to render as.
-    - **Default:** `'div'`
-  </APIItem>
-</APIProps>
+  <APIProps>
+    <APIItem name="className" type="string" optional>
+      The CSS class to apply to the component.
+    </APIItem>
+    <APIItem name="editor" type="E">
+      The editor instance. Also available using the strict `useEditor` hook.
+    </APIItem>
+    <APIItem name="element" type="Element">
+      The element node. Also available using `useElement` hook.
+    </APIItem>
+    <APIItem name="path" type="Path">
+      The path of the element in the editor tree. Also available using `usePath`
+      hook.
+    </APIItem>
+    <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
+      Attributes of the element to be spread on the top-level element.
+      <APISubList>
+        <APISubListItem
+          parent="attributes"
+          name="data-plite-node"
+          type="'element'"
+        >
+          Always set to `'element'`.
+        </APISubListItem>
+        <APISubListItem
+          parent="attributes"
+          name="data-plite-inline"
+          type="boolean"
+          optional
+        />
+        <APISubListItem
+          parent="attributes"
+          name="data-plite-void"
+          type="boolean"
+          optional
+        />
+        <APISubListItem parent="attributes" name="dir" type="string" optional />
+        <APISubListItem parent="attributes" name="ref" type="any">
+          The reference to the element. If using your own reference, merge it
+          with this one.
+        </APISubListItem>
+      </APISubList>
+    </APIItem>
+    <APIItem name="children" type="any">
+      Necessary for rendering the node children.
+    </APIItem>
+    <APIItem name="as" type="React.ElementType" optional>
+      The component type to render as. - **Default:** `'div'`
+    </APIItem>
+  </APIProps>
 </API>
 
 ### `<PlateLeaf>`
@@ -783,35 +758,34 @@ Generic component for rendering an element.
 Generic component for rendering a leaf.
 
 <API name="PlateLeaf">
-<APIProps>
-  <APIItem name="className" type="string" optional>
-    The CSS class to apply to the component.
-  </APIItem>
-  <APIItem name="editor" type="E">
-    The editor context.
-  </APIItem>
-  <APIItem name="children" type="any">
-    Necessary for rendering the node children.
-  </APIItem>
-  <APIItem name="leaf" type="Text">
-    The leaf node.
-  </APIItem>
-  <APIItem name="text" type="Text">
-    The text node.
-  </APIItem>
-  <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
-    Attributes of the leaf to be spread on the top-level element.
-    <APISubList>
-      <APISubListItem parent="attributes" name="data-plite-leaf" type="true">
-        Always set to `true`.
-      </APISubListItem>
-    </APISubList>
-  </APIItem>
-  <APIItem name="as" type="React.ElementType" optional>
-    The component type to render as.
-    - **Default:** `'span'`
-  </APIItem>
-</APIProps>
+  <APIProps>
+    <APIItem name="className" type="string" optional>
+      The CSS class to apply to the component.
+    </APIItem>
+    <APIItem name="editor" type="E">
+      The editor context.
+    </APIItem>
+    <APIItem name="children" type="any">
+      Necessary for rendering the node children.
+    </APIItem>
+    <APIItem name="leaf" type="Text">
+      The leaf node.
+    </APIItem>
+    <APIItem name="text" type="Text">
+      The text node.
+    </APIItem>
+    <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
+      Attributes of the leaf to be spread on the top-level element.
+      <APISubList>
+        <APISubListItem parent="attributes" name="data-plite-leaf" type="true">
+          Always set to `true`.
+        </APISubListItem>
+      </APISubList>
+    </APIItem>
+    <APIItem name="as" type="React.ElementType" optional>
+      The component type to render as. - **Default:** `'span'`
+    </APIItem>
+  </APIProps>
 </API>
 
 ### `<PlateText>`
@@ -819,22 +793,21 @@ Generic component for rendering a leaf.
 Generic component for rendering text.
 
 <API name="PlateText">
-<APIProps>
-  <APIItem name="className" type="string" optional>
-    The CSS class to apply to the component.
-  </APIItem>
-  <APIItem name="text" type="Text">
-    The text node.
-  </APIItem>
-  <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
-    Attributes of the text to be spread on the top-level element.
-  </APIItem>
-  <APIItem name="children" type="any">
-    Necessary for rendering the node children.
-  </APIItem>
-  <APIItem name="as" type="React.ElementType" optional>
-    The component type to render as.
-    - **Default:** `'span'`
-  </APIItem>
-</APIProps>
+  <APIProps>
+    <APIItem name="className" type="string" optional>
+      The CSS class to apply to the component.
+    </APIItem>
+    <APIItem name="text" type="Text">
+      The text node.
+    </APIItem>
+    <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
+      Attributes of the text to be spread on the top-level element.
+    </APIItem>
+    <APIItem name="children" type="any">
+      Necessary for rendering the node children.
+    </APIItem>
+    <APIItem name="as" type="React.ElementType" optional>
+      The component type to render as. - **Default:** `'span'`
+    </APIItem>
+  </APIProps>
 </API>

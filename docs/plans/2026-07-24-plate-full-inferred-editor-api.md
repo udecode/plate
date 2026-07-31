@@ -2,7 +2,7 @@
 
 Objective:
 Restore the full inferred Plate editor API; done when installed plugin APIs are
-available and discoverable at `editor.api.<pluginKey>`, scoped portals remain
+available and discoverable at `editor.api.<pluginName>`, scoped portals remain
 typed, adoption and proof pass, and this plan closes.
 
 Flow mode:
@@ -342,7 +342,7 @@ Final handoff prepared:
 - Ownership and target API: Core publishes each non-empty plugin API once under
   its readable key on concrete `editor.api`; the exact plugin portal references
   the same frozen object.
-- Public breaks and adoption: `editor.api.<pluginKey>` is canonical for
+- Public breaks and adoption: `editor.api.<pluginName>` is canonical for
   concrete inferred editors; generic package/self contexts keep
   `editor.plugin(Plugin).api`; Link uses readable key `link` and serialized type
   `a`; no aliases or duplicate implementations survive.

@@ -1,4 +1,4 @@
-import type { InferConfig, PluginConfig } from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 
 import type { CursorData, CursorState } from '@platejs/cursor';
 import { createPlatePlugin } from '@platejs/core/react';
@@ -11,8 +11,6 @@ export type CursorOverlayPluginState = {
 };
 
 const initialState: CursorOverlayPluginState = { cursors: {} };
-
-type DndConfig = PluginConfig<typeof KEYS.dnd, { isDragging: boolean }>;
 
 export const CursorOverlayPlugin = createPlatePlugin({
   api: ({ store }) => ({
@@ -33,24 +31,12 @@ export const CursorOverlayPlugin = createPlatePlugin({
   editOnly: {
     render: false,
   },
-  key: KEYS.cursorOverlay,
+  name: KEYS.cursorOverlay,
   initialState,
-}).extend(({ api, editor, store }) => ({
-  extension: {
-    on: {
-      commit({ commit }) {
-        if (commit.selectionChanged && store.get().cursors?.selection) {
-          setTimeout(() => {
-            api.addCursor('selection', {
-              selection: editor.read.selection(),
-            });
-          }, 0);
-        }
-      },
-    },
-  },
-  handlers: {
-    onBlur: ({ api, editor, event }) => {
+  useHooks: useCursorOverlayPlugin,
+}).extend(({ api }) => ({
+  on: {
+    blur: ({ editor, event }) => {
       if (!editor.read.selection()) return;
 
       const enabled =
@@ -63,16 +49,16 @@ export const CursorOverlayPlugin = createPlatePlugin({
         selection: editor.read.selection(),
       });
     },
-    onDragEnd: () => {
+    dragEnd: () => {
       api.removeCursor('drag');
     },
-    onDragLeave: () => {
+    dragLeave: () => {
       api.removeCursor('drag');
     },
-    onDragOver: ({ api, editor, event }) => {
-      const dnd = editor.plugin<DndConfig>({ key: KEYS.dnd });
+    dragOver: ({ editor, event }) => {
+      const dnd = editor.plugin(KEYS.dnd);
 
-      if (!dnd.installed || dnd.store.get('isDragging')) {
+      if (!dnd.installed || document.body.classList.contains('dragging')) {
         return;
       }
 
@@ -88,15 +74,22 @@ export const CursorOverlayPlugin = createPlatePlugin({
         selection: range,
       });
     },
-    onDrop: () => {
+    drop: () => {
       api.removeCursor('drag');
     },
-    onFocus: () => {
+    focus: () => {
       api.removeCursor('selection');
     },
+    commit({ commit, editor, store }) {
+      if (commit.selectionChanged && store.get().cursors?.selection) {
+        setTimeout(() => {
+          api.addCursor('selection', {
+            selection: editor.read.selection(),
+          });
+        }, 0);
+      }
+    },
   },
-
-  useHooks: useCursorOverlayPlugin,
 }));
 
-export type CursorOverlayConfig = InferConfig<typeof CursorOverlayPlugin>;
+export type CursorOverlayDefinition = DefinitionOf<typeof CursorOverlayPlugin>;

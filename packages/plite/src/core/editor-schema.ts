@@ -1,5 +1,6 @@
 import type {
   Descendant,
+  DescendantIn,
   Editor,
   ContentSlice,
   EditorDocumentValue,
@@ -623,6 +624,7 @@ export const createEditorSchema = <V extends Value = Value>(
       lifecycle: property.lifecycle,
       merge: property.merge,
       placement: property.placement,
+      role: property.role,
       target: property.target,
       value: property.descriptor,
     });
@@ -1322,7 +1324,7 @@ export const createEditorSchema = <V extends Value = Value>(
     return cloneFrozen(element);
   };
 
-  const createAndFill = ((
+  const create = ((
     element: string | Readonly<{ kind: 'schema-element'; type: string }>,
     properties?: Readonly<Record<string, unknown>>,
     creating: ReadonlySet<string> = new Set(),
@@ -1342,7 +1344,7 @@ export const createEditorSchema = <V extends Value = Value>(
       creating,
       options
     );
-  }) as InternalEditorSchemaApi['createAndFill'];
+  }) as InternalEditorSchemaApi['create'];
 
   const createDefaultRootChild = (root = 'main'): Descendant | null => {
     const declarative = getDeclarativeSchema();
@@ -1389,7 +1391,7 @@ export const createEditorSchema = <V extends Value = Value>(
     schemaApi: api,
     structurallyEqual,
     validateDeclarativeChildren,
-    validateDocument,
+    validateDocument: assertDocument,
     validateSliceVocabulary,
   }));
   const fit: InternalEditorSchemaApi<V>['fit'] = sliceFitter.fit;
@@ -2392,12 +2394,21 @@ export const createEditorSchema = <V extends Value = Value>(
       );
     }
   };
-  const validateFragment = (children: readonly Descendant[]) => {
-    assertSchemaJsonValue(
-      children,
-      'Editor document fragment',
-      toSchemaValidationLocation('main', [])
-    );
+  const assertFragment: EditorStateSchemaApi<V>['assertFragment'] = (
+    input: unknown
+  ): asserts input is readonly DescendantIn<V>[] => {
+    const location = toSchemaValidationLocation('main', []);
+
+    assertSchemaJsonValue(input, 'Editor document fragment', location);
+    if (!Array.isArray(input)) {
+      throw createEditorSchemaValidationError(
+        'invalid-json',
+        'Editor document fragment must be an array.',
+        location
+      );
+    }
+    const children = input as readonly Descendant[];
+
     validateFragmentContents(children);
   };
 
@@ -2813,11 +2824,28 @@ export const createEditorSchema = <V extends Value = Value>(
     }
   };
 
-  const validateDocument = (value: EditorDocumentValue) => {
+  const assertDocument: EditorStateSchemaApi<V>['assertDocument'] = (
+    input: unknown
+  ): asserts input is EditorDocumentValue<V> => {
     profileCoreDuration('schema-validation-full-document-boundary', () => {
       const location = toSchemaValidationLocation('main', []);
 
-      assertSchemaJsonValue(value, 'Editor document value', location);
+      assertSchemaJsonValue(input, 'Editor document value', location);
+      if (
+        typeof input !== 'object' ||
+        input === null ||
+        Array.isArray(input) ||
+        !Object.hasOwn(input, 'children') ||
+        !Array.isArray((input as Readonly<{ children?: unknown }>).children)
+      ) {
+        throw createEditorSchemaValidationError(
+          'invalid-json',
+          'Editor document value must be an object with a children array.',
+          location
+        );
+      }
+      const value = input as EditorDocumentValue<V>;
+
       assertSchemaJsonValue(
         value.children,
         'Editor document children',
@@ -2865,7 +2893,7 @@ export const createEditorSchema = <V extends Value = Value>(
 
     if (unvalidatedRoot) {
       throw new Error(
-        `Incremental schema validation requires an explicitly validated immutable baseline for ${editorRootLabel(unvalidatedRoot)}. Call validateDocument() at the external document boundary before constructing changes.`
+        `Incremental schema validation requires an explicitly validated immutable baseline for ${editorRootLabel(unvalidatedRoot)}. Call assertDocument() at the external document boundary before constructing changes.`
       );
     }
     if (after.roots && Object.hasOwn(after.roots, 'main')) {
@@ -3365,7 +3393,9 @@ export const createEditorSchema = <V extends Value = Value>(
     canonicalizeChildren,
     elementPropertiesForSplitAt,
     elementPropertiesForTypeChangeAt,
-    createAndFill,
+    assertDocument,
+    assertFragment,
+    create,
     createDefaultRootChild,
     delta: () => getExtensionRegistry(getEditor()).schemaContributions.delta,
     element: getPublicElement,
@@ -3410,15 +3440,13 @@ export const createEditorSchema = <V extends Value = Value>(
       ElementApi.isElement(element) && getElementBehavior(element).selectable,
     isVoid: (element: Node) =>
       ElementApi.isElement(element) && getElementBehavior(element).void,
-    markableVoid: (element: Node) =>
+    isMarkableVoid: (element: Node) =>
       ElementApi.isElement(element) && getElementBehavior(element).markableVoid,
     property: getPublicProperty,
     mergeTextPropertyAt,
     textPropertiesForSplitAt,
     textPropertiesForTypeChangeAt,
-    validateDocument,
     validateDocumentChange,
-    validateFragment,
     validateTextPropertiesAtValue,
   });
 

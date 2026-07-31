@@ -94,6 +94,7 @@ import { type Range, RangeApi } from '../interfaces/range';
 import { SelectionApi } from '../interfaces/selection';
 import { stripLocationRoots } from '../internal/root-location';
 import { isTxOnlyMethod } from './tx-only';
+import type { InternalEditorSchemaApi } from './editor-schema';
 import { defineSemanticUpdateMethod } from './semantic-update-method';
 import type { Text } from '../interfaces/text';
 import {
@@ -300,7 +301,7 @@ type TransactionSnapshot = {
     string,
     Readonly<{
       editor?: Editor;
-      input: EditorExtensionInput<any>;
+      input: EditorExtensionInput;
       migrate?: EditorExtensionReconfigureOptions['migrate'];
       onPublished?: (cleanup: () => void) => void;
     }>
@@ -1522,10 +1523,10 @@ export const markTransactionChanged = (editor: Editor) => {
   }
 };
 
-export const stageEditorExtensionConfiguration = (
+export const stageEditorExtensionCandidate = (
   editor: Editor,
   key: string,
-  input: EditorExtensionInput<any>,
+  input: EditorExtensionInput,
   onPublished?: (cleanup: () => void) => void,
   extensionEditor?: Editor,
   options: EditorExtensionReconfigureOptions = {}
@@ -1535,7 +1536,7 @@ export const stageEditorExtensionConfiguration = (
 
   if (!snapshot) {
     throw new Error(
-      'Editor extension configuration can only be staged during editor.update.'
+      'An editor extension candidate can only be staged during editor.update.'
     );
   }
 
@@ -1796,7 +1797,7 @@ export const getSelectionMarks = <V extends Value>(
         match: (n: PliteNode) =>
           NodeApi.isElement(n) &&
           getEditorSchema(editor).isVoid(n) &&
-          getEditorSchema(editor).markableVoid(n),
+          getEditorSchema(editor).isMarkableVoid(n),
       });
 
       if (!markedVoid) {
@@ -2299,7 +2300,9 @@ const fitSliceIntoActiveDraft = <V extends Value>(
       fitted = continuationFitted;
       if (fitted) {
         try {
-          getEditorSchema(editor).validateDocument(
+          const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+          schema.assertDocument(
             continuation.changes.apply(
               getActiveDocumentChangeBuilder(editor)
                 .value as EditorDocumentValue
@@ -3531,7 +3534,7 @@ const getUpdateView = <
     extensions: Object.freeze({
       reconfigure: (slot, input, options) =>
         runActive(() =>
-          stageEditorExtensionConfiguration(
+          stageEditorExtensionCandidate(
             editor,
             slot.key,
             slot.of(input),
@@ -3945,9 +3948,20 @@ const getUpdateView = <
       )) as EditorCommandDispatch;
   }
 
-  for (const [groupName, registration] of getExtensionRegistry(editor)
-    .txGroups) {
-    const group = registration.factory(
+  const extensionRegistry = getExtensionRegistry(editor);
+
+  for (const [groupName] of extensionRegistry.stateGroups) {
+    if (extensionRegistry.txGroups.has(groupName)) continue;
+
+    txExtensionRecord[groupName] = guardTransactionValue(
+      txExtensionRecord[groupName],
+      assertActive,
+      new WeakMap()
+    );
+  }
+
+  for (const [groupName, registration] of extensionRegistry.txGroups) {
+    const updateGroup = registration.factory(
       txExtensionRecord as never,
       editor as never,
       (specContext?.kind === 'update'
@@ -3960,6 +3974,14 @@ const getUpdateView = <
             },
           })) as never
     );
+    const readGroup = txExtensionRecord[groupName];
+    const group =
+      typeof readGroup === 'object' &&
+      readGroup !== null &&
+      typeof updateGroup === 'object' &&
+      updateGroup !== null
+        ? { ...readGroup, ...updateGroup }
+        : updateGroup;
 
     txExtensionRecord[groupName] = guardTransactionValue(
       specContext?.kind === 'spec' ? getSpecSafeTransactionGroup(group) : group,
@@ -4176,7 +4198,7 @@ const reconcileExclusiveElementOwnedRoots = (editor: Editor) => {
   const snapshot = getTransactionSnapshot(editor);
 
   if (!snapshot) return false;
-  const schema = getEditorSchema(editor);
+  const schema: InternalEditorSchemaApi = getEditorSchema(editor);
   const before = getChangeValue(snapshot.roots) as EditorDocumentValue;
   const after = snapshot.builder.value as EditorDocumentValue;
   const change = snapshot.builder.change;
@@ -5605,7 +5627,7 @@ const createEditorDocumentChangeBuilder = (
   }> = {}
 ) => {
   const revision = getExtensionRegistry(editor);
-  const schema = getEditorSchema(editor);
+  const schema: InternalEditorSchemaApi = getEditorSchema(editor);
   const validation = options.validation ?? 'incremental';
   const assertRevision = () => {
     if (getExtensionRegistry(editor) !== revision) {
@@ -5647,7 +5669,7 @@ const createEditorDocumentChangeBuilder = (
       ? {
           validate: (candidate) => {
             assertRevision();
-            schema.validateDocument(candidate as EditorDocumentValue);
+            schema.assertDocument(candidate as EditorDocumentValue);
           },
           validateConstructed: ({
             after,
@@ -6889,7 +6911,9 @@ const createRootFitTransactionSpec = (
             roots: { ...(current.roots ?? {}), [root]: input.content },
           };
 
-    getEditorSchema(editor).validateDocument(candidate as EditorDocumentValue);
+    const schema: InternalEditorSchemaApi = getEditorSchema(editor);
+
+    schema.assertDocument(candidate as EditorDocumentValue);
     return createTransactionSpec(editor, () => {
       const builder = getActiveDocumentChangeBuilder(editor);
       const currentRoot =

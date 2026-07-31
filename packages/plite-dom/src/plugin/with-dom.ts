@@ -2,9 +2,7 @@ import {
   defineEditorExtension,
   type EditorCommit,
   type EditorExtension,
-  type EditorExtensionConfigurationContext,
-  type EditorExtensionTxGroup,
-  type EditorExtensionTypeProvider,
+  type EditorExtensionApiFactoryContext,
   type EditorTransactionChangeContext,
   LocationApi,
   type Editor as EditorType,
@@ -113,7 +111,8 @@ const handleDOMTransactionChange = (
 
 export interface DOMEditorOptions {
   /**
-   * Expose DOM clipboard insertion through `editor.api.clipboard.insertData`.
+   * Expose DOM clipboard insertion through
+   * `editor.api.dom.clipboard.insertData`.
    *
    * Set to `false` when a host package owns clipboard parsing and fallback
    * insertion.
@@ -128,29 +127,33 @@ export interface DOMEditorOptions {
 }
 
 export type DOMExtensionTypes<TClipboard extends boolean = true> = {
-  api: { dom: DOMApi } & ([TClipboard] extends [true]
-    ? { clipboard: DOMClipboardApi }
-    : Record<never, never>);
+  api: {
+    dom: DOMApi &
+      ([TClipboard] extends [true]
+        ? { clipboard: DOMClipboardApi }
+        : { clipboard?: never });
+  };
 } & ([TClipboard] extends [true]
-  ? { tx: { clipboard: Pick<DOMClipboardApi, 'insertData'> } }
+  ? { update: { dom: Pick<DOMClipboardApi, 'insertData'> } }
   : Record<never, never>);
 
-type DOMExtensionApi = DOMExtensionTypes<false>['api'] & {
+type DOMExtensionApi = DOMApi & {
   clipboard?: DOMClipboardApi;
 };
 
+type DOMExtensionDefinition<TClipboard extends boolean> = {
+  activate: true;
+  api: DOMExtensionTypes<TClipboard>['api']['dom'];
+  name: 'dom';
+  on: true;
+} & ([TClipboard] extends [true]
+  ? { update: Pick<DOMClipboardApi, 'insertData'> }
+  : Record<never, never>);
+
 /** Editor extension installed by `dom()`. */
-export type DOMExtension<TClipboard extends boolean = true> =
-  EditorExtensionTypeProvider<
-    (editor: EditorType) => DOMExtensionTypes<TClipboard>
-  > &
-    Omit<EditorExtension<EditorType>, 'api' | 'name'> & {
-      api: (
-        editor: EditorType,
-        context: EditorExtensionConfigurationContext
-      ) => DOMExtensionApi;
-      name: 'dom';
-    };
+export type DOMExtension<TClipboard extends boolean = true> = EditorExtension<
+  DOMExtensionDefinition<TClipboard>
+>;
 
 /** Install DOM clipboard, selection, focus, and node-resolution behavior. */
 export function dom(
@@ -160,27 +163,26 @@ export function dom(
   options?: Omit<DOMEditorOptions, 'clipboard'> & { clipboard?: never }
 ): DOMExtension<true>;
 export function dom(options: DOMEditorOptions): DOMExtension<boolean>;
-export function dom(options: DOMEditorOptions = {}): DOMExtension<boolean> {
-  const getApi = (
-    editor: EditorType,
-    context: EditorExtensionConfigurationContext
-  ) => {
-    const handlers = context.getContributions(DOM_CLIPBOARD_HANDLERS);
+export function dom(
+  options: DOMEditorOptions = {}
+): DOMExtension<true> | DOMExtension<false> | DOMExtension<boolean> {
+  const createApi = ({
+    editor,
+    getContributions,
+  }: EditorExtensionApiFactoryContext<EditorType>) => {
+    const handlers = getContributions(DOM_CLIPBOARD_HANDLERS);
 
     const { clipboard, ...domApi } = createDOMEditorCapability(
       editor,
       handlers
     );
-    const api: DOMExtensionApi = {
-      dom: Object.freeze(domApi) as DOMApi,
-    };
-
-    if (options.clipboard !== false) api.clipboard = clipboard;
-
-    return api;
+    return Object.freeze({
+      ...domApi,
+      ...(options.clipboard === false ? {} : { clipboard }),
+    }) as DOMExtensionApi;
   };
 
-  const extension = defineEditorExtension<EditorType>()({
+  const extension = defineEditorExtension({
     activate(editor, context) {
       const previousActivation = DOM_ACTIVATION.get(editor);
       const previousClipboardFormatKey = getDOMClipboardFormatKey(editor);
@@ -219,7 +221,7 @@ export function dom(options: DOMEditorOptions = {}): DOMExtension<boolean> {
         EDITOR_TO_KEY_TO_ELEMENT.set(editor, new WeakMap());
       }
     },
-    api: getApi,
+    api: createApi,
     name: 'dom',
     on: {
       commit({ commit, editor }) {
@@ -229,33 +231,26 @@ export function dom(options: DOMEditorOptions = {}): DOMExtension<boolean> {
         handleDOMTransactionChange(context.editor, context);
       },
     },
-    tx:
-      options.clipboard === false
-        ? {}
-        : {
-            clipboard: ((tx, editor) => ({
-              insertData: (data) => {
-                tx.tags.add('paste');
+    ...(options.clipboard === false
+      ? {}
+      : {
+          update: ({ editor, tx }) => ({
+            insertData: (data: DataTransfer) => {
+              tx.tags.add('paste');
 
-                return dispatchDOMClipboardHandlers(
-                  getEditorExtensionContributions(
-                    editor,
-                    DOM_CLIPBOARD_HANDLERS
-                  ),
-                  data,
-                  tx,
-                  (nextData) =>
-                    DOMEditorApi.clipboard.insertData(editor, nextData)
-                );
-              },
-            })) satisfies EditorExtensionTxGroup<
-              EditorType,
-              Pick<DOMClipboardApi, 'insertData'>
-            >,
-          },
+              return dispatchDOMClipboardHandlers(
+                getEditorExtensionContributions(editor, DOM_CLIPBOARD_HANDLERS),
+                data,
+                tx,
+                (nextData) =>
+                  DOMEditorApi.clipboard.insertData(editor, nextData)
+              );
+            },
+          }),
+        }),
   });
 
-  return extension as DOMExtension<boolean>;
+  return extension as unknown as DOMExtension<boolean>;
 }
 
 /** Editor type with the public API installed by `dom()`. */

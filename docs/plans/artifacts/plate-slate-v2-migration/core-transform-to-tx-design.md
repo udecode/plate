@@ -81,7 +81,7 @@ No generic compatibility shim:
 
 Plate keeps `editor.tf`, `getTransforms(plugin)`, and plugin
 `extendTransforms(...)` as the typed beta command facade only when that facade
-opens `editor.update((tx) => tx.<pluginKey>.<method>(...))` over an explicit
+opens `editor.update((tx) => tx.<pluginName>.<method>(...))` over an explicit
 `extendTx(...)` group. It cannot be a hidden old Slate adapter.
 
 ## Completed implementation packets
@@ -94,7 +94,7 @@ Completed runtime packet:
    an internal plugin shape that maps directly to Slate v2 extension `tx`.
 2. Added focused core test coverage proving:
    - a plugin registers a tx group;
-   - `editor.update((tx) => tx.<pluginKey>.<method>())` performs a document
+   - `editor.update((tx) => tx.<pluginName>.<method>())` performs a document
      mutation;
    - raw tx groups execute without restoring legacy editor mutation.
 

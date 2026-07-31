@@ -255,7 +255,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types.
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
@@ -492,7 +492,7 @@ Related scoped sweep ledger:
 | Raw editor-bound API hard cut | `packages/list/src` | old helper import/export and callback audit | package matches removed | all | 0 | none in package |
 | Outside adoption audit | `apps/www/src`, `templates`, `content` | exact old list helper/API names | 44 lines / 9 files | 0 | 44 | separate adoption packet |
 | Reviewer questioned pure helper | `apps/www/src`, `templates` | `isOrderedList` imports | 6 files | 0 | 0 | none; keep is correct |
-| Reviewer found target mismatch | `packages/list/src` | configured list vs indent `targetPluginKeys` | 1 contract | 1 | 0 | regression proves shared targets |
+| Reviewer found target mismatch | `packages/list/src` | configured list vs indent `targetPluginNames` | 1 contract | 1 | 0 | regression proves shared targets |
 | Reviewer found parser-owner mismatch | `packages/list/src` | element deserializers on non-element plugins | 1 parser | 1 | 0 | runtime proves default, custom-only, and multi-target ownership |
 
 Core drift ledger:

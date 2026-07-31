@@ -45,9 +45,7 @@ export const defineTestSchema = (
   return defineEditorSchema({
     elements: elementDeclarations,
     id,
-    root: {
-      content: schema.content.types(Object.keys(elementDeclarations)),
-    } as const,
+    root: schema.content.types(Object.keys(elementDeclarations)),
     unknown: 'preserve',
     version: 1,
   });

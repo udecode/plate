@@ -2,8 +2,8 @@ import {
   BaseParagraphPlugin,
   createBaseEditor,
   createBasePlugin,
-  getEditorPlugin,
 } from '@platejs/core';
+import { createPluginContext } from '@platejs/core/internal';
 import {
   ContentSlice,
   EditorSchemaValidationError,
@@ -23,19 +23,19 @@ describe('BaseIndentPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
     });
-    const plugin = editor.getPlugin(BaseIndentPlugin);
-    const nodeProps = editor.getInjectProps(BaseIndentPlugin);
+    const plugin = editor.plugin(BaseIndentPlugin).plugin;
+    const nodeProps = editor.plugin(BaseIndentPlugin).plugin.inject.nodeProps!;
 
     expect(editor.plugin(BaseIndentPlugin).store.get()).toEqual({
       offset: 24,
       unit: 'px',
     });
-    expect(plugin.targetPluginKeys).toEqual([KEYS.p]);
+    expect(plugin.targetPluginNames).toEqual([KEYS.p]);
     expect(nodeProps.nodeKey).toBe('indent');
     expect(nodeProps.styleKey).toBe('marginLeft');
     expect(
       nodeProps.transformNodeValue!({
-        ...getEditorPlugin(editor, plugin),
+        ...createPluginContext(editor, plugin),
         nodeValue: 2,
       })
     ).toBe('48px');
@@ -47,7 +47,7 @@ describe('BaseIndentPlugin', () => {
         BaseParagraphPlugin,
         BaseIndentPlugin,
         createBasePlugin({
-          key: 'testIndentProps',
+          name: 'testIndentProps',
           schema: {
             properties: [
               schema.elementProperty('foo', property.string(), {
@@ -108,7 +108,7 @@ describe('BaseIndentPlugin', () => {
 
   it('uses configured targets for both model validation and injection', () => {
     const QuotePlugin = createBasePlugin({
-      key: 'quote',
+      name: 'quote',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),
@@ -117,7 +117,7 @@ describe('BaseIndentPlugin', () => {
       type: 'callout',
     });
     const IndentQuotePlugin = BaseIndentPlugin.configure({
-      targetPluginKeys: ['quote'],
+      targetPluginNames: ['quote'],
     });
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, QuotePlugin, IndentQuotePlugin],
@@ -130,17 +130,19 @@ describe('BaseIndentPlugin', () => {
       ],
     });
 
-    expect(editor.getPlugin(BaseIndentPlugin).targetPluginKeys).toEqual([
-      'quote',
-    ]);
+    expect(
+      editor.plugin(BaseIndentPlugin).plugin.targetPluginNames.join()
+    ).toBe('quote');
     expect(editor.read.children()[0]).toMatchObject({
       indent: 1,
       type: 'callout',
     });
     let thrown: unknown;
+    const assertFragment: typeof editor.read.schema.assertFragment =
+      editor.read.schema.assertFragment;
 
     try {
-      editor.read.schema.validateFragment([
+      assertFragment([
         { children: [{ text: 'Paragraph' }], indent: 1, type: KEYS.p },
       ]);
     } catch (error) {
@@ -182,7 +184,6 @@ describe('BaseIndentPlugin', () => {
         offset: 10,
         unit: 'em',
       },
-      type: 'depth',
     });
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, IndentPlugin],
@@ -195,20 +196,19 @@ describe('BaseIndentPlugin', () => {
     ).toEqual([
       {
         children: [{ text: 'Indented' }],
-        depth: 2,
+        indent: 2,
         type: KEYS.p,
       },
     ]);
   });
 
-  it('uses the resolved plugin type as its sole storage key', () => {
+  it('uses the plugin type instead of an injected node key', () => {
     const IndentPlugin = BaseIndentPlugin.configure({
       inject: {
         nodeProps: {
           nodeKey: 'legacyIndent',
         },
       },
-      type: 'depth',
     });
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, IndentPlugin],
@@ -220,7 +220,7 @@ describe('BaseIndentPlugin', () => {
       initialValue: [
         {
           children: [{ text: 'One' }],
-          depth: 1,
+          indent: 1,
           type: KEYS.p,
         },
       ],
@@ -228,11 +228,11 @@ describe('BaseIndentPlugin', () => {
 
     editor.update.indent.set();
 
-    expect(editor.read.children()[0]).toMatchObject({ depth: 2 });
+    expect(editor.read.children()[0]).toMatchObject({ indent: 2 });
     expect(editor.read.children()[0]).not.toHaveProperty('legacyIndent');
 
     expect(editor.update.indent.untab()).toBe(true);
-    expect(editor.read.children()[0]).toMatchObject({ depth: 1 });
+    expect(editor.read.children()[0]).toMatchObject({ indent: 1 });
   });
 
   it('round-trips configured indent values through HTML', () => {
@@ -241,14 +241,13 @@ describe('BaseIndentPlugin', () => {
         offset: 10,
         unit: 'em',
       },
-      type: 'depth',
     });
     const editor = createBaseEditor({
       plugins: [BaseParagraphPlugin, IndentPlugin],
       initialValue: [
         {
           children: [{ text: 'Indented' }],
-          depth: 2,
+          indent: 2,
           type: KEYS.p,
         },
       ],
@@ -298,8 +297,10 @@ describe('BaseIndentPlugin', () => {
     ]);
   });
 
-  it('caps the resolved schema property instead of an injected node key', () => {
-    const value: Value = [{ children: [{ text: 'One' }], depth: 4, type: 'p' }];
+  it('caps the schema property instead of an injected node key', () => {
+    const value: Value = [
+      { children: [{ text: 'One' }], indent: 4, type: 'p' },
+    ];
     const editor = createPlateEditor({
       plugins: [
         BaseParagraphPlugin,
@@ -310,7 +311,6 @@ describe('BaseIndentPlugin', () => {
             },
           },
           initialState: { indentMax: 2 },
-          type: 'depth',
         }),
       ],
       initialValue: value,
@@ -319,7 +319,7 @@ describe('BaseIndentPlugin', () => {
     editor.update.value.repair();
 
     expect(editor.read.children()).toEqual([
-      { children: [{ text: 'One' }], depth: 2, type: 'p' },
+      { children: [{ text: 'One' }], indent: 2, type: 'p' },
     ]);
   });
 
@@ -334,7 +334,7 @@ describe('BaseIndentPlugin', () => {
         plugins: [
           BaseParagraphPlugin,
           createBasePlugin({
-            key: 'quote',
+            name: 'quote',
             schema: {
               element: {
                 content: schema.content.text({ default: 'text', min: 1 }),

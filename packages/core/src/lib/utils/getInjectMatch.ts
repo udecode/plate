@@ -2,17 +2,15 @@ import { type Node, type Path, ElementApi } from '@platejs/plite';
 
 import type { BaseEditor } from '../editor';
 
+import type { AnyBasePlugin } from '../plugin';
 import {
-  type AnyPluginConfig,
-  type BasePlugin,
-  getPluginKey,
-  getPluginKeys,
-} from '../plugin';
-import { getResolvedPluginTargetBinding } from '../../internal/plugin/compilePlateModel';
+  getCompiledPlatePluginName,
+  getResolvedPluginTargetBinding,
+} from '../../internal/plugin/compilePlateModel';
 
-export const getInjectMatch = <E extends BaseEditor, C extends AnyPluginConfig>(
+export const getInjectMatch = <E extends BaseEditor>(
   editor: E,
-  plugin: Pick<BasePlugin<C>, 'inject' | 'key' | 'targetPluginKeys'>
+  plugin: Pick<AnyBasePlugin, 'inject' | 'name' | 'targetPluginNames'>
 ) => {
   return (node: Node, path?: Path) => {
     const {
@@ -33,16 +31,16 @@ export const getInjectMatch = <E extends BaseEditor, C extends AnyPluginConfig>(
     }
     if (isLeaf && element) return false;
     if (element?.type) {
-      const pluginKey = getPluginKey(editor, element.type);
+      const pluginName = getCompiledPlatePluginName(editor, element.type);
 
       // Exclude plugins
-      if (pluginKey && excludePlugins?.includes(pluginKey)) {
+      if (pluginName && excludePlugins?.includes(pluginName)) {
         return false;
       }
       // Target plugins
       if (
-        plugin.targetPluginKeys.length > 0 &&
-        (!pluginKey || !targetBinding.keys.includes(pluginKey))
+        plugin.targetPluginNames.length > 0 &&
+        (!pluginName || !targetBinding.names.includes(pluginName))
       ) {
         return false;
       }
@@ -55,7 +53,11 @@ export const getInjectMatch = <E extends BaseEditor, C extends AnyPluginConfig>(
         return false;
       }
       if (excludeBelowPlugins) {
-        const excludeTypes = getPluginKeys(editor, excludeBelowPlugins);
+        const excludeTypes = excludeBelowPlugins.map((name) => {
+          const portal = editor.plugin(name);
+
+          return portal.installed ? portal.type : name;
+        });
         const isBelow = editor.read.nodes.above({
           at: path,
           match: { type: excludeTypes },

@@ -1,10 +1,14 @@
-import type { AnyBasePlugin } from '../../lib/plugin';
-
 const DEFAULT = {
-  handlers: true,
   inject: true,
-  transformInitialValue: false,
+  on: true,
   render: true,
+  transformInitialValue: false,
+};
+
+type EditOnlyPlugin = {
+  editOnly?:
+    | boolean
+    | Partial<Record<keyof typeof DEFAULT, boolean | undefined>>;
 };
 
 /**
@@ -13,13 +17,13 @@ const DEFAULT = {
  *
  * @param plugin The plugin to check
  * @param isReadOnly Whether the editor is in read-only mode
- * @param feature The feature to check ('render' | 'handlers' | 'inject' |
+ * @param feature The feature to check ('render' | 'on' | 'inject' |
  *   'transformInitialValue')
  * @returns True if the feature should be disabled
  */
 export const isEditOnly = (
   readOnly: boolean,
-  plugin: Pick<AnyBasePlugin, 'editOnly'>,
+  plugin: EditOnlyPlugin,
   feature: keyof typeof DEFAULT
 ): boolean => {
   if (!readOnly) return false;

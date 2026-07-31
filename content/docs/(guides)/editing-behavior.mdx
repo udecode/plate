@@ -30,7 +30,7 @@ Most editing behavior belongs in `plugin.rules`. Reach for an explicit transacti
 | Control mark or inline boundaries while typing and moving. | `rules.selection` |
 | Apply one plugin's rules to another node type. | `rules.match` |
 | Run a product-specific mutation that rules cannot express. | A constructor `update` contribution or an explicit `editor.update(...)` |
-| Compose reusable Enter, Delete, or text-input behavior. | A Plite command handler contributed through the constructor's `extension` field |
+| Compose reusable Enter, Delete, or text-input behavior. | A Plite command handler declared through the constructor's root `commands` field |
 
 Rules keep common editor policy close to the plugin that owns the node. Transaction commands are the right tool for toolbar actions and behavior that depends on app state.
 
@@ -138,7 +138,7 @@ import { schema } from 'platejs';
 import { createPlatePlugin } from 'platejs/react';
 
 export const QuoteItemPlugin = createPlatePlugin({
-  key: 'quote_item',
+  name: 'quote_item',
   rules: {
     delete: {
       start: 'lift',
@@ -222,7 +222,8 @@ export const AppLinkPlugin = LinkPlugin.configure({
 
 Keep normalization rules boring. If a node needs a richer structural repair,
 write a convergent Plite correction and contribute it through
-the constructor's `extension` field so the behavior is explicit and testable.
+the constructor's root `corrections` field so the behavior is explicit and
+testable.
 
 ## Selection Behavior
 
@@ -259,12 +260,12 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 
 | Surface | Owner | Reference |
 | --- | --- | --- |
-| `rules.break` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesbreak) |
-| `rules.delete` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesdelete) |
-| `rules.merge` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
-| `rules.normalize` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
-| `rules.selection` | Affinity core plugin plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesselection) |
-| `rules.match` | Core rule lookup plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
+| `rules.break` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesbreak) |
+| `rules.delete` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesdelete) |
+| `rules.merge` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmerge) |
+| `rules.normalize` | Core rule engine plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
+| `rules.selection` | Affinity core plugin plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesselection) |
+| `rules.match` | Core rule lookup plus feature plugin definition | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
 | `tx.nodes.merge(...)` | Plite transaction command | [Transforms](/docs/plite/api/transforms#txnodesmergeoptions) |
 | `editor.read.nodes.shouldMergeNodesRemovePrevNode(...)` | Plite read query extended by Plate merge-rule middleware | [Editor](/docs/plite/api/nodes/editor) |
 | `tx.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |

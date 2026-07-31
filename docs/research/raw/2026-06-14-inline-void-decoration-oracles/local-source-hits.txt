@@ -516,7 +516,7 @@
 /Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:217:  decorationContent = '',
 /Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:218:  decorationEmptyClass = 'is-empty',
 /Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:243:  // Helper to create a clientRect callback for a given decoration node.
-/Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:244:  // Returns null when no decoration node is present. Uses the pluginKey's
+/Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:244:  // Returns null when no decoration node is present. Uses the pluginName's
 /Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:245:  // state to resolve the current decoration node on demand, avoiding a
 /Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:247:  const clientRectFor = (view: EditorView, decorationNode: Element | null) => {
 /Users/zbeyens/git/tiptap/packages/suggestion/src/suggestion.ts:248:    if (!decorationNode) {
@@ -1181,7 +1181,7 @@
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:25:        element.classList.add('decoration')
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:36:  decorationData: MappablePosition[]
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:37:  decorations: DecorationSet
-/Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:40:const DecorationsPluginKey = new PluginKey('decorations')
+/Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:40:const DecorationsPluginName = new PluginName('decorations')
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:43: * An extension that allows you to insert decorations into the editor. Inside
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:44: * its ProseMirror plugin, it keeps track of the decoration data and
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:45: * decorations.
@@ -1197,15 +1197,15 @@
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:79:              // Create new ProseMirror decorations in the positions determined
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:80:              // by the decoration data.
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:81:              decorations: createDecorations(decorationData, newState.doc),
-/Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:86:          decorations: state => DecorationsPluginKey.getState(state)?.decorations,
+/Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:86:          decorations: state => DecorationsPluginName.getState(state)?.decorations,
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:125:              const decorationData = editor.utils.createMappablePosition(position)
-/Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:126:              props.tr.setMeta(DecorationsPluginKey, decorationData)
+/Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:126:              props.tr.setMeta(DecorationsPluginName, decorationData)
 /Users/zbeyens/git/tiptap/demos/src/Extensions/CollaborationMapPositions/React/index.tsx:131:          Insert decoration
 /Users/zbeyens/git/lexical/packages/shared/src/environment.ts:44:// which falsely matches the Safari regex, activating wrong composition code paths.
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:73: * @param positions - The positions where the decorations should be placed.
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:86:        element.classList.add('decoration')
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:99:  decorations: DecorationSet
-/Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:102:const DecorationsPluginKey = new PluginKey<PluginState>('decorations')
+/Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:102:const DecorationsPluginName = new PluginName<PluginState>('decorations')
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:105: * Metadata for the decorations plugin transactions.
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:123: * Sets the performance callback for the decorations extension.
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:131: * An extension that allows you to insert decorations into the editor.
@@ -1213,7 +1213,7 @@
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:136:  name: 'decorations',
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:146:            decorations: DecorationSet.empty,
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:177:              decorations: createDecorations(
-/Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:185:          decorations: state => DecorationsPluginKey.getState(state)?.decorations,
+/Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:185:          decorations: state => DecorationsPluginName.getState(state)?.decorations,
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:208:  const [decorationCount, setDecorationCount] = useState<DecorationCount>(5)
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:310:   * Adds decorations at random positions in the document.
 /Users/zbeyens/git/tiptap/demos/src/Experiments/CollaborationMappingPerformance/React/index.tsx:317:    startTiming(`Add ${decorationCount} decorations`)
@@ -1728,7 +1728,7 @@
 /Users/zbeyens/git/milkdown/packages/plugins/preset-commonmark/CHANGELOG.md:639:  - fix: 🐛 crepe slash menu and toolbar z-index (#1864)
 /Users/zbeyens/git/milkdown/packages/plugins/preset-commonmark/CHANGELOG.md:743:  - `.milkdown-toolbar` - For the editor toolbar
 /Users/zbeyens/git/milkdown/packages/plugins/preset-commonmark/CHANGELOG.md:749:  - feat: 🎸 migrate toolbar to vue (#1827)
-/Users/zbeyens/git/milkdown/packages/plugins/plugin-upload/src/upload.ts:77:    const decorations = pluginKey.getState(state)
+/Users/zbeyens/git/milkdown/packages/plugins/plugin-upload/src/upload.ts:77:    const decorations = pluginName.getState(state)
 /Users/zbeyens/git/milkdown/packages/plugins/plugin-upload/src/upload.ts:78:    if (!decorations) return -1
 /Users/zbeyens/git/milkdown/packages/plugins/plugin-upload/src/upload.ts:79:    const found = decorations.find(
 /Users/zbeyens/git/milkdown/packages/plugins/plugin-upload/src/upload.ts:144:          const decoration = uploadWidgetFactory(action.add.pos, {

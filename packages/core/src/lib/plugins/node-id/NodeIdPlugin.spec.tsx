@@ -10,7 +10,7 @@ import { NodeIdPlugin, normalizeNodeId } from './NodeIdPlugin';
 jsxt;
 
 const TestLinkPlugin = createBasePlugin({
-  key: 'a',
+  name: 'a',
   type: 'a',
   schema: {
     element: {
@@ -21,7 +21,7 @@ const TestLinkPlugin = createBasePlugin({
 });
 
 const TestInlineVoidPlugin = createBasePlugin({
-  key: 'tag',
+  name: 'tag',
   schema: {
     element: {
       void: 'inline',
@@ -30,7 +30,7 @@ const TestInlineVoidPlugin = createBasePlugin({
 });
 
 const TestBlockquotePlugin = createBasePlugin({
-  key: 'blockquote',
+  name: 'blockquote',
   schema: {
     element: {
       content: schema.content.group('block'),
@@ -39,14 +39,14 @@ const TestBlockquotePlugin = createBasePlugin({
 });
 
 const TestHeadingPlugin = createBasePlugin({
-  key: 'h1',
+  name: 'h1',
   schema: {
     element: { content: schema.content.open({ default: 'text', min: 1 }) },
   },
 });
 
 const TestMarkLikePlugin = createBasePlugin({
-  key: 'markLike',
+  name: 'markLike',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 

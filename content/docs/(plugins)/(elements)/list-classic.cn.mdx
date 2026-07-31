@@ -234,7 +234,7 @@ const editor = createPlateEditor({
 
 `ListItemPlugin.configure({ initialState: { validLiChildren: [ImagePlugin] } })`
 
-将配置后的 `ListItemPlugin` 与 `ListPlugin` 一起放入编辑器插件数组。这个显式描述符会替换键相同的必需默认描述符。
+将配置后的 `ListItemPlugin` 与 `ListPlugin` 一起放入编辑器插件数组。这个显式描述符会替换 name 相同的必需默认描述符。
 
 ### `ListItemContentPlugin`
 
@@ -464,7 +464,7 @@ const editor = createPlateEditor({
   </APIItem>
   <APIItem name="nodeType" type="string">
     列表节点类型。
-    - **默认：** `BulletedListPlugin.key`
+    - **默认：** `BulletedListPlugin.name`
   </APIItem>
 </APIState>
 

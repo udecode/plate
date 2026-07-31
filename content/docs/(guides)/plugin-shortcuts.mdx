@@ -10,7 +10,7 @@ custom handlers, overrides, priorities, and default shortcut ownership.
 
 ## How Shortcuts Resolve
 
-Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every shortcut as `${plugin.key}.${shortcutName}`.
+Each plugin owns a `shortcuts` object. At resolution time Plate namespaces every shortcut as `${plugin.name}.${shortcutName}`.
 
 When a shortcut has no `handler`, Plate looks for a same-named plugin method:
 
@@ -39,13 +39,14 @@ uses a later stage. Custom handlers do not need a linked method.
 
 ## Linked Update Shortcuts
 
-Use a linked transaction command when the shortcut name and plugin tx command name are the same.
+Use a linked update method when the shortcut and plugin update method share a
+name.
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
-  key: 'signature',
+  name: 'signature',
   update: ({ tx }) => ({
     insertSignature: () => {
       tx.text.insert(' - Plate');
@@ -71,7 +72,7 @@ When only the matching API method exists, Plate infers the API route.
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const InspectPlugin = createPlatePlugin({
-  key: 'inspect',
+  name: 'inspect',
   api: ({ editor }) => ({
     logText: () => {
       editor.api.debug.info('Editor text', editor.api.string([]));
@@ -93,9 +94,9 @@ Pressing `Mod+Alt+L` calls
 <Callout type="info" title="Disambiguate collisions">
   If an update method and API method share a name, set `target: 'update'` or
   `target: 'api'`. Plate never changes route silently when a second method is
-  added. A plugin-scoped API and root editor API contributed by the same
-  descriptor are both `api`; if they share the shortcut name, rename one or use
-  a custom handler.
+  added. Each plugin has one API group; `editor.api.inspect` and
+  `editor.plugin(InspectPlugin).api` are two typed access paths to that same
+  immutable object.
 </Callout>
 
 ## Custom Handlers
@@ -108,7 +109,7 @@ or work that should not live as a plugin API or update method. Do not set
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const DraftPlugin = createPlatePlugin({
-  key: 'draft',
+  name: 'draft',
   shortcuts: {
     saveDraft: {
       keys: [[Key.Mod, 's']],
@@ -178,7 +179,7 @@ A plugin can declare multiple shortcut names. Keep each name aligned with the me
 import { Key, createPlatePlugin } from 'platejs/react';
 
 export const ReviewPlugin = createPlatePlugin({
-  key: 'review',
+  name: 'review',
   update: ({ tx }) => ({
     accept: () => tx.text.insert('Accepted'),
     reject: () => tx.text.insert('Rejected'),
@@ -207,7 +208,7 @@ the same key combination and one should win.
 import { createPlatePlugin } from 'platejs/react';
 
 export const PriorityPlugin = createPlatePlugin({
-  key: 'commandMenu',
+  name: 'commandMenu',
   shortcuts: {
     openCommandMenu: {
       keys: 'mod+k',

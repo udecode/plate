@@ -4,12 +4,11 @@ import {
   createTestEditor,
   getTestSerializeOptions,
 } from '../__tests__/createTestEditor';
-import { defaultRules } from '../rules';
 import { convertTextsSerialize } from './convertTextsSerialize';
 
 describe('convertTextsSerialize', () => {
   const editor = createTestEditor();
-  const options = getTestSerializeOptions(editor, { rules: defaultRules });
+  const options = getTestSerializeOptions(editor);
 
   it('keeps outer whitespace outside a single closing mark', () => {
     const result = convertTextsSerialize(

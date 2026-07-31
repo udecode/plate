@@ -55,7 +55,7 @@ const shouldAutoLinkPasteByDefault = (editor, { textBefore }) => {
   if (
     editor.read.nodes.above({
       at: selection,
-      match: { type: editor.getType(KEYS.codeBlock) },
+      match: { type: editor.plugin(KEYS.codeBlock).type },
     })
   ) {
     return false;

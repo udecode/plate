@@ -2,9 +2,12 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import type { EditableProps } from '../../lib';
+import type { EditableProps, EditOnlyConfig } from '../../lib';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
 
@@ -83,7 +86,7 @@ export const pipeRenderLeaf = (
   const complexRenderLeafEntryByKey = new Map<string, RenderLeaf>();
   const renderLeafEntries: Array<{
     className?: string;
-    editOnly?: boolean | Record<string, unknown>;
+    editOnly?: boolean | EditOnlyConfig;
     key: string;
     selectionAffinity?: string;
     tag: keyof HTMLElementTagNameMap;
@@ -93,44 +96,46 @@ export const pipeRenderLeaf = (
   const hasInjectNodeProps =
     getPlateRuntime(editor).pluginCache.inject.nodeProps.length > 0;
 
-  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.node.decoratedMarks.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
 
-    if (plugin) {
-      const leafKey = plugin.type;
-      const canUseSimpleLeaf =
-        getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
-        !plugin.render?.leaf &&
-        !plugin.render?.node &&
-        !plugin.render.nodeProps &&
-        (!plugin.rules.selection?.affinity ||
-          plugin.rules.selection?.affinity === 'hard');
+      if (plugin) {
+        const leafKey = plugin.type;
+        const canUseSimpleLeaf =
+          getPlateRuntime(editor).pluginCache.inject.nodeProps.length === 0 &&
+          !plugin.render?.leaf &&
+          !plugin.render?.node &&
+          !plugin.render.nodeProps &&
+          (!plugin.rules.selection?.affinity ||
+            plugin.rules.selection?.affinity === 'hard');
 
-      if (canUseSimpleLeaf) {
-        const entry = {
-          className: plugin.type ? `plite-${plugin.type}` : undefined,
-          editOnly: plugin.editOnly,
-          key: leafKey,
-          selectionAffinity: plugin.rules.selection?.affinity,
-          tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
-        };
+        if (canUseSimpleLeaf) {
+          const entry = {
+            className: plugin.type ? `plite-${plugin.type}` : undefined,
+            editOnly: plugin.editOnly,
+            key: leafKey,
+            selectionAffinity: plugin.rules.selection?.affinity,
+            tag: (plugin.render?.as ?? 'span') as keyof HTMLElementTagNameMap,
+          };
 
-        renderLeafEntries.push(entry);
-        renderLeafEntryByKey.set(leafKey, true);
-      } else {
-        const entry = {
-          key: leafKey,
-          renderLeaf: pluginRenderLeaf(editor, plugin as any),
-        };
+          renderLeafEntries.push(entry);
+          renderLeafEntryByKey.set(leafKey, true);
+        } else {
+          const entry = {
+            key: leafKey,
+            renderLeaf: pluginRenderLeaf(editor, plugin as any),
+          };
 
-        complexRenderLeafEntries.push(entry);
-        complexRenderLeafEntryByKey.set(leafKey, entry.renderLeaf);
+          complexRenderLeafEntries.push(entry);
+          complexRenderLeafEntryByKey.set(leafKey, entry.renderLeaf);
+        }
       }
     }
-  });
+  );
 
-  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
+  getPlateRuntime(editor).pluginCache.node.leafProps.forEach((pluginName) => {
+    const plugin = getCompiledPlatePlugin(editor, pluginName)!;
     if (plugin) {
       leafPropsPlugins.push(plugin as any);
     }

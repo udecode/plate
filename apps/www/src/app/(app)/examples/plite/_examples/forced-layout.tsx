@@ -10,7 +10,6 @@ import {
   usePliteEditor,
 } from '@platejs/plite-react';
 import type {
-  CustomEditor,
   CustomElement,
   CustomElementType,
   ParagraphElement,
@@ -31,7 +30,7 @@ const setType = (type: CustomElementType) =>
   ({ type }) satisfies Partial<PliteElement>;
 
 const forcedLayout = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'forced-layout',
     corrections: [
       {

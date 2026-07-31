@@ -56,7 +56,7 @@ export default function PreviewMdDemo() {
       plugins: [
         ...BasicNodesKit,
         createBasePlugin({
-          key: 'preview-markdown',
+          name: 'preview-markdown',
           decorate: ({ entry: [node, path] }) => {
             if (!TextApi.isText(node)) return [];
 

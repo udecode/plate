@@ -18,7 +18,7 @@ const inlineLinkSchema = defineEditorSchema({
     },
   },
   id: 'rendered-dom-shape-inline-link',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -98,12 +98,10 @@ describe('rendered DOM shape contract', () => {
                 },
         },
         id: 'rendered-dom-schema-reconfiguration',
-        root: {
-          content: schema.content.type('probe', {
-            default: { type: 'probe' },
-            min: 1,
-          }),
-        },
+        root: schema.content.type('probe', {
+          default: { type: 'probe' },
+          min: 1,
+        }),
         unknown: 'reject',
         version: profile === 'block' ? 1 : profile === 'inline' ? 2 : 3,
       });

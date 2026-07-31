@@ -9,6 +9,7 @@ import {
   getSelection as editorGetSelection,
   replace as editorReplace,
 } from '@platejs/plite/internal';
+import { dom } from '@platejs/plite-dom';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -104,7 +105,7 @@ const projectedSelectionSchema = defineEditorSchema({
     },
   },
   id: 'selection-controller-projected-selection',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -760,7 +761,7 @@ test('changed expanded DOM selection import publishes a selection commit', () =>
 
 test('projected DOM selection import publishes its anchor selection commit', () => {
   const runtime = createEditorRuntime({
-    extensions: [react(), projectedSelectionSchema],
+    extensions: [react({ dom: dom() }), projectedSelectionSchema],
     initialValue: {
       children: [
         { type: 'paragraph', children: [{ text: 'Before' }] },

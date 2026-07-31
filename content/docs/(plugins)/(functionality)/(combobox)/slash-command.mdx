@@ -95,7 +95,7 @@ const editor = createPlateEditor({
         triggerPreviousCharPattern: /^\s?$/,
         triggerQuery: (editor) =>
           !editor.read.nodes.some({
-            match: { type: editor.getType(KEYS.codeBlock) },
+            match: { type: editor.plugin(KEYS.codeBlock).type },
           }),
       },
     }),

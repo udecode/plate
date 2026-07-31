@@ -30,8 +30,11 @@ shell components outside a `<Plite>` root.
 - Resolve projected clipboard ranges against the canonical runtime so
   root-scoped editor views copy and cut their own model content
 - Cancel superseded delayed focus restoration when undo or redo crosses roots
-- Install the DOM extension through a descriptor dependency and consume its
-  clipboard and input-runtime services without name-based capability lookup
+- Install the exact DOM descriptor through `react({ dom })` and consume its
+  clipboard and input-runtime services without name-based runtime lookup
+- Install the default DOM descriptor when `createReactEditor()` is called
+  directly; keep `react({ dom })` as the low-level custom DOM composition
+  surface
 - Route keyboard default-action ownership through the DOM host-facts selector
 - Expose transaction announcements through one `aria-live` region per logical
   editor

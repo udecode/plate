@@ -17,7 +17,7 @@ const UPPER_ALPHA_PATTERN = /^[A-Z]+\./;
 const UPPER_ROMAN_PATTERN = /^[CDILMVX]+\./;
 
 export const DocxPlugin = createBasePlugin({
-  key: KEYS.docx,
+  name: KEYS.docx,
   editOnly: true,
   parsers: {
     html: {

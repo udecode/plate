@@ -112,7 +112,8 @@ Tranche-3 closeout read:
   - `editor.read`
   - `editor.update`
   - primitive editor methods
-  - extension `editor`, `state`, and `tx` groups
+  - extension `api`, `read`, and `update` factories projected through the
+    editor API and runtime `state` / `tx` namespaces
   - commit subscribers
 - stale-state hierarchy is classified:
   - `editor.children` is not a primary read path

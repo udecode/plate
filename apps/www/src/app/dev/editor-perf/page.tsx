@@ -1982,7 +1982,7 @@ const benchmarkStoreInitialState: BenchmarkStorePluginState = {
 
 const BenchmarkStorePlugin = createPlatePlugin({
   initialState: benchmarkStoreInitialState,
-  key: 'benchmarkStore',
+  name: 'benchmarkStore',
 });
 
 function BenchmarkElement({
@@ -2682,19 +2682,19 @@ function BenchmarkEditableMount({
     [editor]
   );
   const paragraphPlugin = React.useMemo(
-    () => editor.getPlugin({ key: 'p' }),
+    () => editor.plugin('p').plugin,
     [editor]
   );
   const boldPlugin = React.useMemo(
-    () => editor.getPlugin({ key: 'bold' }),
+    () => editor.plugin('bold').plugin,
     [editor]
   );
   const underlinePlugin = React.useMemo(
-    () => editor.getPlugin({ key: 'underline' }),
+    () => editor.plugin('underline').plugin,
     [editor]
   );
   const codePlugin = React.useMemo(
-    () => editor.getPlugin({ key: 'code' }),
+    () => editor.plugin('code').plugin,
     [editor]
   );
   const renderElement = React.useCallback(
@@ -2817,7 +2817,7 @@ function BenchmarkEditableMount({
 
       const elementType = element.type as string | undefined;
       const elementPlugin = elementType
-        ? editor.getPlugin({ key: elementType as any })
+        ? editor.plugin(elementType as any).plugin
         : undefined;
       const elementClassName = elementType ? `plite-${elementType}` : undefined;
       const baseAttributes = {
@@ -2936,7 +2936,8 @@ function BenchmarkEditableMount({
       if (elementBenchmarkMode === 'pipe-plugin-precomputed-path') {
         if (
           elementPlugin &&
-          editor.read.schema.element(elementPlugin) !== undefined
+          elementType &&
+          editor.read.schema.element(elementType) !== undefined
         ) {
           return (
             <PlateElement
@@ -2970,7 +2971,8 @@ function BenchmarkEditableMount({
       if (elementBenchmarkMode === 'pipe-plugin-precomputed-no-below-root') {
         if (
           elementPlugin &&
-          editor.read.schema.element(elementPlugin) !== undefined
+          elementType &&
+          editor.read.schema.element(elementType) !== undefined
         ) {
           return (
             <PlateElement
@@ -2992,7 +2994,8 @@ function BenchmarkEditableMount({
       if (elementBenchmarkMode === 'pipe-bare-plain-fast-path') {
         if (
           elementPlugin &&
-          editor.read.schema.element(elementPlugin) !== undefined
+          elementType &&
+          editor.read.schema.element(elementType) !== undefined
         ) {
           const typeClass = elementPlugin.type
             ? `plite-${elementPlugin.type}`
@@ -3058,7 +3061,7 @@ function BenchmarkEditableMount({
             element={element}
             entry={[element, path]}
             path={path}
-            scope={elementPlugin?.key ?? element.type ?? 'bench'}
+            scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <PlateElement {...ctxProps}>
               {props.children}
@@ -3194,7 +3197,7 @@ function BenchmarkEditableMount({
             element={element}
             entry={[element, path]}
             path={path}
-            scope={elementPlugin?.key ?? element.type ?? 'bench'}
+            scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <PlateElement {...ctxProps}>
               {props.children}
@@ -3227,7 +3230,7 @@ function BenchmarkEditableMount({
             element={element}
             entry={[element, path]}
             path={path}
-            scope={elementPlugin?.key ?? element.type ?? 'bench'}
+            scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <BenchRenderNodeHookElement
               attributes={ctxProps.attributes as any}
@@ -3264,7 +3267,7 @@ function BenchmarkEditableMount({
               element,
               entry: [element, path],
               path,
-              scope: elementPlugin?.key ?? element.type ?? 'bench',
+              scope: elementPlugin?.name ?? element.type ?? 'bench',
             }}
           >
             <BenchRenderNodeHookElement
@@ -3410,7 +3413,7 @@ function BenchmarkEditableMount({
             element={element}
             entry={[element, path]}
             path={path}
-            scope={elementPlugin?.key ?? element.type ?? 'bench'}
+            scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <BenchRenderNodeSelectorElement
               attributes={ctxProps.attributes as any}
@@ -3449,7 +3452,7 @@ function BenchmarkEditableMount({
               element,
               entry: [element, path],
               path,
-              scope: elementPlugin?.key ?? element.type ?? 'bench',
+              scope: elementPlugin?.name ?? element.type ?? 'bench',
             }}
           >
             <BenchRenderNodeSelectorElement
@@ -3518,7 +3521,7 @@ function BenchmarkEditableMount({
             element={element}
             entry={[element, path]}
             path={path}
-            scope={elementPlugin?.key ?? element.type ?? 'bench'}
+            scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <PlateElement {...ctxProps}>
               {props.children}
@@ -3547,7 +3550,7 @@ function BenchmarkEditableMount({
               element,
               entry: [element, path],
               path,
-              scope: elementPlugin?.key ?? element.type ?? 'bench',
+              scope: elementPlugin?.name ?? element.type ?? 'bench',
             }}
           >
             <PlateElement {...ctxProps}>
@@ -3689,7 +3692,7 @@ function BenchmarkEditableMount({
             element={element}
             entry={[element, path]}
             path={path}
-            scope={elementPlugin?.key ?? element.type ?? 'bench'}
+            scope={elementPlugin?.name ?? element.type ?? 'bench'}
           >
             <PlateElement {...ctxProps}>
               {props.children}
@@ -3721,7 +3724,7 @@ function BenchmarkEditableMount({
         );
       }
 
-      const plugin = editor.getPlugin({ key: element.type as any });
+      const plugin = editor.plugin(element.type as any).plugin;
       const ctxProps = getRenderNodeProps({
         editor: editor as any,
         plugin: plugin as any,
@@ -3742,8 +3745,8 @@ function BenchmarkEditableMount({
     if (
       !precomputedElementPluginPath ||
       !paragraphPlugin ||
-      editor.read.schema.element(paragraphPlugin) === undefined ||
-      !paragraphPlugin.type
+      !paragraphPlugin.type ||
+      editor.read.schema.element(paragraphPlugin.type) === undefined
     ) {
       return;
     }

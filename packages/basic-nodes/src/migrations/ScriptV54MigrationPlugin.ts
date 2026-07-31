@@ -14,7 +14,7 @@ import { BaseScriptPlugin } from '../lib/BaseMarkPlugins';
  * `script` mark before schema fitting.
  */
 export const ScriptV54MigrationPlugin = createBasePlugin({
-  key: 'scriptV54Migration',
+  name: 'scriptV54Migration',
   transformInitialValue: ({ editor, value }) => {
     const script = editor.plugin(BaseScriptPlugin);
 

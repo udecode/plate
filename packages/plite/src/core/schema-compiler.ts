@@ -33,7 +33,7 @@ const BUILT_IN_GROUPS = [
   'textBlock',
 ] as const;
 const BUILT_IN_GROUP_SET = new Set<string>(BUILT_IN_GROUPS);
-const COMPLETE_SCHEMA_COMMON_FIELDS = ['root', 'unknown'] as const;
+const COMPLETE_SCHEMA_COMMON_FIELDS = ['root'] as const;
 const COMPLETE_SCHEMA_LINEAGE_FIELDS = ['id', 'version'] as const;
 const COMPLETE_SCHEMA_FIELDS = [
   ...COMPLETE_SCHEMA_COMMON_FIELDS,
@@ -68,13 +68,11 @@ const DEFAULT_DERIVED_EDITOR_SCHEMA: EditorSchemaDefinition = Object.freeze({
     }),
   }),
   root: Object.freeze({
-    content: Object.freeze({
-      allowed: Object.freeze({
-        kind: 'not' as const,
-        rule: Object.freeze({ kind: 'text' as const }),
-      }),
-      default: Object.freeze({ type: 'paragraph' }),
+    allowed: Object.freeze({
+      kind: 'not' as const,
+      rule: Object.freeze({ kind: 'text' as const }),
     }),
+    default: Object.freeze({ type: 'paragraph' }),
   }),
   unknown: 'preserve' as const,
 });
@@ -347,6 +345,7 @@ export type CompiledSchemaProperty = Readonly<{
   merge: CompiledSchemaPropertyMergeStrategy;
   owner: string;
   placement: 'element' | 'text';
+  role: 'content' | 'metadata';
   target: SchemaTarget | null;
 }>;
 
@@ -405,7 +404,6 @@ export type StructuralPropertyValueDescriptor = Readonly<{
   item?: StructuralPropertyValueDescriptor;
   kind: PropertyValueKind;
   omitDefault: boolean;
-  significant: boolean;
   validationVersion?: number;
   values?: readonly string[];
 }>;
@@ -809,7 +807,6 @@ const collectSchemaKeyDiagnostics = (
         'item',
         'kind',
         'omitDefault',
-        'significant',
         'validate',
         'validationVersion',
         'values',
@@ -1043,20 +1040,16 @@ const collectSchemaKeyDiagnostics = (
         array(groupDeclaration.extends, extensionName, `${groupPath}.extends`);
       }
     }
-    const visitRoot = (value: unknown, path: string) => {
-      const root = check(value, ['content'], extensionName, path);
-
-      if (root) visitContent(root.content, extensionName, `${path}.content`);
-    };
-
-    if (declaration.root !== undefined) visitRoot(declaration.root, 'root');
+    if (declaration.root !== undefined) {
+      visitContent(declaration.root, extensionName, 'root');
+    }
     const roots =
       declaration.roots === undefined
         ? null
         : object(declaration.roots, extensionName, 'roots');
 
     for (const [name, value] of Object.entries(roots ?? {})) {
-      visitRoot(value, `roots.${name}`);
+      visitContent(value, extensionName, `roots.${name}`);
     }
     if (declaration.contentRoots !== undefined) {
       array(declaration.contentRoots, extensionName, 'contentRoots')?.forEach(
@@ -1081,12 +1074,21 @@ const collectSchemaKeyDiagnostics = (
                   'inclusive',
                   'key',
                   'placement',
+                  'role',
                   'split',
                   'target',
                   'typeChange',
                   'value',
                 ]
-              : ['key', 'placement', 'split', 'target', 'typeChange', 'value'],
+              : [
+                  'key',
+                  'placement',
+                  'role',
+                  'split',
+                  'target',
+                  'typeChange',
+                  'value',
+                ],
             extensionName,
             path
           );
@@ -2278,9 +2280,7 @@ const clonePropertyDescriptor = (
     !['boolean', 'enum', 'json', 'number', 'set', 'string'].includes(
       descriptor.kind
     ) ||
-    typeof descriptor.omitDefault !== 'boolean' ||
-    (descriptor.significant !== undefined &&
-      typeof descriptor.significant !== 'boolean')
+    typeof descriptor.omitDefault !== 'boolean'
   ) {
     compileFailure(
       'invalid-property-descriptor',
@@ -2396,7 +2396,6 @@ const clonePropertyDescriptor = (
     ...(item ? { item } : {}),
     kind: descriptor.kind,
     omitDefault: descriptor.omitDefault,
-    significant: descriptor.significant ?? true,
     ...(hasValidationVersion
       ? { validationVersion: descriptor.validationVersion }
       : {}),
@@ -2518,7 +2517,6 @@ const canonicalDescriptor = (descriptor: PropertyValueDescriptor): unknown => ({
   ...(descriptor.validationVersion
     ? { validationVersion: descriptor.validationVersion }
     : {}),
-  significant: descriptor.significant ?? true,
 });
 
 const compilePropertyLookup = (
@@ -2682,7 +2680,9 @@ const compileEditorSchemaInternal = (
       );
     }
   }
-  if (definition.unknown !== 'preserve' && definition.unknown !== 'reject') {
+  const unknownPolicy = definition.unknown ?? 'reject';
+
+  if (unknownPolicy !== 'preserve' && unknownPolicy !== 'reject') {
     compileFailure(
       'invalid-unknown-policy',
       `${derived ? 'Derived editor schema' : `Editor schema "${definition.id}"`} unknown policy must be "preserve" or "reject".`,
@@ -2690,8 +2690,6 @@ const compileEditorSchemaInternal = (
       'schema.unknown'
     );
   }
-  const unknownPolicy = definition.unknown as EditorSchemaUnknownPolicy;
-
   const groupParents = new Map<string, readonly string[]>(
     BUILT_IN_GROUPS.map((group) => [group, Object.freeze([])] as const)
   );
@@ -2935,8 +2933,8 @@ const compileEditorSchemaInternal = (
   const rootsByName = new Map<string, Source<SchemaContent>>();
   const primaryRoot: Source<SchemaContent> = {
     extensionName: completeRecord.extensionName,
-    path: 'root.content',
-    value: definition.root.content,
+    path: 'root',
+    value: definition.root,
   };
 
   for (const record of records) {
@@ -2945,8 +2943,8 @@ const compileEditorSchemaInternal = (
     ).sort(([left], [right]) => left.localeCompare(right))) {
       const source: Source<SchemaContent> = {
         extensionName: record.extensionName,
-        path: `roots.${name}.content`,
-        value: root.content,
+        path: `roots.${name}`,
+        value: root,
       };
 
       assertName(name, 'Schema root name', source);
@@ -3286,6 +3284,16 @@ const compileEditorSchemaInternal = (
       'value' in raw ? raw.value : raw,
       source
     );
+    const role = 'value' in raw ? raw.role : 'content';
+
+    if (role !== 'content' && role !== 'metadata') {
+      compileFailure(
+        'invalid-property-role',
+        `Schema property at ${source.path} has invalid role.`,
+        [source],
+        source.path
+      );
+    }
 
     mutableProperties.push({
       descriptor,
@@ -3299,6 +3307,7 @@ const compileEditorSchemaInternal = (
       merge: descriptor.kind === 'set' ? 'set' : 'replace',
       owner: source.extensionName,
       placement,
+      role,
       source,
       target: clonedTarget,
     });
@@ -3442,6 +3451,7 @@ const compileEditorSchemaInternal = (
         merge: property.merge,
         owner: property.owner,
         placement: property.placement,
+        role: property.role,
         target: property.target,
       }) satisfies CompiledSchemaProperty;
     })
@@ -3935,7 +3945,6 @@ const toStructuralPropertyDescriptor = (
     ...(item ? { item } : {}),
     kind: descriptor.kind,
     omitDefault: descriptor.omitDefault,
-    significant: descriptor.significant ?? true,
     ...(descriptor.validationVersion
       ? { validationVersion: descriptor.validationVersion }
       : {}),
@@ -4067,6 +4076,7 @@ const canonicalCompiledProperty = (property: CompiledSchemaProperty | null) =>
         lifecycle: property.lifecycle,
         merge: property.merge,
         placement: property.placement,
+        role: property.role,
         target: canonicalTarget(property.target),
       }
     : null;

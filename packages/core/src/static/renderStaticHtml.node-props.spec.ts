@@ -23,7 +23,7 @@ const getObjectProp = (record: Record<string, unknown>, key: string) => {
 const plugins = [
   BaseParagraphPlugin,
   createBasePlugin({
-    key: 'a',
+    name: 'a',
     type: 'a',
     schema: {
       element: {
@@ -43,7 +43,7 @@ const plugins = [
     },
   }),
   createBasePlugin({
-    key: 'img',
+    name: 'img',
     type: 'img',
     schema: {
       element: {
@@ -66,16 +66,10 @@ const plugins = [
 ];
 
 describe('static HTML plugin node props', () => {
-  it('renders a component bound through Base terminal configuration', async () => {
+  it('renders a component declared by a Base plugin', async () => {
     const staticEditor = createStaticEditor({
       plugins: [
         createBasePlugin({
-          key: 'static-callout',
-          render: {
-            nodeProps: () => ({ 'data-static-plugin-prop': 'preserved' }),
-          },
-          schema: { element: { void: 'block' } },
-        }).configure({
           component: ({ attributes, children }) =>
             createElement(
               'aside',
@@ -85,6 +79,11 @@ describe('static HTML plugin node props', () => {
               },
               children
             ),
+          name: 'static-callout',
+          render: {
+            nodeProps: () => ({ 'data-static-plugin-prop': 'preserved' }),
+          },
+          schema: { element: { void: 'block' } },
         }),
       ],
       initialValue: [

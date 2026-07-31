@@ -79,34 +79,38 @@ defaults, and open edges before the transaction publishes one change.
 
 ## Extension Contract
 
-Extensions add named `state`, `tx`, and `api` groups, typed commands, schema,
+Extensions add named `read`, `update`, and `api` groups, typed commands, schema,
 state fields, effects, facets, and corrections.
 
+Public dependency references are shallow, non-generic identity values. Finite
+name-keyed capability/provider inference stays under
+`@platejs/plite/internal`, does not recursively encode exact ancestry, and
+supports static portal checks without replacing runtime exact-descriptor
+identity.
+
 ```ts
-const todo = defineEditorExtension({
+const TodoExtension = defineEditorExtension({
   name: 'todo',
-  tx: {
-    todo(tx) {
-      return {
-        toggle() {
-          tx.nodes.set({ type: 'todo', checked: true })
-        },
-      }
+  update: ({ tx }) => ({
+    toggle() {
+      tx.nodes.set({ type: 'todo', checked: true })
     },
-  },
+  }),
 })
 
-const editor = createEditor({ extensions: [todo] as const })
+const editor = createEditor({ extensions: [TodoExtension] })
+
+editor.update.todo.toggle()
 ```
 
 Extension groups compose through the read/update runtime. Direct method
 replacement is not the public extension model.
 
 Extension declarations compile into a detached immutable candidate.
-`validateConfiguration` checks that candidate before synchronous activation;
-`activate` registers cleanup, and `onReady` runs only after publication.
-Runtime replacement uses a named slot through
-`tx.extensions.reconfigure(...)`, so configuration and document changes publish
+`validate(context)` checks that candidate before synchronous activation;
+`activate(editor, context)` registers cleanup and schedules publication work
+with `context.afterPublish(...)`. Runtime replacement uses a named slot through
+`tx.extensions.reconfigure(...)`, so extension and document changes publish
 atomically.
 
 ## Hard Cuts
@@ -126,8 +130,8 @@ These are not primary public API:
 
 Private runtime storage exists only behind the canonical change engine. Public
 docs, examples, and plugin guidance must use
-read/update, state groups, tx groups, API groups, commit listeners, and
-projection sources.
+`editor.read`, `editor.update`, owner-local read/update groups, name-scoped API
+objects, commit listeners, and projection sources.
 
 ## Browser Editing Claim
 

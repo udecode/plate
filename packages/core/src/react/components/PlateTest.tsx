@@ -18,18 +18,18 @@ type PlateTestEditorOptions = CreatePlateEditorOptions<
 >;
 
 type PlateTestProps = Omit<PlateProps, 'children' | 'editor'> &
-  Omit<PlateTestEditorOptions, 'editor' | 'schema'> & {
+  Omit<PlateTestEditorOptions, 'editor' | 'schemaIdentity'> & {
     children?: React.ReactNode;
     editableProps?: PlateContentProps;
     variant?: 'comment' | 'wordProcessor';
   } & (
     | {
         editor: PlateEditor;
-        schema?: never;
+        schemaIdentity?: never;
       }
     | {
         editor?: Editor<Value> | null;
-        schema: PlateTestEditorOptions['schema'];
+        schemaIdentity: PlateTestEditorOptions['schemaIdentity'];
       }
   );
 
@@ -43,20 +43,22 @@ export function PlateTest({
   variant = 'wordProcessor',
   ...props
 }: PlateTestProps) {
-  const { editor: providedEditor, schema, ...editorOptions } = props;
+  const { editor: providedEditor, schemaIdentity, ...editorOptions } = props;
   let editor: PlateEditor;
 
   if (providedEditor && isPlateEditor(providedEditor)) {
     editor = providedEditor;
   } else {
-    if (!schema) {
-      throw new TypeError('PlateTest requires a schema to create an editor');
+    if (!schemaIdentity) {
+      throw new TypeError(
+        'PlateTest requires schemaIdentity to create an editor'
+      );
     }
 
     editor = createPlateEditor({
       ...editorOptions,
       editor: providedEditor ?? undefined,
-      schema,
+      schemaIdentity,
       shouldNormalizeEditor,
     });
   }

@@ -1,4 +1,4 @@
-import { ElementApi, KEYS, PathApi, getPluginType } from 'platejs';
+import { ElementApi, KEYS, PathApi } from 'platejs';
 import { BaseAIPlugin } from '@platejs/ai';
 import { AIChatPlugin } from '@platejs/ai/react';
 
@@ -28,7 +28,7 @@ const streamPreview = (chunks: string[]) => {
   editor.update({ history: 'skip' }).nodes.insert(
     {
       children: [{ text: '' }],
-      type: getPluginType(editor, KEYS.aiChat),
+      type: editor.plugin(KEYS.aiChat).type,
     },
     {
       at: insertAt,
@@ -40,7 +40,7 @@ const streamPreview = (chunks: string[]) => {
   for (const chunk of chunks) {
     aiChat.update.insertChunk(chunk, {
       textProps: {
-        [getPluginType(editor, KEYS.ai)]: true,
+        [editor.plugin(KEYS.ai).type]: true,
       },
     });
   }
@@ -83,14 +83,13 @@ describe('ai chat streaming history', () => {
       editor.read.nodes.some({
         at: [],
         match: (n: any) =>
-          ElementApi.isElement(n) &&
-          n.type === getPluginType(editor, KEYS.aiChat),
+          ElementApi.isElement(n) && n.type === editor.plugin(KEYS.aiChat).type,
       })
     ).toBe(false);
     expect(
       editor.read.nodes.some({
         at: [],
-        match: (n: any) => !!n[getPluginType(editor, KEYS.ai)],
+        match: (n: any) => !!n[editor.plugin(KEYS.ai).type],
       })
     ).toBe(false);
     expect(

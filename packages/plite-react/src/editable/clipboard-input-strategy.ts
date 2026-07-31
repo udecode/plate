@@ -310,7 +310,7 @@ export const applyEditableCopy = ({
       return;
     }
 
-    editor.api.clipboard.writeSelection(clipboardData);
+    editor.api.dom.clipboard.writeSelection(clipboardData);
   }
 };
 
@@ -373,7 +373,7 @@ export const applyEditableCut = ({
       }
     }
 
-    editor.api.clipboard.writeSelection(clipboardData);
+    editor.api.dom.clipboard.writeSelection(clipboardData);
     const selection = editor.read((state) => state.selection());
 
     if (selection) {
@@ -647,7 +647,7 @@ export const applyEditableDragStart = ({
     state.isDraggingInternally = true;
     event.dataTransfer.effectAllowed = 'move';
 
-    editor.api.clipboard.writeSelection(event.dataTransfer);
+    editor.api.dom.clipboard.writeSelection(event.dataTransfer);
   }
 };
 

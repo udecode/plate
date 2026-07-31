@@ -86,19 +86,19 @@ function getNextRecentColors(
 type ColorPlugin = typeof FontBackgroundColorPlugin | typeof FontColorPlugin;
 
 function setColor(editor: PlateEditor, plugin: ColorPlugin, value: string) {
-  switch (plugin.key) {
-    case FontBackgroundColorPlugin.key:
+  switch (plugin.name) {
+    case FontBackgroundColorPlugin.name:
       return editor.plugin(plugin).update.set(value);
-    case FontColorPlugin.key:
+    case FontColorPlugin.name:
       return editor.plugin(plugin).update.set(value);
   }
 }
 
 function clearColor(editor: PlateEditor, plugin: ColorPlugin) {
-  switch (plugin.key) {
-    case FontBackgroundColorPlugin.key:
+  switch (plugin.name) {
+    case FontBackgroundColorPlugin.name:
       return editor.plugin(plugin).update.clear();
-    case FontColorPlugin.key:
+    case FontColorPlugin.name:
       return editor.plugin(plugin).update.clear();
   }
 }

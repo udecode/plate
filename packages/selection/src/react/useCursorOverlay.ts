@@ -1,18 +1,13 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
 import { useEditorPlugin } from '@platejs/core/react';
-import { KEYS } from '@platejs/utils';
 
-import type { BlockSelectionConfig } from './BlockSelectionPlugin';
-import type { CursorOverlayConfig } from './CursorOverlayPlugin';
+import { BlockSelectionPlugin } from './BlockSelectionPlugin';
+import { CursorOverlayPlugin } from './CursorOverlayPlugin';
 
 export const useCursorOverlayPlugin = () => {
-  const blockSelection = useEditorPlugin<BlockSelectionConfig>({
-    key: KEYS.blockSelection,
-  });
-  const cursorOverlay = useEditorPlugin<CursorOverlayConfig>({
-    key: KEYS.cursorOverlay,
-  });
+  const blockSelection = useEditorPlugin(BlockSelectionPlugin);
+  const cursorOverlay = useEditorPlugin(CursorOverlayPlugin);
   const isSelecting = useSyncExternalStore(
     (listener) =>
       blockSelection.installed

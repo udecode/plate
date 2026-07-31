@@ -62,7 +62,7 @@ describe('useElementSelector', () => {
     const exactScope = renderHook(
       () =>
         useElementSelector(([element]) => element.type, {
-          key: 'name',
+          name: 'name',
         }),
       { wrapper }
     );
@@ -72,7 +72,7 @@ describe('useElementSelector', () => {
     const fallbackScope = renderHook(
       () =>
         useElementSelector(([element]) => element.type, {
-          key: 'missing',
+          name: 'missing',
         }),
       { wrapper }
     );
@@ -115,7 +115,7 @@ describe('useElementSelector', () => {
       () => {
         const value = useElementSelector(
           ([element]) => element.children.length,
-          { equalityFn: (a, b) => a === b, key: 'element' }
+          { equalityFn: (a, b) => a === b, name: 'element' }
         );
 
         renderValues.push(value);
@@ -174,7 +174,7 @@ describe('useElementSelector', () => {
     const { rerender, result } = renderHook(
       ({ suffix }) =>
         useElementSelector(([element]) => `${element.type}-${suffix}`, {
-          key: 'element',
+          name: 'element',
         }),
       { initialProps: { suffix: 'one' }, wrapper }
     );

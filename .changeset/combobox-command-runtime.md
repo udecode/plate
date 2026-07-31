@@ -7,11 +7,4 @@
 - Rename `TriggerComboboxPluginOptions` to `TriggerComboboxPluginState`
 
 **Migration:** Replace `withTriggerCombobox` with
-`createTriggerComboboxExtension` in the plugin constructor:
-
-```ts
-const BasePlugin = createBasePlugin({
-  extension: (context) => createTriggerComboboxExtension(context),
-  // ...
-});
-```
+`BaseTriggerComboboxPlugin`, which declares the command behavior directly.

@@ -52,6 +52,31 @@ const teachingDocs = new Set([
 
 const removedPlateNodeBagPattern =
   /\bnode\s*:\s*\{[\s\S]{0,400}?\b(?:type|element|mark|component|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp|isDecoration|dangerouslyAllowAttributes|toDataAttributes)\s*:/;
+const basePluginExtendComponentPattern =
+  /\bBase[\w$]*Plugin\s*\.\s*extend\s*\(\s*(?:\([^)]*\)\s*=>\s*\(?\s*)?\{[\s\S]{0,400}?\bcomponent\s*:/;
+const terminalComponentConversionPattern =
+  /\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\s*\)\s*\.\s*configure\s*\(\s*\{[\s\S]{0,400}?\bcomponent\s*:/;
+const staticBaseKitReactAdapterPattern =
+  /(?:\b[\w-]+-base-kit\b[^\n]{0,500}\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b|\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b[^\n]{0,500}\b[\w-]+-base-kit\b)/i;
+const staticEditorBaseReactAdapterPattern =
+  /(?=[\s\S]*\b(?:createStaticEditor\s*\(|from\s+['"](?:platejs|@platejs\/core)\/static['"]))[\s\S]*\btoPlatePlugin\s*\(\s*Base[\w$]*Plugin\b/;
+const invalidBaseRendererDocPatterns = [
+  {
+    pattern: terminalComponentConversionPattern,
+    reason:
+      'terminal consumers configure the Base descriptor directly; owning React adapters pass component to toPlatePlugin() while publishing the Plate descriptor',
+  },
+  {
+    pattern: basePluginExtendComponentPattern,
+    reason:
+      'Base .extend() cannot define component; use the constructor default or terminal .configure({ component }) replacement',
+  },
+  {
+    pattern: staticBaseKitReactAdapterPattern,
+    reason:
+      'static/base kits declare or configure component on the Base descriptor without platejs/react',
+  },
+];
 
 const staleCodePatterns = [
   {
@@ -76,6 +101,11 @@ const deletedCodeBlockPatterns = [
     reason:
       'Plate plugin semantics belong under schema.element or schema.mark; the node bag is deleted',
   },
+  {
+    pattern: staticEditorBaseReactAdapterPattern,
+    reason:
+      'static editors use terminal BasePlugin.configure({ component }) without platejs/react; toPlatePlugin(BasePlugin) is for live React',
+  },
 ];
 
 const removedRootMutationFacadePattern =
@@ -83,9 +113,25 @@ const removedRootMutationFacadePattern =
 const removedPlateSchemaFlagsPattern =
   /\bnode\.(?:component|element|mark|isElement|isLeaf|isInline|isVoid|isMarkableVoid|isSelectable|isContainer|isStrictSiblings|isMetadataProp)\b|\bisMarkableVoid\b|\b(?:isElement\b[^\n]{0,160}\bisLeaf|isLeaf\b[^\n]{0,160}\bisElement)\b/;
 const removedSchemaTargetOptionsPattern =
-  /\boptions\s*:\s*\{[^}\n]*\btargetPluginKeys\b/;
+  /\boptions\s*:\s*\{[^}\n]*\btargetPluginNames\b/;
 const removedCaptionTargetOptionsPattern =
   /\boptions\s*:\s*\{\s*query\s*:\s*\{\s*allow\s*:/;
+const removedExtensionApiPortalPattern = /\beditor\.getApi\s*\(/;
+const removedExtensionValidationPattern = /\bvalidateConfiguration\b/;
+const removedExplicitExtensionGenericPattern = /\bdefineEditorExtension\s*</;
+const removedLooseExtensionPortalSignaturePattern =
+  /\bextension\s*<[^>]*\bEditorExtension\s*<\s*EditorExtensionDefinition\s*>/;
+const removedPlatePluginShapePattern =
+  /\b(?:AnyPluginConfig|BasePluginExtensionContract|EffectiveExtensionContractField|EffectivePlateContractField|InferConfig|InferPluginDefinitionTree|MergePlatePluginDefinitions|PluginConfig|TPlatePluginConfig|UnifiedRuntimeBasePluginConfig|UnifiedRuntimePlatePluginConfig|__config|targetPluginKeys)\b|\.clone\s*\(\)|\b(?:extension|handlers|pluginApi)\s*:\s*\{|\b(?:plugin|[A-Za-z_$][\w$]*Plugin)\.pluginApi\b/;
+const removedDefinitionAliasNamePattern =
+  /\btype\s+(?![A-Za-z_$][\w$]*Definition\b)[A-Za-z_$][\w$]*\s*=\s*DefinitionOf\s*</;
+const removedGenericDependencyReferencePattern =
+  /\bEditorExtensionDependencyReference\s*</;
+const removedRootInternalDependencyTypePattern =
+  /\b(?:EditorExtensionDependencyReferenceFor|EditorExtensionTypeLambda|InternalEditorExtensionDependencyReference|InternalEditorExtensionInstalledCapabilitiesOf|InternalEditorExtensionTypeProviderOf|InternalEditorExtensionWitnessFor)\b[\s\S]{0,500}\bfrom\s+['"]@platejs\/plite['"]/;
+const removedZeroArgumentReactPattern = /\breact\s*\(\s*\)/;
+const removedStaticCapabilityPattern =
+  /\b(?:api|commands|read|readMiddleware|update)\s*:\s*\{/;
 const staleTeachingPatterns = [
   {
     pattern:
@@ -101,14 +147,60 @@ const staleTeachingPatterns = [
 
 const deletedArchitecturePatterns = [
   {
+    pattern: removedExtensionApiPortalPattern,
+    reason:
+      'extension APIs use editor.api.<name> or editor.extension(Extension).api',
+  },
+  {
+    pattern: removedExtensionValidationPattern,
+    reason: 'extension candidate validation uses validate',
+  },
+  {
+    pattern: removedExplicitExtensionGenericPattern,
+    reason:
+      'defineEditorExtension infers one definition from its author object',
+  },
+  {
+    pattern: removedLooseExtensionPortalSignaturePattern,
+    reason:
+      'editor.extension accepts an installed EditorExtensionReference guarded by the editor capability set',
+  },
+  {
+    pattern: removedPlatePluginShapePattern,
+    reason:
+      'Plate plugins use one flat definition, prefixless on events, and no clone method',
+  },
+  {
+    pattern: removedDefinitionAliasNamePattern,
+    reason: 'aliases derived with DefinitionOf must end in Definition',
+  },
+  {
+    pattern: removedGenericDependencyReferencePattern,
+    reason: 'root dependency references are shallow and non-generic',
+  },
+  {
+    pattern: removedRootInternalDependencyTypePattern,
+    reason:
+      'finite dependency capability/provider types import from @platejs/plite/internal',
+  },
+  {
+    pattern: removedZeroArgumentReactPattern,
+    reason: 'low-level React composition uses react({ dom })',
+  },
+  {
+    pattern: removedStaticCapabilityPattern,
+    reason:
+      'extension and plugin API, read, update, readMiddleware, and commands fields are factory-only',
+  },
+  {
     pattern: removedSchemaTargetOptionsPattern,
     reason:
-      'schema target plugin descriptors belong in top-level targetPluginKeys',
+      'schema target plugin descriptors belong in top-level targetPluginNames',
   },
   {
     pattern: removedCaptionTargetOptionsPattern,
     reason:
-      'caption target plugin descriptors belong in top-level targetPluginKeys',
+      'caption target plugin descriptors belong in top-level targetPluginNames',
   },
   {
     pattern: removedRootMutationFacadePattern,
@@ -474,6 +566,17 @@ function auditSlateV2Docs() {
         `${relativePath}:${lineNumber}: current release notes must not teach the deleted Plate node bag: ${line}`
       );
     }
+
+    for (const { pattern, reason } of invalidBaseRendererDocPatterns) {
+      const match = pattern.exec(source);
+
+      if (match?.index === undefined) continue;
+
+      const lineNumber = source.slice(0, match.index).split('\n').length;
+      const line = source.split('\n')[lineNumber - 1]?.trim() ?? match[0];
+
+      failures.push(`${relativePath}:${lineNumber}: ${reason}: ${line}`);
+    }
   }
 
   for (const path of [...schemaAdoptionDocs].sort()) {
@@ -489,6 +592,17 @@ function auditSlateV2Docs() {
       failures.push(
         `${relativePath}:${lineNumber}: Plate plugin semantics belong under schema.element or schema.mark: ${line}`
       );
+    }
+
+    for (const { pattern, reason } of invalidBaseRendererDocPatterns) {
+      const match = pattern.exec(source);
+
+      if (match?.index === undefined) continue;
+
+      const lineNumber = source.slice(0, match.index).split('\n').length;
+      const line = lines[lineNumber - 1]?.trim() ?? match[0];
+
+      failures.push(`${relativePath}:${lineNumber}: ${reason}: ${line}`);
     }
 
     for (const fence of source.matchAll(/```[^\n]*\n([\s\S]*?)```/g)) {
@@ -593,8 +707,22 @@ export {
   isClosedLedgerValue,
   isCurrentSchemaAdoptionDoc,
   removedPlateNodeBagPattern,
+  basePluginExtendComponentPattern,
+  terminalComponentConversionPattern,
+  staticBaseKitReactAdapterPattern,
+  staticEditorBaseReactAdapterPattern,
   removedPlateSchemaFlagsPattern,
   removedRootMutationFacadePattern,
   removedCaptionTargetOptionsPattern,
+  removedExplicitExtensionGenericPattern,
+  removedExtensionApiPortalPattern,
+  removedExtensionValidationPattern,
+  removedLooseExtensionPortalSignaturePattern,
+  removedPlatePluginShapePattern,
+  removedDefinitionAliasNamePattern,
+  removedGenericDependencyReferencePattern,
+  removedRootInternalDependencyTypePattern,
+  removedZeroArgumentReactPattern,
+  removedStaticCapabilityPattern,
   removedSchemaTargetOptionsPattern,
 };

@@ -48,14 +48,14 @@ the work invents or materially changes a reusable public shape.
 
 - If behavior matters without React, author it in `src/lib` with
   `createBasePlugin`.
-- Lift an existing semantic base with `toPlatePlugin` only inside the live
-  React adapter layer; do not re-author it with `createPlatePlugin`.
-- Base/static modules must never import `platejs/react`,
-  `@platejs/core/react`, or any `@platejs/*/react` entrypoint. If a static
-  consumer cannot express a required binding, repair the Base/static Core
-  owner instead of importing a React adapter.
-- A Base/static kit binds a static renderer module, never a live/client node
-  component. In the registry, prefer the owning `*-static` component module.
+- Lift an existing semantic base with `toPlatePlugin` only in its live React
+  adapter; do not re-author it with `createPlatePlugin`.
+- Base and Plate constructors accept root-level `component`; Base `.extend()`
+  does not. A static/base kit declares or terminally replaces a server-safe
+  component without importing a Plate React entrypoint.
+- A static/base kit binds the Base descriptor to a static renderer module,
+  never a live/client node component. In the registry, prefer the owning
+  `*-static` component module.
 - Use `createPlatePlugin` directly only for a real React/Plate-native plugin.
 - Pure grouping of complete plugins belongs in an app or registry kit array,
   never a package bundle plugin.
@@ -117,10 +117,13 @@ Colocation controls source ownership, not public composition identity. A real
 independently substitutable capability may remain colocated; route its public
 identity to `best-api`.
 
-Same-key descriptors across independently optional app or registry kits are a
-composition-identity decision, not mechanical deduplication. Do not make one
-optional kit install another merely to adapt it. Stop and route membership
-ownership to `best-api`; `plate-next` owns the package/kit adoption audit.
+Within one owned plugin array, terminal configurations derived from the same
+authored plugin compose in source order; later defined values win and exact
+identity deduplicates. A shared name never makes unrelated plugins or divergent
+authoring branches compatible. Same-name descriptors across independently
+optional app or registry kits still require a membership decision: do not make
+one optional kit install another merely to adapt it. Route that fork to
+`best-api`; `plate-next` owns the package/kit adoption audit.
 
 ## Inference Law
 
@@ -129,36 +132,41 @@ Let builders and initializers own contextual typing.
 - Infer plugin exports from `createBasePlugin`, `createPlatePlugin`,
   `toPlatePlugin`, and chained `.extend()` calls.
 - Never annotate or cast an inferred plugin export to `BasePlugin`,
-  `PlatePlugin`, or a config type.
-- Do not create `PluginConfig<'foo'>` aliases with no real initial state, API,
-  read, update, selectors, dependencies, or extension contract.
-- Keep an explicit config/API/tx type only for a real exported contract,
-  recursive shape, reused contract, or external boundary.
-- Prefer inline one-use constants, config fragments, callback types, and test
-  setup. Do not create ferry types to move an inferred callback into another
-  file.
+  `PlatePlugin`, or a definition type.
+- Do not create `PluginConfig` aliases. That parallel generic machine and its
+  public `__config` anchor do not exist.
+- `DefinitionOf<typeof FooPlugin>` is the sole public way to extract a
+  descriptor definition. Name the alias `FooDefinition`, never `FooConfig` or
+  an unsuffixed name. Keep true domain/runtime `*Config` types, but never
+  restore `InferConfig` or another extraction alias.
+- Keep an explicit state/API/update/domain type only for a real exported
+  contract, recursive shape, reused contract, or external boundary.
+- Prefer inline one-use constants, initial-state fragments, callback types,
+  and test setup. Do not create ferry types to move an inferred callback into
+  another file.
 - Do not annotate local variables, callbacks, examples, or test fixtures whose
   initializer/context should infer them.
-- Bind an initial public capability contract through the constructor's plugin
-  config generic or the field callback's public return type. For a justified
-  later stage, pass the contribution shape to
-  `.extend<{ api: ApiContract }>(...)` or
+- Bind an initial public capability contract through the field callback's
+  public return type. For a justified later stage, pass the contribution shape
+  to `.extend<{ api: ApiContract }>(...)` or
   `.extend<{ update: UpdateContract }>(...)`. The `update` contract describes
   the command object returned by `update({ tx })`, not the factory function.
   Do not append `satisfies`, cast the callback, or annotate every parameter.
 - Put every independent author contribution in `createBasePlugin()` /
-  `createPlatePlugin()`: `api`, `read`, `selectors`, `update`, `extension`,
-  `codecs`, and ordinary static fields. Constructor callbacks already receive
-  typed authoring context; context access alone never justifies `.extend()`.
-  Use `.extend()` only for an imported/prebuilt descriptor or extension, a
-  shared factory the constructor cannot access, or a real earlier-stage type
+  `createPlatePlugin()`: `api`, `read`, `selectors`, `update`, flat native
+  Plite fields, `codecs`, and ordinary Plate fields. There is no nested
+  `extension` wrapper. Constructor callbacks already receive typed authoring
+  context; context access alone never justifies `.extend()`. Use `.extend()`
+  only to adapt an imported/prebuilt plugin descriptor, call a shared factory
+  the constructor cannot access, or consume a real earlier-stage type
   dependency.
-- Treat an exceptional builder chain as a typed capability dependency graph. When a later
-  API, read, update, extension, handler, or required dependent needs an earlier
-  capability, add an earlier `.extend()` stage with the applicable `api`,
-  `read`, `selectors`, `update`, `extension`, or `codecs` field and consume its
-  accumulated inferred surface. Multiple stages require a real type dependency and
-  remain preferable to parameter-threaded helper functions.
+- Treat an exceptional builder chain as a typed capability dependency graph.
+  When a later API, read, update, native field, event, or required dependent
+  needs an earlier capability, add an earlier `.extend()` stage with the
+  applicable `api`, `read`, `selectors`, `update`, native Plite field, or
+  `codecs` field and consume its accumulated inferred surface. Multiple stages
+  require a real type dependency and remain preferable to parameter-threaded
+  helper functions.
 - Author codecs through the constructor's context-bound callback:
   `codecs: ({ defineCodecs }) => defineCodecs(map)`.
   `defineCodecs(map)` handles self and product maps;
@@ -176,10 +184,49 @@ Let builders and initializers own contextual typing.
   keep a pure shared domain algorithm private, coalesce stages, or name the
   missing builder capability.
 - If contextual inference fails, repair the owning Core builder/generic or
-  source API. A new config alias or explicit `editor`/`tx` annotation is not an
-  inference fix.
+  source API. A new definition alias or explicit `editor`/`tx` annotation is
+  not an inference fix.
 - Forbid `any` in production source. A deliberate local non-type test escape is
   the only exception.
+
+Plite, Base, and Plate public factories are one object call with no
+caller-supplied generics. Internally, TypeScript may require a small inferred
+environment parameter—Plite dependencies, or Plate dependencies plus initial
+state—beside the author-input parameter to preserve contextual callback
+inference. Keep that split private. Do not claim one self-referential generic
+can infer the whole definition, expose the environment, or add caller
+generics, annotations, casts, or `any`. Reject excess fields and normalize one
+exact definition through a private invariant witness. Raw callbacks and
+dependency graphs must not leak into declarations. `DefinitionOf<>` may expose
+the definition; `PluginConfig`, `__config`, accumulator tuples, and public
+witness fields may not.
+
+Raw `PluginReference` carries nominal identity only, with no definition generic
+or private witness. Concrete Base and Plate descriptors carry the one invariant
+definition witness. Plite's root `EditorExtensionDependencyReference` is a
+shallow, non-generic `name` plus optional `enabled` value. Capability/provider
+carriers, definition witnesses, and recursive exact dependency ancestry do not
+belong on that public reference.
+
+`EditorExtensionTypeProvider` is the sole public value-sensitive capability
+bridge. Its higher-kinded encoding, normalized installed-capability carrier,
+and transitive dependency expansion are internal-only exports from
+`@platejs/plite/internal`. Static portals require a unique literal name and
+mutually assignable descriptor/installed capabilities. Runtime portals still
+require exact installed descriptor identity. Plite keeps
+`EditorExtension<Definition>` as one public definition parameter, and official
+factory returns are derived rather than reconstructed with another public
+generic.
+
+Core's contextually typed author-source and canonical-lowered aliases are
+implementation details. Do not export or teach them. A plugin author supplies
+one object and receives one exact descriptor.
+
+Low-level React composition uses `react({ dom })` with one required object and
+the exact DOM descriptor. One explicit erased implementation boundary is
+acceptable only where TypeScript 7 cannot reduce the invariant DOM-extension
+union. Do not add zero-argument construction, flattened DOM options, overload
+ceremony, caller generics, or scattered casts.
 
 ## Current-Owner Context Law
 
@@ -188,9 +235,9 @@ provided by that callback:
 
 - `store` instead of `editor.plugin(plugin).store`;
 - `api`, `read`, and `update` instead of rediscovering the current descriptor
-  or calling the equivalent current-key root group;
+  or calling the equivalent current-name root group;
 - `type`, `plugin`, and `installed` instead of resolving the current plugin
-  again by key or descriptor.
+  again by name or descriptor.
 
 Destructure only the values the callback uses. Keep `editor` for editor-wide
 substrate, another plugin, or one-shot transaction metadata that the scoped
@@ -201,8 +248,8 @@ This rule follows the callback contract, not lexical proximity. Shortcut,
 input-rule, state-value, render-prop, and other specialized callbacks may
 intentionally expose only `editor`. Keep an exact typed plugin portal there;
 do not move or wrap a coherent declaration solely to manufacture a context
-shortcut. Never rewrite by matching a property name alone: an editor-wide
-extension such as `editor.api.dom` is not the current plugin's `api`.
+shortcut. Never rewrite by matching a property name alone: another descriptor
+such as `editor.api.dom` is not the current plugin's `api`.
 
 ## Capability Boundary Protocol
 
@@ -210,16 +257,16 @@ Classify every contribution before choosing a plugin field. This is the
 canonical Plate plugin capability protocol; migration skills audit it instead
 of defining another model.
 
-| Field          | Owns                                                                 | Hard boundary                                                                  |
-| -------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `initialState` | default mutable state for each editor instance                       | declaration input, not a live accessor                                         |
-| `store`        | live editor-local state through `get`, `set`, and `subscribe`        | not document state; updates do not rebuild schema                              |
-| `selectors`    | pure named projections of readonly store state plus domain arguments | no editor/document reads, mutation, I/O, or store writes                       |
-| `api`          | stable plugin services not bound to a supplied document snapshot or active transaction | immutable publication does not make its methods pure; never mutate the document |
-| `read`         | pure queries over the supplied document snapshot/state              | replayable for the same state and arguments; no mutation, I/O, or store writes |
-| `update`       | document mutation and transaction-local reads through the active `tx` | no nested one-shot update and no unrelated I/O                                 |
-| `extension`    | genuine editor-wide Plite substrate: activation, state fields, effect types, commands, corrections, root API/state/tx, or descriptor-owned read middleware | not an escape hatch for plugin-scoped state, reads, services, or updates       |
-| `codecs`       | format encode/decode declarations                                   | not runtime service or mutation ownership                                      |
+| Field               | Owns                                                                                                                                            | Hard boundary                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `initialState`      | default mutable state for each editor instance                                                                                                   | declaration input, not a live accessor                                         |
+| `store`             | live editor-local state through `get`, `set`, and `subscribe`                                                                                    | not document state; updates do not rebuild schema                              |
+| `selectors`         | pure named projections of readonly store state plus domain arguments                                                                             | no editor/document reads, mutation, I/O, or store writes                       |
+| `api`               | stable plugin services not bound to a supplied document snapshot or active transaction                                                           | immutable publication does not make its methods pure; never mutate the document |
+| `read`              | pure queries over the supplied document snapshot/state                                                                                           | replayable for the same state and arguments; no mutation, I/O, or store writes |
+| `update`            | document mutation and transaction-local reads through the active `tx`                                                                            | no nested one-shot update and no unrelated I/O                                 |
+| native Plite fields | genuine editor-wide substrate through flat `readMiddleware`, commands, corrections, declarations, contributions, events, activation, and validation | not an escape hatch for plugin-scoped state, reads, services, or updates       |
+| `codecs`            | format encode/decode declarations                                                                                                                 | not runtime service or mutation ownership                                      |
 
 Choose in this order:
 
@@ -230,20 +277,27 @@ Choose in this order:
 3. Mutates the document? Use `update` and the supplied `tx`.
 4. Otherwise, use `api` for a plugin-owned service that is not snapshot- or
    transaction-bound.
-5. Use `extension` only when the capability genuinely belongs to the
-   editor-wide Plite substrate. If none fits, stop and name the ownership gap.
+5. Use the flat native Plite fields only when the capability genuinely belongs
+   to editor-wide substrate. If none fits, stop and name the ownership gap.
 
 Authoring stages have one equally strict protocol:
 
 | Stage                                         | Owns                                                                                                  |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `createBasePlugin()` / `createPlatePlugin()`  | identity, schema, dependencies, default state, and every independent declaration or context callback |
-| `.extend()`                                   | imported/prebuilt adaptation, a shared factory unavailable to the constructor, or a real earlier-capability type dependency |
+| `.extend()`                                   | imported/prebuilt plugin adaptation, a shared factory unavailable to the constructor, or a real earlier-capability type dependency |
 | `.configure()`                                | terminal overrides of existing fields; never schema replacement or type widening                    |
 
 Context access alone never justifies `.extend()`. Merge independent
 contributions into the constructor. Repeat `.extend()` only when the later
 stage consumes a capability type introduced earlier.
+
+Staging does not make every repeated field additive. Inferred object
+capabilities such as `api`, `read`, and `update` accumulate across honest
+stages. Replacement declarations such as the `commands` array do not: author
+all ordered command handlers in one factory unless a later stage deliberately
+replaces the complete earlier declaration. Inspect the field's merge law
+before repeating it; `.extend()` is not generic array concatenation.
 
 Deleted builder shortcuts are forbidden. Hard-delete `extendApi`,
 `extendEditorApi`, `extendSelectors`, `extendTx`, `extendTxGroup`,
@@ -253,7 +307,12 @@ staged `.extend()` contribution. Classify the receiver before editing:
 same-named methods on Zustand stores or other non-plugin builders are not
 plugin-authoring targets.
 
-State and extension mechanics:
+`name` is descriptor identity; `type` is serialized node identity. `.extend()`
+widens the exact definition, `.configure()` is terminal and non-widening, and
+`toPlatePlugin()` is the exact live Base-to-React adapter. Factories replace
+cloning; never add `clone()` or another copy verb.
+
+State and native extension mechanics:
 
 - Give every state-owning production plugin a named `*PluginState`. Export the
   state type when the descriptor is exported.
@@ -270,27 +329,42 @@ State and extension mechanics:
 - Never add a second top-level `options` or `config` channel for immutable,
   compile-time, parser, codec, schema, or host-policy values.
 - Schema factories receive the configured `initialState` snapshot; parser,
-  codec, API, read, update, and extension callbacks use inferred `store`.
+  codec, API, read, update, and native-field callbacks use inferred `store`.
 - Live store updates do not rebuild compiled schema. Configure
   schema-affecting initial state before editor construction.
-- Plite editor extensions may retain their own unrelated `config` contract.
-- The constructor's `extension` field accepts a built extension or raw
-  extension declaration. A justified `.extend({ extension })` stage accepts the
-  same shape when it adapts an existing descriptor or consumes an earlier
-  capability. Plain declarations and callback returns are contextually typed.
-  Raw options without `name` default to the plugin key.
-- Keep Plate-context capture inside the `extension` authoring callback and
+- Plite editor extensions have no `config` contract. Immutable construction
+  inputs and runtime resources stay in the factory closure or their host owner.
+- Plate constructors expose Plite-native fields directly at the plugin root:
+  `conflicts`, `readMiddleware`, `commands`, `corrections`, `stateFields`,
+  `effectTypes`, `facetProviders`, `selectionKinds`, `contributions`, `on`,
+  `activate`, and `validate`. Never recreate a nested `extension` object.
+- Clipboard ingress is not a plugin field. Add `clipboardHandler(...)` directly
+  to `contributions`. `clipboardHandler(handler)` is the sole form; the owning
+  extension or Plate stage contextually infers the handler transaction from
+  its installed update capabilities. Never pass an editor to the helper.
+- Keep Plate-context capture inside the owning flat authoring callback and
   extract domain inputs. A public context identity helper is leaked compiler
   machinery; fix the owning generic rather than adding a callback annotation,
   cast, `any`, alias, or replacement helper.
 - `defineEditorExtension` imported from `@platejs/plite` authors independently
-  reusable standalone Plite descriptors. Do not pass Plate plugin context into
-  those factories or wrap inline Plate contributions in the imported helper.
-- Use an explicit extension name only for an independently identified secondary
-  or standalone extension.
+  reusable standalone Plite descriptors that compose as dependencies. Do not
+  pass Plate plugin context into those factories or copy inline Plate
+  contributions through the imported helper.
+
+All lifecycle and host/DOM observation uses one root `on` family. Child names
+do not repeat `on`: use `keyDown`, `paste`, `nodeChange`, `textChange`, and
+their capture variants beside Plite lifecycle names such as `commit`. Never
+author or document a second `handlers` bucket. The runtime may retain private
+bridges where Plate event short-circuit behavior differs from Plite run-all
+lifecycle observation; that difference does not leak into authoring shape.
+
+Plite owner-local capability factories are `read` and `update`; pure core-read
+policy is `readMiddleware`. Do not restore descriptor `state`/`tx` authoring or
+overload `read` as middleware. `validate` checks assembled context without a
+configuration argument.
 
 Deleted plugin option helpers are forbidden. Do not use or re-add root or
-scoped `getOption`, `getOptions`, `setOption`, or `setOptions`. A key-only
+scoped `getOption`, `getOptions`, `setOption`, or `setOptions`. A name-only
 portal needs a concrete cycle, layer, or decoupling reason; plugin-owned
 callbacks whose contract supplies owner context should use it directly.
 When `FooPlugin` is a valid optional peer, keep the typed portal and check
@@ -306,23 +380,42 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 - `api` is immutable as a published method object, not necessarily pure. It may
   own non-document service effects or live store orchestration. Document
   mutation still belongs exclusively in `update`.
+- `api` is factory-only at Plite, Base, and Plate layers, including
+  context-free APIs: write `api: () => ({ ... })`, never `api: { ... }`.
+  Plite supplies one context object; Base and Plate add their authoring fields
+  to that same object. Never use positional `(editor, context)` arguments or
+  consumer `.configure({ api })`.
 - `read` methods depend only on their supplied state and domain arguments.
   `update: ({ tx }) => ({ ... })` methods use the active transaction for both
   provisional reads and document writes.
 - On a concrete inferred editor, consumers discover plugin API through
-  `editor.api.<pluginKey>`; generic package code and exact ownership use
-  `editor.plugin(FooPlugin).api`.
-- The same projection law applies to `editor.read.<pluginKey>` /
-  `editor.update.<pluginKey>` and the portal's `.read` / `.update`. Selectors
+  `editor.api.<pluginName>`; generic package code and exact ownership use
+  `editor.plugin(FooPlugin).api`; exact raw Plite ownership uses
+  `editor.extension(FooExtension).api`.
+- The same projection law applies to `editor.read.<pluginName>` /
+  `editor.update.<pluginName>` and the portal's `.read` / `.update`. Selectors
   stay store-owned and are evaluated through
   `editor.plugin(FooPlugin).store.get(selectorKey, ...args)`.
 - Generic code integrating an optional descriptor first checks
   `editor.plugin(FooPlugin).installed`; required descriptor ownership may
   access the portal directly.
-- Both discovery paths expose the same plugin-owned API. Publish it once
-  through the constructor's `api` field.
-- A genuinely unkeyed root editor capability belongs under
-  the constructor's `extension: { api }`, not a parallel plugin implementation.
+- `editor.plugin(FooPlugin | pluginName)` is the only public imperative plugin
+  lookup. Descriptors keep exact inference; runtime names return erased portals.
+  Use a name for dynamic input or a family-agnostic slot that intentionally
+  accepts whichever installed descriptor owns that name.
+  Never accept `{ name }` as a public lookup input. Its
+  consumer portal exposes the scoped capabilities and compiled descriptor,
+  never callback-only `editor` or `defineCodecs`. Do not export standalone or
+  editor-method alternatives for descriptor, type/name reverse, container, or
+  injection lookup. Use portal `.type` when descriptor identity matters and
+  `editor.plugin(name).type` when identity is intentionally erased. Missing runtime names expose
+  `installed: false`; other portal fields throw. Keep compiler caches private,
+  use schema predicates for public node questions, read compiled injection at
+  `portal.plugin.inject.nodeProps`, and expose codec mapping as
+  `registry.{getType,getName,has}`.
+- All discovery paths expose the same descriptor-owned API. Publish it once
+  through the root `api` field and let the compiler namespace it by `name`.
+  Never add root-merged methods, `getApi`, or `pluginApi`.
 - A scoped portal already owns the plugin noun. Prefer flat, direct verbs such
   as `table.update.insertTable()` over taxonomy like
   `table.update.insert.table()`. Route disputed public spelling to `best-api`.
@@ -332,13 +425,13 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
   required dependents consume the same capability through their inferred
   editor or scoped portal.
 - Inside a later tx method, reuse an earlier staged mutation through the same
-  active transaction: `tx[plugin.key].method(...)`. Do not call
+  active transaction: `tx[plugin.name].method(...)`. Do not call
   `editor.plugin(FooPlugin).update.method(...)`, `context.update`, or another
   one-shot update from the active tx; that reopens a transaction.
-- An `extension` contribution is assembled before plugin API publication. When
-  its runtime callbacks need a staged API, keep the typed extension context
-  and read `context.api` inside the runtime callback. Do not eagerly destructure
-  `api` in the extension factory and capture the pre-publication value.
+- A flat native runtime callback may be assembled before plugin API
+  publication. When it needs a staged API, keep the typed callback context and
+  read `context.api` at invocation time. Do not eagerly destructure `api`
+  during descriptor construction and capture the pre-publication value.
 - Repeated callers use the scoped API/tx method. They do not justify a parallel
   exported helper.
 - Transform-backed callbacks receive and mutate through the active `tx`. Do not
@@ -350,16 +443,23 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 
 ## Component Binding Law
 
-- `createPlatePlugin()` accepts root-level `component`.
-- `createBasePlugin()` stays renderer-neutral and does not accept
-  `component`.
+- `component` is ordinary render publication data, not a Plate-only
+  capability.
+- `createBasePlugin()` and `createPlatePlugin()` accept root-level `component`
+  for static/RSC and live Plate consumers.
+- Base `.extend()` does not accept `component`; independent defaults belong in
+  the constructor and consumer replacement belongs in terminal
+  `.configure({ component })`.
 - Existing Plate descriptors bind or replace the ordinary node component
   through one terminal `.configure({ component })`.
-- Base/static consumers bind a static component directly through
-  `BasePlugin.configure({ component })`.
-- `toPlatePlugin(BasePlugin)` is the live React conversion path. Never use it
-  in a `*-base-kit`, `*-static`, server/static renderer, or other Base/static
-  module merely to bind a component.
+- Static/base files may import a server-safe component but do not import
+  `platejs/react`,
+  `@platejs/core/react`, or any `@platejs/*/react` entrypoint.
+- Use `toPlatePlugin()` at the owning React adapter to publish a reusable
+  Plate-layer descriptor or add genuine Plate-only authoring. A terminal
+  consumer never inserts conversion merely to set `component`.
+- A static/base kit imports the static renderer module, never the feature
+  package's live/client plugin or node component.
 - Hard-delete `.withComponent()`.
 - Do not author, document, or preserve direct public `render.node` assignment.
 - `.configure()` is terminal and non-widening. It changes existing descriptor
@@ -367,7 +467,7 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
 - `createBasePlugin()` / `createPlatePlugin()` own every independent
   declaration contribution. Constructor callbacks already receive typed
   authoring context; context access alone never justifies `.extend()`. Use
-  `.extend()` only for imported/prebuilt declarations, a shared factory the
+  `.extend()` only for imported/prebuilt plugin descriptors, a shared factory the
   constructor cannot access, or an earlier-stage type dependency.
 - New scoped methods and surviving helpers take domain arguments by default.
   Do not pass `editor`, `api`, `read`, `tx`, `store`, resolved plugin state
@@ -386,10 +486,33 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
   existing transaction, or one `editor.update((tx) => ...)` when no `tx`
   exists.
 - Never add arbitrary plugin/product fields to the editor root. Use scoped
-  API/store state, extension state, a React store, a local controller, or a
+  API/store state, Plite state fields, a React store, a local controller, or a
   module-local `WeakMap` according to lifecycle.
 
 ## Plite Primitive Law
+
+Schema authoring follows the Plite owner exactly:
+
+- Use `schema.element.textBlock()` for the ordinary editable text-plus-inline
+  element; spell custom structural grammar explicitly.
+- Complete and named roots contain `SchemaContent` directly. Omit `elements`
+  for an empty element vocabulary and omit `unknown` for the safe `"reject"`
+  default.
+- Unvalidated `property.json()` stays generic JSON. Narrow only with a runtime
+  predicate plus `validationVersion`.
+- Put `role: "metadata"` on an element/text property placement for bookkeeping
+  values; do not add meaning to the reusable value descriptor.
+- Plate editor creation uses `schemaIdentity`; Plate element declarations use
+  `blockContent` for normal-flow membership.
+- Use `schema.create`, `schema.assertDocument`, `schema.assertFragment`, and
+  `schema.isMarkableVoid`. Assertion inputs are `unknown` and narrow after
+  success.
+- Pass Plate plugin descriptors directly to schema queries. Reserve
+  `schema.handle.*` for raw Plite schemas; never add a Plate plugin handle
+  wrapper.
+- Never export compiler/provider witnesses or rebuild private schema inference
+  with a public config/model carrier. Repair inference in Core's private
+  descriptor compiler.
 
 - Prefer direct one-shot reads and writes over one-operation callback wrappers.
   Use callback form only for shared snapshot/transaction state, branching,
@@ -453,8 +576,8 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
    analog. Do not copy a stale file graph.
 4. Route reusable public forks to `best-api`; otherwise keep the inferred
    plugin chain inline.
-5. Define initial state, scoped store/API/tx methods, relationships, Plite extensions, and
-   React behavior in their durable owners.
+5. Define initial state, scoped store/API/update methods, relationships, flat
+   Plite-native fields, and React behavior in their durable owners.
 6. Delete superseded helper/component/hook/spec files and regenerate barrels.
 7. Prove the smallest honest surface:
    - package typecheck and behavior tests;
@@ -462,7 +585,7 @@ or installed descriptor. Disabled plugins count as absent. Do not probe root
    - compile/runtime proof that a required dependent sees staged capabilities;
    - compile/runtime proof for staged tx-to-tx reuse when one tx stage consumes
      another;
-   - runtime proof when an extension callback consumes a staged API;
+   - runtime proof when a native runtime callback consumes a staged API;
    - an active-transaction test when a query crosses a state-view boundary;
    - React tests when React behavior changes;
    - `pnpm brl` when exports or public files change.

@@ -7,9 +7,9 @@ import type { CompiledPlateShortcut } from './compilePlateShortcuts';
 
 export type PlatePluginCache = Readonly<{
   decorate: readonly string[];
-  handlers: Readonly<{
-    onNodeChange: readonly string[];
-    onTextChange: readonly string[];
+  on: Readonly<{
+    nodeChange: readonly string[];
+    textChange: readonly string[];
   }>;
   inject: Readonly<{
     nodeProps: readonly string[];
@@ -20,7 +20,7 @@ export type PlatePluginCache = Readonly<{
     textMarks: readonly string[];
     leafProps: readonly string[];
     textProps: readonly string[];
-    /** Node types to plugin keys. */
+    /** Node types to plugin names. */
     types: Readonly<Record<string, string>>;
   }>;
   transformInitialValue: readonly string[];

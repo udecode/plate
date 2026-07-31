@@ -5,7 +5,7 @@ import { KEYS } from '@platejs/utils';
 import { BaseTocPlugin } from './BaseTocPlugin';
 
 const TestParagraphPlugin = createBasePlugin({
-  key: 'paragraph',
+  name: 'paragraph',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -15,7 +15,7 @@ const TestParagraphPlugin = createBasePlugin({
 
 const TestHeadingPlugins = [
   createBasePlugin({
-    key: 'h1',
+    name: 'h1',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -23,7 +23,7 @@ const TestHeadingPlugins = [
     },
   }),
   createBasePlugin({
-    key: 'h2',
+    name: 'h2',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -31,7 +31,7 @@ const TestHeadingPlugins = [
     },
   }),
   createBasePlugin({
-    key: 'h3',
+    name: 'h3',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -45,9 +45,9 @@ describe('BaseTocPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseTocPlugin],
     });
-    const plugin = editor.getPlugin(BaseTocPlugin);
+    const plugin = editor.plugin(BaseTocPlugin).plugin;
 
-    expect(plugin.key).toBe(KEYS.toc);
+    expect(plugin.name).toBe(KEYS.toc);
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.void).toBe(true);
     expect(editor.read.schema.element(BaseTocPlugin)?.behavior.voidKind).toBe(
       'block'
@@ -315,24 +315,5 @@ describe('BaseTocPlugin.update.insert', () => {
         type: KEYS.toc,
       },
     ]);
-  });
-
-  it('respects the configured node type', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseTocPlugin.configure({ type: 'custom-toc' })],
-      initialValue: [
-        {
-          children: [{ text: 'a' }],
-          type: KEYS.p,
-        },
-      ],
-    });
-
-    editor.plugin(BaseTocPlugin).update.insert({ at: [1] });
-
-    expect(editor.read.children()[1]).toMatchObject({
-      children: [{ text: '' }],
-      type: 'custom-toc',
-    });
   });
 });

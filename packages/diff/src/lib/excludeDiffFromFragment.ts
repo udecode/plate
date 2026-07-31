@@ -33,7 +33,7 @@ export const excludeDiffFromFragment = (
 export const createExcludeDiffFragmentExtension = () =>
   defineEditorExtension({
     name: 'exclude-diff-fragment',
-    read: ({ around }) => [
+    readMiddleware: ({ around }) => [
       around(editorReads.slice.export, ({ next }) => {
         const slice = next();
 

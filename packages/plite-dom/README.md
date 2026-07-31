@@ -10,7 +10,7 @@ React apps normally use these APIs through `plite-react`:
 
 ```ts
 editor.api.dom.focus()
-editor.api.clipboard.insertTextData(dataTransfer)
+editor.api.dom.clipboard.insertTextData(dataTransfer)
 ```
 
 Use direct `plite-dom` imports for framework/runtime integration code that

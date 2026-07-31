@@ -1,4 +1,5 @@
-import { type PlateEditor, useEditor } from '@platejs/core/react';
+import type { BaseEditor } from '@platejs/core';
+import { useEditor } from '@platejs/core/react';
 import { type NodeInsertNodesOptions, PathApi } from '@platejs/plite';
 import type { TImageElement, TMediaEmbedElement } from '@platejs/utils';
 import { KEYS, NODES } from '@platejs/utils';
@@ -17,15 +18,18 @@ export interface InsertMediaUrlOptions
 }
 
 export const insertMediaUrl = async (
-  editor: PlateEditor,
+  editor: BaseEditor,
   {
     at,
     caption,
     getUrl,
-    type = editor.getType(KEYS.img),
+    type: requestedType,
     ...options
   }: InsertMediaUrlOptions = {}
 ) => {
+  const image = editor.plugin(KEYS.img);
+  const imageType = image.installed ? image.type : KEYS.img;
+  const type = requestedType ?? imageType;
   const atAnchor =
     at === undefined
       ? undefined
@@ -40,7 +44,7 @@ export const insertMediaUrl = async (
       ? await getUrl()
       : // biome-ignore lint/suspicious/noAlert: intentional user input for media URL
         window.prompt(
-          `Enter the URL of the ${type === KEYS.img ? KEYS.img : NODES.mediaEmbed}`
+          `Enter the URL of the ${type === imageType ? KEYS.img : NODES.mediaEmbed}`
         );
 
     if (!url) return;
@@ -55,7 +59,7 @@ export const insertMediaUrl = async (
       at: resolvedAt ?? (blockPath ? PathApi.next(blockPath) : undefined),
     };
 
-    if (type === editor.getType(KEYS.img)) {
+    if (type === imageType) {
       editor
         .plugin(BaseImagePlugin)
         .update.insert({ caption, url }, insertOptions);

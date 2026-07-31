@@ -1,6 +1,6 @@
 import type { Anchor, Path, Point, Range } from '@platejs/plite';
 
-export const NAVIGATION_FEEDBACK_KEY = 'navigation';
+export const NAVIGATION_FEEDBACK_NAME = 'navigation';
 
 export type NavigationFeedbackTarget = {
   path: Path;

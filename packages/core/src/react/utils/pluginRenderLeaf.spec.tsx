@@ -11,7 +11,7 @@ import { pluginRenderLeaf } from './pluginRenderLeaf';
 
 it('uses a plain render.as fast path for simple leaf plugins', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -48,7 +48,7 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
 
 it('renders simple hard-affinity leaves without spacers when inactive', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -86,7 +86,7 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
 
 it('renders simple directional-affinity leaves without PlateLeaf fallback', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -121,7 +121,7 @@ it('renders simple directional-affinity leaves without PlateLeaf fallback', () =
 
 it('renders boundary spacers only for the active hard-affinity edge', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {

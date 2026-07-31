@@ -93,10 +93,15 @@ export const createMarkInputRule = (
         end: config.end,
       };
     },
-    apply: ({ editor, pluginKey, tx }, match) => {
+    apply: ({ editor, pluginName, tx }, match) => {
       const marks = config.marks
         ? [...config.marks]
-        : [config.mark ?? pluginKey];
+        : [config.mark ?? pluginName];
+      const markKeys = marks.map((mark) => {
+        const plugin = editor.plugin(mark);
+
+        return plugin.installed ? plugin.type : mark;
+      });
 
       const selection = tx.selection();
 
@@ -114,15 +119,11 @@ export const createMarkInputRule = (
         focus: match.beforeEndMatchPoint,
       });
 
-      marks.forEach((mark) => {
-        const key = editor.getType(mark);
-
+      markKeys.forEach((key) => {
         tx.marks.add(key, config.value === undefined ? true : config.value);
       });
 
       tx.selection.collapse({ edge: 'end' });
-
-      const markKeys = marks.map((mark) => editor.getType(mark));
 
       markKeys.forEach((key) => {
         tx.marks.remove(key);
@@ -217,14 +218,16 @@ export const createBlockStartInputRule = <TMatch extends object = {}>(
     apply: (context, match) => {
       if (config.apply) return config.apply(context, match);
 
-      const { editor, pluginKey, tx } = context;
+      const { editor, pluginName, tx } = context;
       const defaultMatch = match as BlockStartInputRuleMatch;
 
       if (config.removeMatchedText !== false) {
         tx.text.delete({ at: defaultMatch.range });
       }
 
-      const node = editor.getType(config.node ?? pluginKey);
+      const nodeName = config.node ?? pluginName;
+      const plugin = editor.plugin(nodeName);
+      const node = plugin.installed ? plugin.type : nodeName;
 
       if (config.mode === 'wrap') {
         tx.blocks.toggle(node, {
@@ -269,7 +272,12 @@ const matchBlockFence = <
   const [blockNode, path] = blockEntry;
   const endPoint = editor.read.points.end(path);
 
-  if (config.block && blockNode.type !== editor.getType(config.block)) return;
+  if (config.block) {
+    const plugin = editor.plugin(config.block);
+    const blockType = plugin.installed ? plugin.type : config.block;
+
+    if (blockNode.type !== blockType) return;
+  }
   if (!endPoint || !editor.read.points.isEnd(selection.focus, path)) return;
 
   const range = context.getBlockStartRange();

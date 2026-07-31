@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'vitest';
 import { createEditor } from '@platejs/plite';
+import { dom } from '@platejs/plite-dom';
 import {
   insertText as editorInsertText,
   replace as editorReplace,
@@ -11,8 +12,8 @@ import {
 } from '@platejs/plite-dom/internal';
 import { react } from '../src/plugin/with-react';
 
-test('react() clears pending selection before mounted-root Android insertText bridge calls', () => {
-  const editor = createEditor({ extensions: [react()] });
+test('react clears pending selection before mounted-root Android insertText bridge calls', () => {
+  const editor = createEditor({ extensions: [react({ dom: dom() })] });
   const runtime = new DOMRootRuntime({
     adapter: {},
     editor,

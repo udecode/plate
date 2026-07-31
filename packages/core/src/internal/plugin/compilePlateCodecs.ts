@@ -13,7 +13,6 @@ import { hostCodecs } from '@platejs/plite-dom';
 
 import type { BaseEditor } from '../../lib/editor';
 import type { AnyBasePlugin } from '../../lib/plugin';
-import { getEditorPlugin } from '../../lib/plugin';
 import type {
   CompiledPlateModel,
   CompiledPlateModelBinding,
@@ -87,17 +86,19 @@ const compileDeclaration = (
 ): CompiledCodecDeclaration => {
   if (!format || !format.includes('/')) {
     throw new Error(
-      `Plate codec owner "${plugin.key}" must use a MIME format key.`
+      `Plate codec owner "${plugin.name}" must use a MIME format key.`
     );
   }
   if (!isRecord(value)) {
-    throw new Error(`Plate codec "${plugin.key}/${format}" must be an object.`);
+    throw new Error(
+      `Plate codec "${plugin.name}/${format}" must be an object.`
+    );
   }
 
   for (const key of Object.keys(value)) {
     if (!declarationKeys.has(key)) {
       throw new Error(
-        `Plate codec "${plugin.key}/${format}" has unknown field "${key}".`
+        `Plate codec "${plugin.name}/${format}" has unknown field "${key}".`
       );
     }
   }
@@ -106,7 +107,7 @@ const compileDeclaration = (
 
   if (!declaration.decode && !declaration.encode) {
     throw new Error(
-      `Plate codec "${plugin.key}/${format}" must define decode or encode.`
+      `Plate codec "${plugin.name}/${format}" must define decode or encode.`
     );
   }
   for (const key of ['decode', 'encode', 'query'] as const) {
@@ -115,7 +116,7 @@ const compileDeclaration = (
       typeof declaration[key] !== 'function'
     ) {
       throw new Error(
-        `Plate codec "${plugin.key}/${format}" field "${key}" must be a function.`
+        `Plate codec "${plugin.name}/${format}" field "${key}" must be a function.`
       );
     }
   }
@@ -124,17 +125,21 @@ const compileDeclaration = (
     !Number.isFinite(declaration.priority)
   ) {
     throw new Error(
-      `Plate codec "${plugin.key}/${format}" priority must be finite.`
+      `Plate codec "${plugin.name}/${format}" priority must be finite.`
     );
   }
 
   return Object.freeze({
-    claims: getClaims(plugin.key, declaration.scope, model.byKey[plugin.key]),
+    claims: getClaims(
+      plugin.name,
+      declaration.scope,
+      model.byName[plugin.name]
+    ),
     codecPriority: declaration.priority ?? 0,
     ...(declaration.decode ? { decode: declaration.decode } : {}),
     ...(declaration.encode ? { encode: declaration.encode } : {}),
     format,
-    owner: plugin.key,
+    owner: plugin.name,
     ...(declaration.query ? { query: declaration.query } : {}),
   });
 };
@@ -311,29 +316,30 @@ export const compilePlateCodecs = (
   model: CompiledPlateModel,
   plugins: readonly AnyBasePlugin[]
 ) => {
-  const declarations = plugins.flatMap((plugin) =>
-    (plugin.__codecExtensions ?? []).flatMap((extension) => {
-      const codecs = Reflect.apply(extension, undefined, [
-        getEditorPlugin(editor, plugin),
-      ]);
+  const declarations = plugins.flatMap((plugin) => {
+    if (!isRecord(plugin.codecs)) return [];
+    const codecs = plugin.codecs;
 
-      if (!isRecord(codecs)) {
+    return Object.entries(codecs).flatMap(([format, declaration]) => {
+      if (format.trim().toLowerCase() === 'text/html') {
         throw new Error(
-          `Plate codec owner "${plugin.key}" callback must return an object.`
+          `Plate codec owner "${plugin.name}" must register "text/html" through the schema-aware \`codecs["text/html"]\` declaration.`
         );
       }
 
-      return Object.entries(codecs).map(([format, declaration]) => {
-        if (format.trim().toLowerCase() === 'text/html') {
-          throw new Error(
-            `Plate codec owner "${plugin.key}" must register "text/html" through the schema-aware \`codecs["text/html"]\` declaration.`
-          );
-        }
+      if (
+        (Array.isArray(declaration) &&
+          declaration.every(
+            (item) => isRecord(item) && item.kind === 'node'
+          )) ||
+        (isRecord(declaration) && declaration.kind === 'node')
+      ) {
+        return [];
+      }
 
-        return compileDeclaration(plugin, model, format, declaration);
-      });
-    })
-  );
+      return [compileDeclaration(plugin, model, format, declaration)];
+    });
+  });
 
   const byFormat = new Map<string, CompiledCodecDeclaration[]>();
   const ownerFormats = new Set<string>();

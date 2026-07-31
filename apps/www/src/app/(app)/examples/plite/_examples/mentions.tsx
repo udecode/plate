@@ -60,12 +60,10 @@ const MentionSchema = defineEditorSchema({
       property.boolean({ default: false, omitDefault: true })
     ),
   ],
-  root: {
-    content: schema.content.type('paragraph', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.type('paragraph', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
 });
 

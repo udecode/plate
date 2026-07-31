@@ -92,7 +92,7 @@ const editableIsland = defineEditorSchema({
     },
   },
   id: 'test-editable-island',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -107,7 +107,7 @@ const contentRootExtension = defineEditorSchema({
     },
   },
   id: 'test-content-root',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -299,7 +299,7 @@ describe('PliteRuntime provider contract', () => {
         },
       },
       id: 'test-content-root-multi-slot',
-      root: { content: schema.content.type('details-content') },
+      root: schema.content.type('details-content'),
       unknown: 'reject',
       version: 1,
     });
@@ -1549,7 +1549,7 @@ describe('PliteRuntime provider contract', () => {
       });
     });
     await act(async () => {
-      headerEditor.api.clipboard.insertData(
+      headerEditor.api.dom.clipboard.insertData(
         clipboard as unknown as DataTransfer
       );
     });
@@ -1612,7 +1612,7 @@ describe('PliteRuntime provider contract', () => {
     });
     await act(async () => {
       headerEditor.update(() => {
-        headerEditor.api.clipboard.insertData(
+        headerEditor.api.dom.clipboard.insertData(
           clipboard as unknown as DataTransfer
         );
       });

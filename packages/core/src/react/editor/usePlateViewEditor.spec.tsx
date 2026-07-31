@@ -44,7 +44,7 @@ describe('usePlateViewEditor', () => {
       const options = {
         enabled: true as const,
         id: 'custom-id',
-        plugins: [createBasePlugin({ key: 'test' })],
+        plugins: [createBasePlugin({ name: 'test' })],
         initialValue: [{ children: [{ text: 'Hello' }], type: 'p' }],
       };
 
@@ -276,8 +276,8 @@ describe('usePlateViewEditor', () => {
         id: 'complex-editor',
         enabled: true,
         plugins: [
-          createBasePlugin({ key: 'plugin1' }),
-          createBasePlugin({ key: 'plugin2' }),
+          createBasePlugin({ name: 'plugin1' }),
+          createBasePlugin({ name: 'plugin2' }),
         ],
         selection: {
           kind: 'text' as const,

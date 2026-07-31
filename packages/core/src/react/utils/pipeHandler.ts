@@ -3,11 +3,23 @@ import type React from 'react';
 import type { EditableProps } from '../../lib';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin';
-import type { DOMHandlers } from '../plugin/DOMHandlers';
+import type { DOMHandlerProp, DOMHandlers } from '../plugin/DOMHandlers';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
 import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
-import { getEditorPlugin } from '../plugin/getEditorPlugin';
+import { createPluginContext } from '../plugin/createPluginContext.internal';
+
+type DOMHandlerName = keyof DOMHandlers & string;
+
+type PluginWithDOMHandlers = AnyEditorPlatePlugin & {
+  on?: DOMHandlers;
+};
+
+const getDOMHandlerName = (handlerKey: DOMHandlerProp): DOMHandlerName => {
+  if (handlerKey === 'onDOMBeforeInput') return 'domBeforeInput';
+
+  return `${handlerKey[2]!.toLowerCase()}${handlerKey.slice(3)}` as DOMHandlerName;
+};
 
 const convertDomEventToSyntheticEvent = (
   domEvent: Event
@@ -41,7 +53,7 @@ const convertDomEventToSyntheticEvent = (
   };
 };
 
-/** Check if an event is overrided by a handler. */
+/** Check if an event is overridden by a handler. */
 const isEventHandled = <
   EventType extends React.SyntheticEvent<unknown, unknown>,
 >(
@@ -64,29 +76,32 @@ const isEventHandled = <
 };
 
 /**
- * Generic pipe for handlers.
+ * Generic pipe for DOM events.
  *
- * - Get all the plugins handlers by `handlerKey`.
- * - If there is no plugin handler or editable prop handler for this key, return
+ * - Get every plugin event by the matching prefixless event name.
+ * - If there is no plugin event or editable prop handler for this key, return
  *   `undefined`.
- * - Return a handler calling all the plugins handlers then the prop handler.
- * - Any handler returning true will stop the next handlers to be called,
+ * - Return a handler calling every plugin event then the prop handler.
+ * - Any callback returning true will stop the next callbacks,
  *   including the Plite internal handler.
  */
-export const pipeHandler = <K extends keyof DOMHandlers>(
-  editor: PlateEditor,
+export const pipeHandler = <K extends DOMHandlerProp>(
+  editor: PlateEditor<any, any>,
   {
     editableProps,
     handlerKey,
   }: { handlerKey: K; editableProps?: Omit<EditableProps, 'decorate'> | null }
-): ((event: any) => void) | undefined => {
+): ((event: any) => boolean | void) | undefined => {
   const propsHandler = editableProps?.[handlerKey] as (
     event: any
   ) => boolean | void;
 
+  const pluginHandlerName = getDOMHandlerName(handlerKey);
   const relevantPlugins = (
     getPlateRuntime(editor).pluginList as unknown as AnyEditorPlatePlugin[]
-  ).filter((plugin) => plugin.handlers?.[handlerKey]);
+  ).filter(
+    (plugin) => (plugin as PluginWithDOMHandlers).on?.[pluginHandlerName]
+  );
 
   if (relevantPlugins.length === 0 && !propsHandler) return;
 
@@ -97,18 +112,18 @@ export const pipeHandler = <K extends keyof DOMHandlers>(
       : event;
 
     const eventIsHandled = relevantPlugins.some((plugin) => {
-      if (isEditOnly(editor.read.view.isReadOnly(), plugin, 'handlers')) {
+      if (isEditOnly(editor.read.view.isReadOnly(), plugin, 'on')) {
         return false;
       }
 
-      const pluginHandler = plugin.handlers?.[handlerKey] as
-        | ((ctx: any) => boolean | void)
-        | undefined;
+      const pluginHandler = (plugin as PluginWithDOMHandlers).on?.[
+        pluginHandlerName
+      ] as ((ctx: any) => boolean | void) | undefined;
 
       if (!pluginHandler) return false;
 
       const shouldTreatEventAsHandled = pluginHandler({
-        ...getEditorPlugin(editor, plugin),
+        ...createPluginContext(editor, plugin),
         event: handledEvent,
       });
 

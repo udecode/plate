@@ -14,6 +14,7 @@ import {
   schema,
   type ValueOf,
 } from '@platejs/plite';
+import { dom } from '@platejs/plite-dom';
 import { history } from '@platejs/plite-history';
 import * as PliteReact from '@platejs/plite-react';
 import {
@@ -66,26 +67,34 @@ const initialValue: CustomValue = [
 declare const dataTransfer: DataTransfer;
 declare const pliteNode: PliteNode;
 
-const ReactExtension = react();
+const ReactExtension = react({ dom: dom() });
 const _reactExtensionName: 'react' = ReactExtension.name;
+// @ts-expect-error react requires an exact DOM descriptor
+const _invalidZeroArgumentReact = react();
+// @ts-expect-error react does not accept flattened DOM options
+const _invalidFlattenedReact = react({ clipboardFormatKey: 'x-test' });
+const DOMWithoutClipboard = dom({ clipboard: false });
+const ReactWithoutClipboard = react({ dom: DOMWithoutClipboard });
+const reactWithoutClipboardEditor = createEditor({
+  extensions: [ReactWithoutClipboard],
+  initialValue,
+});
 const HistoryExtension = history();
 const _historyExtensionName: 'history' = HistoryExtension.name;
 const DisabledHistoryExtension = history({ enabled: false });
 const CustomApiExtension = defineEditorExtension({
+  api: () => ({
+    ping: () => 'pong' as const,
+  }),
   name: 'custom-api',
-  api: {
-    customApi: {
-      ping: () => 'pong' as const,
-    },
-  },
 });
 const SpecialCommandExtension = defineEditorExtension({
   name: 'special-command',
-  state: { special: () => ({ value: () => 1 }) },
+  read: () => ({ value: () => 1 }),
 });
 const ExtraCommandExtension = defineEditorExtension({
   name: 'extra-command',
-  state: { extra: () => ({ value: () => 2 }) },
+  read: () => ({ value: () => 2 }),
 });
 type SpecialCommandEditor = ReactEditor<
   CustomValue,
@@ -95,7 +104,7 @@ const specialCommand = defineCommand<{ amount: number }, SpecialCommandEditor>(
   'react.special',
   {
     build: ({ input, state }) => {
-      state.special.value();
+      state['special-command'].value();
 
       return input.amount > 0 ? state.transaction(() => {}) : false;
     },
@@ -142,7 +151,7 @@ const InferredSchema = defineEditorSchema({
       properties: { align: property.string() },
     },
   },
-  root: { content: schema.content.type('paragraph') },
+  root: schema.content.type('paragraph'),
   unknown: 'reject',
 });
 type InferredSchemaValue = EditorValueFromExtensions<
@@ -190,9 +199,14 @@ manualReactHistoryEditor.read((state) => state.history.undos());
 manualReactHistoryEditor.update((tx) => tx.history.undo());
 
 reactEditor.api.dom.resolvePath(pliteNode);
-reactEditor.api.clipboard.insertData(dataTransfer);
+reactEditor.api.dom.clipboard.insertData(dataTransfer);
 reactEditor.api.react.isComposing();
-reactEditor.getApi(ReactExtension).isComposing();
+reactEditor.extension(ReactExtension).api.isComposing();
+reactWithoutClipboardEditor.api.dom.focus();
+// @ts-expect-error react({ dom }) preserves the exact disabled clipboard owner
+reactWithoutClipboardEditor.api.dom.clipboard.insertData(dataTransfer);
+// @ts-expect-error createReactEditor owns its enabled DOM descriptor
+createReactEditor({ dom: DOMWithoutClipboard, initialValue });
 
 historyReactEditor.read((state) => {
   const undos = state.history.undos();
@@ -206,7 +220,7 @@ historyReactEditor.update((tx) => {
 
 historyReactEditor.update({ history: 'skip' }, () => {});
 historyReactEditor.api.dom.focus();
-historyReactEditor.api.clipboard.writeSelection(dataTransfer);
+historyReactEditor.api.dom.clipboard.writeSelection(dataTransfer);
 historyReactEditor.api.react.isFocused();
 
 defaultHistoryReactEditor.read((state) => {
@@ -252,7 +266,8 @@ typedDefaultReactEditor.update({ history: 'skip' }, () => {});
 typedDefaultReactEditor.api.dom.focus();
 typedDefaultReactEditor.api.react.isComposing();
 typedNamespaceReactEditor.update({ history: 'skip' }, () => {});
-const customApiResult: 'pong' = typedCustomApiReactEditor.api.customApi.ping();
+const customApiResult: 'pong' =
+  typedCustomApiReactEditor.api['custom-api'].ping();
 
 // @ts-expect-error Plite React no longer exports extension-owned renderer maps
 void PliteReact.editableRenderers;

@@ -4,7 +4,7 @@ import type { TPlaceholderElement } from '@platejs/utils';
 import { KEYS } from '@platejs/utils';
 
 export const BasePlaceholderPlugin = createBasePlugin({
-  key: KEYS.placeholder,
+  name: KEYS.placeholder,
   schema: {
     element: {
       properties: {

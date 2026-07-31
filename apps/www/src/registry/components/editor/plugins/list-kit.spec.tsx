@@ -2,7 +2,7 @@ import ReactDOMServer from 'react-dom/server';
 
 import { BaseParagraphPlugin, createBasePlugin } from '@platejs/core';
 import { schema } from 'platejs';
-import { createBaseEditor, KEYS } from 'platejs';
+import { type BaseEditor, createBaseEditor, KEYS } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { BlockList } from '@/registry/ui/block-list';
@@ -19,7 +19,7 @@ const ListTargetSchemaKit = [
   KEYS.img,
 ].map((type) =>
   createBasePlugin({
-    key: type,
+    name: type,
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -47,11 +47,8 @@ type ListNodePropsContract = {
   transformProps: (options: unknown) => unknown;
 };
 
-const getListNodeProps = (editor: {
-  getPlugin: (plugin: { key: string }) => { inject?: { nodeProps?: unknown } };
-}) =>
-  editor.getPlugin({ key: KEYS.list }).inject!
-    .nodeProps! as ListNodePropsContract;
+const getListNodeProps = (editor: BaseEditor) =>
+  editor.plugin(KEYS.list).plugin.inject!.nodeProps! as ListNodePropsContract;
 
 describe('ListKit unordered list rendering', () => {
   it('decodes configured list items as paragraphs with list properties', () => {

@@ -39,7 +39,7 @@ Normal reads use `state` groups:
 - `state.points`
 - `state.fragment`
 - `state.selection()`
-- installed extension state groups
+- installed extension read groups
 
 Normal writes use `tx` groups:
 
@@ -50,7 +50,7 @@ Normal writes use `tx` groups:
 - `tx.fragment.replace`
 - `tx.slice.replace`
 - `tx.extensions`
-- installed extension transaction groups
+- installed extension update groups
 
 External, clipboard, or parsed content enters as a `ContentSlice` and is
 replaced through `tx.slice.replace(...)`. Closed application content uses
@@ -68,14 +68,19 @@ actual target before publication.
 
 ## Extensions
 
-Extensions contribute typed `state`, `tx`, and `api` groups, commands, schema,
-state fields, effects, facets, corrections, and host codecs.
+Extensions contribute typed `api`, `read`, and `update` groups, commands,
+schema, state fields, effects, facets, corrections, and host codecs.
 
-Extension declarations compile into a detached immutable configuration.
-Validation completes before publication. Synchronous activation runs against
-the published configuration, reports failures through the lifecycle error
-sink, and cleans only the failed activation attempt. Ready callbacks run after
-publication.
+Root dependency references carry only `name` and optional `enabled`. The
+finite name-keyed capability/provider carrier and value-sensitive HKT are
+internal-only. Static portals prove name and capability equivalence; runtime
+portals prove exact installed descriptor identity.
+
+Extension declarations compile into a detached immutable candidate.
+`validate(context)` completes before publication. Synchronous activation runs
+against the published extension, reports failures through the lifecycle error
+sink, and cleans only the failed activation attempt. Publication-dependent work
+is registered through `context.afterPublish(...)`.
 
 Pure commands evaluate committed state into `false | TransactionSpec`.
 Execution validates the base snapshot and publishes the spec through the same

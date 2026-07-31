@@ -3,11 +3,11 @@ title: Plate 插件
 description: Plate 插件的 API 参考文档。
 ---
 
-Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 key 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、类型或 editor-local state 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginStore` 订阅变化。
+Plate 插件是传给 `Plate` 组件 [plugins](/docs/api/core/plate-components#plugins) 属性的描述符。已安装插件的 API 会按插件 name 推断到 `editor.api`。当通用代码需要精确的插件 API、update 命令、类型或 editor-local state 时，将描述符传给 `editor.plugin(MyPlugin)`；React 组件通过 `usePluginStore` 订阅变化。
 
 ## Authoring Context
 
-插件 constructor、extension、configuration、handler、codec 和 injection
+插件 constructor、extension、configuration、event、codec 和 injection
 callback 在其契约支持时会接收当前插件的 context：
 
 ```ts
@@ -20,7 +20,7 @@ const uploadInitialState: UploadPluginState = {
 };
 
 export const UploadPlugin = createPlatePlugin({
-  key: 'upload',
+  name: "upload",
   initialState: uploadInitialState,
   api: ({ store }) => ({
     start: () => store.set({ active: true }),
@@ -29,11 +29,11 @@ export const UploadPlugin = createPlatePlugin({
     isReady: () => !!state.selection(),
   }),
   update: ({ tx, type }) => ({
-    insert: () => tx.nodes.insert({ children: [{ text: '' }], type }),
+    insert: () => tx.nodes.insert({ children: [{ text: "" }], type }),
   }),
 }).extend(({ api, read, store, update }) => ({
-  handlers: {
-    onFocus: () => {
+  on: {
+    focus: () => {
       if (!read.isReady()) return;
 
       store.set({ active: true });
@@ -53,92 +53,125 @@ metadata 才使用 `editor`。shortcut handler 和 input rule 等特殊 callback
 
 <API name="Properties">
 <APIAttributes>
-<APIItem name="key" type="C['key']" required>
+<APIItem name="name" type="D['name']" required>
 Plate 用于通过 `editor.plugin(MyPlugin)` 解析描述符的唯一标识符。
 </APIItem>
 
-<APIItem name="targetPluginKeys" type="readonly string[]">
-插件的 schema 声明和注入行为所针对的插件 key。
+<APIItem name="targetPluginNames" type="readonly string[]">
+插件的 schema 声明和注入行为所针对的插件 name。
 
 - **默认值:** `[]`
 </APIItem>
 
-<APIItem name="api" type="Record<string, Function>">
-  插件拥有的 API 函数，可通过 `editor.api[MyPlugin.key]` 和精确的
+<APIItem name="api" type="(context: PlatePluginContext<D>) => InferOwnApi<D>">
+  插件拥有的 API 函数，可通过 `editor.api[MyPlugin.name]` 和精确的
   `editor.plugin(MyPlugin).api` portal 访问。两个路径引用同一个不可变 API
-  对象。互相独立的方法放进 constructor；只有方法需要前一阶段类型或正在适配
-  import/prebuilt descriptor 时才使用 `.extend({ api })`。真正面向整个编辑器的能力属于
-  `extension` 贡献。
+  对象。即使不需要 context，`api` 也必须声明为 factory。Factory 接收一个包含
+  普通 Plate plugin context 的对象；不要使用 positional `editor, context`
+  参数。互相独立的方法放进 constructor；只有方法需要前一阶段类型或正在适配
+  import/prebuilt descriptor 时才使用 `.extend({api})`。真正面向整个
+  编辑器的能力也使用根级 `api` 字段；Plite 会按插件 name 投影它。
 </APIItem>
 
-<APIItem name="tx" type="Record<string, Function>">
+<APIItem
+  name="read"
+  type="(context: PlatePluginContext<D> & { state: PlatePluginReadState<D> }) => InferOwnRead<D>"
+>
+  插件拥有的 state-bound read。Plate 会将它发布到
+  `editor.read[pluginName]`，也可通过 `editor.plugin(MyPlugin).read` 访问。
+  即使返回的方法不需要 authoring context，也必须把 `read` 声明为 factory。
+</APIItem>
+
+<APIItem name="selectors" type="PluginSelectors<InferPluginStoreState<D>>">
+  基于插件 editor-local store 的纯 state-first derivation。React consumer 通过
+  `usePluginStore` 订阅。
+</APIItem>
+
+<APIItem
+  name="update"
+  type="(context: PlatePluginContext<D> & { context: EditorUpdateContext; tx: PlatePluginTransaction<D> }) => InferOwnUpdate<D>"
+>
   插件提供的事务命令。通过 `editor.plugin(MyPlugin).update.method()`
-  执行单个命令， 或在 `editor.update((tx) => tx[key].method())` 中组合命令。
+  执行单个命令， 或在 `editor.update((tx) => tx[pluginName].method())`
+  中组合命令。 `update` 只能使用 factory：从 callback 返回 command
+  object，不要声明静态对象。
 </APIItem>
 
-<APIItem name="initialState" type="Record<string, any>">
+<APIItem name="initialState" type="Partial<InferPluginStoreState<D>> | ((context: PlatePluginContext<D>) => InferPluginStoreState<D>)">
 当前插件可变 editor-local store 的初始值。导出的插件应同时导出命名的
-`*PluginState`，并通过带类型的常量或显式 factory 返回类型检查默认值。应用用户通过
-一次最终 `.configure({ initialState: { ... } })` 覆盖初始值。运行时代码通过
+`*PluginState`，并通过带类型的常量或显式 factory 返回类型检查默认值。当 seed
+依赖已解析 plugin context 时使用 callback 形式。应用用户通过一次最终
+`.configure({ initialState: { ... } })` 覆盖初始值。运行时代码通过
 `editor.plugin(MyPlugin).store` 读取和更新已安装的 store。
 </APIItem>
 
 <APIItem name="component" type="NodeComponent" optional>
-插件普通节点使用的 React 组件。在 `createPlatePlugin({ component })` 中声明；
-已有 Plate descriptor 使用一次最终 `.configure({ component })` 绑定。静态
-consumer 直接使用 `BasePlugin.configure({ component })` 绑定已有 Base
-descriptor。
+  插件普通节点使用的组件。在 `createBasePlugin({component})` 或
+  `createPlatePlugin({component})` 中声明，可用于 static/RSC 和 live rendering；
+  使用一次最终 `.configure({component})` 替换。Base `.extend()` 不接受该字段。
+  `toPlatePlugin()` 只在所属 React adapter 中发布可复用 Plate-layer descriptor
+  或添加 Plate-only authoring；terminal consumer 不为设置 `component` 而转换。
 </APIItem>
 
-<APIItem name="handlers" type="{ onChange?: (editor: PlateEditor) => void } & Record<string, Function>">
-各种编辑器事件的事件处理器。
+<APIItem
+  name="codecs"
+  type="PluginCodecMapDeclaration | ((context: PlatePluginContext<D>) => PluginCodecMapDeclaration)"
+>
+  Schema-aware product 和 foreign format mapping。Self/product codec 使用
+  contextual `defineCodecs(map)`；foreign contribution 使用
+  `defineCodecs(TargetPlugin, map)`。
+</APIItem>
+
+<APIItem name="on" type="EditorExtensionChangeHandlers & DOMHandlers">
+生命周期和 DOM 事件处理器。子项名称不重复 `on` 前缀：使用
+`nodeChange`、`textChange`、`keyDown`、`paste` 以及对应的 capture 变体。
 
 <APISubList>
-<APISubListItem parent="handlers" name="onChange" type="(editor: PlateEditor) => void" optional>
-每当编辑器内容更改时调用。
+<APISubListItem parent="on" name="commit" type="EditorCommitHandler" optional>
+编辑器 commit 发布后调用。
 </APISubListItem>
-<APISubListItem parent="handlers" name="onNodeChange" type="OnNodeChange" optional>
-每当发生节点操作时调用（插入、删除、设置、合并、拆分、移动）。
+<APISubListItem parent="on" name="nodeChange" type="OnNodeChange" optional>
+每当已提交节点被插入、移动、删除或更新时调用。
 
 ```ts
 type OnNodeChange = (
-  ctx: PlatePluginContext & {
-    node: Descendant;
-    operation: NodeOperation;
-    prevNode: Descendant;
-  }
+  ctx: PlatePluginContext & EditorNodeChangeContext<PlateEditor>
 ) => HandlerReturnType;
 ```
 
 **参数：**
 
-- `node`：操作后的节点
-- `operation`：发生的节点操作
-- `prevNode`：操作前的节点
-
-**注意：** 对于 `insert_node` 和 `remove_node` 操作，`node` 和 `prevNode` 包含相同的值以避免空值情况。
+- `kind`：`insert`、`move`、`remove` 或 `update`
+- `node`：变更后的节点，或 `null`
+- `prevNode`：变更前的节点，或 `null`
+- `path` 和 `previousPath`：最终和此前的文档坐标
+- `commit`：已发布的 commit
 
 </APISubListItem>
-<APISubListItem parent="handlers" name="onTextChange" type="OnTextChange" optional>
-每当发生文本操作时调用（插入或删除文本）。
+<APISubListItem parent="on" name="textChange" type="OnTextChange" optional>
+每当已提交文本发生变化时调用。
 
 ```ts
 type OnTextChange = (
-  ctx: PlatePluginContext & {
-    node: Descendant;
-    operation: TextOperation;
-    prevText: string;
-    text: string;
-  }
+  ctx: PlatePluginContext & EditorTextChangeContext<PlateEditor>
 ) => HandlerReturnType;
 ```
 
 **参数：**
 
 - `node`：包含已更改文本的父节点
-- `operation`：发生的文本操作（`insert_text` 或 `remove_text`）
 - `prevText`：操作前的文本内容
 - `text`：操作后的文本内容
+- `path` 和 `previousPath`：最终和此前的文档坐标
+- `commit`：已发布的 commit
+
+</APISubListItem>
+<APISubListItem parent="on" name="keyDown" type="DOMHandler" optional>
+处理 React `keydown` 事件。DOM 事件使用无前缀的 camelCase 名称；capture
+handler 使用 `keyDownCapture` 等名称。
+</APISubListItem>
+<APISubListItem parent="on" name="paste" type="DOMHandler" optional>
+处理 React `paste` 事件。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -152,7 +185,7 @@ Plate 用于向任何节点组件注入 props 的属性。
 </APISubListItem>
 
 <APISubListItem parent="inject" name="excludePlugins" type="string[]" optional>
-  排除节点属性注入的插件 key 数组。
+  排除节点属性注入的插件 name 数组。
 </APISubListItem>
 
 <APISubListItem
@@ -161,7 +194,7 @@ Plate 用于向任何节点组件注入 props 的属性。
   type="string[]"
   optional
 >
-  插件 key 数组。对于这些插件类型的元素后代节点，将排除节点属性注入。
+  插件 name 数组。对于这些插件类型的元素后代节点，将排除节点属性注入。
 </APISubListItem>
 <APISubListItem parent="inject" name="isBlock" type="boolean" optional>
   如果为 true，仅匹配块级元素。用于限制属性注入到块级节点。
@@ -182,13 +215,13 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APIItem name="type" type="string">
 插件拥有的已解析文档类型或属性 key。通过 `own.elementProperty(...)` 或
 `own.textProperty(...)` 创建的 schema 声明、注入的节点 props 和插件命令都使用
-同一个 key。当存储 key 需要与 `plugin.key` 不同时配置 `type`，不要添加第二个
+同一个值。当存储 key 需要与 `plugin.name` 不同时配置 `type`，不要添加第二个
 存储 key 选项。
 
-- **默认值:** `plugin.key`
+- **默认值:** `plugin.name`
 </APIItem>
 
-<APIItem name="schema" type="PluginSchema<C> | null">
+<APIItem name="schema" type="PluginSchema<D> | null">
 通过 `element`、`mark`、`properties` 和 `contentRoots` 字段声明插件的 Plite
 模型。工厂通过 `contentRoots: [own.contentRoot(...)]` 声明元素拥有的根。
 Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快照和已安装插件
@@ -259,6 +292,7 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 
 - `'default'`: 默认行为
 - `'reset'`: 重置块为默认段落类型
+
 </APISubListItem>
 <APISubListItem parent="rules" name="match" type="MatchRules" optional>
 确定此插件的规则是否应用于节点的函数。用于基于节点属性（不仅仅是类型匹配）覆盖行为。
@@ -281,6 +315,7 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 在规范化期间是否移除空文本节点。参见 [插件规则](/docs/plugin-rules)。
 
 - **默认值:** `false`
+
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -290,10 +325,10 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 
 <APISubList>
 <APISubListItem parent="override" name="components" type="Record<string, NodeComponent>" optional>
-按 key 替换插件 `NodeComponent`。
+按 name 替换插件 `NodeComponent`。
 </APISubListItem>
 <APISubListItem parent="override" name="plugins" type="Record<string, BasePluginOverride>" optional>
-按 key 弱适配已安装的外部插件。目标不存在时忽略。值不能定义 `key`、
+按 name 弱适配已安装的外部插件。目标不存在时忽略。值不能定义 `name`、
 `dependencies` 或另一个 `override`。贡献者按 priority 和源顺序解析，目标的直接
 `.configure()` 值优先。当包插件必须禁用已安装的可选对等插件时，使用
 `{ enabled: false }`。
@@ -305,7 +340,7 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 定义完整输入的 HTML 解析行为。
 
 <APISubList>
-<APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyKey<C>>>" optional>
+<APISubListItem parent="parsers" name="html" type="Nullable<HtmlParser<WithAnyName<D>>>" optional>
 完整输入 HTML 钩子。`query`、`transformData` 和 `transformFragment`
 是扁平的同级字段。节点、mark 和 property 映射使用 context-bound
 `defineCodecs` 返回的 schema-aware `'text/html'` map。
@@ -320,7 +355,7 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
 在 Editable 组件上方但在 Plite 包装器内部渲染的组件。
 </APISubListItem>
-<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
 创建一个函数，为所有其他插件的节点组件生成父 React 节点。
 </APISubListItem>
 <APISubListItem parent="render" name="abovePlite" type="Component" optional>
@@ -332,10 +367,10 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 <APISubListItem parent="render" name="beforeEditable" type="EditableSiblingComponent" optional>
 在 Editable 组件之前渲染的组件。
 </APISubListItem>
-<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
+<APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyName<D>>" optional>
 创建一个函数，在所有其他插件的节点 React 节点下方生成 React 节点，但在它们的子节点上方。
 </APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, C>) => React.ReactNode" optional>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, D>) => React.ReactNode" optional>
 在根元素的直接子元素之后渲染组件。与 `belowNodes` 的不同之处在于它是 `PlateElement` 的直接子元素，而不是包装可能是嵌套的子元素。当需要相对于根元素的组件时很有用。
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>
@@ -366,22 +401,80 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
   定义插件的键盘快捷键。
 </APIItem>
 
-<APIItem name="dependencies" type="readonly PluginReference[]">
-  必须在当前插件之前安装的插件描述符。直接传入插件对象，以保留依赖身份和类型推断。
+<APIItem name="inputRules" type="InputRulesDefinition | InputRulesConfig">
+  当前插件拥有的 input rule。使用 typed rule factory，并把规则放在拥有结果行为的
+  feature 旁边。
+</APIItem>
+
+<APIItem name="dependencies" type="readonly (EditorExtensionReference | PluginReference)[]">
+  必须在当前插件之前安装的 Plate plugin 或 raw Plite extension descriptor。直接传入
+  descriptor 对象，以保留依赖身份和类型推断。
+</APIItem>
+
+<APIItem name="conflicts" type="readonly (EditorExtensionReference | PluginReference)[]">
+  不能与当前插件同时安装的 Plate plugin 或 raw Plite extension descriptor。两种
+  reference type 都可以从 `platejs` 导入；Plite-only library 也可以从
+  `@platejs/plite` 导入 `EditorExtensionReference`。
+</APIItem>
+
+<APIItem name="readMiddleware" type="EditorExtensionReadMiddlewareFactory">
+  基于已声明 Plite `editorReads` descriptor 的类型化 middleware。
+</APIItem>
+
+<APIItem name="commands" type="EditorExtensionCommandFactory">
+  通过 `handle` 或 `around` 声明的纯类型化 command interceptor。
+</APIItem>
+
+<APIItem name="corrections" type="readonly EditorCorrection[]">
+  确定性的 changed-range 结构修复。
+</APIItem>
+
+<APIItem name="stateFields" type="readonly EditorStateField[]">
+  类型化的持久或运行时 state descriptor。
+</APIItem>
+
+<APIItem name="effectTypes" type="readonly EditorEffectType[]">
+  类型化的 commit effect descriptor 和 codec。
+</APIItem>
+
+<APIItem name="facetProviders" type="readonly EditorFacetProvider[]">
+  派生 state provider。
+</APIItem>
+
+<APIItem name="selectionKinds" type="readonly EditorSelectionSpec[]">
+  自定义 selection codec 和行为。
+</APIItem>
+
+<APIItem name="contributions" type="readonly EditorExtensionContribution[]">
+  绑定到类型化 extension point 的有序值。Host clipboard insertion 必须直接使用
+  `clipboardHandler(...)` contribution，不能使用根级 `clipboard` 字段。
+  `clipboardHandler({ insertData })` 是唯一形式。所属 extension 或 Plate stage
+  会根据已安装的 update capability 推断 `transaction`。`next` 会委托给下一个
+  handler。
+</APIItem>
+
+<APIItem name="activate" type="EditorExtensionActivation">
+  管理同步资源。需要观察发布结果的工作使用 `context.afterPublish(...)` 延后。
+</APIItem>
+
+<APIItem name="validate" type="EditorExtensionValidator">
+  在 activation 前验证 detached candidate。
 </APIItem>
 
 <APIItem name="enabled" type="boolean" optional>
   启用或禁用插件。Plate 使用此属性决定是否使用该插件。
 </APIItem>
 
-<APIItem name="priority" type="number">
-定义插件注册和执行的顺序。
-
-- **默认值:** `100`
+<APIItem name="decorate" type="Decorate<WithAnyName<D>>" optional>
+  Plate 用于装饰编辑器范围的属性。
 </APIItem>
 
-<APIItem name="decorate" type="Decorate<WithAnyKey<C>>" optional>
-  Plate 用于装饰编辑器范围的属性。
+<APIItem
+  name="transformInitialValue"
+  type="TransformInitialValue<WithAnyName<D>>"
+  optional
+>
+  在 editor initialization 期间、schema fitting 之前转换 document input。
 </APIItem>
 
 <APIItem name="useHooks" type="() => void" optional>
@@ -396,7 +489,7 @@ Schema 工厂接收已解析的插件 `type`、配置后的 `initialState` 快�
 ```ts
 type EditOnlyConfig = {
   render?: boolean; // 默认: true
-  handlers?: boolean; // 默认: true
+  on?: boolean; // 默认: true
   inject?: boolean; // 默认: true
   transformInitialValue?: boolean; // 默认: false
 };
@@ -404,7 +497,7 @@ type EditOnlyConfig = {
 
 当设置为 `true`（布尔值）时：
 
-- `render`、`handlers` 和 `inject.nodeProps` 仅在编辑器非只读时激活
+- `render`、`on` 和 `inject.nodeProps` 仅在编辑器非只读时激活
 - `transformInitialValue` 无论只读状态如何都保持激活
 
 当设置为对象时：
@@ -439,57 +532,39 @@ editOnly: {
 
 <API name="Methods">
 <APIMethods>
-<APIItem name="configure" type="(config: PlatePluginConfig | ((ctx: PlatePluginContext) => Partial<Pick<PlatePluginConfig, 'initialState' | 'handlers' | 'render' | 'shortcuts'>>)) => ConfiguredPlatePlugin">
+<APIItem name="configure" type="(config: PlatePluginConfiguration<D> | ((context: PlatePluginContext<D>) => PlatePluginConfiguration<D>)) => ConfiguredPlatePlugin<D>">
 应用一次最终用户配置，并返回不能再次配置或扩展的描述符。对象形式用于定义字段；
-回调形式可根据已解析编辑器上下文生成已有的 `initialState`、`handlers`、`render` 或
+回调形式可根据已解析编辑器上下文生成已有的 `initialState`、`on`、`render` 或
 `shortcuts`。此前声明的运行时扩展可以读取配置值，重叠字段最终仍以用户配置为准。
 
 ```ts
 H1Plugin.configure({
-  shortcuts: { toggle: { keys: 'mod+alt+1' } },
+  shortcuts: { toggle: { keys: "mod+alt+1" } },
 });
 ```
 
 </APIItem>
 
-<APIItem name="extend" type="(config: Partial<PlatePlugin> | ((ctx: PlatePluginContext) => Partial<PlatePlugin>)) => PlatePlugin">
+<APIItem name="extend" type="<TExtension extends PlatePluginExtendInput<D>>(extension: TExtension) => PlatePlugin">
 向 import/prebuilt descriptor 添加贡献，使用 constructor 无法访问的 shared
 factory，或使用前一阶段新增类型。
 互相独立的字段直接放进 `createBasePlugin()` 或 `createPlatePlugin()`。所有
-`.extend()` 调用必须在用户 `.configure()` 之前完成。
-
-```ts
-type PluginContribution = {
-  api?: Record<string, Function>;
-  read?: Record<string, Function>;
-  selectors?: Record<string, Function>;
-  update?: (context: { tx: EditorUpdateTransaction }) => Record<string, Function>;
-  extension?: PlateEditorExtensionInput;
-  codecs?: PluginCodecMapDeclaration;
-};
-
-<TContract extends PluginContribution>(
-  extendConfig: (
-    context: PlatePluginContext<C> & {
-      defineCodecs: DefinePluginCodecs<C>;
-    }
-  ) => TContract
-) => PlatePlugin;
-```
+`.extend()` 调用必须在用户 `.configure()` 之前完成。返回的 `PlatePlugin`
+保留 contribution 推断出的 capabilities。
 
 贡献字段各自拥有明确职责：
 
 - `api`：插件作用域内的不可变服务
 - `read`：快照或事务内读取
-- `selectors`：派生 option 值
+- `selectors`：基于 editor-local state 的纯派生值
 - `update`：插件作用域内、绑定事务的变更
-- `extension`：Plite 运行时能力和真正的编辑器级分组；inline object 无需
-  helper 即可获得 contextual typing，callback 也直接返回 object
+- `readMiddleware`、`commands`、`corrections`、`stateFields`、
+  `effectTypes`、`facetProviders`、`selectionKinds`、`contributions`、
+  `on`、`activate` 和 `validate`：直接声明在插件上的原生 Plite 能力
 - `codecs`：context-bound `defineCodecs` 返回的 declaration
 
-Plate context 保持在 `extension` callback 内，只抽取 domain input。独立复用的
-standalone Plite descriptor 使用从 `@platejs/plite` import 的
-`defineEditorExtension`。
+独立复用的 standalone Plite descriptor 使用从 `@platejs/plite` import 的
+`defineEditorExtension`。Plate 插件在根级声明相同的原生能力。
 
 Self/product codec 使用 `defineCodecs(map)`；foreign codec 使用
 `defineCodecs(TargetPlugin, map)`，helper 会注入 foreign target。Map 保持
@@ -498,7 +573,7 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 也不要手动添加 `target`。
 
 `createBasePlugin()` / `createPlatePlugin()` 拥有所有互相独立的 declaration
-字段，包括 `api`、`read`、`selectors`、`update`、`extension` 和 `codecs`。
+字段，包括 `api`、`read`、`selectors`、`update`、原生 Plite 字段和 `codecs`。
 
 </APIItem>
 </APIMethods>
@@ -507,37 +582,41 @@ MIME-keyed；`'text/html'` 接受单个 schema-aware rule 或非空有序 rule t
 ## 插件上下文
 
 <API name="Context">
-<APIAttributes>
-<APIItem name="editor" type="PlateEditor">
+  <APIAttributes>
+    <APIItem name="editor" type="PlateEditor">
       当前编辑器实例。
-</APIItem>
-<APIItem name="plugin" type="EditorPlatePlugin<C>">
+    </APIItem>
+    <APIItem name="plugin" type="EditorPlatePlugin<D>">
       当前插件实例。
-</APIItem>
-<APIItem name="defineCodecs" type="DefinePluginCodecs<C>">
+    </APIItem>
+    <APIItem name="defineCodecs" type="DefinePluginCodecs<D>">
       在 constructor 的 `codecs` callback 中创建 schema-checked codec
       declaration；只有 codec 需要前一阶段能力时才放进 `.extend()`。
       Self/product codec 传入一个 MIME-keyed map；foreign contribution 传入
       target plugin 和 map。
-</APIItem>
-<APIItem name="store" type="PluginStore<C>">
+    </APIItem>
+    <APIItem name="store" type="PluginStore<D>">
       读取、更新和订阅当前插件的 editor-local state。命名 selector 是该 state
       的纯函数。
-</APIItem>
-</APIAttributes>
+    </APIItem>
+  </APIAttributes>
 </API>
 
 有关 Plate 插件特定方面的更详细信息，请参阅 [插件配置](/docs/plugin)、[插件方法](/docs/plugin-methods)、[插件上下文](/docs/plugin-context)、[插件组件](/docs/plugin-components) 和 [插件快捷键](/docs/plugin-shortcuts) 的单独指南。
 
 ## 泛型类型
 
+使用 `DefinitionOf<typeof Plugin>` 提取 descriptor 的 inferred definition。
+这是唯一的 public extractor。
+
 <API name="GenericTypes">
-<APIAttributes>
-<APIItem name="C" type="AnyPluginConfig = PluginConfig">
+  <APIAttributes>
+    <APIItem name="D" type="BasePluginDefinition | PlatePluginDefinition">
       表示插件契约，包括
-      `key`、`initialState`、`api`、`read`、`update`、selectors、dependencies 和 schema 推断。
-</APIItem>
-</APIAttributes>
+      `name`、`initialState`、`api`、`read`、`update`、selectors、dependencies
+      和 schema 推断。
+    </APIItem>
+  </APIAttributes>
 </API>
 
 使用示例：
@@ -547,20 +626,18 @@ export type MyPluginState = {
   customOption: boolean;
 };
 
-const initialState: MyPluginState = {
-  customOption: false,
-};
-
 export const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  initialState,
+  name: "myPlugin",
+  initialState: {
+    customOption: false,
+  } satisfies MyPluginState,
   api: ({ store }) => ({
-    getData: () => String(store.get('customOption')),
+    getData: () => String(store.get("customOption")),
   }),
   update: ({ tx }) => ({
     run: () => tx.selection.collapse(),
   }),
 });
 
-type MyPluginConfig = InferConfig<typeof MyPlugin>;
+type MyDefinition = DefinitionOf<typeof MyPlugin>;
 ```

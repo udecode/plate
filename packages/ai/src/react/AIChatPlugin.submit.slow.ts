@@ -4,7 +4,7 @@ import { type Value } from '@platejs/plite';
 import { createPlateEditor } from '@platejs/core/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
-import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
+import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 
 const createEditor = (sendMessage: ReturnType<typeof mock>) => {
   const initialValue: Value = [
@@ -28,7 +28,7 @@ const createEditor = (sendMessage: ReturnType<typeof mock>) => {
   const chat = {
     messages: [],
     sendMessage,
-  } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+  } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
 
   editor.plugin(AIChatPlugin).store.set({ chat });
 

@@ -4,12 +4,12 @@
 
 This is a source-derived map of the Plite side of the multi-editor audit. It is not a verdict against Wordgard, Lexical, or ProseMirror and it does not trust earlier migration plans.
 
-- Checkout commit: `979c00b350f0c139c28f5bfb3b52adc51d18d5dd`.
+- Checkout commit: `01847c776dcf16738ba173b60053fc55828cf7a4`.
 - Machine manifest: `plite-source-manifest.json`.
 - Generator/checker: `plite-build-manifest.mjs`.
 - Audited owners: `packages/plite*`, `packages/browser`, `packages/yjs`, `apps/plite`, editor benchmarks, Plite docs, donor proof tooling, root Plite checks, and Plite CI.
 - Runtime-generated directories such as `node_modules`, `dist`, `.next`, `.tmp`, `.turbo`, `out`, `tmp`, `coverage`, and `test-results` are excluded.
-- The manifest maps every included file and every parsed top-level TypeScript, JavaScript, Markdown, JSON, and workflow declaration to at least one atomic concept. Current result: **2,318 files, 6,004 declarations, zero unmapped**.
+- The manifest maps every included file and every parsed top-level TypeScript, JavaScript, Markdown, JSON, and workflow declaration to at least one atomic concept. Current result: **2,330 files, 6,042 declarations, zero unmapped**.
 
 ## Current public shape
 
@@ -245,14 +245,14 @@ The exact overloads and inferred extension namespaces live at `packages/plite/sr
 - **Proof owner:** command contracts, type inference, recursion/delegation tests, command-dispatch benchmark.
 - **Local assessment:** preserve. This already implements the pure typed command direction the audit should demand.
 
-### PL-16 — Query middleware
+### PL-16 — Typed editor reads and descriptor-owned read middleware
 
-- **Public shape:** `EditorExtension.queries` mirrors nearly every node/point/range/text/fragment/mark query and supplies `next`.
-- **Internal shape and invariant:** per-method chains enforce at most one delegation and wrap generators.
-- **Evidence:** `packages/plite/src/interfaces/editor.ts:1367`, `packages/plite/src/interfaces/editor.ts:1434`, `packages/plite/src/interfaces/editor.ts:1494`, `packages/plite/src/interfaces/editor.ts:1510`, `packages/plite/src/core/query-middleware.ts:124`.
-- **Consumers:** only five production registrations were found: override merge policy (`packages/core/src/lib/plugins/override/OverridePlugin.ts:499`), diff fragment export (`packages/diff/src/lib/excludeDiffFromFragment.ts:30`), table fragment export and marks (`packages/table/src/lib/BaseTablePlugin.ts:2543`, `packages/table/src/lib/BaseTablePlugin.ts:3046`), and toggle selectability (`packages/toggle/src/react/TogglePlugin.tsx:100`).
-- **Proof owner:** query middleware tests plus each owning Plate package.
-- **Local assessment:** hard-cut candidate. Five heterogeneous policies do not justify a public interception matrix for the entire read API. Route each policy to its actual owner, then delete the generic registry.
+- **Public shape:** `defineRead<Input, Result>(id)` owns identity and types; an extension contributes focused `read` registrations, while callers use ordinary `editor.read.*` and inferred plugin read namespaces.
+- **Internal shape and invariant:** the read registry compiles descriptor registrations once, binds the supplied snapshot, permits one guarded `next` delegation, and keeps mutation, I/O, and store writes out of the read path.
+- **Evidence:** `packages/plite/src/core/read-definition.ts:19`, `packages/plite/src/core/read-registry.ts:1`, `packages/plite/src/core/editor-read-execution.ts:1`, `packages/plite/src/interfaces/editor.ts:1997`.
+- **Consumers:** focused merge-target, selectability, and export-slice policies plus plugin-owned reads; no generic whole-editor query mirror remains.
+- **Proof owner:** extension read type contracts, middleware delegation/recursion tests, generator and transaction-snapshot tests, and each owning policy.
+- **Local assessment:** preserve. The narrow descriptor is the current local law; the former generic query middleware candidate is implemented and deleted.
 
 ### PL-17 — Facets and dependency-aware derived state
 
@@ -382,7 +382,7 @@ The exact overloads and inferred extension namespaces live at `packages/plite/sr
 
 ### PL-31 — Package boundaries, exports, docs, and adoption
 
-- **Public shape:** `@platejs/plite` exports 269 top-level declarations from its public index; DOM exports 98, React 177, layout 61. Low-level internals are isolated behind explicit `/internal` entrypoints.
+- **Public shape:** `@platejs/plite` exports 272 top-level declarations from its public index; DOM exports 103, React 177, layout 61. Low-level internals are isolated behind explicit `/internal` entrypoints.
 - **Internal shape and invariant:** core remains the intended DOM-free substrate; host packages depend inward; Plate owns product schema/plugins/UI.
 - **Evidence:** `packages/plite/src/index.ts:1`, `packages/plite/src/internal/index.ts:1`, `packages/plite-dom/src/index.ts:1`, `packages/plite-dom/src/internal/index.ts:1`, `packages/plite-react/src/index.ts:1`, `packages/plite-layout/src/index.ts:1`.
 - **Consumers:** all Plate packages and apps.
@@ -412,14 +412,21 @@ The exact overloads and inferred extension namespaces live at `packages/plite/sr
 10. Separate public decoration/annotation/widget concepts backed by one private mapped-store kernel.
 11. Browser evidence classes, contract registries, zero retries, and target-backed performance proof.
 
-## Confirmed local pressure points
+## Current pressure closure
 
-The source map exposes five concrete candidates before any donor comparison:
+The live manifest confirms the accepted cleanup packets are local law:
 
-1. Core owns `DataTransfer` clipboard middleware and host-codec error details even though `@platejs/plite-dom` owns codecs and DOM transport.
-2. Set-only content grammar cannot express ordered required structure, leaving some structural laws in corrections.
-3. Mark mutual exclusion is repeated as caller `clear` lists instead of compiled property relations.
-4. A single extension `priority` number changes ordering across unrelated resource lanes.
-5. Generic query middleware mirrors the entire read API for five heterogeneous production registrations.
+1. DOM clipboard transport lives in `@platejs/plite-dom`; core has no
+   `DataTransfer` owner.
+2. Mutual mark-clear occurrences are zero.
+3. Global extension-priority consumption is zero; remaining priority fields
+   belong to local codec/shortcut/input-rule jobs or are cleanup residue.
+4. Generic query middleware has zero execution owner, registrations, wrapper
+   calls, exported types, or overridable methods. Typed descriptor-owned
+   `read` middleware is the surviving job.
+5. Plugin option mutation calls are zero; plugin state/configuration uses the
+   current `initialState`/store contract.
 
-Those are pressure findings, not accepted cross-editor proposals. The detailed current-versus-candidate shapes and deletion/adoption ledgers are in `plite-pressure-audit.md`.
+Ordered grammar remains evidence-backed defer, not a material current packet.
+The historical proposals stay in `plite-pressure-audit.md`; they are not
+current implementation recommendations.

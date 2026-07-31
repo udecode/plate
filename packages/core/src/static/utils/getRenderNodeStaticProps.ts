@@ -8,13 +8,13 @@ import type { PliteRenderNodeProps } from '../types';
 
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import {
-  type AnyBasePlugin,
+  type AnyResolvedBasePlugin,
   type BaseEditor,
   type GetInjectNodePropsOptions,
-  getEditorPlugin,
   getPluginNodeProps,
   getPluginNodeClass,
 } from '../../lib';
+import { createPluginContext } from '../../lib/plugin/createPluginContext.internal';
 
 type StaticNodePropsInput = Partial<PliteRenderNodeProps> &
   GetInjectNodePropsOptions &
@@ -36,7 +36,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   props: TProps;
   /** Pre-computed path to avoid expensive node path lookup */
   path?: Path;
-  plugin?: AnyBasePlugin;
+  plugin?: AnyResolvedBasePlugin;
 }): TProps & { attributes: AnyObject } & (
     | PliteRenderNodeProps
     | { api: BaseEditor['api']; editor: BaseEditor }
@@ -44,7 +44,7 @@ export const getRenderNodeStaticProps = <TProps extends StaticNodePropsInput>({
   const contextProps = {
     ...props,
     ...(plugin
-      ? getEditorPlugin(editor, plugin)
+      ? createPluginContext(editor, plugin.name)
       : {
           api: editor.api,
           editor,

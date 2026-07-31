@@ -2,33 +2,39 @@ import { create } from 'mutative';
 import type { TBaseStateApi } from 'zustand-x/vanilla';
 
 import type {
-  AnyPluginConfig,
+  AnyBasePluginDefinition,
+  AnyBasePlugin,
   InferPluginStoreState,
   InferSelectors,
+  PluginReference,
   PluginStore,
 } from '../../lib';
+import type { InternalPluginDefinitionOf } from '../../lib/plugin/pluginDefinitionLookup.internal';
 import {
   brandPluginDescriptor,
   isNominalPluginDescriptor,
 } from '../utils/mergePlugins';
 import { getPlateRuntimeOwner } from './plateRuntime';
 
-type PluginStoreBase<C extends AnyPluginConfig = AnyPluginConfig> =
-  TBaseStateApi<
-    InferPluginStoreState<C>,
-    [['zustand/mutative-x', never]],
-    {},
-    {}
-  >;
+type PluginStoreBase<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = TBaseStateApi<
+  InferPluginStoreState<C>,
+  [['zustand/mutative-x', never]],
+  {},
+  {}
+>;
 
-export type InternalPluginStore<C extends AnyPluginConfig = AnyPluginConfig> = {
+export type InternalPluginStore<
+  C extends AnyBasePluginDefinition = AnyBasePluginDefinition,
+> = {
   readonly base: PluginStoreBase<C>;
   readonly public: PluginStore<C>;
   readonly selectors: InferSelectors<C>;
 };
 
-export const createPluginStore = <C extends AnyPluginConfig>(
-  pluginKey: C['key'],
+export const createPluginStore = <C extends AnyBasePluginDefinition>(
+  pluginName: C['name'],
   base: PluginStoreBase<C>,
   selectors: InferSelectors<C>
 ): InternalPluginStore<C> => {
@@ -37,7 +43,7 @@ export const createPluginStore = <C extends AnyPluginConfig>(
   for (const key of Object.keys(selectors)) {
     if (Object.hasOwn(state, key)) {
       throw new Error(
-        `Plate plugin "${pluginKey}" defines "${key}" as both state and selector.`
+        `Plate plugin "${pluginName}" defines "${key}" as both state and selector.`
       );
     }
   }
@@ -60,7 +66,7 @@ export const createPluginStore = <C extends AnyPluginConfig>(
       }
 
       throw new Error(
-        `Plate plugin "${pluginKey}" has no state field or selector "${String(key)}".`
+        `Plate plugin "${pluginName}" has no state field or selector "${String(key)}".`
       );
     },
     set(value) {
@@ -84,7 +90,7 @@ export const createPluginStore = <C extends AnyPluginConfig>(
 
 const isMinimalPluginReference = (value: object) =>
   Object.isFrozen(value) &&
-  Reflect.ownKeys(value).every((key) => key === 'key' || key === 'type');
+  Reflect.ownKeys(value).every((key) => key === 'name' || key === 'type');
 
 type PluginStateSnapshotContext = Readonly<{
   canonicalReferences?: Map<string, Map<string, unknown>>;
@@ -98,7 +104,7 @@ const snapshotPluginStateValue = (
 ): unknown => {
   if (!value || typeof value !== 'object') return value;
   if (isNominalPluginDescriptor(value)) {
-    const canonicalByType = context.canonicalReferences?.get(value.key);
+    const canonicalByType = context.canonicalReferences?.get(value.name);
     const canonicalReference = canonicalByType?.get(value.type);
 
     if (canonicalReference) return canonicalReference;
@@ -107,7 +113,7 @@ const snapshotPluginStateValue = (
         const byType = canonicalByType ?? new Map<string, unknown>();
 
         byType.set(value.type, value);
-        context.canonicalReferences.set(value.key, byType);
+        context.canonicalReferences.set(value.name, byType);
       }
 
       return value;
@@ -116,7 +122,7 @@ const snapshotPluginStateValue = (
 
     if (existingReference) return existingReference;
     const reference = Object.freeze(
-      brandPluginDescriptor({ key: value.key, type: value.type })
+      brandPluginDescriptor({ name: value.name, type: value.type })
     );
 
     context.references.set(value, reference);
@@ -124,7 +130,7 @@ const snapshotPluginStateValue = (
       const byType = canonicalByType ?? new Map<string, unknown>();
 
       byType.set(value.type, reference);
-      context.canonicalReferences.set(value.key, byType);
+      context.canonicalReferences.set(value.name, byType);
     }
 
     return reference;
@@ -190,17 +196,26 @@ export const clearPluginStores = (editor: object) => {
   PLUGIN_STORES.delete(getPlateRuntimeOwner(editor));
 };
 
-export const getPluginStore = <C extends AnyPluginConfig>(
+export function getPluginStore<P extends AnyBasePlugin & PluginReference>(
   editor: object,
-  pluginKey: C['key']
-) =>
-  PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.get(pluginKey) as
-    | InternalPluginStore<C>
-    | undefined;
+  plugin: P
+): InternalPluginStore<InternalPluginDefinitionOf<P>> | undefined;
+export function getPluginStore<C extends AnyBasePluginDefinition>(
+  editor: object,
+  pluginName: C['name']
+): InternalPluginStore<C> | undefined;
+export function getPluginStore(
+  editor: object,
+  plugin: PluginReference | string
+): unknown {
+  const pluginName = typeof plugin === 'string' ? plugin : plugin.name;
 
-export const setPluginStore = <C extends AnyPluginConfig>(
+  return PLUGIN_STORES.get(getPlateRuntimeOwner(editor))?.get(pluginName);
+}
+
+export const setPluginStore = <C extends AnyBasePluginDefinition>(
   editor: object,
-  pluginKey: C['key'],
+  pluginName: C['name'],
   store: InternalPluginStore<C>
 ) => {
   const owner = getPlateRuntimeOwner(editor);
@@ -210,5 +225,5 @@ export const setPluginStore = <C extends AnyPluginConfig>(
     stores = new Map();
     PLUGIN_STORES.set(owner, stores);
   }
-  stores.set(pluginKey, store);
+  stores.set(pluginName, store);
 };

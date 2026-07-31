@@ -14,7 +14,7 @@ and the plugin-scoped commands:
 ```ts
 const list = editor.plugin(ListPlugin);
 
-list.update.toggle({ type: editor.getType(KEYS.ulClassic) });
+list.update.toggle({ type: editor.plugin(KEYS.ulClassic).type });
 list.update.indent();
 list.update.outdent();
 ```

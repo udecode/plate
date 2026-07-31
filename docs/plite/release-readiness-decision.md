@@ -73,7 +73,8 @@ The live claim is only this:
   - transaction-owned primitive editor methods are the mutation power API
   - `EditorCommit` is the local runtime truth for history, React, DOM repair,
     and proof
-  - extensions compose through named `editor`, `state`, and `tx` groups
+  - extensions compose through owner-local `api`, `read`, and `update` factories
+    published under the extension name
   - rewrite is allowed when retrofit shape blocks the better API or proof
 - tranche 1 Bun/tooling/docs ownership is green
 - tranche 2 React 19.2.5 + Next 16.2.4 + TypeScript 6.0.3 runtime baseline is

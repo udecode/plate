@@ -212,7 +212,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types.
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
@@ -427,7 +427,7 @@ Plite / Plate gap ledger:
 Related scoped sweep ledger:
 | Trigger correction | Active scope | Sweep query / method | Matches | Patched | Deferred | Remaining risk |
 |--------------------|--------------|----------------------|---------|---------|----------|----------------|
-| Remove `getPlugin` cast | named plugin lookup owner/callers | `rg "getBasePlugin|getPluginType|getPluginKey|getPluginByType|editor\\.getPlugin as any" packages/core/src` | 34 lookup references; 1 cast smell | 1 | 0 | none; typecheck passed |
+| Remove `getPlugin` cast | named plugin lookup owner/callers | `rg "getBasePlugin|getPluginType|getPluginName|getPluginByType|editor\\.getPlugin as any" packages/core/src` | 34 lookup references; 1 cast smell | 1 | 0 | none; typecheck passed |
 | Direct Plite import in root | named React root owner/direct imports | `rg "from ['\"].*plite-react|\\.\\.?/plite-react" packages/core/src` | 23 direct package imports; 1 public barrel export; 0 internal local-boundary imports | 1 | 0 | none |
 | Hard-cut owner names | all Core source | `rg "SlateEditor|SlatePlugin|getSlatePlugin|PlateSlate|useSlateProps|slate-react" packages/core/src` | 0 | 0 | 0 | none |
 

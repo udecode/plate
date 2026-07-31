@@ -87,9 +87,9 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件
     TextAlignPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
+        ParagraphPlugin.name,
       ],
       inject: {
         nodeProps: {
@@ -114,9 +114,9 @@ const editor = createPlateEditor({
 - `inject.nodeProps.defaultNodeValue`: 设置默认对齐方式（`start`）
 - `inject.nodeProps.styleKey`: 将注入属性映射到 CSS 的 `textAlign` 属性
 - `inject.nodeProps.validNodeValues`: 定义有效的对齐值用于 UI 控制
-- `targetPluginKeys`: 指定哪些元素插件类型可以保存对齐属性
+- `targetPluginNames`: 指定哪些元素插件类型可以保存对齐属性
 
-`targetPluginKeys` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
+`targetPluginNames` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
 
 ### 添加工具栏按钮
 
@@ -128,7 +128,7 @@ const editor = createPlateEditor({
 
 ### `TextAlignPlugin`
 
-用于设置块级元素内文本对齐的插件。它允许 `targetPluginKeys` 指定的元素保存 `align` 属性。
+用于设置块级元素内文本对齐的插件。它允许 `targetPluginNames` 指定的元素保存 `align` 属性。
 
 <API name="TextAlignPlugin">
   <APIOptions type="object">
@@ -145,9 +145,9 @@ const editor = createPlateEditor({
       有效对齐值数组 - **默认值:** `['start', 'left', 'center', 'right', 'end',
       'justify']`
     </APIItem>
-    <APIItem name="targetPluginKeys" type="string[]" optional>
-      可以保存对齐属性的元素插件键；注入目标由此派生 - **默认值:**
-      `[BaseParagraphPlugin.key]`
+    <APIItem name="targetPluginNames" type="string[]" optional>
+      可以保存对齐属性的元素插件 name；注入目标由此派生 - **默认值:**
+      `[BaseParagraphPlugin.name]`
     </APIItem>
   </APIOptions>
 </API>

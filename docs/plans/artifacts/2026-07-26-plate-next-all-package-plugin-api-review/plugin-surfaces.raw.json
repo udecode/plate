@@ -1294,7 +1294,7 @@
         "inject",
         "key",
         "schema",
-        "targetPluginKeys",
+        "targetPluginNames",
         "update"
       ],
       "key": "KEYS.lineHeight",
@@ -1334,7 +1334,7 @@
         "inject",
         "key",
         "schema",
-        "targetPluginKeys",
+        "targetPluginNames",
         "type",
         "update"
       ],
@@ -1376,7 +1376,7 @@
         "key",
         "options",
         "schema",
-        "targetPluginKeys",
+        "targetPluginNames",
         "update"
       ],
       "key": "KEYS.textIndent",
@@ -3214,7 +3214,7 @@
         "key",
         "options",
         "schema",
-        "targetPluginKeys",
+        "targetPluginNames",
         "update"
       ],
       "key": "KEYS.indent",
@@ -3565,7 +3565,7 @@
         "render",
         "rules",
         "schema",
-        "targetPluginKeys"
+        "targetPluginNames"
       ],
       "key": "KEYS.list",
       "stage": "constructor"

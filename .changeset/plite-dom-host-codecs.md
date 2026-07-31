@@ -1,5 +1,5 @@
 ---
-"@platejs/plite-dom": patch
+"@platejs/plite-dom": major
 ---
 
 - Add prioritized schema-bound host codecs that claim exact schema declarations through `owns` and parse or serialize immutable `ContentSlice` values through read-only state
@@ -8,6 +8,11 @@
 - Own every public `DataTransfer` contract outside headless Plite, including
   typed `clipboardHandler(...)` extension contributions and exact `readSlice` /
   `writeSlice` transport
+- Use only `clipboardHandler(handler)`; infer the handler transaction
+  contextually from the owning extension or Plate stage and its installed
+  update capabilities
+- Publish clipboard operations under the DOM-owned
+  `editor.api.dom.clipboard` namespace
 - Select default editing-action event phases through one host-facts policy,
   retaining only the proven Korean iOS Backspace exception
 - Add root-scoped coordinate, caret, visual-line, and rectangle geometry APIs

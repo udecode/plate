@@ -259,7 +259,7 @@ Paragraph 2 line 1`,
         output: (
           <fragment>
             <hp>Line 1</hp>
-            <element type={HorizontalRulePlugin.key}>
+            <element type={HorizontalRulePlugin.name}>
               <htext />
             </element>
             <hp>Line 2</hp>

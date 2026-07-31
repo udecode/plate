@@ -17,7 +17,7 @@ import {
   schema,
   target,
 } from '@platejs/plite';
-import { createBasePlugin, type InferConfig } from '@platejs/core';
+import { createBasePlugin, type DefinitionOf } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import { SUGGESTION_TRANSIENT_KEY } from '@platejs/suggestion';
 
@@ -50,7 +50,7 @@ const aiPreviewField = defineStateField<AIPreviewState | null>({
 });
 
 export const BaseAIPlugin = createBasePlugin({
-  api: {
+  api: () => ({
     findTextRangeInBlock: ({
       block,
       findText,
@@ -186,13 +186,10 @@ export const BaseAIPlugin = createBasePlugin({
         focus: findPoint(matchEnd, true),
       };
     },
-  },
-  extension: {
-    effectTypes: [aiBatchEffect, aiPreviewField.effect],
-    stateFields: [aiBatchField, aiPreviewField],
-    name: 'ai-batch',
-  },
-  key: KEYS.ai,
+  }),
+  effectTypes: [aiBatchEffect, aiPreviewField.effect],
+  stateFields: [aiBatchField, aiPreviewField],
+  name: KEYS.ai,
   render: { isDecoration: false },
   rules: { selection: { affinity: 'outward' } },
   schema: {
@@ -263,9 +260,11 @@ export const BaseAIPlugin = createBasePlugin({
         });
       }
 
+      const aiChat = editor.plugin(KEYS.aiChat);
+
       tx.nodes.remove({
         at: [],
-        match: { type: editor.getType(KEYS.aiChat) },
+        match: { type: aiChat.installed ? aiChat.type : KEYS.aiChat },
       });
 
       if (preview.selectionBefore) {
@@ -436,4 +435,4 @@ export const BaseAIPlugin = createBasePlugin({
   },
 });
 
-export type BaseAIPluginConfig = InferConfig<typeof BaseAIPlugin>;
+export type BaseAIDefinition = DefinitionOf<typeof BaseAIPlugin>;

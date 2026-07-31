@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 1,
+  "authority": {
+    "repository": "../lexical",
+    "commit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+    "sourceManifest": "docs/plans/artifacts/multi-editor-full-architecture-audit/lexical-source-manifest.json"
+  },
+  "concepts": [
+    {
+      "id": "LX-CORE-NODE",
+      "origin": "reference",
+      "title": "Class-based node graph, stable node keys, parent/sibling links, and latest/writable versions"
+    },
+    {
+      "id": "LX-CORE-NODE-CONFIG",
+      "origin": "reference",
+      "title": "Static node configuration, registration, replacement, inheritance, and DOM/JSON codecs"
+    },
+    {
+      "id": "LX-CORE-STATE",
+      "origin": "reference",
+      "title": "Immutable EditorState snapshots and mutable pending double buffer"
+    },
+    {
+      "id": "LX-CORE-UPDATE",
+      "origin": "reference",
+      "title": "Synchronous ambient read/update context, nested update queue, commit, rollback, and tags"
+    },
+    {
+      "id": "LX-CORE-DIRTY",
+      "origin": "reference",
+      "title": "Dirty leaf/element tracking, transform fixed point, and normalization"
+    },
+    {
+      "id": "LX-CORE-RECONCILE",
+      "origin": "reference",
+      "title": "Incremental imperative DOM reconciliation and mutation accounting"
+    },
+    {
+      "id": "LX-CORE-SELECTION",
+      "origin": "reference",
+      "title": "Point, range, node selection, editing transforms, and DOM selection mapping"
+    },
+    {
+      "id": "LX-CORE-CARET",
+      "origin": "reference",
+      "title": "Typed directional tree caret and range traversal"
+    },
+    {
+      "id": "LX-CORE-COMMAND",
+      "origin": "reference",
+      "title": "Typed command tokens, listener priority, propagation, and editor dispatch"
+    },
+    {
+      "id": "LX-CORE-EVENT",
+      "origin": "reference",
+      "title": "Contenteditable event transport, browser branching, composition, clipboard, and input"
+    },
+    {
+      "id": "LX-CORE-INPUT-STATE",
+      "origin": "reference",
+      "title": "Per-editor input and composition state without module-global event state"
+    },
+    {
+      "id": "LX-CORE-DOM-SLOT",
+      "origin": "reference",
+      "title": "DOM content boundary abstraction for wrapped and decorated node rendering"
+    },
+    {
+      "id": "LX-CORE-NAMED-SLOT",
+      "origin": "reference",
+      "title": "Experimental named node-owned content regions across editing, serialization, clipboard, and collaboration"
+    },
+    {
+      "id": "LX-CORE-GENMAP",
+      "origin": "reference",
+      "title": "Generation-aware copy-on-write map used by node maps and reconciliation"
+    },
+    {
+      "id": "LX-CORE-REFCOUNT",
+      "origin": "reference",
+      "title": "Reference-counted document resource registry and shared selectionchange transport"
+    },
+    {
+      "id": "LX-CORE-READ-MODE",
+      "origin": "reference",
+      "title": "Explicit latest and pending editor-state read modes"
+    },
+    {
+      "id": "LX-CORE-WARN",
+      "origin": "reference",
+      "title": "Editor warning hook and update-recursion diagnostics"
+    },
+    {
+      "id": "LX-CORE-LISTENER",
+      "origin": "reference",
+      "title": "Editor update, mutation, root, editable, text, and decorator listeners"
+    },
+    {
+      "id": "LX-CORE-NODE-STATE",
+      "origin": "reference",
+      "title": "Descriptor-backed per-node state, lazy parsing, default elision, and copy-on-write"
+    },
+    {
+      "id": "LX-CORE-GC",
+      "origin": "reference",
+      "title": "Detached-node and decorator garbage collection"
+    },
+    {
+      "id": "LX-CORE-NODES",
+      "origin": "reference",
+      "title": "Built-in root, element, text, paragraph, decorator, line-break, tab, and artificial nodes"
+    },
+    {
+      "id": "LX-CORE-UTIL",
+      "origin": "reference",
+      "title": "Core structural utilities and cleanup composition"
+    },
+    {
+      "id": "LX-EXTENSION-CONTRACT",
+      "origin": "reference",
+      "title": "Typed extension descriptors, config, dependencies, peers, conflicts, and lifecycle"
+    },
+    {
+      "id": "LX-EXTENSION-COMPILER",
+      "origin": "reference",
+      "title": "Extension graph compilation, topological order, config merge, build/register, and disposal"
+    },
+    {
+      "id": "LX-EXTENSION-SIGNALS",
+      "origin": "reference",
+      "title": "Reactive extension signals, watched signal lifecycle, and dependency outputs"
+    },
+    {
+      "id": "LX-CLIPBOARD",
+      "origin": "reference",
+      "title": "Clipboard MIME import/export, selection serialization, and insertion"
+    },
+    {
+      "id": "LX-CODE",
+      "origin": "reference",
+      "title": "Code block nodes, flat line structure, tab/indent behavior, and syntax engines"
+    },
+    {
+      "id": "LX-DEVTOOLS",
+      "origin": "reference",
+      "title": "Editor inspection, state serialization, command log, element picker, and browser extension"
+    },
+    {
+      "id": "LX-DRAGON",
+      "origin": "reference",
+      "title": "Dragon NaturallySpeaking DOM compatibility"
+    },
+    {
+      "id": "LX-FILE",
+      "origin": "reference",
+      "title": "Serialized editor file import/export"
+    },
+    {
+      "id": "LX-HASHTAG",
+      "origin": "reference",
+      "title": "Hashtag text entity and extension"
+    },
+    {
+      "id": "LX-HEADLESS",
+      "origin": "reference",
+      "title": "Headless editor creation and DOM environment adapters"
+    },
+    {
+      "id": "LX-HISTORY",
+      "origin": "reference",
+      "title": "Undo/redo stacks, merge heuristics, tags, and shared history"
+    },
+    {
+      "id": "LX-HTML",
+      "origin": "reference",
+      "title": "HTML generation and fitted DOM import"
+    },
+    {
+      "id": "LX-DOM-IMPORT",
+      "origin": "reference",
+      "title": "Extension-contributed DOM import declarations and compiled matchers"
+    },
+    {
+      "id": "LX-DOM-RENDER",
+      "origin": "reference",
+      "title": "Extension-contributed DOM create, update, export, slot, and decorator overrides"
+    },
+    {
+      "id": "LX-MDAST",
+      "origin": "reference",
+      "title": "Extension-contributed MDAST import/export with syntax-extension preservation"
+    },
+    {
+      "id": "LX-A11Y",
+      "origin": "reference",
+      "title": "Accessibility live regions, focus trapping, focus restoration, and roving tabindex helpers"
+    },
+    {
+      "id": "LX-INTERNAL",
+      "origin": "reference",
+      "title": "Private cross-package implementation utilities with no supported public contract"
+    },
+    {
+      "id": "LX-LINK",
+      "origin": "reference",
+      "title": "Link/autolink nodes, commands, transforms, and extensions"
+    },
+    {
+      "id": "LX-LIST",
+      "origin": "reference",
+      "title": "List/list-item representation, formatting, checklist, indentation, and normalization"
+    },
+    {
+      "id": "LX-MARK",
+      "origin": "reference",
+      "title": "Wrapper mark node and range wrapping helpers"
+    },
+    {
+      "id": "LX-MARKDOWN",
+      "origin": "reference",
+      "title": "Markdown transformers, import, export, and shortcuts"
+    },
+    {
+      "id": "LX-OFFSET",
+      "origin": "reference",
+      "title": "Flat text-offset view and selection conversion"
+    },
+    {
+      "id": "LX-OVERFLOW",
+      "origin": "reference",
+      "title": "Overflow node and character-limit wrapping"
+    },
+    {
+      "id": "LX-PLAIN-TEXT",
+      "origin": "reference",
+      "title": "Plain-text commands and extension"
+    },
+    {
+      "id": "LX-REACT",
+      "origin": "reference",
+      "title": "React composers, contexts, plugins, hooks, decorators, and contenteditable host"
+    },
+    {
+      "id": "LX-RICH-TEXT",
+      "origin": "reference",
+      "title": "Rich-text commands, editing rules, headings, quotes, and extension"
+    },
+    {
+      "id": "LX-SELECTION-UTIL",
+      "origin": "reference",
+      "title": "Selection geometry, style, slicing, cloning, and traversal helpers"
+    },
+    {
+      "id": "LX-TABLE",
+      "origin": "reference",
+      "title": "Table nodes, grid selection, observer, navigation, commands, and normalization"
+    },
+    {
+      "id": "LX-TAILWIND",
+      "origin": "reference",
+      "title": "Tailwind theme extension"
+    },
+    {
+      "id": "LX-TEXT",
+      "origin": "reference",
+      "title": "Text entity registration, root text subscription, and placeholder policy"
+    },
+    {
+      "id": "LX-UTILS",
+      "origin": "reference",
+      "title": "Reusable registration, DOM, traversal, merge, and selection utilities"
+    },
+    {
+      "id": "LX-YJS",
+      "origin": "reference",
+      "title": "Yjs node bindings, relative positions, cursors, snapshots, and bidirectional sync"
+    },
+    {
+      "id": "LX-CONSUMER",
+      "origin": "reference",
+      "title": "Example application and integration consumer"
+    },
+    {
+      "id": "LX-PLAYGROUND",
+      "origin": "reference",
+      "title": "Playground product nodes, plugins, UI, collaboration, and browser host"
+    },
+    {
+      "id": "LX-WEBSITE",
+      "origin": "reference",
+      "title": "Documentation site, public concept documentation, and product examples"
+    },
+    {
+      "id": "LX-PROOF",
+      "origin": "reference",
+      "title": "Unit, integration, browser, regression, fixture, and harness evidence"
+    },
+    {
+      "id": "LX-PACKAGING",
+      "origin": "reference",
+      "title": "Package metadata, exports, dependency graph, build variants, and workspace boundaries"
+    },
+    {
+      "id": "PLITE-CHANGE-ALGEBRA",
+      "origin": "Plite",
+      "title": "Canonical operation and change algebra"
+    },
+    {
+      "id": "PLITE-TRANSACTION-MAPPING",
+      "origin": "Plite",
+      "title": "Transaction mapping and rebasing"
+    },
+    {
+      "id": "PLITE-SCHEMA-GRAMMAR",
+      "origin": "Plite",
+      "title": "Compiled data-first schema grammar"
+    },
+    {
+      "id": "PLITE-ELEMENT-ROOTS",
+      "origin": "Plite",
+      "title": "Element-owned named roots and lifecycle"
+    },
+    {
+      "id": "PLITE-READ-MIDDLEWARE",
+      "origin": "Plite",
+      "title": "Descriptor-owned typed editor reads"
+    },
+    {
+      "id": "PLITE-EXTENSION-CONTRIBUTIONS",
+      "origin": "Plite",
+      "title": "Typed ordered extension contribution points"
+    },
+    {
+      "id": "PLITE-EXTENSION-SLOTS",
+      "origin": "Plite",
+      "title": "Atomic descriptor replacement slots"
+    },
+    {
+      "id": "PLITE-DOM-COVERAGE",
+      "origin": "Plite",
+      "title": "Renderer-neutral DOM coverage and projection"
+    },
+    {
+      "id": "PLITE-CORRECTIONS",
+      "origin": "Plite",
+      "title": "Schema-owned correction and representation law"
+    },
+    {
+      "id": "PLITE-ANCHORS",
+      "origin": "Plite",
+      "title": "Mapped stable document anchors"
+    },
+    {
+      "id": "PLITE-PERSISTENT-INDEXES",
+      "origin": "Plite",
+      "title": "Persistent and element-owned runtime indexes"
+    },
+    {
+      "id": "PLATE-CODECS",
+      "origin": "Plate",
+      "title": "Compiled schema-owned format codecs"
+    },
+    {
+      "id": "PLATE-PLUGIN-CAPABILITIES",
+      "origin": "Plate",
+      "title": "Inferred plugin API read update and store capabilities"
+    },
+    {
+      "id": "PLATE-HOST-CODEC",
+      "origin": "Plate",
+      "title": "Host format codec boundary"
+    }
+  ],
+  "priorCandidates": [
+    {
+      "id": "A6",
+      "conceptIds": ["LX-EXTENSION-CONTRACT"],
+      "evidence": "docs/plans/2026-07-25-multi-editor-full-architecture-audit.md:2281"
+    }
+  ]
+}

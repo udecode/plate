@@ -1,17 +1,8 @@
 import { schema } from '@platejs/plite';
 
-import { createBasePlugin } from '../../plugin';
+import { createBasePlugin, type DefinitionOf } from '../../plugin';
 
 export const BaseParagraphPlugin = createBasePlugin({
-  key: 'p',
-  schema: {
-    element: {
-      content: schema.content.any(
-        [schema.content.text(), schema.content.group('inline')],
-        { default: 'text', min: 1 }
-      ),
-    },
-  },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -21,8 +12,13 @@ export const BaseParagraphPlugin = createBasePlugin({
         match: [{ tag: 'p' }],
       },
     }),
-
+  name: 'p',
   rules: {
     merge: { removeEmpty: true },
   },
+  schema: {
+    element: schema.element.textBlock(),
+  },
 });
+
+export type BaseParagraphDefinition = DefinitionOf<typeof BaseParagraphPlugin>;

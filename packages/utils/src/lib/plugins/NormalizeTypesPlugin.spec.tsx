@@ -30,7 +30,7 @@ describe('NormalizeTypesPlugin', () => {
       ) as TestEditor,
       rules: [
         { path: [0, 0], strictType: 'h1' },
-        { path: [0, 1], type: ParagraphPlugin.key },
+        { path: [0, 1], type: ParagraphPlugin.name },
       ],
       title: 'inserts missing nodes for configured paths',
     },

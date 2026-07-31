@@ -267,7 +267,7 @@ const createPlateBenchmarkCodecPlugin = (counters, format) =>
         },
       });
     },
-    key: 'benchmarkPlateCodec',
+    name: 'benchmarkPlateCodec',
   });
 
 const createBenchmarkEditor = (children, selection, extensions = []) => {

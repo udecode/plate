@@ -79,7 +79,7 @@ describe('AIChatPlugin suggestions', () => {
       .update.applySuggestions('next-a\n\nnext-b\n\nnext-c\n\nnext-d', {
         split: true,
       });
-    editor.plugin(AIChatPlugin).update.insertBelow(editor);
+    editor.plugin(AIChatPlugin).update.insertBelow();
 
     expect(
       editor.read.children().map((_, index) => editor.read.text.string([index]))
@@ -92,6 +92,34 @@ describe('AIChatPlugin suggestions', () => {
       'next-d',
       'tail',
     ]);
+  });
+
+  it('replaces the selection from the owned preview value', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], id: 'id-1', type: 'p' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes, {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
+      kind: 'text',
+    });
+
+    editor.plugin(AIChatPlugin).store.set({
+      previewValue: [{ children: [{ text: 'new' }], type: 'p' }],
+    });
+    editor.plugin(AIChatPlugin).update.replaceSelection({ format: 'none' });
+
+    expect(editor.read.text.string([])).toBe('new');
+  });
+
+  it('clears stale preview content before submitting another request', () => {
+    const chatNodes = [{ children: [{ text: 'old' }], id: 'id-1', type: 'p' }];
+    const editor = createEditor(structuredClone(chatNodes), chatNodes);
+
+    editor.plugin(AIChatPlugin).store.set({
+      previewValue: [{ children: [{ text: 'stale' }], type: 'p' }],
+    });
+    editor.plugin(AIChatPlugin).api.submit('continue');
+
+    expect(editor.plugin(AIChatPlugin).store.get('previewValue')).toEqual([]);
   });
 
   it('inserts fragment suggestions and selects transient text for one block', () => {

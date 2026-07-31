@@ -1,1227 +1,736 @@
 import type {
-  AnyPluginConfig,
-  AnyPluginTx,
-  InferDependencyConfigs,
-  InferDependencies,
-  InferEnabled,
-  InferApi,
-  InferPluginStoreState,
-  InferPluginApi,
-  InferPluginSchemaModel,
-  InferPluginState,
-  InferPluginTx,
-  InferSelectors,
-  InferState,
-  InferTx,
-  PluginDependencyConfigReferences,
-  PluginConfig,
-  PluginSchemaContext,
-  PluginSchemaDeclaration,
-  PluginSchemaModel,
-  PluginSelectors,
-} from './PluginConfig';
-import type { EditorUpdateContext, Value } from '@platejs/plite';
-import { clipboardHandler } from '@platejs/plite-dom';
-import type {
+  AnyBasePlugin,
+  AnyBasePluginContext,
   BasePlugin,
   BasePluginContext,
-  BaseShortcutRecord,
-  AuthoringPlateEditorExtensionInput,
-  DeclaredPluginShortcutInput,
+  BasePluginDefinitionInput,
   EditorShortcut,
-  ExtensionApiContribution,
-  ExtensionStateContribution,
-  ExtensionTxContribution,
-  PlateEditorExtension,
-  PlateEditorExtensionInput,
-  PluginCodecMapDeclaration,
-  PluginShortcutInput,
-  UnifiedRuntimeBasePluginConfig,
-  UnifiedInferredBasePlugin,
 } from './BasePlugin';
+import type {
+  PluginSchemaContext,
+  PluginSchemaDeclaration,
+  PluginSelectorMethods,
+  PluginSelectors,
+  NormalizePluginSelectors,
+  NormalizePluginState,
+} from './PluginDefinition';
+import type { EditorUpdateContext } from '@platejs/plite';
+
+import { isFunction } from '../../internal/utils/isFunction';
+import {
+  allowPrivateRenderContribution,
+  isPrivateRenderContribution,
+} from '../../internal/plugin/privateRenderContribution';
 import type {
   PlatePluginReadState,
   PlatePluginTransaction,
 } from '../editor/pluginRuntimeTypes';
-import type { BaseEditor } from '../editor';
-
-import { isFunction } from '../../internal/utils/isFunction';
+import type { BasePluginDependencyReferences } from './basePluginCompiler.internal';
 import {
   brandPluginDescriptor,
   freezePluginDescriptorValue,
-  isNominalPluginDescriptor,
   mergePlugins,
 } from '../../internal/utils/mergePlugins';
 
-type InitialPluginAuthoringConfig<C extends AnyPluginConfig> = PluginConfig<
-  C['key'],
-  InferPluginStoreState<C>,
-  {},
-  {},
-  {},
-  {},
-  InferDependencies<C>,
-  never,
-  InferPluginApi<C>,
-  InferEnabled<C>
->;
+type BasePluginDependencies = readonly Readonly<{ name: string }>[];
 
-type InitialPluginCodecConfig<
-  C extends AnyPluginConfig,
-  TApi extends object,
-> = PluginConfig<
-  C['key'],
-  InferPluginStoreState<C>,
-  {},
-  {},
-  {},
-  {},
-  InferDependencies<C>,
-  InferPluginSchemaModel<C>,
-  InferPluginApi<C> & TApi,
-  InferEnabled<C>
->;
+type ConstructorFactoryResult<TValue> = TValue extends (
+  ...args: infer _TArguments
+) => infer TResult
+  ? TResult
+  : TValue;
 
-type InitialPluginContext<C extends AnyPluginConfig> = Omit<
-  BasePluginContext<InitialPluginAuthoringConfig<C>>,
-  'defineCodecs' | 'editor' | 'read' | 'update'
-> & {
-  editor: BaseEditor<Value, InferDependencyConfigs<C>>;
-};
-
-type InitialPluginField<C extends AnyPluginConfig, T> =
-  | T
-  | ((context: InitialPluginContext<C>) => T);
-
-type InitialPluginExtensionInput =
-  | object
-  | readonly object[]
-  | ((...args: never[]) => object | readonly object[]);
-
-type ResolveInitialPluginExtension<T> = T extends (
-  ...args: never[]
-) => infer TExtension
-  ? TExtension extends object | readonly object[]
-    ? TExtension
-    : {}
-  : T extends object | readonly object[]
-    ? T
-    : {};
-
-type InitialExtensionApi<T> = ExtensionApiContribution<
-  ResolveInitialPluginExtension<T>
->;
-type InitialExtensionState<T> = ExtensionStateContribution<
-  ResolveInitialPluginExtension<T>
->;
-type InitialExtensionTx<T> = ExtensionTxContribution<
-  ResolveInitialPluginExtension<T>
->;
-
-type InitialPluginCodecsContext<
-  C extends AnyPluginConfig,
-  TApi extends object,
-> = Omit<
-  BasePluginContext<InitialPluginCodecConfig<C, TApi>>,
-  'editor' | 'read' | 'update'
-> & {
-  editor: BaseEditor<Value, InferDependencyConfigs<C>>;
-};
-
-type CreateBasePluginInput<C extends AnyPluginConfig = PluginConfig> = {
-  component?: never;
-  dependencies?: C['dependencies'];
-  enabled?: C['enabled'];
-  key: C['key'];
-  initialState?: InitialPluginField<C, InferPluginStoreState<C>>;
-  schema?: BasePlugin<C>['schema'];
-  targetPluginKeys?: BasePlugin<C>['targetPluginKeys'];
-  type?: string;
-};
-
-type PluginInputConfig<C extends AnyPluginConfig> = CreateBasePluginInput<C>;
-
-type TypedBasePluginConfig<C extends AnyPluginConfig = PluginConfig> =
-  PluginInputConfig<C>;
-
-type NoInferConfig<T> = [T][T extends unknown ? 0 : never];
-
-type InitialPluginCodecs<C extends AnyPluginConfig, TApi extends object = {}> =
-  | PluginCodecMapDeclaration
-  | ((
-      context: InitialPluginCodecsContext<C, TApi>
-    ) => PluginCodecMapDeclaration);
-
-type InitialPluginReadContext<C extends AnyPluginConfig> =
-  InitialPluginContext<C> & {
-    state: PlatePluginReadState<InferDependencyConfigs<C>>;
-  };
-
-type InitialPluginUpdateContext<C extends AnyPluginConfig> =
-  InitialPluginContext<C> & {
-    context: EditorUpdateContext;
-    tx: PlatePluginTransaction<InferDependencyConfigs<C>>;
-  };
-
-type InitialPluginShortcutConfig<
-  C extends AnyPluginConfig,
-  TApi extends object,
-  TUpdate extends object,
-> = PluginConfig<
-  C['key'],
-  InferPluginStoreState<C>,
-  InferApi<C>,
-  InferTx<C> & {
-    [K in C['key']]: InferPluginTx<C> & TUpdate;
-  },
-  InferSelectors<C>,
-  InferState<C>,
-  InferDependencies<C>,
-  InferPluginSchemaModel<C>,
-  InferPluginApi<C> & TApi,
-  InferEnabled<C>
->;
-
-type ExplicitTypedBasePluginConfig<C extends AnyPluginConfig> = [C] extends [
-  never,
-]
-  ? never
-  : Omit<TypedBasePluginConfig<NoInferConfig<C>>, 'key'> &
-      Omit<
-        InferredBasePluginDeclaration<
-          NoInferConfig<C>,
-          InferPluginApi<NoInferConfig<C>> & object,
-          InferPluginState<NoInferConfig<C>> & object,
-          InferSelectors<NoInferConfig<C>> & object,
-          InferPluginTx<NoInferConfig<C>> & object,
-          {},
-          BaseShortcutRecord
-        >,
-        'codecs' | 'extension' | 'shortcuts'
-      > & {
-        codecs?: InitialPluginCodecs<NoInferConfig<C>>;
-        extension?: InitialPluginField<
-          NoInferConfig<C>,
-          AuthoringPlateEditorExtensionInput<NoInferConfig<C>>
-        >;
-        key: C['key'];
-        shortcuts?: DeclaredPluginShortcutInput<
-          NoInferConfig<C>,
-          EditorShortcut
-        >;
-      };
-
-type InferredPluginSchemaFactory<
-  K extends string,
-  StoreState extends object,
-  A extends object,
-  Tx extends AnyPluginTx,
+type BasePluginConstructorContextDefinition<
+  N extends string,
+  D extends BasePluginDependencies,
   S extends object,
-  D extends readonly AnyPluginConfig[],
-  Enabled extends boolean,
+  TType extends string = N,
+  TSchema extends PluginSchemaDeclaration = never,
+  TTargetPluginNames extends readonly string[] = readonly [],
+> = Readonly<{
+  dependencies: BasePluginDependencyReferences<D>;
+  initialState: S;
+  name: N;
+  targetPluginNames: TTargetPluginNames;
+  type: TType;
+}> &
+  ([TSchema] extends [never]
+    ? Readonly<Record<never, never>>
+    : Readonly<{ schema: TSchema }>);
+
+type BasePluginConstructorSchemaFactory<
+  N extends string,
+  D extends BasePluginDependencies,
+  S extends object,
   TType extends string,
-  TDeclaration extends PluginSchemaDeclaration,
+  TTargetPluginNames extends readonly string[],
+  TSchema extends PluginSchemaDeclaration,
 > = (
   context: PluginSchemaContext<
-    PluginConfig<
-      K,
-      StoreState,
-      A,
-      Tx,
-      S,
-      {},
-      PluginDependencyConfigReferences<D>,
-      never,
-      {},
-      Enabled
+    NoInfer<
+      BasePluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TType,
+        never,
+        TTargetPluginNames
+      >
     >,
-    TType
+    NoInfer<TType>
   >
-) => TDeclaration;
+) => TSchema;
 
-type InferredBasePluginInput<
-  K extends string,
-  StoreState extends object,
-  A extends object,
-  Tx extends AnyPluginTx,
-  S extends object,
-  D extends readonly AnyPluginConfig[],
-  Enabled extends boolean,
+type BasePluginConstructorInitialStateInput<
+  N extends string,
+  D extends BasePluginDependencies,
   TType extends string,
-> = {
-  component?: never;
-  dependencies?: {
-    readonly [TIndex in keyof D]: {
-      readonly __config: D[TIndex];
-    };
-  };
-  enabled?: Enabled;
-  key: K;
-  initialState?: InitialPluginField<
-    InitialBasePluginConfig<K, StoreState, A, Tx, S, D, never, Enabled>,
-    StoreState
-  >;
-  targetPluginKeys?: readonly string[];
-  type?: TType;
-};
+  TTargetPluginNames extends readonly string[],
+> =
+  | ((
+      context: BasePluginContext<
+        BasePluginConstructorContextDefinition<
+          N,
+          D,
+          {},
+          TType,
+          never,
+          TTargetPluginNames
+        >
+      >
+    ) => any)
+  | Readonly<Record<string, unknown>>;
 
-type InitialBasePluginConfig<
-  K extends string,
-  StoreState extends object,
-  A extends object,
-  Tx extends AnyPluginTx,
+type BasePluginConstructorUpdateFactory<
+  N extends string,
+  D extends BasePluginDependencies,
   S extends object,
-  D extends readonly AnyPluginConfig[],
-  SchemaModel,
-  Enabled extends boolean,
-> = PluginConfig<
-  K,
-  StoreState,
-  A,
-  Tx,
-  S,
-  {},
-  PluginDependencyConfigReferences<D>,
-  SchemaModel,
-  {},
-  Enabled
->;
-
-type InferredBasePluginDeclaration<
-  C extends AnyPluginConfig,
-  TApi extends object,
-  TRead extends object,
-  TSelectors extends object,
-  TUpdate extends object,
-  TExtension extends InitialPluginExtensionInput,
-  TShortcuts extends BaseShortcutRecord,
-> = Omit<
-  UnifiedRuntimeBasePluginConfig<
-    C,
-    {},
-    TApi,
-    TRead,
-    TSelectors,
-    TUpdate,
-    ResolveInitialPluginExtension<TExtension>,
-    TShortcuts
-  >,
-  | 'dependencies'
-  | 'enabled'
-  | 'key'
-  | 'initialState'
-  | 'schema'
-  | 'targetPluginKeys'
-  | 'type'
-  | 'api'
-  | 'codecs'
-  | 'extension'
-  | 'read'
-  | 'selectors'
-  | 'shortcuts'
-  | 'update'
-> & {
-  api?: InitialPluginField<C, TApi>;
-  codecs?: InitialPluginCodecs<C, TApi>;
-  extension?:
-    | (TExtension &
-        ((
-          context: InitialPluginContext<C>
-        ) => AuthoringPlateEditorExtensionInput<C>))
-    | (TExtension & AuthoringPlateEditorExtensionInput<C>);
-  read?: (context: InitialPluginReadContext<C>) => TRead;
-  selectors?: TSelectors & PluginSelectors<InferPluginStoreState<C>>;
-  update?: (context: InitialPluginUpdateContext<C>) => TUpdate;
-  shortcuts?: PluginShortcutInput<
-    InitialPluginShortcutConfig<C, NoInfer<TApi>, NoInfer<TUpdate>>,
-    TShortcuts,
-    EditorShortcut
-  >;
-};
-
-type InferredCreateBasePluginInput<
-  K extends string,
-  StoreState extends object,
-  A extends object,
-  Tx extends AnyPluginTx,
-  S extends object,
-  D extends readonly AnyPluginConfig[],
-  SchemaModel,
-  Enabled extends boolean,
   TType extends string,
-  TApi extends object,
-  TRead extends object,
-  TSelectors extends PluginSelectors<StoreState>,
+  TSchema extends PluginSchemaDeclaration,
+  TTargetPluginNames extends readonly string[],
   TUpdate extends object,
-  TExtension extends InitialPluginExtensionInput,
-  TShortcuts extends BaseShortcutRecord,
-> = InferredBasePluginInput<K, StoreState, A, Tx, S, D, Enabled, TType> &
-  Omit<
-    InferredBasePluginDeclaration<
-      InitialBasePluginConfig<K, StoreState, A, Tx, S, D, never, Enabled>,
-      TApi,
-      TRead,
-      TSelectors,
-      TUpdate,
-      TExtension,
-      TShortcuts
-    >,
-    'codecs'
+> = (
+  context: BasePluginContext<
+    NoInfer<
+      BasePluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TType,
+        TSchema,
+        TTargetPluginNames
+      >
+    >
   > & {
-    codecs?: InitialPluginCodecs<
-      InitialBasePluginConfig<K, StoreState, A, Tx, S, D, SchemaModel, Enabled>,
-      TApi
+    context: EditorUpdateContext;
+    tx: PlatePluginTransaction<
+      NoInfer<
+        BasePluginConstructorContextDefinition<
+          N,
+          D,
+          S,
+          TType,
+          never,
+          TTargetPluginNames
+        >
+      >
     >;
-  };
+  }
+) => TUpdate;
 
-const extensionArrayKeys = [
-  '__apiExtensions',
-  '__codecExtensions',
-  '__htmlCodecExtensions',
-  '__editorExtensions',
-  '__readExtensions',
-  '__txExtensions',
-] as const;
-
-type ExtensionArrayKey = (typeof extensionArrayKeys)[number];
-type ExtensionArrayRecord = Partial<
-  Record<ExtensionArrayKey, readonly unknown[]>
+type BasePluginShortcutRecord = Record<
+  string,
+  EditorShortcut | null | undefined
 >;
 
-type MutableBasePlugin = Omit<
-  BasePlugin<AnyPluginConfig>,
-  'targetPluginKeys'
-> & {
-  targetPluginKeys: readonly string[];
+type BasePluginConstructorPresenceKey =
+  | 'activate'
+  | 'codecs'
+  | 'commands'
+  | 'contributions'
+  | 'corrections'
+  | 'decorate'
+  | 'editOnly'
+  | 'effectTypes'
+  | 'facetProviders'
+  | 'inject'
+  | 'inputRules'
+  | 'on'
+  | 'override'
+  | 'parsers'
+  | 'readMiddleware'
+  | 'render'
+  | 'rules'
+  | 'selectionKinds'
+  | 'stateFields'
+  | 'transformInitialValue'
+  | 'useHooks'
+  | 'validate';
+
+type MutableBasePlugin = AnyBasePlugin & {
+  targetPluginNames: readonly string[];
 };
 
-const PLATE_IMPLICIT_EXTENSION_NAME = Symbol.for(
-  'plate.core.implicitExtensionName'
-);
-
-type PlateEditorExtensionRecord = Record<PropertyKey, unknown> & {
-  key?: unknown;
+type PluginRecord = Record<PropertyKey, unknown> & {
   name?: unknown;
 };
 
-const isObjectRecord = (
-  extension: unknown
-): extension is PlateEditorExtensionRecord =>
-  typeof extension === 'object' && extension !== null;
+const isObjectRecord = (value: unknown): value is PluginRecord =>
+  typeof value === 'object' && value !== null;
 
-const hasOwnName = (
-  extension: unknown
-): extension is PlateEditorExtensionRecord & { name: unknown } =>
-  isObjectRecord(extension) && Object.hasOwn(extension, 'name');
+const assertNoPublicRenderNode = (value: object) => {
+  if (isPrivateRenderContribution(value)) return;
 
-const hasOwnKey = (
-  extension: unknown
-): extension is PlateEditorExtensionRecord & { key: unknown } =>
-  isObjectRecord(extension) && Object.hasOwn(extension, 'key');
-
-const omitExtensionKey = (extension: PlateEditorExtensionRecord) => {
-  const { key: _key, ...extensionWithoutKey } = extension;
-
-  return extensionWithoutKey;
-};
-
-const markImplicitExtensionName = <T extends object>(extension: T): T => {
-  Object.defineProperty(extension, PLATE_IMPLICIT_EXTENSION_NAME, {
-    configurable: true,
-    value: true,
-  });
-
-  return extension;
-};
-
-const preserveExtensionArrays = <P extends object>(
-  basePlugin: ExtensionArrayRecord,
-  nextPlugin: P
-): P => {
-  const nextPluginRecord = nextPlugin as P & ExtensionArrayRecord;
-
-  for (const key of extensionArrayKeys) {
-    const baseExtensions = basePlugin[key] ?? [];
-    const nextExtensions = nextPluginRecord[key] ?? [];
-
-    if (baseExtensions.length === 0) continue;
-
-    nextPluginRecord[key] = [
-      ...baseExtensions,
-      ...nextExtensions.filter(
-        (extension: unknown) => !baseExtensions.includes(extension as never)
-      ),
-    ];
-  }
-
-  return nextPlugin;
-};
-
-const assertNoLegacyNode = (configuration: unknown) => {
-  if (
-    configuration &&
-    typeof configuration === 'object' &&
-    Object.hasOwn(configuration, 'node')
-  ) {
-    throw new Error(
-      'Plate plugin `node` configuration is unsupported. Use top-level `type`, `schema`, and `render`.'
-    );
-  }
-};
-
-const assertNoBaseComponent = (configuration: unknown) => {
-  if (
-    configuration &&
-    typeof configuration === 'object' &&
-    Object.hasOwn(configuration, 'component')
-  ) {
-    throw new Error(
-      'Base plugin constructors are renderer-neutral. Bind `component` through terminal `.configure()`.'
-    );
-  }
-};
-
-const assertNoTerminalCodecField = (configuration: unknown) => {
-  if (
-    configuration &&
-    typeof configuration === 'object' &&
-    Object.hasOwn(configuration, 'codecs')
-  ) {
-    throw new Error(
-      'Plate plugin terminal configuration cannot define `codecs`.'
-    );
-  }
-};
-
-const assertNoRenderNode = (configuration: unknown) => {
-  if (!configuration || typeof configuration !== 'object') return;
-
-  const render = Reflect.get(configuration, 'render');
-
-  if (render && typeof render === 'object' && Object.hasOwn(render, 'node')) {
-    throw new Error(
-      'Plate plugin `render.node` is private. Use top-level `component`.'
-    );
-  }
-};
-
-const assertNoPluginChildren = (configuration: unknown) => {
-  if (
-    configuration &&
-    typeof configuration === 'object' &&
-    Object.hasOwn(configuration, 'plugins')
-  ) {
-    throw new Error(
-      'Plate plugin descriptors cannot define top-level `plugins`. Use `dependencies` for required capabilities or include optional plugins in the consumer plugin array.'
-    );
-  }
-};
-
-const assertNoRelationshipMutation = (
-  configuration: unknown,
-  kind: 'configure' | 'extend'
-) => {
-  if (!configuration || typeof configuration !== 'object') return;
-
-  for (const key of ['dependencies', 'plugins'] as const) {
-    if (Object.hasOwn(configuration, key)) {
-      throw new Error(
-        `Plate plugin ${kind} cannot define \`${key}\`. Declare relationship membership when creating the plugin or during static Base-to-React conversion.`
-      );
-    }
-  }
-};
-
-const assertRuntimeCallback = (
-  value: unknown,
-  kind: 'configure' | 'extension'
-) => {
-  if (!value || typeof value !== 'object') {
-    throw new Error(`Plate plugin ${kind} callbacks must return an object.`);
-  }
-
-  assertNoLegacyNode(value);
-  assertNoRenderNode(value);
-  assertNoRelationshipMutation(value, kind === 'extension' ? 'extend' : kind);
-
-  if (kind === 'configure') {
-    for (const key of Object.keys(value)) {
-      if (!['handlers', 'initialState', 'render', 'shortcuts'].includes(key)) {
-        throw new Error(
-          `Plate plugin configure callbacks cannot define \`${key}\`. Use \`.extend\` for additive plugin behavior or an object configuration for model fields.`
-        );
-      }
-    }
-  }
-
-  const modelKeys =
-    kind === 'configure'
-      ? (['parsers', 'schema', 'targetPluginKeys', 'type'] as const)
-      : (['schema', 'targetPluginKeys', 'type'] as const);
-
-  for (const key of modelKeys) {
-    if (Object.hasOwn(value, key)) {
-      throw new Error(
-        `Plate plugin ${kind} callbacks cannot define \`${key}\`. Use an object configuration or a schema factory over plugin initial state.`
-      );
-    }
-  }
   const render = Reflect.get(value, 'render');
 
   if (
-    kind === 'configure' &&
-    render &&
     typeof render === 'object' &&
-    Object.hasOwn(render, 'isDecoration')
+    render !== null &&
+    Object.hasOwn(render, 'node')
   ) {
     throw new Error(
-      `Plate plugin ${kind} callbacks cannot define \`render.isDecoration\`. Use an object configuration.`
+      'Plate plugin `render.node` is private. Use top-level `component` in createBasePlugin/createPlatePlugin, or terminal .configure({ component }).'
     );
   }
 };
 
-const snapshotModelConfiguration = (configuration: object) => {
-  assertNoLegacyNode(configuration);
-  assertNoTerminalCodecField(configuration);
-  assertNoRenderNode(configuration);
+const assertBaseDefinition: (value: unknown) => asserts value is PluginRecord =
+  (value) => {
+    if (!isObjectRecord(value)) {
+      throw new Error('Plate plugin definitions must be objects.');
+    }
+    if (typeof value.name !== 'string' || value.name.length === 0) {
+      throw new Error('Plate plugins require a non-empty `name`.');
+    }
 
-  // Snapshot model identity here. The complete descriptor graph is snapshotted
-  // at editor publication, where nominal plugin references and opaque extension
-  // resources can be preserved instead of cloned as plain data.
-  const snapshot = { ...configuration };
+    assertNoPublicRenderNode(value);
+    if (Object.hasOwn(value, 'node')) {
+      throw new Error(
+        'Plate plugin `node` is unsupported. Use top-level `type`, `schema`, and `render`.'
+      );
+    }
+    if (Object.hasOwn(value, 'api') && typeof value.api !== 'function') {
+      throw new Error('Plate plugin `api` must be a context factory.');
+    }
+  };
 
-  if (Object.hasOwn(snapshot, 'schema')) {
-    Reflect.set(
-      snapshot,
-      'schema',
-      freezePluginDescriptorValue(Reflect.get(snapshot, 'schema'))
+const assertExtendObject = (value: object) => {
+  assertNoPublicRenderNode(value);
+
+  if (Object.hasOwn(value, 'component')) {
+    throw new Error(
+      'Plate plugin .extend() cannot define `component`; declare the default in the constructor or replace it through terminal .configure({ component }).'
     );
   }
-  if (Object.hasOwn(snapshot, 'targetPluginKeys')) {
-    const targetPluginKeys = Reflect.get(snapshot, 'targetPluginKeys');
 
-    if (Array.isArray(targetPluginKeys)) {
-      Reflect.set(
-        snapshot,
-        'targetPluginKeys',
-        Object.freeze(targetPluginKeys)
+  if (
+    Object.hasOwn(value, 'api') &&
+    typeof Reflect.get(value, 'api') !== 'function'
+  ) {
+    throw new Error('Plate plugin `api` must be a context factory.');
+  }
+
+  for (const field of ['dependencies', 'name', 'schema', 'type'] as const) {
+    if (Object.hasOwn(value, field)) {
+      throw new Error(
+        `Plate plugin .extend() cannot define \`${field}\`; declare model identity and dependencies in the constructor.`
       );
     }
   }
-
-  return Object.freeze(snapshot);
 };
 
-export const normalizePlateEditorExtensions = (
-  pluginKey: string,
-  input: PlateEditorExtensionInput | undefined,
-  extensionKey?: string
-) => {
-  if (!input) return [];
+const assertConfigureObject = (value: object) => {
+  assertNoPublicRenderNode(value);
 
-  const extensions = Array.isArray(input) ? input : [input];
+  for (const field of [
+    'activate',
+    'api',
+    'codecs',
+    'commands',
+    'conflicts',
+    'contributions',
+    'corrections',
+    'dependencies',
+    'effectTypes',
+    'facetProviders',
+    'name',
+    'read',
+    'readMiddleware',
+    'schema',
+    'selectionKinds',
+    'stateFields',
+    'type',
+    'update',
+    'validate',
+  ] as const) {
+    if (Object.hasOwn(value, field)) {
+      throw new Error(
+        `Plate plugin .configure() cannot define \`${field}\`; use .extend() for author capabilities.`
+      );
+    }
+  }
+};
 
-  return extensions.map((extension, index) => {
-    const hasExplicitName = hasOwnName(extension);
-    const key =
-      extensionKey ?? (hasOwnKey(extension) ? extension.key : undefined);
-    const name =
-      typeof key === 'string'
-        ? `${pluginKey}:${key}`
-        : extensions.length === 1
-          ? pluginKey
-          : `${pluginKey}:${index}`;
-    const extensionWithoutKey = hasOwnKey(extension)
-      ? omitExtensionKey(extension)
-      : extension;
-    const {
-      clipboard,
-      contributions = [],
-      ...modelExtension
-    } = extensionWithoutKey as PlateEditorExtensionRecord & {
-      clipboard?: Parameters<typeof clipboardHandler>[0];
-      contributions?: NonNullable<PlateEditorExtension['contributions']>;
-    };
-    const normalized = {
-      ...modelExtension,
-      name: hasExplicitName ? extension.name : name,
-      ...(clipboard
-        ? {
-            contributions: [...contributions, clipboardHandler(clipboard)],
-          }
-        : contributions.length > 0
-          ? { contributions }
-          : {}),
-    };
+const normalizeComponent = (value: PluginRecord): PluginRecord => {
+  if (!Object.hasOwn(value, 'component')) return value;
 
-    return (
-      hasExplicitName ? normalized : markImplicitExtensionName(normalized)
-    ) as PlateEditorExtension;
+  const { component, ...rest } = value;
+  const render = isObjectRecord(rest.render) ? rest.render : {};
+
+  return allowPrivateRenderContribution({
+    ...rest,
+    render: {
+      ...render,
+      node: component,
+    },
   });
 };
 
-/**
- * Creates a renderer-neutral Plate plugin descriptor.
- *
- * @remarks
- *   Put every independent author contribution in this constructor, including
- *   `api`, `read`, `selectors`, `update`, `extension`, and `codecs`. Constructor
- *   callbacks receive the typed plugin context. Use `extend` only to adapt an
- *   existing descriptor or consume a capability introduced by an earlier
- *   stage.
- *
- * @example
- *   const myPlugin = createBasePlugin({
- *     api: ({ store }) => ({
- *       isEnabled: () => store.get('enabled'),
- *     }),
- *     key: 'myPlugin',
- *     initialState: { enabled: true },
- *   });
- *
- * @param config - The complete initial plugin declaration.
- * @returns An immutable plugin descriptor with inferred authoring methods.
- */
-export function createBasePlugin<C extends AnyPluginConfig = never>(
-  config: ExplicitTypedBasePluginConfig<C>
-): BasePlugin<C>;
-export function createBasePlugin<
-  const K extends string,
-  TInitialStateFactory extends (
-    context: InitialPluginContext<
-      InitialBasePluginConfig<K, {}, A, Tx, S, D, never, Enabled>
-    >
-  ) => object,
-  A extends object = {},
-  Tx extends AnyPluginTx = {},
-  S extends object = {},
-  const D extends readonly AnyPluginConfig[] = readonly [],
-  const Enabled extends boolean = boolean,
-  const TType extends string = K,
-  const TApi extends object = {},
-  const TRead extends object = {},
-  const TSelectors extends PluginSelectors<
-    ReturnType<TInitialStateFactory>
-  > = {},
-  const TUpdate extends object = {},
-  const TExtension extends InitialPluginExtensionInput = {},
-  const TShortcuts extends BaseShortcutRecord = {},
->(
-  config: Omit<
-    InferredCreateBasePluginInput<
-      K,
-      ReturnType<TInitialStateFactory>,
-      A,
-      Tx,
-      S,
-      D,
-      PluginSchemaModel<TType, null>,
-      Enabled,
-      TType,
-      TApi,
-      TRead,
-      TSelectors,
-      TUpdate,
-      TExtension,
-      TShortcuts
-    >,
-    'initialState'
-  > & {
-    initialState: TInitialStateFactory;
-    schema?: null;
-  }
-): UnifiedInferredBasePlugin<
-  InitialBasePluginConfig<
-    K,
-    ReturnType<TInitialStateFactory>,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<TType, null>,
-    Enabled
-  >,
-  {},
-  {},
-  TApi,
-  TRead,
-  TSelectors,
-  TUpdate,
-  InitialExtensionApi<TExtension>,
-  InitialExtensionTx<TExtension>,
-  InitialExtensionState<TExtension>
->;
-export function createBasePlugin<
-  const K extends string,
-  StoreState extends object = {},
-  A extends object = {},
-  Tx extends AnyPluginTx = {},
-  S extends object = {},
-  const D extends readonly AnyPluginConfig[] = readonly [],
-  const Enabled extends boolean = boolean,
-  const TType extends string = K,
-  const TDeclaration extends PluginSchemaDeclaration = PluginSchemaDeclaration,
-  const TApi extends object = {},
-  const TRead extends object = {},
-  const TSelectors extends PluginSelectors<StoreState> = {},
-  const TUpdate extends object = {},
-  const TExtension extends InitialPluginExtensionInput = {},
-  const TShortcuts extends BaseShortcutRecord = {},
->(
-  config: InferredCreateBasePluginInput<
-    K,
-    StoreState,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<
-      TType,
-      InferredPluginSchemaFactory<
-        K,
-        StoreState,
-        A,
-        Tx,
-        S,
-        D,
-        Enabled,
-        TType,
-        TDeclaration
-      >
-    >,
-    Enabled,
-    TType,
-    TApi,
-    TRead,
-    TSelectors,
-    TUpdate,
-    TExtension,
-    TShortcuts
-  > & {
-    schema: InferredPluginSchemaFactory<
-      K,
-      NoInfer<StoreState>,
-      NoInfer<A>,
-      NoInfer<Tx>,
-      NoInfer<S>,
-      NoInfer<D>,
-      NoInfer<Enabled>,
-      TType,
-      TDeclaration
-    >;
-  }
-): UnifiedInferredBasePlugin<
-  InitialBasePluginConfig<
-    K,
-    StoreState,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<
-      TType,
-      InferredPluginSchemaFactory<
-        K,
-        StoreState,
-        A,
-        Tx,
-        S,
-        D,
-        Enabled,
-        TType,
-        TDeclaration
-      >
-    >,
-    Enabled
-  >,
-  {},
-  {},
-  TApi,
-  TRead,
-  TSelectors,
-  TUpdate,
-  InitialExtensionApi<TExtension>,
-  InitialExtensionTx<TExtension>,
-  InitialExtensionState<TExtension>
->;
-export function createBasePlugin<
-  const K extends string,
-  StoreState extends object = {},
-  A extends object = {},
-  Tx extends AnyPluginTx = {},
-  S extends object = {},
-  const D extends readonly AnyPluginConfig[] = readonly [],
-  const Enabled extends boolean = boolean,
-  const TType extends string = K,
-  const TDeclaration extends PluginSchemaDeclaration = PluginSchemaDeclaration,
-  const TApi extends object = {},
-  const TRead extends object = {},
-  const TSelectors extends PluginSelectors<StoreState> = {},
-  const TUpdate extends object = {},
-  const TExtension extends InitialPluginExtensionInput = {},
-  const TShortcuts extends BaseShortcutRecord = {},
->(
-  config: InferredCreateBasePluginInput<
-    K,
-    StoreState,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<TType, TDeclaration>,
-    Enabled,
-    TType,
-    TApi,
-    TRead,
-    TSelectors,
-    TUpdate,
-    TExtension,
-    TShortcuts
-  > & {
-    schema: TDeclaration;
-  }
-): UnifiedInferredBasePlugin<
-  InitialBasePluginConfig<
-    K,
-    StoreState,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<TType, TDeclaration>,
-    Enabled
-  >,
-  {},
-  {},
-  TApi,
-  TRead,
-  TSelectors,
-  TUpdate,
-  InitialExtensionApi<TExtension>,
-  InitialExtensionTx<TExtension>,
-  InitialExtensionState<TExtension>
->;
-export function createBasePlugin<
-  const K extends string,
-  StoreState extends object = {},
-  A extends object = {},
-  Tx extends AnyPluginTx = {},
-  S extends object = {},
-  const D extends readonly AnyPluginConfig[] = readonly [],
-  const Enabled extends boolean = boolean,
-  const TType extends string = K,
-  const TApi extends object = {},
-  const TRead extends object = {},
-  const TSelectors extends PluginSelectors<StoreState> = {},
-  const TUpdate extends object = {},
-  const TExtension extends InitialPluginExtensionInput = {},
-  const TShortcuts extends BaseShortcutRecord = {},
->(
-  config: InferredCreateBasePluginInput<
-    K,
-    StoreState,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<TType, null>,
-    Enabled,
-    TType,
-    TApi,
-    TRead,
-    TSelectors,
-    TUpdate,
-    TExtension,
-    TShortcuts
-  > & {
-    schema?: null;
-  }
-): UnifiedInferredBasePlugin<
-  InitialBasePluginConfig<
-    K,
-    StoreState,
-    A,
-    Tx,
-    S,
-    D,
-    PluginSchemaModel<TType, null>,
-    Enabled
-  >,
-  {},
-  {},
-  TApi,
-  TRead,
-  TSelectors,
-  TUpdate,
-  InitialExtensionApi<TExtension>,
-  InitialExtensionTx<TExtension>,
-  InitialExtensionState<TExtension>
->;
-export function createBasePlugin(config: unknown): unknown {
-  return createBasePluginRuntime(config);
-}
+const normalizeConfiguration = (configuration: PluginRecord) => {
+  assertConfigureObject(configuration);
 
-const createBasePluginRuntime = (config: unknown): MutableBasePlugin => {
-  if (!isObjectRecord(config)) {
-    throw new Error('Plate plugin configuration must be an object.');
-  }
-  const baseConfig = config;
-  const isRecreatedDescriptor = isNominalPluginDescriptor(baseConfig);
+  return normalizeComponent(configuration);
+};
 
-  assertNoLegacyNode(baseConfig);
-  assertNoPluginChildren(baseConfig);
-  if (!isRecreatedDescriptor) {
-    assertNoBaseComponent(baseConfig);
-    assertNoRenderNode(baseConfig);
+const snapshotConfiguration = (configuration: object) => {
+  const snapshot: Record<PropertyKey, unknown> = {};
+
+  for (const key of Reflect.ownKeys(configuration)) {
+    snapshot[key] = freezePluginDescriptorValue(
+      Reflect.get(configuration, key)
+    );
   }
 
-  const key = baseConfig.key;
+  const frozenSnapshot = Object.freeze(snapshot);
 
-  if (typeof key !== 'string' || key.length === 0) {
-    throw new Error('Plate plugins require a non-empty `key`.');
+  return isPrivateRenderContribution(configuration)
+    ? allowPrivateRenderContribution(frozenSnapshot)
+    : frozenSnapshot;
+};
+
+const createInitialStage = (definition: PluginRecord) => {
+  const { api, codecs, initialState, read, update } = definition;
+  const contextualInitialState =
+    typeof initialState === 'function' ? initialState : undefined;
+
+  if (
+    api === undefined &&
+    codecs === undefined &&
+    contextualInitialState === undefined &&
+    read === undefined &&
+    update === undefined
+  ) {
+    return [];
   }
 
-  let creationConfig: object = config;
-  let creationExtensions: readonly ((ctx: unknown) => unknown)[] = [];
-
-  if (!isRecreatedDescriptor) {
-    const {
-      api,
-      codecs,
-      extension,
-      initialState,
-      read,
-      selectors,
-      update,
-      ...staticConfig
-    } = config;
-    const contextualInitialState =
-      typeof initialState === 'function' ? initialState : undefined;
-
-    if (codecs !== undefined && typeof codecs !== 'function') {
-      throw new Error(
-        'Plate plugin `codecs` must be declared by the constructor callback.'
-      );
-    }
-
-    creationConfig =
-      contextualInitialState === undefined
-        ? { ...staticConfig, initialState, selectors }
-        : { ...staticConfig, selectors };
-
-    if (
-      api !== undefined ||
-      codecs !== undefined ||
-      extension !== undefined ||
-      contextualInitialState !== undefined ||
-      read !== undefined ||
-      update !== undefined
-    ) {
-      creationExtensions = [
-        (context: unknown) => {
-          const pluginContext = context as BasePluginContext<AnyPluginConfig>;
-
-          return Object.freeze({
-            api:
-              typeof api === 'function'
-                ? Reflect.apply(api, undefined, [pluginContext])
-                : api,
+  return [
+    (context: AnyBasePluginContext) => ({
+      ...(api !== undefined
+        ? {
+            api,
+          }
+        : {}),
+      ...(codecs !== undefined
+        ? {
             codecs:
               typeof codecs === 'function'
-                ? Reflect.apply(codecs, undefined, [pluginContext])
-                : undefined,
-            extension:
-              typeof extension === 'function'
-                ? Reflect.apply(extension, undefined, [pluginContext])
-                : extension,
-            initialState: contextualInitialState
-              ? Reflect.apply(contextualInitialState, undefined, [
-                  pluginContext,
-                ])
-              : undefined,
-            read,
-            update,
-          });
-        },
+                ? Reflect.apply(codecs, undefined, [context])
+                : codecs,
+          }
+        : {}),
+      ...(contextualInitialState
+        ? {
+            initialState: Reflect.apply(contextualInitialState, undefined, [
+              context,
+            ]),
+          }
+        : {}),
+      ...(read !== undefined ? { read } : {}),
+      ...(update !== undefined ? { update } : {}),
+    }),
+  ] as const;
+};
+
+const attachPluginMethods = (
+  source: MutableBasePlugin,
+  familySource?: object
+): MutableBasePlugin => {
+  const plugin = source;
+  const recreate = (next: MutableBasePlugin) =>
+    attachPluginMethods(
+      brandPluginDescriptor(next, familySource ?? plugin),
+      familySource ?? plugin
+    );
+  const assertAuthoringOpen = (method: string) => {
+    if (Reflect.get(plugin, '__configured') !== true) return;
+
+    throw new Error(
+      `Plate plugin '${plugin.name}' is already configured. Call .${method}() before .configure().`
+    );
+  };
+
+  Reflect.set(plugin, 'configure', (input: unknown) => {
+    assertAuthoringOpen('configure');
+    const next = { ...plugin } as MutableBasePlugin;
+
+    Reflect.set(next, '__configured', true);
+
+    if (isFunction(input)) {
+      next.__configurationLayers = [
+        ...next.__configurationLayers,
+        Object.freeze({
+          kind: 'context' as const,
+          value: (context: AnyBasePluginContext) => {
+            const configuration = Reflect.apply(input, undefined, [context]);
+
+            if (!isObjectRecord(configuration)) {
+              throw new Error(
+                'Plate plugin .configure() callbacks must return an object.'
+              );
+            }
+            return normalizeConfiguration(configuration);
+          },
+        }),
+      ];
+    } else {
+      if (!isObjectRecord(input)) {
+        throw new Error('Plate plugin .configure() values must be objects.');
+      }
+      const configuration = normalizeConfiguration(input);
+      next.__configurationLayers = [
+        ...next.__configurationLayers,
+        Object.freeze({
+          kind: 'object' as const,
+          value: snapshotConfiguration(configuration),
+        }),
       ];
     }
-  }
 
+    return recreate(next);
+  });
+
+  Reflect.set(plugin, 'extend', (input: unknown) => {
+    assertAuthoringOpen('extend');
+    const next = { ...plugin } as MutableBasePlugin;
+
+    if (isFunction(input)) {
+      next.__stages = [
+        ...next.__stages,
+        (context: AnyBasePluginContext) => {
+          const contribution = Reflect.apply(input, undefined, [context]);
+
+          if (!isObjectRecord(contribution)) {
+            throw new Error(
+              'Plate plugin .extend() callbacks must return an object.'
+            );
+          }
+          if (!Object.hasOwn(contribution, 'name')) {
+            assertExtendObject(contribution);
+          }
+
+          return contribution;
+        },
+      ];
+    } else {
+      if (!isObjectRecord(input)) {
+        throw new Error('Plate plugin .extend() values must be objects.');
+      }
+
+      // A named object is a canonical raw Plite descriptor. Its name is
+      // validated by the resolver and its native fields are adopted flat.
+      if (!Object.hasOwn(input, 'name')) assertExtendObject(input);
+
+      const contribution = freezePluginDescriptorValue(input);
+
+      next.__stages = [...next.__stages, () => contribution];
+    }
+
+    return recreate(next);
+  });
+
+  return brandPluginDescriptor(plugin, familySource);
+};
+
+const createBasePluginRuntime = (definition: unknown): MutableBasePlugin => {
+  assertBaseDefinition(definition);
+  const normalizedDefinition = normalizeComponent(definition);
+
+  const {
+    api: _api,
+    codecs: _codecs,
+    initialState,
+    read: _read,
+    update: _update,
+    ...staticDefinition
+  } = normalizedDefinition;
+  const name = normalizedDefinition.name as string;
   const plugin = mergePlugins(
     {
-      key,
-      __apiExtensions: [],
-      __codecExtensions: [],
-      __htmlCodecExtensions: [],
+      name,
       __configurationLayers: [],
-      __editorExtensions: [],
-      __extensions: creationExtensions,
-      __readExtensions: [],
-      __txExtensions: [],
+      __htmlCodecContributions: [],
+      __stages: createInitialStage(normalizedDefinition),
+      conflicts: [],
       dependencies: [],
-      handlers: {},
-      inject: {},
       initialState: {},
-      selectors: {},
+      inject: {},
+      inputRules: [],
+      on: {},
       override: {},
       parsers: {},
       render: {},
       rules: {},
       schema: null,
+      selectors: {},
       shortcuts: {},
-      targetPluginKeys: [],
-      inputRules: [],
-      tx: {},
-      type: key,
+      targetPluginNames: [],
+      type: name,
     },
-    creationConfig
+    {
+      ...staticDefinition,
+      ...(typeof initialState === 'function' ? {} : { initialState }),
+    }
   ) as unknown as MutableBasePlugin;
-  const recreatePlugin = (configuration: object) =>
-    createBasePluginRuntime(brandPluginDescriptor(configuration, plugin));
 
-  (plugin as { targetPluginKeys: readonly string[] }).targetPluginKeys =
-    Object.freeze([...plugin.targetPluginKeys]);
+  plugin.targetPluginNames = Object.freeze([...plugin.targetPluginNames]);
 
-  const assertAuthoringOpen = (method: string) => {
-    if (Reflect.get(plugin, '__configured') !== true) return;
-
-    throw new Error(
-      `Plate plugin '${plugin.key}' is already configured. Call .${method}() before .configure().`
-    );
-  };
-  const assertNoSchemaMutation = (configuration: unknown, method: string) => {
-    if (
-      typeof configuration === 'object' &&
-      configuration !== null &&
-      Object.hasOwn(configuration, 'schema')
-    ) {
-      throw new Error(
-        `Plate plugin '${plugin.key}' cannot define schema through .${method}(). Declare schema when creating the plugin.`
-      );
-    }
-  };
-
-  Reflect.set(plugin, 'configure', (config: unknown) => {
-    assertAuthoringOpen('configure');
-    const newPlugin = { ...plugin };
-    Reflect.set(newPlugin, '__configured', true);
-
-    if (isFunction(config)) {
-      const value = (ctx: unknown) => {
-        const configuration = Reflect.apply(config, undefined, [ctx]);
-
-        assertRuntimeCallback(configuration, 'configure');
-        assertNoSchemaMutation(configuration, 'configure');
-
-        return configuration;
-      };
-
-      newPlugin.__configurationLayers = [
-        ...newPlugin.__configurationLayers,
-        Object.freeze({ kind: 'context' as const, value }),
-      ];
-
-      return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
-    }
-    if (!isObjectRecord(config)) {
-      throw new Error('Plate plugin configure values must be objects.');
-    }
-    assertNoSchemaMutation(config, 'configure');
-    assertNoRelationshipMutation(config, 'configure');
-    assertNoRenderNode(config);
-    let normalizedConfig = config;
-
-    if (
-      typeof config === 'object' &&
-      config !== null &&
-      Object.hasOwn(config, 'component')
-    ) {
-      const { component, ...configWithoutComponent } = config;
-
-      newPlugin.render = mergePlugins(newPlugin.render, {
-        node: component,
-      });
-      normalizedConfig = configWithoutComponent;
-    }
-    const type = Reflect.get(normalizedConfig, 'type');
-
-    if (typeof type === 'string') {
-      newPlugin.type = type;
-    }
-    newPlugin.__configurationLayers = [
-      ...newPlugin.__configurationLayers,
-      Object.freeze({
-        kind: 'object' as const,
-        value: snapshotModelConfiguration(normalizedConfig),
-      }),
-    ];
-
-    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
-  });
-
-  Reflect.set(plugin, 'extend', (extendConfig: unknown) => {
-    assertAuthoringOpen('extend');
-    let newPlugin = { ...plugin };
-
-    if (isFunction(extendConfig)) {
-      newPlugin.__extensions = [
-        ...newPlugin.__extensions,
-        (ctx: unknown) => {
-          const extension = Reflect.apply(extendConfig, undefined, [ctx]);
-
-          assertRuntimeCallback(extension, 'extension');
-          assertNoSchemaMutation(extension, 'extend');
-
-          return extension;
-        },
-      ];
-    } else {
-      if (!isObjectRecord(extendConfig)) {
-        throw new Error('Plate plugin extension values must be objects.');
-      }
-      assertNoSchemaMutation(extendConfig, 'extend');
-      assertNoLegacyNode(extendConfig);
-      assertNoRenderNode(extendConfig);
-      assertNoRelationshipMutation(extendConfig, 'extend');
-
-      const { api, codecs, extension, read, update, ...configuration } =
-        extendConfig;
-
-      newPlugin = mergePlugins(
-        newPlugin,
-        configuration
-      ) as unknown as MutableBasePlugin;
-
-      if (
-        api !== undefined ||
-        codecs !== undefined ||
-        extension !== undefined ||
-        read !== undefined ||
-        update !== undefined
-      ) {
-        const unifiedExtension = Object.freeze({
-          api,
-          codecs,
-          extension,
-          read,
-          update,
-        });
-
-        newPlugin.__extensions = [
-          ...newPlugin.__extensions,
-          () => unifiedExtension,
-        ];
-      }
-    }
-
-    return preserveExtensionArrays(plugin, recreatePlugin(newPlugin));
-  });
-
-  Reflect.set(plugin, 'clone', () => {
-    assertAuthoringOpen('clone');
-
-    return preserveExtensionArrays(plugin, recreatePlugin({ ...plugin }));
-  });
-
-  return brandPluginDescriptor(plugin);
+  return attachPluginMethods(plugin);
 };
+
+/**
+ * Create one exact render-capable Plate definition.
+ *
+ * The callback-rich input is normalized to a compact private definition
+ * witness. Ordered `.extend()` stages may consume capabilities from earlier
+ * stages; `.configure()` is terminal and never widens the definition.
+ */
+type BasePluginConstructorRestInput<
+  N extends string,
+  D extends BasePluginDependencies,
+  S extends object,
+  TType extends string,
+  TSchema extends PluginSchemaDeclaration,
+  TTargetPluginNames extends readonly string[],
+> = Omit<
+  BasePluginDefinitionInput<
+    NoInfer<
+      BasePluginConstructorContextDefinition<
+        N,
+        D,
+        S,
+        TType,
+        TSchema,
+        TTargetPluginNames
+      >
+    >
+  >,
+  | 'api'
+  | 'conflicts'
+  | 'dependencies'
+  | 'enabled'
+  | 'initialState'
+  | 'name'
+  | 'read'
+  | 'schema'
+  | 'selectors'
+  | 'shortcuts'
+  | 'targetPluginNames'
+  | 'type'
+  | 'update'
+>;
+
+type BasePluginConstructorSchemaInput<
+  N extends string,
+  D extends BasePluginDependencies,
+  S extends object,
+  TType extends string,
+  TTargetPluginNames extends readonly string[],
+  TSchema extends PluginSchemaDeclaration,
+> =
+  | BasePluginConstructorSchemaFactory<
+      N,
+      D,
+      S,
+      TType,
+      TTargetPluginNames,
+      TSchema
+    >
+  | (TSchema & Readonly<Record<string, unknown>>);
+
+type BasePluginConstructorKey = keyof BasePluginDefinitionInput;
+
+type BasePluginConstructorDependencies<
+  TKeys extends BasePluginConstructorKey,
+  D extends BasePluginDependencies,
+> = 'dependencies' extends TKeys ? D : readonly [];
+
+export function createBasePlugin<
+  const N extends string,
+  const TKeys extends BasePluginConstructorKey,
+  TInitialStateInput extends BasePluginConstructorInitialStateInput<
+    N,
+    BasePluginConstructorDependencies<TKeys, D>,
+    TType,
+    TTargetPluginNames
+  >,
+  const TApi extends object,
+  const TUpdate extends object,
+  const TSchema extends PluginSchemaDeclaration,
+  const D extends BasePluginDependencies,
+  S extends object = 'initialState' extends TKeys
+    ? Extract<ConstructorFactoryResult<TInitialStateInput>, object>
+    : {},
+  const TConflicts extends BasePluginDependencies = readonly [],
+  const TType extends string = N,
+  const TTargetPluginNames extends readonly string[] = readonly [],
+  const TRead extends object = {},
+  const TSelectors extends PluginSelectors<S> = {},
+  const TEnabled extends boolean = boolean,
+  const TShortcuts extends BasePluginShortcutRecord = {},
+>(
+  definition: Readonly<Record<TKeys, unknown>> &
+    ('schema' extends TKeys
+      ? Readonly<{
+          schema: BasePluginConstructorSchemaInput<
+            N,
+            BasePluginConstructorDependencies<TKeys, D>,
+            S,
+            TType,
+            TTargetPluginNames,
+            TSchema
+          >;
+        }>
+      : Readonly<{ schema?: never }>) &
+    BasePluginConstructorRestInput<
+      N,
+      BasePluginConstructorDependencies<TKeys, D>,
+      S,
+      TType,
+      NoInfer<'schema' extends TKeys ? TSchema : never>,
+      TTargetPluginNames
+    > &
+    ('initialState' extends TKeys
+      ? Readonly<{ initialState: TInitialStateInput }>
+      : Readonly<{ initialState?: never }>) &
+    Readonly<{
+      api?: (
+        context: BasePluginContext<
+          NoInfer<
+            BasePluginConstructorContextDefinition<
+              N,
+              BasePluginConstructorDependencies<TKeys, D>,
+              S,
+              TType,
+              never,
+              TTargetPluginNames
+            >
+          >
+        >
+      ) => TApi;
+      conflicts?: TConflicts;
+      dependencies?: D;
+      enabled?: TEnabled;
+      name: N;
+      read?: (
+        context: BasePluginContext<
+          NoInfer<
+            BasePluginConstructorContextDefinition<
+              N,
+              BasePluginConstructorDependencies<TKeys, D>,
+              S,
+              TType,
+              never,
+              TTargetPluginNames
+            >
+          >
+        > & {
+          state: PlatePluginReadState<
+            NoInfer<
+              BasePluginConstructorContextDefinition<
+                N,
+                BasePluginConstructorDependencies<TKeys, D>,
+                S,
+                TType,
+                never,
+                TTargetPluginNames
+              >
+            >
+          >;
+        }
+      ) => TRead;
+      selectors?: TSelectors & PluginSelectors<NoInfer<S>>;
+      shortcuts?: TShortcuts;
+      targetPluginNames?: TTargetPluginNames;
+      type?: TType;
+      update?: BasePluginConstructorUpdateFactory<
+        N,
+        BasePluginConstructorDependencies<TKeys, D>,
+        S,
+        TType,
+        NoInfer<'schema' extends TKeys ? TSchema : never>,
+        TTargetPluginNames,
+        TUpdate
+      >;
+    }>
+): BasePlugin<
+  Readonly<{
+    [P in Extract<
+      keyof Readonly<Record<TKeys, unknown>>,
+      BasePluginConstructorPresenceKey
+    >]: true;
+  }> &
+    Readonly<{ name: N }> &
+    ('dependencies' extends TKeys
+      ? Readonly<{
+          dependencies: BasePluginDependencyReferences<
+            BasePluginConstructorDependencies<TKeys, D>
+          >;
+        }>
+      : Readonly<Record<never, never>>) &
+    ('conflicts' extends TKeys
+      ? Readonly<{
+          conflicts: BasePluginDependencyReferences<TConflicts>;
+        }>
+      : Readonly<Record<never, never>>) &
+    ('initialState' extends TKeys
+      ? Readonly<{ initialState: NormalizePluginState<S> }>
+      : Readonly<Record<never, never>>) &
+    ('enabled' extends TKeys
+      ? Readonly<{ enabled: TEnabled }>
+      : Readonly<Record<never, never>>) &
+    ('api' extends TKeys
+      ? Readonly<{ api: TApi }>
+      : Readonly<Record<never, never>>) &
+    ('read' extends TKeys
+      ? Readonly<{ read: TRead }>
+      : Readonly<Record<never, never>>) &
+    ('selectors' extends TKeys
+      ? Readonly<{
+          selectors: NormalizePluginSelectors<
+            NormalizePluginState<S>,
+            PluginSelectorMethods<TSelectors>
+          >;
+        }>
+      : Readonly<Record<never, never>>) &
+    ('update' extends TKeys
+      ? Readonly<{ update: TUpdate }>
+      : Readonly<Record<never, never>>) &
+    ('schema' extends TKeys
+      ? Readonly<{
+          schema: TSchema;
+        }>
+      : Readonly<Record<never, never>>) &
+    ('targetPluginNames' extends TKeys
+      ? Readonly<{ targetPluginNames: TTargetPluginNames }>
+      : Readonly<Record<never, never>>) &
+    ('type' extends TKeys
+      ? Readonly<{ type: TType }>
+      : Readonly<Record<never, never>>) &
+    ('shortcuts' extends TKeys
+      ? Readonly<{ shortcuts: true }>
+      : Readonly<Record<never, never>>)
+>;
+
+export function createBasePlugin(definition: unknown): AnyBasePlugin {
+  return createBasePluginRuntime(definition);
+}

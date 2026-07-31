@@ -81,9 +81,9 @@ import { createPlateEditor, ParagraphPlugin } from "platejs/react";
 export const editor = createPlateEditor({
   plugins: [
     TextAlignPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
+        ParagraphPlugin.name,
       ],
       inject: {
         nodeProps: {
@@ -132,7 +132,7 @@ The package owns alignment storage and parsing. The registry owns the dropdown U
 
 | Behavior                | Source                                               |
 | ----------------------- | ---------------------------------------------------- |
-| Plugin key              | `KEYS.textAlign`                                     |
+| Plugin name             | `KEYS.textAlign`                                     |
 | Stored property         | `align`                                              |
 | Rendered CSS style      | `textAlign`                                          |
 | Default target plugins  | `[BaseParagraphPlugin]`                              |
@@ -146,7 +146,7 @@ The package owns alignment storage and parsing. The registry owns the dropdown U
 
 ## HTML
 
-`targetPluginKeys` is the schema placement truth. The plugin derives
+`targetPluginNames` is the schema placement truth. The plugin derives
 its render and HTML-parser injection targets from the same list. Pasted HTML
 with a `text-align` style becomes an `align` property on matching blocks.
 
@@ -167,7 +167,7 @@ with a `text-align` style becomes an `align` property on matching blocks.
 
 | Option                              | Surface                       | Use                                                                                    |
 | ----------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------- |
-| `targetPluginKeys`                  | `TextAlignPlugin`             | Element plugin keys whose types can keep `align`; injection is derived from this list. |
+| `targetPluginNames`                  | `TextAlignPlugin`             | Element plugin names whose types can keep `align`; injection is derived from this list. |
 | `type`                              | `TextAlignPlugin`             | Resolved schema and rendered model-property key; defaults to `align`.                  |
 | `inject.nodeProps.defaultNodeValue` | `TextAlignPlugin`             | Value that clears the stored property when selected.                                   |
 | `inject.nodeProps.styleKey`         | `TextAlignPlugin`             | CSS property used for rendering.                                                       |

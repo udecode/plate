@@ -86,9 +86,9 @@ const editor = createPlateEditor({
   plugins: [
     // ...其他插件,
     LineHeightPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
+        ParagraphPlugin.name,
       ],
       inject: {
         nodeProps: {
@@ -103,10 +103,10 @@ const editor = createPlateEditor({
 
 - `inject.nodeProps.defaultNodeValue`: 设置默认行高值（如 `1.5`）
 - `inject.nodeProps.validNodeValues`: 定义常用行高值列表，适用于工具栏下拉菜单
-- `targetPluginKeys`: 指定哪些元素插件类型可以保存 `lineHeight` 属性
+- `targetPluginNames`: 指定哪些元素插件类型可以保存 `lineHeight` 属性
 - `type`: schema 和渲染使用的同一个模型属性 key（默认：`lineHeight`）
 
-`targetPluginKeys` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
+`targetPluginNames` 是 schema 的唯一目标配置。插件会从该列表派生渲染和 HTML 解析所需的注入目标。
 
 ### 添加工具栏按钮
 
@@ -118,7 +118,7 @@ const editor = createPlateEditor({
 
 ### `LineHeightPlugin`
 
-用于设置块级元素行高的插件。它允许 `targetPluginKeys` 指定的元素保存 `lineHeight` 属性。
+用于设置块级元素行高的插件。它允许 `targetPluginNames` 指定的元素保存 `lineHeight` 属性。
 
 <API name="LineHeightPlugin">
   <APIOptions type="object">
@@ -131,9 +131,9 @@ const editor = createPlateEditor({
     <APIItem name="inject.nodeProps.validNodeValues" type="number[]" optional>
       有效行高值数组
     </APIItem>
-    <APIItem name="targetPluginKeys" type="string[]" optional>
-      可保存行高的元素插件键；注入目标由此派生 - **默认值:**
-      `[BaseParagraphPlugin.key]`
+    <APIItem name="targetPluginNames" type="string[]" optional>
+      可保存行高的元素插件 name；注入目标由此派生 - **默认值:**
+      `[BaseParagraphPlugin.name]`
     </APIItem>
   </APIOptions>
 </API>

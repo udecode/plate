@@ -23,7 +23,7 @@ describe('pipeDecorate', () => {
       comment: true,
     } satisfies Range & { comment: true };
     const HighlightPlugin = createBasePlugin({
-      key: 'highlight',
+      name: 'highlight',
       decorate: () => [rangeFromPlugin],
     });
     const editor = createBaseEditor({

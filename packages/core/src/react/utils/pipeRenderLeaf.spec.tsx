@@ -71,7 +71,7 @@ it('returns the custom leaf renderer unchanged when no plugin work exists', () =
 
 it('render with render.leaf and isDecoration=false', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       isDecoration: false,
@@ -103,7 +103,7 @@ it('render with render.leaf and isDecoration=false', () => {
 
 it('render with render.leaf and isDecoration=true', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
       isDecoration: true,
@@ -135,7 +135,7 @@ it('render with render.leaf and isDecoration=true', () => {
 
 it('keeps the outer leaf attributes for render.as leaf plugins', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -169,7 +169,7 @@ it('keeps the outer leaf attributes for render.as leaf plugins', () => {
 
 it('nests multiple simple render.as leaf plugins without losing outer attributes', () => {
   const boldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     type: 'bold',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -177,7 +177,7 @@ it('nests multiple simple render.as leaf plugins without losing outer attributes
     },
   });
   const italicPlugin = createBasePlugin({
-    key: 'italic',
+    name: 'italic',
     type: 'italic',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -216,7 +216,7 @@ it('skips inactive leaf renderers', () => {
   let inactiveCalls = 0;
 
   const boldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     type: 'bold',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -228,7 +228,7 @@ it('skips inactive leaf renderers', () => {
     },
   });
   const italicPlugin = createBasePlugin({
-    key: 'italic',
+    name: 'italic',
     type: 'italic',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -268,7 +268,7 @@ it('keeps complex leaf renderer hooks stable when a mark activates', () => {
 
   try {
     const testPlugin = createBasePlugin({
-      key: 'test',
+      name: 'test',
       type: 'test',
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       render: {
@@ -322,7 +322,7 @@ it('keeps hooks stable when the projection segment count changes', () => {
 
   try {
     const testPlugin = createBasePlugin({
-      key: 'test',
+      name: 'test',
       type: 'test',
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     });
@@ -360,7 +360,7 @@ it('keeps hooks stable when the projection segment count changes', () => {
 
 it('uses node.type to activate leaf renderers when key differs', () => {
   const simplePlugin = createBasePlugin({
-    key: 'simple',
+    name: 'simple',
     type: 'simpleMark',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -368,7 +368,7 @@ it('uses node.type to activate leaf renderers when key differs', () => {
     },
   });
   const complexPlugin = createBasePlugin({
-    key: 'complex',
+    name: 'complex',
     type: 'complexMark',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -407,7 +407,7 @@ it('uses node.type to activate leaf renderers when key differs', () => {
 
 it('renders legacy decoration data from projection slices', () => {
   const searchPlugin = createBasePlugin({
-    key: 'searchHighlight',
+    name: 'searchHighlight',
     type: 'search_highlight',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -452,7 +452,7 @@ it('renders legacy decoration data from projection slices', () => {
 
 it('keeps plugin leafProps behavior', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -468,7 +468,7 @@ it('keeps plugin leafProps behavior', () => {
   });
 
   const Leaf = pipeRenderLeaf(editor)!;
-  const publishedLeafProps = editor.getPlugin(testPlugin).render.leafProps;
+  const publishedLeafProps = editor.plugin(testPlugin).plugin.render.leafProps;
 
   expect(Object.isFrozen(publishedLeafProps)).toBe(true);
 
@@ -496,7 +496,7 @@ it('keeps plugin leafProps behavior', () => {
 
 it('render with render.node', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { isDecoration: false },
   });
@@ -539,7 +539,7 @@ it('keeps text hooks stable when the projection segment count changes', () => {
 
   try {
     const testPlugin = createBasePlugin({
-      key: 'test',
+      name: 'test',
       type: 'test',
       schema: { mark: property.boolean({ default: false, omitDefault: true }) },
       render: { isDecoration: false },
@@ -577,7 +577,7 @@ it('keeps text hooks stable when the projection segment count changes', () => {
 
 it('keeps the outer text attributes for render.as text plugins', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { isDecoration: false, as: 'strong' },
@@ -612,7 +612,7 @@ it('skips inactive text renderers', () => {
 
       return <strong data-testid="active-text">{children}</strong>;
     },
-    key: 'bold',
+    name: 'bold',
     render: {
       isDecoration: false,
     },
@@ -625,7 +625,7 @@ it('skips inactive text renderers', () => {
 
       return <em data-testid="inactive-text">{children}</em>;
     },
-    key: 'italic',
+    name: 'italic',
     render: {
       isDecoration: false,
     },
@@ -659,7 +659,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
       component: ({ children }: ChildrenProps) => (
         <span data-testid="complex-text">{children}</span>
       ),
-      key: 'test',
+      name: 'test',
       render: {
         isDecoration: false,
       },
@@ -698,7 +698,7 @@ it('keeps complex text renderer hooks stable when a mark activates', () => {
 
 it('keeps plugin textProps behavior', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: {
@@ -715,7 +715,7 @@ it('keeps plugin textProps behavior', () => {
   });
 
   const Text = pipeRenderText(editor)!;
-  const publishedTextProps = editor.getPlugin(testPlugin).render.textProps;
+  const publishedTextProps = editor.plugin(testPlugin).plugin.render.textProps;
 
   expect(Object.isFrozen(publishedTextProps)).toBe(true);
 

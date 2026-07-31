@@ -511,7 +511,7 @@ export class YjsController {
           : currentValue;
 
         try {
-          this.editor.read.schema.validateDocument(previousValue);
+          this.editor.read.schema.assertDocument(previousValue);
         } catch {
           return;
         }

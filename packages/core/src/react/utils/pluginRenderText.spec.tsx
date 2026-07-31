@@ -11,7 +11,7 @@ import { pluginRenderText } from './pluginRenderText';
 
 it('uses a plain render.as fast path for simple text plugins', () => {
   const testPlugin = createBasePlugin({
-    key: 'test',
+    name: 'test',
     type: 'test',
     schema: { mark: property.boolean({ default: false, omitDefault: true }) },
     render: { isDecoration: false, as: 'strong' },

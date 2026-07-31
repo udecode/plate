@@ -32,10 +32,13 @@ export const useMediaState = ({
   const { id, align, isUpload, name, type, url } = element;
 
   const embed = React.useMemo(() => {
+    const video = editor.plugin(KEYS.video);
+    const mediaEmbed = editor.plugin(KEYS.mediaEmbed);
+
     if (
       !urlParsers ||
-      (type !== editor.getType(KEYS.video) &&
-        type !== editor.getType(KEYS.mediaEmbed))
+      (type !== (video.installed ? video.type : KEYS.video) &&
+        type !== (mediaEmbed.installed ? mediaEmbed.type : KEYS.mediaEmbed))
     )
       return;
 

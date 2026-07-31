@@ -1,7 +1,9 @@
+'use client';
+
 import {
   ElementStatePlugin,
   type GetInjectNodePropsReturnType,
-  type WithAnyKey,
+  type WithAnyName,
 } from '@platejs/core';
 import {
   type TransformOptions,
@@ -14,12 +16,13 @@ import {
 } from '@platejs/core/react';
 import { PathApi } from '@platejs/plite';
 import { useEffect } from 'react';
-import type { BlockPlaceholderHookConfig } from '../plugins/BlockPlaceholderPlugin';
+import type { BlockPlaceholderHookDefinition } from '../plugins/BlockPlaceholderPlugin';
 
-type BlockPlaceholderContextConfig = WithAnyKey<BlockPlaceholderHookConfig>;
+type BlockPlaceholderHookContextDefinition =
+  WithAnyName<BlockPlaceholderHookDefinition>;
 
 export const useBlockPlaceholderProps = (
-  props: TransformOptions<BlockPlaceholderContextConfig> & {
+  props: TransformOptions<BlockPlaceholderHookDefinition> & {
     props: GetInjectNodePropsReturnType;
   }
 ) => {
@@ -33,11 +36,9 @@ export const useBlockPlaceholderProps = (
   }
 };
 
-export const useBlockPlaceholder: UseHooks<BlockPlaceholderContextConfig> = ({
-  editor,
-  store,
-  type,
-}) => {
+export const useBlockPlaceholder: UseHooks<
+  BlockPlaceholderHookContextDefinition
+> = ({ editor, store, type }) => {
   const focused = useEditorFocused();
   const readOnly = useEditorReadOnly();
   const composing = useEditorComposing();
@@ -83,9 +84,11 @@ export const useBlockPlaceholder: UseHooks<BlockPlaceholderContextConfig> = ({
       children.length === 1 &&
       editor.read.nodes.isEmpty(firstNode) &&
       editor.plugin(ElementStatePlugin).api.isEmpty(firstNode);
-    const placeholder = Object.keys(placeholders).find(
-      (key) => editor.getType(key) === node.type
-    );
+    const placeholder = Object.keys(placeholders).find((pluginName) => {
+      const plugin = editor.plugin(pluginName);
+
+      return (plugin.installed ? plugin.type : pluginName) === node.type;
+    });
 
     if (
       query({ editor, node, path, type }) &&

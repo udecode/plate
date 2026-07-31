@@ -15,7 +15,7 @@ check runtime ownership, then inspect plugin resolution with `DebugPlugin`.
 | Plugins render as plain text or components do not attach. | Missing plugin, wrong `/react` versus base import, or wrong component map. |
 | Server Component crashes on import. | A Server Component imported `platejs/react` or `@platejs/*/react`. |
 | `OPTION_UNDEFINED` in the console. | Code reads or writes an option that is not declared in the plugin. |
-| `PLUGIN_DEPENDENCY_MISSING` in the console. | A plugin dependency key is not present in the editor plugin list. |
+| `PLUGIN_DEPENDENCY_MISSING` in the console. | A plugin dependency name is not present in the editor plugin list. |
 | Markdown, HTML, or static rendering misses nodes. | The static/base plugin kit does not include the serializer or node plugin. |
 
 Use the focused guide when the issue belongs to one area:
@@ -128,7 +128,7 @@ Common debug errors:
 
 | Message | Meaning |
 | --- | --- |
-| `PLUGIN_DEPENDENCY_MISSING` | A plugin lists a dependency key that is not registered. |
+| `PLUGIN_DEPENDENCY_MISSING` | A plugin lists a dependency name that is not registered. |
 
 Use [Plugin](/docs/plugin#advanced-plugin-configuration) to check `dependencies`,
 `enabled`, and `override.*` behavior.

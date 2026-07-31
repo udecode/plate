@@ -7,6 +7,7 @@ import type { MdRootContent } from '../mdast';
 import type { DeserializeMdContext, MdDecoration } from '../types';
 
 import { serializeUnknownMdxNode } from '../internal/markdownDocument';
+import { runMarkdownDecodeCodecs } from '../internal/markdownCodecs';
 import { mdastToPlate } from '../types';
 
 export const convertNodesDeserialize = (
@@ -28,22 +29,49 @@ export const buildSlateNode = (
   deco: MdDecoration,
   options: DeserializeMdContext
 ): Descendant[] => {
+  const runParser = (
+    parser:
+      | NonNullable<DeserializeMdContext['rules']>[string]
+      | null
+      | undefined
+  ) => {
+    const result = parser?.deserialize?.(mdastNode, deco, options);
+
+    if (result === undefined) return;
+
+    return Array.isArray(result) ? result : [result];
+  };
+
   /** Handle custom mdx nodes */
   if (isMdxJsxNode(mdastNode)) {
-    const key = mdastNode.name
-      ? (options.getPluginKey(mdastNode.name) ?? mdastNode.name)
+    const pluginName = mdastNode.name
+      ? (options.registry.getName(mdastNode.name) ?? mdastNode.name)
       : null;
 
-    if (key) {
-      const type = options.getPluginType(mdastToPlate(key));
-      const parserKey = options.getPluginKey(type) ?? type;
-      const nodeParser = options.rules?.[parserKey]?.deserialize;
+    if (pluginName) {
+      const type = options.registry.getType(mdastToPlate(pluginName));
+      const parserName = options.registry.getName(type) ?? type;
+      const overridden = runParser(options.ruleOverrides?.[parserName]);
 
-      if (nodeParser) {
-        const result = nodeParser(mdastNode, deco, options);
+      if (overridden) return overridden;
 
-        return Array.isArray(result) ? result : [result];
+      const compiled = options.compiledCodecs
+        ? runMarkdownDecodeCodecs(
+            options.compiledCodecs,
+            pluginName,
+            mdastNode,
+            deco,
+            options
+          )
+        : undefined;
+
+      if (compiled !== undefined) {
+        return Array.isArray(compiled) ? compiled : [compiled];
       }
+
+      const fallback = runParser(options.rules?.[parserName]);
+
+      if (fallback) return fallback;
     } else {
       console.warn(
         'This MDX node does not have a parser for deserialization',
@@ -58,20 +86,35 @@ export const buildSlateNode = (
     return [
       {
         children: [{ text: serializeUnknownMdxNode(mdastNode) }],
-        type: options.getPluginType(KEYS.p),
+        type: options.registry.getType(KEYS.p),
       },
     ];
   }
 
-  const type = options.getPluginType(mdastToPlate(mdastNode.type));
+  const type = options.registry.getType(mdastToPlate(mdastNode.type));
 
-  const key = options.getPluginKey(type) ?? type;
-  const nodeParser = options.rules?.[key]?.deserialize;
+  const pluginName = options.registry.getName(type) ?? type;
+  const overridden = runParser(options.ruleOverrides?.[pluginName]);
 
-  if (nodeParser) {
-    const result = nodeParser(mdastNode, deco, options);
-    return Array.isArray(result) ? result : [result];
+  if (overridden) return overridden;
+
+  const compiled = options.compiledCodecs
+    ? runMarkdownDecodeCodecs(
+        options.compiledCodecs,
+        mdastNode.type,
+        mdastNode,
+        deco,
+        options
+      )
+    : undefined;
+
+  if (compiled !== undefined) {
+    return Array.isArray(compiled) ? compiled : [compiled];
   }
+
+  const fallback = runParser(options.rules?.[pluginName]);
+
+  if (fallback) return fallback;
   return [];
 };
 
@@ -88,7 +131,7 @@ const shouldIncludeNode = (
 
   if (!node.type) return true;
 
-  const type = options.getPluginType(mdastToPlate(node.type));
+  const type = options.registry.getType(mdastToPlate(node.type));
 
   // First check allowedNodes/disallowedNodes
   if (

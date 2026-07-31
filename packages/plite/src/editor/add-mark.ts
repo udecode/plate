@@ -34,7 +34,7 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
       }
       return (
         schema.isTextPropertyAllowedAt(key, path, root) &&
-        (!schema.isVoid(parentNode) || schema.markableVoid(parentNode))
+        (!schema.isVoid(parentNode) || schema.isMarkableVoid(parentNode))
       );
     };
     const expandedSelection = RangeApi.isExpanded(selection);
@@ -47,7 +47,7 @@ export const applyAddMark: EditorStaticApi['addMark'] = (
         const [parentNode] = editorParent(editor, path);
         markAcceptingVoidSelected =
           NodeApi.isElement(parentNode) &&
-          getEditorSchema(editor).markableVoid(parentNode);
+          getEditorSchema(editor).isMarkableVoid(parentNode);
       }
     }
     if (markAcceptingVoidSelected && selectedPath) {

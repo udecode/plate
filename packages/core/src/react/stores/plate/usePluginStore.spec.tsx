@@ -2,8 +2,6 @@ import React from 'react';
 
 import { act, renderHook } from '@testing-library/react';
 
-import type { PluginConfig } from '../../../lib';
-
 import { TestPlate as Plate } from '../../__tests__/TestPlate';
 import { createPlateEditor } from '../../editor';
 import { createPlatePlugin } from '../../plugin';
@@ -15,7 +13,7 @@ describe('usePluginStore', () => {
       initialState: {
         value: 1,
       },
-      key: 'counter',
+      name: 'counter',
       selectors: {
         doubleValue: (state, factor: number) => state.value * factor,
       },
@@ -77,7 +75,7 @@ describe('usePluginStore', () => {
     const snapshots: number[] = [];
     const CounterPlugin = createPlatePlugin({
       initialState: { value: 1 },
-      key: 'counter',
+      name: 'counter',
       selectors: {
         trackedValue: (state) => {
           snapshots.push(state.value);
@@ -106,21 +104,15 @@ describe('usePluginStore', () => {
 
   it('preserves optional named-selector return types', () => {
     type State = { value: number };
-    type OptionalSelectorConfig = PluginConfig<
-      'optionalSelector',
-      State,
-      {},
-      {},
-      {
-        isEven?: (state: Readonly<State>) => boolean;
-      }
-    >;
-    const OptionalSelectorPlugin = createPlatePlugin<OptionalSelectorConfig>({
+    const selectors: {
+      isEven?: (state: Readonly<State>) => boolean;
+    } = {
+      isEven: (state) => state.value % 2 === 0,
+    };
+    const OptionalSelectorPlugin = createPlatePlugin({
       initialState: { value: 2 },
-      key: 'optionalSelector',
-      selectors: {
-        isEven: (state) => state.value % 2 === 0,
-      },
+      name: 'optionalSelector',
+      selectors,
     });
     const editor = createPlateEditor({
       plugins: [OptionalSelectorPlugin],
@@ -144,11 +136,11 @@ describe('usePluginStore', () => {
   it('supports explicit editors and rejects missing plugins and keys', () => {
     const CounterPlugin = createPlatePlugin({
       initialState: { value: 1 },
-      key: 'counter',
+      name: 'counter',
     });
     const ExternalPlugin = createPlatePlugin({
       initialState: { value: 5 },
-      key: 'external',
+      name: 'external',
     });
     const editor = createPlateEditor({ plugins: [CounterPlugin] });
 

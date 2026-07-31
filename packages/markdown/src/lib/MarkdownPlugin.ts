@@ -2,7 +2,7 @@ import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
 import {
   type BaseEditor,
-  type InferConfig,
+  type DefinitionOf,
   createBasePlugin,
 } from '@platejs/core';
 import type {
@@ -17,7 +17,6 @@ import { isUrl } from '@udecode/utils';
 import type {
   AllowNodeConfig,
   DeserializeMdOptions,
-  MdRules,
   PlateType,
   SerializeMdOptions,
 } from './types';
@@ -43,8 +42,6 @@ export type MarkdownPluginState = {
   remarkPlugins: readonly Pluggable[];
   /** Options passed to `remark-stringify`. */
   remarkStringifyOptions: RemarkStringifyOptions | null;
-  /** Markdown conversion rules. Pass `null` to use only defaults. */
-  rules: MdRules | null;
 };
 
 export type MarkdownApi = {
@@ -70,20 +67,6 @@ const shouldParseMarkdown = (
 };
 
 export const MarkdownPlugin = createBasePlugin({
-  api: ({ editor, store }): MarkdownApi => ({
-    deserialize: (data, options) =>
-      withMarkdownRuntime(editor, store.get(), (runtime) =>
-        deserializeMdWithRuntime(runtime, data, options)
-      ),
-    deserializeInline: (text, options) =>
-      withMarkdownRuntime(editor, store.get(), (runtime) =>
-        deserializeInlineMdWithRuntime(runtime, text, options)
-      ),
-    serialize: (options) =>
-      withMarkdownRuntime(editor, store.get(), (runtime) =>
-        serializeMdWithRuntime(runtime, options)
-      ),
-  }),
   codecs: ({ defineCodecs, editor, store }) => {
     const decode = (data: string, state: EditorCoreStateView) => {
       const document = deserializeMdWithRuntime(
@@ -114,18 +97,32 @@ export const MarkdownPlugin = createBasePlugin({
       },
     });
   },
-  key: KEYS.markdown,
+  name: KEYS.markdown,
   initialState: (): MarkdownPluginState => ({
     allowedNodes: null,
     disallowedNodes: null,
     plainMarks: null,
     remarkPlugins: [],
     remarkStringifyOptions: null,
-    rules: null,
   }),
-});
+}).extend(({ editor, store }) => ({
+  api: (): MarkdownApi => ({
+    deserialize: (data, options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        deserializeMdWithRuntime(runtime, data, options)
+      ),
+    deserializeInline: (text, options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        deserializeInlineMdWithRuntime(runtime, text, options)
+      ),
+    serialize: (options) =>
+      withMarkdownRuntime(editor, store.get(), (runtime) =>
+        serializeMdWithRuntime(runtime, options)
+      ),
+  }),
+}));
 
-export type MarkdownConfig = InferConfig<typeof MarkdownPlugin>;
+export type MarkdownDefinition = DefinitionOf<typeof MarkdownPlugin>;
 
 export type MarkdownEditor<E extends BaseEditor = BaseEditor> = E & {
   readonly api: E['api'] & { markdown: MarkdownApi };

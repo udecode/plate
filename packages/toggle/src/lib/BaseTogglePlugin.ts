@@ -1,4 +1,4 @@
-import { createBasePlugin, type InferConfig } from '@platejs/core';
+import { createBasePlugin, type DefinitionOf } from '@platejs/core';
 import { ElementApi, schema } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
@@ -7,7 +7,17 @@ export type BaseTogglePluginState = {
 };
 
 export const BaseTogglePlugin = createBasePlugin({
-  api: ({ store }) => ({
+  name: KEYS.toggle,
+  initialState: (): BaseTogglePluginState => ({
+    openIds: new Set(),
+  }),
+  schema: {
+    element: {
+      content: schema.content.text({ default: 'text', min: 1 }),
+    },
+  },
+}).extend(({ store, type }) => ({
+  api: () => ({
     toggleIds: (ids: string[], force: boolean | null = null) => {
       store.set((draft) => {
         if (!draft.openIds) draft.openIds = new Set();
@@ -27,16 +37,7 @@ export const BaseTogglePlugin = createBasePlugin({
       });
     },
   }),
-  key: KEYS.toggle,
-  initialState: (): BaseTogglePluginState => ({
-    openIds: new Set(),
-  }),
-  schema: {
-    element: {
-      content: schema.content.text({ default: 'text', min: 1 }),
-    },
-  },
-  read: ({ state, type }) => ({
+  read: ({ state }) => ({
     isActive: () =>
       !!state.selection() &&
       state.nodes.some({
@@ -79,6 +80,6 @@ export const BaseTogglePlugin = createBasePlugin({
     someClosed: (state, toggleIds: string[]) =>
       toggleIds.some((id) => !state.openIds.has(id)),
   },
-});
+}));
 
-export type BaseToggleConfig = InferConfig<typeof BaseTogglePlugin>;
+export type BaseToggleDefinition = DefinitionOf<typeof BaseTogglePlugin>;

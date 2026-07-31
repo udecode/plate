@@ -78,6 +78,28 @@ test('asserts every public runtime and declaration artifact', (t) => {
   assert.doesNotThrow(() => assertPackageBuildArtifacts(packageRoot));
 });
 
+test('rejects plugin descriptors erased to any in public declarations', (t) => {
+  const packageRoot = mkdtempSync(path.join(os.tmpdir(), 'package-build-'));
+
+  t.after(() => rmSync(packageRoot, { force: true, recursive: true }));
+
+  mkdirSync(path.join(packageRoot, 'dist'));
+  writeFileSync(
+    path.join(packageRoot, 'package.json'),
+    `${JSON.stringify({ exports: { '.': './dist/index.js' } })}\n`
+  );
+  writeFileSync(path.join(packageRoot, 'dist/index.js'), 'export {};\n');
+  writeFileSync(
+    path.join(packageRoot, 'dist/index.d.ts'),
+    'declare const BrokenPlugin: any;\nexport { BrokenPlugin };\n'
+  );
+
+  assert.throws(
+    () => assertPackageBuildArtifacts(packageRoot),
+    /plugin declarations collapsed to any/u
+  );
+});
+
 test('shared package config builds from the invoking package root', async () => {
   const packageRoot = path.resolve(import.meta.dirname, '../../packages/media');
   const repositoryRoot = path.resolve(import.meta.dirname, '../..');

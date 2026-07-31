@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 import { BasicMarksKit } from '@/registry/components/editor/plugins/basic-marks-kit';
 
 const InlinePlugin = createPlatePlugin({
-  key: 'inline',
+  name: 'inline',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -42,7 +42,7 @@ const InlinePlugin = createPlatePlugin({
 });
 
 const InlineVoidPlugin = createPlatePlugin({
-  key: 'inline-void',
+  name: 'inline-void',
   schema: { element: { inline: true, void: 'inline' } },
 });
 
@@ -121,13 +121,13 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 
 const DiffPlugin = toPlatePlugin(
   createBasePlugin({
-    key: 'diff',
+    name: 'diff',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
-    extension: createExcludeDiffFragmentExtension(),
-  }),
+  }).extend(createExcludeDiffFragmentExtension()),
   {
+    component: DiffLeaf,
     render: {
       aboveNodes:
         () =>
@@ -164,7 +164,7 @@ const DiffPlugin = toPlatePlugin(
         },
     },
   }
-).configure({ component: DiffLeaf });
+);
 
 function DiffLeaf({ children, ...props }: PlateLeafProps) {
   const diffIntent = props.leaf.diffIntent as DiffIntent;
@@ -201,7 +201,7 @@ const initialValue: Value = [
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: '' }], type: InlineVoidPlugin.key },
+      { children: [{ text: '' }], type: InlineVoidPlugin.name },
       { text: '. Try removing it.' },
     ],
     type: KEYS.p,
@@ -209,7 +209,7 @@ const initialValue: Value = [
   {
     children: [
       { text: 'This is an ' },
-      { children: [{ text: 'editable inline' }], type: InlinePlugin.key },
+      { children: [{ text: 'editable inline' }], type: InlinePlugin.name },
       { text: '. Try editing it.' },
     ],
     type: KEYS.p,

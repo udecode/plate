@@ -1,0 +1,29 @@
+{
+  "concepts": [
+    { "id": "STACK-001", "origin": "Plite/Plate" },
+    { "id": "STACK-002", "origin": "Plite/Plate" },
+    { "id": "STACK-003", "origin": "Plite/Plate" },
+    { "id": "STACK-004", "origin": "Plite/Plate" },
+    { "id": "STACK-005", "origin": "Plite/Plate" },
+    { "id": "STACK-006", "origin": "Plite/Plate" },
+    { "id": "STACK-007", "origin": "Plate" },
+    { "id": "STACK-008", "origin": "Plite" },
+    { "id": "STACK-009", "origin": "Plite/Plate" },
+    { "id": "STACK-010", "origin": "Plate" },
+    { "id": "STACK-011", "origin": "Plate" },
+    { "id": "STACK-012", "origin": "Plate" },
+    { "id": "STACK-013", "origin": "Plate" },
+    { "id": "STACK-014", "origin": "Plate" },
+    { "id": "STACK-015", "origin": "Plate" },
+    { "id": "STACK-016", "origin": "Plate" },
+    { "id": "STACK-017", "origin": "Plate" },
+    { "id": "STACK-018", "origin": "Plite" }
+  ],
+  "priorCandidates": [
+    {
+      "id": "PRIOR-BA-064",
+      "conceptIds": ["STACK-003"],
+      "evidence": "docs/analysis/best-api-review.md:64"
+    }
+  ]
+}

@@ -20,19 +20,35 @@ import {
   BaseCodeHighlightPlugin,
   BaseCodeLinePlugin,
 } from '@platejs/code-block';
-import { BaseListPlugin } from '@platejs/list';
+import {
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+} from '@platejs/basic-styles';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseDatePlugin } from '@platejs/date';
+import {
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '@platejs/footnote';
+import { BaseColumnPlugin } from '@platejs/layout';
 import { BaseLinkPlugin } from '@platejs/link';
+import { BaseListPlugin } from '@platejs/list';
 import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+  BaseVideoPlugin,
+} from '@platejs/media';
+import { BaseMentionPlugin } from '@platejs/mention';
 import {
   BaseTableCellHeaderPlugin,
   BaseTableCellPlugin,
   BaseTablePlugin,
   BaseTableRowPlugin,
 } from '@platejs/table';
-import {
-  BaseFootnoteDefinitionPlugin,
-  BaseFootnotePlugin,
-} from '@platejs/footnote';
+import { BaseTocPlugin } from '@platejs/toc';
 import { BaseParagraphPlugin, KEYS, createBaseEditor } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
@@ -85,6 +101,18 @@ const testPlugins = [
   BaseInlineEquationPlugin,
   BaseFootnotePlugin,
   BaseFootnoteDefinitionPlugin,
+  BaseImagePlugin,
+  BaseFilePlugin,
+  BaseAudioPlugin,
+  BaseVideoPlugin,
+  BaseMediaEmbedPlugin,
+  BaseTocPlugin,
+  BaseColumnPlugin,
+  BaseMentionPlugin,
+  BaseDatePlugin,
+  BaseFontColorPlugin,
+  BaseFontBackgroundColorPlugin,
+  BaseCalloutPlugin,
   markdownPlugin,
 ] as const;
 

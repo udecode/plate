@@ -1,5 +1,4 @@
-import type { InferConfig } from '../../plugin/BasePlugin';
-
+import type { DefinitionOf } from '../../plugin/PluginDefinition';
 import { createBasePlugin } from '../../plugin/createBasePlugin';
 
 export type DebugErrorType =
@@ -18,6 +17,13 @@ type LogFunction = (
   type?: DebugErrorType,
   details?: unknown
 ) => void;
+
+export type DebugApi = {
+  error: (message: unknown, type?: DebugErrorType, details?: unknown) => void;
+  info: LogFunction;
+  log: LogFunction;
+  warn: LogFunction;
+};
 
 export type DebugPluginState = {
   isProduction: boolean;
@@ -87,8 +93,8 @@ export const DebugPlugin = createBasePlugin({
         log('warn', message, type, details),
     };
   },
-  key: 'debug',
+  name: 'debug',
   initialState,
 });
 
-export type DebugConfig = InferConfig<typeof DebugPlugin>;
+export type DebugDefinition = DefinitionOf<typeof DebugPlugin>;

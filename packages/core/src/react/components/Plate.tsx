@@ -3,6 +3,7 @@ import React from 'react';
 import type {
   EditorCommitContext,
   EditorDocumentValue,
+  Editor,
   EditorNodeChangeContext,
   EditorTextChangeContext,
   Selection,
@@ -19,17 +20,23 @@ import { subscribePlateChangeCallbacks } from '../../internal/plugin/plateChange
 import { getPlateEditorInstanceKey } from '../internal/getPlateEditorInstanceKey';
 import { type PlateStoreState, PlateStoreProvider } from '../stores';
 
-export type PlateSelectionChangeContext<E extends PlateEditor = PlateEditor> =
-  EditorCommitContext<E> & {
-    selection: Selection;
-  };
+type PlateEditorConstraint = Editor<any, any> & {
+  plugin(plugin: any): unknown;
+};
 
-export type PlateValueChangeContext<E extends PlateEditor = PlateEditor> =
-  EditorCommitContext<E> & {
-    value: EditorDocumentValue<ValueOf<E>>;
-  };
+export type PlateSelectionChangeContext<
+  E extends PlateEditorConstraint = PlateEditor,
+> = EditorCommitContext<E> & {
+  selection: Selection;
+};
 
-export interface PlateProps<E extends PlateEditor = PlateEditor>
+export type PlateValueChangeContext<
+  E extends PlateEditorConstraint = PlateEditor,
+> = EditorCommitContext<E> & {
+  value: EditorDocumentValue<ValueOf<E>>;
+};
+
+export interface PlateProps<E extends PlateEditorConstraint = PlateEditor>
   extends Partial<Pick<PlateStoreState<E>, 'decorate' | 'primary'>> {
   children: React.ReactNode;
 
@@ -59,7 +66,7 @@ export interface PlateProps<E extends PlateEditor = PlateEditor>
   suppressInstanceWarning?: boolean;
 }
 
-function PlateInner<E extends PlateEditor = PlateEditor>({
+function PlateInner({
   children,
   containerRef,
   decorate,
@@ -73,7 +80,7 @@ function PlateInner<E extends PlateEditor = PlateEditor>({
   onSelectionChange,
   onTextChange,
   onValueChange,
-}: PlateProps<E> & {
+}: PlateProps<PlateEditor<any, any>> & {
   containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const plateReadOnly = readOnly ?? editor?.read.view.isReadOnly();
@@ -190,9 +197,10 @@ function PlateInner<E extends PlateEditor = PlateEditor>({
   );
 }
 
-export function Plate<E extends PlateEditor = PlateEditor>(
+export function Plate<E extends PlateEditorConstraint = PlateEditor>(
   props: PlateProps<E>
-) {
+): React.ReactElement | null;
+export function Plate(props: PlateProps<any>) {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   usePlateInstancesWarn(props.suppressInstanceWarning);
@@ -200,7 +208,7 @@ export function Plate<E extends PlateEditor = PlateEditor>(
   if (!props.editor) return null;
 
   return (
-    <PlateInner<E>
+    <PlateInner
       key={getPlateEditorInstanceKey(props.editor)}
       containerRef={containerRef}
       {...props}

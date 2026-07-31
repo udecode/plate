@@ -46,7 +46,7 @@ const defineContractSchema = (
       ...declarations,
     },
     id,
-    root: { content: schema.content.type('test-root') } as const,
+    root: schema.content.type('test-root'),
     unknown: 'reject',
     version: 1,
   });
@@ -128,7 +128,7 @@ describe('editor schema', () => {
       );
       assert.throws(
         () =>
-          editor.read.schema.validateDocument({
+          editor.read.schema.assertDocument({
             children: [{ children: [{ text: 'body' }], type: 'paragraph' }],
             meta: { payload: value },
           }),
@@ -136,7 +136,7 @@ describe('editor schema', () => {
       );
       assert.throws(
         () =>
-          editor.read.schema.validateFragment([
+          editor.read.schema.assertFragment([
             {
               children: [{ text: 'body' }],
               payload: value,
@@ -165,9 +165,7 @@ describe('editor schema', () => {
         const editor = createEditor({ initialValue: children });
 
         assert.deepEqual(editor.read.children(), children);
-        assert.doesNotThrow(() =>
-          editor.read.schema.validateFragment(children)
-        );
+        assert.doesNotThrow(() => editor.read.schema.assertFragment(children));
         editor.update((tx) => {
           tx.nodes.set({ payload }, { at: [0] });
         });
@@ -207,9 +205,7 @@ describe('editor schema', () => {
         } as const,
       },
       id: 'invalid-create-properties',
-      root: {
-        content: schema.content.type('paragraph'),
-      } as const,
+      root: schema.content.type('paragraph'),
       unknown: 'reject',
       version: 1,
     });
@@ -218,7 +214,7 @@ describe('editor schema', () => {
       () =>
         createEditor({
           extensions: [fromProperties],
-        }).read.schema.createAndFill('paragraph', invalidProperty),
+        }).read.schema.create('paragraph', invalidProperty),
       /JSON-compatible data/
     );
     assert.throws(
@@ -243,12 +239,10 @@ describe('editor schema', () => {
         } as const,
       },
       id: 'closed-document',
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -335,12 +329,10 @@ describe('editor schema', () => {
           { target: target.type('cell') }
         ),
       ],
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'cell' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'cell' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -372,22 +364,18 @@ describe('editor schema', () => {
         } as const,
       },
       id: 'root-grammar',
-      root: {
-        content: schema.content.all(
-          [
-            schema.content.group('block'),
-            schema.content.not(schema.content.type('heading')),
-          ],
-          { default: { type: 'paragraph' }, min: 1 }
-        ),
-      } as const,
+      root: schema.content.all(
+        [
+          schema.content.group('block'),
+          schema.content.not(schema.content.type('heading')),
+        ],
+        { default: { type: 'paragraph' }, min: 1 }
+      ),
       roots: {
-        header: {
-          content: schema.content.type('heading', {
-            default: { type: 'heading' },
-            min: 1,
-          }),
-        } as const,
+        header: schema.content.type('heading', {
+          default: { type: 'heading' },
+          min: 1,
+        }),
       },
       unknown: 'reject',
       version: 1,
@@ -423,7 +411,7 @@ describe('editor schema', () => {
         } as const,
       },
       id: 'conflicting-owned-content-root',
-      root: { content: schema.content.group('block') } as const,
+      root: schema.content.group('block'),
       unknown: 'reject',
       version: 1,
     });
@@ -509,7 +497,7 @@ describe('editor schema', () => {
               } as const,
             },
             id: 'element-only-root',
-            root: { content } as const,
+            root: content,
             unknown: 'reject',
             version: 1,
           }),
@@ -555,9 +543,7 @@ describe('editor schema', () => {
                 } as const,
               },
               id: 'element-only-content-root',
-              root: {
-                content: schema.content.type('portal'),
-              } as const,
+              root: schema.content.type('portal'),
               unknown: 'reject',
               version: 1,
             }),
@@ -580,19 +566,15 @@ describe('editor schema', () => {
         } as const,
       },
       id: 'per-root-construction',
-      root: {
-        content: schema.content.type('paragraph', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.type('paragraph', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       roots: {
-        header: {
-          content: schema.content.type('root-inline', {
-            default: { type: 'root-inline' },
-            min: 2,
-          }),
-        } as const,
+        header: schema.content.type('root-inline', {
+          default: { type: 'root-inline' },
+          min: 2,
+        }),
       },
       unknown: 'reject',
       version: 1,
@@ -639,12 +621,10 @@ describe('editor schema', () => {
         } as const,
       },
       id: 'owned-content-root',
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -719,12 +699,10 @@ describe('editor schema', () => {
         }),
         schema.textProperty('commentIds', property.set(property.string())),
       ],
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -862,12 +840,10 @@ describe('editor schema', () => {
           split: 'drop',
         }),
       ],
-      root: {
-        content: schema.content.group('block', {
-          default: { type: 'paragraph' },
-          min: 1,
-        }),
-      } as const,
+      root: schema.content.group('block', {
+        default: { type: 'paragraph' },
+        min: 1,
+      }),
       unknown: 'reject',
       version: 1,
     });
@@ -1039,12 +1015,10 @@ describe('editor schema', () => {
               inclusive: false,
             }),
           ],
-          root: {
-            content: schema.content.group('block', {
-              default: { type: 'paragraph' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.group('block', {
+            default: { type: 'paragraph' },
+            min: 1,
+          }),
           unknown: 'reject',
           version: 1,
         }),
@@ -1102,14 +1076,14 @@ describe('editor schema', () => {
             'section-child': {},
           },
           id: 'compiled-schema',
-          root: { content: schema.content.type('section') } as const,
+          root: schema.content.type('section'),
           unknown: 'reject',
           version: 1,
         }),
       ],
     });
 
-    assert.deepEqual(editor.read.schema.createAndFill('section'), {
+    assert.deepEqual(editor.read.schema.create('section'), {
       type: 'section',
       children: [{ type: 'paragraph', children: [{ text: '' }] }],
     });
@@ -1170,7 +1144,7 @@ describe('editor schema', () => {
       ],
     });
     assert.doesNotThrow(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           type: 'section',
           children: [{ type: 'paragraph', children: [{ text: 'valid' }] }],
@@ -1179,7 +1153,7 @@ describe('editor schema', () => {
     );
     assert.throws(
       () =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           {
             type: 'section',
             children: [{ type: 'caption', children: [{ text: 'invalid' }] }],
@@ -1235,11 +1209,11 @@ describe('editor schema', () => {
     ];
 
     assert.throws(
-      () => editor.read.schema.validateDocument({ children: invalid }),
+      () => editor.read.schema.assertDocument({ children: invalid }),
       /derived-row.*cannot contain.*paragraph/
     );
     assert.throws(
-      () => editor.read.schema.validateFragment(invalid),
+      () => editor.read.schema.assertFragment(invalid),
       /derived-row.*cannot contain.*paragraph/
     );
     assert.throws(
@@ -1277,16 +1251,12 @@ describe('editor schema', () => {
             } as const,
           },
           id: 'external-root-fit',
-          root: {
-            content: schema.content.type('section', {
-              default: { type: 'section' },
-              min: 1,
-            }),
-          } as const,
+          root: schema.content.type('section', {
+            default: { type: 'section' },
+            min: 1,
+          }),
           roots: {
-            header: {
-              content: schema.content.type('heading'),
-            } as const,
+            header: schema.content.type('heading'),
           },
           unknown: 'reject',
           version: 1,
@@ -1385,7 +1355,7 @@ describe('editor schema', () => {
           },
           groups: { 'section-child': {} },
           id: 'open-slice-schema',
-          root: { content: schema.content.type('section') } as const,
+          root: schema.content.type('section'),
           unknown: 'reject',
           version: 1,
         }),
@@ -1506,7 +1476,7 @@ describe('editor schema', () => {
 
     assert.throws(
       () =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           {
             type: 'callout',
             count: 'two',
@@ -1517,7 +1487,7 @@ describe('editor schema', () => {
     );
     assert.throws(
       () =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           {
             type: 'callout',
             tone: 'error',
@@ -1566,7 +1536,7 @@ describe('editor schema', () => {
     );
     assert.equal(
       editor.read((state) =>
-        state.schema.markableVoid({
+        state.schema.isMarkableVoid({
           type: 'mention',
           children: [{ text: '' }],
         })
@@ -1674,7 +1644,7 @@ describe('editor schema', () => {
     let txMarkable = false;
 
     editor.update((tx) => {
-      txMarkable = tx.schema.markableVoid({
+      txMarkable = tx.schema.isMarkableVoid({
         type: 'mention',
         children: [{ text: '' }],
       });
@@ -1736,9 +1706,7 @@ describe('editor schema', () => {
         },
       },
       id: 'table-properties',
-      root: {
-        content: schema.content.type('table-cell'),
-      },
+      root: schema.content.type('table-cell'),
       unknown: 'reject',
       version: 1,
     });

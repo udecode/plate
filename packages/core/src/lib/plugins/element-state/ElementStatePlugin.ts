@@ -1,7 +1,11 @@
 import type { Element } from '@platejs/plite';
 import { NodeApi } from '@platejs/plite';
 
-import { type InferConfig, createBasePlugin } from '../../plugin';
+import { createBasePlugin, type DefinitionOf } from '../../plugin';
+
+export type ElementStateApi = {
+  isEmpty: (element: Element) => boolean;
+};
 
 export const ElementStatePlugin = createBasePlugin({
   api: ({ editor }) => ({
@@ -16,12 +20,12 @@ export const ElementStatePlugin = createBasePlugin({
               key,
               placement: 'element',
               type: element.type,
-            })?.value.significant === false
+            })?.role === 'metadata'
           );
         },
       }),
   }),
-  key: 'elementState',
+  name: 'elementState',
 });
 
-export type ElementStateConfig = InferConfig<typeof ElementStatePlugin>;
+export type ElementStateDefinition = DefinitionOf<typeof ElementStatePlugin>;

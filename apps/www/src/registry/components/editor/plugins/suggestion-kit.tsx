@@ -1,6 +1,6 @@
 'use client';
 
-import type { BasePluginOverride, TrailingBlockConfig } from 'platejs';
+import type { BasePluginOverride, TrailingBlockDefinition } from 'platejs';
 
 import { KEYS, TextApi } from 'platejs';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
@@ -44,14 +44,14 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
             api.untracked(insert);
           },
         },
-      } satisfies BasePluginOverride<TrailingBlockConfig>,
+      } satisfies BasePluginOverride<TrailingBlockDefinition>,
     },
   },
 })).configure({
   component: SuggestionLeaf,
-  handlers: {
+  on: {
     // unset active suggestion when clicking outside of suggestion
-    onClick: ({ api, event, read, store, type }) => {
+    click: ({ api, event, read, store, type }) => {
       const markTarget = getDiscussionClickTarget({
         selector: `.plite-${type}`,
         target: event.target,
@@ -112,7 +112,7 @@ export const suggestionPlugin = SuggestionPlugin.extend(({ api, editor }) => ({
     belowNodes: SuggestionLineBreak,
     belowRootNodes: VoidRemoveSuggestionOverlay,
   },
-  targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
+  targetPluginNames: INLINE_SUGGESTION_RENDER_TARGETS,
 });
 
 export const SuggestionKit = [suggestionPlugin];

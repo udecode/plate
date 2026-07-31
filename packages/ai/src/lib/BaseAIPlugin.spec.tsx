@@ -321,7 +321,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
   const InlineFixturePlugin = createBasePlugin({
-    key: 'inlineFixture',
+    name: 'inlineFixture',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -330,29 +330,33 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     },
   });
 
-  const installPreview = (
-    editor: ReturnType<typeof createEditor>,
-    { selection = editor.read.selection() } = {}
-  ) => {
-    editor.update({ history: 'skip' }, (tx) => {
-      tx.nodes.replaceChildren(
-        [
-          createParagraph('preview', {
-            element: { [AI_PREVIEW_KEY]: true },
-            text: { ai: true },
-          }),
-          { children: [{ text: '' }], type: 'aiChat' },
-          createParagraph('untouched'),
-        ],
-        { at: [], count: tx.children().length, index: 0 }
-      );
+  const createPreviewHarness = () => {
+    const editor = createEditor();
 
-      if (selection) {
-        tx.selection.set(selection);
-      } else {
-        tx.selection.clear();
-      }
-    });
+    return {
+      editor,
+      installPreview: ({ selection = editor.read.selection() } = {}) => {
+        editor.update({ history: 'skip' }, (tx) => {
+          tx.nodes.replaceChildren(
+            [
+              createParagraph('preview', {
+                element: { [AI_PREVIEW_KEY]: true },
+                text: { ai: true },
+              }),
+              { children: [{ text: '' }], type: 'aiChat' },
+              createParagraph('untouched'),
+            ],
+            { at: [], count: tx.children().length, index: 0 }
+          );
+
+          if (selection) {
+            tx.selection.set(selection);
+          } else {
+            tx.selection.clear();
+          }
+        });
+      },
+    };
   };
 
   describe('ai preview transforms', () => {
@@ -406,8 +410,8 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
           key: AI_PREVIEW_KEY,
           placement: 'element',
           type: 'p',
-        })?.value.significant
-      ).toBe(true);
+        })?.role
+      ).toBe('content');
       expect(
         editor.read.schema.property({ key: 'ai', placement: 'text', type: 'p' })
       ).toMatchObject({
@@ -420,7 +424,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
     it('captures once and keeps the original rollback point', () => {
-      const editor = createEditor();
+      const { editor, installPreview } = createPreviewHarness();
       const initialValue = structuredClone(editor.read.children());
       const initialSelection = structuredClone(editor.read.selection());
 
@@ -430,7 +434,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
         })
       ).toBe(true);
 
-      installPreview(editor, {
+      installPreview({
         selection: {
           kind: 'text',
           anchor: { offset: 7, path: [0, 0] },
@@ -456,10 +460,10 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
     it('discards bookkeeping without restoring content', () => {
-      const editor = createEditor();
+      const { editor, installPreview } = createPreviewHarness();
 
       editor.plugin(BaseAIPlugin).update.beginPreview();
-      installPreview(editor, { selection: null });
+      installPreview({ selection: null });
 
       expect(editor.plugin(BaseAIPlugin).update.discardPreview()).toBe(true);
       expect(editor.plugin(BaseAIPlugin).read.hasPreview()).toBe(false);
@@ -473,13 +477,13 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
     it('restores a null snapshot selection', () => {
-      const editor = createEditor();
+      const { editor, installPreview } = createPreviewHarness();
 
       editor.update.selection.clear();
       editor.plugin(BaseAIPlugin).update.beginPreview({
         originalBlocks: [structuredClone(editor.read.children()[0]!)],
       });
-      installPreview(editor, {
+      installPreview({
         selection: {
           kind: 'text',
           anchor: { offset: 7, path: [0, 0] },
@@ -492,14 +496,14 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
     });
 
     it('accepts preview as one undoable batch and clears preview state', () => {
-      const editor = createEditor();
+      const { editor, installPreview } = createPreviewHarness();
       const initialValue = structuredClone(editor.read.children());
       const initialSelection = structuredClone(editor.read.selection());
 
       editor.plugin(BaseAIPlugin).update.beginPreview({
         originalBlocks: [structuredClone(initialValue[0]!)],
       });
-      installPreview(editor);
+      installPreview();
 
       expect(editor.plugin(BaseAIPlugin).update.acceptPreview()).toBe(true);
       expect(editor.read.children()).toEqual([
@@ -528,7 +532,7 @@ import { AI_PREVIEW_KEY, BaseAIPlugin } from './BaseAIPlugin';
 
 {
   const BaseBoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },

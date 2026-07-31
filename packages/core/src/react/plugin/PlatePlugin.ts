@@ -2,1151 +2,254 @@ import type React from 'react';
 
 import type {
   DecoratedRange,
-  Element,
+  DefinitionOf as PliteDefinitionOf,
+  EditorCommitContext,
+  EditorExtensionReference,
   EditorNodeChangeContext,
   EditorTextChangeContext,
-  EditorInstalledApiGroups,
-  EditorInstalledStateGroups,
-  EditorInstalledTxGroups,
+  EditorTransactionChangeContext,
   EditorUpdateContext,
-  EditorExtension,
-  EditorExtensionApiFactory,
+  Element,
   NodeEntry,
-  Path,
   Text,
   Value,
 } from '@platejs/plite';
-import type { TxReadMethod } from '@platejs/plite/internal';
+import type {
+  EditorSchemaSourceProvider,
+  InternalEditorStateViewProvider,
+  InternalEditorUpdateTransactionProvider,
+} from '@platejs/plite/internal';
 import type {
   HotkeysEvent,
   HotkeysOptions,
   Keys,
 } from '@udecode/react-hotkeys';
-import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
+import type { EditableProps as PliteEditableProps } from '@platejs/plite-react';
+import type { AnyObject, Nullable } from '@udecode/utils';
 
 import type {
-  AnyPluginConfig,
-  BasePluginExtensionContract,
+  AnyBasePlugin,
+  AnyBasePluginContext,
+  AnyBasePluginDefinition,
+  AnyBasePluginPortal,
   BaseInjectProps,
-  PluginBase,
-  PluginBaseContext,
+  BasePlugin,
+  BasePluginConfiguration,
+  BasePluginDefinition,
+  BasePluginDefinitionInput,
   BaseTransformOptions,
-  BasePluginOverride,
-  EditableProps,
-  AnyPluginTx,
+  DefinePluginCodecs,
+  EditOnlyConfig,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   HandlerReturnType,
-  HtmlParser,
   InferApi,
+  InferConflicts,
   InferDependencies,
-  InferEnabled,
   InferPluginStoreState,
-  InferPluginApi,
-  InferPluginConfigTree,
-  InferPluginSchemaModel,
+  InferRead,
   InferSelectors,
-  InferState,
-  InferTx,
-  MatchRules,
+  InferUpdate,
   NodeComponent,
-  NodeComponents,
-  PlatePluginExtensionEditor,
-  PlatePluginTxGroups,
-  PluginConfig,
+  NormalizePluginSelectors,
+  NormalizePluginState,
+  PlatePluginReadState,
+  PlatePluginState,
+  PlatePluginTransaction,
+  PluginBaseContext,
+  PluginCodecMapDeclaration,
   PluginReference,
-  PluginSchema,
-  PluginSchemaModel,
+  PluginSelectorMethods,
   PluginSelectors,
   PluginShortcutInput,
-  BasePlugin,
-  DefinePluginCodecs,
-  PluginCodecMapDeclaration,
-  PlatePluginReadState,
-  PlatePluginTransaction,
-  PlateClipboardHandler,
-  WithAnyKey,
+  WithAnyName,
 } from '../../lib';
 import type {
-  InputRulesConfig,
-  InputRulesDefinition,
-} from '../../lib/plugins/input-rules/types';
+  InferPluginDocumentType,
+  InferPluginSchema,
+  InferPluginSchemaContribution,
+} from '../../lib/plugin/pluginSchemaModel.internal';
 import type { PlateElementProps, PlateLeafProps } from '../components';
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { DOMHandlers } from './DOMHandlers';
+import type { MergePluginDefinitions } from '../../lib/plugin/pluginDefinitionMerge.internal';
+import type {
+  BasePluginDependencyDescriptors,
+  BasePluginInstalledCapabilityWitness,
+  LowerBasePlugin,
+} from '../../lib/plugin/basePluginCompiler.internal';
+import type { PluginDefinitionCarrier } from '../../lib/plugin/pluginDefinitionCarrier.internal';
+import type { InternalEditorExtensionWitnessFor } from '@platejs/plite/internal';
 
-export type AnyEditorPlatePlugin = EditorPlatePlugin<AnyPluginConfig>;
-
-export type AnyPlatePlugin = PlatePlugin<AnyPluginConfig>;
-
-/**
- * Property used by Plate to decorate editor ranges. If the function returns
- * undefined then no ranges are modified. If the function returns an array the
- * returned ranges are merged with the ranges called by other plugins.
- */
-export type Decorate<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C> & { entry: NodeEntry }
-) => DecoratedRange[] | undefined;
+/** Compact normalized definition carried by every React Plate descriptor. */
+export type PlatePluginDefinition = BasePluginDefinition;
 
 export type EditableSiblingComponent = (
-  editableProps: EditableProps
-) => React.ReactElement<any> | null;
+  editableProps: PliteEditableProps
+) => React.ReactElement | null;
 
-// -----------------------------------------------------------------------------
+type ErasedPlateCallback<TResult = unknown> = {
+  bivarianceHack(context: unknown): TResult;
+}['bivarianceHack'];
 
-export type EditorPlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
-  PlatePlugin<C>,
-  keyof PlatePluginMethods
+type ErasedRenderNodeWrapper = ErasedPlateCallback<
+  ErasedPlateCallback<React.ReactNode> | undefined
 >;
 
-export type PlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
-  Omit<EditorExtension<any, any>, 'clipboard' | 'name'> & {
-    clipboard?: PlateClipboardHandler<PlatePluginTransaction<C>>;
-    key?: string;
-    name?: string;
-  };
+type AnyPlatePluginRender = Omit<
+  AnyBasePlugin['render'],
+  | 'aboveNodes'
+  | 'afterContainer'
+  | 'afterEditable'
+  | 'beforeContainer'
+  | 'beforeEditable'
+  | 'belowNodes'
+  | 'belowRootNodes'
+> & {
+  aboveNodes?: ErasedRenderNodeWrapper | null;
+  afterContainer?: EditableSiblingComponent | null;
+  afterEditable?: EditableSiblingComponent | null;
+  beforeContainer?: EditableSiblingComponent | null;
+  beforeEditable?: EditableSiblingComponent | null;
+  belowNodes?: ErasedRenderNodeWrapper | null;
+  belowRootNodes?: ErasedPlateCallback<React.ReactNode> | null;
+};
 
-export type PlateEditorExtensionInput<
-  C extends AnyPluginConfig = PluginConfig,
-> = PlateEditorExtension<C> | readonly PlateEditorExtension<C>[];
+type AnyPlatePluginRuntime = Omit<
+  AnyBasePlugin,
+  'editOnly' | 'render' | 'transformInitialValue' | 'useHooks'
+> & {
+  editOnly?: EditOnlyConfig | boolean;
+  render: AnyPlatePluginRender;
+  transformInitialValue?: ErasedPlateCallback<Value> | null;
+  useHooks?: ErasedPlateCallback<void> | null;
+};
 
-type ContextualPlateEditorExtension<C extends AnyPluginConfig = PluginConfig> =
-  Omit<
-    EditorExtension<PlatePluginExtensionEditor<C>>,
-    'api' | 'clipboard' | 'name'
-  > & {
-    api?:
-      | (Record<string, unknown | readonly unknown[]> &
-          Deep2Partial<InferApi<C>>)
-      | EditorExtensionApiFactory<PlatePluginExtensionEditor<C>>;
-    clipboard?: PlateClipboardHandler<PlatePluginTransaction<C>>;
-    key?: string;
-    name?: string;
-  };
-
-type ContextualPlateEditorExtensionInput<
-  C extends AnyPluginConfig = PluginConfig,
-> =
-  | ContextualPlateEditorExtension<C>
-  | readonly ContextualPlateEditorExtension<C>[];
-
-export type AuthoringPlateEditorExtensionInput<
-  C extends AnyPluginConfig = PluginConfig,
-> = ContextualPlateEditorExtensionInput<C>;
-
-type UnifiedEditorExtensionInput<
-  C extends AnyPluginConfig,
-  TExtension extends object | readonly object[],
-> = TExtension &
-  (TExtension extends { api: (...args: never[]) => unknown }
-    ? {}
-    : NoInfer<AuthoringPlateEditorExtensionInput<C>>);
-
-type ExtensionInputFromArgument<TExtension> = TExtension extends (
-  ...args: never[]
-) => infer TResult
-  ? NonNullable<TResult>
-  : TExtension;
-
-type ExtensionTuple<TExtension> = TExtension extends readonly unknown[]
-  ? TExtension
-  : readonly [TExtension];
-
-type ExtensionItemWithImplicitName<TExtension> = TExtension extends object
-  ? TExtension extends { name: infer TName }
-    ? TExtension & { name: TName }
-    : TExtension & { name: string }
-  : TExtension;
-
-type ExtensionInputWithImplicitNames<TExtension> =
-  ExtensionInputFromArgument<TExtension> extends infer TInput
-    ? TInput extends readonly unknown[]
-      ? { [K in keyof TInput]: ExtensionItemWithImplicitName<TInput[K]> }
-      : ExtensionItemWithImplicitName<TInput>
-    : never;
-
-type ExtensionApiFromArgument<TExtension> = EditorInstalledApiGroups<
-  ExtensionTuple<ExtensionInputWithImplicitNames<TExtension>>
+export type AnyPlatePlugin = AnyPlatePluginRuntime;
+export type AnyEditorPlatePlugin = Omit<
+  AnyPlatePluginRuntime,
+  | '__configurationLayers'
+  | '__htmlCodecContributions'
+  | '__resolved'
+  | '__stages'
+  | 'configure'
+  | 'extend'
 >;
 
-type ExtensionStateFromArgument<TExtension> = EditorInstalledStateGroups<
-  Value,
-  ExtensionTuple<ExtensionInputWithImplicitNames<TExtension>>
->;
+/** Type-erased React consumer portal for name-only runtime lookups. */
+export type AnyPlatePluginPortal = Omit<AnyBasePluginPortal, 'plugin'> & {
+  readonly plugin: AnyEditorPlatePlugin;
+};
 
-type ExtensionTxFromArgument<TExtension> = EditorInstalledTxGroups<
-  Value,
-  ExtensionTuple<ExtensionInputWithImplicitNames<TExtension>>
->;
+export type PlatePluginPortal<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = PluginBaseContext<C> & {
+  plugin: EditorPlatePlugin<C>;
+};
 
-type NormalizeExtensionContribution<TContribution> = [TContribution] extends [
-  never,
-]
-  ? {}
-  : unknown extends TContribution
-    ? {}
-    : string extends keyof TContribution
-      ? {}
-      : TContribution;
+/** Type-erased React authoring context used while compiling callbacks. */
+export type AnyPlatePluginContext = Omit<
+  AnyBasePluginContext,
+  'editor' | 'plugin'
+> & {
+  readonly editor: PlateEditor;
+  readonly plugin: AnyEditorPlatePlugin;
+};
 
-type ExtensionApiContribution<TExtension> = [keyof TExtension] extends [never]
-  ? {}
-  : NormalizeExtensionContribution<ExtensionApiFromArgument<TExtension>>;
-type ExtensionStateContribution<TExtension> = [keyof TExtension] extends [never]
-  ? {}
-  : NormalizeExtensionContribution<ExtensionStateFromArgument<TExtension>>;
-type ExtensionTxContribution<TExtension> = [keyof TExtension] extends [never]
-  ? {}
-  : NormalizeExtensionContribution<ExtensionTxFromArgument<TExtension>>;
+export type PlatePluginContext<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = PlatePluginPortal<C> & {
+  defineCodecs: DefinePluginCodecs<C>;
+  editor: PlatePluginContextEditor<C>;
+};
 
-export type InferConfig<P> = P extends {
-  readonly __config: infer C extends AnyPluginConfig;
-}
-  ? C
-  : P extends PlatePlugin<infer C> | BasePlugin<infer C>
-    ? C
-    : P extends AnyPluginConfig
-      ? P
-      : PluginConfig;
+type PlatePluginContextEditor<C extends AnyBasePluginDefinition> = Omit<
+  PlateEditor<Value, C>,
+  '__editorStateViewTypes' | '__editorUpdateTransactionTypes'
+> &
+  InternalEditorStateViewProvider<PlatePluginState<C>> &
+  InternalEditorUpdateTransactionProvider<PlatePluginTransaction<C>>;
 
-/** Properties used by Plate to inject props into any {@link NodeComponent}. */
-export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  BaseInjectProps & {
-    /** Whether to inject the props. If true, overrides all other checks. */
-    query?: (
-      options: NonNullable<NonNullable<InjectNodeProps>> &
-        PlatePluginContext<C> & {
-          nodeProps: GetInjectNodePropsOptions;
-        }
-    ) => boolean;
-    /**
-     * Transform the className.
-     *
-     * @default clsx(className, classNames[value])
-     */
-    transformClassName?: (options: TransformOptions<C>) => string | undefined;
-    /**
-     * Transform the node value for the style or className.
-     *
-     * @default nodeValue
-     */
-    transformNodeValue?: (options: TransformOptions<C>) => unknown;
-    /** Transform the injected props. */
-    transformProps?: (
-      options: TransformOptions<C> & {
-        props: GetInjectNodePropsReturnType;
+export type Decorate<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = (
+  context: PlatePluginContext<C> & { entry: NodeEntry }
+) => DecoratedRange[] | undefined;
+
+export type InjectNodeProps<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = BaseInjectProps & {
+  query?: (
+    context: NonNullable<InjectNodeProps<C>> &
+      PlatePluginContext<C> & {
+        nodeProps: GetInjectNodePropsOptions;
       }
-    ) => AnyObject | undefined;
-    /**
-     * Transform the style.
-     *
-     * @default { ...style, [styleKey]: value }
-     */
-    transformStyle?: (options: TransformOptions<C>) => CSSStyleDeclaration;
-  };
+  ) => boolean;
+  transformClassName?: (context: TransformOptions<C>) => string | undefined;
+  transformNodeValue?: (context: TransformOptions<C>) => unknown;
+  transformProps?: (
+    context: TransformOptions<C> & {
+      props: GetInjectNodePropsReturnType;
+    }
+  ) => AnyObject | undefined;
+  transformStyle?: (context: TransformOptions<C>) => CSSStyleDeclaration;
+};
 
-// -----------------------------------------------------------------------------
+export type LeafNodeProps<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = ((props: PlateLeafProps<Text, C>) => AnyObject | undefined) | AnyObject;
 
-export type LeafNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: PlateLeafProps<Text, C>) => AnyObject | undefined)
-  | AnyObject;
-
-/**
- * Property used by Plate to override node `component` props. If function, its
- * returning value will be shallow merged to the old props, with the old props
- * as parameter. If object, its value will be shallow merged to the old props.
- */
-export type NodeProps<C extends AnyPluginConfig = PluginConfig> =
+export type NodeProps<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> =
   | ((
       props: PlateElementProps<Element, C> & PlateLeafProps<Text, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
-export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C> & { value: Value }
-) => Value;
+export type TextNodeProps<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = ((props: PlateLeafProps<Text, C>) => AnyObject | undefined) | AnyObject;
 
-// -----------------------------------------------------------------------------
+export type TransformInitialValue<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = (context: PlatePluginContext<C> & { value: Value }) => Value;
 
-/**
- * Function called whenever a canonical node change occurs. Return `true`
- * to prevent calling the next plugin handler.
- */
-export type OnNodeChange<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C> & Omit<EditorNodeChangeContext, 'editor'>
+export type UseHooks<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = (context: PlatePluginContext<C>) => void;
+
+export type OnNodeChange<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = (
+  context: PlatePluginContext<C> & Omit<EditorNodeChangeContext, 'editor'>
 ) => HandlerReturnType;
 
-/**
- * Function called whenever a canonical text change occurs. Return `true`
- * to prevent calling the next plugin handler.
- */
-export type OnTextChange<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C> & Omit<EditorTextChangeContext, 'editor'>
+export type OnTextChange<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = (
+  context: PlatePluginContext<C> & Omit<EditorTextChangeContext, 'editor'>
 ) => HandlerReturnType;
 
-type PlatePluginDependencyDescriptors<D extends readonly PluginReference[]> = {
-  readonly [TIndex in keyof D]: D[TIndex] extends {
-    readonly __config: infer C extends AnyPluginConfig;
-  }
-    ? PlatePlugin<C>
-    : D[TIndex];
-};
+type PlateLifecycleContext<
+  C extends AnyBasePluginDefinition,
+  TContext extends { editor: object },
+> = Omit<TContext, 'editor'> & PlatePluginContext<C>;
 
-/**
- * Used by parser plugins like html to deserialize inserted data to a Plite
- * fragment. The fragment will be inserted to the editor if not empty.
- */
-// -----------------------------------------------------------------------------
-
-/** The `PlatePlugin` interface is a React interface for all plugins. */
-export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> = Omit<
-  PluginBase<C>,
-  'dependencies'
-> & {
-  dependencies: PlatePluginDependencyDescriptors<InferDependencies<C>>;
-} & Nullable<{
-    /** @see {@link Decorate} */
-    decorate?: Decorate<C>;
-    /** Transform the initial value before the editor is ready. */
-    transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
-    /** @see {@link UseHooks} */
-    useHooks?: UseHooks<WithAnyKey<C>>;
-  }> &
-  PlatePluginMethods<C> & {
-    /**
-     * Handlers called whenever the corresponding event occurs in the editor.
-     * Event handlers can return a boolean flag to specify whether the event
-     * can be treated as being handled. If it returns `true`, the next
-     * handlers will not be called.
-     */
-    handlers: Nullable<
-      DOMHandlers<WithAnyKey<C>> & {
-        /** @see {@link OnNodeChange} */
-        onNodeChange?: OnNodeChange<WithAnyKey<C>>;
-        /** @see {@link OnTextChange} */
-        onTextChange?: OnTextChange<WithAnyKey<C>>;
-      }
-    >;
-    /** Plugin injection. */
-    inject: Nullable<{
-      nodeProps?: InjectNodeProps<WithAnyKey<C>>;
-    }>;
-    override: {
-      /** Replace plugin {@link NodeComponent} by key. */
-      components?: NodeComponents;
-      /**
-       * Weakly adapts already-installed foreign plugins by key.
-       *
-       * Missing targets are ignored. Configure an imported target descriptor
-       * directly when exact target inference is required.
-       */
-      plugins?: Record<string, BasePluginOverride>;
-    };
-    parsers: {
-      html?: Nullable<HtmlParser<WithAnyKey<C>>>;
-    };
-    render: Nullable<{
-      /**
-       * When other plugins' node components are rendered, this function can
-       * return an optional wrapper function that turns a node's props to a
-       * wrapper React node as its parent. Useful for wrapping or decorating
-       * nodes with additional UI elements.
-       *
-       * NOTE: The function can run React hooks. NOTE: Do not run React hooks
-       * in the wrapper function. It is not equivalent to a React component.
-       */
-      aboveNodes?: RenderNodeWrapper<WithAnyKey<C>>;
-      /** Renders a component after the `Container` component. */
-      afterContainer?: EditableSiblingComponent;
-      /**
-       * Renders a component after the `Editable` component. This is the last
-       * render position within the editor structure.
-       */
-      afterEditable?: EditableSiblingComponent;
-      /** Renders a component before the `Container` component. */
-      beforeContainer?: EditableSiblingComponent;
-      /** Renders a component before the `Editable` component. */
-      beforeEditable?: EditableSiblingComponent;
-      /**
-       * When other plugins' node components are rendered, this function can
-       * return an optional wrapper function that turns a node's props to a
-       * wrapper React node. The wrapper node is the node's child and its
-       * original children's parent. Useful for wrapping or decorating nodes
-       * with additional UI elements.
-       *
-       * NOTE: The function can run React hooks. NOTE: Do not run React hooks
-       * in the wrapper function. It is not equivalent to a React component.
-       */
-      belowNodes?: RenderNodeWrapper<WithAnyKey<C>>;
-      /**
-       * Function to render content below the root element but above its
-       * children. Similar to belowNodes but renders directly in the element
-       * rather than wrapping. Multiple plugins can provide this, and all
-       * their content will be rendered in sequence.
-       */
-      belowRootNodes?: (
-        props: PlateElementProps<Element, C>
-      ) => React.ReactNode;
-      /** Override `data-plite-leaf` element attributes. */
-      leafProps?: LeafNodeProps<WithAnyKey<C>>;
-      /** Override rendered element/text/leaf attributes. */
-      nodeProps?: NodeProps<WithAnyKey<C>>;
-      /** Override `data-plite-node="text"` element attributes. */
-      textProps?: TextNodeProps<WithAnyKey<C>>;
-    }>;
-    rules: {
-      /**
-       * Function to determine if this plugin's rules should apply to a node.
-       * Used to override behavior based on node properties beyond just type
-       * matching.
-       *
-       * Example: List plugin sets `match: ({ node }) => !!node.listStyleType`
-       * to override paragraph behavior when the paragraph is a list item.
-       *
-       * @default type === node.type
-       */
-      match?: (
-        options: {
-          node: Element;
-          path: Path;
-          rule: MatchRules;
-        } & PlatePluginContext<C>
-      ) => boolean;
-    };
-    /**
-     * Keyboard shortcuts configuration mapping shortcut names to their key
-     * combinations and handlers. Each shortcut can link to a public update
-     * command, an API method, or use a custom handler function.
-     */
-    shortcuts: Record<string, Shortcut | null | undefined>;
-    inputRules: InputRulesDefinition | InputRulesConfig;
-    tx: PlatePluginTxGroups;
-  };
-
-export type PlatePluginConfig<
-  K extends string = string,
-  StoreState extends object = {},
-  A extends object = {},
-  Tx extends AnyPluginTx = {},
-  S extends object = {},
-  D extends readonly PluginReference[] = readonly [],
-  EStoreState extends object = {},
-  EA extends object = {},
-  ES extends object = {},
-  SchemaModel = never,
-  PluginApi extends object = {},
-  Enabled extends boolean = boolean,
-> = Partial<
-  Omit<
-    PlatePlugin<
-      PluginConfig<
-        K,
-        StoreState,
-        A,
-        Tx,
-        S,
-        {},
-        D,
-        SchemaModel,
-        PluginApi,
-        Enabled
-      >
-    >,
-    keyof PlatePluginMethods | 'api' | 'initialState' | 'render' | 'schema'
-  > & {
-    api: EA;
-    initialState: Partial<StoreState> & EStoreState;
-    render: Omit<
-      NonNullable<
-        PlatePlugin<
-          PluginConfig<
-            K,
-            StoreState,
-            A,
-            Tx,
-            S,
-            {},
-            D,
-            SchemaModel,
-            PluginApi,
-            Enabled
-          >
-        >['render']
-      >,
-      'node'
-    > | null;
-    schema: PluginSchema<
-      PluginConfig<
-        K,
-        StoreState,
-        A,
-        Tx,
-        S,
-        {},
-        D,
-        SchemaModel,
-        PluginApi,
-        Enabled
-      >
-    > | null;
-    selectors: ES;
+export type PlatePluginOn<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = Readonly<
+  DOMHandlers<C> & {
+    commit?: (context: PlateLifecycleContext<C, EditorCommitContext>) => void;
+    nodeChange?: OnNodeChange<C>;
+    textChange?: OnTextChange<C>;
+    transactionChange?: (
+      context: PlateLifecycleContext<C, EditorTransactionChangeContext>
+    ) => void;
   }
 >;
 
-export type PlatePluginContext<
-  C extends AnyPluginConfig = PluginConfig,
-  E extends PlateEditor<Value, C> = PlateEditor<Value, C>,
-> = PluginBaseContext<C> & {
-  defineCodecs: DefinePluginCodecs<C>;
-  editor: E;
-  plugin: EditorPlatePlugin<C>;
-};
-
-type PlatePluginContextualFields =
-  | 'decorate'
-  | 'handlers'
-  | 'inject'
-  | 'rules'
-  | 'transformInitialValue'
-  | 'useHooks';
-
-type WithPlatePluginContext<C extends AnyPluginConfig, TConfig> = Omit<
-  TConfig,
-  PlatePluginContextualFields
-> &
-  Partial<Pick<PlatePlugin<C>, PlatePluginContextualFields>>;
-
-type RuntimePlatePluginConfig<
-  C extends AnyPluginConfig,
-  EStoreState extends object = {},
-  EA extends object = {},
-  ES extends object = {},
-> = WithPlatePluginContext<
-  C,
-  Omit<
-    PlatePluginConfig<
-      C['key'],
-      InferPluginStoreState<C>,
-      InferApi<C>,
-      InferTx<C>,
-      InferSelectors<C>,
-      InferDependencies<C>,
-      EStoreState,
-      EA,
-      ES,
-      InferPluginSchemaModel<C>,
-      InferPluginApi<C>,
-      InferEnabled<C>
-    >,
-    'codecs' | 'component' | 'dependencies' | 'render' | 'schema' | 'type'
-  > & {
-    render?: Omit<NonNullable<PlatePlugin<C>['render']>, 'node'> | null;
-  }
->;
-
-type PlateExtensionContractField<
-  TContract extends BasePluginExtensionContract,
-  TKey extends keyof BasePluginExtensionContract,
-> = TKey extends keyof TContract
-  ? TContract[TKey] extends object
-    ? TContract[TKey]
-    : {}
-  : {};
-
-type PlateContractExtension<
-  _C extends AnyPluginConfig,
-  T extends BasePluginExtensionContract,
-> = 'extension' extends keyof T
-  ? T['extension'] extends object | readonly object[]
-    ? T['extension']
-    : {}
-  : {};
-
-type PlateTransactionReadGroup<TGroup extends object> = {
-  [TKey in keyof TGroup]: TGroup[TKey] extends (...args: never[]) => unknown
-    ? TxReadMethod<TGroup[TKey]>
-    : TGroup[TKey];
-};
-
-type PlateAdditive<TCurrent, TAddition> = [keyof TAddition] extends [never]
-  ? TCurrent
-  : [keyof TCurrent] extends [never]
-    ? TAddition
-    : Omit<TAddition, keyof TCurrent> & TCurrent;
-
-type EffectivePlateContractField<
-  TContract extends BasePluginExtensionContract,
-  TKey extends Exclude<keyof BasePluginExtensionContract, 'extension'>,
-  TInferred extends object,
-> = [keyof PlateExtensionContractField<TContract, TKey>] extends [never]
-  ? TInferred
-  : PlateExtensionContractField<TContract, TKey>;
-
-type EffectivePlateExtension<
-  C extends AnyPluginConfig,
-  TContract extends BasePluginExtensionContract,
-  TExtension extends object | readonly object[],
-> = [keyof PlateContractExtension<C, TContract>] extends [never]
-  ? TExtension
-  : PlateContractExtension<C, TContract>;
-
-type PlateWithGroup<TGroups, TKey extends string, TGroup extends object> = [
-  keyof TGroups,
-] extends [never]
-  ? Record<TKey, TGroup>
-  : Omit<TGroups, TKey> & Record<TKey, TGroup>;
-
-type ExistingPlatePluginTx<C extends AnyPluginConfig> =
-  InferTx<C> extends Record<C['key'], infer TTx extends object> ? TTx : {};
-type ExistingPlatePluginState<C extends AnyPluginConfig> =
-  InferState<C> extends Record<C['key'], infer TState extends object>
-    ? TState
-    : {};
-
-type PlateExtendedTx<
-  C extends AnyPluginConfig,
-  TRead extends object,
-  TUpdate extends object,
-> = [keyof (TRead & TUpdate)] extends [never]
-  ? InferTx<C>
-  : PlateWithGroup<
-      InferTx<C>,
-      C['key'],
-      PlateAdditive<
-        ExistingPlatePluginTx<C>,
-        PlateTransactionReadGroup<TRead> & TUpdate
-      >
-    >;
-
-type PlateExtendedState<C extends AnyPluginConfig, TRead extends object> = [
-  keyof TRead,
-] extends [never]
-  ? InferState<C>
-  : PlateWithGroup<
-      InferState<C>,
-      C['key'],
-      PlateAdditive<ExistingPlatePluginState<C>, TRead>
-    >;
-
-export type UnifiedRuntimePlatePluginConfig<
-  C extends AnyPluginConfig,
-  TStoreState extends object,
-  TApi extends object,
-  TRead extends object,
-  TSelectors extends object,
-  TUpdate extends object,
-  TExtension extends object | readonly object[],
-  TShortcuts extends PlateShortcutRecord,
-> = {
-  api?: TApi & Deep2Partial<InferPluginApi<C>>;
-  codecs?: PluginCodecMapDeclaration;
-  extension?: UnifiedEditorExtensionInput<C, TExtension>;
-  initialState?: TStoreState & Partial<InferPluginStoreState<C>>;
-  read?: (context: {
-    state: PlatePluginReadState<InferPluginConfigTree<C>>;
-  }) => TRead & Partial<ExistingPlatePluginState<C>>;
-  selectors?: TSelectors &
-    PluginSelectors<InferPluginStoreState<C> & TStoreState> &
-    Partial<InferSelectors<C>>;
-  update?: (context: {
-    context: EditorUpdateContext;
-    tx: PlatePluginTransaction<InferPluginConfigTree<C>>;
-  }) => TUpdate;
-} & Omit<
-  WithValidatedPlateShortcuts<
-    C,
-    RuntimePlatePluginConfig<C, TStoreState, {}, {}>,
-    TShortcuts
-  >,
-  'api' | 'initialState' | 'selectors'
->;
-
-type PortableRuntimePlatePluginConfig<
-  C extends AnyPluginConfig,
-  TContract extends BasePluginExtensionContract,
-  TShortcuts extends PlateShortcutRecord,
-> = Omit<
-  UnifiedRuntimePlatePluginConfig<
-    C,
-    PlateExtensionContractField<TContract, 'initialState'>,
-    PlateExtensionContractField<TContract, 'api'>,
-    PlateExtensionContractField<TContract, 'read'>,
-    PlateExtensionContractField<TContract, 'selectors'>,
-    PlateExtensionContractField<TContract, 'update'>,
-    EffectivePlateExtension<C, TContract, {}>,
-    TShortcuts
-  >,
-  'extension'
-> & {
-  /**
-   * Accepts an already-built Plite extension without claiming undeclared
-   * editor-wide capabilities in this plugin's contract.
-   */
-  extension?: PlateEditorExtensionInput;
-};
-
-type UnifiedExtendedPlatePluginConfig<
-  C extends AnyPluginConfig,
-  TStoreState extends object,
-  TApi extends object,
-  TRead extends object,
-  TSelectors extends object,
-  TUpdate extends object,
-> = PluginConfig<
-  C['key'],
-  PlateAdditive<InferPluginStoreState<C>, TStoreState>,
-  InferApi<C>,
-  PlateExtendedTx<C, TRead, TUpdate>,
-  PlateAdditive<InferSelectors<C>, TSelectors>,
-  PlateExtendedState<C, TRead>,
-  InferDependencies<C>,
-  InferPluginSchemaModel<C>,
-  PlateAdditive<InferPluginApi<C>, TApi>,
-  InferEnabled<C>
->;
-
-/** @internal Nameable boundary for downstream declaration emit. */
-export type ExtendedPlatePluginWithExtension<
-  C extends AnyPluginConfig,
-  TExtensionApi,
-  TExtensionTx,
-  TExtensionState,
-> = PlatePlugin<
-  PluginConfig<
-    C['key'],
-    InferPluginStoreState<C>,
-    InferApi<C> & TExtensionApi,
-    InferTx<C> & TExtensionTx,
-    InferSelectors<C>,
-    InferState<C> & TExtensionState,
-    InferDependencies<C>,
-    InferPluginSchemaModel<C>,
-    InferPluginApi<C>,
-    InferEnabled<C>
-  >
->;
-
-export type UnifiedExtendedPlatePlugin<
-  C extends AnyPluginConfig,
-  TStoreState extends object,
-  TApi extends object,
-  TRead extends object,
-  TSelectors extends object,
-  TUpdate extends object,
-  TExtensionApi = {},
-  TExtensionTx = {},
-  TExtensionState = {},
-> = ExtendedPlatePluginWithExtension<
-  UnifiedExtendedPlatePluginConfig<
-    C,
-    TStoreState,
-    TApi,
-    TRead,
-    TSelectors,
-    TUpdate
-  >,
-  TExtensionApi,
-  TExtensionTx,
-  TExtensionState
->;
-
-export type UnifiedStageExtendedPlatePlugin<
-  C extends AnyPluginConfig,
-  TStoreState extends object,
-  TApi extends object,
-  TRead extends object,
-  TSelectors extends object,
-  TUpdate extends object,
-  TExtension extends object | readonly object[],
-> = UnifiedExtendedPlatePlugin<
-  C,
-  TStoreState,
-  TApi,
-  TRead,
-  TSelectors,
-  TUpdate,
-  ExtensionApiContribution<TExtension>,
-  ExtensionTxContribution<TExtension>,
-  ExtensionStateContribution<TExtension>
->;
-
-type AuthoringPlatePluginContextConfig<
-  C extends AnyPluginConfig,
-  TContract extends BasePluginExtensionContract,
-> = InferConfig<
-  UnifiedExtendedPlatePlugin<
-    C,
-    PlateExtensionContractField<TContract, 'initialState'>,
-    PlateExtensionContractField<TContract, 'api'>,
-    PlateExtensionContractField<TContract, 'read'>,
-    PlateExtensionContractField<TContract, 'selectors'>,
-    PlateExtensionContractField<TContract, 'update'>,
-    ExtensionApiContribution<EffectivePlateExtension<C, TContract, {}>>,
-    ExtensionTxContribution<EffectivePlateExtension<C, TContract, {}>>,
-    ExtensionStateContribution<EffectivePlateExtension<C, TContract, {}>>
-  >
->;
-
-type AuthoringPlatePluginContext<
-  C extends AnyPluginConfig,
-  TContract extends BasePluginExtensionContract,
-> = Omit<PlatePluginContext<C>, 'api' | 'editor' | 'read' | 'update'> & {
-  api: PlatePluginContext<
-    AuthoringPlatePluginContextConfig<C, TContract>
-  >['api'];
-  editor: Omit<PlatePluginContext<C>['editor'], 'api' | 'update'> & {
-    readonly api: PlatePluginContext<
-      AuthoringPlatePluginContextConfig<C, TContract>
-    >['editor']['api'];
-    update: PlatePluginContext<
-      AuthoringPlatePluginContextConfig<C, TContract>
-    >['editor']['update'];
-  };
-  read: PlatePluginContext<
-    AuthoringPlatePluginContextConfig<C, TContract>
-  >['read'];
-  update: PlatePluginContext<
-    AuthoringPlatePluginContextConfig<C, TContract>
-  >['update'];
-};
-
-type UnifiedStaticExtendedPlatePlugin<
-  C extends AnyPluginConfig,
-  EStoreState,
-  EA,
-  ES,
-  Enabled extends boolean,
-  TExtension extends object | readonly object[],
-> = ExtendedPlatePluginWithExtension<
-  InferConfig<ExtendedPlatePlugin<C, EStoreState, EA, ES, Enabled>>,
-  ExtensionApiContribution<TExtension>,
-  ExtensionTxContribution<TExtension>,
-  ExtensionStateContribution<TExtension>
->;
-
-type StaticPlatePluginConfigBase<
-  C extends AnyPluginConfig,
-  EStoreState extends object = {},
-  EA extends object = {},
-  ES extends object = {},
-  Enabled extends boolean = InferEnabled<C>,
-> = WithPlatePluginContext<
-  C,
-  Omit<
-    PlatePluginConfig<
-      C['key'],
-      InferPluginStoreState<C>,
-      InferApi<C>,
-      InferTx<C>,
-      InferSelectors<C>,
-      InferDependencies<C>,
-      EStoreState,
-      EA,
-      ES,
-      InferPluginSchemaModel<C>,
-      InferPluginApi<C>,
-      Enabled
-    >,
-    'component' | 'dependencies'
-  >
->;
-
-type StaticPlatePluginConfig<
-  C extends AnyPluginConfig,
-  EStoreState extends object = {},
-  EA extends object = {},
-  ES extends object = {},
-  Enabled extends boolean = InferEnabled<C>,
-> = Omit<
-  StaticPlatePluginConfigBase<C, EStoreState, EA, ES, Enabled>,
-  'schema'
-> & {
-  schema?: never;
-};
-
-type TerminalPlatePluginConfig<
-  C extends AnyPluginConfig,
-  EStoreState extends object = {},
-  EA extends object = {},
-  ES extends object = {},
-  Enabled extends boolean = InferEnabled<C>,
-> = Omit<StaticPlatePluginConfig<C, EStoreState, EA, ES, Enabled>, 'schema'> & {
-  component?: NodeComponent;
-  schema?: never;
-};
-
-type ContextualPlatePluginConfig<C extends AnyPluginConfig> = Omit<
-  Pick<
-    RuntimePlatePluginConfig<C>,
-    'handlers' | 'initialState' | 'render' | 'shortcuts'
-  >,
-  'render'
-> & {
-  render?: Omit<
-    NonNullable<PlatePlugin<C>['render']>,
-    'isDecoration' | 'node'
-  > | null;
-};
-
-export type PlateShortcutRecord = Record<string, Shortcut | null | undefined>;
-
-type WithValidatedPlateShortcuts<
-  C extends AnyPluginConfig,
-  TConfig,
-  TShortcuts extends PlateShortcutRecord,
-> = Omit<TConfig, 'shortcuts'> & {
-  shortcuts?: PluginShortcutInput<C, TShortcuts, Shortcut>;
-};
-
-/** Plugin descriptor returned by `extend`, with its inferred additions merged. */
-export type ExtendedPlatePlugin<
-  C extends AnyPluginConfig,
-  EStoreState,
-  EA,
-  ES,
-  Enabled extends boolean = InferEnabled<C>,
-> = PlatePlugin<
-  PluginConfig<
-    C['key'],
-    EStoreState & InferPluginStoreState<C>,
-    EA & InferApi<C>,
-    InferTx<C>,
-    ES & InferSelectors<C>,
-    InferState<C>,
-    InferDependencies<C>,
-    InferPluginSchemaModel<C>,
-    InferPluginApi<C>,
-    Enabled
-  >
->;
-
-type PlatePluginAuthoringMethod = 'clone' | 'configure' | 'extend';
-
-type TerminalPlatePluginAuthoringMethods = {
-  [K in PlatePluginAuthoringMethod]: never;
-};
-
-/** Plate plugin descriptor after its single consumer configuration. */
-export type ConfiguredPlatePlugin<C extends AnyPluginConfig = PluginConfig> =
-  PlatePlugin<C> &
-    TerminalPlatePluginAuthoringMethods & {
-      /** @internal Prevents authoring after consumer configuration. */
-      readonly __configured: true;
-    };
-
-type ConfiguredPlatePluginType<
-  C extends AnyPluginConfig,
-  TType extends string,
-  Enabled extends boolean = InferEnabled<C>,
-> = ConfiguredPlatePlugin<
-  PluginConfig<
-    C['key'],
-    InferPluginStoreState<C>,
-    InferApi<C>,
-    InferTx<C>,
-    InferSelectors<C>,
-    InferState<C>,
-    InferDependencies<C>,
-    [InferPluginSchemaModel<C>] extends [never]
-      ? PluginSchemaModel<TType, null>
-      : InferPluginSchemaModel<C> extends PluginSchemaModel<
-            string,
-            infer TSchema
-          >
-        ? PluginSchemaModel<TType, TSchema>
-        : PluginSchemaModel<TType, null>,
-    InferPluginApi<C>,
-    Enabled
-  >
->;
-
-type ConfiguredPlatePluginEnabled<
-  C extends AnyPluginConfig,
-  Enabled extends boolean,
-> = ConfiguredPlatePlugin<
-  PluginConfig<
-    C['key'],
-    InferPluginStoreState<C>,
-    InferApi<C>,
-    InferTx<C>,
-    InferSelectors<C>,
-    InferState<C>,
-    InferDependencies<C>,
-    InferPluginSchemaModel<C>,
-    InferPluginApi<C>,
-    Enabled
-  >
->;
-
-export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
-  __apiExtensions: BasePlugin<C>['__apiExtensions'];
-  __codecExtensions: BasePlugin<C>['__codecExtensions'];
-  __htmlCodecExtensions: BasePlugin<C>['__htmlCodecExtensions'];
-  __configurationLayers: BasePlugin<C>['__configurationLayers'];
-  __editorExtensions: BasePlugin<C>['__editorExtensions'];
-  __extensions: BasePlugin<C>['__extensions'];
-  __readExtensions: BasePlugin<C>['__readExtensions'];
-  __txExtensions: BasePlugin<C>['__txExtensions'];
-  clone: () => PlatePlugin<C>;
-  /**
-   * Applies this descriptor's single terminal consumer configuration.
-   *
-   * Declare reusable behavior with `extend` before this call. Contextual
-   * callbacks can override existing initial state, handlers, renderers, and
-   * shortcuts without widening the plugin contract. Extensions read the
-   * configured values, while this configuration remains the final override.
-   */
-  // biome-ignore lint/style/useUnifiedTypeSignatures: Distinct overloads preserve contextual callback and literal static inference.
-  configure<const TShortcuts extends PlateShortcutRecord = {}>(
-    config: (
-      ctx: PlatePluginContext<C>
-    ) => WithValidatedPlateShortcuts<
-      C,
-      ContextualPlatePluginConfig<C>,
-      TShortcuts
-    >
-  ): ConfiguredPlatePlugin<C>;
-  configure<
-    const TType extends string,
-    const Enabled extends boolean,
-    const TShortcuts extends PlateShortcutRecord = {},
-  >(
-    config: WithValidatedPlateShortcuts<
-      C,
-      Omit<
-        TerminalPlatePluginConfig<C, {}, {}, {}, Enabled>,
-        'enabled' | 'type'
-      > & {
-        enabled: Enabled;
-        type: TType;
-      },
-      TShortcuts
-    >
-  ): ConfiguredPlatePluginType<C, TType, Enabled>;
-  configure<
-    const TType extends string,
-    const TShortcuts extends PlateShortcutRecord = {},
-  >(
-    config: WithValidatedPlateShortcuts<
-      C,
-      Omit<TerminalPlatePluginConfig<C>, 'type'> & { type: TType },
-      TShortcuts
-    >
-  ): ConfiguredPlatePluginType<C, TType>;
-  configure<
-    const Enabled extends boolean,
-    const TShortcuts extends PlateShortcutRecord = {},
-  >(
-    config: WithValidatedPlateShortcuts<
-      C,
-      Omit<TerminalPlatePluginConfig<C, {}, {}, {}, Enabled>, 'enabled'> & {
-        enabled: Enabled;
-      },
-      TShortcuts
-    >
-  ): ConfiguredPlatePluginEnabled<C, Enabled>;
-  configure<const TShortcuts extends PlateShortcutRecord = {}>(
-    config: WithValidatedPlateShortcuts<
-      C,
-      TerminalPlatePluginConfig<C>,
-      TShortcuts
-    >
-  ): ConfiguredPlatePlugin<C>;
-  extend<
-    const TContract extends BasePluginExtensionContract = {},
-    const TStoreState extends object = {},
-    const TApi extends object = {},
-    const TRead extends object = {},
-    const TSelectors extends object = {},
-    const TUpdate extends object = {},
-    const TExtension extends object | readonly object[] = {},
-    const TShortcuts extends PlateShortcutRecord = {},
-  >(
-    extendConfig: (
-      ctx: AuthoringPlatePluginContext<C, TContract>
-    ) => UnifiedRuntimePlatePluginConfig<
-      C,
-      EffectivePlateContractField<TContract, 'initialState', TStoreState>,
-      EffectivePlateContractField<TContract, 'api', TApi>,
-      EffectivePlateContractField<TContract, 'read', TRead>,
-      EffectivePlateContractField<TContract, 'selectors', TSelectors>,
-      EffectivePlateContractField<TContract, 'update', TUpdate>,
-      EffectivePlateExtension<C, TContract, TExtension>,
-      TShortcuts
-    >
-  ): UnifiedExtendedPlatePlugin<
-    C,
-    EffectivePlateContractField<TContract, 'initialState', TStoreState>,
-    EffectivePlateContractField<TContract, 'api', TApi>,
-    EffectivePlateContractField<TContract, 'read', TRead>,
-    EffectivePlateContractField<TContract, 'selectors', TSelectors>,
-    EffectivePlateContractField<TContract, 'update', TUpdate>,
-    ExtensionApiContribution<EffectivePlateExtension<C, TContract, TExtension>>,
-    ExtensionTxContribution<EffectivePlateExtension<C, TContract, TExtension>>,
-    ExtensionStateContribution<
-      EffectivePlateExtension<C, TContract, TExtension>
-    >
-  >;
-  extend<
-    const TContract extends BasePluginExtensionContract,
-    const TShortcuts extends PlateShortcutRecord = {},
-  >(
-    extendConfig: (
-      ctx: AuthoringPlatePluginContext<C, TContract>
-    ) => PortableRuntimePlatePluginConfig<C, TContract, TShortcuts>
-  ): UnifiedExtendedPlatePlugin<
-    C,
-    PlateExtensionContractField<TContract, 'initialState'>,
-    PlateExtensionContractField<TContract, 'api'>,
-    PlateExtensionContractField<TContract, 'read'>,
-    PlateExtensionContractField<TContract, 'selectors'>,
-    PlateExtensionContractField<TContract, 'update'>,
-    ExtensionApiContribution<EffectivePlateExtension<C, TContract, {}>>,
-    ExtensionTxContribution<EffectivePlateExtension<C, TContract, {}>>,
-    ExtensionStateContribution<EffectivePlateExtension<C, TContract, {}>>
-  >;
-  extend<const TExtension extends PlateEditorExtensionInput>(
-    extendConfig: StaticPlatePluginConfig<C> & {
-      extension: TExtension;
-    }
-  ): UnifiedStaticExtendedPlatePlugin<
-    C,
-    {},
-    {},
-    {},
-    InferEnabled<C>,
-    TExtension
-  >;
-  extend<
-    EStoreState extends object = {},
-    EA extends object = {},
-    ES extends object = {},
-    const TShortcuts extends PlateShortcutRecord = {},
-    const Enabled extends boolean = InferEnabled<C>,
-  >(
-    extendConfig: WithValidatedPlateShortcuts<
-      PluginConfig<
-        C['key'],
-        InferPluginStoreState<C>,
-        EA & InferApi<C>,
-        InferTx<C>,
-        InferSelectors<C>,
-        InferState<C>,
-        InferDependencies<C>,
-        InferPluginSchemaModel<C>,
-        InferPluginApi<C>,
-        Enabled
-      >,
-      StaticPlatePluginConfig<C, EStoreState, EA, ES, Enabled>,
-      TShortcuts
-    >
-  ): ExtendedPlatePlugin<C, EStoreState, EA, ES, Enabled>;
-  __resolved?: boolean;
-};
-
-export type PlatePlugins = AnyPlatePlugin[];
-
-export type RenderNodeWrapper<C extends AnyPluginConfig = any> = (
+export type RenderNodeWrapper<C extends AnyBasePluginDefinition = never> = (
   props: RenderNodeWrapperProps<C>
 ) => RenderNodeWrapperFunction;
 
@@ -1154,10 +257,43 @@ export type RenderNodeWrapperFunction =
   | ((elementProps: PlateElementProps) => React.ReactNode)
   | undefined;
 
-export interface RenderNodeWrapperProps<C extends AnyPluginConfig = any>
-  extends PlateElementProps<Element, C> {
-  key: string;
-}
+export type RenderNodeWrapperProps<C extends AnyBasePluginDefinition = never> =
+  PlateElementProps<Element, C> & {
+    pluginName: string;
+  };
+
+type PlateReactRenderFields<C extends AnyBasePluginDefinition> = {
+  aboveNodes?: RenderNodeWrapper<WithAnyName<C>>;
+  afterContainer?: EditableSiblingComponent;
+  afterEditable?: EditableSiblingComponent;
+  beforeContainer?: EditableSiblingComponent;
+  beforeEditable?: EditableSiblingComponent;
+  belowNodes?: RenderNodeWrapper<WithAnyName<C>>;
+  belowRootNodes?: (
+    props: PlateElementProps<Element, WithAnyName<C>>
+  ) => React.ReactNode;
+  leafProps?: LeafNodeProps<WithAnyName<C>>;
+  nodeProps?: NodeProps<WithAnyName<C>>;
+  textProps?: TextNodeProps<WithAnyName<C>>;
+};
+
+type PlatePluginInject<C extends AnyBasePluginDefinition> = Omit<
+  BasePlugin<C>['inject'],
+  'nodeProps'
+> &
+  Nullable<{ nodeProps?: InjectNodeProps<C> }>;
+
+type PlatePluginRender<C extends AnyBasePluginDefinition> = Omit<
+  BasePlugin<C>['render'],
+  keyof PlateReactRenderFields<C>
+> &
+  Nullable<PlateReactRenderFields<C>>;
+
+type PlatePluginAuthorRender<C extends AnyBasePluginDefinition> = Omit<
+  PlatePluginRender<C>,
+  'node'
+> &
+  Readonly<{ node?: never }>;
 
 type ShortcutOptions = HotkeysOptions & {
   keys?: Keys | null;
@@ -1167,7 +303,7 @@ type ShortcutOptions = HotkeysOptions & {
 export type Shortcut = ShortcutOptions &
   (
     | {
-        handler: (ctx: {
+        handler: (context: {
           editor: PlateEditor;
           event: KeyboardEvent;
           eventDetails: HotkeysEvent;
@@ -1176,21 +312,606 @@ export type Shortcut = ShortcutOptions &
       }
     | {
         handler?: never;
-        /** Disambiguates a command name present in both public namespaces. */
         target?: 'api' | 'update';
       }
   );
 
 export type Shortcuts = Record<string, Shortcut | null | undefined>;
+export type PlateShortcutRecord = Shortcuts;
 
-export type TextNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: PlateLeafProps<Text, C>) => AnyObject | undefined)
-  | AnyObject;
+type PlatePluginAuthorFields<C extends AnyBasePluginDefinition> = Omit<
+  BasePluginDefinitionInput<C>,
+  | 'api'
+  | 'codecs'
+  | 'component'
+  | 'decorate'
+  | 'dependencies'
+  | 'initialState'
+  | 'inject'
+  | 'on'
+  | 'read'
+  | 'render'
+  | 'shortcuts'
+  | 'transformInitialValue'
+  | 'update'
+  | 'useHooks'
+> & {
+  api?: (context: PlatePluginContext<C>) => InferApi<C>;
+  codecs?:
+    | PluginCodecMapDeclaration
+    | ((context: PlatePluginContext<C>) => PluginCodecMapDeclaration);
+  component?: NodeComponent;
+  decorate?: Decorate<C>;
+  dependencies?: AnyBasePlugin['dependencies'];
+  initialState?:
+    | Partial<InferPluginStoreState<C>>
+    | ((context: PlatePluginContext<C>) => InferPluginStoreState<C>);
+  inject?: PlatePluginInject<C>;
+  on?: PlatePluginOn<C>;
+  read?: (
+    context: PlatePluginContext<C> & {
+      state: PlatePluginReadState<C>;
+    }
+  ) => InferRead<C>;
+  render?: PlatePluginAuthorRender<C>;
+  shortcuts?: PlateShortcutRecord;
+  transformInitialValue?: TransformInitialValue<WithAnyName<C>>;
+  update?: (
+    context: PlatePluginContext<C> & {
+      context: EditorUpdateContext;
+      tx: PlatePluginTransaction<C>;
+    }
+  ) => InferUpdate<C>;
+  useHooks?: UseHooks<WithAnyName<C>>;
+};
 
-export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =
-  BaseTransformOptions & PlatePluginContext<C>;
+export type PlatePluginDefinitionInput<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = PlatePluginAuthorFields<C>;
 
-/** Hook called when the editor is initialized. */
-export type UseHooks<C extends AnyPluginConfig = PluginConfig> = (
-  ctx: PlatePluginContext<C>
-) => void;
+type PlateExtensionResult<TInput> = TInput extends (
+  ...args: never[]
+) => infer TResult
+  ? PlateExtensionResult<TResult>
+  : TInput extends EditorExtensionReference
+    ? Omit<PliteDefinitionOf<TInput>, 'conflicts' | 'dependencies' | 'name'>
+    : TInput;
+
+type NonCallbackPlateExtension<TExtension> = TExtension extends (
+  ...args: never[]
+) => unknown
+  ? never
+  : TExtension;
+
+type PlatePluginExtensionObject<C extends AnyBasePluginDefinition> = Omit<
+  PlatePluginAuthorFields<C>,
+  | 'api'
+  | 'component'
+  | 'dependencies'
+  | 'initialState'
+  | 'name'
+  | 'read'
+  | 'schema'
+  | 'selectors'
+  | 'type'
+  | 'update'
+> & {
+  api?: (context: PlatePluginContext<C>) => object;
+  initialState?: object | ((context: PlatePluginContext<C>) => object);
+  read?: (
+    context: PlatePluginContext<C> & {
+      state: PlatePluginReadState<C>;
+    }
+  ) => object;
+  selectors?: PluginSelectors<InferPluginStoreState<C>>;
+  update?: (
+    context: PlatePluginContext<C> & {
+      context: EditorUpdateContext;
+      tx: PlatePluginTransaction<C>;
+    }
+  ) => object;
+};
+
+type PlatePluginStageConflictInput<TNames extends readonly string[]> = {
+  readonly [TIndex in keyof TNames]: (
+    | EditorExtensionReference
+    | PluginReference
+  ) &
+    Readonly<{ name: TNames[TIndex] }>;
+};
+
+type PlatePluginStageInput<
+  C extends AnyBasePluginDefinition,
+  TKeys extends keyof PlatePluginExtensionObject<C>,
+  S extends object,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends PluginSelectors<InferPluginStoreState<C>>,
+  TUpdate extends object,
+  TConflictNames extends readonly string[],
+  TEnabled extends boolean,
+  TTargetPluginNames extends readonly string[],
+  TShortcuts extends PlateShortcutRecord,
+> = Readonly<Record<TKeys, unknown>> &
+  Pick<
+    PlatePluginExtensionObject<C>,
+    Exclude<TKeys, PlatePluginStageSpecialKey>
+  > &
+  Readonly<{
+    api?: (context: PlatePluginContext<C>) => TApi;
+    conflicts?: PlatePluginStageConflictInput<TConflictNames>;
+    enabled?: TEnabled;
+    initialState?: S | ((context: PlatePluginContext<C>) => S);
+    read?: (
+      context: PlatePluginContext<C> & {
+        state: PlatePluginReadState<C>;
+      }
+    ) => TRead;
+    selectors?: TSelectors & PluginSelectors<InferPluginStoreState<C>>;
+    shortcuts?: ValidatedPlateShortcuts<C, TShortcuts>;
+    targetPluginNames?: TTargetPluginNames;
+    update?: (
+      context: PlatePluginContext<C> & {
+        context: EditorUpdateContext;
+        tx: PlatePluginTransaction<C>;
+      }
+    ) => TUpdate;
+  }>;
+
+export type PlatePluginExtendInput<C extends AnyBasePluginDefinition> =
+  | PlatePluginExtensionObject<C>
+  | EditorExtensionReference
+  | ((
+      context: PlatePluginContext<C>
+    ) => PlatePluginExtensionObject<C> | EditorExtensionReference);
+
+type PlatePluginConfigurationKey =
+  keyof PlatePluginConfiguration<AnyBasePluginDefinition>;
+
+type PlatePluginConfigurationDefinedFieldInput<
+  C extends AnyBasePluginDefinition,
+  TKey extends PlatePluginConfigurationKey,
+  TShortcuts extends PlateShortcutRecord,
+> = TKey extends 'component'
+  ? NodeComponent
+  : TKey extends 'decorate'
+    ? Decorate<C> | null
+    : TKey extends 'enabled'
+      ? boolean
+      : TKey extends 'initialState'
+        ? Partial<InferPluginStoreState<C>>
+        : TKey extends 'inject'
+          ? PlatePluginInject<C>
+          : TKey extends 'on'
+            ? PlatePluginOn<C> | null
+            : TKey extends 'render'
+              ? PlatePluginAuthorRender<C>
+              : TKey extends 'shortcuts'
+                ? ValidatedPlateShortcuts<C, TShortcuts>
+                : TKey extends 'targetPluginNames'
+                  ? readonly string[]
+                  : TKey extends 'transformInitialValue'
+                    ? TransformInitialValue<WithAnyName<C>> | null
+                    : TKey extends 'useHooks'
+                      ? UseHooks<WithAnyName<C>> | null
+                      : TKey extends keyof BasePluginConfiguration<C>
+                        ? BasePluginConfiguration<C>[TKey]
+                        : never;
+
+type PlatePluginConfigurationFieldInput<
+  C extends AnyBasePluginDefinition,
+  TKey extends PlatePluginConfigurationKey,
+  TShortcuts extends PlateShortcutRecord,
+> = PlatePluginConfigurationDefinedFieldInput<C, TKey, TShortcuts> | undefined;
+
+type PlatePluginConfigurationInput<
+  C extends AnyBasePluginDefinition,
+  TKeys extends PlatePluginConfigurationKey,
+  TShortcuts extends PlateShortcutRecord,
+> = Readonly<Record<TKeys, unknown>> &
+  Readonly<{
+    [TKey in Exclude<TKeys, 'shortcuts'>]: PlatePluginConfigurationFieldInput<
+      C,
+      TKey,
+      TShortcuts
+    >;
+  }> &
+  ('shortcuts' extends TKeys
+    ? Readonly<{
+        shortcuts: ValidatedPlateShortcuts<C, TShortcuts> | undefined;
+      }>
+    : Readonly<Record<never, never>>);
+
+type WithValidatedPlateShortcuts<
+  C extends AnyBasePluginDefinition,
+  TInput,
+  TShortcuts extends PlateShortcutRecord,
+> = Omit<TInput, 'shortcuts'> & {
+  shortcuts?: ValidatedPlateShortcuts<C, TShortcuts>;
+};
+
+export type PlatePluginConfiguration<C extends AnyBasePluginDefinition> = Omit<
+  BasePluginConfiguration<C>,
+  | 'component'
+  | 'decorate'
+  | 'inject'
+  | 'on'
+  | 'render'
+  | 'shortcuts'
+  | 'transformInitialValue'
+  | 'useHooks'
+> & {
+  component?: NodeComponent;
+  decorate?: Decorate<C> | null;
+  inject?: PlatePluginInject<C>;
+  on?: PlatePluginOn<C> | null;
+  render?: PlatePluginAuthorRender<C>;
+  shortcuts?: PlateShortcutRecord;
+  transformInitialValue?: TransformInitialValue<WithAnyName<C>> | null;
+  useHooks?: UseHooks<WithAnyName<C>> | null;
+};
+
+type PlatePluginContextualFields<C extends AnyBasePluginDefinition> = {
+  decorate?: Decorate<C>;
+  inject: PlatePluginInject<C>;
+  on: PlatePluginOn<C>;
+  render: PlatePluginRender<C>;
+  transformInitialValue?: TransformInitialValue<WithAnyName<C>>;
+  useHooks?: UseHooks<WithAnyName<C>>;
+};
+
+type ProjectPlatePluginContextualFields<C extends AnyBasePluginDefinition> =
+  Readonly<{
+    [TKey in Extract<keyof C, keyof PlatePluginContextualFields<C>>]-?: Exclude<
+      PlatePluginContextualFields<C>[TKey],
+      undefined
+    >;
+  }>;
+
+type PlatePluginRuntimeShell = {
+  inject: AnyBasePlugin['inject'] & AnyPlatePluginRuntime['inject'];
+  on: AnyBasePlugin['on'] & AnyPlatePluginRuntime['on'];
+  render: AnyBasePlugin['render'] & AnyPlatePluginRuntime['render'];
+};
+
+type PlatePluginDescriptor<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = Omit<
+  BasePlugin<C>,
+  | '__configured'
+  | 'configure'
+  | 'decorate'
+  | 'extend'
+  | 'inject'
+  | 'on'
+  | 'render'
+  | 'transformInitialValue'
+  | 'useHooks'
+> &
+  PlatePluginRuntimeShell &
+  ProjectPlatePluginContextualFields<C>;
+
+type PlatePluginRuntime = Omit<
+  AnyPlatePluginRuntime,
+  | '__configured'
+  | '__configurationLayers'
+  | '__htmlCodecContributions'
+  | '__resolved'
+  | '__stages'
+  | 'api'
+  | 'configure'
+  | 'conflicts'
+  | 'dependencies'
+  | 'enabled'
+  | 'extend'
+  | 'initialState'
+  | 'name'
+  | 'on'
+  | 'read'
+  | 'render'
+  | 'schema'
+  | 'selectors'
+  | 'targetPluginNames'
+  | 'type'
+  | 'update'
+>;
+
+/** One exact React descriptor layered over one Base/Plite extension. */
+export interface PlatePlugin<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> extends PlatePluginRuntime,
+    PlatePluginMethods<C>,
+    InternalEditorExtensionWitnessFor<LowerBasePlugin<C>>,
+    BasePluginInstalledCapabilityWitness<C>,
+    EditorSchemaSourceProvider<InferPluginSchemaContribution<C>>,
+    PluginReference<C['name'], InferPluginDocumentType<C>>,
+    PluginDefinitionCarrier<C> {
+  readonly __configured?: never;
+  api?: (context: PlatePluginContext<C>) => InferApi<C>;
+  readonly conflicts: BasePluginDependencyDescriptors<InferConflicts<C>>;
+  dependencies: BasePluginDependencyDescriptors<InferDependencies<C>>;
+  readonly initialState: InferPluginStoreState<C>;
+  readonly name: C['name'];
+  readonly on: PlatePluginOn<C>;
+  read?: (
+    context: PlatePluginContext<C> & {
+      state: PlatePluginReadState<C>;
+    }
+  ) => InferRead<C>;
+  readonly render: PlatePluginRender<C>;
+  readonly schema: InferPluginSchema<C>;
+  readonly selectors: InferSelectors<C>;
+  readonly targetPluginNames: C extends {
+    targetPluginNames: infer TTargetPluginNames extends readonly string[];
+  }
+    ? TTargetPluginNames
+    : readonly [];
+  readonly type: InferPluginDocumentType<C>;
+  update?: (
+    context: PlatePluginContext<C> & {
+      context: EditorUpdateContext;
+      tx: PlatePluginTransaction<C>;
+    }
+  ) => InferUpdate<C>;
+}
+
+type PlatePluginStageSpecialKey =
+  | 'api'
+  | 'conflicts'
+  | 'enabled'
+  | 'initialState'
+  | 'read'
+  | 'selectors'
+  | 'shortcuts'
+  | 'targetPluginNames'
+  | 'update';
+
+type PlatePluginStageConflictReferences<TNames extends readonly string[]> = {
+  readonly [TIndex in keyof TNames]: PluginReference<
+    Extract<TNames[TIndex], string>
+  >;
+};
+
+type PlatePluginStageContribution<
+  TKeys extends PropertyKey,
+  S extends object,
+  TApi extends object,
+  TRead extends object,
+  TSelectors extends object,
+  TUpdate extends object,
+  TConflictNames extends readonly string[],
+  TEnabled extends boolean,
+  TTargetPluginNames extends readonly string[],
+> = Readonly<{
+  [TKey in Exclude<TKeys, PlatePluginStageSpecialKey>]: true;
+}> &
+  ('initialState' extends TKeys
+    ? Readonly<{ initialState: NormalizePluginState<S> }>
+    : Readonly<Record<never, never>>) &
+  ('api' extends TKeys
+    ? Readonly<{ api: TApi }>
+    : Readonly<Record<never, never>>) &
+  ('read' extends TKeys
+    ? Readonly<{ read: TRead }>
+    : Readonly<Record<never, never>>) &
+  ('selectors' extends TKeys
+    ? Readonly<{ selectors: TSelectors }>
+    : Readonly<Record<never, never>>) &
+  ('update' extends TKeys
+    ? Readonly<{ update: TUpdate }>
+    : Readonly<Record<never, never>>) &
+  ('conflicts' extends TKeys
+    ? Readonly<{
+        conflicts: PlatePluginStageConflictReferences<TConflictNames>;
+      }>
+    : Readonly<Record<never, never>>) &
+  ('enabled' extends TKeys
+    ? Readonly<{ enabled: TEnabled }>
+    : Readonly<Record<never, never>>) &
+  ('targetPluginNames' extends TKeys
+    ? Readonly<{ targetPluginNames: TTargetPluginNames }>
+    : Readonly<Record<never, never>>) &
+  ('shortcuts' extends TKeys
+    ? Readonly<{ shortcuts: true }>
+    : Readonly<Record<never, never>>);
+
+type PlatePluginStageDefinition<
+  C extends AnyBasePluginDefinition,
+  TKeys extends PropertyKey,
+  S extends object = {},
+  TApi extends object = {},
+  TRead extends object = {},
+  TSelectors extends object = {},
+  TUpdate extends object = {},
+  TConflictNames extends readonly string[] = readonly [],
+  TEnabled extends boolean = boolean,
+  TTargetPluginNames extends readonly string[] = readonly [],
+> = MergePluginDefinitions<
+  C,
+  PlatePluginStageContribution<
+    TKeys,
+    S,
+    TApi,
+    TRead,
+    NormalizePluginSelectors<
+      NormalizePluginState<
+        (InferPluginStoreState<C> & object) &
+          Omit<S, keyof (InferPluginStoreState<C> & object)>
+      >,
+      PluginSelectorMethods<TSelectors>
+    >,
+    TUpdate,
+    TConflictNames,
+    TEnabled,
+    TTargetPluginNames
+  >,
+  PlatePluginStageContribution<
+    TKeys,
+    S,
+    TApi,
+    TRead,
+    NormalizePluginSelectors<
+      NormalizePluginState<
+        (InferPluginStoreState<C> & object) &
+          Omit<S, keyof (InferPluginStoreState<C> & object)>
+      >,
+      PluginSelectorMethods<TSelectors>
+    >,
+    TUpdate,
+    TConflictNames,
+    TEnabled,
+    TTargetPluginNames
+  >
+>;
+
+export type EditorPlatePlugin<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = PlatePluginDescriptor<C>;
+
+interface PlatePluginMethods<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> extends Pick<
+    BasePlugin<C>,
+    | '__configurationLayers'
+    | '__htmlCodecContributions'
+    | '__resolved'
+    | '__stages'
+  > {
+  configure<const TShortcuts extends PlateShortcutRecord = {}>(
+    config: (
+      context: PlatePluginContext<C>
+    ) => WithValidatedPlateShortcuts<C, PlatePluginConfiguration<C>, TShortcuts>
+  ): ConfiguredPlatePlugin<C>;
+  configure<
+    const TKeys extends PlatePluginConfigurationKey,
+    const TShortcuts extends PlateShortcutRecord = {},
+  >(
+    config: PlatePluginConfigurationInput<C, TKeys, TShortcuts> &
+      Readonly<{ apply?: never }>
+  ): ConfiguredPlatePlugin<C>;
+  /** Must precede the raw-extension callback overload to preserve nested contextual typing. */
+  // biome-ignore lint/style/useUnifiedTypeSignatures: Callback overload must precede the raw-extension overload for contextual inference.
+  extend<
+    const TKeys extends keyof PlatePluginExtensionObject<C>,
+    S extends object = {},
+    const TApi extends object = {},
+    const TRead extends object = {},
+    const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
+    const TUpdate extends object = {},
+    const TConflictNames extends readonly string[] = readonly [],
+    const TEnabled extends boolean = boolean,
+    const TTargetPluginNames extends readonly string[] = readonly [],
+    const TShortcuts extends PlateShortcutRecord = {},
+  >(
+    extension: (
+      context: PlatePluginContext<C>
+    ) => PlatePluginStageInput<
+      C,
+      TKeys,
+      S,
+      TApi,
+      TRead,
+      TSelectors,
+      TUpdate,
+      TConflictNames,
+      TEnabled,
+      TTargetPluginNames,
+      TShortcuts
+    >
+  ): PlatePlugin<
+    PlatePluginStageDefinition<
+      C,
+      TKeys,
+      S,
+      TApi,
+      TRead,
+      TSelectors,
+      TUpdate,
+      TConflictNames,
+      TEnabled,
+      TTargetPluginNames
+    >
+  > &
+    Pick<this, Extract<'__editorExtensionTypes', keyof this>>;
+  extend<const TExtension extends EditorExtensionReference>(
+    extension: (context: PlatePluginContext<C>) => TExtension
+  ): PlatePlugin<
+    MergePluginDefinitions<
+      C,
+      PlateExtensionResult<TExtension>,
+      PlateExtensionResult<TExtension>
+    >
+  > &
+    Pick<this, Extract<'__editorExtensionTypes', keyof this>> &
+    Pick<TExtension, Extract<'__editorExtensionTypes', keyof TExtension>>;
+  extend<const TExtension extends EditorExtensionReference>(
+    extension: NonCallbackPlateExtension<TExtension>
+  ): PlatePlugin<
+    MergePluginDefinitions<
+      C,
+      PlateExtensionResult<TExtension>,
+      PlateExtensionResult<TExtension>
+    >
+  > &
+    Pick<this, Extract<'__editorExtensionTypes', keyof this>> &
+    Pick<TExtension, Extract<'__editorExtensionTypes', keyof TExtension>>;
+  extend<
+    const TKeys extends keyof PlatePluginExtensionObject<C>,
+    S extends object = {},
+    const TApi extends object = {},
+    const TRead extends object = {},
+    const TSelectors extends PluginSelectors<InferPluginStoreState<C>> = {},
+    const TUpdate extends object = {},
+    const TConflictNames extends readonly string[] = readonly [],
+    const TEnabled extends boolean = boolean,
+    const TTargetPluginNames extends readonly string[] = readonly [],
+    const TShortcuts extends PlateShortcutRecord = {},
+  >(
+    extension: PlatePluginStageInput<
+      C,
+      TKeys,
+      S,
+      TApi,
+      TRead,
+      TSelectors,
+      TUpdate,
+      TConflictNames,
+      TEnabled,
+      TTargetPluginNames,
+      TShortcuts
+    >
+  ): PlatePlugin<
+    PlatePluginStageDefinition<
+      C,
+      TKeys,
+      S,
+      TApi,
+      TRead,
+      TSelectors,
+      TUpdate,
+      TConflictNames,
+      TEnabled,
+      TTargetPluginNames
+    >
+  > &
+    Pick<this, Extract<'__editorExtensionTypes', keyof this>>;
+}
+
+export type ConfiguredPlatePlugin<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = PlatePluginDescriptor<C> & {
+  readonly __configured: true;
+  configure: never;
+  extend: never;
+};
+
+export type PlatePlugins = AnyPlatePlugin[];
+
+export type TransformOptions<
+  C extends AnyBasePluginDefinition = PlatePluginDefinition,
+> = BaseTransformOptions & PlatePluginContext<C>;
+
+export type ValidatedPlateShortcuts<
+  C extends AnyBasePluginDefinition,
+  TShortcuts extends PlateShortcutRecord,
+> = PluginShortcutInput<C, TShortcuts, Shortcut>;

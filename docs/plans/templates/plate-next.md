@@ -226,35 +226,47 @@ Constraints:
   `.extend()` calls. Do not annotate exports as `BasePlugin<Config>` /
   `PlatePlugin<Config>` or cast chained plugin results unless the annotation is
   a true external boundary. If inference fails, fix the builder/generic owner.
-- Base/static renderer boundary law: `*-base-kit`, `*-static`, server/static
-  renderers, and other Base/static modules must not import `platejs/react`,
-  `@platejs/core/react`, or any `@platejs/*/react` entrypoint. Bind static
-  components through `BasePlugin.configure({ component })`; keep
-  `toPlatePlugin(BasePlugin)` in live React adapters only. If the Base path
-  lacks a required capability, fix its Core owner instead of crossing layers.
-  Bind Base/static descriptors to static renderer modules, never live/client
-  node components; registry Base kits use the owning `*-static` component.
-- Empty config inference law: do not create `type FooConfig =
-  PluginConfig<'foo'>` only to call `createBasePlugin<FooConfig>({ key:
-  'foo' })`. Manual plugin config types are only for real initial state, API,
-  read, update, selectors, dependencies, extension capabilities, or external
-  public contracts.
+- Base/static renderer boundary law: Base constructors stay renderer-neutral.
+  Base `.extend()` also rejects component authoring. Static/base kits bind the
+  owning server-safe `*-static` renderer through terminal
+  `BasePlugin.configure({ component })` without importing a Plate React
+  entrypoint. Live React adapters use
+  `toPlatePlugin(BasePlugin).configure({ component })`.
+- Definition inference law: do not create `PluginConfig`, pass a whole-plugin
+  factory generic, or call an extracted descriptor definition `FooConfig`.
+  Let `createBasePlugin({ name: 'foo' })` infer the descriptor and use
+  `DefinitionOf<typeof FooPlugin>` only when a real exported definition
+  contract is needed, named `FooDefinition`.
 - Plugin capability boundary law: classify every contribution against the
   canonical `plate-plugin-creator` protocol. `initialState` declares defaults;
   `store` owns live editor-local state; `selectors` are pure store projections;
   `api` owns non-snapshot plugin services; `read` owns pure supplied-state
-  queries; `update` owns active-transaction document mutation; `extension`
-  owns genuine editor-wide Plite substrate; `codecs` own format declarations.
+  queries; `update` owns active-transaction document mutation; flat native
+  Plite fields own genuine editor-wide substrate; `codecs` own format
+  declarations.
   Reject document reads in `api`, document mutations outside `update`, impure
-  selectors/reads, plugin-scoped behavior hidden in `extension`, and
+  selectors/reads, plugin-scoped behavior hidden in native fields, and
   unclassifiable contributions.
 - Plugin authoring stage law: keep every independent contribution in
   `createBasePlugin()` / `createPlatePlugin()`. Keep `.extend()` only for
   imported/prebuilt adaptation, a shared factory unavailable to the
   constructor, or a real earlier-capability type dependency. Keep
-  `.configure()` terminal and non-widening. Inline extension options need no
-  wrapper; extracted reusable Plate extension factories use the callback
-  context's `defineEditorExtension`.
+  `.configure()` terminal and non-widening. Native Plite fields stay flat on
+  the plugin; independently reusable standalone Plite descriptors use
+  `defineEditorExtension`.
+- Dependency type boundary law: root
+  `EditorExtensionDependencyReference` is shallow and non-generic. Keep finite
+  name-keyed capability/provider carriers and their value-sensitive HKT under
+  `@platejs/plite/internal`, never recursively encode exact dependency
+  ancestry, and require static name+capability equivalence plus runtime exact
+  descriptor identity.
+- Core lowering law: author-source-to-canonical-lowered aliases are internal.
+  Do not export or teach an intermediate plugin type between the one author
+  object and its exact descriptor.
+- React bridge law: low-level composition is exactly `react({ dom })` with one
+  required object and the exact DOM descriptor. Permit one explicit erased
+  implementation boundary only for the TypeScript 7 invariant-union reduction
+  limit.
 - Inferred local type law: do not annotate local variables whose initializer
   should infer the type. Smells like `const entries: NodeEntry<T>[] =
   editor.read...` or `const value: Value = [...]` hide type regressions at the
@@ -267,7 +279,7 @@ Constraints:
   consumers use `editor.plugin(FooPlugin).store.get/set/subscribe`; React
   subscriptions use `usePluginStore` or `useEditorPluginStore`. Do not use or
   re-add root or scoped `getOption`, `getOptions`, `setOption`, `setOptions`,
-  `usePluginOption`, or a parallel immutable `config` channel. Key+generic
+  `usePluginOption`, or a parallel immutable `config` channel. Name-only
   portals need an owner reason: plugin self-definition cycle, React
   hook/component imported by the plugin itself, non-React layer that must not
   import a React plugin, or intentionally decoupled cross-package code. Inline
@@ -396,18 +408,25 @@ Work Checklist:
       such as `: BasePlugin<Config>`, `: PlatePlugin<Config>`, and
       `as BasePlugin<Config>` are removed when inference should own the result,
       or each remaining annotation is justified as a real external boundary.
-- [ ] Empty config inference audit closed: `PluginConfig<'key'>` aliases and
-      `createBasePlugin<Config>` generics are removed when the config has no
-      typed initial state, API, read, update, selectors, dependencies,
-      extension capabilities, or external public contract.
+- [ ] Definition inference audit closed: `PluginConfig`, caller-supplied
+      whole-plugin generics, `InferConfig`, and extracted `*Config` aliases are
+      removed; real exported definitions use
+      `DefinitionOf<typeof FooPlugin>` and the `FooDefinition` name.
 - [ ] Plugin capability boundary audit closed: every plugin contribution has
       exactly one canonical `initialState` / `store` / `selectors` / `api` /
-      `read` / `update` / `extension` / `codecs` owner and obeys that owner's
-      purity, snapshot, transaction, and editor-scope boundary.
+      `read` / `update` / flat native field / `codecs` owner and obeys that
+      owner's purity, snapshot, transaction, and editor-scope boundary.
 - [ ] Plugin authoring stage audit closed: independent contributions are in the
       constructor; every `.extend()` names an imported/prebuilt adaptation,
       constructor-inaccessible shared factory, or earlier capability type; no
       `.configure()` call widens the descriptor.
+- [ ] Dependency type boundary audit closed: root references are shallow and
+      non-generic; internal carriers/HKTs stay internal and finite; static
+      portals prove name+capability equivalence; runtime portals prove exact
+      descriptor identity.
+- [ ] Core lowering / React bridge audit closed: author-source normalization
+      aliases are internal, and every low-level React composition call is the
+      exact `react({ dom })` object form with no extra erasure.
 - [ ] Bridge scoring law applied: forbidden bridges score `0`, direct bridge
       imports/installers are capped, displaced owner files are capped, and no
       capped file is raised to 100 from green checks alone.

@@ -146,7 +146,7 @@ describe('editor.update afterCommit', () => {
     const editor = seedEditor(
       createEditor({
         extensions: [
-          defineEditorExtension()({
+          defineEditorExtension({
             name: 'nested-on-commit',
             on: {
               commit({ commit, editor }) {

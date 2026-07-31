@@ -32,7 +32,7 @@ Status:
   proves the new command surface.
 - Runtime tx registration packet kept: `createPlateRuntimeEditor` can install
   plugin-owned Slate v2 tx groups and prove document mutation through
-  `editor.update((tx) => tx.<pluginKey>.<method>())` without exposing legacy
+  `editor.update((tx) => tx.<pluginName>.<method>())` without exposing legacy
   `getTransforms(plugin)` commands.
 - Plugin tx authoring packet kept: `extendTx(...)` exists on Slate and React
   Plate plugin builders, resolves into Slate v2 extension `tx` groups in the

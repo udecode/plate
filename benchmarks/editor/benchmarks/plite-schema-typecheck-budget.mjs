@@ -13,7 +13,7 @@ export const createSchemaTypecheckFixture = (plugins) => {
     { length: plugins },
     (_value, index) => `
 const Plugin${index} = createBasePlugin({
-  key: 'schemaTypeBudget${index}',
+  name: 'schemaTypeBudget${index}',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),

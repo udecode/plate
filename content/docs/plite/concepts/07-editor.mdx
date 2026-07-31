@@ -165,62 +165,54 @@ the document.
 ## Extending The Editor
 
 Extensions package reusable behavior without mutating random fields onto the
-editor object. They can register read namespaces with `state`, write namespaces
-with `tx`, schema contributions, commit listeners, changed-range corrections, effects,
-and optional runtime registration.
+editor object. They can register owner-local `read` and `update` namespaces,
+schema contributions, commit listeners, changed-range corrections, effects,
+and optional runtime services.
 
 Here's a small extension that adds a table namespace:
 
 ```javascript
 import { createEditor, defineEditorExtension } from "@platejs/plite";
 
-const tables = defineEditorExtension({
+const TablesExtension = defineEditorExtension({
   name: "tables",
-  state: {
-    table(state) {
-      return {
-        rowCount() {
-          return state.nodes.children().length;
-        },
-      };
+  read: ({ state }) => ({
+    rowCount() {
+      return state.nodes.children().length;
     },
-  },
-  tx: {
-    table(tx) {
-      return {
-        insertRow(text = "row") {
-          tx.nodes.insert(
-            {
-              type: "paragraph",
-              children: [{ text }],
-            },
-            { at: [tx.nodes.children().length] }
-          );
+  }),
+  update: ({ tx }) => ({
+    insertRow(text = "row") {
+      tx.nodes.insert(
+        {
+          type: "paragraph",
+          children: [{ text }],
         },
-      };
+        { at: [tx.nodes.children().length] }
+      );
     },
-  },
+  }),
 });
 
-const editor = createEditor({ extensions: [tables] as const });
+const editor = createEditor({ extensions: [TablesExtension] as const });
 ```
 
 The extension adds helpers to grouped reads, atomic updates, and direct update
 methods.
 
 ```javascript
-const rows = editor.read((state) => state.table.rowCount());
+const rows = editor.read((state) => state.tables.rowCount());
 
-editor.update.table.insertRow();
+editor.update.tables.insertRow();
 
 editor.update((tx) => {
-  tx.table.insertRow();
+  tx.tables.insertRow();
 });
 ```
 
 Extension authors can mark a method with `txOnly(...)` when it only makes sense
-inside an active transaction. Those methods stay on `tx` and are omitted from
-the direct update surface.
+inside an active transaction. Those methods stay on the transaction namespace
+and are omitted from the direct update surface.
 
 ## Schema Behavior
 

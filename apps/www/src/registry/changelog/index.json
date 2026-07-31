@@ -2,6 +2,24 @@
   "schemaVersion": 1,
   "events": [
     {
+      "id": "2026-07-31-simplify-ai-chat-source-commands",
+      "href": "/registry/changelog/2026-07-31-simplify-ai-chat-source-commands.json",
+      "status": "draft",
+      "kind": "wiring",
+      "summary": "Read AI previews from plugin state",
+      "change": {
+        "type": "source",
+        "date": "2026-07-31",
+        "commits": []
+      },
+      "release": {
+        "status": "unresolved"
+      },
+      "targets": ["ai-menu"],
+      "entries": 1,
+      "diagnostics": []
+    },
+    {
       "id": "2026-07-29-preserve-feature-example-wiring",
       "href": "/registry/changelog/2026-07-29-preserve-feature-example-wiring.json",
       "status": "draft",

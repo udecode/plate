@@ -54,7 +54,7 @@ const EmbedsExample = () => {
 };
 
 const embed = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'embed',
     schema: { elements: { video: { void: 'block' } } },
   });

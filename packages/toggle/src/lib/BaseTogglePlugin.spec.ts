@@ -10,7 +10,7 @@ describe('BaseTogglePlugin', () => {
       plugins: [BaseTogglePlugin],
     });
 
-    expect(editor.read.schema.createAndFill(BaseTogglePlugin)).toEqual({
+    expect(editor.read.schema.create(BaseTogglePlugin)).toEqual({
       children: [{ text: '' }],
       type: BaseTogglePlugin.type,
     });
@@ -96,7 +96,7 @@ describe('BaseTogglePlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseIndentPlugin.configure({
-          targetPluginKeys: [BaseParagraphPlugin.key, BaseTogglePlugin.key],
+          targetPluginNames: [BaseParagraphPlugin.name, BaseTogglePlugin.name],
         }),
         BaseTogglePlugin,
       ],
@@ -112,7 +112,7 @@ describe('BaseTogglePlugin', () => {
     const editor = createBaseEditor({
       plugins: [
         BaseIndentPlugin.configure({
-          targetPluginKeys: [BaseParagraphPlugin.key, BaseTogglePlugin.key],
+          targetPluginNames: [BaseParagraphPlugin.name, BaseTogglePlugin.name],
         }),
         BaseTogglePlugin,
       ],

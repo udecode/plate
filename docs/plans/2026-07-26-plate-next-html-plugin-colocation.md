@@ -230,7 +230,7 @@ Error attempts:
 |-------|-------|------------|
 | Cross-package tests could not resolve Core before artifact build | 1 | Built Core, then reran consumers |
 | Bundler lost overloaded proof-helper value export | 1 | Replaced overloads with one inferred generic declaration |
-| Parser context generic mismatch | 1 | Parameterized the prepared parser entry with `HtmlParser<C>` and `WithAnyKey<C>` |
+| Parser context generic mismatch | 1 | Parameterized the prepared parser entry with `HtmlParser<C>` and `WithAnyName<C>` |
 | Direct decode widened to `undefined` | 1 | Restored strict null result and invariant throw; contract typecheck passes |
 | Full List test reported two unrelated keyboard expectations during shared WIP | 1 | HtmlPlugin family slice passes 22/22; package typecheck passes; no source repair made |
 | Autoreview proposed restoring global plugin priority | 1 | Rejected against the explicit hard cut and codec-local priority tests |

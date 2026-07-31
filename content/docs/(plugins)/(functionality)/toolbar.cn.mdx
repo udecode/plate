@@ -70,7 +70,7 @@ import { FloatingToolbar } from '@/components/ui/floating-toolbar';
 import { FloatingToolbarButtons } from '@/components/ui/floating-toolbar-buttons';
 
 const fixedToolbarPlugin = createPlatePlugin({
-  key: 'fixed-toolbar',
+  name: 'fixed-toolbar',
   render: {
     beforeEditable: () => (
       <FixedToolbar>
@@ -81,7 +81,7 @@ const fixedToolbarPlugin = createPlatePlugin({
 });
 
 const floatingToolbarPlugin = createPlatePlugin({
-  key: 'floating-toolbar',
+  name: 'floating-toolbar',
   render: {
     afterEditable: () => (
       <FloatingToolbar>

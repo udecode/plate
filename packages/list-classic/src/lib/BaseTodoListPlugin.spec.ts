@@ -22,7 +22,7 @@ describe('BaseTodoListPlugin', () => {
       ],
     } as any);
 
-    expect(BaseTodoListPlugin.key).toBe('listTodoClassic');
+    expect(BaseTodoListPlugin.name).toBe('listTodoClassic');
     expect(BaseTodoListPlugin.type).toBe(NODES.listTodoClassic);
     const typedEditor = createBaseEditor({
       plugins: [BaseTodoListPlugin],
@@ -30,7 +30,7 @@ describe('BaseTodoListPlugin', () => {
     expect(typeof typedEditor.plugin(BaseTodoListPlugin).update.toggle).toBe(
       'function'
     );
-    expect(typedEditor.read.schema.createAndFill(BaseTodoListPlugin)).toEqual({
+    expect(typedEditor.read.schema.create(BaseTodoListPlugin)).toEqual({
       checked: false,
       children: [{ text: '' }],
       type: NODES.listTodoClassic,
@@ -126,7 +126,7 @@ describe('BaseTodoListPlugin', () => {
     editor.plugin(BaseTodoListPlugin).update.toggle();
 
     expect(editor.read.children()[0].type).toBe(
-      editor.getType(KEYS.listTodoClassic)
+      editor.plugin(KEYS.listTodoClassic).type
     );
   });
 });

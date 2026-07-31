@@ -85,9 +85,7 @@ export const fixtureSchema = defineEditorSchema({
   elements: fixtureElements,
   groups: { fixture: {} },
   id: 'fixture-schema',
-  root: {
-    content: schema.content.not(schema.content.text()),
-  },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });

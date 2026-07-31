@@ -7,6 +7,8 @@
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
+const { createBunTestArgs } = require('./bun-test-args.cjs');
+
 const [command, ...rawCommandArgs] = process.argv.slice(2);
 const commandArgs =
   rawCommandArgs[0] === '--' ? rawCommandArgs.slice(1) : rawCommandArgs;
@@ -90,23 +92,21 @@ switch (command) {
     result = runPnpm('biome', ['check', INIT_CWD, '--fix', ...commandArgs]);
     break;
   case 'p:test': {
-    const bunTestArgs = [
-      '--config',
-      path.join(PROJECT_CWD, 'bunfig.toml'),
-      'test',
-      ...commandArgs,
-    ];
+    const bunTestArgs = createBunTestArgs({
+      commandArgs,
+      packageCwd: INIT_CWD,
+      projectCwd: PROJECT_CWD,
+    });
     result = runPnpm('bun', bunTestArgs);
     break;
   }
   case 'p:test:watch': {
-    const bunTestArgs = [
-      '--config',
-      path.join(PROJECT_CWD, 'bunfig.toml'),
-      'test',
-      '--watch',
-      ...commandArgs,
-    ];
+    const bunTestArgs = createBunTestArgs({
+      commandArgs,
+      packageCwd: INIT_CWD,
+      projectCwd: PROJECT_CWD,
+      watch: true,
+    });
     result = runPnpm('bun', bunTestArgs);
     break;
   }

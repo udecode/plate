@@ -1,4 +1,4 @@
-import { createBasePlugin, type InferConfig } from '@platejs/core';
+import { createBasePlugin, type DefinitionOf } from '@platejs/core';
 import { ElementApi, type Path } from '@platejs/plite';
 
 import { KEYS } from '../plate-keys';
@@ -28,50 +28,52 @@ const initialState: NormalizeTypesPluginState = {
 };
 
 export const NormalizeTypesPlugin = createBasePlugin({
-  key: KEYS.normalizeTypes,
+  name: KEYS.normalizeTypes,
   initialState,
-  extension: ({ store }) => ({
-    corrections: [
-      {
-        event: 'children',
-        query: 'root',
-        correct({ tx }) {
-          const { onError, rules = [] } = store.get();
+  corrections: [
+    {
+      event: 'children',
+      query: 'root',
+      correct({ editor, tx }) {
+        const { onError, rules = [] } = editor
+          .plugin(NormalizeTypesPlugin)
+          .store.get();
 
-          rules.forEach(({ path, strictType, type }) => {
-            const at = [...path];
-            const entry = tx.nodes.get(at);
-            const node = entry?.[0];
+        rules.forEach(({ path, strictType, type }) => {
+          const at = [...path];
+          const entry = tx.nodes.get(at);
+          const node = entry?.[0];
 
-            if (node) {
-              if (
-                strictType &&
-                ElementApi.isElement(node) &&
-                node.type !== strictType
-              ) {
-                tx.nodes.set({ type: strictType }, { at });
-              }
-
-              return;
+          if (node) {
+            if (
+              strictType &&
+              ElementApi.isElement(node) &&
+              node.type !== strictType
+            ) {
+              tx.nodes.set({ type: strictType }, { at });
             }
 
-            const nextType = strictType ?? type;
+            return;
+          }
 
-            if (!nextType) return;
+          const nextType = strictType ?? type;
 
-            try {
-              tx.nodes.insert(
-                { children: [{ text: '' }], type: nextType },
-                { at }
-              );
-            } catch (error) {
-              onError?.(error);
-            }
-          });
-        },
+          if (!nextType) return;
+
+          try {
+            tx.nodes.insert(
+              { children: [{ text: '' }], type: nextType },
+              { at }
+            );
+          } catch (error) {
+            onError?.(error);
+          }
+        });
       },
-    ],
-  }),
+    },
+  ],
 });
 
-export type NormalizeTypesConfig = InferConfig<typeof NormalizeTypesPlugin>;
+export type NormalizeTypesDefinition = DefinitionOf<
+  typeof NormalizeTypesPlugin
+>;

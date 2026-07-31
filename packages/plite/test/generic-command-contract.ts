@@ -3,25 +3,28 @@ import {
   defineEditorExtension,
   txOnly,
   type Editor,
+  type EditorTransactionSpecBuilder,
   type Value,
 } from '@platejs/plite';
 
 const SpecialExtension = defineEditorExtension({
   name: 'special',
-  state: { special: () => ({ value: () => 1 }) },
-  tx: {
-    special: () => ({
-      unsafe: txOnly(() => {}),
-      value: () => 1,
-    }),
-  },
+  read: () => ({ value: () => 1 }),
+  update: () => ({
+    unsafe: txOnly(() => {}),
+    value: () => 1,
+  }),
 });
 const ExtraExtension = defineEditorExtension({
   name: 'extra',
-  state: { extra: () => ({ value: () => 2 }) },
+  read: () => ({ value: () => 2 }),
 });
 
 type PlainEditor = Editor<Value>;
+type HostOnlyValue = {
+  type: 'host-only';
+  children: { text: string }[];
+}[];
 type SpecialEditor = Editor<Value, readonly [typeof SpecialExtension]>;
 type SpecialExtraEditor = Editor<
   Value,
@@ -55,6 +58,7 @@ const specialExtraCommand = defineCommand<void, SpecialExtraEditor>(
     },
   }
 );
+const hostAgnosticCommand = defineCommand('test.host-agnostic');
 
 declare const plain: PlainEditor;
 declare const special: SpecialEditor;
@@ -72,7 +76,20 @@ plain.update.command(specialCommand, { amount: 1 });
 // @ts-expect-error SpecialEditor lacks ExtraExtension
 special.update.command(specialExtraCommand);
 
-defineEditorExtension<SpecialEditor>()({
+defineEditorExtension({
+  commands: ({ handle }) => [
+    handle(hostAgnosticCommand, ({ state }) =>
+      state.transaction((tx) => {
+        // @ts-expect-error host-agnostic descriptors cannot assume app-only nodes
+        const hostTransaction: EditorTransactionSpecBuilder<HostOnlyValue> = tx;
+
+        void hostTransaction;
+      })
+    ),
+  ],
+  name: 'host-agnostic-handler',
+});
+defineEditorExtension({
   commands: ({ handle }) => [
     handle(specialCommand, ({ state }) => {
       state.special.value();
@@ -82,9 +99,10 @@ defineEditorExtension<SpecialEditor>()({
       });
     }),
   ],
+  dependencies: [SpecialExtension],
   name: 'special-handler',
 });
-defineEditorExtension<SpecialExtraEditor>()({
+defineEditorExtension({
   commands: ({ handle }) => [
     handle(specialCommand, ({ state }) => {
       state.special.value();
@@ -99,16 +117,18 @@ defineEditorExtension<SpecialExtraEditor>()({
       return false;
     }),
   ],
+  dependencies: [SpecialExtension, ExtraExtension],
   name: 'special-extra-handler',
 });
-defineEditorExtension<SpecialEditor>()({
+defineEditorExtension({
   commands: ({ handle }) => [
     // @ts-expect-error command requires ExtraExtension
     handle(specialExtraCommand, () => false),
   ],
+  dependencies: [SpecialExtension],
   name: 'bad-special-extra-handler',
 });
-defineEditorExtension<PlainEditor>()({
+defineEditorExtension({
   commands: ({ handle }) => [
     // @ts-expect-error command requires SpecialExtension
     handle(specialCommand, () => false),

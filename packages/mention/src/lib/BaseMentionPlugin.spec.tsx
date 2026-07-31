@@ -35,10 +35,10 @@ describe('BaseMentionPlugin', () => {
       },
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
     });
-    const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
+    const inputPlugin = editor.plugin(BaseMentionInputPlugin).plugin;
     const state = editor.plugin(BaseMentionPlugin).store.get();
 
-    expect(inputPlugin.key).toBe('mentionInput');
+    expect(inputPlugin.name).toBe('mentionInput');
     expect(inputPlugin.type).toBe(NODES.mentionInput);
     expect(
       editor.read.schema.element(BaseMentionPlugin)?.behavior

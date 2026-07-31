@@ -1,77 +1,101 @@
-import { renderHook } from '@testing-library/react';
+import { createPlateEditor, Plate } from '@platejs/core/react';
+import { KEYS } from '@platejs/utils';
+import { act, renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 
-const useEditorMock = mock();
-const useEditorSelectorMock = mock();
-const toggleListMock = mock();
-
-mock.module('@platejs/core/react', () => ({
-  useEditor: useEditorMock,
-  useEditorSelector: useEditorSelectorMock,
-}));
-
-mock.module('./ListPlugin', () => ({
-  ListPlugin: { key: 'list' },
-}));
-
-const {
+import {
   useListToolbarButton,
   useListToolbarButtonState,
   useTodoListToolbarButton,
   useTodoListToolbarButtonState,
-} = await import('./useListToolbarButton');
+} from './useListToolbarButton';
+import { ListPlugin } from './ListPlugin';
 
 describe('useListToolbarButton', () => {
-  beforeEach(() => {
-    useEditorMock.mockReset();
-    useEditorSelectorMock.mockReset();
-    toggleListMock.mockReset();
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
-  it('builds list toolbar button props from query state', () => {
-    useEditorMock.mockReturnValue({
-      plugin: () => ({
-        update: { toggle: toggleListMock },
-      }),
+  it('builds list toolbar button props from query state', async () => {
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      plugins: [ListPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
     });
-    useEditorSelectorMock.mockReturnValue(true);
+    const { result } = renderHook(
+      () => {
+        const state = useListToolbarButtonState();
 
-    const { result } = renderHook(() => {
-      const state = useListToolbarButtonState();
+        return {
+          ...state,
+          ...useListToolbarButton(state).props,
+        };
+      },
+      {
+        wrapper: ({ children }) => (
+          <Plate editor={editor} suppressInstanceWarning>
+            {children}
+          </Plate>
+        ),
+      }
+    );
 
-      return useListToolbarButton(state);
+    expect(result.current.pressed).toBe(false);
+
+    act(() => {
+      result.current.onClick();
     });
 
-    result.current.props.onClick();
-
-    expect(result.current.props.pressed).toBe(true);
-    expect(toggleListMock).toHaveBeenCalledWith({
+    expect(editor.read.children()[0]).toMatchObject({
+      indent: 1,
       listStyleType: 'disc',
     });
+    await waitFor(() => {
+      expect(result.current.pressed).toBe(true);
+    });
   });
 
-  it('builds todo toolbar button props from todo selection state', () => {
-    useEditorMock.mockReturnValue({
-      plugin: () => ({
-        update: { toggle: toggleListMock },
-      }),
+  it('builds todo toolbar button props from todo selection state', async () => {
+    const editor = createPlateEditor({
+      initialValue: [{ children: [{ text: 'Item' }], type: KEYS.p }],
+      plugins: [ListPlugin],
+      selection: {
+        kind: 'text',
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
     });
-    useEditorSelectorMock.mockReturnValue(true);
+    const { result } = renderHook(
+      () => {
+        const state = useTodoListToolbarButtonState();
 
-    const { result } = renderHook(() => {
-      const state = useTodoListToolbarButtonState();
+        return {
+          ...state,
+          ...useTodoListToolbarButton(state).props,
+        };
+      },
+      {
+        wrapper: ({ children }) => (
+          <Plate editor={editor} suppressInstanceWarning>
+            {children}
+          </Plate>
+        ),
+      }
+    );
 
-      return useTodoListToolbarButton(state);
+    expect(result.current.pressed).toBe(false);
+
+    act(() => {
+      result.current.onClick();
     });
 
-    result.current.props.onClick();
-
-    expect(result.current.props.pressed).toBe(true);
-    expect(toggleListMock).toHaveBeenCalledWith({
-      listStyleType: 'todo',
+    expect(editor.read.children()[0]).toMatchObject({
+      checked: false,
+      indent: 1,
+      listStyleType: KEYS.listTodo,
+    });
+    await waitFor(() => {
+      expect(result.current.pressed).toBe(true);
     });
   });
 });

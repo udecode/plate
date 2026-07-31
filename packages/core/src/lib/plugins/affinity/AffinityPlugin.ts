@@ -13,10 +13,10 @@ import {
 import { findEditorDOMRootRuntime } from '@platejs/plite-dom/internal';
 import isEqual from 'lodash/isEqual.js';
 
-import { getPluginByType } from '../../plugin';
-import { createBasePlugin } from '../../plugin';
+import { createBasePlugin, type DefinitionOf } from '../../plugin';
+import { getCompiledPlatePluginByType } from '../../../internal/plugin/compilePlateModel';
 
-type EdgeNodes =
+export type AffinityEdgeNodes =
   | [NodeEntry<Element | Text>, NodeEntry<Element | Text>]
   | [NodeEntry<Element | Text>, null]
   | [null, NodeEntry<Element | Text>];
@@ -26,10 +26,17 @@ type EdgeNodeState = Pick<
   'nodes' | 'points' | 'ranges' | 'selection'
 >;
 
+export type AffinityPluginUpdate = {
+  setSelection: (
+    edgeNodes: AffinityEdgeNodes,
+    affinity: 'backward' | 'forward'
+  ) => void;
+};
+
 export const AffinityPlugin = createBasePlugin({
-  key: 'affinity',
-  update: ({ tx }) => ({
-    setSelection: (edgeNodes: EdgeNodes, affinity: 'backward' | 'forward') => {
+  name: 'affinity',
+  update: ({ tx }): AffinityPluginUpdate => ({
+    setSelection: (edgeNodes, affinity) => {
       const select = (point: Point) => {
         tx.selection.set({ anchor: point, focus: point });
       };
@@ -74,7 +81,7 @@ export const AffinityPlugin = createBasePlugin({
     },
   }),
 }).extend(({ editor, plugin }) => {
-  const hasElement = (edgeNodes: EdgeNodes) => {
+  const hasElement = (edgeNodes: AffinityEdgeNodes) => {
     const [before, after] = edgeNodes;
 
     return (
@@ -83,7 +90,7 @@ export const AffinityPlugin = createBasePlugin({
     );
   };
 
-  const getEdgeNodes = (state: EdgeNodeState): EdgeNodes | null => {
+  const getEdgeNodes = (state: EdgeNodeState): AffinityEdgeNodes | null => {
     if (!state.selection.isCollapsed()) return null;
 
     const selection = state.selection();
@@ -106,7 +113,8 @@ export const AffinityPlugin = createBasePlugin({
       (state.nodes.parent(cursor.path)?.[0] as Element | undefined) ?? null;
     const parentAffinity =
       parent && ElementApi.isElement(parent)
-        ? getPluginByType(editor, parent.type)?.rules.selection?.affinity
+        ? getCompiledPlatePluginByType(editor, parent.type)?.rules.selection
+            ?.affinity
         : undefined;
     const isAffinityInlineElement =
       parentAffinity === 'hard' || parentAffinity === 'directional';
@@ -148,11 +156,12 @@ export const AffinityPlugin = createBasePlugin({
 
     return keys.some(
       (type) =>
-        getPluginByType(editor, type)?.rules.selection?.affinity === affinity
+        getCompiledPlatePluginByType(editor, type)?.rules.selection
+          ?.affinity === affinity
     );
   };
   const isNodesAffinity = (
-    edgeNodes: EdgeNodes,
+    edgeNodes: AffinityEdgeNodes,
     affinity: 'directional' | 'hard' | 'outward'
   ) => {
     const [backwardLeafEntry, forwardLeafEntry] = edgeNodes;
@@ -163,7 +172,7 @@ export const AffinityPlugin = createBasePlugin({
     );
   };
   const getMarkBoundaryAffinity = (
-    markBoundary: EdgeNodes,
+    markBoundary: AffinityEdgeNodes,
     state: Pick<EditorStateView, 'marks' | 'selection'>
   ): 'backward' | 'forward' | undefined => {
     const selection = state.selection();
@@ -218,142 +227,140 @@ export const AffinityPlugin = createBasePlugin({
     return 'backward';
   };
   return {
-    extension: {
-      commands: ({ around }) => [
-        around(editorCommands.delete, ({ input, state, next }) => {
+    commands: ({ around }) => [
+      around(editorCommands.delete, ({ input, state, next }) => {
+        if (
+          input.direction !== 'backward' ||
+          input.unit !== 'character' ||
+          !state.selection.isCollapsed()
+        ) {
+          return false;
+        }
+
+        const [start] = getEdgeNodes(state) ?? [null];
+        const startText =
+          start &&
+          (NodeApi.isText(start[0]) ? start[0].text : NodeApi.string(start[0]));
+        const result = next();
+
+        if (result === false) return false;
+
+        return state.transaction.extend(result, (tx) => {
+          const edgeNodes = getEdgeNodes(tx);
+
           if (
-            input.direction !== 'backward' ||
-            input.unit !== 'character' ||
-            !state.selection.isCollapsed()
+            edgeNodes &&
+            isNodesAffinity(edgeNodes, 'directional') &&
+            !hasElement(edgeNodes)
           ) {
-            return false;
+            const affinity =
+              startText && startText.length > 1 ? 'backward' : 'forward';
+
+            tx[plugin.name].setSelection(edgeNodes, affinity);
+          }
+        });
+      }),
+      around(editorCommands.insertText, ({ state, next }) => {
+        const prefix = state.transaction((tx) => {
+          const selection = state.selection();
+
+          if (!selection || RangeApi.isExpanded(selection)) return;
+
+          const textPath = selection.focus.path;
+          const textNode = state.nodes.get<Text>(textPath)?.[0];
+
+          if (!textNode) return;
+
+          const marks = Object.keys(NodeApi.extractProps(textNode));
+          const outwardMarks = marks.filter(
+            (type) =>
+              getCompiledPlatePluginByType(editor, type)?.rules.selection
+                ?.affinity === 'outward'
+          );
+
+          if (
+            !outwardMarks.length ||
+            !state.points.isEnd(selection.focus, textPath)
+          ) {
+            return;
           }
 
-          const [start] = getEdgeNodes(state) ?? [null];
-          const startText =
-            start &&
-            (NodeApi.isText(start[0])
-              ? start[0].text
-              : NodeApi.string(start[0]));
+          const nextPoint = state.points.after(textPath);
+          const nextTextNode = nextPoint
+            ? (state.nodes.get<Text>(nextPoint.path)?.[0] ?? null)
+            : null;
+          const marksToRemove = outwardMarks.filter(
+            (markKey) => textNode[markKey] && !nextTextNode?.[markKey]
+          );
+
+          outwardMarks.forEach((markKey) => {
+            tx.marks.add(markKey, textNode[markKey]);
+          });
+          marksToRemove.forEach((markKey) => {
+            tx.marks.remove(markKey);
+          });
+        });
+
+        return next.after(prefix);
+      }),
+      around(editorCommands.move, ({ input, state, next }) => {
+        const {
+          distance = 1,
+          reverse = false,
+          unit = 'character',
+        } = input.options ?? {};
+
+        if (
+          unit === 'character' &&
+          distance === 1 &&
+          state.selection.isCollapsed()
+        ) {
+          const preEdgeNodes = getEdgeNodes(state);
+
+          if (preEdgeNodes && isNodesAffinity(preEdgeNodes, 'hard')) {
+            if (
+              preEdgeNodes[reverse ? 0 : 1] === null &&
+              getMarkBoundaryAffinity(preEdgeNodes, state) ===
+                (reverse ? 'forward' : 'backward')
+            ) {
+              return state.transaction((tx) => {
+                tx[plugin.name].setSelection(
+                  preEdgeNodes,
+                  reverse ? 'backward' : 'forward'
+                );
+              });
+            }
+
+            return next({
+              ...input,
+              options: { ...input.options, unit: 'offset' },
+            });
+          }
+
           const result = next();
 
           if (result === false) return false;
 
           return state.transaction.extend(result, (tx) => {
-            const edgeNodes = getEdgeNodes(tx);
+            const postEdgeNodes = getEdgeNodes(tx);
 
             if (
-              edgeNodes &&
-              isNodesAffinity(edgeNodes, 'directional') &&
-              !hasElement(edgeNodes)
+              postEdgeNodes &&
+              isNodesAffinity(postEdgeNodes, 'directional') &&
+              !hasElement(postEdgeNodes)
             ) {
-              const affinity =
-                startText && startText.length > 1 ? 'backward' : 'forward';
-
-              tx[plugin.key].setSelection(edgeNodes, affinity);
+              tx[plugin.name].setSelection(
+                postEdgeNodes,
+                reverse ? 'forward' : 'backward'
+              );
             }
           });
-        }),
-        around(editorCommands.insertText, ({ state, next }) => {
-          const prefix = state.transaction((tx) => {
-            const selection = state.selection();
+        }
 
-            if (!selection || RangeApi.isExpanded(selection)) return;
-
-            const textPath = selection.focus.path;
-            const textNode = state.nodes.get<Text>(textPath)?.[0];
-
-            if (!textNode) return;
-
-            const marks = Object.keys(NodeApi.extractProps(textNode));
-            const outwardMarks = marks.filter(
-              (type) =>
-                getPluginByType(editor, type)?.rules.selection?.affinity ===
-                'outward'
-            );
-
-            if (
-              !outwardMarks.length ||
-              !state.points.isEnd(selection.focus, textPath)
-            ) {
-              return;
-            }
-
-            const nextPoint = state.points.after(textPath);
-            const nextTextNode = nextPoint
-              ? (state.nodes.get<Text>(nextPoint.path)?.[0] ?? null)
-              : null;
-            const marksToRemove = outwardMarks.filter(
-              (markKey) => textNode[markKey] && !nextTextNode?.[markKey]
-            );
-
-            outwardMarks.forEach((markKey) => {
-              tx.marks.add(markKey, textNode[markKey]);
-            });
-            marksToRemove.forEach((markKey) => {
-              tx.marks.remove(markKey);
-            });
-          });
-
-          return next.after(prefix);
-        }),
-        around(editorCommands.move, ({ input, state, next }) => {
-          const {
-            distance = 1,
-            reverse = false,
-            unit = 'character',
-          } = input.options ?? {};
-
-          if (
-            unit === 'character' &&
-            distance === 1 &&
-            state.selection.isCollapsed()
-          ) {
-            const preEdgeNodes = getEdgeNodes(state);
-
-            if (preEdgeNodes && isNodesAffinity(preEdgeNodes, 'hard')) {
-              if (
-                preEdgeNodes[reverse ? 0 : 1] === null &&
-                getMarkBoundaryAffinity(preEdgeNodes, state) ===
-                  (reverse ? 'forward' : 'backward')
-              ) {
-                return state.transaction((tx) => {
-                  tx[plugin.key].setSelection(
-                    preEdgeNodes,
-                    reverse ? 'backward' : 'forward'
-                  );
-                });
-              }
-
-              return next({
-                ...input,
-                options: { ...input.options, unit: 'offset' },
-              });
-            }
-
-            const result = next();
-
-            if (result === false) return false;
-
-            return state.transaction.extend(result, (tx) => {
-              const postEdgeNodes = getEdgeNodes(tx);
-
-              if (
-                postEdgeNodes &&
-                isNodesAffinity(postEdgeNodes, 'directional') &&
-                !hasElement(postEdgeNodes)
-              ) {
-                tx[plugin.key].setSelection(
-                  postEdgeNodes,
-                  reverse ? 'forward' : 'backward'
-                );
-              }
-            });
-          }
-
-          return next();
-        }),
-      ],
-    },
+        return next();
+      }),
+    ],
   };
 });
+
+export type AffinityDefinition = DefinitionOf<typeof AffinityPlugin>;

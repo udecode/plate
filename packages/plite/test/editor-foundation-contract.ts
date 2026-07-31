@@ -70,66 +70,58 @@ describe('editor foundation contract', () => {
             },
           },
         },
-        state: {
-          table(state) {
-            return {
-              defaultColSpan() {
-                return state.schema.getElementProperty(
-                  { type: 'table-cell', children: [{ text: '' }] },
-                  'colSpan'
-                );
-              },
-              imageIsVoid() {
-                return state.schema.isVoid({
-                  type: 'image',
-                  children: [{ text: '' }],
-                });
-              },
-              rowCount() {
-                return state.nodes.children().length;
-              },
-            };
+        read: ({ state }) => ({
+          defaultColSpan() {
+            return state.schema.getElementProperty(
+              { type: 'table-cell', children: [{ text: '' }] },
+              'colSpan'
+            );
           },
-        },
-        tx: {
-          table(tx) {
-            return {
-              imageVoidKind() {
-                return tx.schema.element('image')?.behavior.voidKind;
-              },
-              colSpanIsDefault(value: unknown) {
-                return Object.is(
-                  value,
-                  tx.schema.property({
-                    key: 'colSpan',
-                    placement: 'element',
-                    type: 'table-cell',
-                  })?.value.default
-                );
-              },
-              insertRow(text: string) {
-                tx.nodes.insert(paragraph(text), {
-                  at: [tx.nodes.children().length],
-                });
-              },
-              mentionIsMarkableVoid() {
-                return tx.schema.markableVoid({
-                  type: 'mention',
-                  children: [{ text: '' }],
-                });
-              },
-              rowCount() {
-                return tx.nodes.children().length;
-              },
-            };
+          imageIsVoid() {
+            return state.schema.isVoid({
+              type: 'image',
+              children: [{ text: '' }],
+            });
           },
-        },
+          rowCount() {
+            return state.nodes.children().length;
+          },
+        }),
+        update: ({ tx }) => ({
+          imageVoidKind() {
+            return tx.schema.element('image')?.behavior.voidKind;
+          },
+          colSpanIsDefault(value: unknown) {
+            return Object.is(
+              value,
+              tx.schema.property({
+                key: 'colSpan',
+                placement: 'element',
+                type: 'table-cell',
+              })?.value.default
+            );
+          },
+          insertRow(text: string) {
+            tx.nodes.insert(paragraph(text), {
+              at: [tx.nodes.children().length],
+            });
+          },
+          mentionIsMarkableVoid() {
+            return tx.schema.isMarkableVoid({
+              type: 'mention',
+              children: [{ text: '' }],
+            });
+          },
+          rowCount() {
+            return tx.nodes.children().length;
+          },
+        }),
       })
     );
 
     const readState = editor.read((state) => {
       const tableState = state as typeof state & {
-        table: {
+        'table-foundation': {
           defaultColSpan(): unknown;
           imageIsVoid(): boolean;
           rowCount(): number;
@@ -137,9 +129,9 @@ describe('editor foundation contract', () => {
       };
 
       return {
-        defaultColSpan: tableState.table.defaultColSpan(),
-        imageIsVoid: tableState.table.imageIsVoid(),
-        rowCount: tableState.table.rowCount(),
+        defaultColSpan: tableState['table-foundation'].defaultColSpan(),
+        imageIsVoid: tableState['table-foundation'].imageIsVoid(),
+        rowCount: tableState['table-foundation'].rowCount(),
       };
     });
     let txState: {
@@ -151,7 +143,7 @@ describe('editor foundation contract', () => {
 
     editor.update((tx) => {
       const tableTx = tx as typeof tx & {
-        table: {
+        'table-foundation': {
           colSpanIsDefault(value: unknown): boolean;
           imageVoidKind(): unknown;
           insertRow(text: string): void;
@@ -160,12 +152,13 @@ describe('editor foundation contract', () => {
         };
       };
 
-      tableTx.table.insertRow('four');
+      tableTx['table-foundation'].insertRow('four');
       txState = {
-        colSpanIsDefault: tableTx.table.colSpanIsDefault(1),
-        imageVoidKind: tableTx.table.imageVoidKind(),
-        mentionIsMarkableVoid: tableTx.table.mentionIsMarkableVoid(),
-        rowCountAfterInsert: tableTx.table.rowCount(),
+        colSpanIsDefault: tableTx['table-foundation'].colSpanIsDefault(1),
+        imageVoidKind: tableTx['table-foundation'].imageVoidKind(),
+        mentionIsMarkableVoid:
+          tableTx['table-foundation'].mentionIsMarkableVoid(),
+        rowCountAfterInsert: tableTx['table-foundation'].rowCount(),
       };
     });
 
@@ -185,7 +178,7 @@ describe('editor foundation contract', () => {
     const editorSurface = editor as unknown as Record<string, unknown>;
 
     assert.equal(typeof editorSurface.api, 'object');
-    assert.equal(typeof editorSurface.getApi, 'function');
+    assert.equal(typeof editorSurface.extension, 'function');
     assert.equal('tf' in editorSurface, false);
     assert.equal('plate' in editorSurface, false);
     assert.equal('yjs' in editorSurface, false);

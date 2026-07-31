@@ -13,6 +13,7 @@ import type { NodeKey, NodeMap, TListElement } from '@platejs/utils';
 import type { Nullable } from '@udecode/utils';
 import type { Options as RemarkStringifyOptions } from 'remark-stringify';
 import type { Pluggable } from 'unified';
+import type { MarkdownPluginRegistry } from '@platejs/core';
 
 import type {
   MdBlockquote,
@@ -84,16 +85,19 @@ export type SerializeMdOptions = {
 };
 
 export type MarkdownConversionContext = Readonly<{
-  getPluginKey: (type: string) => string | undefined;
-  getPluginType: (key: string) => string;
-  hasPlugin: (key: string) => boolean;
   isBlock: (node: Descendant) => boolean;
   isInline: (node: Descendant) => boolean;
+  registry: MarkdownPluginRegistry;
 }>;
 
 /** Prepared Markdown deserialization context supplied to conversion rules. */
 export type DeserializeMdContext = Readonly<DeserializeMdOptions> &
-  MarkdownConversionContext;
+  MarkdownConversionContext & {
+    /** @internal Compiled feature-owned Markdown node codecs. */
+    compiledCodecs?: import('./internal/markdownCodecs').CompiledMarkdownCodecs;
+    /** @internal Operation or configured rules that override compiled codecs. */
+    ruleOverrides?: MdRules;
+  };
 
 /** Prepared Markdown serialization context supplied to conversion rules. */
 export type SerializeMdContext = Readonly<
@@ -106,13 +110,13 @@ export type MdRules = Partial<{
 }> &
   Record<string, Nullable<AnyNodeParser>>;
 
-export type MdNodeParser<K extends keyof PlateNodeMap> = {
+export type MdNodeParser<K extends keyof PlateNodeMap = keyof PlateNodeMap> = {
   mark?: boolean;
   deserialize?(
     mdastNode: MdNodeMap[K],
     deco: MdDecoration,
     options: DeserializeMdContext
-  ): Descendant | Descendant[];
+  ): Descendant | Descendant[] | undefined;
   serialize?(
     slateNode: PlateNodeMap[K],
     options: SerializeMdContext
@@ -127,7 +131,7 @@ type AnyNodeParser = {
   mark?: boolean;
   deserialize?: BivariantCallback<
     [UnistNode, MdDecoration, DeserializeMdContext],
-    Descendant | Descendant[]
+    Descendant | Descendant[] | undefined
   >;
   serialize?: BivariantCallback<
     [Descendant, SerializeMdContext],

@@ -142,7 +142,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
             getEditorSchema(editor).isTextPropertyAllowedAt(key, path, root)
           ) &&
           (!getEditorSchema(editor).isVoid(parentNode) ||
-            getEditorSchema(editor).markableVoid(parentNode))
+            getEditorSchema(editor).isMarkableVoid(parentNode))
         );
       };
       const isExpandedRange = RangeApi.isExpanded(at);
@@ -155,7 +155,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
           const [parentNode] = editorParent(editor, selectedPath);
           markAcceptingVoidSelected =
             NodeApi.isElement(parentNode) &&
-            getEditorSchema(editor).markableVoid(parentNode);
+            getEditorSchema(editor).isMarkableVoid(parentNode);
         }
       }
 

@@ -25,11 +25,14 @@
           "localPath": "../lexical",
           "branch": "main",
           "upstream": "origin/main",
-          "auditedCommit": "d52f66e250e031a6c6fd8836d160373b0df557c7",
-          "auditedAt": "2026-07-25T23:30:38Z",
-          "testHarvestCommit": "d52f66e250e031a6c6fd8836d160373b0df557c7",
-          "issueHarvestCheckedAt": "2026-07-25T23:13:33Z",
-          "issueLedger": "docs/editor-issue-harvester/lexical/full/issue-closure-ledger.md"
+          "auditedCommit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+          "auditedAt": "2026-07-29T13:30:32Z",
+          "testHarvestCommit": "dd5c41b13193efa9ab1574234d8593d2c9e4f988",
+          "issueHarvestCheckedAt": "2026-07-29T13:25:57.084Z",
+          "issueLedger": "docs/editor-issue-harvester/lexical/full/issue-closure-ledger.md",
+          "conceptManifest": "docs/plans/artifacts/multi-editor-full-architecture-audit/lexical-concept-manifest.json",
+          "conceptMatrix": "docs/plans/artifacts/multi-editor-full-architecture-audit/lexical-concept-matrix.md",
+          "conceptMatrixValidatedAt": "2026-07-29T13:30:32Z"
         },
         {
           "repoKey": "github.com/ProseMirror/prosemirror",

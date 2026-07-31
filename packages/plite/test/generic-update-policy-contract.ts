@@ -7,18 +7,14 @@ import {
 
 const history = defineEditorExtension({
   name: 'history',
-  tx: {
-    history(tx) {
-      return {
-        direct() {
-          tx.text.insert('direct');
-        },
-        scoped: txOnly(() => {
-          tx.text.insert('scoped');
-        }),
-      };
+  update: ({ tx }) => ({
+    direct() {
+      tx.text.insert('direct');
     },
-  },
+    scoped: txOnly(() => {
+      tx.text.insert('scoped');
+    }),
+  }),
 });
 
 const initialValue = [{ type: 'paragraph', children: [{ text: '' }] }];

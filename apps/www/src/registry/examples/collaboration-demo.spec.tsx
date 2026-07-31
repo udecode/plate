@@ -13,7 +13,7 @@ let currentPositions: any[] = [];
 mock.module('platejs/react', () => ({
   createPlateEditor: (options: any) => {
     const yjsPlugin = options.plugins.find(
-      (plugin: any) => plugin?.key === 'yjs'
+      (plugin: any) => plugin?.name === 'yjs'
     );
     const update = Object.assign(
       (callback: (tx: any) => void) =>
@@ -64,7 +64,7 @@ mock.module('@platejs/yjs/react', () => ({
   useYjsProviderStatus: (editor: any) => editor.provider.status,
   useYjsProviderSynced: (editor: any) => editor.provider.synced,
   YjsPlugin: {
-    configure: ({ initialState }: any) => ({ initialState, key: 'yjs' }),
+    configure: ({ initialState }: any) => ({ initialState, name: 'yjs' }),
   },
 }));
 

@@ -1,23 +1,30 @@
 import type {
   Element,
-  EditorTransactionSpecBuilder,
-  ExtensionsOf,
   NodeEntry,
   Path,
   Point,
   PropertyJsonValue,
   Range,
   TextInsertTextOptions,
-  ValueOf,
 } from '@platejs/plite';
+import type {
+  EditorCommandContext,
+  InternalEditorUpdateTransactionOf,
+} from '@platejs/plite/internal';
 
 import type { BaseEditor } from '../../editor';
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
 
-type InputRuleTransaction<TEditor> = BaseEditor extends TEditor
-  ? EditorTransactionSpecBuilder<ValueOf<TEditor>>
-  : EditorTransactionSpecBuilder<ValueOf<TEditor>, ExtensionsOf<TEditor>>;
+type InputRuleTransaction<TEditor> = TEditor extends BaseEditor
+  ?
+      | Parameters<
+          Parameters<
+            EditorCommandContext<void, TEditor>['state']['transaction']
+          >[0]
+        >[0]
+      | InternalEditorUpdateTransactionOf<TEditor>
+  : never;
 
 type BivariantCallback<TArgs extends unknown[], TResult> = {
   bivarianceHack: (...args: TArgs) => TResult;
@@ -32,7 +39,7 @@ export type SelectionInputRuleContext<TEditor = BaseEditor> = {
   getCharAfter: () => string | undefined;
   getCharBefore: () => string | undefined;
   isCollapsed: boolean;
-  pluginKey: string;
+  pluginName: string;
 };
 
 export type TransformInputRuleContext<TEditor = BaseEditor> = {
@@ -302,7 +309,7 @@ export type InputRulesConfig<TEditor = BaseEditor> = (
 
 export type ResolvedInputRule = StoredInputRule & {
   id: string;
-  pluginKey: string;
+  pluginName: string;
   priority: number;
   ruleIndex: number;
   pluginIndex: number;

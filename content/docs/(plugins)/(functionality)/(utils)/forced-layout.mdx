@@ -124,8 +124,8 @@ That example keeps the first playground block as an H1 while leaving the rest of
 | API | Package | Use |
 |-----|---------|-----|
 | `NormalizeTypesPlugin` | `platejs` / `@platejs/utils` | Path-based type normalization plugin. |
-| `NormalizeTypesConfig.initialState.rules` | `@platejs/utils` | Ordered list of path rules. Defaults to `[]`. |
+| `NormalizeTypesPluginState.rules` | `@platejs/utils` | Ordered list of path rules. Defaults to `[]`. |
 | `Rule.path` | `@platejs/utils` | Plite `Path` where the rule applies. |
 | `Rule.strictType` | `@platejs/utils` | Required type for an existing or missing node. |
 | `Rule.type` | `@platejs/utils` | Type for a missing node only. |
-| `NormalizeTypesConfig.initialState.onError` | `@platejs/utils` | Called when inserting a missing node throws. |
+| `NormalizeTypesPluginState.onError` | `@platejs/utils` | Called when inserting a missing node throws. |

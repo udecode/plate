@@ -44,7 +44,7 @@ export const ListKit = [
     render: {
       belowNodes: BlockList,
     },
-    targetPluginKeys: [
+    targetPluginNames: [
       ...KEYS.heading,
       KEYS.p,
       KEYS.blockquote,

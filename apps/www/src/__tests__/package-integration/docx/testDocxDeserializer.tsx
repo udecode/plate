@@ -37,11 +37,11 @@ import { createBaseEditor } from '../../../../../../packages/core/src/lib/editor
 jsx;
 
 const targetPluginConfig = {
-  targetPluginKeys: [
-    BaseParagraphPlugin.key,
-    H1Plugin.key,
-    H2Plugin.key,
-    H3Plugin.key,
+  targetPluginNames: [
+    BaseParagraphPlugin.name,
+    H1Plugin.name,
+    H2Plugin.name,
+    H3Plugin.name,
   ],
 };
 
@@ -106,7 +106,7 @@ export const testDocxDeserializer = ({
       initialValue: input.children,
     } as any);
 
-    actual.api.clipboard.insertData(
+    actual.api.dom.clipboard.insertData(
       createClipboardData(readTestFile(`./${filename}.html`))
     );
 

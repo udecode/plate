@@ -46,7 +46,7 @@ const getDecodedMarkReader = (plugin: MarkPlugin) => {
     if (!fragment) return false;
 
     return Array.from(NodeApi.texts({ children: fragment, type: 'root' })).some(
-      ([text]) => text[plugin.key]
+      ([text]) => text[plugin.name]
     );
   };
 };
@@ -78,7 +78,7 @@ describe('BaseMarkPlugins', () => {
     data.setData('text/html', '<p><strong>bold</strong></p>');
 
     expect(bold).toBeDefined();
-    expect(editor.api.clipboard.insertData(data)).toBe(true);
+    expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     expect(editor.read.children()).toEqual([
       { children: [{ bold: true, text: 'bold' }], type: KEYS.p },
     ]);
@@ -189,12 +189,12 @@ describe('BaseMarkPlugins', () => {
       '<span style="text-decoration: underline">text</span>',
       'u',
     ],
-  ] as const)('decodes and encodes the %s HTML claim', (_label, plugin, key, value, input, outputTag) => {
+  ] as const)('decodes and encodes the %s HTML claim', (_label, plugin, markName, value, input, outputTag) => {
     const editor = createBaseEditor({
       plugins: [plugin],
       initialValue: [
         {
-          children: [{ [key]: value, text: 'text' }],
+          children: [{ [markName]: value, text: 'text' }],
           type: KEYS.p,
         },
       ],
@@ -209,14 +209,14 @@ describe('BaseMarkPlugins', () => {
     const data = new DataTransfer();
 
     expect(decodedText).toMatchObject({
-      [key]: value,
+      [markName]: value,
       text: 'text',
     });
 
     editor.update.selection.set(
       SelectionApi.node([0], { anchor: point, focus: point })
     );
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const body = new DOMParser().parseFromString(
       data.getData('text/html'),
@@ -260,7 +260,7 @@ describe('BaseMarkPlugins', () => {
       text: 'text',
     });
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const body = new DOMParser().parseFromString(
       data.getData('text/html'),
@@ -662,7 +662,9 @@ describe('basic mark input rules', () => {
   ])('$title', ({ input, output, plugin, text }) => {
     const editor = createBaseEditor({
       plugins: [
-        ...basicMarkPlugins.filter((candidate) => candidate.key !== plugin.key),
+        ...basicMarkPlugins.filter(
+          (candidate) => candidate.name !== plugin.name
+        ),
         plugin,
       ],
       selection: input.selection,

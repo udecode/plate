@@ -6,7 +6,7 @@ import {
   type Element,
 } from '@platejs/plite';
 
-type TriggerComboboxEditor = Pick<BaseEditor, 'getType'> & {
+type TriggerComboboxEditor = Pick<BaseEditor, 'plugin'> & {
   read: Pick<EditorCoreStateView, 'nodes'>;
 };
 

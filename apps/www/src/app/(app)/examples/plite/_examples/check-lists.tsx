@@ -86,7 +86,7 @@ const CheckListsExample = () => {
 };
 
 const checklist = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     name: 'checklists',
     commands: ({ handle }) => [
       handle(editorCommands.delete, ({ input, state }) => {

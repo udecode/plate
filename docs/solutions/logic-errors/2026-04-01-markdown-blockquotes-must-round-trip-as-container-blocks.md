@@ -65,7 +65,7 @@ const children = groupInlineChildrenIntoParagraphs(
 return [
   {
     children,
-    type: editor.getType(KEYS.blockquote),
+    type: editor.plugin(KEYS.blockquote).type,
   },
 ];
 ```

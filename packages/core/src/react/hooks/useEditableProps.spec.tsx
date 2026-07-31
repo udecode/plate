@@ -15,7 +15,7 @@ describe('useEditableProps', () => {
       const editor = createPlateEditor({
         plugins: [
           createBasePlugin({
-            key: 'a',
+            name: 'a',
             decorate: () => {
               decorate();
 

@@ -70439,5 +70439,85 @@
     "reason": "Added by refresh-only; not hydrated or classified.",
     "refreshStatus": "added-unchecked",
     "lastMetadataRefreshAt": "2026-07-25T22:59:04Z"
+  },
+  {
+    "number": 8880,
+    "state": "CLOSED",
+    "title": "Bug: Table alignment fails when selecting in non-TL→BR direction",
+    "url": "https://github.com/facebook/lexical/issues/8880",
+    "labels": [
+      "tables"
+    ],
+    "updatedAt": "2026-07-27T15:02:30Z",
+    "action": "review-later",
+    "cluster": "unclassified",
+    "command": "issue-harvester facebook/lexical --state all --continue",
+    "disposition": "unclassified",
+    "matrixKey": "Pending issue-harvester classification",
+    "owner": "unknown",
+    "proofKind": "pending",
+    "reason": "Added by refresh-only; not hydrated or classified.",
+    "refreshStatus": "added-unchecked",
+    "lastMetadataRefreshAt": "2026-07-29T13:25:57.084Z"
+  },
+  {
+    "number": 8881,
+    "state": "OPEN",
+    "title": "Bug: selection.hasFormat is giving wrong info when clear formatting is clicked from dropdown/button",
+    "url": "https://github.com/facebook/lexical/issues/8881",
+    "labels": [],
+    "updatedAt": "2026-07-27T03:43:27Z",
+    "action": "review-later",
+    "cluster": "unclassified",
+    "command": "issue-harvester facebook/lexical --state all --continue",
+    "disposition": "unclassified",
+    "matrixKey": "Pending issue-harvester classification",
+    "owner": "unknown",
+    "proofKind": "pending",
+    "reason": "Added by refresh-only; not hydrated or classified.",
+    "refreshStatus": "added-unchecked",
+    "lastMetadataRefreshAt": "2026-07-29T13:25:57.084Z"
+  },
+  {
+    "number": 8885,
+    "state": "OPEN",
+    "title": "Bug: SELECTION_CHANGE_COMMAND is triggered after clicking a link in Safari",
+    "url": "https://github.com/facebook/lexical/issues/8885",
+    "labels": [
+      "safari-bug",
+      "selection"
+    ],
+    "updatedAt": "2026-07-27T20:24:29Z",
+    "action": "review-later",
+    "cluster": "unclassified",
+    "command": "issue-harvester facebook/lexical --state all --continue",
+    "disposition": "unclassified",
+    "matrixKey": "Pending issue-harvester classification",
+    "owner": "unknown",
+    "proofKind": "pending",
+    "reason": "Added by refresh-only; not hydrated or classified.",
+    "refreshStatus": "added-unchecked",
+    "lastMetadataRefreshAt": "2026-07-29T13:25:57.084Z"
+  },
+  {
+    "number": 8886,
+    "state": "OPEN",
+    "title": "Bug: Selection is leaving beyond the editor from the top block cursor",
+    "url": "https://github.com/facebook/lexical/issues/8886",
+    "labels": [
+      "decorators",
+      "selection"
+    ],
+    "updatedAt": "2026-07-29T02:17:34Z",
+    "action": "review-later",
+    "cluster": "unclassified",
+    "command": "issue-harvester facebook/lexical --state all --continue",
+    "disposition": "unclassified",
+    "matrixKey": "Pending issue-harvester classification",
+    "owner": "unknown",
+    "proofKind": "pending",
+    "reason": "Added by refresh-only; not hydrated or classified.",
+    "refreshStatus": "added-unchecked",
+    "lastMetadataRefreshAt": "2026-07-29T13:25:57.084Z"
   }
 ]

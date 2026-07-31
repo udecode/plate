@@ -55,7 +55,7 @@ describe('BaseTablePlugin schema', () => {
       default: { type: KEYS.p },
       min: 1,
     });
-    expect(editor.read.schema.createAndFill(BaseTablePlugin)).toEqual({
+    expect(editor.read.schema.create(BaseTablePlugin)).toEqual({
       children: [
         {
           children: [],
@@ -65,7 +65,7 @@ describe('BaseTablePlugin schema', () => {
       type: KEYS.table,
     });
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [
@@ -81,13 +81,13 @@ describe('BaseTablePlugin schema', () => {
       })
     ).not.toThrow();
     expect(() =>
-      editor.read.schema.validateDocument({ children: [row] })
+      editor.read.schema.assertDocument({ children: [row] })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     expect(() =>
-      editor.read.schema.validateDocument({ children: [cell(KEYS.td)] })
+      editor.read.schema.assertDocument({ children: [cell(KEYS.td)] })
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ children: [paragraph('invalid')], type: KEYS.tr }],
@@ -97,7 +97,7 @@ describe('BaseTablePlugin schema', () => {
       })
     ).toThrow(/cannot contain/i);
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [paragraph('invalid')],
@@ -107,7 +107,7 @@ describe('BaseTablePlugin schema', () => {
       })
     ).toThrow(/cannot contain/i);
     expect(() =>
-      editor.read.schema.validateFragment([
+      editor.read.schema.assertFragment([
         {
           children: [
             {
@@ -176,7 +176,7 @@ describe('BaseTablePlugin schema', () => {
     ).toBe('number');
     expect(colSpan).toBeUndefined();
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [

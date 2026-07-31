@@ -3,7 +3,7 @@
 ---
 
 Export complete `*PluginState` contracts for audio, file, video, image, media
-embed, media placeholder, and React placeholder descriptors.
+embed, and React placeholder descriptors.
 
 - Insert images with
   `editor.plugin(BaseImagePlugin).update.insert({ url }, options)`
@@ -11,8 +11,8 @@ embed, media placeholder, and React placeholder descriptors.
   `editor.plugin(BaseMediaEmbedPlugin).update.insert({ url }, options)`
 - Insert headless placeholders with `editor.plugin(BasePlaceholderPlugin).update.insert(mediaType, options)`
 - Insert React upload placeholders with `editor.plugin(PlaceholderPlugin).update.insertMedia(files, options)`
-- Manage upload records through `PlaceholderPlugin.api` and read one with
-  `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
+- Manage upload records through `editor.plugin(PlaceholderPlugin).api` and read
+  one with `editor.plugin(PlaceholderPlugin).store.get('uploadingFile', id)`
 - Insert prompted image and embed URLs with `insertMediaUrl` from `@platejs/media/react`
 - Remove the standalone `insertImage`, `insertMedia`, `insertMediaEmbed`,
   `insertPlaceholder`, and `getUploadingFile` helpers
@@ -28,9 +28,10 @@ embed, media placeholder, and React placeholder descriptors.
 - Preserve plugin API inference in typed component integrations and accept
   arrays when inserting placeholder media
 - Publish pending upload state only after its placeholder transaction commits
-- Expose `MediaPluginConfig` for floating-media URL controls
-- Rename `MediaPluginOptions` to `MediaPluginState` and
-  `MediaPlaceholderOptions` to `MediaPlaceholderPluginState`
+- Expose the `MediaPlugin` union for typed floating-media URL controls
+- Rename `MediaPluginOptions` to `MediaPluginState`
+- Replace `MediaPlaceholderOptions` with the React
+  `PlaceholderPluginState`; the headless `BasePlaceholderPlugin` is state-free
 - Register media properties and required direct inline caption children in
   compiled schemas.
 - Export `MediaV54MigrationPlugin` from `@platejs/media/migrations` to convert

@@ -35,16 +35,14 @@ describe('base heading plugins', () => {
 
     headingPlugins.forEach((plugin, index) => {
       const level = headingKeys[index]!;
-      const resolvedPlugin = editor.getPlugin(plugin);
+      const resolvedPlugin = editor.plugin(plugin).plugin;
 
-      expect(resolvedPlugin.key).toBe(level);
+      expect(resolvedPlugin.name).toBe(level);
       expect(editor.read.schema.element(resolvedPlugin.type)).toBeDefined();
       expect(editor.read.schema.isElementTypeInGroup(level, 'block')).toBe(
         true
       );
-      expect(
-        editor.read.schema.createAndFill(resolvedPlugin.type)
-      ).toMatchObject({
+      expect(editor.read.schema.create(resolvedPlugin.type)).toMatchObject({
         children: [{ text: '' }],
         type: resolvedPlugin.type,
       });
@@ -72,7 +70,7 @@ describe('base heading plugins', () => {
       });
       const data = new DataTransfer();
 
-      codecEditor.api.clipboard.writeSelection(data);
+      codecEditor.api.dom.clipboard.writeSelection(data);
 
       const body = new DOMParser().parseFromString(
         data.getData('text/html'),
@@ -89,8 +87,8 @@ describe('base heading plugins', () => {
     });
 
     [BaseH1Plugin, BaseH3Plugin, BaseH5Plugin].forEach((plugin) => {
-      expect(editor.getPlugin(plugin).key).toBe(plugin.key);
-      expect(editor.read.schema.element(plugin.key)).toBeDefined();
+      expect(editor.plugin(plugin).plugin.name).toBe(plugin.name);
+      expect(editor.read.schema.element(plugin.name)).toBeDefined();
     });
 
     expect(editor.read.schema.element(KEYS.h2)).toBeNull();

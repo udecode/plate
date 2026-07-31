@@ -1,4 +1,5 @@
-import { type InferConfig, toPlatePlugin } from '@platejs/core/react';
+import type { DefinitionOf } from '@platejs/core';
+import { toPlatePlugin } from '@platejs/core/react';
 
 import { BaseSuggestionPlugin } from '../lib/BaseSuggestionPlugin';
 
@@ -17,4 +18,4 @@ export const SuggestionPlugin = toPlatePlugin(BaseSuggestionPlugin, {
   initialState,
 });
 
-export type SuggestionConfig = InferConfig<typeof SuggestionPlugin>;
+export type SuggestionDefinition = DefinitionOf<typeof SuggestionPlugin>;

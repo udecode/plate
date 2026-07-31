@@ -1,6 +1,9 @@
 import { createEditor } from '@platejs/plite';
 import * as PliteHistory from '@platejs/plite-history';
-import { history } from '@platejs/plite-history';
+import {
+  history,
+  type HistoryExtensionTypeProvider,
+} from '@platejs/plite-history';
 
 type CustomText = {
   text: string;
@@ -19,6 +22,7 @@ const initialValue: CustomValue = [
 ];
 
 const HistoryExtension = history();
+const historyTypeProvider: HistoryExtensionTypeProvider = HistoryExtension;
 const editor = createEditor({ extensions: [HistoryExtension], initialValue });
 
 editor.update((tx) => {
@@ -76,4 +80,5 @@ const assertHistoryTypeErrors = () => {
 
 void assertHistoryTypeErrors;
 void directUndoCount;
+void historyTypeProvider;
 void historyValue;

@@ -6,9 +6,9 @@ import { jsxt, type TestEditor } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
   createBasePlugin,
+  type DefinitionOf,
   NodeIdPlugin,
   type PlatePluginReadState,
-  type PluginConfig,
 } from '@platejs/core';
 import { MarkdownPlugin } from '@platejs/markdown';
 import { type Element, type ElementEntry, schema } from '@platejs/plite';
@@ -18,7 +18,7 @@ import { createPlateEditor } from '@platejs/core/react';
 jsxt;
 
 const getTableGridAbove = (
-  state: PlatePluginReadState<PluginConfig>
+  state: PlatePluginReadState<DefinitionOf<typeof BaseParagraphPlugin>>
 ): ElementEntry[] => {
   const selection = state.selection();
   if (!selection) return [];
@@ -51,7 +51,7 @@ const getTableGridAbove = (
 };
 
 const TableFixturePlugin = createBasePlugin({
-  key: KEYS.table,
+  name: KEYS.table,
   read: ({ state }) => ({
     getGridAbove: () => getTableGridAbove(state),
   }),
@@ -63,7 +63,7 @@ const TableFixturePlugin = createBasePlugin({
 });
 
 const TableRowFixturePlugin = createBasePlugin({
-  key: KEYS.tr,
+  name: KEYS.tr,
   schema: ({ plugins }) => ({
     element: {
       content: schema.content.types(
@@ -77,7 +77,7 @@ const TableRowFixturePlugin = createBasePlugin({
 });
 
 const TableCellFixturePlugin = createBasePlugin({
-  key: KEYS.td,
+  name: KEYS.td,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),
@@ -86,7 +86,7 @@ const TableCellFixturePlugin = createBasePlugin({
 });
 
 const TableHeaderCellFixturePlugin = createBasePlugin({
-  key: KEYS.th,
+  name: KEYS.th,
   schema: ({ plugins }) => ({
     element: {
       content: plugins.blockContent(),

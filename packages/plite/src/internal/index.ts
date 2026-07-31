@@ -1,4 +1,17 @@
-export type { Editor, Value } from '../interfaces/editor';
+export type {
+  Editor,
+  EditorCommandContext,
+  EditorExtensionDependencyReferenceFor,
+  EditorExtensionTypeLambda,
+  InternalEditorExtensionDependencyReference,
+  InternalEditorExtensionInstalledCapabilitiesOf,
+  InternalEditorExtensionTypeProviderOf,
+  InternalEditorExtensionWitnessFor,
+  InternalEditorStateViewProvider,
+  InternalEditorUpdateTransactionOf,
+  InternalEditorUpdateTransactionProvider,
+  Value,
+} from '../interfaces/editor';
 export { txRead } from '../core/tx-only';
 export type { TxReadMethod } from '../core/tx-only';
 
@@ -12,7 +25,6 @@ export {
   after,
   before,
   collapse,
-  defineEditorExtension,
   delete,
   deleteBackward,
   deleteForward,
@@ -141,6 +153,8 @@ export {
   type EditorSchemaDiagnostic,
 } from '../core/schema-compiler';
 export {
+  compileEditorExtension,
+  defineEditorExtension,
   getCompiledEditorConfiguration,
   getCandidateEditorExtensionApi,
   getEditorExtensionContributions,
@@ -154,6 +168,10 @@ export {
   toPublicRoot,
 } from '../core/public-root';
 export { getCompiledEditorSchemaFromApi } from '../core/editor-schema';
+export type {
+  EditorSchemaSource,
+  EditorSchemaSourceProvider,
+} from '../core/schema-source.internal';
 export {
   getEditorRuntime,
   getEditorRuntimeOwner,

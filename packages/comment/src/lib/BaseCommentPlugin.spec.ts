@@ -9,7 +9,7 @@ import type { TCommentText } from '@platejs/utils';
 import { BaseCommentPlugin } from './BaseCommentPlugin';
 
 const CommentTargetPlugin = createBasePlugin({
-  key: 'commentTarget',
+  name: 'commentTarget',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),

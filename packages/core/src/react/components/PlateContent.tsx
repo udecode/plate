@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useRef } from 'react';
 
 import { Editable, useOptionalEditorReadOnly } from '@platejs/plite-react';
@@ -6,7 +8,10 @@ import { useComposedRef } from '@udecode/react-utils';
 import type { EditableProps } from '../../lib/types/EditableProps';
 
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { useEditableProps } from '../hooks';
 import type { PlateEditor } from '../editor/PlateEditor';
 import { usePlateModelRevision } from '../internal/usePlateModelRevision';
@@ -144,33 +149,37 @@ const PlateContentBranch = React.forwardRef<
     let afterEditable: React.ReactNode = null;
     let beforeEditable: React.ReactNode = null;
 
-    getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((key) => {
-      const plugin = editor.getPlugin({ key });
-      if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach(
+      (pluginName) => {
+        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+        if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-      const BeforeEditable = plugin.render.beforeEditable!;
+        const BeforeEditable = plugin.render.beforeEditable!;
 
-      beforeEditable = (
-        <>
-          {beforeEditable}
-          <BeforeEditable {...editableProps} />
-        </>
-      );
-    });
+        beforeEditable = (
+          <>
+            {beforeEditable}
+            <BeforeEditable {...editableProps} />
+          </>
+        );
+      }
+    );
 
-    getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((key) => {
-      const plugin = editor.getPlugin({ key });
-      if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    getPlateRuntime(editor).pluginCache.render.afterEditable.forEach(
+      (pluginName) => {
+        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+        if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-      const AfterEditable = plugin.render.afterEditable!;
+        const AfterEditable = plugin.render.afterEditable!;
 
-      afterEditable = (
-        <>
-          {afterEditable}
-          <AfterEditable {...editableProps} />
-        </>
-      );
-    });
+        afterEditable = (
+          <>
+            {afterEditable}
+            <AfterEditable {...editableProps} />
+          </>
+        );
+      }
+    );
 
     let aboveEditable: React.ReactNode = (
       <>
@@ -182,14 +191,16 @@ const PlateContentBranch = React.forwardRef<
       </>
     );
 
-    getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((key) => {
-      const plugin = editor.getPlugin({ key });
-      if (isEditOnly(plateReadOnly, plugin, 'render')) return;
+    getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach(
+      (pluginName) => {
+        const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+        if (isEditOnly(plateReadOnly, plugin, 'render')) return;
 
-      const AboveEditable = plugin.render.aboveEditable!;
+        const AboveEditable = plugin.render.aboveEditable!;
 
-      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
-    });
+        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+      }
+    );
 
     return (
       <PlateRoot id={id}>

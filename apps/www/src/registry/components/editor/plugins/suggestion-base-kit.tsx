@@ -49,6 +49,6 @@ export const BaseSuggestionKit = [
     render: {
       belowRootNodes: VoidRemoveSuggestionOverlayStatic,
     },
-    targetPluginKeys: INLINE_SUGGESTION_RENDER_TARGETS,
+    targetPluginNames: INLINE_SUGGESTION_RENDER_TARGETS,
   }),
 ];

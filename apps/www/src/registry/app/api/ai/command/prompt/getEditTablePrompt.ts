@@ -27,7 +27,7 @@ export function buildEditTableMultiCellPrompt(
     cells.flatMap(([cell]) => (typeof cell.id === 'string' ? [cell.id] : []))
   );
   const table = editor.read.nodes.block<TTableElement>({
-    match: { type: editor.getType(KEYS.table) },
+    match: { type: editor.plugin(KEYS.table).type },
   })?.[0];
   const selectedCells: Array<{ cell: TTableCellElement; id: string }> = [];
   const rows =

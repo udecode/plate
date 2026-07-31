@@ -8,10 +8,10 @@ describe('BaseExcalidrawPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseExcalidrawPlugin],
     });
-    const plugin = editor.getPlugin(BaseExcalidrawPlugin);
+    const plugin = editor.plugin(BaseExcalidrawPlugin).plugin;
     const element = { children: [{ text: '' }], type: KEYS.excalidraw };
 
-    expect(plugin.key).toBe(KEYS.excalidraw);
+    expect(plugin.name).toBe(KEYS.excalidraw);
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(
@@ -21,7 +21,7 @@ describe('BaseExcalidrawPlugin', () => {
         type: KEYS.excalidraw,
       })?.value.kind
     ).toBe('json');
-    expect(editor.getType(KEYS.excalidraw)).toBe(KEYS.excalidraw);
+    expect(editor.plugin(KEYS.excalidraw).type).toBe(KEYS.excalidraw);
   });
 
   it('rejects malformed drawing data', () => {
@@ -30,7 +30,7 @@ describe('BaseExcalidrawPlugin', () => {
     });
 
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ text: '' }],
@@ -48,7 +48,7 @@ describe('BaseExcalidrawPlugin', () => {
     });
 
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ text: '' }],
@@ -88,11 +88,7 @@ describe('BaseExcalidrawPlugin', () => {
 
   it('publishes insertion on the active transaction group', () => {
     const editor = createBaseEditor({
-      plugins: [
-        BaseExcalidrawPlugin.configure({
-          type: 'custom-excalidraw',
-        }),
-      ],
+      plugins: [BaseExcalidrawPlugin],
       selection: {
         kind: 'text',
         anchor: { offset: 0, path: [0, 0] },
@@ -116,7 +112,7 @@ describe('BaseExcalidrawPlugin', () => {
       {
         children: [{ text: '' }],
         data: { elements: [], state: { theme: 'dark' } },
-        type: 'custom-excalidraw',
+        type: KEYS.excalidraw,
       },
     ]);
   });

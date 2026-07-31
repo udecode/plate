@@ -1,4 +1,4 @@
-import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, createBasePlugin } from '@platejs/core';
 import type { EditorNodesOptions, NodeSetNodesOptions } from '@platejs/plite';
 import { property, schema, target, TextApi } from '@platejs/plite';
 import { KEYS, type TCommentText } from '@platejs/utils';
@@ -16,8 +16,8 @@ import {
 } from './commentMarks';
 
 export const BaseCommentPlugin = createBasePlugin({
-  key: KEYS.comment,
-  api: {
+  name: KEYS.comment,
+  api: () => ({
     nodeId: (leaf: TCommentText) => {
       const keys = Object.keys(leaf);
 
@@ -28,7 +28,30 @@ export const BaseCommentPlugin = createBasePlugin({
         .map(getCommentKeyId)
         .at(-1);
     },
-  },
+  }),
+  codecs: ({ defineCodecs }) =>
+    defineCodecs({
+      'text/markdown': {
+        from: 'comment',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) =>
+          decode(node.children, {
+            [type]: true,
+            ...decoration,
+          }),
+        encode: ({ node }) => {
+          if (!TextApi.isText(node)) return;
+
+          return {
+            attributes: [],
+            children: [{ type: 'text', value: node.text }],
+            name: 'comment',
+            type: 'mdxJsxTextElement',
+          };
+        },
+      },
+    }),
   read: ({ state, type }) => ({
     has: ({ id }: { id: string }) =>
       state.nodes.some<TCommentText>({
@@ -105,28 +128,26 @@ export const BaseCommentPlugin = createBasePlugin({
     ],
   },
 
-  extension: {
-    corrections: [
-      {
-        event: 'properties',
-        correct({ entry: [node, path], tx }) {
-          if (
-            isCommentText(node) &&
-            !node[getDraftCommentKey()] &&
-            !node[getTransientCommentKey()] &&
-            getCommentCount(node) < 1
-          ) {
-            tx.nodes.unset(KEYS.comment, { at: path });
-          }
-        },
+  corrections: [
+    {
+      event: 'properties',
+      correct({ entry: [node, path], tx }) {
+        if (
+          isCommentText(node) &&
+          !node[getDraftCommentKey()] &&
+          !node[getTransientCommentKey()] &&
+          getCommentCount(node) < 1
+        ) {
+          tx.nodes.unset(KEYS.comment, { at: path });
+        }
       },
-    ],
-  },
+    },
+  ],
   rules: { selection: { affinity: 'outward' } },
 }).extend(({ api, plugin, type }) => ({
   update: ({ tx }) => ({
     removeMark: () => {
-      const nodeEntry = tx[plugin.key].node();
+      const nodeEntry = tx[plugin.name].node();
 
       if (!nodeEntry) return;
 
@@ -146,7 +167,7 @@ export const BaseCommentPlugin = createBasePlugin({
       );
     },
     unsetMark: ({ id, transient }: { id?: string; transient?: boolean }) => {
-      for (const [node] of tx[plugin.key].nodes({ id, at: [], transient })) {
+      for (const [node] of tx[plugin.name].nodes({ id, at: [], transient })) {
         const removedId = id ?? api.nodeId(node);
         const unsetKeys = [
           getDraftCommentKey(),
@@ -164,4 +185,4 @@ export const BaseCommentPlugin = createBasePlugin({
   }),
 }));
 
-export type BaseCommentConfig = InferConfig<typeof BaseCommentPlugin>;
+export type BaseCommentDefinition = DefinitionOf<typeof BaseCommentPlugin>;

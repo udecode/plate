@@ -11,6 +11,6 @@ export const LineHeightKit = [
         validNodeValues: [1, 1.2, 1.5, 2, 3],
       },
     },
-    targetPluginKeys: [...KEYS.heading, KEYS.p],
+    targetPluginNames: [...KEYS.heading, KEYS.p],
   }),
 ];

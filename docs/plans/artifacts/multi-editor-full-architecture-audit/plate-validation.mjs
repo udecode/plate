@@ -119,8 +119,13 @@ for (const file of manifest.files) {
 
 const includedFiles = manifest.files.filter((file) => !file.exclusion);
 const declarations = includedFiles.flatMap((file) => file.declarations);
-const sourceLines = (file) =>
-  fs.readFileSync(path.join(root, file), 'utf8').split(/\r?\n/);
+const sourceLines = (file) => {
+  const absolute = path.join(root, file);
+
+  return fs.existsSync(absolute)
+    ? fs.readFileSync(absolute, 'utf8').split(/\r?\n/)
+    : [];
+};
 const countLineMatches = (paths, pattern, accept = () => true) =>
   paths.reduce(
     (count, file) =>
@@ -201,15 +206,14 @@ const expectedPressure = {
     ),
   },
   queryMiddleware: {
-    executionOwnerLines:
-      fs
-        .readFileSync(
-          path.join(root, 'packages/plite/src/core/query-middleware.ts'),
-          'utf8'
-        )
-        .match(/\n/g)?.length ?? 0,
-    exportedTypes: 4,
-    plateRegistrationFiles: 4,
+    executionOwnerLines: 0,
+    exportedTypes: 0,
+    plateRegistrationFiles: [
+      'packages/core/src/lib/plugins/override/OverridePlugin.ts',
+      'packages/diff/src/lib/excludeDiffFromFragment.ts',
+      'packages/table/src/lib/BaseTablePlugin.ts',
+      'packages/toggle/src/react/TogglePlugin.tsx',
+    ].filter((file) => fs.existsSync(path.join(root, file))).length,
     plateRegistrations: countLineMatches(
       [
         'packages/core/src/lib/plugins/override/OverridePlugin.ts',
@@ -227,7 +231,7 @@ const expectedPressure = {
       ],
       /\bexecuteQueryMiddleware\(/
     ),
-    overridableMethods: 43,
+    overridableMethods: 0,
   },
 };
 if (JSON.stringify(expectedPressure) !== JSON.stringify(manifest.pressure)) {

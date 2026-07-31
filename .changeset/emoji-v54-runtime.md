@@ -20,4 +20,4 @@ Keep picker consumers on `useEmojiPicker`, `useEmojiDropdownMenuState`,
 `EmojiFloatingLibrary`, and `FrequentEmojiStorage`. Remove the exported
 observer, reducer, local-storage, floating-grid, and floating-grid-builder
 implementation helpers. Replace the removed `EmojiInputConfig` type with
-`InferConfig<typeof BaseEmojiPlugin>`.
+`DefinitionOf<typeof BaseEmojiPlugin>`.

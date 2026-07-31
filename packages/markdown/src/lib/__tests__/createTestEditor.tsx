@@ -1,16 +1,58 @@
 import {
+  BaseBlockquotePlugin,
+  BaseBoldPlugin,
+  BaseCodePlugin,
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseHighlightPlugin,
+  BaseHorizontalRulePlugin,
+  BaseItalicPlugin,
+  BaseKbdPlugin,
+  BaseScriptPlugin,
+  BaseStrikethroughPlugin,
+  BaseUnderlinePlugin,
+} from '@platejs/basic-nodes';
+import {
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+  BaseFontFamilyPlugin,
+  BaseFontSizePlugin,
+  BaseFontWeightPlugin,
+} from '@platejs/basic-styles';
+import { BaseCalloutPlugin } from '@platejs/callout';
+import { BaseCodeBlockPlugin } from '@platejs/code-block';
+import { BaseCommentPlugin } from '@platejs/comment';
+import {
+  type BasePluginInput,
   BaseParagraphPlugin,
   createBaseEditor,
-  createBasePlugin,
 } from '@platejs/core';
+import { BaseDatePlugin } from '@platejs/date';
 import {
-  type PropertyValueDescriptor,
-  type SchemaElement,
-  property,
-  schema,
-  target,
-} from '@platejs/plite';
-import { KEYS, NODES } from '@platejs/utils';
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+} from '@platejs/footnote';
+import { BaseColumnPlugin } from '@platejs/layout';
+import { BaseLinkPlugin } from '@platejs/link';
+import { BaseListPlugin as BaseIndentListPlugin } from '@platejs/list';
+import { BaseListPlugin as BaseClassicListPlugin } from '@platejs/list-classic';
+import { BaseEquationPlugin, BaseInlineEquationPlugin } from '@platejs/math';
+import {
+  BaseAudioPlugin,
+  BaseFilePlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+  BaseVideoPlugin,
+} from '@platejs/media';
+import { BaseMentionPlugin } from '@platejs/mention';
+import { BaseSuggestionPlugin } from '@platejs/suggestion';
+import { BaseTablePlugin } from '@platejs/table';
+import { BaseTocPlugin } from '@platejs/toc';
+import { KEYS } from '@platejs/utils';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -25,147 +67,49 @@ import {
 } from '../internal/markdownConversion';
 import { remarkMdx, remarkMention } from '../plugins';
 
-type TestElementOptions = {
-  properties?: Readonly<Record<string, PropertyValueDescriptor>>;
-  inlineContent?: boolean;
-  inline?: boolean;
-  type?: string;
-  void?: boolean;
-};
-
-const element = (key: string, options: TestElementOptions = {}) => {
-  const descriptor: SchemaElement = {
-    ...(!options.void
-      ? {
-          content: options.inlineContent
-            ? schema.content.any(
-                [schema.content.text(), schema.content.group('inline')],
-                { default: 'text', min: 1 }
-              )
-            : options.inline
-              ? schema.content.text({ default: 'text', min: 1 })
-              : schema.content.open(),
-        }
-      : {}),
-    ...(options.inline ? { inline: true } : {}),
-    ...(options.properties ? { properties: options.properties } : {}),
-    ...(options.void ? { void: options.inline ? 'inline' : 'block' } : {}),
-  };
-
-  return createBasePlugin({
-    key,
-    schema: { element: descriptor },
-    type: options.type ?? key,
-  });
-};
-
-const leaf = (key: string, type = key) =>
-  createBasePlugin({
-    key,
-    schema: {
-      mark: property.boolean({ default: false, omitDefault: true }),
-    },
-    type,
-  });
-
-const mediaProperties = {
-  alt: property.string(),
-  height: property.json(),
-  isUpload: property.boolean(),
-  name: property.string(),
-  provider: property.string(),
-  sourceUrl: property.string(),
-  title: property.string(),
-  url: property.string(),
-  width: property.json(),
-};
-
-const testSchemaPlugins = [
-  createBasePlugin({
-    key: KEYS.list,
-    schema: {
-      properties: Object.entries({
-        checked: property.boolean(),
-        indent: property.number(),
-        listRestart: property.number(),
-        listRestartPolite: property.number(),
-        listStart: property.number(),
-        listStyleType: property.string(),
-      }).map(([key, value]) =>
-        schema.elementProperty(key, value, {
-          target: target.group('element'),
-        })
-      ),
-    },
-  }),
-  ...KEYS.heading.map((key) => element(key)),
-  element(KEYS.blockquote),
-  element(KEYS.hr, { void: true }),
-  element(KEYS.codeBlock, { type: NODES.codeBlock }),
-  element(KEYS.codeLine, { type: NODES.codeLine }),
-  leaf(KEYS.codeSyntax, NODES.codeSyntax),
-  leaf(KEYS.bold),
-  leaf(KEYS.italic),
-  leaf(KEYS.underline),
-  leaf(KEYS.code),
-  leaf(KEYS.strikethrough),
-  createBasePlugin({
-    key: KEYS.script,
-    schema: {
-      mark: property.enum(['sub', 'sup']),
-    },
-  }),
-  leaf(KEYS.highlight),
-  leaf(KEYS.kbd),
-  element(KEYS.a, { inline: true }),
-  element(KEYS.footnoteReference, { inline: true, void: true }),
-  element(KEYS.footnoteDefinition),
-  element(KEYS.olClassic),
-  element(KEYS.ulClassic),
-  element(KEYS.li),
-  element(KEYS.lic),
-  element(KEYS.mention, {
-    properties: {
-      key: property.string(),
-      value: property.string(),
-    },
-    inline: true,
-    void: true,
-  }),
-  element(KEYS.date, { inline: true, void: true }),
-  element(KEYS.equation, { void: true }),
-  element(KEYS.inlineEquation, {
-    inline: true,
-    type: NODES.inlineEquation,
-    void: true,
-  }),
-  element(KEYS.file, {
-    inlineContent: true,
-    properties: mediaProperties,
-  }),
-  element(KEYS.audio, {
-    inlineContent: true,
-    properties: mediaProperties,
-  }),
-  element(KEYS.img, {
-    inlineContent: true,
-    properties: mediaProperties,
-  }),
-  element(KEYS.mediaEmbed, {
-    inlineContent: true,
-    properties: mediaProperties,
-    type: NODES.mediaEmbed,
-  }),
-  element(KEYS.video, {
-    inlineContent: true,
-    properties: mediaProperties,
-  }),
-  element(KEYS.columnGroup, { type: NODES.columnGroup }),
-  element(KEYS.column),
-  element(KEYS.table),
-  element(KEYS.tr),
-  element(KEYS.td),
-  element(KEYS.th),
+const testSchemaPlugins: readonly BasePluginInput[] = [
+  BaseH1Plugin,
+  BaseH2Plugin,
+  BaseH3Plugin,
+  BaseH4Plugin,
+  BaseH5Plugin,
+  BaseH6Plugin,
+  BaseBlockquotePlugin,
+  BaseHorizontalRulePlugin,
+  BaseBoldPlugin,
+  BaseItalicPlugin,
+  BaseUnderlinePlugin,
+  BaseCodePlugin,
+  BaseStrikethroughPlugin,
+  BaseScriptPlugin,
+  BaseHighlightPlugin,
+  BaseKbdPlugin,
+  BaseFontBackgroundColorPlugin,
+  BaseFontColorPlugin,
+  BaseFontFamilyPlugin,
+  BaseFontSizePlugin,
+  BaseFontWeightPlugin,
+  BaseLinkPlugin,
+  BaseCodeBlockPlugin,
+  BaseFootnoteDefinitionPlugin,
+  BaseFootnotePlugin,
+  BaseIndentListPlugin,
+  BaseClassicListPlugin,
+  BaseMentionPlugin,
+  BaseDatePlugin,
+  BaseEquationPlugin,
+  BaseInlineEquationPlugin,
+  BaseFilePlugin,
+  BaseAudioPlugin,
+  BaseImagePlugin,
+  BaseMediaEmbedPlugin,
+  BaseVideoPlugin,
+  BaseColumnPlugin,
+  BaseTablePlugin,
+  BaseCalloutPlugin,
+  BaseCommentPlugin,
+  BaseSuggestionPlugin,
+  BaseTocPlugin,
 ];
 
 const markdownPlugin = MarkdownPlugin.configure({

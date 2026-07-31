@@ -169,7 +169,7 @@ Constraints:
   selectors, state, or external public contracts.
 - Plugin editor extension law: plugin-owned editor extension options should be
   returned directly from `extendExtension`. Do not wrap them in
-  `defineEditorExtension({ name: pluginKey, ... })` just to satisfy types.
+  `defineEditorExtension({ name: pluginName, ... })` just to satisfy types.
   `extendExtension` must accept both built extensions and raw options; raw
   options without `name` default to the owning plugin key. Keep explicit names
   only for genuinely separate extension identities.
@@ -241,7 +241,7 @@ Work Checklist:
 - [x] Mode classified: named file/API packet, broad Core sweep, package sweep,
       docs/API mismatch, or public API plan. Evidence: package review mode for `packages/suggestion`, not broad Core.
 - [x] Best Plate v2 call recorded for every reviewed target. Evidence: cut `editor.plugin(FooPlugin).api` to scoped plugin API; add `editorApi` for root/composed API; keep render-node context root API where render contract requires it.
-- [x] Legacy/backcompat decision recorded. Evidence: no `.api.<pluginKey>` compat alias, no old nested suggestion/block-selection portal calls kept.
+- [x] Legacy/backcompat decision recorded. Evidence: no `.api.<pluginName>` compat alias, no old nested suggestion/block-selection portal calls kept.
 - [x] Hack check recorded. Evidence: no local `any` escape for the portal cut; one existing test-only root API cast in `BlockMenuPlugin.spec.tsx` remains intentionally root-shaped.
 - [x] Gap ledger updated. Evidence: no Plite/Plate gap blocks this cut; one Plite transaction option type hole fixed in `NodeSetNodesOptions`.
 - [x] Related scoped sweep row added after correction. Evidence: suggestion scoped sweep, check-core-caused selection sweep, and diff replacement proof row recorded below.
@@ -446,7 +446,7 @@ Findings:
 - Diff replacement marking had a real ref bug: removed text insertion before inserted range marking put insert metadata on the deleted text; consuming refs with `unref()` is needed inside the same transaction.
 
 Decisions and tradeoffs:
-- Do not keep `.api.<pluginKey>` as a compat namespace on plugin portals.
+- Do not keep `.api.<pluginName>` as a compat namespace on plugin portals.
 - Keep render-node plugin context `api` root-shaped because that existing render contract is editor-context, not plugin portal lookup.
 - Keep `editor.api.blockMenu.*` in the selection spec because it intentionally tests the composed root API, not `editor.plugin(BlockMenuPlugin).api`.
 

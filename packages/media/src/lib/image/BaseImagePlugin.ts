@@ -1,15 +1,15 @@
-import { type InferConfig, createBasePlugin } from '@platejs/core';
+import { type DefinitionOf, createBasePlugin } from '@platejs/core';
 import {
   pipePreparedInsertDataQuery,
   prepareHtmlRegistry,
 } from '@platejs/core/internal';
-import { PathApi, property } from '@platejs/plite';
+import { PathApi, property, schema } from '@platejs/plite';
+import { clipboardHandler } from '@platejs/plite-dom';
 import { KEYS } from '@platejs/utils';
 import { isUrl } from '@udecode/utils';
 
 import {
   defineMediaPlugin,
-  mediaElementContent,
   mediaElementProperties,
   type MediaPluginState,
 } from '../BaseMediaPlugin';
@@ -31,11 +31,10 @@ const initialState: ImagePluginState = {};
 
 /** Enables support for images. */
 export const BaseImagePlugin = createBasePlugin({
-  key: KEYS.img,
+  name: KEYS.img,
   initialState,
   schema: {
-    element: {
-      content: mediaElementContent,
+    element: schema.element.textBlock({
       isolating: true,
       keyboardSelectable: true,
       properties: {
@@ -44,7 +43,7 @@ export const BaseImagePlugin = createBasePlugin({
         initialHeight: property.number(),
         initialWidth: property.number(),
       },
-    },
+    }),
   },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -143,6 +142,159 @@ export const BaseImagePlugin = createBasePlugin({
           match: [{ tag: 'img' }],
         },
       ],
+      'text/markdown': [
+        {
+          from: 'image',
+          kind: 'node',
+          decode: ({ node, type }) => ({
+            ...(node.alt === null || node.alt === undefined
+              ? {}
+              : { alt: node.alt }),
+            children: [{ text: '' }],
+            ...(node.title ? { title: node.title } : {}),
+            type,
+            url: node.url,
+          }),
+        },
+        {
+          from: 'img',
+          kind: 'node',
+          decode: ({ caption, decode, node, parseAttributes, type }) => {
+            const {
+              alt: altAttribute,
+              src,
+              ...rest
+            } = parseAttributes(node.attributes);
+            const captionChildren =
+              node.children.length > 0
+                ? caption(decode(node.children))
+                : [{ text: '' }];
+
+            return {
+              ...(typeof altAttribute === 'string'
+                ? { alt: altAttribute }
+                : {}),
+              children: captionChildren,
+              type,
+              url: typeof src === 'string' ? src : '',
+              ...rest,
+            };
+          },
+          encode: ({
+            encodePhrasing,
+            node,
+            propsToAttributes,
+            readPlainInline,
+            type,
+          }) => {
+            const { children, type: _, url, ...rest } = node;
+            const plainCaption = readPlainInline(children);
+            const {
+              alt: altProperty,
+              title: titleProperty,
+              ...properties
+            } = rest;
+            const alt =
+              typeof altProperty === 'string' ? altProperty : undefined;
+            const title =
+              typeof titleProperty === 'string' ? titleProperty : undefined;
+            const attributes = propsToAttributes({
+              ...(alt === undefined ? {} : { alt }),
+              ...properties,
+              src: url,
+              ...(title === undefined ? {} : { title }),
+            });
+
+            if (plainCaption !== '') {
+              const serializedChildren =
+                plainCaption === null
+                  ? encodePhrasing(children)
+                  : [{ type: 'text' as const, value: plainCaption }];
+
+              return {
+                attributes: [],
+                children: [
+                  {
+                    attributes,
+                    children: [],
+                    name: type,
+                    type: 'mdxJsxFlowElement',
+                  },
+                  {
+                    attributes: [],
+                    children: [
+                      { children: serializedChildren, type: 'paragraph' },
+                    ],
+                    name: 'figcaption',
+                    type: 'mdxJsxFlowElement',
+                  },
+                ],
+                name: 'figure',
+                type: 'mdxJsxFlowElement',
+              };
+            }
+
+            if (Object.keys(properties).length > 0) {
+              return {
+                attributes,
+                children: [],
+                name: type,
+                type: 'mdxJsxFlowElement',
+              };
+            }
+
+            return {
+              children: [
+                {
+                  alt: alt ?? '',
+                  title,
+                  type: 'image',
+                  url: typeof url === 'string' ? url : '',
+                },
+              ],
+              type: 'paragraph',
+            };
+          },
+        },
+        {
+          from: 'figure',
+          kind: 'node',
+          decode: ({
+            caption,
+            decode,
+            registry,
+            node,
+            parseAttributes,
+            serializeUnknown,
+            type,
+          }) => {
+            const [image, figcaption] = node.children;
+
+            if (
+              node.children.length !== 2 ||
+              image?.type !== 'mdxJsxFlowElement' ||
+              image.name !== 'img' ||
+              image.children.length > 0 ||
+              figcaption?.type !== 'mdxJsxFlowElement' ||
+              figcaption.name !== 'figcaption'
+            ) {
+              return {
+                children: [{ text: serializeUnknown(node) }],
+                type: registry.getType(KEYS.p),
+              };
+            }
+
+            const { src, ...properties } = parseAttributes(image.attributes);
+
+            return {
+              ...properties,
+              children: caption(decode(figcaption.children)),
+              type,
+              url: typeof src === 'string' ? src : '',
+            };
+          },
+        },
+      ],
     }),
 })
   .extend(
@@ -152,16 +304,16 @@ export const BaseImagePlugin = createBasePlugin({
   )
   .extend(({ editor, store, plugin, update }) => {
     const preparedHtmlPlugin = prepareHtmlRegistry(editor).plugins.find(
-      (candidate) => candidate.key === plugin.key
+      (candidate) => candidate.name === plugin.name
     );
 
     if (!preparedHtmlPlugin) {
-      throw new Error(`Parser plugin "${plugin.key}" is not installed.`);
+      throw new Error(`Parser plugin "${plugin.name}" is not installed.`);
     }
 
     return {
-      extension: {
-        clipboard: {
+      contributions: [
+        clipboardHandler({
           insertData(dataTransfer, { next, transaction: tx }) {
             const format = 'text/plain';
             const text = dataTransfer.getData(format);
@@ -233,12 +385,12 @@ export const BaseImagePlugin = createBasePlugin({
 
             return next(dataTransfer);
           },
-        },
-      },
+        }),
+      ],
     };
   });
 
-export type ImageConfig = InferConfig<typeof BaseImagePlugin>;
+export type ImageDefinition = DefinitionOf<typeof BaseImagePlugin>;
 
 const imageExtensions = new Set([
   '3dv',

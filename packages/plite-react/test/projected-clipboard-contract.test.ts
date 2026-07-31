@@ -39,12 +39,11 @@ const SHARED_ROOT = 'synced-block:shared:body' as RootKey;
 
 const contentRootExtension = defineEditorSchema({
   elements: {
-    paragraph: {
-      content: schema.content.text({ default: 'text', min: 1 }),
+    paragraph: schema.element.textBlock({
       properties: {
-        blockTone: property.string({ significant: true }),
+        blockTone: property.string(),
       },
-    },
+    }),
     section: {
       content: schema.content.not(schema.content.text()),
     },
@@ -69,10 +68,8 @@ const contentRootExtension = defineEditorSchema({
     },
   },
   id: 'projected-clipboard-test',
-  properties: [
-    schema.textProperty('emphasis', property.boolean({ significant: true })),
-  ],
-  root: { content: schema.content.not(schema.content.text()) },
+  properties: [schema.textProperty('emphasis', property.boolean())],
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });
@@ -350,7 +347,7 @@ describe('projected clipboard', () => {
     }
   });
 
-  it('preserves significant element and text properties in projected fragments', () => {
+  it('preserves content element and text properties in projected fragments', () => {
     const { editor } = createFixture(true);
     const clipboardData = createClipboardData();
     const expected = {

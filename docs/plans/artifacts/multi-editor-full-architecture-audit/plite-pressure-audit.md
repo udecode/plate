@@ -146,7 +146,7 @@ schema: {
 update: ({ editor, tx, type }) => ({
   toggle: () => {
     tx.marks.toggle(type, true, {
-      clear: editor.getType(KEYS.sub),
+      clear: editor.plugin(KEYS.sub).type,
     });
   },
 }),

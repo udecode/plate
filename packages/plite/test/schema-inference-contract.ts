@@ -5,7 +5,9 @@ import {
   defineExtensionSlot,
   property,
   schema,
+  type DescendantIn,
   type EditorSchemaProperty,
+  type EditorDocumentValue,
   type SchemaContentRootSlotsFor,
   type SchemaElementFor,
   type SchemaElementInput,
@@ -21,6 +23,7 @@ import {
   type SchemaTextPropertyKeys,
   type SchemaValue,
   target,
+  type ValueOf,
 } from '@platejs/plite';
 
 const ArticleSchema = defineEditorSchema({
@@ -45,14 +48,12 @@ const ArticleSchema = defineEditorSchema({
     schema.textProperty('bold', property.boolean()),
     schema.textProperty(schema.key.prefix('comment_'), property.string()),
   ],
-  root: {
-    content: schema.content.group('block', {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  } as const,
+  root: schema.content.group('block', {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   roots: {
-    comments: { content: schema.content.type('paragraph') } as const,
+    comments: schema.content.type('paragraph'),
   },
   unknown: 'reject',
   version: 1,
@@ -81,7 +82,7 @@ const ContentRootSchema = defineEditorSchema({
       content: schema.content.text({ default: 'text', min: 1 }),
     },
   },
-  root: { content: schema.content.type('image') },
+  root: schema.content.type('image'),
   unknown: 'reject',
 });
 
@@ -180,7 +181,7 @@ const UnsupportedDepthSchema = defineEditorSchema({
       target: target.types(['heading', 'paragraph'] as const),
     }),
   ],
-  root: { content: schema.content.types(['heading', 'paragraph']) },
+  root: schema.content.types(['heading', 'paragraph']),
   unknown: 'reject',
   version: 1,
 });
@@ -308,7 +309,7 @@ const WidenedElementSchema = defineEditorSchema({
       target: target.not(target.group('custom')),
     }),
   ],
-  root: { content: schema.content.open() },
+  root: schema.content.open(),
   unknown: 'reject',
   version: 1,
 });
@@ -458,9 +459,28 @@ const editor = createEditor({
   ],
 });
 
+const assertExternalSchemaValues = (
+  schemaApi: typeof editor.read.schema,
+  document: unknown,
+  fragment: unknown
+) => {
+  schemaApi.assertDocument(document);
+  schemaApi.assertFragment(fragment);
+
+  const assertedDocument: EditorDocumentValue<ValueOf<typeof editor>> =
+    document;
+  const assertedFragment: readonly DescendantIn<ValueOf<typeof editor>>[] =
+    fragment;
+
+  void assertedDocument;
+  void assertedFragment;
+};
+
+void assertExternalSchemaValues;
+
 const paragraphHandle = schema.handle.element(ArticleSchema, 'paragraph');
 const alignHandle = schema.handle.property(paragraphHandle, 'align');
-const handledParagraph = editor.read.schema.createAndFill(paragraphHandle, {
+const handledParagraph = editor.read.schema.create(paragraphHandle, {
   align: 'center',
   shared: true,
 });
@@ -481,24 +501,41 @@ const assertSchemaHandleTypes = () => {
   // @ts-expect-error property handles reject keys unavailable on the element
   schema.handle.property(paragraphHandle, 'headingOnly');
   // @ts-expect-error handle-owned element properties retain their value type
-  editor.read.schema.createAndFill(paragraphHandle, { align: 1 });
+  editor.read.schema.create(paragraphHandle, { align: 1 });
 };
 
 void assertSchemaHandleTypes;
 void handledAlignProperty;
 
+const factoryOptions = {
+  nested: { enabled: true },
+  types: ['callout'],
+} as const;
 const FactoryContribution = defineEditorExtension({
-  config: {
-    nested: { enabled: true },
-    types: ['callout'],
-  },
   name: 'schema-inference-factory-contribution',
-  schema({ config }) {
+  schema(context) {
+    const hasOnlyName: [Exclude<keyof typeof context, 'name'>] extends [never]
+      ? true
+      : false = true;
+    const hasName: [Exclude<'name', keyof typeof context>] extends [never]
+      ? true
+      : false = true;
+
+    void hasOnlyName;
+    void hasName;
+    void context.name;
+    // @ts-expect-error schema factories do not receive plugin config
+    void context.config;
+    // @ts-expect-error schema factories do not receive plugin state
+    void context.state;
+    // @ts-expect-error schema factories receive no editor capability
+    void context.editor;
+
     const assertReadonlyConfig = () => {
-      // @ts-expect-error nested factory config is deeply readonly
-      config.nested.enabled = false;
-      // @ts-expect-error nested factory arrays are deeply readonly
-      config.types.push('paragraph');
+      // @ts-expect-error owner options remain deeply readonly
+      factoryOptions.nested.enabled = false;
+      // @ts-expect-error owner option arrays remain deeply readonly
+      factoryOptions.types.push('paragraph');
     };
 
     void assertReadonlyConfig;
@@ -513,11 +550,6 @@ const FactoryContribution = defineEditorExtension({
     } as const;
   },
 });
-// @ts-expect-error Canonical extensions expose the evaluated declaration.
-FactoryContribution.schema({
-  config: FactoryContribution.config,
-  name: FactoryContribution.name,
-});
 const composedEditor = createEditor({
   extensions: [ArticleSchema, FactoryContribution] as const,
   initialValue: [
@@ -526,7 +558,7 @@ const composedEditor = createEditor({
 });
 const calloutHandle = schema.handle.element(FactoryContribution, 'callout');
 const toneHandle = schema.handle.property(calloutHandle, 'tone');
-const handledCallout = composedEditor.read.schema.createAndFill(calloutHandle, {
+const handledCallout = composedEditor.read.schema.create(calloutHandle, {
   tone: 'notice',
 });
 const handledTone: string | undefined =
@@ -675,7 +707,7 @@ const PreserveSchema = defineEditorSchema({
     } as const,
   },
   id: 'schema-inference-preserve-contract',
-  root: { content: schema.content.type('paragraph') } as const,
+  root: schema.content.type('paragraph'),
   unknown: 'preserve',
   version: 1,
 });

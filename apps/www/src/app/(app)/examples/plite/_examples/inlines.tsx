@@ -123,7 +123,7 @@ const InlinesExample = () => {
 };
 
 const inline = () =>
-  defineEditorExtension<CustomEditor>()({
+  defineEditorExtension({
     contributions: [
       clipboardHandler({
         insertData(data, { next, transaction }) {
@@ -253,10 +253,7 @@ const splitLinkedTextSegments = (text: string) => {
   return segments;
 };
 
-const insertLinkText = (
-  tx: EditorTransactionSpecBuilder<CustomElement[]>,
-  url: string
-) => {
+const insertLinkText = (tx: EditorTransactionSpecBuilder, url: string) => {
   const selection = tx.selection();
 
   if (!selection) return;
@@ -289,7 +286,7 @@ const insertLinkText = (
 };
 
 const insertLinkedTextSegments = (
-  tx: EditorTransactionSpecBuilder<CustomElement[]>,
+  tx: EditorTransactionSpecBuilder,
   text: string
 ) => {
   const selection = tx.selection();

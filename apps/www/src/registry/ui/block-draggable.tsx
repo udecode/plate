@@ -8,7 +8,7 @@ import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { ListPlugin } from '@platejs/list/react';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { GripVertical } from 'lucide-react';
-import { ElementApi, getContainerTypes, KEYS } from 'platejs';
+import { ElementApi, KEYS } from 'platejs';
 import {
   type PlateEditor,
   type PlateElementProps,
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
-const UNDRAGGABLE_KEYS = [KEYS.column, KEYS.tr, KEYS.td];
+const UNDRAGGABLE_PLUGIN_NAMES = [KEYS.column, KEYS.tr, KEYS.td];
 
 export const BlockDraggable: RenderNodeWrapper = (props) => {
   const { editor, element, path } = props;
@@ -38,17 +38,20 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
   const enabled = React.useMemo(() => {
     if (editor.read.view.isReadOnly()) return false;
 
-    const isUndraggable = UNDRAGGABLE_KEYS.some(
-      (key) => editor.getType(key) === element.type
-    );
+    const isUndraggable = UNDRAGGABLE_PLUGIN_NAMES.some((pluginName) => {
+      const plugin = editor.plugin(pluginName);
+
+      return (plugin.installed ? plugin.type : pluginName) === element.type;
+    });
 
     if (path.length === 1 && !isUndraggable) {
       return true;
     }
     if (path.length === 3 && !isUndraggable) {
+      const column = editor.plugin(KEYS.column);
       const block = editor.read.nodes.some({
         at: path,
-        match: { type: editor.getType(KEYS.column) },
+        match: { type: column.installed ? column.type : KEYS.column },
       });
 
       if (block) {
@@ -56,9 +59,10 @@ export const BlockDraggable: RenderNodeWrapper = (props) => {
       }
     }
     if (path.length === 4 && !isUndraggable) {
+      const table = editor.plugin(KEYS.table);
       const block = editor.read.nodes.some({
         at: path,
-        match: { type: editor.getType(KEYS.table) },
+        match: { type: table.installed ? table.type : KEYS.table },
       });
 
       if (block) {
@@ -94,6 +98,9 @@ function Draggable(props: PlateElementProps) {
 
   const isInColumn = path.length === 3;
   const isInTable = path.length === 4;
+  const isContainer =
+    ElementApi.isElement(element.children[0]) &&
+    editor.read.schema.isBlock(element.children[0]);
 
   const [previewTop, setPreviewTop] = React.useState(0);
 
@@ -126,9 +133,7 @@ function Draggable(props: PlateElementProps) {
       className={cn(
         'relative',
         isDragging && 'opacity-50',
-        getContainerTypes(editor).includes(element.type)
-          ? 'group/container'
-          : 'group'
+        isContainer ? 'group/container' : 'group'
       )}
       onMouseEnter={() => {
         if (isDragging) return;
@@ -203,6 +208,9 @@ function Gutter({
     'isSelectionAreaVisible'
   );
   const selected = useElementSelected();
+  const isContainer =
+    ElementApi.isElement(element.children[0]) &&
+    editor.read.schema.isBlock(element.children[0]);
 
   return (
     <div
@@ -210,7 +218,7 @@ function Gutter({
       className={cn(
         'plite-gutterLeft',
         '-translate-x-full absolute top-0 z-50 flex h-full cursor-text hover:opacity-100 sm:opacity-0',
-        getContainerTypes(editor).includes(element.type)
+        isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',

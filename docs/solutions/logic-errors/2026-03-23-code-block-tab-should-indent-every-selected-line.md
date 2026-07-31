@@ -45,7 +45,7 @@ The later loop then fed that block entry into `indentCodeLine` / `outdentCodeLin
 Query explicit code-line entries first:
 
 ```ts
-const codeLineType = editor.getType('code_line');
+const codeLineType = editor.plugin('code_line').type;
 const _codeLines = editor.api.nodes<TElement>({
   match: { type: codeLineType },
 });

@@ -613,7 +613,7 @@ does not participate in the semantic fingerprint.
 ```ts
 type CompiledPlateModelBinding = Readonly<{
   elementType: string | null;
-  pluginKey: string;
+  pluginName: string;
   propertyIds: readonly string[];
   textPropertyId: string | null;
   type: string;

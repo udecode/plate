@@ -27,6 +27,18 @@ const concepts = {
     'Typed command tokens, listener priority, propagation, and editor dispatch',
   'LX-CORE-EVENT':
     'Contenteditable event transport, browser branching, composition, clipboard, and input',
+  'LX-CORE-INPUT-STATE':
+    'Per-editor input and composition state without module-global event state',
+  'LX-CORE-DOM-SLOT':
+    'DOM content boundary abstraction for wrapped and decorated node rendering',
+  'LX-CORE-NAMED-SLOT':
+    'Experimental named node-owned content regions across editing, serialization, clipboard, and collaboration',
+  'LX-CORE-GENMAP':
+    'Generation-aware copy-on-write map used by node maps and reconciliation',
+  'LX-CORE-REFCOUNT':
+    'Reference-counted document resource registry and shared selectionchange transport',
+  'LX-CORE-READ-MODE': 'Explicit latest and pending editor-state read modes',
+  'LX-CORE-WARN': 'Editor warning hook and update-recursion diagnostics',
   'LX-CORE-LISTENER':
     'Editor update, mutation, root, editable, text, and decorator listeners',
   'LX-CORE-NODE-STATE':
@@ -53,6 +65,16 @@ const concepts = {
   'LX-HEADLESS': 'Headless editor creation and DOM environment adapters',
   'LX-HISTORY': 'Undo/redo stacks, merge heuristics, tags, and shared history',
   'LX-HTML': 'HTML generation and fitted DOM import',
+  'LX-DOM-IMPORT':
+    'Extension-contributed DOM import declarations and compiled matchers',
+  'LX-DOM-RENDER':
+    'Extension-contributed DOM create, update, export, slot, and decorator overrides',
+  'LX-MDAST':
+    'Extension-contributed MDAST import/export with syntax-extension preservation',
+  'LX-A11Y':
+    'Accessibility live regions, focus trapping, focus restoration, and roving tabindex helpers',
+  'LX-INTERNAL':
+    'Private cross-package implementation utilities with no supported public contract',
   'LX-LINK': 'Link/autolink nodes, commands, transforms, and extensions',
   'LX-LIST':
     'List/list-item representation, formatting, checklist, indentation, and normalization',
@@ -76,8 +98,6 @@ const concepts = {
     'Reusable registration, DOM, traversal, merge, and selection utilities',
   'LX-YJS':
     'Yjs node bindings, relative positions, cursors, snapshots, and bidirectional sync',
-  'LX-SHARED':
-    'Cross-package environment, invariant, DOM, diff, and React compatibility helpers',
   'LX-CONSUMER': 'Example application and integration consumer',
   'LX-PLAYGROUND':
     'Playground product nodes, plugins, UI, collaboration, and browser host',
@@ -91,6 +111,7 @@ const concepts = {
 
 const packageConcept = {
   lexical: 'LX-CORE-UTIL',
+  'lexical-a11y': 'LX-A11Y',
   'lexical-clipboard': 'LX-CLIPBOARD',
   'lexical-code': 'LX-CODE',
   'lexical-code-core': 'LX-CODE',
@@ -105,10 +126,12 @@ const packageConcept = {
   'lexical-headless': 'LX-HEADLESS',
   'lexical-history': 'LX-HISTORY',
   'lexical-html': 'LX-HTML',
+  'lexical-internal': 'LX-INTERNAL',
   'lexical-link': 'LX-LINK',
   'lexical-list': 'LX-LIST',
   'lexical-mark': 'LX-MARK',
   'lexical-markdown': 'LX-MARKDOWN',
+  'lexical-mdast': 'LX-MDAST',
   'lexical-offset': 'LX-OFFSET',
   'lexical-overflow': 'LX-OVERFLOW',
   'lexical-plain-text': 'LX-PLAIN-TEXT',
@@ -122,7 +145,6 @@ const packageConcept = {
   'lexical-utils': 'LX-UTILS',
   'lexical-website': 'LX-WEBSITE',
   'lexical-yjs': 'LX-YJS',
-  shared: 'LX-SHARED',
 };
 
 const coreFileConcepts = {
@@ -134,16 +156,28 @@ const coreFileConcepts = {
     'LX-CORE-LISTENER',
     'LX-CORE-DIRTY',
     'LX-CORE-NODE-CONFIG',
+    'LX-CORE-READ-MODE',
+    'LX-CORE-WARN',
   ],
   'LexicalEditorState.ts': ['LX-CORE-STATE', 'LX-CORE-UPDATE'],
-  'LexicalEvents.ts': ['LX-CORE-EVENT', 'LX-CORE-SELECTION', 'LX-CLIPBOARD'],
+  'LexicalDOMSlot.ts': ['LX-CORE-DOM-SLOT', 'LX-CORE-RECONCILE'],
+  'LexicalEvents.ts': [
+    'LX-CORE-EVENT',
+    'LX-CORE-SELECTION',
+    'LX-CLIPBOARD',
+    'LX-CORE-INPUT-STATE',
+    'LX-CORE-REFCOUNT',
+  ],
+  'LexicalGenMap.ts': ['LX-CORE-GENMAP', 'LX-CORE-STATE'],
   'LexicalGC.ts': ['LX-CORE-GC'],
   'LexicalMutations.ts': ['LX-CORE-LISTENER', 'LX-CORE-RECONCILE'],
   'LexicalNode.ts': ['LX-CORE-NODE', 'LX-CORE-NODE-CONFIG'],
   'LexicalNodeState.ts': ['LX-CORE-NODE-STATE', 'LX-CORE-NODE-CONFIG'],
   'LexicalNormalization.ts': ['LX-CORE-DIRTY', 'LX-CORE-SELECTION'],
   'LexicalReconciler.ts': ['LX-CORE-RECONCILE', 'LX-CORE-DIRTY'],
+  'LexicalRefCountedRegistry.ts': ['LX-CORE-REFCOUNT'],
   'LexicalSelection.ts': ['LX-CORE-SELECTION', 'LX-CORE-EVENT'],
+  'LexicalSlot.ts': ['LX-CORE-NAMED-SLOT', 'LX-CORE-NODE', 'LX-CORE-SELECTION'],
   'LexicalUpdateTags.ts': ['LX-CORE-UPDATE'],
   'LexicalUpdates.ts': [
     'LX-CORE-UPDATE',
@@ -151,6 +185,8 @@ const coreFileConcepts = {
     'LX-CORE-RECONCILE',
     'LX-CORE-COMMAND',
     'LX-CORE-LISTENER',
+    'LX-CORE-READ-MODE',
+    'LX-CORE-WARN',
   ],
   'LexicalUtils.ts': ['LX-CORE-UTIL', 'LX-CORE-NODE'],
 };
@@ -215,6 +251,13 @@ function classify(path) {
     if (pkg === 'lexical-extension' && /signals|Signal/.test(path)) {
       conceptsForFile.add('LX-EXTENSION-SIGNALS');
     }
+    if (pkg === 'lexical-html') {
+      if (/DOMImport|import/i.test(path)) conceptsForFile.add('LX-DOM-IMPORT');
+      if (/DOMRender|render/i.test(path)) conceptsForFile.add('LX-DOM-RENDER');
+    }
+    if (pkg === 'lexical-yjs' && /slot/i.test(path)) {
+      conceptsForFile.add('LX-CORE-NAMED-SLOT');
+    }
   } else if (path.startsWith('packages/lexical-playground/')) {
     kind = isTest(path) ? 'proof' : 'consumer';
     conceptsForFile.add('LX-PLAYGROUND');
@@ -223,7 +266,7 @@ function classify(path) {
     kind = isTest(path) ? 'proof' : 'docs';
     conceptsForFile.add('LX-WEBSITE');
     if (isTest(path)) conceptsForFile.add('LX-PROOF');
-  } else if (path.startsWith('examples/')) {
+  } else if (path.startsWith('examples/') || path.startsWith('dev-examples/')) {
     kind = isTest(path) ? 'proof' : 'consumer';
     conceptsForFile.add('LX-CONSUMER');
     if (isTest(path)) conceptsForFile.add('LX-PROOF');

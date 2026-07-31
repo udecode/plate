@@ -1,4 +1,4 @@
-import { createBasePlugin, type InferConfig } from '@platejs/core';
+import { createBasePlugin, type DefinitionOf } from '@platejs/core';
 import {
   type Descendant,
   ElementApi,
@@ -21,47 +21,47 @@ export type TrailingBlockPluginState = {
 };
 
 export const TrailingBlockPlugin = createBasePlugin({
-  key: KEYS.trailingBlock,
+  name: KEYS.trailingBlock,
   initialState: ({ editor }): TrailingBlockPluginState => ({
     level: 0,
-    type: editor.getType(KEYS.p),
+    type: editor.plugin(KEYS.p).type,
   }),
-  extension: ({ store }) => ({
-    corrections: [
-      {
-        event: 'children',
-        query: 'root',
-        correct({ tx }) {
-          const { insert, level, match, type } = store.get();
-          const lastChild =
-            tx.nodes.children().length > 0
-              ? tx.nodes.last([], { level })
-              : undefined;
-          const lastChildNode = lastChild?.[0];
-          const lastChildType = ElementApi.isElement(lastChildNode)
-            ? lastChildNode.type
+  corrections: [
+    {
+      event: 'children',
+      query: 'root',
+      correct({ editor, tx }) {
+        const { insert, level, match, type } = editor
+          .plugin(TrailingBlockPlugin)
+          .store.get();
+        const lastChild =
+          tx.nodes.children().length > 0
+            ? tx.nodes.last([], { level })
             : undefined;
+        const lastChildNode = lastChild?.[0];
+        const lastChildType = ElementApi.isElement(lastChildNode)
+          ? lastChildNode.type
+          : undefined;
 
-          if (
-            !lastChildNode ||
-            (lastChildType !== type &&
-              (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
-          ) {
-            const at = lastChild ? PathApi.next(lastChild[1]) : [0];
-            const insertDefault = () => {
-              tx.nodes.insert({ children: [{ text: '' }], type }, { at });
-            };
+        if (
+          !lastChildNode ||
+          (lastChildType !== type &&
+            (!match || NodeApi.matches(lastChildNode, match, lastChild[1])))
+        ) {
+          const at = lastChild ? PathApi.next(lastChild[1]) : [0];
+          const insertDefault = () => {
+            tx.nodes.insert({ children: [{ text: '' }], type }, { at });
+          };
 
-            if (insert) {
-              insert(insertDefault);
-            } else {
-              insertDefault();
-            }
+          if (insert) {
+            insert(insertDefault);
+          } else {
+            insertDefault();
           }
-        },
+        }
       },
-    ],
-  }),
+    },
+  ],
 });
 
-export type TrailingBlockConfig = InferConfig<typeof TrailingBlockPlugin>;
+export type TrailingBlockDefinition = DefinitionOf<typeof TrailingBlockPlugin>;

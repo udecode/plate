@@ -110,7 +110,7 @@ type PublicPackageNamedTypeExports = [
   import('@platejs/plite').Text,
   import('@platejs/plite').Value,
   import('@platejs/yjs').YjsExtensionOptions,
-  import('@platejs/yjs').YjsConfig,
+  import('@platejs/yjs').YjsDefinition,
   import('@platejs/yjs').YjsProviderLike,
   import('@platejs/yjs').YjsState,
   import('@platejs/yjs').YjsTx,

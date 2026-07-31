@@ -26,7 +26,7 @@ Task source:
     editor types or assumed root plugin APIs;
   - optional descriptors use `editor.plugin(Plugin).installed` before portal
     access;
-  - concrete inferred app editors retain `editor.api.<pluginKey>`;
+  - concrete inferred app editors retain `editor.api.<pluginName>`;
   - edit `.agents/rules/**`, not generated skill mirrors;
   - leave `plate-plan` unchanged per the earlier explicit scope boundary;
   - regenerate skills and prove zero contradictory guidance.
@@ -241,7 +241,7 @@ Findings:
   but does not mirror nested `.agents/rules/plate-ui/**` attachments.
 
 Decisions and tradeoffs:
-- Keep root `editor.api.<pluginKey>` for host-owned code with a complete
+- Keep root `editor.api.<pluginName>` for host-owned code with a complete
   inferred kit.
 - Require descriptor portals for copied registry UI and reusable generic
   components.

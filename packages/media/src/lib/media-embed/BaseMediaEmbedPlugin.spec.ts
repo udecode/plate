@@ -12,10 +12,10 @@ describe('BaseMediaEmbedPlugin', () => {
     const editor = createBaseEditor({
       plugins: [BaseMediaEmbedPlugin],
     });
-    const plugin = editor.getPlugin(BaseMediaEmbedPlugin);
+    const plugin = editor.plugin(BaseMediaEmbedPlugin).plugin;
     const transformUrl = plugin.initialState.transformUrl!;
 
-    expect(plugin.key).toBe('mediaEmbed');
+    expect(plugin.name).toBe('mediaEmbed');
     expect(plugin.type).toBe(NODES.mediaEmbed);
     expect(
       editor.read.schema.element(BaseMediaEmbedPlugin)?.behavior.void
@@ -75,7 +75,7 @@ describe('BaseMediaEmbedPlugin', () => {
     });
     const safeData = new DataTransfer();
 
-    safe.api.clipboard.writeSelection(safeData);
+    safe.api.dom.clipboard.writeSelection(safeData);
 
     const safeDocument = new DOMParser().parseFromString(
       safeData.getData('text/html'),
@@ -166,7 +166,7 @@ describe('BaseMediaEmbedPlugin', () => {
     });
     const unsafeData = new DataTransfer();
 
-    unsafe.api.clipboard.writeSelection(unsafeData);
+    unsafe.api.dom.clipboard.writeSelection(unsafeData);
 
     const unsafeDocument = new DOMParser().parseFromString(
       unsafeData.getData('text/html'),

@@ -152,7 +152,7 @@ import {
 
 {
   const BoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -245,7 +245,7 @@ import {
 {
   describe('BaseSuggestionPlugin.read.findIdentity', () => {
     const MentionPlugin = createBasePlugin({
-      key: KEYS.mention,
+      name: KEYS.mention,
       schema: {
         element: {
           inline: true,
@@ -407,7 +407,7 @@ import {
 
 {
   const InlineSuggestionTargetPlugin = createBasePlugin({
-    key: 'inlineSuggestionTarget',
+    name: 'inlineSuggestionTarget',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -473,7 +473,7 @@ import {
       const result = editor.plugin(BaseSuggestionPlugin).api.getProps(
         {
           children: [{ text: '' }],
-          type: InlineSuggestionTargetPlugin.key,
+          type: InlineSuggestionTargetPlugin.name,
         },
         { createdAt: 456, id: 'def', suggestionDeletion: true }
       );
@@ -880,14 +880,14 @@ import {
   });
 
   const BoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
   const ItalicPlugin = createBasePlugin({
-    key: 'italic',
+    name: 'italic',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -922,7 +922,7 @@ import {
 
       expect(editor.read.children()[0].children[0].bold).toBe(true);
       expect(
-        editor.read.children()[0].children[0][BaseSuggestionPlugin.key]
+        editor.read.children()[0].children[0][BaseSuggestionPlugin.name]
       ).toBe(true);
       expect(data).toBeDefined();
       expect(data?.type).toBe('update');
@@ -1248,14 +1248,14 @@ import {
   });
 
   const BoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
   const ItalicPlugin = createBasePlugin({
-    key: 'italic',
+    name: 'italic',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -1292,7 +1292,7 @@ import {
 
       expect(editor.read.children()[0].children[0].bold).toBeUndefined();
       expect(
-        editor.read.children()[0].children[0][BaseSuggestionPlugin.key]
+        editor.read.children()[0].children[0][BaseSuggestionPlugin.name]
       ).toBe(true);
       expect(data).toBeDefined();
       expect(data?.type).toBe('update');
@@ -1487,7 +1487,7 @@ import {
   });
 
   const MentionPlugin = createBasePlugin({
-    key: KEYS.mention,
+    name: KEYS.mention,
     schema: {
       element: {
         inline: true,
@@ -1645,7 +1645,7 @@ import {
       editor.update.break.insert();
 
       const data = editor.read.children()[0][
-        BaseSuggestionPlugin.key
+        BaseSuggestionPlugin.name
       ] as TSuggestionData;
 
       expect(editor.read.children()).toHaveLength(2);
@@ -1878,7 +1878,7 @@ import {
   });
 
   const BoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
@@ -2247,21 +2247,21 @@ import {
   });
 
   const BoldPlugin = createBasePlugin({
-    key: 'bold',
+    name: 'bold',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
   const ItalicPlugin = createBasePlugin({
-    key: 'italic',
+    name: 'italic',
     schema: {
       mark: property.boolean({ default: false, omitDefault: true }),
     },
   });
 
   const ExplicitFalseItalicPlugin = createBasePlugin({
-    key: 'italic',
+    name: 'italic',
     schema: {
       mark: property.boolean({ default: true, omitDefault: true }),
     },
@@ -2628,7 +2628,7 @@ import {
 
 {
   const SuggestionTargetPlugin = createBasePlugin({
-    key: 'suggestionTarget',
+    name: 'suggestionTarget',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -2637,7 +2637,7 @@ import {
   });
 
   const InlineSuggestionTargetPlugin = createBasePlugin({
-    key: 'inlineSuggestionTarget',
+    name: 'inlineSuggestionTarget',
     schema: {
       element: {
         content: schema.content.text({ default: 'text', min: 1 }),
@@ -2745,14 +2745,14 @@ import {
         editor.read.schema.property({
           key: 'suggestion',
           placement: 'element',
-          type: InlineSuggestionTargetPlugin.key,
+          type: InlineSuggestionTargetPlugin.name,
         })
       ).toMatchObject({ value: { kind: 'boolean' } });
       expect(
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: InlineSuggestionTargetPlugin.key,
+          type: InlineSuggestionTargetPlugin.name,
         })
       ).toMatchObject({ value: { kind: 'json' } });
       expect(
@@ -2808,9 +2808,9 @@ import {
         editor.read.schema.property({
           key: 'suggestion_any',
           placement: 'element',
-          type: InlineSuggestionTargetPlugin.key,
-        })?.value.significant
-      ).toBe(true);
+          type: InlineSuggestionTargetPlugin.name,
+        })?.role
+      ).toBe('content');
 
       editor.update.nodes.set({ type: 'suggestionTarget' }, { at: [0] });
 

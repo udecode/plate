@@ -53,12 +53,10 @@ const ContentRootSchema = defineEditorSchema({
     },
   },
   id: 'yjs-content-root',
-  root: {
-    content: schema.content.types(['media', 'paragraph'], {
-      default: { type: 'paragraph' },
-      min: 1,
-    }),
-  },
+  root: schema.content.types(['media', 'paragraph'], {
+    default: { type: 'paragraph' },
+    min: 1,
+  }),
   unknown: 'reject',
   version: 1,
 });

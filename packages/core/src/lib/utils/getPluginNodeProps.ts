@@ -1,7 +1,11 @@
 import type { AnyObject } from '@udecode/utils';
 import type React from 'react';
 
-import type { AnyBasePlugin, GetInjectNodePropsOptions } from '../plugin';
+import type {
+  AnyBasePlugin,
+  AnyResolvedBasePlugin,
+  GetInjectNodePropsOptions,
+} from '../plugin';
 import type { AnyEditorPlatePlugin } from '../../react/plugin';
 
 export const getPluginNodeProps = <
@@ -14,7 +18,7 @@ export const getPluginNodeProps = <
   props,
 }: {
   props: TProps;
-  plugin?: AnyBasePlugin | AnyEditorPlatePlugin;
+  plugin?: AnyBasePlugin | AnyEditorPlatePlugin | AnyResolvedBasePlugin;
 }): TProps & { attributes: AnyObject } => {
   const newProps = { ...props, attributes: { ...props.attributes } };
 

@@ -14,8 +14,8 @@ and unknown vocabulary by default; a raw editor without one stays permissive.
 | Declare the complete document vocabulary | `defineEditorSchema(...)`                  | `@platejs/plite`                        |
 | Add feature-owned schema declarations    | extension `schema` contribution            | `@platejs/plite` or a framework adapter |
 | Inspect compiled behavior                | `editor.read.schema.*`                     | committed editor state                  |
-| Validate a complete persisted document   | `editor.read.schema.validateDocument(...)` | compiled schema                         |
-| Validate closed children                 | `validateFragment(...)`                    | compiled schema                         |
+| Validate a complete persisted document   | `editor.read.schema.assertDocument(...)`   | compiled schema                         |
+| Validate closed children                 | `editor.read.schema.assertFragment(...)`   | compiled schema                         |
 | Import a complete document snapshot      | `tx.value.replace(...)`                    | transaction fitter                      |
 | Change one named root                    | `tx.roots.*`                               | transaction fitter                      |
 | Insert closed application content        | `tx.fragment.replace(...)`                 | transaction fitter                      |
@@ -45,12 +45,11 @@ import {
 
 const ArticleSchema = defineEditorSchema({
   elements: {
-    paragraph: {
-      content: schema.content.text({ default: "text", min: 1 }),
+    paragraph: schema.element.textBlock({
       properties: {
         id: property.string(),
       },
-    },
+    }),
     quote: {
       content: schema.content.group("block", {
         default: { type: "paragraph" },
@@ -69,13 +68,10 @@ const ArticleSchema = defineEditorSchema({
       typeChange: "preserve-if-allowed",
     }),
   ],
-  root: {
-    content: schema.content.group("block", {
-      default: { type: "paragraph" },
-      min: 1,
-    }),
-  },
-  unknown: "reject",
+  root: schema.content.group("block", {
+    default: { type: "paragraph" },
+    min: 1,
+  }),
   version: 1,
 });
 
@@ -108,8 +104,12 @@ Element and root content use explicit rules.
 | `schema.content.all(rules, ...)`   | every nested rule                |
 | `schema.content.not(rule, ...)`    | anything outside the nested rule |
 
+Use `schema.element.textBlock(options?)` for an editable element that accepts
+text and inline elements, requires one child, and constructs an empty text
+child by default. Structural and void elements still declare their own shape.
+
 `min`, `max`, and `default` define cardinality and construction. A required
-content rule needs a constructable default. `state.schema.createAndFill(type)`
+content rule needs a constructable default. `state.schema.create(type)`
 uses the compiled plan, and `state.schema.findWrapping(parent, child)` uses the
 same grammar.
 
@@ -135,7 +135,7 @@ mount lifecycle, or shared ownership.
 const SyncedBlocksSchema = defineEditorSchema({
   elements: {
     "synced-block": {
-      content: schema.content.text({ default: "text", min: 1 }),
+      content: schema.content.text({ min: 1 }),
       contentRoots: {
         body: {
           content: schema.content.type("paragraph", {
@@ -146,17 +146,12 @@ const SyncedBlocksSchema = defineEditorSchema({
         },
       },
     },
-    paragraph: {
-      content: schema.content.text({ default: "text", min: 1 }),
-    },
+    paragraph: schema.element.textBlock(),
   },
-  root: {
-    content: schema.content.types(["synced-block", "paragraph"], {
-      default: { type: "paragraph" },
-      min: 1,
-    }),
-  },
-  unknown: "reject",
+  root: schema.content.types(["synced-block", "paragraph"], {
+    default: { type: "paragraph" },
+    min: 1,
+  }),
 });
 ```
 
@@ -169,13 +164,26 @@ lifecycle behavior.
 ## Properties And Targets
 
 Property descriptors define JSON value laws. Use `property.boolean()`,
-`property.string()`, `property.number()`, `property.json()`, or
+`property.string()`, `property.number()`, `property.enum(values)`,
+`property.json()`, or
 `property.set(item)`. All values use structural equality; defaults can be
 omitted canonically with `{ default, omitDefault: true }`.
 
 Element-owned fields live in the element declaration's `properties` map.
 Cross-cut element fields use `schema.elementProperty(...)` with an explicit
 target. Text marks use `schema.textProperty(...)`.
+
+Properties participate in document content by default. Set `role: "metadata"`
+on an element or text property placement when the value supports runtime
+bookkeeping and should not make a node meaningfully non-empty or appear in
+content-only serialization.
+
+```ts
+const NodeId = schema.elementProperty("id", property.json(), {
+  role: "metadata",
+  target: target.group("block"),
+});
+```
 
 Use one frozen group when separate text properties cannot coexist:
 
@@ -208,7 +216,6 @@ version whenever the validator's accepted value set changes.
 const MediaSchema = defineEditorSchema({
   elements: {
     image: {
-      content: schema.content.text({ default: "text", min: 1 }),
       properties: {
         size: property.json({
           validate: (value): value is { height: number; width: number } =>
@@ -229,13 +236,9 @@ const MediaSchema = defineEditorSchema({
       void: "block",
     },
   },
-  root: {
-    content: schema.content.type("image", {
-      default: { type: "image" },
-      min: 1,
-    }),
-  },
-  unknown: "reject",
+  root: schema.content.type("image", {
+    min: 1,
+  }),
 });
 ```
 
@@ -252,11 +255,8 @@ properties.
 
 ```ts
 const ForwardCompatibleSchema = defineEditorSchema({
-  elements: {},
   id: "forward-compatible",
-  root: {
-    content: schema.content.not(schema.content.text()),
-  },
+  root: schema.content.not(schema.content.text()),
   unknown: "preserve",
   version: 1,
 });
@@ -280,15 +280,23 @@ parent/child relationships fail atomically when they cannot be fitted.
 Use the compiled read API at other external boundaries:
 
 ```ts
-editor.read.schema.validateDocument(decodedDocument);
-editor.read.schema.validateFragment(decodedChildren);
+let decodedDocument: unknown = JSON.parse(documentJson);
+let decodedChildren: unknown = JSON.parse(fragmentJson);
+
+editor.read.schema.assertDocument(decodedDocument);
+editor.read.schema.assertFragment(decodedChildren);
+
+// Both values are narrowed after the assertions.
+decodedDocument.children;
+decodedChildren.length;
 ```
 
-`validateDocument` checks primary children, named roots, and the JSON shape of
-persisted meta.
-`validateFragment` checks a closed fragment without changing it. Do not run a
-separate canonicalization pass before importing content. Use
-`tx.value.replace(...)` as the sole complete-document publication boundary.
+`assertDocument` checks primary children, named roots, and JSON shape.
+`assertFragment` checks a closed fragment without changing it. Both accept
+untrusted `unknown` input, throw `EditorSchemaValidationError` on failure, and
+narrow the input on success. Do not run a separate canonicalization pass before
+importing content. Use `tx.value.replace(...)` as the sole complete-document
+publication boundary.
 Use `tx.roots.create(...)` or `tx.roots.replace(...)` for one targeted named
 root. Every path routes content through the same schema fitter and publishes
 atomically.
@@ -355,17 +363,14 @@ const articleSchema = (version: number, type: string) =>
   defineEditorSchema({
     elements: {
       [type]: {
-        content: schema.content.text({ default: "text", min: 1 }),
+        content: schema.content.text({ min: 1 }),
       },
     },
     id: "article",
-    root: {
-      content: schema.content.type(type, {
-        default: { type },
-        min: 1,
-      }),
-    },
-    unknown: "reject",
+    root: schema.content.type(type, {
+      default: { type },
+      min: 1,
+    }),
     version,
   });
 

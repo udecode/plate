@@ -5,7 +5,7 @@ import { KEYS } from '@platejs/utils';
 import { BaseImagePlugin } from './BaseImagePlugin';
 
 const TestBoldPlugin = createBasePlugin({
-  key: 'bold',
+  name: 'bold',
   schema: {
     mark: property.boolean({ default: false, omitDefault: true }),
   },
@@ -138,7 +138,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => 'https://i.imgur.com/removed.png',
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'test' }], type: KEYS.p },
@@ -157,7 +157,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => 'https://example.com/photo.PNG',
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children().at(1)).toMatchObject({
       type: KEYS.img,
@@ -185,7 +185,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => text,
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: `test${text}` }], type: KEYS.p },
@@ -202,7 +202,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => text,
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: `test${text}` }], type: KEYS.p },
@@ -218,7 +218,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => '',
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'test' }], type: KEYS.p },
@@ -234,7 +234,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => '',
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
       { children: [{ text: 'test' }], type: KEYS.p },
@@ -275,7 +275,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => '',
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
     await started;
     editor.update.selection.set({
       anchor: { offset: 5, path: [1, 0] },
@@ -317,7 +317,7 @@ describe('BaseImagePlugin clipboard behavior', () => {
       getData: () => 'https://i.imgur.com/removed.png',
     };
 
-    editor.api.clipboard.insertData(data as unknown as DataTransfer);
+    editor.api.dom.clipboard.insertData(data as unknown as DataTransfer);
 
     expect(editor.read.children()).toEqual([
       {

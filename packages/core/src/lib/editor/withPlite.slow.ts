@@ -6,13 +6,15 @@ import {
   type Value,
 } from '@platejs/plite';
 import { NavigationFeedbackPlugin, ParagraphPlugin } from '../../react';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlateContainerTypes,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import { getPlateCorePlugins } from '../../react/editor/getPlateCorePlugins';
 import { extendPlateEditor } from '../../react/editor/withPlate';
 import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import { InputRulesPlugin } from '../plugins/input-rules/InputRulesPlugin';
-import { getContainerTypes } from '../plugin/getBasePlugin';
 import {
   AffinityPlugin,
   type BaseEditor,
@@ -28,24 +30,24 @@ import {
   extendBaseEditor,
 } from '../index';
 
-const coreKeys = [
+const coreNames = [
   'root',
-  DebugPlugin.key,
-  ElementStatePlugin.key,
-  DOMPlugin.key,
-  HistoryPlugin.key,
-  InputRulesPlugin.key,
-  OverridePlugin.key,
-  HtmlPlugin.key,
-  NodeIdPlugin.key,
-  AffinityPlugin.key,
-  ParagraphPlugin.key,
-  EventEditorPlugin.key,
-  NavigationFeedbackPlugin.key,
+  DebugPlugin.name,
+  ElementStatePlugin.name,
+  DOMPlugin.name,
+  HistoryPlugin.name,
+  InputRulesPlugin.name,
+  OverridePlugin.name,
+  HtmlPlugin.name,
+  NodeIdPlugin.name,
+  AffinityPlugin.name,
+  ParagraphPlugin.name,
+  EventEditorPlugin.name,
+  NavigationFeedbackPlugin.name,
 ];
 
 const TestBoldPlugin = createBasePlugin({
-  key: 'bold',
+  name: 'bold',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -58,7 +60,7 @@ const TestBoldPlugin = createBasePlugin({
 });
 
 const TestItalicPlugin = createBasePlugin({
-  key: 'italic',
+  name: 'italic',
   schema: { mark: property.boolean({ default: false, omitDefault: true }) },
 });
 
@@ -74,12 +76,12 @@ describe('extendPlateEditor', () => {
       expect(editor.id).toBeDefined();
       expect(editor.read((state) => state.history())).toBeDefined();
       expect(
-        getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
-      ).toEqual(coreKeys);
+        getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
+      ).toEqual(coreNames);
       expect(
         getPlateRuntime(editor).pluginList.map((plugin) => plugin.type)
-      ).toEqual(coreKeys);
-      expect(Object.keys(getPlateRuntime(editor).plugins)).toEqual(coreKeys);
+      ).toEqual(coreNames);
+      expect(Object.keys(getPlateRuntime(editor).plugins)).toEqual(coreNames);
 
       expect(editor.read.children()).toEqual([
         { children: [{ text: '' }], type: 'p' },
@@ -150,7 +152,7 @@ describe('extendPlateEditor', () => {
         { children: [{ text: 'missing' }], type: 'p' },
       ]);
       expect(() =>
-        editor.read.schema.validateDocument(editor.read.value())
+        editor.read.schema.assertDocument(editor.read.value())
       ).not.toThrow();
 
       editor.update.nodes.insert(
@@ -166,7 +168,7 @@ describe('extendPlateEditor', () => {
 
       expect(
         getPlateRuntime(disabledEditor).pluginList.some(
-          (plugin) => plugin.key === NodeIdPlugin.key
+          (plugin) => plugin.name === NodeIdPlugin.name
         )
       ).toBe(false);
       expect(() =>
@@ -179,7 +181,7 @@ describe('extendPlateEditor', () => {
 
     it('executes tx-backed plugin commands through update on the current editor runtime', () => {
       const TxPlugin = createBasePlugin({
-        key: 'txPlugin',
+        name: 'txPlugin',
         update: ({ tx }) => ({
           bold: () => tx.marks.add('bold', true),
         }),
@@ -203,31 +205,33 @@ describe('extendPlateEditor', () => {
     });
 
     it('installs plugin dependencies before their dependent', () => {
-      const DependencyPlugin = createBasePlugin({ key: 'dependency' });
+      const DependencyPlugin = createBasePlugin({ name: 'dependency' });
       const DependentPlugin = createBasePlugin({
         dependencies: [DependencyPlugin],
-        key: 'dependent',
+        name: 'dependent',
       });
       const editor = extendPlateEditor(createEditor(), {
         plugins: [DependentPlugin],
       });
-      const pluginKeys = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+      const pluginNames = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.name
       );
 
-      expect(pluginKeys.indexOf('dependency')).toBeLessThan(
-        pluginKeys.indexOf('dependent')
+      expect(pluginNames.indexOf('dependency')).toBeLessThan(
+        pluginNames.indexOf('dependent')
       );
-      expect(pluginKeys.filter((key) => key === 'dependency')).toHaveLength(1);
+      expect(pluginNames.filter((name) => name === 'dependency')).toHaveLength(
+        1
+      );
     });
 
     it('runs shared dependency factories once and keeps distinct extensions', () => {
       const calls = { api: 0, distinct: 0, selectors: 0, tx: 0 };
-      const DependencyPlugin = createBasePlugin({ key: 'dependency' })
+      const DependencyPlugin = createBasePlugin({ name: 'dependency' })
         .extend(() => {
           calls.api += 1;
 
-          return { api: { shared: () => true } };
+          return { api: () => ({ shared: () => true }) };
         })
         .extend(() => {
           calls.selectors += 1;
@@ -242,11 +246,11 @@ describe('extendPlateEditor', () => {
       const ExplicitDependencyPlugin = DependencyPlugin.extend(() => {
         calls.distinct += 1;
 
-        return { api: { distinct: () => true } };
+        return { api: () => ({ distinct: () => true }) };
       });
       const DependentPlugin = createBasePlugin({
         dependencies: [DependencyPlugin],
-        key: 'dependent',
+        name: 'dependent',
       });
 
       extendPlateEditor(createEditor(), {
@@ -281,7 +285,7 @@ describe('extendPlateEditor', () => {
 
     it('installs schema.element behavior before tx groups insert inline nodes', () => {
       const InlineTxPlugin = createBasePlugin({
-        key: 'mention',
+        name: 'mention',
         type: 'mention',
         schema: {
           element: {
@@ -328,7 +332,7 @@ describe('extendPlateEditor', () => {
 
     it('installs schema.element selection behavior through the schema adapter', () => {
       const NonSelectableVoidPlugin = createBasePlugin({
-        key: 'badge',
+        name: 'badge',
         type: 'badge',
         schema: {
           element: {
@@ -345,17 +349,17 @@ describe('extendPlateEditor', () => {
 
       expect(editor.read.schema.isSelectable(badgeElement)).toBe(false);
       expect(editor.read.schema.isVoid(badgeElement)).toBe(true);
-      expect(editor.read.schema.markableVoid(badgeElement)).toBe(true);
+      expect(editor.read.schema.isMarkableVoid(badgeElement)).toBe(true);
     });
 
     it('compiles boolean marks, parameterized marks, and element grammar', () => {
       const CellPlugin = createBasePlugin({
-        key: 'cell',
+        name: 'cell',
         type: 'configured-cell',
         schema: { element: TextBlockElement },
       });
       const RowPlugin = createBasePlugin({
-        key: 'row',
+        name: 'row',
         type: 'configured-row',
         schema: ({ plugins }) => {
           const cellType = plugins.elementType(CellPlugin);
@@ -372,7 +376,7 @@ describe('extendPlateEditor', () => {
         },
       });
       const TonePlugin = createBasePlugin({
-        key: 'tone',
+        name: 'tone',
         schema: ({ plugins }) => ({
           mark: {
             split: 'drop',
@@ -383,7 +387,7 @@ describe('extendPlateEditor', () => {
       });
       const editor = extendPlateEditor(createEditor(), {
         plugins: [RowPlugin, CellPlugin, TonePlugin],
-        schema: { id: 'plate-core-test', version: 4 },
+        schemaIdentity: { id: 'plate-core-test', version: 4 },
         initialValue: [
           {
             children: [
@@ -403,7 +407,7 @@ describe('extendPlateEditor', () => {
       expect(editor.read.schema.identity()?.fingerprint).toEqual(
         expect.any(String)
       );
-      expect(editor.read.schema.createAndFill('configured-row')).toEqual({
+      expect(editor.read.schema.create('configured-row')).toEqual({
         children: [{ children: [{ text: '' }], type: 'configured-cell' }],
         type: 'configured-row',
       });
@@ -414,7 +418,7 @@ describe('extendPlateEditor', () => {
         })
       ).toBe(false);
       expect(() =>
-        editor.read.schema.validateDocument({
+        editor.read.schema.assertDocument({
           children: [
             {
               children: [
@@ -443,7 +447,7 @@ describe('extendPlateEditor', () => {
     it('decodes and transforms HTML before fitting its root content', () => {
       let transformedInput: ReturnType<BaseEditor['read']['value']> | undefined;
       const TransformHtmlPlugin = createBasePlugin({
-        key: 'transformHtml',
+        name: 'transformHtml',
         transformInitialValue: ({ value }) => {
           transformedInput = value;
 
@@ -481,7 +485,7 @@ describe('extendPlateEditor', () => {
 
     it('initializes and transforms one full multi-root document', () => {
       const FigurePlugin = createBasePlugin({
-        key: 'figure',
+        name: 'figure',
         schema: {
           element: {
             contentRoots: {
@@ -493,13 +497,13 @@ describe('extendPlateEditor', () => {
                 ownership: 'exclusive',
               },
             },
-            topLevel: true,
+            blockContent: true,
             void: 'block',
           },
         },
       });
       const TransformDocumentPlugin = createBasePlugin({
-        key: 'transformDocument',
+        name: 'transformDocument',
         schema: {
           properties: [
             schema.elementProperty('transformed', property.boolean(), {
@@ -582,11 +586,11 @@ describe('extendPlateEditor', () => {
 
     it('keeps schema fingerprints independent of plugin order', () => {
       const QuotePlugin = createBasePlugin({
-        key: 'quote',
+        name: 'quote',
         schema: { element: { ...TextBlockElement } },
       });
       const TonePlugin = createBasePlugin({
-        key: 'tone',
+        name: 'tone',
         schema: { mark: { property: property.string() } },
       });
       const options = {
@@ -610,7 +614,7 @@ describe('extendPlateEditor', () => {
 
     it('uses configured pure schema targets without global property leakage', () => {
       const BadgePlugin = createBasePlugin({
-        key: 'badge',
+        name: 'badge',
         type: 'badge-node',
         schema: {
           element: {
@@ -620,15 +624,17 @@ describe('extendPlateEditor', () => {
         },
       });
       const IdentityPlugin = createBasePlugin({
-        key: 'identity',
-        schema: ({ own, plugins, targetPluginKeys }) => ({
+        name: 'identity',
+        schema: ({ own, plugins, targetPluginNames }) => ({
           properties: [
             own.elementProperty(property.string(), {
-              target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+              target: target.types(
+                plugins.elementTypesByName(targetPluginNames)
+              ),
             }),
           ],
         }),
-        targetPluginKeys: [BadgePlugin.key] as const,
+        targetPluginNames: [BadgePlugin.name] as const,
       });
       const editor = extendPlateEditor(createEditor(), {
         plugins: [IdentityPlugin, BadgePlugin],
@@ -644,12 +650,12 @@ describe('extendPlateEditor', () => {
       });
 
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           { children: [{ text: '' }], identity: 'leak', type: 'p' },
         ])
       ).toThrow(/identity/i);
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           { children: [{ text: '' }], identity: 1, type: 'badge-node' },
         ])
       ).toThrow(/identity/i);
@@ -657,7 +663,7 @@ describe('extendPlateEditor', () => {
 
     it('derives container types from compiled schema grammar', () => {
       const ContainerPlugin = createBasePlugin({
-        key: 'container',
+        name: 'container',
         type: 'container-node',
         schema: {
           element: {
@@ -669,16 +675,18 @@ describe('extendPlateEditor', () => {
         plugins: [ContainerPlugin],
       });
 
-      expect(getContainerTypes(editor)).toEqual(['container-node']);
+      expect(getCompiledPlateContainerTypes(editor)).toEqual([
+        'container-node',
+      ]);
     });
 
     it('publishes schema conflicts atomically', () => {
       const editor = createEditor();
       const identityBefore = editor.read.schema.identity();
       const valueBefore = editor.read.value();
-      const duplicatePropertyPlugin = (key: string) =>
+      const duplicatePropertyPlugin = (name: string) =>
         createBasePlugin({
-          key,
+          name,
           schema: {
             properties: [
               schema.elementProperty('duplicate', property.string(), {
@@ -702,7 +710,7 @@ describe('extendPlateEditor', () => {
 
   describe('when plugins is an array', () => {
     it('add custom plugins to core plugins', () => {
-      const customPlugin = createBasePlugin({ key: 'custom' });
+      const customPlugin = createBasePlugin({ name: 'custom' });
       const editor = extendPlateEditor(createEditor(), {
         override: {
           components: {},
@@ -711,9 +719,9 @@ describe('extendPlateEditor', () => {
       });
 
       expect(
-        getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
-      ).toEqual([...coreKeys, 'custom']);
-      expect(editor.getPlugin({ key: 'custom' })).toBeDefined();
+        getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
+      ).toEqual([...coreNames, 'custom']);
+      expect(editor.plugin('custom').plugin).toBeDefined();
     });
   });
 
@@ -724,14 +732,27 @@ describe('extendPlateEditor', () => {
       });
 
       expect(
-        getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
-      ).toEqual(coreKeys);
+        getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
+      ).toEqual(coreNames);
     });
   });
 
   describe('when using override', () => {
+    it('publishes components declared by Base plugins to live Plate editors', () => {
+      const Component = () => null;
+      const Plugin = createBasePlugin({
+        component: Component,
+        name: 'base-component',
+      });
+      const editor = extendPlateEditor(createEditor(), {
+        plugins: [Plugin],
+      });
+
+      expect(editor.plugin(Plugin).plugin.render.node).toBe(Component);
+    });
+
     it('merge components', () => {
-      const HeadingPlugin = createPlatePlugin({ key: 'h1' });
+      const HeadingPlugin = createPlatePlugin({ name: 'h1' });
       const customComponent = () => null;
 
       const editor = extendPlateEditor(createEditor(), {
@@ -743,7 +764,7 @@ describe('extendPlateEditor', () => {
         plugins: [HeadingPlugin],
       });
 
-      const h1Plugin = editor.getPlugin({ key: 'h1' });
+      const h1Plugin = editor.plugin('h1').plugin;
       expect(h1Plugin.render.node).toBe(customComponent);
     });
 
@@ -752,14 +773,14 @@ describe('extendPlateEditor', () => {
       const overrideComponent = () => null;
       const HeadingPlugin = createPlatePlugin({
         component: originalComponent,
-        key: 'h1',
+        name: 'h1',
       });
 
       let editor = extendPlateEditor(createEditor(), {
         plugins: [HeadingPlugin],
       });
 
-      let h1Plugin = editor.getPlugin(HeadingPlugin);
+      let h1Plugin = editor.plugin(HeadingPlugin).plugin;
       expect(h1Plugin.render.node).toBe(originalComponent);
 
       editor = extendPlateEditor(createEditor(), {
@@ -771,7 +792,7 @@ describe('extendPlateEditor', () => {
         plugins: [HeadingPlugin],
       });
 
-      h1Plugin = editor.getPlugin(HeadingPlugin);
+      h1Plugin = editor.plugin(HeadingPlugin).plugin;
       expect(h1Plugin.render.node).toBe(overrideComponent);
     });
   });
@@ -779,7 +800,7 @@ describe('extendPlateEditor', () => {
   describe('when replacing core plugins', () => {
     it('replace core plugins with custom plugins, maintain order, and add additional plugins', () => {
       const additionalPlugin = createBasePlugin({
-        key: 'additional',
+        name: 'additional',
         type: 'additional',
       });
       const [ReactDOMPlugin] = getPlateCorePlugins();
@@ -789,18 +810,18 @@ describe('extendPlateEditor', () => {
       });
 
       const pluginCache = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+        (plugin) => plugin.name
       );
       const pluginTypes = getPlateRuntime(editor).pluginList.map(
         (plugin) => plugin.type
       );
 
       // Check if React DOM replacement plugin replaced DOMPlugin.
-      expect(pluginCache).toContain(ReactDOMPlugin.key);
+      expect(pluginCache).toContain(ReactDOMPlugin.name);
       expect(pluginTypes).toContain(ReactDOMPlugin.type);
 
       // Check if ParagraphPlugin is present
-      expect(pluginCache).toContain(ParagraphPlugin.key);
+      expect(pluginCache).toContain(ParagraphPlugin.name);
       expect(pluginTypes).toContain(ParagraphPlugin.type);
 
       // Check if additional plugin is added
@@ -808,8 +829,8 @@ describe('extendPlateEditor', () => {
       expect(pluginTypes).toContain('additional');
 
       // Check if the order is correct
-      const reactIndex = pluginCache.indexOf(ReactDOMPlugin.key);
-      const paragraphIndex = pluginCache.indexOf(ParagraphPlugin.key);
+      const reactIndex = pluginCache.indexOf(ReactDOMPlugin.name);
+      const paragraphIndex = pluginCache.indexOf(ParagraphPlugin.name);
       const additionalIndex = pluginCache.indexOf('additional');
 
       expect(reactIndex).toBeLessThan(paragraphIndex);
@@ -833,49 +854,49 @@ describe('extendPlateEditor', () => {
     it('does not duplicate core plugins', () => {
       const existingEditor = createEditor() as any;
       existingEditor.plugins = [
-        createBasePlugin({ key: 'dom' }),
-        createBasePlugin({ key: 'history' }),
+        createBasePlugin({ name: 'dom' }),
+        createBasePlugin({ name: 'history' }),
       ];
 
       const editor = extendPlateEditor(existingEditor, {});
 
-      const pluginCache = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+      const pluginNames = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.name
       );
-      expect(pluginCache.filter((key) => key === 'dom')).toHaveLength(1);
-      expect(pluginCache.filter((key) => key === 'history')).toHaveLength(1);
+      expect(pluginNames.filter((name) => name === 'dom')).toHaveLength(1);
+      expect(pluginNames.filter((name) => name === 'history')).toHaveLength(1);
     });
 
     it('add missing core plugins', () => {
       const existingEditor = createEditor() as any;
       existingEditor.pluginList = [
-        createBasePlugin({ key: 'dom' }),
-        createBasePlugin({ key: 'history' }),
+        createBasePlugin({ name: 'dom' }),
+        createBasePlugin({ name: 'history' }),
       ];
 
       const editor = extendPlateEditor(existingEditor, {});
 
-      const pluginCache = getPlateRuntime(editor).pluginList.map(
-        (plugin) => plugin.key
+      const pluginNames = getPlateRuntime(editor).pluginList.map(
+        (plugin) => plugin.name
       );
-      coreKeys.forEach((key) => {
-        expect(pluginCache).toContain(key);
+      coreNames.forEach((name) => {
+        expect(pluginNames).toContain(name);
       });
     });
 
     it('does not preserve custom plugins', () => {
-      const customPlugin = createBasePlugin({ key: 'custom' });
+      const customPlugin = createBasePlugin({ name: 'custom' });
       const existingEditor = createEditor() as any;
       existingEditor.plugins = [
-        createBasePlugin({ key: 'dom' }),
-        createBasePlugin({ key: 'history' }),
+        createBasePlugin({ name: 'dom' }),
+        createBasePlugin({ name: 'history' }),
         customPlugin,
       ];
 
       const editor = extendPlateEditor(existingEditor, {});
 
       expect(
-        getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
+        getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
       ).not.toContain('custom');
     });
   });
@@ -898,8 +919,8 @@ describe('extendPlateEditor', () => {
     });
 
     expect(
-      getPlateRuntime(editor).pluginList.map((plugin) => plugin.key)
-    ).not.toContain(AffinityPlugin.key);
+      getPlateRuntime(editor).pluginList.map((plugin) => plugin.name)
+    ).not.toContain(AffinityPlugin.name);
   });
 
   it('syncs explicit readOnly into the Plite view state', () => {
@@ -918,7 +939,7 @@ describe('extendPlateEditor', () => {
 
   it('syncs the Plate paragraph type into Plite block toggles', () => {
     const BlockquotePlugin = createBasePlugin({
-      key: 'blockquote',
+      name: 'blockquote',
       schema: { element: { ...TextBlockElement } },
     });
     const editor = extendBaseEditor(createEditor(), {
@@ -944,15 +965,15 @@ describe('extendPlateEditor', () => {
 
   it('preserves Plate marks allowed by the destination block schema', () => {
     const HeadingPlugin = createBasePlugin({
-      key: 'heading',
+      name: 'heading',
       schema: { element: { ...TextBlockElement } },
     });
     const TonePlugin = createBasePlugin({
-      key: 'tone',
+      name: 'tone',
       schema: { mark: { property: property.string() } },
     });
     const EphemeralPlugin = createBasePlugin({
-      key: 'ephemeral',
+      name: 'ephemeral',
       schema: { mark: { typeChange: 'drop', property: property.boolean() } },
     });
     const editor = extendBaseEditor(createEditor(), {
@@ -1072,7 +1093,7 @@ describe('extendPlateEditor', () => {
       };
     };
     const WrapTextPlugin = createBasePlugin({
-      key: 'wrapText',
+      name: 'wrapText',
       transformInitialValue: ({ value: initialValue }) => ({
         ...initialValue,
         children: initialValue.children.map(wrapCellText) as Value,
@@ -1085,7 +1106,7 @@ describe('extendPlateEditor', () => {
       }),
     });
     const TablePlugin = createBasePlugin({
-      key: 'table',
+      name: 'table',
       schema: {
         element: {
           content: schema.content.type('tr', {
@@ -1096,7 +1117,7 @@ describe('extendPlateEditor', () => {
       },
     });
     const TableRowPlugin = createBasePlugin({
-      key: 'tr',
+      name: 'tr',
       schema: {
         element: {
           content: schema.content.type('td', {
@@ -1107,7 +1128,7 @@ describe('extendPlateEditor', () => {
       },
     });
     const TableCellPlugin = createBasePlugin({
-      key: 'td',
+      name: 'td',
       schema: {
         element: {
           content: schema.content.group('block', {

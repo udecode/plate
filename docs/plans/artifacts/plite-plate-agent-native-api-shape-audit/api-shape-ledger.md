@@ -58,7 +58,7 @@ Production usage also matters:
   so removing the raw public constructor fields follows actual ownership rather
   than inventing a new convention.
 - Plate schema factories overwhelmingly consume real compiler context
-  (`plugins`, `own`, `targetPluginKeys`, `config`, or `type`): 52 declarations
+  (`plugins`, `own`, `targetPluginNames`, `config`, or `type`): 52 declarations
   are static objects, 22 are genuine contextual factories, and six are
   identifiers. These factories earn their existence: they derive the configured
   owner type and validate typed references against the candidate installed
@@ -157,7 +157,7 @@ Evidence: [schema builders](../../../../packages/plite/src/core/schema-definitio
 | `createBasePlugin`, `createPlatePlugin`                          | static descriptor constructors                                         | keep descriptor                   | Keep nominal plugin descriptors and const inference.                                                                                                                                                                                          |
 | Top-level plugin `schema`                                        | direct declaration or compiler-context factory                         | keep mixed                        | Direct object for self-contained grammar; factory only for immutable config, configured owner type, or installed typed-reference resolution.                                                                                                  |
 | `PluginSchemaContext.own/plugins`                                | compile-time typed-reference context                                   | keep callback                     | It derives the configured owner type and fails missing, disabled, or type-mismatched plugin references. Do not replace it with eager `Plugin.type`.                                                                                           |
-| `targetPluginKeys: string[]`                                     | weak optional installed-plugin allowlist shared by schema and matching | keep                              | Keep it top-level. It resolves configured installed types without importing optional feature packages. Required peers still use descriptors. Compile one internal resolved binding so schema, parser, injection, and matching cannot diverge. |
+| `targetPluginNames: string[]`                                     | weak optional installed-plugin allowlist shared by schema and matching | keep                              | Keep it top-level. It resolves configured installed types without importing optional feature packages. Required peers still use descriptors. Compile one internal resolved binding so schema, parser, injection, and matching cannot diverge. |
 | `config` versus `options`                                        | immutable compiler input versus mutable per-editor state               | keep                              | Sharpen docs and JSDoc; do not merge the concepts.                                                                                                                                                                                            |
 | `dependencies` and child `plugins`                               | descriptor arrays                                                      | keep static                       | Keep descriptor-first references.                                                                                                                                                                                                             |
 | `inputRules: ({ rule }) => [...]`                                | helper-injection callback                                              | hard-cut                          | Export frozen `inputRule.mark/blockStart/blockFence/insertText/insertBreak/insertData`; accept concrete arrays only.                                                                                                                          |
@@ -270,7 +270,7 @@ Evidence: [Plite selectors](../../../../packages/plite-react/src/hooks/use-edito
 1. Hard-cut input-rule helper injection and publish imported `inputRule.*`.
 2. Keep advanced Plate schema factories for configured owner/reference
    resolution; sweep only callbacks that consume none of that context.
-3. Keep weak optional `targetPluginKeys`, compile one internal resolved target
+3. Keep weak optional `targetPluginNames`, compile one internal resolved target
    binding, and replace only ambiguous shortcut precedence.
 4. Compose `.configure(object | callback)` layers; flatten `.extendTx` and `.extendTxGroup`;
    remove raw public `api` / `tx` / `selectors` routes; allow direct object
@@ -325,7 +325,7 @@ Shape numbers remain stable so review comments keep meaning. `Keep` and
 |     6 |   A   | Accept  | Surgical Plite callback normalization; leave hot state/tx and phase-specific contexts alone.                                               |
 |     7 |   A   | Accept  | Explicit state-field creation and updates; function-valued fields become representable.                                                    |
 |     8 |   A   | Accept  | Plite schema defaults and extension tuple typing; safe defaults and callsite errors.                                                       |
-|     9 |   —   | Keep    | Keep top-level weak optional `targetPluginKeys`; typed descriptors are for required peers. No public packet.                               |
+|     9 |   —   | Keep    | Keep top-level weak optional `targetPluginNames`; typed descriptors are for required peers. No public packet.                               |
 |    10 |   A   | Revise  | Infer the sole shortcut route and require optional target `update` or `api` only for collisions.                                           |
 |    11 |   A   | Revise  | Keep the fallback private for Rules of Hooks; add honest strict and nullable public access and remove duplicate selector semantics.        |
 |    12 |   A   | Revise  | Descriptor-first inference plus generic/type-only overloads; strict/optional context; no fake live arbitrary-node path.                    |
@@ -582,7 +582,7 @@ createEditor({ extensions: [paragraph, history()] as const });
 Omission means derived identity and `unknown: 'reject'`; it never means an
 anonymous permissive schema.
 
-### Shape 9. Keep weak optional `targetPluginKeys`
+### Shape 9. Keep weak optional `targetPluginNames`
 
 **Before (rejected rewrite)** — typed targets hidden in `config` look cleaner,
 but force feature-package imports, snapshot eager descriptor types, and turn
@@ -599,11 +599,11 @@ product-selected optional applicability remains a top-level key allowlist.
 
 ```ts
 createBasePlugin({
-  targetPluginKeys: [KEYS.p, KEYS.blockquote],
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  targetPluginNames: [KEYS.p, KEYS.blockquote],
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
       }),
     ],
   }),
@@ -1156,7 +1156,7 @@ Plugin.configure({
 
 ```ts
 Plugin.configure({
-  targetPluginKeys: [KEYS.p, KEYS.blockquote],
+  targetPluginNames: [KEYS.p, KEYS.blockquote],
 });
 ```
 

@@ -43,6 +43,7 @@
   "dependencies": {
     "@platejs/core": "workspace:^",
     "@platejs/plite": "workspace:^",
+    "@platejs/plite-dom": "workspace:^",
     "@platejs/plite-react": "workspace:^",
     "@platejs/utils": "workspace:^",
     "@udecode/react-hotkeys": "workspace:^",

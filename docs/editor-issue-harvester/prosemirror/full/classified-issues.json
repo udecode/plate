@@ -29680,7 +29680,7 @@
       "docs-release-package"
     ],
     "state": "CLOSED",
-    "title": "prosemirror-state: Get name of created `PluginKey`",
+    "title": "prosemirror-state: Get name of created `PluginName`",
     "updatedAt": "2022-05-02T13:22:58Z",
     "url": "https://github.com/ProseMirror/prosemirror/issues/1264",
     "labels": []

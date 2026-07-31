@@ -81,9 +81,9 @@ import { createPlateEditor, ParagraphPlugin } from "platejs/react";
 export const editor = createPlateEditor({
   plugins: [
     LineHeightPlugin.configure({
-      targetPluginKeys: [
+      targetPluginNames: [
         ...KEYS.heading,
-        ParagraphPlugin.key,
+        ParagraphPlugin.name,
       ],
       inject: {
         nodeProps: {
@@ -124,10 +124,10 @@ The package owns line-height storage and parsing. The registry owns the dropdown
 
 | Behavior                  | Source                                           |
 | ------------------------- | ------------------------------------------------ |
-| Plugin key                | `KEYS.lineHeight`                                |
+| Plugin name               | `KEYS.lineHeight`                                |
 | Stored property           | `lineHeight`                                     |
 | Default target plugins    | `[BaseParagraphPlugin]`                          |
-| Registry target plugins   | `[...KEYS.heading, ParagraphPlugin.key]`           |
+| Registry target plugins   | `[...KEYS.heading, ParagraphPlugin.name]`          |
 | Default node value        | `1.5`                                            |
 | Registry valid values     | `[1, 1.2, 1.5, 2, 3]`                            |
 | HTML parser               | Reads `element.style.lineHeight`.                |
@@ -137,7 +137,7 @@ The package owns line-height storage and parsing. The registry owns the dropdown
 
 ## HTML
 
-`targetPluginKeys` is the schema placement truth. The plugin derives
+`targetPluginNames` is the schema placement truth. The plugin derives
 its render and HTML-parser injection targets from the same list. When pasted
 HTML contains an inline `line-height` style on a target block, Plate stores the
 value on that block.
@@ -159,7 +159,7 @@ value on that block.
 
 | Option                              | Surface                        | Use                                                                                         |
 | ----------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------- |
-| `targetPluginKeys`                  | `LineHeightPlugin`             | Element plugin keys whose types can keep `lineHeight`; injection is derived from this list. |
+| `targetPluginNames`                  | `LineHeightPlugin`             | Element plugin names whose types can keep `lineHeight`; injection is derived from this list. |
 | `type`                              | `LineHeightPlugin`             | Resolved schema and rendered model-property key; defaults to `lineHeight`.                  |
 | `inject.nodeProps.defaultNodeValue` | `BaseLineHeightPlugin`         | Value that clears the stored property when selected.                                        |
 | `inject.nodeProps.validNodeValues`  | Registry toolbar               | Dropdown values used by `LineHeightToolbarButton`.                                          |

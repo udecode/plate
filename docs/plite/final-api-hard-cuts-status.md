@@ -17,7 +17,8 @@ The kept shape is:
 - transaction/commit-first local execution through primitive editor methods
 - projection-source overlays
 - semantic `Editable`
-- extension `editor`, `state`, and `tx` groups
+- extension `api`, `read`, and `update` factories projected through the
+  editor API and runtime `state` / `tx` namespaces
 - generated browser gauntlet proof for cursor/caret claims
 
 ## Hard Cut Matrix
@@ -27,7 +28,7 @@ The kept shape is:
 | Keep `decorate` out of durable overlay ownership | `done` | `Editable.decorate` exists as a local convenience adapter for simple editor-local ranges. Projection stores are the primary API for shared, external, frequent, or source-scoped overlays. Public docs teach that split directly. | Keep docs/examples from presenting `decorate` as the durable overlay architecture. |
 | Keep child-count chunking dead | `done` | Product `plite-react` runtime has no `renderChunk`, `getChunkSize`, or child-count chunking API. Huge docs use semantic islands, active corridor, occlusion, and projection stores. | None for product runtime. Legacy chunking remains only as historical/comparison context. |
 | Cut mutable editor fields from primary public API | `done for public teaching` | `editor.children`, `editor.selection`, and `editor.marks` are not primary read paths. Public docs/examples/tests use read APIs, transaction/update APIs, and focused helpers instead. Internal runtime storage is not app/plugin DX. | Keep public docs and examples on the current read/update surface. |
-| Stop teaching `editor.apply` / `editor.onChange` | `done for public teaching` | Examples do not monkey-patch `editor.apply`; huge-document instrumentation uses `Editor.subscribe`; extension power is through `editor`, `state`, and `tx` groups plus commit listeners. Direct apply/onChange replacement is not an extension point. | Keep public docs and examples on commit listeners and extension groups. |
+| Stop teaching `editor.apply` / `editor.onChange` | `done for public teaching` | Examples do not monkey-patch `editor.apply`; huge-document instrumentation uses `Editor.subscribe`; extension power is through `api`, `read`, and `update` factories plus commit listeners. Direct apply/onChange replacement is not an extension point. | Keep public docs and examples on commit listeners and extension capabilities. |
 | Hard-cut dead legacy React renderer exports/tests/docs | `done` | Legacy renderer exports `DefaultElement`, `DefaultLeaf`, and `DefaultText` are removed. Old renderer files and the broad legacy decorations test are deleted. Current public primitives are `Editable`, `EditableText`, `PliteElement`, `PliteLeaf`, `PliteText`, `TextString`, `ZeroWidthString`, and related semantic primitives. | Local docs may use `DefaultElement` as an example-local function name; that is not a package export. |
 
 ## Current Boundaries

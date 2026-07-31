@@ -13,9 +13,9 @@ description: 理解并利用 Plate 插件中的插件上下文。
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  handlers: {
-    onKeyDown: (ctx) => {
+  name: 'myPlugin',
+  on: {
+    keyDown: (ctx) => {
       // ctx 就是插件上下文
       console.info(ctx.editor, ctx.plugin);
     },
@@ -23,16 +23,16 @@ const MyPlugin = createPlatePlugin({
 });
 ```
 
-### `getBasePlugin`
+### `editor.plugin`
 
-当您需要访问其他插件的上下文时，这个函数特别有用。它支持跨插件通信和交互，实现更复杂和相互关联的插件行为。
+需要访问其他插件时，使用该插件 descriptor 打开类型化 consumer portal。
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  handlers: {
-    onKeyDown: ({ editor }) => {
-      const linkCtx = getBasePlugin(editor, LinkPlugin);
+  name: 'myPlugin',
+  on: {
+    keyDown: ({ editor }) => {
+      const linkCtx = editor.plugin(LinkPlugin);
     },
   },
 });
@@ -58,9 +58,9 @@ const MyComponent = () => {
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  handlers: {
-    onChange: ({ editor }) => {
+  name: 'myPlugin',
+  on: {
+    commit: ({ editor }) => {
       console.info('编辑器内容:', editor.children);
     },
   },
@@ -73,10 +73,10 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
-  handlers: {
-    onKeyDown: ({ plugin }) => {
-      console.info('插件键名:', plugin.key);
+  name: 'myPlugin',
+  on: {
+    keyDown: ({ plugin }) => {
+      console.info('插件名称:', plugin.name);
     },
   },
 });
@@ -97,9 +97,9 @@ const initialState: MyPluginState = {
 
 const MyPlugin = createPlatePlugin({
   initialState,
-  key: 'myPlugin',
-  handlers: {
-    onClick: ({ store }) => {
+  name: 'myPlugin',
+  on: {
+    click: ({ store }) => {
       const myValue = store.get('myValue');
       console.info('state 值:', myValue);
     },
@@ -122,9 +122,9 @@ const initialState: MyPluginState = {
 
 const MyPlugin = createPlatePlugin({
   initialState,
-  key: 'myPlugin',
-  handlers: {
-    onClick: ({ store }) => {
+  name: 'myPlugin',
+  on: {
+    click: ({ store }) => {
       console.info('完整 state:', store.get());
     },
   },
@@ -144,9 +144,9 @@ const initialState: MyPluginState = {
 
 const MyPlugin = createPlatePlugin({
   initialState,
-  key: 'myPlugin',
-  handlers: {
-    onClick: ({ store }) => {
+  name: 'myPlugin',
+  on: {
+    click: ({ store }) => {
       store.set({ count: 1 });
     },
   },
@@ -166,9 +166,9 @@ const initialState: MyPluginState = {
 
 const MyPlugin = createPlatePlugin({
   initialState,
-  key: 'myPlugin',
-  handlers: {
-    onClick: ({ store }) => {
+  name: 'myPlugin',
+  on: {
+    click: ({ store }) => {
       store.set((state) => {
         state.count += 1;
       });
@@ -183,10 +183,10 @@ const MyPlugin = createPlatePlugin({
 
 ```ts
 const MyPlugin = createPlatePlugin({
-  key: 'myPlugin',
+  name: 'myPlugin',
   type: 'myNodeType',
-  handlers: {
-    onKeyDown: ({ type }) => {
+  on: {
+    keyDown: ({ type }) => {
       console.info('节点类型:', type);
     },
   },
@@ -210,7 +210,7 @@ const StrongPlugin = createBasePlugin({
         match: [{ tag: 'strong' }],
       },
     }),
-  key: 'strong',
+  name: 'strong',
   schema: { mark: property.boolean() },
 });
 ```
@@ -220,12 +220,11 @@ Self/product map 使用 `defineCodecs(map)`。Foreign contribution 使用
 Map 保持 MIME-keyed；`'text/html'` 使用单个 rule 或非空有序 rule tuple。
 不要直接声明 codec map，也不要标注 callback 参数。
 
-### Extension inference
+### 原生能力推断
 
-Constructor 和 `.extend()` callback 直接返回 extension object。Plate context
-保持在这些 callback 内，嵌套 command、input、state、transaction、dependency
-和 plugin state 就能获得 contextual typing。抽取 domain input，不要抽取
-Plate plugin context。
+原生 Plite 字段直接放在 constructor 或分阶段 `.extend()` callback 中。
+能力专属 helper 和 Plate plugin context 会一起推断。抽取 domain input，
+不要抽取整个 Plate plugin context。
 
 从 `@platejs/plite` import 的 `defineEditorExtension` 只用于独立复用的
 standalone Plite descriptor。完整示例见

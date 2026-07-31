@@ -26,7 +26,7 @@ APIs through `editor.api`.
 
 ```typescript
 editor.api.dom.focus();
-editor.api.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
 editor.api.react.isComposing();
 ```
 
@@ -41,17 +41,21 @@ const editor = createReactEditor({
 });
 ```
 
-Use the lower-level `react()` extension only when composing extensions through
-`createEditor`.
+Use the lower-level `react({ dom })` extension only when composing extensions
+through `createEditor`. Pass the exact DOM descriptor that React installs as a
+dependency.
 
 ## react
 
 ```typescript
 import { createEditor } from "@platejs/plite";
+import { dom } from "@platejs/plite-dom";
 import { react } from "@platejs/plite-react";
 
+const DOMExtension = dom();
+
 const editor = createEditor({
-  extensions: [react()],
+  extensions: [react({ dom: DOMExtension })],
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });
 ```

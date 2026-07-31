@@ -5,12 +5,9 @@ import { createBaseEditor } from '../../editor';
 import { BaseParagraphPlugin } from './BaseParagraphPlugin';
 
 describe('BaseParagraphPlugin', () => {
-  it('decodes and encodes its configured HTML element claim', () => {
-    const ParagraphPlugin = BaseParagraphPlugin.configure({
-      type: 'configured-paragraph',
-    });
+  it('decodes and encodes its HTML element claim', () => {
     const editor = createBaseEditor({
-      plugins: [ParagraphPlugin],
+      plugins: [BaseParagraphPlugin],
     });
     const fragment = editor.api.html.deserialize({
       element: '<p>Paragraph</p>',
@@ -20,7 +17,7 @@ describe('BaseParagraphPlugin', () => {
     expect(fragment).toEqual([
       {
         children: [{ text: 'Paragraph' }],
-        type: 'configured-paragraph',
+        type: 'p',
       },
     ]);
     expect(

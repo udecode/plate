@@ -126,8 +126,8 @@ unsubscribe();
 
 Use `editor.subscribe(...)` instead when the listener also needs the current
 snapshot. For a reusable editing policy, contribute a Plite command handler or
-correction through the constructor's `extension` field and test that behavior
-directly.
+correction through the constructor's root `commands` or `corrections` field and
+test that behavior directly.
 
 ### 2. Remove Suspected Plugins
 

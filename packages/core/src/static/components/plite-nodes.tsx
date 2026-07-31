@@ -6,9 +6,9 @@ import type { UnknownObject } from '@udecode/utils';
 import { clsx } from 'clsx';
 
 import type {
-  AnyPluginConfig,
+  AnyBasePluginDefinition,
   BasePluginContext,
-  PluginConfig,
+  BasePluginDefinition,
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
@@ -42,25 +42,26 @@ export const useNodeAttributes = <E extends HTMLElement>(
 
 export type PliteElementProps<
   N extends Element = Element,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = PliteNodeProps<C> &
   RenderElementProps<N> & {
     attributes: UnknownObject;
     path: Path;
   };
 
-export type PliteNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  BasePluginContext<C> & {
-    /**
-     * Optional ref to be merged with `attributes.ref`.
-     *
-     * @default undefined
-     */
-    ref?: React.Ref<HTMLElement>;
-  };
+export type PliteNodeProps<
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
+> = BasePluginContext<C> & {
+  /**
+   * Optional ref to be merged with `attributes.ref`.
+   *
+   * @default undefined
+   */
+  ref?: React.Ref<HTMLElement>;
+};
 
 export type PliteHTMLProps<
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = PliteNodeProps<C> & {
   /** HTML attributes to pass to the underlying HTML element. */
@@ -75,7 +76,7 @@ export type PliteHTMLProps<
 
 export type StyledPliteElementProps<
   N extends Element = Element,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = PliteElementProps<N, C> & PliteHTMLProps<C, T>;
 
@@ -110,7 +111,7 @@ export const PliteElement = React.forwardRef<
   );
 }) as <
   N extends Element = Element,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
   props: StyledPliteElementProps<N, C, T>
@@ -118,7 +119,7 @@ export const PliteElement = React.forwardRef<
 
 export type PliteTextProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = PliteNodeProps<C> &
   RenderTextProps<N> & {
     attributes: UnknownObject;
@@ -126,7 +127,7 @@ export type PliteTextProps<
 
 export type StyledPliteTextProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = PliteTextProps<N, C> & PliteHTMLProps<C, T>;
 
@@ -139,7 +140,7 @@ export const PliteText = React.forwardRef<
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
   props: StyledPliteTextProps<N, C, T>
@@ -147,7 +148,7 @@ export const PliteText = React.forwardRef<
 
 export type PliteLeafProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
 > = PliteNodeProps<C> &
   RenderLeafProps<N> & {
     attributes: UnknownObject;
@@ -156,7 +157,7 @@ export type PliteLeafProps<
 
 export type StyledPliteLeafProps<
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = PliteLeafProps<N, C> & PliteHTMLProps<C, T>;
 
@@ -187,7 +188,7 @@ export const PliteLeaf = React.forwardRef<
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
   N extends Text = Text,
-  C extends AnyPluginConfig = PluginConfig,
+  C extends AnyBasePluginDefinition = BasePluginDefinition,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({
   className,

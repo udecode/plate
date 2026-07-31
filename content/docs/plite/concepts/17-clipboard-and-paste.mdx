@@ -5,7 +5,7 @@ description: "Route copy, paste, drop, and fitted slice replacement through Plit
 
 Clipboard work crosses browser events, Plite fragments, transactions, DOM
 coverage, and browser proof. Use this page to decide whether a paste, copy, or
-drop policy belongs in `Editable`, an extension, `editor.api.clipboard`, or a
+drop policy belongs in `Editable`, an extension, `editor.api.dom.clipboard`, or a
 fragment transform.
 
 ## Choose The Right Surface
@@ -18,7 +18,7 @@ insertion ownership.
 | One editor instance needs a local paste/drop hook    | `Editable` `onPaste` or `onDrop`                           | `@platejs/plite-react`                              |
 | A reusable package owns paste/drop import policy     | extension contribution `clipboardHandler(...)`             | `@platejs/plite-dom`                                |
 | A host format needs parsing or serialization         | Inline a codec in `hostCodecs`                             | `@platejs/plite-dom`                                |
-| Framework code needs to import a `DataTransfer`      | `editor.api.clipboard.insertData(data)`                    | `@platejs/plite-dom` through `@platejs/plite-react` |
+| Framework code needs to import a `DataTransfer`      | `editor.api.dom.clipboard.insertData(data)`                    | `@platejs/plite-dom` through `@platejs/plite-react` |
 | Parsed or structural content is already decoded      | `tx.slice.replace(slice, options?)`                        | `@platejs/plite`                                    |
 | Decoded content must fit a detached parent           | `state.slice.fitContent(slice, { parent, root? })`         | `@platejs/plite`                                    |
 | Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `@platejs/plite-dom` and `@platejs/plite-react`     |
@@ -85,15 +85,15 @@ in Plite core unless the rule is part of Plite's model contract.
 
 ## DOM Clipboard API
 
-React editors expose DOM clipboard helpers through `editor.api.clipboard`.
+React editors expose DOM clipboard helpers through `editor.api.dom.clipboard`.
 
 ```ts
-editor.api.clipboard.insertData(dataTransfer);
-editor.api.clipboard.insertFragmentData(dataTransfer);
-editor.api.clipboard.insertTextData(dataTransfer);
-editor.api.clipboard.readSlice(dataTransfer);
-editor.api.clipboard.writeSelection(dataTransfer);
-editor.api.clipboard.writeSlice(dataTransfer, { slice });
+editor.api.dom.clipboard.insertData(dataTransfer);
+editor.api.dom.clipboard.insertFragmentData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.readSlice(dataTransfer);
+editor.api.dom.clipboard.writeSelection(dataTransfer);
+editor.api.dom.clipboard.writeSlice(dataTransfer, { slice });
 ```
 
 Use these APIs from framework bridges, tests, or low-level event code that

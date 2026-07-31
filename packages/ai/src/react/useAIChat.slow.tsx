@@ -7,7 +7,7 @@ import { MarkdownPlugin } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
 
 import { BaseAIPlugin } from '../lib/BaseAIPlugin';
-import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
+import { type AIChatDefinition, AIChatPlugin } from './AIChatPlugin';
 import {
   useAIChatEditor,
   useChatChunk,
@@ -18,7 +18,7 @@ import {
 // biome-ignore lint/complexity/noUselessLoneBlockStatements: isolates the merged hook behavior family.
 {
   describe('useAIChatEditor', () => {
-    it('deserializes markdown, writes editor children, and registers the editor', () => {
+    it('deserializes markdown and registers the preview value', () => {
       const primaryEditor = createPlateEditor({
         plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       });
@@ -37,10 +37,9 @@ import {
       expect(editor.read.text.string([])).toBe('hi');
       const registered = primaryEditor
         .plugin(AIChatPlugin)
-        .store.get('aiEditor');
+        .store.get('previewValue');
 
-      expect(registered?.id).toBe(editor.id);
-      expect(registered?.read.text.string([])).toBe('hi');
+      expect(registered).toEqual(editor.read.children());
     });
   });
 }
@@ -56,7 +55,7 @@ import {
         },
       ],
       status,
-    }) as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+    }) as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
 
   describe('useChatChunk', () => {
     it('emits new text chunks and calls finish when streaming stops', () => {
@@ -201,7 +200,7 @@ import {
 
   const chat = {
     messages,
-  } as unknown as NonNullable<AIChatPluginConfig['initialState']['chat']>;
+  } as unknown as NonNullable<AIChatDefinition['initialState']['chat']>;
 
   const createEditor = () => {
     const editor = createPlateEditor({

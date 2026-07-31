@@ -23,7 +23,8 @@ import {
   writeDOMFragmentData,
   writeDOMRangeData,
 } from '@platejs/plite-dom';
-import { createPlatePlugin, type InferConfig } from '@platejs/core/react';
+import type { DefinitionOf } from '@platejs/core';
+import { createPlatePlugin } from '@platejs/core/react';
 import { KEYS } from '@platejs/utils';
 import copyToClipboard from 'copy-to-clipboard';
 
@@ -108,12 +109,12 @@ const initialState: BlockSelectionPluginState = {
 // Keep component rendering in the final capability stage so the component can
 // consume the finished API without creating a recursive inference cycle.
 export const BlockSelectionPlugin = createPlatePlugin({
-  key: KEYS.blockSelection,
+  name: KEYS.blockSelection,
   initialState,
 
   editOnly: true,
-  handlers: {
-    onMouseDown: ({ editor, event, store }) => {
+  on: {
+    mouseDown: ({ editor, event, store }) => {
       if (!(event.target instanceof HTMLElement)) return;
 
       if (event.target.dataset.platePreventDeselect) return;
@@ -631,92 +632,90 @@ export const BlockSelectionPlugin = createPlatePlugin({
       blockMenu.installed && Boolean(blockMenu.store.get('openId'));
 
     return {
-      api,
-      extension: {
-        commands: ({ around }) => [
-          around(editorCommands.addMark, ({ state, next }) => {
-            if (!store.get().selectedIds?.size) return next();
+      api: () => api,
+      commands: ({ around }) => [
+        around(editorCommands.addMark, ({ state, next }) => {
+          if (!store.get().selectedIds?.size) return next();
 
-            const range = state.ranges.fromEntries(
-              state.blockSelection.getNodes()
-            );
+          const range = state.ranges.fromEntries(
+            state.blockSelection.getNodes()
+          );
 
-            if (!range) return next();
+          if (!range) return next();
 
-            return next.after(
-              state.transaction((tx) => {
-                tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
-                tx.selection.set(range);
-              })
-            );
-          }),
-          around(editorCommands.toggleMark, ({ state, next }) => {
-            if (!store.get().selectedIds?.size) return next();
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
+              tx.selection.set(range);
+            })
+          );
+        }),
+        around(editorCommands.toggleMark, ({ state, next }) => {
+          if (!store.get().selectedIds?.size) return next();
 
-            const range = state.ranges.fromEntries(
-              state.blockSelection.getNodes()
-            );
+          const range = state.ranges.fromEntries(
+            state.blockSelection.getNodes()
+          );
 
-            if (!range) return next();
+          if (!range) return next();
 
-            return next.after(
-              state.transaction((tx) => {
-                tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
-                tx.selection.set(range);
-              })
-            );
-          }),
-          around(editorCommands.setNodes, ({ state, next }) => {
-            if (!store.get().selectedIds?.size) return next();
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
+              tx.selection.set(range);
+            })
+          );
+        }),
+        around(editorCommands.setNodes, ({ state, next }) => {
+          if (!store.get().selectedIds?.size) return next();
 
-            const range = state.ranges.fromEntries(
-              state.blockSelection.getNodes()
-            );
+          const range = state.ranges.fromEntries(
+            state.blockSelection.getNodes()
+          );
 
-            if (!range) return next();
+          if (!range) return next();
 
-            return next.after(
-              state.transaction((tx) => {
-                tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
-                tx.selection.set(range);
-              })
-            );
-          }),
-          around(editorCommands.select, ({ state, next }) => {
-            if (!store.get().selectedIds?.size || isBlockMenuOpen()) {
-              return next();
-            }
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_PRESERVE_TAG);
+              tx.selection.set(range);
+            })
+          );
+        }),
+        around(editorCommands.select, ({ state, next }) => {
+          if (!store.get().selectedIds?.size || isBlockMenuOpen()) {
+            return next();
+          }
 
-            return next.after(
-              state.transaction((tx) => {
-                tx.tags.add(BLOCK_SELECTION_DESELECT_TAG);
-              })
-            );
-          }),
-          around(editorCommands.setSelection, ({ state, next }) => {
-            if (!store.get().selectedIds?.size || isBlockMenuOpen()) {
-              return next();
-            }
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_DESELECT_TAG);
+            })
+          );
+        }),
+        around(editorCommands.setSelection, ({ state, next }) => {
+          if (!store.get().selectedIds?.size || isBlockMenuOpen()) {
+            return next();
+          }
 
-            return next.after(
-              state.transaction((tx) => {
-                tx.tags.add(BLOCK_SELECTION_DESELECT_TAG);
-              })
-            );
-          }),
-        ],
-        on: {
-          commit({ commit }) {
-            if (
-              (commit.tags.includes(BLOCK_SELECTION_DESELECT_TAG) ||
-                (commit.selectionChanged &&
-                  !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
-              store.get().selectedIds!.size > 0 &&
-              !isBlockMenuOpen()
-            ) {
-              store.set({ isSelecting: false, selectedIds: new Set() });
-            }
-          },
+          return next.after(
+            state.transaction((tx) => {
+              tx.tags.add(BLOCK_SELECTION_DESELECT_TAG);
+            })
+          );
+        }),
+      ],
+      on: {
+        commit({ commit }) {
+          if (
+            (commit.tags.includes(BLOCK_SELECTION_DESELECT_TAG) ||
+              (commit.selectionChanged &&
+                !commit.tags.includes(BLOCK_SELECTION_PRESERVE_TAG))) &&
+            store.get().selectedIds!.size > 0 &&
+            !isBlockMenuOpen()
+          ) {
+            store.set({ isSelecting: false, selectedIds: new Set() });
+          }
         },
       },
     };
@@ -766,7 +765,7 @@ export const BlockSelectionPlugin = createPlatePlugin({
       },
     },
     update: ({ context: updateContext, tx }) => {
-      const getSelectedBlocks = () => tx[plugin.key].getNodes();
+      const getSelectedBlocks = () => tx[plugin.name].getNodes();
 
       return {
         duplicate: () => {
@@ -820,13 +819,13 @@ export const BlockSelectionPlugin = createPlatePlugin({
             tx.nodes.insert(
               {
                 children: [{ text: '' }],
-                type: editor.getType(KEYS.p),
+                type: editor.plugin(KEYS.p).type,
               },
               { at: PathApi.next(path), select: true }
             );
           }
 
-          tx.clipboard.insertData(data);
+          tx.dom.insertData(data);
           updateContext.afterCommit(() => api.selectInserted());
         },
         removeNodes: (options: RemoveBlockSelectionNodesOptions = {}) => {
@@ -844,7 +843,7 @@ export const BlockSelectionPlugin = createPlatePlugin({
             tx.nodes.insert(
               {
                 children: [{ text: options.insertText }],
-                type: editor.getType(KEYS.p),
+                type: editor.plugin(KEYS.p).type,
               },
               { at: firstPath, select: true }
             );
@@ -930,4 +929,6 @@ export const BlockSelectionPlugin = createPlatePlugin({
     },
   });
 
-export type BlockSelectionConfig = InferConfig<typeof BlockSelectionPlugin>;
+export type BlockSelectionDefinition = DefinitionOf<
+  typeof BlockSelectionPlugin
+>;

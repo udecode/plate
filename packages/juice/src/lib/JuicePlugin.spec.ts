@@ -11,7 +11,7 @@ describe('JuicePlugin', () => {
     const createContext = prepareHtmlPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
     const transformData =
-      editor.getPlugin(JuicePlugin).parsers.html?.transformData;
+      editor.plugin(JuicePlugin).plugin.parsers.html?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');
@@ -40,7 +40,7 @@ describe('JuicePlugin', () => {
     const createContext = prepareHtmlPluginContext(editor, JuicePlugin);
     const context = editor.read((state) => createContext(state));
     const transformData =
-      editor.getPlugin(JuicePlugin).parsers.html?.transformData;
+      editor.plugin(JuicePlugin).plugin.parsers.html?.transformData;
 
     if (!transformData) {
       throw new Error('Missing HTML transformData');

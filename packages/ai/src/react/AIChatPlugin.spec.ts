@@ -13,12 +13,18 @@ describe('AIChatPlugin', () => {
     const editor = createPlateEditor({
       plugins: [AIChatPlugin],
     });
-    const keys = getPlateRuntime(editor).pluginList.map((plugin) => plugin.key);
+    const pluginNames = getPlateRuntime(editor).pluginList.map(
+      (plugin) => plugin.name
+    );
 
-    expect(keys.indexOf('ai')).toBeLessThan(keys.indexOf('aiChat'));
-    expect(keys.indexOf('markdown')).toBeLessThan(keys.indexOf('aiChat'));
-    expect(keys.filter((key) => key === 'ai')).toHaveLength(1);
-    expect(keys.filter((key) => key === 'markdown')).toHaveLength(1);
+    expect(pluginNames.indexOf('ai')).toBeLessThan(
+      pluginNames.indexOf('aiChat')
+    );
+    expect(pluginNames.indexOf('markdown')).toBeLessThan(
+      pluginNames.indexOf('aiChat')
+    );
+    expect(pluginNames.filter((name) => name === 'ai')).toHaveLength(1);
+    expect(pluginNames.filter((name) => name === 'markdown')).toHaveLength(1);
   });
 
   it('clears internal streaming state when stop is called', () => {

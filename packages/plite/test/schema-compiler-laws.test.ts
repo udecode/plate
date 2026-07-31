@@ -57,13 +57,9 @@ const createBaseSchema = (properties: readonly SchemaProperty[] = []) =>
     groups: { editable: {} as const },
     id: 'generated-laws',
     properties,
-    root: {
-      content: schema.content.type('paragraph'),
-    } as const,
+    root: schema.content.type('paragraph'),
     roots: {
-      comments: {
-        content: schema.content.type('paragraph'),
-      } as const,
+      comments: schema.content.type('paragraph'),
     },
     unknown: 'reject',
     version: 1,
@@ -226,7 +222,7 @@ describe('compiled schema generated laws', () => {
                 target: target.not(target.type('b')),
               }),
             ],
-            root: { content: schema.content.type('a') } as const,
+            root: schema.content.type('a'),
             unknown,
             version: 1,
           });
@@ -265,9 +261,7 @@ describe('compiled schema generated laws', () => {
               } as const,
             },
             id: 'bounded-unknown-wrapper-plans',
-            root: {
-              content: schema.content.type('wrapper'),
-            } as const,
+            root: schema.content.type('wrapper'),
             unknown: 'preserve',
             version: 1,
           });

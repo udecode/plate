@@ -57,8 +57,7 @@ title: 主要版本更新
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
-    -   `editor.getType()` 现在接受 `pluginKey: string` 而非 `plugin: PlatePlugin` 实例。
-        -   示例：使用 `editor.getType(ParagraphPlugin.key)` 而非 `editor.getType(ParagraphPlugin)`。
+    -   `editor.plugin(Plugin).type` 通过插件描述符保留精确类型；只有运行时名称才使用 `editor.plugin(pluginName)`。
     -   没有 `key` 属性的插件将不会被注册到编辑器中。
     -   向 `PlateContent` 传递 `disabled: true` 属性现在也会在内部将编辑器设置为 `readOnly: true` 状态。
     -   编辑器 DOM 状态属性已移至 `editor.dom` 命名空间下：

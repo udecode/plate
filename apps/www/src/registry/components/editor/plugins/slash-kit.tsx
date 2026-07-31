@@ -8,10 +8,15 @@ import { SlashInputElement } from '@/registry/ui/slash-node';
 export const SlashKit = [
   SlashPlugin.configure({
     initialState: {
-      triggerQuery: (editor) =>
-        !editor.read.nodes.some({
-          match: { type: editor.getType(KEYS.codeBlock) },
-        }),
+      triggerQuery: (editor) => {
+        const codeBlock = editor.plugin(KEYS.codeBlock);
+
+        return !editor.read.nodes.some({
+          match: {
+            type: codeBlock.installed ? codeBlock.type : KEYS.codeBlock,
+          },
+        });
+      },
     },
   }),
   SlashInputPlugin.configure({ component: SlashInputElement }),

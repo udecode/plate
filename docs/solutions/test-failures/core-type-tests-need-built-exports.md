@@ -38,7 +38,7 @@ transaction passed to a repeated `.extend()` update stage:
 
 ```ts
 const DependencyPlugin = createBasePlugin({
-  key: 'dependency',
+  name: 'dependency',
 })
   .extend(() => ({
     extension: {
@@ -55,7 +55,7 @@ const DependencyPlugin = createBasePlugin({
 
 const DependentPlugin = createBasePlugin({
   dependencies: [DependencyPlugin],
-  key: 'dependent',
+  name: 'dependent',
 }).extend(({ editor }) => ({
   update: ({ tx }) => ({
     runDependent: () => {
@@ -84,5 +84,5 @@ editor.update((tx) => {
 
 - Do not trust `pnpm test:types` failures on package subpaths until the affected package graph is built.
 - Declare plugin dependencies before reading their APIs through `editor.api`.
-- Define plugin writes with `.extend({ update })` and compose dependencies through `tx.<pluginKey>.*`.
+- Define plugin writes with `.extend({ update })` and compose dependencies through `tx.<pluginName>.*`.
 - Use `editor.plugin(Plugin).update.*` for one-shot calls and `editor.update((tx) => ...)` when several writes must share one transaction.

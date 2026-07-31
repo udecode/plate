@@ -29,7 +29,7 @@ umbrella `platejs` package.
 ## Key Constants
 
 `KEYS` contains code-facing plugin identities. `NODES` contains serialized
-element and mark discriminators. Use `editor.getType(KEYS.somePlugin)` when a
+element and mark discriminators. Use `editor.plugin(KEYS.somePlugin).type` when a
 plugin can override its node type.
 
 | Export       | Contains                                                                                                                 | Notes                                                                    |
@@ -93,7 +93,7 @@ export function getImageUrl(element: TImageElement) {
 
 ## Utility Plugins And Kits
 
-| Export                 | Key                    | Behavior                                                                         |
+| Export                 | Name                   | Behavior                                                                         |
 | ---------------------- | ---------------------- | -------------------------------------------------------------------------------- |
 | `ExitBreakPlugin`      | `KEYS.exitBreak`       | Adds transaction commands around `insertExitBreak`.                              |
 | `NormalizeTypesPlugin` | `KEYS.normalizeTypes`  | Normalizes configured root paths to a required `type` or `strictType`.           |
@@ -135,12 +135,12 @@ export function MarkToolbarButton({ nodeType }: { nodeType: string }) {
 
 ## React Plugins
 
-| Plugin                   | Key                     | Behavior                                                                                                                |
+| Plugin                   | Name                    | Behavior                                                                                                                |
 | ------------------------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `BlockPlaceholderPlugin` | `KEYS.blockPlaceholder` | Tracks the current empty block and injects `placeholder` and optional `className` props into matching block components. |
 
 `BlockPlaceholderPlugin` defaults to paragraph placeholders and only targets a
-focused, editable, collapsed selection. Configure `placeholders` by plugin key
+focused, editable, collapsed selection. Configure `placeholders` by plugin name
 and `query` by node/path.
 
 ```tsx title="components/editor/plugins/block-placeholder-kit.tsx"

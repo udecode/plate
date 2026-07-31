@@ -140,7 +140,7 @@ describe('BaseTablePlugin prepared paste', () => {
       commits.push(commit)
     );
 
-    expect(target.api.clipboard.insertData(data)).toBe(true);
+    expect(target.api.dom.clipboard.insertData(data)).toBe(true);
     unsubscribe();
 
     expect(tableText(target)).toEqual([
@@ -180,7 +180,7 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(
       editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
     ).toBeGreaterThan(1);
-    expect(editor.api.clipboard.insertData(data)).toBe(true);
+    expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     unsubscribe();
 
     expect(editor.read.value()).toEqual(before);
@@ -216,7 +216,7 @@ describe('BaseTablePlugin prepared paste', () => {
     expect(
       editor.plugin(BaseTablePlugin).read.getSelection()?.anchors.length
     ).toBe(1);
-    expect(editor.api.clipboard.insertData(data)).toBe(true);
+    expect(editor.api.dom.clipboard.insertData(data)).toBe(true);
     expect(tableText(editor)).toEqual([['plain fallbacka']]);
     expect(editor.read.history.undos()).toHaveLength(1);
   });

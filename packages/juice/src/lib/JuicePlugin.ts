@@ -3,7 +3,7 @@ import { createBasePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 export const JuicePlugin = createBasePlugin({
-  key: KEYS.juice,
+  name: KEYS.juice,
   editOnly: true,
   parsers: {
     html: {

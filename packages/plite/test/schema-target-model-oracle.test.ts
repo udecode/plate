@@ -168,16 +168,10 @@ const compileTarget = (input: ModelTarget) => {
         target: toTarget(input),
       }),
     ],
-    root: {
-      content: schema.content.type(typeName(0)),
-    } as const,
+    root: schema.content.type(typeName(0)),
     roots: {
-      comments: {
-        content: schema.content.type(typeName(1)),
-      } as const,
-      footnotes: {
-        content: schema.content.type(typeName(2)),
-      } as const,
+      comments: schema.content.type(typeName(1)),
+      footnotes: schema.content.type(typeName(2)),
     },
     unknown: 'reject',
     version: 1,

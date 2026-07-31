@@ -1,8 +1,8 @@
 import { history } from '@platejs/plite-history';
-
-import { createBasePlugin } from '../plugin';
+import { createBasePlugin, type DefinitionOf } from '../plugin';
 
 export const HistoryPlugin = createBasePlugin({
-  key: 'history',
-  extension: history(),
-});
+  name: 'history',
+}).extend(history());
+
+export type HistoryDefinition = DefinitionOf<typeof HistoryPlugin>;

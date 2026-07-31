@@ -35,7 +35,7 @@ const keyboardSelectableSchema = defineEditorSchema({
     },
   },
   id: 'keyboard-selectable-selection',
-  root: { content: schema.content.not(schema.content.text()) },
+  root: schema.content.not(schema.content.text()),
   unknown: 'preserve',
   version: 1,
 });

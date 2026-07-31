@@ -8,6 +8,7 @@ import {
   StrikethroughPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
+import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { jsxt } from '@platejs/test-utils';
@@ -21,15 +22,16 @@ jsxt;
 
 const markdownPlugin = MarkdownPlugin.configure({
   initialState: {
-    disallowedNodes: [SuggestionPlugin.key],
+    disallowedNodes: [SuggestionPlugin.name],
     remarkPlugins: [remarkMath, remarkGfm],
   },
 });
 
-const createTestEditor = (plugins: any[] = []) =>
+const createTestEditor = () =>
   createBaseEditor({
     plugins: [
       markdownPlugin,
+      BaseBlockquotePlugin,
       BaseSuggestionPlugin,
       BoldPlugin,
       CodePlugin,
@@ -37,7 +39,6 @@ const createTestEditor = (plugins: any[] = []) =>
       StrikethroughPlugin,
       ScriptPlugin,
       UnderlinePlugin,
-      ...plugins,
     ],
   });
 

@@ -11,7 +11,7 @@ describe('useEditorPlugin', () => {
   it('infers plugin-owned updates from the descriptor', () => {
     const duplicate = vi.fn();
     const BlockPlugin = createPlatePlugin({
-      key: 'block',
+      name: 'block',
       update: () => ({ duplicate }),
     });
     const editor = createPlateEditor({ plugins: [BlockPlugin] });
@@ -29,7 +29,7 @@ describe('useEditorPlugin', () => {
 
   it('returns the editor plugin context with a stable store-backed reference', () => {
     const CounterPlugin = createPlatePlugin({
-      key: 'counter',
+      name: 'counter',
       initialState: {
         value: 1,
       },
@@ -51,7 +51,7 @@ describe('useEditorPlugin', () => {
     const firstContext = result.current;
 
     expect(firstContext.editor).toBe(editor);
-    expect(firstContext.plugin.key).toBe('counter');
+    expect(firstContext.plugin.name).toBe('counter');
     expect(firstContext.store.get()).toEqual({ value: 1 });
     expect(firstContext.store).toBeDefined();
 
@@ -63,5 +63,33 @@ describe('useEditorPlugin', () => {
     });
 
     expect(result.current.store.get()).toEqual({ value: 2 });
+  });
+
+  it('accepts runtime names without weakening missing-plugin errors', () => {
+    const CounterPlugin = createPlatePlugin({ name: 'counter' });
+    const editor = createPlateEditor({ plugins: [CounterPlugin] });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <Plate editor={editor}>{children}</Plate>
+    );
+    const { result: installed } = renderHook(() => useEditorPlugin('counter'), {
+      wrapper,
+    });
+    const { result: missing } = renderHook(() => useEditorPlugin('missing'), {
+      wrapper,
+    });
+
+    expect(installed.current.installed).toBe(true);
+    expect(installed.current.type).toBe('counter');
+    expect(missing.current.installed).toBe(false);
+    expect(() => missing.current.type).toThrow(
+      'Plate plugin "missing" is not installed.'
+    );
+
+    const weakNameReference = { name: 'counter' } as const;
+    const assertWeakNameObjectRejected = () => {
+      // @ts-expect-error Weak name objects are not public hook inputs.
+      useEditorPlugin(weakNameReference);
+    };
+    void assertWeakNameObjectRejected;
   });
 });

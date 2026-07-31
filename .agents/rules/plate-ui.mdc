@@ -32,9 +32,10 @@ and registry wiring.
 8. **Examples teach the install shape.** Do not remove an explicit feature
    plugin, kit, renderer binding, or dependency merely because an aggregate
    EditorKit also includes it. Deliberate repetition can make copied code and
-   feature ownership transparent. Transparency is source-level, never duplicate
-   runtime membership: filter the feature descriptor out of the aggregate,
-   then explicitly add/configure it once.
+   feature ownership transparent. Terminal configurations of the same authored
+   plugin compose in source order, so append the explicit configuration after
+   EditorKit and let its defined values win. Unrelated plugins and divergent
+   authoring branches cannot share a name.
 
 ## Critical Rules
 
@@ -74,7 +75,7 @@ and registry wiring.
 - Keep `usePath()` only when a descendant must rerender or resynchronize as its
   element moves and no path prop is already available. Account for that
   dependency in the repeated-unit subscription budget.
-- Prefer direct `editor.api.<pluginKey>` / `editor.update.<group>` in concrete
+- Prefer direct `editor.api.<pluginName>` / `editor.update.<group>` in concrete
   host-owned app code with a complete inferred kit. Copied registry UI is
   generic by definition: never import its host editor type or use root plugin
   namespaces there. Use `editor.plugin(plugin)` or `useEditorPlugin(plugin)`.
@@ -89,13 +90,13 @@ and registry wiring.
   consumers, and compose renderer-specific peer kits in the owning editor
   preset. Do not create a base twin because an unrelated renderer kit was
   bundled into a neutral owner.
-- Base/static kits must not import `platejs/react`, `@platejs/core/react`, or
-  any `@platejs/*/react` entrypoint. Bind static components with
-  `BasePlugin.configure({ component: StaticComponent })`. Reserve
-  `toPlatePlugin(BasePlugin)` for live React adapters.
-- Bind that Base descriptor to the static renderer module, never the live
-  client node component. Registry Base kits should import the owning
-  `*-static` component.
+- Base and Plate constructors accept root-level `component`; Base `.extend()`
+  does not. Static/base kits declare or terminally replace the owning
+  server-safe component and never import `platejs/react`, `@platejs/core/react`,
+  or any `@platejs/*/react` entrypoint just to bind it.
+- Use `toPlatePlugin()` at the owning React adapter to publish a reusable
+  Plate-layer descriptor or add genuine Plate-only authoring. A terminal
+  consumer never inserts conversion merely to set `component`.
 
 ### React Performance & Effects → [react-performance.md](./rules/react-performance.md)
 
@@ -115,9 +116,9 @@ and registry wiring.
 - Treat registry examples as teaching/install surfaces, not optimized host-app
   presets. Preserve explicit feature configuration when the example metadata
   names that feature kit or the source intentionally demonstrates its binding,
-  even if EditorKit installs the same descriptor transitively. Filter that
-  descriptor from EditorKit before explicitly adding it so each key installs
-  exactly once.
+  even if EditorKit installs the same descriptor transitively. Append a terminal
+  configuration of that authored plugin after EditorKit so earlier fields
+  survive and the explicit later configuration wins.
 - Do not create, modernize, polish, or parity-sync `*-classic` registry
   variants, including `list-classic`. Touch an existing classic surface only
   for a user-facing regression, security/release blocker, or an explicitly

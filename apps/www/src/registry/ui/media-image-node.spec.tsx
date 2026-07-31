@@ -16,7 +16,7 @@ mock.module('@platejs/media/react', () => ({
   Image: ({ className }: React.ComponentProps<'img'>) => (
     <img className={className} data-testid="image" alt="" />
   ),
-  ImagePlugin: { key: 'img' },
+  ImagePlugin: { name: 'img' },
   useMediaState: useMediaStateMock,
 }));
 

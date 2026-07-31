@@ -19,7 +19,7 @@ import { tabbableValue } from '@/registry/examples/values/tabbable-value';
 import { Editor, EditorContainer } from '@/registry/ui/editor';
 
 const TabbableElementPlugin = createPlatePlugin({
-  key: 'tabbable-element',
+  name: 'tabbable-element',
   schema: { element: { void: 'block' } },
 }).configure({ component: TabbableElement });
 

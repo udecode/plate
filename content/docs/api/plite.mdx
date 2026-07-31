@@ -50,7 +50,8 @@ changes.
 | Transaction API | `EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorTransactionNodesApi`, `EditorTransactionSelectionApi` | Mutate editor state inside `editor.update(...)`. |
 | Interfaces | `ElementApi`, `NodeApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi` | Typed helpers for Plite data structures. |
 | Anchors | `Anchor`, `editor.anchor`, `tx.anchor` | Keep paths, points, and ranges mapped through document changes. |
-| Extensions | `defineEditorExtension`, `defineEditorSchema`, `defineStateField`, `property`, `schema` | Register schema facts, state groups, tx groups, corrections, commands, query middleware, and commit hooks. |
+| Extensions | `defineEditorExtension`, `defineEditorSchema`, `defineStateField`, `property`, `schema` | Register schema facts, owner-local reads and updates, corrections, commands, read middleware, and lifecycle hooks. |
+| Dependency references | `EditorExtensionDependencyReference` | Describe one shallow extension identity with `name` and optional `enabled`; capability/provider compiler types stay under `@platejs/plite/internal`. |
 | Value codecs | `defineValueCodec`, `valueCodecs`, `encodeEditorEffect`, `decodeEditorEffect` | Version persisted fields and keyed shared effects. |
 
 ## Editor Shape
@@ -62,7 +63,7 @@ An `Editor` exposes committed state through explicit read and update entrypoints
 | `api` | `Readonly<EditorCoreApiGroups & EditorInstalledApiGroups>` | Access installed runtime services. |
 | `id` | `string` | Identify the logical editor instance. |
 | `extend` | `(extension) => () => void` | Install an extension and return its cleanup function. |
-| `getApi` | `(extension) => unknown` | Read one extension token's typed runtime API. |
+| `extension` | `(descriptor) => EditorExtensionPortal` | Read one installed descriptor's typed runtime API. |
 | `read` | `EditorRead<Value, TExtensions>` | Run direct or grouped committed-state reads. |
 | `subscribe` | `(listener) => () => void` | Observe snapshots and optional commits. |
 | `subscribeCommit` | `(listener) => () => void` | Observe committed changes. |
@@ -96,16 +97,17 @@ editor.update({ history: "skip" }).selection.set([]);
 ```
 
 History is a Plite extension. It stores undo and redo batches, exposes history
-state through read groups, and exposes undo/redo plus batching helpers through
-transaction groups.
+state through its read group, and exposes undo/redo plus batching helpers
+through its update group.
 
 ## Extension Authoring
 
-Extensions register schema facts, state groups, transaction groups,
-corrections, commands, query middleware, commit listeners, and runtime APIs.
+Extensions register schema facts, owner-local read and update groups,
+corrections, commands, read middleware, lifecycle listeners, and runtime APIs.
 
-Use `api` for mounted host/runtime services. Use `tx` for feature commands that
-change Plite model state.
+Use an `api` factory for mounted host/runtime services, even when it needs no
+context. It receives one `{ editor, root, getContributions }` object. Use
+`update` for feature commands that change Plite model state.
 
 ```ts
 import {

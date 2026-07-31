@@ -6,6 +6,7 @@ import {
   NodeApi,
   RangeApi,
 } from '@platejs/plite';
+import { clipboardHandler } from '@platejs/plite-dom';
 
 import type {
   InsertBreakInputRuleContext,
@@ -18,124 +19,131 @@ import { createBasePlugin } from '../../plugin';
 import { getPlateRuntime } from '../../../internal/plugin/compilePlateModel';
 
 export const InputRulesPlugin = createBasePlugin({
-  key: 'inputRules',
-
+  name: 'inputRules',
   editOnly: true,
-  extension: ({ editor }) => {
-    const createCachedGetter = <TValue>(compute: () => TValue) => {
-      let hasValue = false;
-      let value: TValue;
+}).extend(({ editor }) => {
+  const createCachedGetter = <TValue>(compute: () => TValue) => {
+    let hasValue = false;
+    let value: TValue;
 
-      return () => {
-        if (!hasValue) {
-          value = compute();
-          hasValue = true;
-        }
+    return () => {
+      if (!hasValue) {
+        value = compute();
+        hasValue = true;
+      }
 
-        return value;
-      };
+      return value;
     };
-    const createSelectionContext = ({
-      state,
-    }: {
-      state: Pick<
-        EditorStateView,
-        'nodes' | 'points' | 'schema' | 'selection' | 'text'
-      >;
-    }): Omit<SelectionInputRuleContext, 'pluginKey'> => {
-      const selection = state.selection();
-      const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
-      const getBlockEntry = createCachedGetter(() =>
-        selection
-          ? state.nodes.above<Element>({
-              at: selection.focus,
-              match: (node) =>
-                ElementApi.isElement(node) && state.schema.isBlock(node),
-            })
-          : undefined
-      );
-      const getBlockStartRange = createCachedGetter(() => {
-        const blockEntry = getBlockEntry();
+  };
+  const createSelectionContext = ({
+    state,
+  }: {
+    state: Pick<
+      EditorStateView,
+      'nodes' | 'points' | 'schema' | 'selection' | 'text'
+    >;
+  }): Omit<SelectionInputRuleContext, 'pluginName'> => {
+    const selection = state.selection();
+    const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
+    const getBlockEntry = createCachedGetter(() =>
+      selection
+        ? state.nodes.above<Element>({
+            at: selection.focus,
+            match: (node) =>
+              ElementApi.isElement(node) && state.schema.isBlock(node),
+          })
+        : undefined
+    );
+    const getBlockStartRange = createCachedGetter(() => {
+      const blockEntry = getBlockEntry();
 
-        if (!selection || !blockEntry) return;
+      if (!selection || !blockEntry) return;
 
-        const anchor = state.points.start(blockEntry[1]);
+      const anchor = state.points.start(blockEntry[1]);
 
-        if (!anchor) return;
-
-        return {
-          anchor,
-          focus: RangeApi.start(selection),
-        };
-      });
-      const getBlockStartText = createCachedGetter(() => {
-        const range = getBlockStartRange();
-
-        return range ? state.text.string(range) : undefined;
-      });
-      const getCharAfter = createCachedGetter(() => {
-        if (!selection || !isCollapsed) return;
-
-        const afterPoint = state.points.after(selection, {
-          distance: 1,
-          unit: 'character',
-        });
-
-        return afterPoint
-          ? state.text.string({
-              anchor: selection.anchor,
-              focus: afterPoint,
-            }) || undefined
-          : undefined;
-      });
-      const getCharBefore = createCachedGetter(() => {
-        if (!selection || !isCollapsed) return;
-
-        const beforePoint = state.points.before(selection, {
-          distance: 1,
-          unit: 'character',
-        });
-
-        return beforePoint
-          ? state.text.string({
-              anchor: beforePoint,
-              focus: selection.anchor,
-            }) || undefined
-          : undefined;
-      });
+      if (!anchor) return;
 
       return {
-        editor,
-        getBlockEntry,
-        getBlockStartRange,
-        getBlockStartText,
-        getBlockTextBeforeSelection: () => getBlockStartText() ?? '',
-        getCharAfter,
-        getCharBefore,
-        isCollapsed,
+        anchor,
+        focus: RangeApi.start(selection),
       };
-    };
+    });
+    const getBlockStartText = createCachedGetter(() => {
+      const range = getBlockStartRange();
+
+      return range ? state.text.string(range) : undefined;
+    });
+    const getCharAfter = createCachedGetter(() => {
+      if (!selection || !isCollapsed) return;
+
+      const afterPoint = state.points.after(selection, {
+        distance: 1,
+        unit: 'character',
+      });
+
+      return afterPoint
+        ? state.text.string({
+            anchor: selection.anchor,
+            focus: afterPoint,
+          }) || undefined
+        : undefined;
+    });
+    const getCharBefore = createCachedGetter(() => {
+      if (!selection || !isCollapsed) return;
+
+      const beforePoint = state.points.before(selection, {
+        distance: 1,
+        unit: 'character',
+      });
+
+      return beforePoint
+        ? state.text.string({
+            anchor: beforePoint,
+            focus: selection.anchor,
+          }) || undefined
+        : undefined;
+    });
 
     return {
-      clipboard: {
+      editor,
+      getBlockEntry,
+      getBlockStartRange,
+      getBlockStartText,
+      getBlockTextBeforeSelection: () => getBlockStartText() ?? '',
+      getCharAfter,
+      getCharBefore,
+      isCollapsed,
+    };
+  };
+
+  return {
+    contributions: [
+      clipboardHandler({
         insertData(data, { next, transaction: tx }) {
           const text = data.getData('text/plain') || null;
           const selectionContext = createSelectionContext({ state: tx });
           let handled = false;
 
           for (const rule of getPlateRuntime(editor).inputRules.insertData) {
-            const context: InsertDataInputRuleContext = {
+            const context = {
               cause: 'insertData',
               data,
               insertData: (nextData) => {
                 next(nextData);
               },
-              pluginKey: rule.pluginKey,
+              pluginName: rule.pluginName,
               text,
               tx,
               ...selectionContext,
+            } satisfies Omit<InsertDataInputRuleContext, 'tx'> & {
+              tx: typeof tx;
             };
-            if (rule.enabled?.(context) === false) continue;
+            if (
+              typeof rule.enabled === 'function' &&
+              Reflect.apply(rule.enabled, undefined, [context]) === false
+            ) {
+              continue;
+            }
             if (
               rule.mimeTypes?.length &&
               !rule.mimeTypes.some((type) => {
@@ -152,10 +160,15 @@ export const InputRulesPlugin = createBasePlugin({
               continue;
             }
 
-            const match = rule.resolve ? rule.resolve(context) : true;
+            const match =
+              typeof rule.resolve === 'function'
+                ? Reflect.apply(rule.resolve, undefined, [context])
+                : true;
 
             if (match === undefined) continue;
-            if (rule.apply(context, match) !== false) {
+            if (
+              Reflect.apply(rule.apply, undefined, [context, match]) !== false
+            ) {
               handled = true;
 
               break;
@@ -166,111 +179,134 @@ export const InputRulesPlugin = createBasePlugin({
 
           return next(data);
         },
-      },
-      commands: ({ around }) => [
-        around(editorCommands.insertBreak, ({ state, next }) => {
-          let handled = false;
-          let continueInsertion = false;
-          const prefix = state.transaction((tx) => {
-            const selectionContext = createSelectionContext({ state: tx });
+      }),
+    ],
+    commands: ({ around }) => [
+      around(editorCommands.insertBreak, ({ state, next }) => {
+        let handled = false;
+        let continueInsertion = false;
+        const prefix = state.transaction((tx) => {
+          const selectionContext = createSelectionContext({ state: tx });
 
-            for (const rule of getPlateRuntime(editor).inputRules.insertBreak) {
-              const context: InsertBreakInputRuleContext = {
-                cause: 'insertBreak',
-                insertBreak: () => {
-                  if (continueInsertion) {
-                    throw new Error(
-                      'An input rule cannot continue insertBreak more than once.'
-                    );
-                  }
+          for (const rule of getPlateRuntime(editor).inputRules.insertBreak) {
+            const context = {
+              cause: 'insertBreak',
+              insertBreak: () => {
+                if (continueInsertion) {
+                  throw new Error(
+                    'An input rule cannot continue insertBreak more than once.'
+                  );
+                }
 
-                  continueInsertion = true;
-                },
-                pluginKey: rule.pluginKey,
-                tx,
-                ...selectionContext,
-              };
-              if (rule.enabled?.(context) === false) continue;
-              const match = rule.resolve ? rule.resolve(context) : true;
-
-              if (match === undefined) continue;
-              if (rule.apply(context, match) !== false) {
-                handled = true;
-
-                break;
-              }
+                continueInsertion = true;
+              },
+              pluginName: rule.pluginName,
+              tx,
+              ...selectionContext,
+            } satisfies Omit<InsertBreakInputRuleContext, 'tx'> & {
+              tx: typeof tx;
+            };
+            if (
+              typeof rule.enabled === 'function' &&
+              Reflect.apply(rule.enabled, undefined, [context]) === false
+            ) {
+              continue;
             }
-          });
+            const match =
+              typeof rule.resolve === 'function'
+                ? Reflect.apply(rule.resolve, undefined, [context])
+                : true;
 
-          if (handled && !continueInsertion) return prefix;
+            if (match === undefined) continue;
+            if (
+              Reflect.apply(rule.apply, undefined, [context, match]) !== false
+            ) {
+              handled = true;
 
-          return next.after(prefix);
-        }),
-        around(editorCommands.insertText, ({ input, state, next }) => {
-          const rules =
-            getPlateRuntime(editor).inputRules.insertText.byTrigger[
-              input.text
-            ] ?? [];
-          const target = input.options?.at;
-          const resolvedTarget = NodeApi.isNode(target)
-            ? state.nodes.path(target)
-            : target;
-
-          if (NodeApi.isNode(target) && !resolvedTarget) return next();
-
-          const commandOptions = input.options
-            ? { ...input.options, at: resolvedTarget }
-            : undefined;
-          let handled = false;
-          let continuation: typeof input | undefined;
-          const prefix = state.transaction((tx) => {
-            const selectionContext = createSelectionContext({ state: tx });
-
-            for (const rule of rules) {
-              const context: InsertTextInputRuleContext = {
-                cause: 'insertText',
-                insertText: (text, options) => {
-                  if (continuation) {
-                    throw new Error(
-                      'An input rule cannot continue insertText more than once.'
-                    );
-                  }
-
-                  continuation = { ...input, options, text };
-                },
-                options: commandOptions,
-                pluginKey: rule.pluginKey,
-                text: input.text,
-                tx,
-                ...selectionContext,
-              };
-              if (
-                Array.isArray(rule.trigger)
-                  ? !rule.trigger.includes(context.text)
-                  : rule.trigger !== context.text
-              ) {
-                continue;
-              }
-              if (rule.enabled?.(context) === false) continue;
-
-              const match = rule.resolve ? rule.resolve(context) : true;
-
-              if (match === undefined) continue;
-              if (rule.apply(context, match) !== false) {
-                handled = true;
-
-                break;
-              }
+              break;
             }
-          });
+          }
+        });
 
-          if (handled && !continuation) return prefix;
+        if (handled && !continueInsertion) return prefix;
 
-          return continuation
-            ? next.after(prefix, continuation)
-            : next.after(prefix);
-        }),
-      ],
-    };
-  },
+        return next.after(prefix);
+      }),
+      around(editorCommands.insertText, ({ input, state, next }) => {
+        const rules =
+          getPlateRuntime(editor).inputRules.insertText.byTrigger[input.text] ??
+          [];
+        const target = input.options?.at;
+        const resolvedTarget = NodeApi.isNode(target)
+          ? state.nodes.path(target)
+          : target;
+
+        if (NodeApi.isNode(target) && !resolvedTarget) return next();
+
+        const commandOptions = input.options
+          ? { ...input.options, at: resolvedTarget }
+          : undefined;
+        let handled = false;
+        let continuation: typeof input | undefined;
+        const prefix = state.transaction((tx) => {
+          const selectionContext = createSelectionContext({ state: tx });
+
+          for (const rule of rules) {
+            const context = {
+              cause: 'insertText',
+              insertText: (text, options) => {
+                if (continuation) {
+                  throw new Error(
+                    'An input rule cannot continue insertText more than once.'
+                  );
+                }
+
+                continuation = { ...input, options, text };
+              },
+              options: commandOptions,
+              pluginName: rule.pluginName,
+              text: input.text,
+              tx,
+              ...selectionContext,
+            } satisfies Omit<InsertTextInputRuleContext, 'tx'> & {
+              tx: typeof tx;
+            };
+            if (
+              Array.isArray(rule.trigger)
+                ? !rule.trigger.includes(context.text)
+                : rule.trigger !== context.text
+            ) {
+              continue;
+            }
+            if (
+              typeof rule.enabled === 'function' &&
+              Reflect.apply(rule.enabled, undefined, [context]) === false
+            ) {
+              continue;
+            }
+
+            const match =
+              typeof rule.resolve === 'function'
+                ? Reflect.apply(rule.resolve, undefined, [context])
+                : true;
+
+            if (match === undefined) continue;
+            if (
+              Reflect.apply(rule.apply, undefined, [context, match]) !== false
+            ) {
+              handled = true;
+
+              break;
+            }
+          }
+        });
+
+        if (handled && !continuation) return prefix;
+
+        return continuation
+          ? next.after(prefix, continuation)
+          : next.after(prefix);
+      }),
+    ],
+  };
 });

@@ -89,7 +89,7 @@ export function ParagraphElement(props: PlateElementProps) {
 }
 
 const ParagraphPlugin = createPlatePlugin({
-  key: 'p',
+  name: 'p',
   type: 'paragraph',
   schema: {
     element: { content: schema.content.text({ default: 'text', min: 1 }) },
@@ -106,7 +106,7 @@ const ParagraphPlugin = createPlatePlugin({
 
 ```ts
 const SignaturePlugin = createPlatePlugin({
-  key: 'signature',
+  name: 'signature',
   update: ({ tx }) => ({
     insert() {
       tx.text.insert(' - Plate');
@@ -123,7 +123,7 @@ editor.update((tx) => {
 
 ```ts
 const CalloutPlugin = createPlatePlugin({
-  key: 'callout',
+  name: 'callout',
   update: ({ tx }) => ({
     insertCallout() {
       tx.nodes.insert({
@@ -139,9 +139,9 @@ editor.update((tx) => {
 });
 ```
 
-插件专属的不可变服务放在 `api`，快照内查询放在 `read`，真正编辑器级或参与
-Plite command、correction、query pipeline 的行为放在 `extension`。互相独立的
-字段放进 constructor。只有 import/prebuilt declaration、constructor 无法访问的
+插件专属的不可变服务放在 `api`，快照内查询放在 `read`，command、correction、
+read middleware、lifecycle、activation、validation 等底层行为使用根级原生 Plite
+字段。互相独立的字段放进 constructor。只有 import/prebuilt declaration、constructor 无法访问的
 shared factory 或前一阶段类型需要 `.extend()`。Codec declaration 通过 constructor 的
 `codecs: ({ defineCodecs }) => defineCodecs(map)` 构建；foreign codec 使用
 `defineCodecs(TargetPlugin, map)`。
@@ -162,9 +162,9 @@ const onKeyDown = (event) => {
 
 // 之后
 const TabPlugin = createPlatePlugin({
-  key: 'tab',
-  handlers: {
-    onKeyDown: ({ editor, event }) => {
+  name: 'tab',
+  on: {
+    keyDown: ({ editor, event }) => {
       if (event.key === 'Tab') {
         // 处理 Tab 键
       }
@@ -177,7 +177,7 @@ const TabPlugin = createPlatePlugin({
 
 ```ts
 const TabPlugin = createPlatePlugin({
-  key: 'tab',
+  name: 'tab',
   shortcuts: {
     indent: {
       handler: ({ editor }) => {

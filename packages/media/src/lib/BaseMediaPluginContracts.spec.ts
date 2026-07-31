@@ -1,11 +1,18 @@
-import { createBaseEditor, createBasePlugin } from '@platejs/core';
+import {
+  createBaseEditor,
+  createBasePlugin,
+  type DefinitionOf,
+} from '@platejs/core';
 import { type PropertyValueOf, SelectionApi, schema } from '@platejs/plite';
 import { KEYS, NODES } from '@platejs/utils';
 
 import {
+  type AlignedMediaInsertInput,
   BaseAudioPlugin,
   BaseFilePlugin,
   BaseVideoPlugin,
+  type ImageInsertInput,
+  type ProviderMediaInsertInput,
 } from './BaseMediaPlugin';
 import { BaseImagePlugin } from './image/BaseImagePlugin';
 import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
@@ -13,7 +20,7 @@ import { mediaElementProperties } from './BaseMediaPlugin';
 import { BasePlaceholderPlugin } from './placeholder/BasePlaceholderPlugin';
 
 const TestInlinePlugin = createBasePlugin({
-  key: 'testInline',
+  name: 'testInline',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -39,6 +46,53 @@ type _basePlaceholderPluginNotAny = AssertFalse<
 type _mediaWidthValueIsInferred = AssertTrue<
   IsEqual<PropertyValueOf<typeof mediaElementProperties.width>, number | string>
 >;
+type _audioInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<DefinitionOf<typeof BaseAudioPlugin>['update']['insert']>[0],
+    AlignedMediaInsertInput
+  >
+>;
+type _audioInsertOmitsAlt = AssertFalse<
+  'alt' extends keyof Parameters<
+    DefinitionOf<typeof BaseAudioPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _imageInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<DefinitionOf<typeof BaseImagePlugin>['update']['insert']>[0],
+    ImageInsertInput
+  >
+>;
+type _imageInsertHasAlt = AssertTrue<
+  'alt' extends keyof Parameters<
+    DefinitionOf<typeof BaseImagePlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _embedInsertInputIsExact = AssertTrue<
+  IsEqual<
+    Parameters<
+      DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
+    >[0],
+    ProviderMediaInsertInput
+  >
+>;
+type _embedInsertHasProvider = AssertTrue<
+  'provider' extends keyof Parameters<
+    DefinitionOf<typeof BaseMediaEmbedPlugin>['update']['insert']
+  >[0]
+    ? true
+    : false
+>;
+type _mediaApiIsPublished = AssertTrue<
+  IsEqual<
+    ReturnType<DefinitionOf<typeof BaseImagePlugin>['api']['normalizeUrl']>,
+    { provider?: string; sourceUrl?: string; url: string } | undefined
+  >
+>;
 
 describe('Base media plugin contracts', () => {
   it('configures every media node as a keyboard-selectable direct caption owner', () => {
@@ -50,7 +104,7 @@ describe('Base media plugin contracts', () => {
       BaseMediaEmbedPlugin,
     ]) {
       const editor = createBaseEditor({ plugins: [plugin] });
-      const element = editor.read.schema.element(plugin);
+      const element = editor.read.schema.element(plugin.type);
 
       expect(element?.behavior).toMatchObject({
         isolating: true,
@@ -73,7 +127,7 @@ describe('Base media plugin contracts', () => {
     });
 
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [
@@ -91,7 +145,7 @@ describe('Base media plugin contracts', () => {
       })
     ).not.toThrow();
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ children: [{ text: '' }], type: KEYS.p }],
@@ -120,7 +174,9 @@ describe('Base media plugin contracts', () => {
       alt: 'Preview',
       children: [{ text: '' }],
     });
-    expect(editor.getPlugin(BaseImagePlugin).render.nodeProps).toBeUndefined();
+    expect(
+      editor.plugin(BaseImagePlugin).plugin.render.nodeProps
+    ).toBeUndefined();
   });
 
   it('preserves relative media widths in document data', () => {
@@ -174,7 +230,7 @@ describe('Base media plugin contracts', () => {
       expect.objectContaining({ type: KEYS.video, width: '85%' }),
     ]);
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ text: '' }],
@@ -291,7 +347,7 @@ describe('Base media plugin contracts', () => {
     });
     const data = new DataTransfer();
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const document = new DOMParser().parseFromString(
       data.getData('text/html'),

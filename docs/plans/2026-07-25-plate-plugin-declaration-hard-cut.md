@@ -257,7 +257,7 @@ Findings:
 - Current doctrine and generated worker skills still explicitly require
   `.withComponent()` and reject public component binding.
 - Current `createPlatePlugin` creator input exposes only
-  dependencies/enabled/key/options/schema/targetPluginKeys/type, explaining the
+  dependencies/enabled/key/options/schema/targetPluginNames/type, explaining the
   poor autocomplete shown by the user.
 - `BasePlugin` currently owns React-specific `.withComponent()`, while
   `toPlatePlugin` already provides the honest Base-to-Plate boundary.

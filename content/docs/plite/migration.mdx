@@ -161,12 +161,15 @@ Use `createEditor` plus extensions for lower-level runtime construction.
 
 ```tsx
 import { createEditor } from "@platejs/plite";
+import { dom } from "@platejs/plite-dom";
 import { history } from "@platejs/plite-history";
 import { react } from "@platejs/plite-react";
 
+const DOMExtension = dom();
+
 const editor = createEditor({
   initialValue,
-  extensions: [react(), history()],
+  extensions: [react({ dom: DOMExtension }), history()],
 });
 ```
 

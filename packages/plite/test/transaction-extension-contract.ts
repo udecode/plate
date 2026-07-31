@@ -189,7 +189,7 @@ describe('transaction extension values', () => {
             : { content: schema.content.text() },
         },
         id: 'facet-schema',
-        root: { content: schema.content.type('quote') } as const,
+        root: schema.content.type('quote'),
         unknown: 'reject',
         version: voidKind ? 2 : 1,
       });

@@ -84,7 +84,7 @@ export const createYjsPeerWithEditor = <TEditor extends TestEditor>(
     ...(roots ? { roots } : {}),
     selection: null,
   });
-  editor.read.schema.validateDocument(editor.read.value());
+  editor.read.schema.assertDocument(editor.read.value());
 
   const doc = new Y.Doc();
 

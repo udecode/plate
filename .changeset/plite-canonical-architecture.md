@@ -18,6 +18,8 @@
 - Delete the exact selected node when Backspace or Delete targets a serializable `NodeSelection`, then place a text selection at the nearest surviving sibling
 - Let extensions register serializable selection kinds with validation, mapping, range enumeration, replacement, and DOM projection hooks
 - Publish one-shot `editor.read.*` and `editor.update.*` APIs with callback forms for grouped work
+- Name installed extension namespace projections
+  `EditorInstalledReadGroups` and `EditorInstalledUpdateGroups`
 - Keep state-backed read methods available inside active and speculative transactions without exposing them as one-shot editor updates
 - Add document replacement, block-relative insertion, live location targets, property matchers, and explicit selection predicates
 - Replace the complete serializable document solely through `tx.value.replace({ children, roots, meta, selection })`; remove omitted roots, reset omitted persisted meta, and clear omitted selection
@@ -26,7 +28,13 @@
   canonicalization, history, and collaboration share one invariant
 - Resolve extension dependencies and conflicts by descriptor, install required
   dependencies transitively with reference-counted cleanup, and expose typed
-  dependency APIs through `editor.getApi(descriptor)`
+  dependency APIs through `editor.extension(descriptor).api`
+- Keep root Plite dependency references shallow and non-generic as
+  `{ name, enabled? }`. Plate's separate `PluginReference` carries
+  `{ name, type }`. Keep name-keyed capability/provider inference under
+  `@platejs/plite/internal`, without recursively encoding exact dependency
+  ancestry. Static portals prove name and capability equivalence; runtime
+  portals prove exact installed descriptor identity.
 - Add descriptor-owned typed extension contributions for package-specific
   contribution channels
 - Define package-owned contribution channels with `defineExtensionPoint(...)`
@@ -34,12 +42,25 @@
 - Intercept core-owned pure reads through descriptor-based extension `read`
   middleware, with transaction-draft state, single delegation, and complete
   generator cleanup
-- Group change callbacks under `on`, use `config` as the immutable extension
-  input, name descriptor collections as `stateFields`, `effectTypes`,
-  `facetProviders`, and `selectionKinds`, and defer published-state work through
-  `afterPublish`
+- Group prefixless change callbacks under `on`; declare owner-local methods
+  through `read` and `update`, core read wrappers through `readMiddleware`,
+  candidate validation through `validate`, and descriptor collections as
+  `stateFields`, `effectTypes`, `facetProviders`, and `selectionKinds`
+- Infer one exact definition from every `defineEditorExtension({ ... })`
+  author object, carry that sole public definition generic through
+  `EditorExtension<D>`, omit undeclared fields from the inferred descriptor,
+  and expose `DefinitionOf<typeof Extension>` as the public definition
+  extractor
+- Expose `EditorExtensionTypeProvider` as the public value-sensitive capability
+  bridge and keep higher-kinded encoding, normalized installed capabilities,
+  and transitive dependency expansion under `@platejs/plite/internal`
+- Keep immutable author inputs in the descriptor factory closure instead of an
+  extension `config` channel
 - Resolve functional extension APIs against each editor view root and preserve
   the complete root-scoped read surface, including exported selection slices
+- Declare every extension API through an `api` factory, including
+  context-free API objects; contextual factories receive one
+  `{ editor, root, getContributions }` object
 - Keep merge, selectability, and exported-slice policy on typed `editorReads`
   descriptors instead of extension-specific root hooks
 - Name the model selection projection `primaryRange`

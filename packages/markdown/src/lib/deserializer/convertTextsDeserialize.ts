@@ -12,7 +12,7 @@ export const convertTextsDeserialize = (
   options: DeserializeMdContext
 ) =>
   mdastNode.children.reduce<Descendant[]>((acc, node) => {
-    const type = options.getPluginType(mdastToPlate(mdastNode.type));
+    const type = options.registry.getType(mdastToPlate(mdastNode.type));
 
     acc.push(...buildSlateNode(node, { ...deco, [type]: true }, options));
     return acc;

@@ -9,16 +9,16 @@ describe('BaseCodeDrawingPlugin', () => {
       plugins: [BaseCodeDrawingPlugin],
     });
 
-    const plugin = editor.getPlugin(BaseCodeDrawingPlugin);
+    const plugin = editor.plugin(BaseCodeDrawingPlugin).plugin;
     const element = { children: [{ text: '' }], type: NODES.codeDrawing };
 
-    expect(plugin.key).toBe('codeDrawing');
+    expect(plugin.name).toBe('codeDrawing');
     expect(editor.read.schema.isBlock(element)).toBe(true);
     expect(editor.read.schema.isVoid(element)).toBe(true);
     expect(editor.read.schema.property(BaseCodeDrawingPlugin)?.value.kind).toBe(
       'json'
     );
-    expect(editor.getType(KEYS.codeDrawing)).toBe(NODES.codeDrawing);
+    expect(editor.plugin(KEYS.codeDrawing).type).toBe(NODES.codeDrawing);
     expect(plugin.type).toBe(NODES.codeDrawing);
 
     editor.update((tx) => {
@@ -32,7 +32,7 @@ describe('BaseCodeDrawingPlugin', () => {
     });
 
     expect(() =>
-      editor.read.schema.validateDocument({
+      editor.read.schema.assertDocument({
         children: [
           {
             children: [{ text: '' }],
@@ -71,13 +71,9 @@ describe('BaseCodeDrawingPlugin', () => {
     ]);
   });
 
-  it('merges custom data and uses the configured node type', () => {
+  it('merges custom data with the defaults', () => {
     const editor = createBaseEditor({
-      plugins: [
-        BaseCodeDrawingPlugin.configure({
-          type: 'custom-code-drawing',
-        }),
-      ],
+      plugins: [BaseCodeDrawingPlugin],
       initialValue: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 
@@ -97,7 +93,7 @@ describe('BaseCodeDrawingPlugin', () => {
         drawingMode: 'Both',
         drawingType: 'Graphviz',
       },
-      type: 'custom-code-drawing',
+      type: NODES.codeDrawing,
     });
   });
 });

@@ -39,7 +39,7 @@ It also unwrapped the wrong node for the paragraph-only case.
 The broken shape looked like this:
 
 ```ts
-if (node.children.length === 1 && firstChild.type === editor.getType(KEYS.p)) {
+if (node.children.length === 1 && firstChild.type === editor.plugin(KEYS.p).type) {
   editor.tf.unwrapNodes({ at: PathApi.child(path, 0) });
 }
 
@@ -58,7 +58,7 @@ returning:
 
 ```ts
 correct({ entry: [node, path], tx }) {
-  const columnGroupType = editor.getType(KEYS.columnGroup);
+  const columnGroupType = editor.plugin(KEYS.columnGroup).type;
 
   if (
     ElementApi.isElementType<TColumnGroupElement>(node, columnGroupType) &&

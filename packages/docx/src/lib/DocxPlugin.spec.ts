@@ -11,7 +11,7 @@ describe('DocxPlugin', () => {
   const createContext = prepareHtmlPluginContext(editor, DocxPlugin);
   const context = editor.read((state) => createContext(state));
   const transformData =
-    editor.getPlugin(DocxPlugin).parsers.html?.transformData;
+    editor.plugin(DocxPlugin).plugin.parsers.html?.transformData;
   const source = (dataTransfer: DataTransfer) => ({
     files: dataTransfer.files,
     getData: (format: string) => dataTransfer.getData(format),

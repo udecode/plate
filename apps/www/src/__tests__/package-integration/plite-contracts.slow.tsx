@@ -19,11 +19,11 @@ const createMarkEditor = (input: any) =>
     initialValue: input.children,
   });
 
-const createVoidElementPlugin = (key: string) =>
+const createVoidElementPlugin = (name: string) =>
   createBasePlugin({
-    key,
+    name,
     schema: { element: { void: 'block' } },
-    type: key,
+    type: name,
   });
 
 const deleteBackwardCharacter = (editor: BaseEditor<any, any>) => {
@@ -358,7 +358,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, BoldPlugin.key);
+      toggleMark(editor, BoldPlugin.name);
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -387,7 +387,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, ItalicPlugin.key, { remove: BoldPlugin.key });
+      toggleMark(editor, ItalicPlugin.name, { remove: BoldPlugin.name });
 
       expect(editor.read.children()).toEqual(output.children);
     });
@@ -415,7 +415,7 @@ describe('slate cross-package contracts', () => {
 
       const editor = createMarkEditor(input);
 
-      toggleMark(editor, BoldPlugin.key);
+      toggleMark(editor, BoldPlugin.name);
 
       expect(editor.read.children()).toEqual(output.children);
     });

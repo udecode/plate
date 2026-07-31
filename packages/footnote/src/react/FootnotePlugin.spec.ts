@@ -2,7 +2,7 @@ import {
   createPlateEditor,
   NavigationFeedbackPlugin,
 } from '@platejs/core/react';
-import { defineEditorExtension } from '@platejs/plite';
+import { DOMEditor } from '@platejs/plite-dom/internal';
 import { KEYS } from '@platejs/utils';
 
 import {
@@ -12,16 +12,22 @@ import {
 } from './FootnotePlugin';
 
 describe('FootnotePlugin', () => {
+  afterEach(() => {
+    mock.restore();
+  });
+
   it('declares its exact React dependencies', () => {
-    expect(FootnotePlugin.dependencies.map(({ key }) => key)).toEqual([
-      FootnoteInputPlugin.key,
-      NavigationFeedbackPlugin.key,
+    expect(FootnotePlugin.dependencies.map(({ name }) => name)).toEqual([
+      FootnoteInputPlugin.name,
+      NavigationFeedbackPlugin.name,
     ]);
   });
 
   it('runs typed navigation feedback only after the headless selection commits', () => {
-    const focus = mock();
-    const scrollIntoView = mock();
+    const focusSpy = spyOn(DOMEditor, 'focus').mockImplementation(() => {});
+    const scrollSpy = spyOn(DOMEditor, 'scrollIntoView').mockImplementation(
+      () => {}
+    );
     const editor = createPlateEditor({
       plugins: [FootnotePlugin, FootnoteDefinitionPlugin] as const,
       initialValue: [
@@ -45,13 +51,6 @@ describe('FootnotePlugin', () => {
       ],
     });
 
-    editor.extend(
-      defineEditorExtension({
-        api: { dom: { focus, scrollIntoView } },
-        name: 'test:footnote-navigation-feedback',
-      })
-    );
-
     editor.update((tx) => {
       expect(tx.footnote.focusDefinition({ identifier: '1' })).toBe(true);
       expect(tx.selection()).toEqual({
@@ -59,15 +58,19 @@ describe('FootnotePlugin', () => {
         anchor: { offset: 0, path: [1, 0, 0] },
         focus: { offset: 0, path: [1, 0, 0] },
       });
-      expect(focus).not.toHaveBeenCalled();
-      expect(scrollIntoView).not.toHaveBeenCalled();
+      expect(focusSpy).not.toHaveBeenCalled();
+      expect(scrollSpy).not.toHaveBeenCalled();
     });
 
-    expect(focus).toHaveBeenCalledTimes(1);
-    expect(scrollIntoView).toHaveBeenLastCalledWith({
-      offset: 0,
-      path: [1, 0, 0],
-    });
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+    expect(scrollSpy).toHaveBeenLastCalledWith(
+      editor,
+      {
+        offset: 0,
+        path: [1, 0, 0],
+      },
+      undefined
+    );
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
     ).toMatchObject({
@@ -83,15 +86,19 @@ describe('FootnotePlugin', () => {
         anchor: { offset: 0, path: [0, 2] },
         focus: { offset: 0, path: [0, 2] },
       });
-      expect(focus).toHaveBeenCalledTimes(1);
-      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(focusSpy).toHaveBeenCalledTimes(1);
+      expect(scrollSpy).toHaveBeenCalledTimes(1);
     });
 
-    expect(focus).toHaveBeenCalledTimes(2);
-    expect(scrollIntoView).toHaveBeenLastCalledWith({
-      offset: 0,
-      path: [0, 2],
-    });
+    expect(focusSpy).toHaveBeenCalledTimes(2);
+    expect(scrollSpy).toHaveBeenLastCalledWith(
+      editor,
+      {
+        offset: 0,
+        path: [0, 2],
+      },
+      undefined
+    );
     expect(
       editor.plugin(NavigationFeedbackPlugin).store.get('activeTarget')
     ).toMatchObject({

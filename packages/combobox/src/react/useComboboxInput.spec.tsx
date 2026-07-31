@@ -16,7 +16,7 @@ mock.module('@platejs/core/react', () => ({
 }));
 
 const ComboboxInputPlugin = actualCoreReact.createPlatePlugin({
-  key: 'mentionInput',
+  name: 'mentionInput',
   schema: {
     element: {
       inline: true,

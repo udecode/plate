@@ -203,6 +203,7 @@ export {
   type ReactApi,
   type ReactEditor,
   type ReactEditorOptions,
+  type ReactExtension,
   react,
 } from './plugin/with-react';
 export type {

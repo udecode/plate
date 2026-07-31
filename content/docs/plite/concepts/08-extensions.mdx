@@ -1,17 +1,17 @@
 ---
 title: "Extensions"
-description: "Package reusable Plite schema, state, transaction, command, and rendering behavior."
+description: "Package reusable Plite schema, reads, updates, APIs, and lifecycle behavior."
 ---
 
 Extensions package reusable Plite behavior that should be installed, ordered,
-and removed as one unit. Use them when plain app functions are no longer enough.
-Plate uses plugins for product-level configured features; raw Plite calls this
-runtime unit an extension.
+and removed as one unit. Plate builds its product-level plugin conventions on
+this smaller runtime primitive.
 
 ## On This Page
 
 - [Smallest Extension](08-extensions#smallest-extension)
-- [Read And Write Helpers](08-extensions#read-and-write-helpers)
+- [Read And Update Helpers](08-extensions#read-and-update-helpers)
+- [Extension APIs](08-extensions#extension-apis)
 - [Extension Order](08-extensions#extension-order)
 - [Typed Extension Points](08-extensions#typed-extension-points)
 - [Activation And Reconfiguration](08-extensions#activation-and-reconfiguration)
@@ -20,17 +20,21 @@ runtime unit an extension.
 - [Commands And Corrections](08-extensions#commands-and-corrections)
 - [Clipboard And Fragment Policy](08-extensions#clipboard-and-fragment-policy)
 - [Slot Reference](08-extensions#slot-reference)
-- [Advanced TypeScript](08-extensions#advanced-typescript)
-- [Helper Namespaces](08-extensions#helper-namespaces)
+- [Type Inference](08-extensions#type-inference)
 
 ## Smallest Extension
 
 `defineEditorExtension(...)` preserves the literal extension name and lets
-`createEditor(...)` infer the installed surface. A complete schema is also an
-extension, created with `defineEditorSchema(...)`.
+`createEditor(...)` infer every installed capability. A complete schema is also
+an extension, created with `defineEditorSchema(...)`.
 
 ```ts
-import { createEditor, defineEditorSchema, schema } from "@platejs/plite";
+import {
+  createEditor,
+  defineEditorExtension,
+  defineEditorSchema,
+  schema,
+} from "@platejs/plite";
 
 const ArticleSchema = defineEditorSchema({
   elements: {
@@ -39,135 +43,150 @@ const ArticleSchema = defineEditorSchema({
     },
   },
   id: "article",
-  root: {
-    content: schema.content.type("paragraph", {
-      default: { type: "paragraph" },
-      min: 1,
-    }),
-  },
+  root: schema.content.type("paragraph", {
+    default: { type: "paragraph" },
+    min: 1,
+  }),
   unknown: "reject",
   version: 1,
 });
 
+const ArticleExtension = defineEditorExtension({
+  name: "article",
+});
+
 const editor = createEditor({
-  extensions: [ArticleSchema] as const,
+  extensions: [ArticleSchema, ArticleExtension] as const,
   initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
 });
 ```
 
 Use feature extensions for reusable behavior and partial schema contributions.
 Use one complete schema to close the document vocabulary. See
-[Schema](19-schema) for the full declaration and compiler model.
+[Schema](19-schema) for the declaration and compiler model.
 
-## Read And Write Helpers
+## Read And Update Helpers
 
-Use `state` for read helpers. Use `tx` for model writes; direct-safe methods are
-also exposed through the matching `editor.update` group.
+Use `read` for owner-local queries and `update` for owner-local model writes.
+The extension name becomes the namespace on `editor.read` and `editor.update`.
 
 ```ts
 import { createEditor, defineEditorExtension } from "@platejs/plite";
 
-const linkTools = defineEditorExtension({
-  name: "link-tools",
-  state: {
-    link(state) {
-      return {
-        hasSelection() {
-          return state.selection() !== null;
-        },
-      };
+const LinksExtension = defineEditorExtension({
+  name: "links",
+  read: ({ state }) => ({
+    hasSelection() {
+      return state.selection() !== null;
     },
-  },
-  tx: {
-    link(tx) {
-      return {
-        setHref(href: string) {
-          tx.nodes.set({ url: href });
-        },
-      };
+  }),
+  update: ({ tx }) => ({
+    setHref(href: string) {
+      tx.nodes.set({ url: href });
     },
-  },
+  }),
 });
 
 const editor = createEditor({
-  extensions: [linkTools],
+  extensions: [LinksExtension],
 });
 
-const canEditLink = editor.read((state) => state.link.hasSelection());
+const canEditLink = editor.read((state) => state.links.hasSelection());
 
-editor.update.link.setHref("https://example.com");
+editor.update.links.setHref("https://example.com");
 
 editor.update((tx) => {
-  tx.link.setHref("https://example.com");
+  tx.links.setHref("https://example.com");
 });
 ```
 
-This split is the normal authoring path. Reads cannot write by accident, and
-writes can still read transaction-local state after earlier writes in the same
-update. Wrap a method with `txOnly(...)` when it requires that active state;
-Plite omits it from direct update groups. A `tx` helper should exist to perform
-Plite model writes. If a helper only opens UI, reads layout, talks to the
-network, or coordinates host state, keep it out of `tx`.
+Reads cannot write by accident. Updates can still read transaction-local state
+after earlier writes in the same transaction. Wrap a method with `txOnly(...)`
+when it requires an active transaction; Plite then omits it from the direct
+`editor.update` group.
+
+An `update` helper should perform Plite model writes. Keep UI, layout, network,
+and other host services in `api`.
+
+## Extension APIs
+
+`api` is the single host-service channel. Declare it as a factory even when it
+needs no context. Its single context object exposes `editor`, `root`, and
+`getContributions`. Plite publishes the returned object through the extension
+name and through the exact descriptor portal.
+
+```ts
+const LinksExtension = defineEditorExtension({
+  name: "links",
+  api: () => ({
+    normalizeHref(href: string) {
+      return new URL(href).toString();
+    },
+  }),
+});
+
+const editor = createEditor({
+  extensions: [LinksExtension],
+});
+
+editor.api.links.normalizeHref("https://example.com");
+editor.extension(LinksExtension).api.normalizeHref("https://example.com");
+```
+
+Use `editor.api.links` when application code knows the installed editor shape.
+Use `editor.extension(LinksExtension).api` when generic package code owns the
+descriptor. Both paths reference the same immutable API object.
+
+Do not use `api` as a document command bus. Document mutations belong in
+`update`; host services such as DOM focus, measurements, history batching, or
+framework bridges belong in `api`.
 
 ## Extension Order
 
-Extensions are named so Plite can compose them deterministically. Use
-`dependencies` when one extension needs another installed first.
+Use descriptor-valued `dependencies` when one extension requires another.
+Use `conflicts` when two descriptors cannot be installed together.
 
 ```ts
-import { createEditor, defineEditorExtension } from "@platejs/plite";
-
-const links = defineEditorExtension({
+const LinksExtension = defineEditorExtension({
   name: "links",
-  api: {
-    links: {
-      normalizeHref(href: string) {
-        return new URL(href).toString();
-      },
+  api: () => ({
+    normalizeHref(href: string) {
+      return new URL(href).toString();
     },
-  },
+  }),
 });
 
-const mentions = defineEditorExtension({
+const MentionsExtension = defineEditorExtension({
   name: "mentions",
-  dependencies: [links],
-  tx: {
-    mention(tx) {
-      return {
-        insert(character: string) {
-          tx.nodes.insert({
-            type: "mention",
-            character,
-            children: [{ text: "" }],
-          });
-        },
-      };
+  dependencies: [LinksExtension],
+  update: ({ tx }) => ({
+    insert(character: string) {
+      tx.nodes.insert({
+        type: "mention",
+        character,
+        children: [{ text: "" }],
+      });
     },
-  },
+  }),
 });
-
-const editor = createEditor({
-  extensions: [mentions],
-});
-
-editor.getApi(links).normalizeHref("https://example.com");
 ```
 
-Plite installs `links` transitively before `mentions` because the dependency is
-the extension descriptor, not its name. Shared dependencies activate once and
-remain installed until their last direct or transitive owner is removed.
-`conflicts` also accepts descriptors. Configuration fails for dependency
-cycles, duplicate active names, or installed conflicting descriptors.
+Plite installs `LinksExtension` transitively before `MentionsExtension`.
+Shared dependencies activate once and remain installed until their last direct
+or transitive owner is removed. Configuration fails for dependency cycles,
+duplicate active names, or installed conflicting descriptors.
 
-Use `editor.getApi(descriptor)` when code needs the API owned by a particular
-installed dependency. The descriptor preserves the inferred API type and works
-while Plite validates a detached configuration candidate. Do not search
-dependencies by string or publish a second capability registry.
+The public dependency reference is deliberately shallow: literal `name` and
+optional `enabled`, with no generic capability graph. Plite keeps its finite
+name-keyed capability/provider inference under `@platejs/plite/internal`
+instead of recursively publishing dependency ancestry. Static portal types
+prove that one installed name has the same capability as the descriptor;
+runtime access separately requires the exact installed descriptor identity.
 
 ## Typed Extension Points
 
-Use `defineExtensionPoint(...)` when another package owns an ordered,
-typed contribution channel that is not part of the headless model.
+Use `defineExtensionPoint(...)` when another package owns an ordered typed
+contribution channel outside the headless model.
 
 ```ts
 import {
@@ -182,7 +201,7 @@ type MeasurementSource = {
 const measurements =
   defineExtensionPoint<MeasurementSource>("app:measurement-source");
 
-const measured = defineEditorExtension({
+const MeasuredExtension = defineEditorExtension({
   name: "measured",
   contributions: [
     measurements.of({
@@ -192,87 +211,79 @@ const measured = defineEditorExtension({
 });
 ```
 
-The extension point owns identity and type. Configuration factories and
-validators collect its ordered values with
-`context.getContributions(measurements)`, so arbitrary strings do not become a
-hidden dependency API.
+The extension point owns identity and type. Validators collect its ordered
+values with `context.getContributions(measurements)`, so arbitrary strings do
+not become a hidden dependency API.
 
 ## Activation And Reconfiguration
 
-Keep schema, state, transaction, command, and API declarations on the extension
-descriptor. Use `activate(editor, context)` only for synchronous resource
-ownership. Register cleanup before activation returns, and defer external work
-that must observe the published configuration to `context.afterPublish(...)`.
+Keep schema, read, update, command, and API declarations on the extension.
+Use `activate(editor, context)` only for synchronous resource ownership.
+Register cleanup before activation returns, and defer external work that must
+observe the published candidate to `context.afterPublish(...)`.
 
 ```ts
-const tableNavigation = defineEditorExtension({
-  name: "table-navigation",
-  config: { initialMode: "text" as const },
-  tx: {
-    table(tx) {
-      return {
-        insertRow() {
-          tx.nodes.insert({
-            type: "table-row",
-            children: [{ type: "table-cell", children: [{ text: "" }] }],
-          });
-        },
-      };
+const TableNavigationExtension = defineEditorExtension({
+  name: "tableNavigation",
+  update: ({ tx }) => ({
+    insertRow() {
+      tx.nodes.insert({
+        type: "table-row",
+        children: [{ type: "table-cell", children: [{ text: "" }] }],
+      });
     },
-  },
+  }),
   activate(_editor, context) {
-    const controller = createTableNavigationController(context.config);
+    const controller = createTableNavigationController();
 
     context.onCleanup(({ reason }) => controller.dispose(reason));
     context.afterPublish(() => controller.start({ signal: context.signal }));
   },
+  validate(context) {
+    validateTableContributions(context.getContributions(tableContributions));
+  },
 });
 ```
 
-Plite compiles and validates a detached immutable configuration candidate before
-publication. Every functional `api(editor, context)` factory sees the same
-declarative schema and descriptor-resolved dependency APIs. Factory results become
-visible together in the final candidate passed to
-`validateConfiguration(context)`; factory registration order cannot change what
-another factory observes. Ordinary editor reads still see the published
-configuration. Activation runs only after the candidate passes every validator.
+Plite compiles and validates a detached candidate before publication. API
+factories see the same declarative schema and descriptor-resolved dependency
+APIs. Factory results become visible together in the final candidate passed to
+`validate(context)`. Activation runs only after every validator succeeds.
+
 Lifecycle callbacks are synchronous and cannot publish editor writes. Cleanup
 receives `remove`, `replace`, or `rollback` as its reason; lifecycle failures
-report through the editor's error sink.
+report through the editor error sink.
 
-Use a named extension slot when configuration must change after editor creation.
-The replacement is staged in the surrounding transaction and becomes visible
-with the same commit as any document or state changes.
+Use a named extension slot when installed behavior must change after editor
+creation. The replacement is staged in the surrounding transaction and becomes
+visible with the same commit as document and state changes.
 
 ```ts
 import { createEditor, defineExtensionSlot } from "@platejs/plite";
 
-const navigationMode = defineExtensionSlot("navigation-mode");
+const navigation = defineExtensionSlot("navigation");
 const editor = createEditor({
-  extensions: [navigationMode.of(tableNavigation)] as const,
+  extensions: [navigation.of(TableNavigationExtension)] as const,
 });
 
 editor.update((tx) => {
-  tx.extensions.reconfigure(navigationMode, alternativeNavigation);
+  tx.extensions.reconfigure(navigation, AlternativeNavigationExtension);
 });
 ```
 
 When a replacement schema rejects the current document, pass a `migrate`
-callback. It receives the immutable current document and candidate schema and
-returns the complete candidate document. Compilation, migration, and validation
-finish before one document-plus-configuration commit; failure publishes
-nothing. See [Atomic Reconfiguration](19-schema#atomic-reconfiguration).
+callback. Compilation, migration, and validation finish before one
+document-plus-extension commit; failure publishes nothing. See
+[Atomic Reconfiguration](19-schema#atomic-reconfiguration).
 
-`editor.extend(...)` is the host-level dynamic form. It publishes through the
-same candidate lifecycle, accepts the same schema migration callback, and its
-cleanup function publishes the matching removal. Prefer a named slot when the
-configuration change must commit atomically with other model writes.
+`editor.extend(...)` is the host-level dynamic form. Prefer a named slot when
+the replacement must commit atomically with other model writes.
 
 ## Schema Contributions
 
-Feature extensions add their document vocabulary through the `schema` slot.
-Element-owned properties live with the element; cross-cut properties use a
-top-level property declaration with an explicit target.
+Feature extensions add document vocabulary through `schema`. Element-owned
+properties live with the element; cross-cut properties use a top-level
+property declaration with an explicit target.
 
 ```ts
 import { defineEditorExtension, property, schema } from "@platejs/plite";
@@ -295,76 +306,54 @@ const tableModel = {
     },
   },
 } as const;
+
 const tableCell = schema.handle.element(tableModel, "tableCell");
 const colSpan = schema.handle.property(tableCell, "colSpan");
 
-const tables = defineEditorExtension({
+const TablesExtension = defineEditorExtension({
   ...tableModel,
   name: "tables",
-  state: {
-    table(state) {
-      return {
-        selectedCellColSpan(element) {
-          return state.schema.getElementProperty(element, colSpan);
-        },
-      };
+  read: ({ state }) => ({
+    selectedCellColSpan(element) {
+      return state.schema.getElementProperty(element, colSpan);
     },
-  },
-});
-```
-
-When schema semantics depend on extension configuration, put the immutable
-value in `config` and return the declaration from a pure schema factory. The
-factory receives only the frozen config and extension name.
-
-```ts
-import {
-  defineEditorExtension,
-  property,
-  schema,
-  target,
-} from "@platejs/plite";
-
-const comments = defineEditorExtension({
-  name: "comments",
-  config: { prefix: "comment_" },
-  schema: ({ config }) => ({
-    properties: [
-      schema.textProperty(
-        schema.key.prefix(config.prefix),
-        property.boolean({ default: false, omitDefault: true }),
-        {
-          split: "preserve",
-          target: target.group("element"),
-          typeChange: "preserve-if-allowed",
-        }
-      ),
-    ],
   }),
 });
 ```
 
-Elements can describe behavior such as `inline`, `void`, `atom`, `isolating`,
-`keyboardSelectable`, `readOnly`, `selectable`, and `markableVoid`.
-On a non-void element, `keyboardSelectable` gives its non-editable chrome an
-exact `NodeSelection` while keeping child text editable; see
-[Selection And DOM](16-selection-and-dom#keyboard-selectable-content).
-`void: 'editable-island'` keeps the element void for rendering policy while
-allowing Plite cursor projection to enter its text children. `contentRoots`
-maps each owned slot to its content grammar; the root key is stored at
-`element.childRoots[slot]`. See [Roots](13-roots#content-roots) for rendering
-and root ownership.
+A schema factory receives only the extension `name`. Capture immutable domain
+inputs in the factory that creates the descriptor.
 
-`properties` are descriptors for element-owned fields. Descriptors use
-structural JSON equality and can declare canonical defaults. Defaults are read
-through `state.schema` or `tx.schema`; they do not require stored duplicate
-values.
+```ts
+const createCommentsExtension = (prefix: string) =>
+  defineEditorExtension({
+    name: "comments",
+    schema: ({ name }) => ({
+      properties: [
+        schema.textProperty(
+          schema.key.prefix(`${prefix}${name}_`),
+          property.boolean({ default: false, omitDefault: true }),
+          {
+            split: "preserve",
+            target: target.group("element"),
+            typeChange: "preserve-if-allowed",
+          }
+        ),
+      ],
+    }),
+  });
+```
+
+Element declarations can describe `inline`, `void`, `atom`, `isolating`,
+`keyboardSelectable`, `readOnly`, `selectable`, and `markableVoid` behavior.
+See [Selection And DOM](16-selection-and-dom#keyboard-selectable-content) and
+[Roots](13-roots#content-roots) for the associated selection and root laws.
 
 ## Read Middleware
 
-Use `read` to customize a declared core read without adding a one-off root
-hook. Register middleware against an `editorReads` descriptor. The descriptor
-infers the input, result, editor, and state types.
+Use `readMiddleware` to wrap a declared core read. Register middleware against
+an `editorReads` descriptor; the descriptor infers the input, result, editor,
+and state types.
 
 ```ts
 import {
@@ -372,9 +361,9 @@ import {
   editorReads,
 } from "@platejs/plite";
 
-const closedSections = defineEditorExtension({
-  name: "closed-sections",
-  read: ({ around }) => [
+const ClosedSectionsExtension = defineEditorExtension({
+  name: "closedSections",
+  readMiddleware: ({ around }) => [
     around(
       editorReads.nodes.isSelectable,
       ({ input: { element }, next }) =>
@@ -385,17 +374,15 @@ const closedSections = defineEditorExtension({
 ```
 
 Middleware runs in extension order. `next()` delegates once and accepts a
-replacement input when needed. The provided `state` is read-only and observes
-the active transaction draft when the caller is already evaluating one.
-Generator results keep their iteration and cleanup inside the same read
-boundary.
+replacement input when needed. The provided state is read-only and observes an
+active transaction draft.
 
 Use `editorReads.slice.export` for ordered export projection:
 
 ```ts
-const cleanExport = defineEditorExtension({
-  name: "clean-export",
-  read: ({ around }) => [
+const CleanExportExtension = defineEditorExtension({
+  name: "cleanExport",
+  readMiddleware: ({ around }) => [
     around(editorReads.slice.export, ({ next }) => {
       const slice = next();
 
@@ -410,11 +397,10 @@ const cleanExport = defineEditorExtension({
 
 ## Commands And Corrections
 
-Use a typed `defineCommand(...)` when an action needs headless evaluation or
-extension policy. Its pure builder and extension handlers return `false` or a
-frozen `TransactionSpec`; extension `commands` register typed interceptors
-without patching editor methods. Extension configuration determines handler
-order. See [Commands](06-commands) for the complete flow.
+Use `defineCommand(...)` when an action needs headless evaluation or extension
+policy. Its pure builder and extension handlers return `false` or a frozen
+`TransactionSpec`; `commands` registers typed interceptors without patching
+editor methods. See [Commands](06-commands) for the complete flow.
 
 Use `corrections` for deterministic schema repairs triggered by canonical
 changed ranges. A correction writes through its provided transaction and must
@@ -424,66 +410,59 @@ converge. Keyboard events and host UI remain React or DOM adapter concerns.
 
 DOM clipboard ingress is a typed extension point owned by
 `@platejs/plite-dom`. Add `clipboardHandler(...)` to `contributions`. Its
-`insertData` callback receives the `DataTransfer`, `next`, and the ingress
-`transaction`. Mutate through that transaction and return `true` when the
-handler owns the payload. Return `next()` to keep Plite's slice and plain-text
-fallback in the same transaction.
-Use [Clipboard And Paste](17-clipboard-and-paste) for the full clipboard
-pipeline and proof boundary.
+`insertData` callback receives the `DataTransfer`, `next`, and transaction.
+Mutate through that transaction and return `true` when the handler owns the
+payload. Return `next()` to keep Plite's slice and plain-text fallback in the
+same transaction. See [Clipboard And Paste](17-clipboard-and-paste).
 
-Wrap `editorReads.slice.export` to sanitize copied or dragged Plite content,
-such as removing local preview marks before host clipboard serialization. Call
-`editor.read.slice.export()` when the result is leaving the editor;
-`editor.read.slice.get()` returns the structural selection slice unchanged.
-
-Plite's core slice replacement stays structural and schema-fitted. Grid-aware
-table paste, such as mapping copied cells onto existing target cells by row and
-column, belongs in the table extension's clipboard policy.
+Wrap `editorReads.slice.export` with `readMiddleware` to sanitize copied or
+dragged content. Call `editor.read.slice.export()` when content leaves the
+editor; `editor.read.slice.get()` returns the structural selection slice
+unchanged.
 
 ## Slot Reference
 
-Start with `schema`, `state`, and `tx`. Reach for the other slots only when
+Start with `schema`, `read`, and `update`. Reach for the other slots only when
 the behavior needs that runtime phase.
 
-| Slot                    | Use it for                                                       |
-| ----------------------- | ---------------------------------------------------------------- |
-| `name`                  | stable extension identity                                        |
-| `enabled`               | declarative inclusion                                            |
-| `dependencies`          | descriptors installed before this extension                      |
-| `conflicts`             | descriptors that cannot be installed with this extension         |
-| `config`                | immutable schema/API/validation/activation input                  |
-| `schema`                | immutable element, property, group, and root contributions        |
-| `state`                 | read helpers available inside `editor.read(...)`                  |
-| `tx`                    | write helpers for atomic and direct `editor.update` calls         |
-| `read`                  | typed middleware over `editorReads` descriptors                   |
-| `commands`              | pure typed command interceptors                                   |
-| `corrections`           | deterministic changed-range structural repairs                    |
-| `stateFields`           | typed persisted or runtime state descriptors                      |
-| `effectTypes`           | typed commit-effect descriptors and codecs                        |
-| `facetProviders`        | derived state providers                                           |
-| `selectionKinds`        | custom selection codecs and behavior                              |
-| `api`                   | mounted host/runtime services exposed through `editor.api`        |
-| `contributions`         | typed ordered values consumed through an extension point          |
-| `on.*`                  | transaction, commit, node, and text change handlers               |
-| `activate`              | synchronous resource ownership and cleanup registration           |
-| `validateConfiguration` | detached candidate validation                                     |
+| Slot             | Use it for                                                   |
+| ---------------- | ------------------------------------------------------------ |
+| `name`           | stable extension identity                                    |
+| `enabled`        | declarative inclusion                                        |
+| `dependencies`   | descriptors installed before this extension                  |
+| `conflicts`      | descriptors that cannot be installed with this extension     |
+| `schema`         | element, property, group, and root contributions              |
+| `read`           | owner-local read helpers                                      |
+| `update`         | owner-local atomic and direct update helpers                  |
+| `readMiddleware` | typed middleware over `editorReads` descriptors               |
+| `commands`       | pure typed command interceptors                               |
+| `corrections`    | deterministic changed-range structural repairs                |
+| `stateFields`    | typed persisted or runtime state descriptors                  |
+| `effectTypes`    | typed commit-effect descriptors and codecs                    |
+| `facetProviders` | derived state providers                                       |
+| `selectionKinds` | custom selection codecs and behavior                          |
+| `api`            | host services exposed through the extension namespace         |
+| `contributions`  | typed ordered values consumed through an extension point      |
+| `on.*`           | `commit`, `transactionChange`, `nodeChange`, and `textChange` |
+| `activate`       | synchronous resource ownership and cleanup registration       |
+| `validate`       | detached candidate validation                                 |
 
-Do not use `api` as a product command bus. A checklist toggle that changes the
-document belongs in `tx.checklist.toggle()`. Host services such as DOM focus,
-clipboard ingress, history batching, overlays, measurements, or framework
-bridges belong in `api`.
+Keep product conventions above these raw slots. Frameworks can build richer
+feature APIs on Plite's smaller extension substrate.
 
-Keep product-specific APIs above these raw slots. Frameworks can build richer
-feature conventions on top of Plite's smaller extension substrate.
+## Type Inference
 
-## Advanced TypeScript
-
-The simple form should be your default:
+Let `defineEditorExtension(...)` infer its one definition type from the author
+object. `DefinitionOf<typeof Extension>` recovers the compact public contract
+when generic library code needs it.
 
 ```ts
-import { defineEditorExtension } from "@platejs/plite";
+import {
+  type DefinitionOf,
+  defineEditorExtension,
+} from "@platejs/plite";
 
-const images = defineEditorExtension({
+const ImagesExtension = defineEditorExtension({
   name: "images",
   schema: {
     elements: {
@@ -492,60 +471,20 @@ const images = defineEditorExtension({
       },
     },
   },
-});
-```
-
-Use the curried generic form when library code must bind an extension to a
-custom editor type before passing the descriptor.
-
-```ts
-import { type Editor, defineEditorExtension } from "@platejs/plite";
-
-type ImageElement = {
-  type: "image";
-  url: string;
-  children: [{ text: "" }];
-};
-
-type CustomEditor = Editor<ImageElement[]>;
-
-const images = defineEditorExtension<CustomEditor>()({
-  name: "images",
-  tx: {
-    image(tx) {
-      return {
-        insert(url: string) {
-          tx.nodes.insert({
-            type: "image",
-            url,
-            children: [{ text: "" }],
-          });
-        },
-      };
+  update: ({ tx }) => ({
+    insert(url: string) {
+      tx.nodes.insert({
+        type: "image",
+        url,
+        children: [{ text: "" }],
+      });
     },
-  },
+  }),
 });
+
+type ImagesDefinition = DefinitionOf<typeof ImagesExtension>;
 ```
 
-Use module augmentation when you need ambient `state.*`, `tx.*`, or `api.*`
-names across editor values instead of relying on the inferred editor instance.
-That is a library-authoring move, not the first step for an app.
-
-## Helper Namespaces
-
-Plain helper namespaces are still the right shape for stateless checks.
-
-```ts
-import { ElementApi } from "@platejs/plite";
-
-const MyElement = {
-  isImage(value: unknown) {
-    return ElementApi.isElement(value) && value.type === "image";
-  },
-};
-```
-
-Use helper namespaces for pure utilities. Install typed behavior at editor
-creation, use `editor.extend(...)` for host-selected dynamic behavior, or
-replace a declared slot through `tx.extensions.reconfigure(...)` when the
-configuration must share a model transaction.
+Do not annotate callback contexts or pass a separate editor generic. The
+definition factory, installed descriptor tuple, and descriptor portal preserve
+the inferred capabilities.

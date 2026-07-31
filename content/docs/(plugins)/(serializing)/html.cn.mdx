@@ -74,9 +74,9 @@ import { HeadingElementStatic } from '@/components/ui/heading-node-static';
 // 对于带样式的静态输出，可以使用像EditorStatic这样的包装器
 import { EditorStatic } from '@/components/ui/editor-static';
 
-// 将插件键映射到其静态渲染组件
+// 将插件 name 映射到其静态渲染组件
 const components = {
-  p: ParagraphElementStatic, // 'p'是段落的默认键
+  p: ParagraphElementStatic, // 'p'是段落的默认 name
   h1: HeadingElementStatic,
   // ... 为所有元素和标记添加映射
 };
@@ -244,7 +244,7 @@ Context-bound `defineCodecs` 返回的同一个 `'text/html'` map 同时负责 d
 | `style="line-height: ..."`                               | [`LineHeightPlugin`](/docs/line-height)      | 在块元素上设置`lineHeight`属性。                            |
 
 <Callout type="note" title="插件配置">
-  确切的Plate类型（例如`ParagraphPlugin.key`与`'p'`）取决于插件的配置方式。表格显示典型关联。确保编辑器包含对应的Plate插件以使这些规则生效。
+  确切的Plate类型（例如`ParagraphPlugin.name`与`'p'`）取决于插件的配置方式。表格显示典型关联。确保编辑器包含对应的Plate插件以使这些规则生效。
 </Callout>
 
 ### `defineCodecs`
@@ -285,7 +285,7 @@ const CalloutPlugin = createPlatePlugin({
         match: [{ tag: 'aside' }],
       },
     }),
-  key: 'callout',
+  name: 'callout',
   schema: {
     element: {
       content: schema.content.text({ default: 'text', min: 1 }),
@@ -316,7 +316,7 @@ map 的非空有序 `'text/html'` tuple 中。
 
 ```ts title="lib/html-cleanup-plugin.ts"
 const HtmlCleanupPlugin = createPlatePlugin({
-  key: 'htmlCleanup',
+  name: 'htmlCleanup',
   parsers: {
     html: {
       query: ({ source }) => source.types.includes('text/html'),

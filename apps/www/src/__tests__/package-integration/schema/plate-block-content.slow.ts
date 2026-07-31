@@ -46,26 +46,26 @@ describe('Plate block-content eligibility', () => {
         BaseTablePlugin,
       ],
     });
-    const structuralTypes = structuralPlugins.map((plugin) =>
-      editor.getType(plugin.key)
+    const structuralTypes = structuralPlugins.map(
+      (plugin) => editor.plugin(plugin.name).type
     );
 
     for (const plugin of structuralPlugins) {
-      const element = editor.read.schema.createAndFill(plugin);
+      const element = editor.read.schema.create(plugin);
 
       expect(editor.read.schema.element(plugin)?.groups).toContain('block');
 
       if (!ElementApi.isElement(element)) {
-        throw new Error(`Expected ${plugin.key} to construct an element.`);
+        throw new Error(`Expected ${plugin.name} to construct an element.`);
       }
 
       expect(() =>
-        editor.read.schema.validateDocument({ children: [element] })
+        editor.read.schema.assertDocument({ children: [element] })
       ).toThrow(/root.*cannot contain|cannot contain.*root/i);
     }
 
     for (const containerPlugin of normalFlowContainerPlugins) {
-      const container = editor.read.schema.createAndFill(containerPlugin);
+      const container = editor.read.schema.create(containerPlugin);
       const allowedTypes =
         editor.read.schema.element(containerPlugin)?.content
           ?.allowedElementTypes;
@@ -78,12 +78,11 @@ describe('Plate block-content eligibility', () => {
 
       if (!ElementApi.isElement(container)) {
         throw new Error(
-          `Expected ${containerPlugin.key} to construct an element.`
+          `Expected ${containerPlugin.name} to construct an element.`
         );
       }
 
-      const structuralChild =
-        editor.read.schema.createAndFill(BaseTableRowPlugin);
+      const structuralChild = editor.read.schema.create(BaseTableRowPlugin);
 
       if (!ElementApi.isElement(structuralChild)) {
         throw new Error(
@@ -92,7 +91,7 @@ describe('Plate block-content eligibility', () => {
       }
 
       expect(() =>
-        editor.read.schema.validateFragment([
+        editor.read.schema.assertFragment([
           { ...container, children: [structuralChild] },
         ])
       ).toThrow(/cannot contain/i);

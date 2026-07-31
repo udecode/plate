@@ -1,3 +1,7 @@
+import type {
+  EditorSchemaSource,
+  EditorSchemaSourceProvider,
+} from '../core/schema-source.internal';
 import type { BaseElement } from './element';
 import type { BaseText } from './text';
 
@@ -33,7 +37,6 @@ export type PropertyValidation<TValue> =
 type PropertyValueBaseOptions<TValue> = Readonly<{
   default?: TValue;
   omitDefault?: boolean;
-  significant?: boolean;
 }>;
 
 export type PropertyValueOptions<TValue> = PropertyValueBaseOptions<TValue> &
@@ -47,8 +50,6 @@ export type PropertyValueDescriptor<
   default?: TValue;
   kind: TKind;
   omitDefault: boolean;
-  /** Defaults to `true`; set `false` for cache-only identity or metadata. */
-  significant?: boolean;
   /** Runtime validator; excluded from structural schema identity. */
   validate?: (value: unknown) => value is TValue;
   /** Structural identity for `validate`; required whenever it is present. */
@@ -133,6 +134,7 @@ export type SchemaTarget =
 
 export type SchemaPropertySplitPolicy = 'drop' | 'preserve';
 export type SchemaPropertyTypeChangePolicy = 'drop' | 'preserve-if-allowed';
+export type SchemaPropertyRole = 'content' | 'metadata';
 
 export type SchemaPropertyExclusiveGroup<TId extends string = string> =
   Readonly<{
@@ -143,12 +145,14 @@ export type SchemaPropertyExclusiveGroup<TId extends string = string> =
 export type SchemaTextPropertyOptions = Readonly<{
   exclusive?: readonly SchemaPropertyExclusiveGroup[];
   inclusive?: boolean;
+  role?: SchemaPropertyRole;
   split?: SchemaPropertySplitPolicy;
   target?: SchemaTarget;
   typeChange?: SchemaPropertyTypeChangePolicy;
 }>;
 
 export type SchemaElementPropertyOptions = Readonly<{
+  role?: SchemaPropertyRole;
   split?: SchemaPropertySplitPolicy;
   target: SchemaTarget;
   typeChange?: SchemaPropertyTypeChangePolicy;
@@ -163,6 +167,7 @@ export type SchemaTextProperty<
   inclusive: boolean;
   key: TKey;
   placement: 'text';
+  role: SchemaPropertyRole;
   split: SchemaPropertySplitPolicy;
   target?: TTarget;
   typeChange: SchemaPropertyTypeChangePolicy;
@@ -176,6 +181,7 @@ export type SchemaElementProperty<
 > = Readonly<{
   key: TKey;
   placement: 'element';
+  role: SchemaPropertyRole;
   split: SchemaPropertySplitPolicy;
   target: TTarget;
   typeChange: SchemaPropertyTypeChangePolicy;
@@ -247,10 +253,6 @@ export type SchemaGroup<
   TOptions extends SchemaGroupOptions = SchemaGroupOptions,
 > = Readonly<TOptions>;
 
-export type SchemaRoot = Readonly<{
-  content: SchemaContent;
-}>;
-
 export type SchemaElementProperties = Readonly<
   Record<string, PropertyValueDescriptor>
 >;
@@ -281,6 +283,11 @@ export type SchemaElementInput = Readonly<{
 export type SchemaElement<
   TInput extends SchemaElementInput = SchemaElementInput,
 > = Readonly<TInput>;
+
+export type SchemaTextBlockOptions = Omit<
+  SchemaElementInput,
+  'content' | 'inline' | 'void'
+>;
 
 /** Immutable compiled content facts exposed by `state.schema.element()`. */
 export type EditorSchemaContent = Readonly<{
@@ -346,6 +353,7 @@ export type EditorSchemaProperty = Readonly<{
   }>;
   merge: 'replace' | 'set';
   placement: 'element' | 'text';
+  role: SchemaPropertyRole;
   target: SchemaTarget | null;
   value: PropertyValueDescriptor;
 }>;
@@ -389,8 +397,8 @@ export type EditorSchemaContribution<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRoot>> = Readonly<
-    Record<string, SchemaRoot>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends
     readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
@@ -413,18 +421,18 @@ type EditorSchemaDefinitionBase<
   TElements extends Readonly<Record<string, SchemaElement>>,
   TProperties extends readonly SchemaProperty[],
   TGroups extends Readonly<Record<string, SchemaGroup>>,
-  TRoots extends Readonly<Record<string, SchemaRoot>>,
+  TRoots extends Readonly<Record<string, SchemaContent>>,
   TContentRoots extends readonly SchemaContentRootContribution[],
 > = Readonly<{
   contentRoots?: TContentRoots;
-  elements: TElements;
+  elements?: TElements;
   groups?: TGroups;
   properties?: TProperties;
   /** The implicit primary document root. */
-  root: SchemaRoot;
+  root: SchemaContent;
   /** Named secondary roots only. The reserved key `main` is invalid. */
   roots?: TRoots;
-  unknown: EditorSchemaUnknownPolicy;
+  unknown?: EditorSchemaUnknownPolicy;
 }>;
 
 /** One complete schema whose identity is derived only from compiled semantics. */
@@ -436,8 +444,8 @@ export type EditorSchemaDerivedDefinition<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRoot>> = Readonly<
-    Record<string, SchemaRoot>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends
     readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
@@ -463,8 +471,8 @@ export type EditorSchemaNamedDefinition<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRoot>> = Readonly<
-    Record<string, SchemaRoot>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends
     readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
@@ -490,8 +498,8 @@ export type EditorSchemaDefinition<
   TGroups extends Readonly<Record<string, SchemaGroup>> = Readonly<
     Record<string, SchemaGroup>
   >,
-  TRoots extends Readonly<Record<string, SchemaRoot>> = Readonly<
-    Record<string, SchemaRoot>
+  TRoots extends Readonly<Record<string, SchemaContent>> = Readonly<
+    Record<string, SchemaContent>
   >,
   TContentRoots extends
     readonly SchemaContentRootContribution[] = readonly SchemaContentRootContribution[],
@@ -525,24 +533,6 @@ export type EditorSchemaExtension<
     : 'schema:derived';
   schema: TDefinition;
 }>;
-
-declare const EDITOR_SCHEMA_SOURCE: unique symbol;
-
-/** Type-only exact schema contribution witness for host descriptors. */
-export interface EditorSchemaSourceProvider<
-  TDeclaration extends EditorSchemaDeclaration = EditorSchemaDeclaration,
-> {
-  readonly [EDITOR_SCHEMA_SOURCE]: TDeclaration;
-}
-
-/** Any descriptor that owns or type-provides one schema contribution. */
-export type EditorSchemaSource =
-  | EditorSchemaSourceProvider
-  | Readonly<{
-      schema:
-        | EditorSchemaDeclaration
-        | ((...args: any[]) => EditorSchemaDeclaration);
-    }>;
 
 type SchemaDefinitionOf<TSchema extends EditorSchemaSource> =
   TSchema extends EditorSchemaSourceProvider<infer TDeclaration>
@@ -1297,6 +1287,13 @@ type SchemaComposedLineage<TComplete extends EditorSchemaDefinition> =
     ? Readonly<{ id: TId; version: TVersion }>
     : Readonly<Record<never, never>>;
 
+type SchemaComposedUnknown<TComplete extends EditorSchemaDefinition> =
+  TComplete extends Readonly<{
+    unknown: infer TUnknown extends EditorSchemaUnknownPolicy;
+  }>
+    ? TUnknown
+    : 'reject';
+
 type SchemaComposedDefinition<
   TInput,
   TComplete extends EditorSchemaDefinition,
@@ -1311,7 +1308,7 @@ type SchemaComposedDefinition<
     properties: readonly SchemaDeclarationProperty<TDeclarations>[];
     root: TComplete['root'];
     roots: SchemaUnionToIntersection<SchemaDeclarationRoots<TDeclarations>>;
-    unknown: TComplete['unknown'];
+    unknown: SchemaComposedUnknown<TComplete>;
   } & SchemaComposedLineage<TComplete>
 >;
 

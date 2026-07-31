@@ -89,7 +89,7 @@ const packageTestTargets = packageSlugs.map((slug) => {
     roots: ['src', 'test'].filter((rootName) =>
       existsSync(join(dir, rootName))
     ),
-    bunArgs: ['--config', '../../bunfig.toml'],
+    bunArgs: ['--config=../../bunfig.toml'],
   };
 });
 

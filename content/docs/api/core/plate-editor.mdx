@@ -7,13 +7,13 @@ description: API reference for the Plate editor runtime.
 
 ## Ownership
 
-| Surface | Owner | Notes |
-| --- | --- | --- |
-| `PlateEditor` | `@platejs/core/react` | React editor type with Plate plugin APIs, transaction groups, handlers, renders, and hooks. |
-| `BaseEditor` | `@platejs/core` | Non-React editor type used by server-side and static editor paths. |
-| Plite primitives | `@platejs/plite` | `children`, `selection`, `operations`, core `api`, and the transaction/update runtime. |
-| Core plugins | `@platejs/core` | Debugging, HTML parsing, product codecs, length, node id, history, input rules, and base paragraph behavior. |
-| React core plugins | `@platejs/core/react` | React extension, DOM integration, event editor, navigation feedback, and React paragraph plugin. |
+| Surface            | Owner                 | Notes                                                                                                        |
+| ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `PlateEditor`      | `@platejs/core/react` | React editor type with Plate plugin APIs, transaction groups, lifecycle/DOM events, renders, and hooks.      |
+| `BaseEditor`       | `@platejs/core`       | Non-React editor type used by server-side and static editor paths.                                           |
+| Plite primitives   | `@platejs/plite`      | `children`, `selection`, `operations`, core `api`, and the transaction/update runtime.                       |
+| Core plugins       | `@platejs/core`       | Debugging, HTML parsing, product codecs, length, node id, history, input rules, and base paragraph behavior. |
+| React core plugins | `@platejs/core/react` | React extension, DOM integration, event editor, navigation feedback, and React paragraph plugin.             |
 
 Use `PlateEditor` when a page or component runs inside React. Use `BaseEditor` when you need the headless editor from `createBaseEditor`.
 
@@ -22,56 +22,63 @@ Use `PlateEditor` when a page or component runs inside React. Use `BaseEditor` w
 The editor is still a Plite editor. Plate adds typed plugin access, DOM services, and a small set of Plate runtime flags on top of that shape.
 
 <API name="PlateEditor">
-<APIAttributes>
-  <APIItem name="id" type="string">
-    Unique editor instance id. `withPlite` uses the provided `id`, an existing editor id, or `nanoid()`.
-  </APIItem>
-  <APIItem name="children" type="Value">
-    Current document value.
-  </APIItem>
-  <APIItem name="selection" type="Range | null">
-    Current Plite selection.
-  </APIItem>
-  <APIItem name="operations" type="Operation[]">
-    Operations applied since Plite last flushed the editor.
-  </APIItem>
-  <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
-    Core Plite APIs, explicit editor-wide APIs, and installed plugin APIs
-    inferred under their plugin keys.
-  </APIItem>
-  <APIItem name="update" type="PlateEditor['update']">
-    Transaction entrypoint for document, selection, history, and plugin commands.
-  </APIItem>
-  <APIItem name="plugin" type="<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>">
-    Return the descriptor-scoped portal for a plugin's API, update commands, type, and store.
-  </APIItem>
-  <APIItem name="dom" type="PlateEditor['dom']">
-    Runtime DOM state owned by the editor instance.
-  </APIItem>
-  <APIItem name="runtime" type="PlateEditor['runtime']">
-    Public Plate runtime identity and lifecycle state. Compiled plugin registries stay private to Plate.
-  </APIItem>
-</APIAttributes>
+  <APIAttributes>
+    <APIItem name="id" type="string">
+      Unique editor instance id. `withPlite` uses the provided `id`, an existing
+      editor id, or `nanoid()`.
+    </APIItem>
+    <APIItem name="children" type="Value">
+      Current document value.
+    </APIItem>
+    <APIItem name="selection" type="Range | null">
+      Current Plite selection.
+    </APIItem>
+    <APIItem name="operations" type="Operation[]">
+      Operations applied since Plite last flushed the editor.
+    </APIItem>
+    <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
+      Core Plite APIs, explicit editor-wide APIs, and installed plugin APIs
+      inferred under their plugin names.
+    </APIItem>
+    <APIItem name="update" type="PlateEditor['update']">
+      Transaction entrypoint for document, selection, history, and plugin
+      commands.
+    </APIItem>
+    <APIItem
+      name="plugin"
+      type="<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginContext<DefinitionOf<P>>"
+    >
+      Return the descriptor-scoped portal for a plugin's API, update commands,
+      type, and store.
+    </APIItem>
+    <APIItem name="dom" type="PlateEditor['dom']">
+      Runtime DOM state owned by the editor instance.
+    </APIItem>
+    <APIItem name="runtime" type="PlateEditor['runtime']">
+      Public Plate runtime identity and lifecycle state. Compiled plugin
+      registries stay private to Plate.
+    </APIItem>
+  </APIAttributes>
 </API>
 
 ## Runtime State
 
 React and DOM runtime state is read through Plite runtime APIs. Plate exposes only editor identity and lifecycle fields on `editor.runtime`; compiled plugin registries are private implementation data.
 
-| State | Read path | Set by |
-| --- | --- | --- |
-| composition | `editor.api.react.isComposing()` | Plite React composition runtime. |
-| focus | `editor.api.react.isFocused()` | Plite React focus runtime. |
-| read-only | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createPlateEditor`, `<Plate>`, and `<PlateContent>`. |
+| State       | Read path                                                          | Set by                                                |
+| ----------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
+| composition | `editor.api.react.isComposing()`                                   | Plite React composition runtime.                      |
+| focus       | `editor.api.react.isFocused()`                                     | Plite React focus runtime.                            |
+| read-only   | `editor.read.view.isReadOnly()` or `editor.api.react.isReadOnly()` | `createPlateEditor`, `<Plate>`, and `<PlateContent>`. |
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `userId` | `string \| null \| undefined` | Collaborative identity passed through editor options. |
-| `isNormalizing` | `boolean \| undefined` | `true` while Plate applies initial-value normalization. |
+| Field           | Type                          | Notes                                                   |
+| --------------- | ----------------------------- | ------------------------------------------------------- |
+| `userId`        | `string \| null \| undefined` | Collaborative identity passed through editor options.   |
+| `isNormalizing` | `boolean \| undefined`        | `true` while Plate applies initial-value normalization. |
 
 ## Plugin Access
 
-Use `editor.api.<pluginKey>` for installed plugin queries and services on a
+Use `editor.api.<pluginName>` for installed plugin queries and services on a
 concrete editor. Pass the descriptor to `editor.plugin(plugin)` when generic
 code needs the exact plugin API, update commands, type, or store. The
 root and scoped API paths reference the same immutable object.
@@ -84,31 +91,38 @@ editor.plugin(TablePlugin).api.getColumnCount();
 ```
 
 ```ts title="Plugin state access"
-import { FindReplacePlugin } from '@platejs/find-replace';
+import { FindReplacePlugin } from "@platejs/find-replace";
 
 const findReplace = editor.plugin(FindReplacePlugin);
 
-const search = findReplace.store.get('search');
+const search = findReplace.store.get("search");
 findReplace.store.set({ search: search.trim() });
 ```
 
-| Helper | Type | Use it for |
-| --- | --- | --- |
-| `api[pluginKey]` | `InferOwnApi<C>` | Call an installed plugin's queries and services from a concrete inferred editor. |
-| `plugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => BasePluginContext<C>` | Open a typed portal to a plugin descriptor. |
-| `plugin(plugin).installed` | `boolean` | Check installation before reading another portal field when the plugin is optional. |
-| `plugin(plugin).api` | `InferOwnApi<C>` | Call the same plugin API from generic or exact-descriptor code. |
-| `plugin(plugin).update` | `InferOwnTx<C>` | Run one plugin-owned update command. |
-| `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value` | Read one state field or named selector result. |
-| `plugin(plugin).store.get()` | `() => InferPluginStoreState<C>` | Read the complete current plugin state. |
-| `plugin(plugin).store.set(partial)` | `(partial) => void` | Merge state fields. |
-| `plugin(plugin).store.set(recipe)` | `(draft) => void` | Update state through a draft recipe. |
-| `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the installed plugin instance after overrides and configuration. Throws when it is absent or disabled. |
-| `getType(pluginKey)` | `(pluginKey: string) => string` | Resolve the node type for a plugin key. |
-| `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | Read injected node props with default `nodeKey` and `styleKey` filled from the plugin type. |
+In the table below, `P` is the exact plugin descriptor type and
+`DefinitionOf<P>` is its normalized public definition.
+
+| Helper                                   | Type                                                                                           | Use it for                                                                                                  |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `api[pluginName]`                        | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call an installed plugin's queries and services from a concrete inferred editor.                            |
+| `plugin(plugin)`                         | `<P extends AnyBasePlugin & PluginReference>(plugin: P) => BasePluginPortal<DefinitionOf<P>>`  | Open a typed consumer portal to the exact plugin descriptor.                                                |
+| `plugin(plugin).installed`               | `boolean`                                                                                      | Check installation before reading another portal field when the plugin is optional.                         |
+| `plugin(plugin).api`                     | `InferOwnApi<DefinitionOf<P>>`                                                                 | Call the same plugin API from generic or exact-descriptor code.                                             |
+| `plugin(plugin).read`                    | `InferOwnRead<DefinitionOf<P>>`                                                                | Run one plugin-owned read against current editor state.                                                     |
+| `plugin(plugin).update`                  | `InferOwnUpdate<DefinitionOf<P>>`                                                              | Run one plugin-owned update command.                                                                        |
+| `plugin(plugin).store.get(key, ...args)` | `(key, ...args) => value`                                                                      | Read one state field or named selector result.                                                              |
+| `plugin(plugin).store.get()`             | `() => InferPluginStoreState<DefinitionOf<P>>`                                                 | Read the complete current plugin state.                                                                     |
+| `plugin(plugin).store.set(partial)`      | `(partial) => void`                                                                            | Merge state fields.                                                                                         |
+| `plugin(plugin).store.set(recipe)`       | `(draft) => void`                                                                              | Update state through a draft recipe.                                                                        |
+| `plugin(plugin).plugin`                  | `ResolvedBasePlugin<DefinitionOf<P>>`                                                          | Read the compiled plugin descriptor after overrides and configuration.                                      |
+| `plugin(pluginName)`                     | `(pluginName: string) => AnyBasePluginPortal`                                                   | Open an erased portal for dynamic names or family-agnostic plugin slots.                                     |
 
 In React, subscribe with `usePluginStore(plugin, key)` or
 `usePluginStore(plugin, selector)` instead of reading a portal during render.
+`useEditorPlugin` accepts the same descriptor-or-runtime-name inputs. Runtime
+names are for dynamic values and family-agnostic slots that accept whichever
+installed descriptor owns the name. They return erased portals; check
+`.installed` before any other field when absence is valid.
 
 ## Initialization
 
@@ -117,16 +131,16 @@ editor-local store from `initialState` and prepends the React core plugins
 before user plugins.
 
 ```tsx title="Create a typed editor"
-import { usePlateEditor } from 'platejs/react';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import { usePlateEditor } from "platejs/react";
+import { BoldPlugin } from "@platejs/basic-nodes/react";
 
 export function useBasicEditor() {
   return usePlateEditor({
     plugins: [BoldPlugin],
     initialValue: [
       {
-        type: 'p',
-        children: [{ text: 'Bold text is ready.' }],
+        type: "p",
+        children: [{ text: "Bold text is ready." }],
       },
     ],
   });
@@ -135,14 +149,14 @@ export function useBasicEditor() {
 
 `withPlite` does the lower-level setup:
 
-| Step | Behavior |
-| --- | --- |
-| Runtime state | Preserves Plite `editor.id` and initializes `runtime.userId`. |
-| Plugin access | Publishes installed APIs under `editor.api[pluginKey]` and installs exact `plugin(...)` portals plus `getPlugin`, `getType`, and injection helpers. |
-| Core plugins | Resolves core plugins, replaces core plugins with custom plugins that share the same key, and resolves the root plugin. |
-| Components | Merges `components` into root-plugin component overrides. |
-| Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass. |
-| Initial value | Initializes the value and selection through the runtime update path unless `skipInitialization` is `true`. |
+| Step                | Behavior                                                                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Runtime state       | Preserves Plite `editor.id` and initializes `runtime.userId`.                                                                                        |
+| Plugin access       | Publishes installed APIs under `editor.api[pluginName]` and installs descriptor-or-name `plugin(...)` portals.                                        |
+| Core plugins        | Resolves core plugins, replaces core plugins with custom plugins that share the same name, and resolves the root plugin.                             |
+| Components          | Merges `components` into root-plugin component overrides.                                                                                            |
+| Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass.                                                      |
+| Initial value       | Initializes the value and selection through the runtime update path unless `skipInitialization` is `true`.                                           |
 
 `initialValue` accepts a Plate value or a synchronous function that returns one.
 Load remote data before constructing the editor. Use the callback form when a
@@ -153,35 +167,62 @@ decoder needs the compiled plugin model.
 These APIs exist on every Plate editor because core plugins are always resolved before user plugins.
 
 <API name="Core plugin APIs">
-<APIMethods>
-  <APIItem name="editor.api.debug.log" type="(message: string, type?: DebugErrorType, details?: any) => void">
-    Log a debug message when debug logging is enabled.
-  </APIItem>
-  <APIItem name="editor.api.debug.info" type="(message: string, type?: DebugErrorType, details?: any) => void">
-    Log an info message when the configured log level allows it.
-  </APIItem>
-  <APIItem name="editor.api.debug.warn" type="(message: string, type?: DebugErrorType, details?: any) => void">
-    Log a warning when the configured log level allows it.
-  </APIItem>
-  <APIItem name="editor.api.debug.error" type="(message: unknown, type?: DebugErrorType, details?: any) => void">
-    Throw a `PlateError` by default in development. Configure `DebugPlugin` to change logging or `throwErrors`.
-  </APIItem>
-  <APIItem name="editor.api.html.deserialize" type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredKey }) => Descendant[]">
-    Deserialize an HTML element into Plate nodes. The HTML parser plugin calls this for `text/html` paste data.
-  </APIItem>
-  <APIItem name="editor.api.react.refreshDecorations" type="(options?: PliteProjectionStoreRefreshOptions) => void">
-    Refresh React decorations after an external state change.
-  </APIItem>
-  <APIItem name="editor.api.navigation.activeTarget" type="() => NavigationFeedbackTarget | null">
-    Read the current navigation feedback target and clear it if the stored target no longer resolves.
-  </APIItem>
-  <APIItem name="editor.api.navigation.clear" type="() => void">
-    Clear the current navigation feedback target.
-  </APIItem>
-  <APIItem name="editor.api.navigation.isTarget" type="(path: Path) => boolean">
-    Check whether a path matches the active navigation feedback target.
-  </APIItem>
-</APIMethods>
+  <APIMethods>
+    <APIItem
+      name="editor.api.debug.log"
+      type="(message: string, type?: DebugErrorType, details?: any) => void"
+    >
+      Log a debug message when debug logging is enabled.
+    </APIItem>
+    <APIItem
+      name="editor.api.debug.info"
+      type="(message: string, type?: DebugErrorType, details?: any) => void"
+    >
+      Log an info message when the configured log level allows it.
+    </APIItem>
+    <APIItem
+      name="editor.api.debug.warn"
+      type="(message: string, type?: DebugErrorType, details?: any) => void"
+    >
+      Log a warning when the configured log level allows it.
+    </APIItem>
+    <APIItem
+      name="editor.api.debug.error"
+      type="(message: unknown, type?: DebugErrorType, details?: any) => void"
+    >
+      Throw a `PlateError` by default in development. Configure `DebugPlugin` to
+      change logging or `throwErrors`.
+    </APIItem>
+    <APIItem
+      name="editor.api.html.deserialize"
+      type="(options: { element: HTMLElement | string; collapseWhiteSpace?: boolean; defaultElementPlugin?: WithRequiredName }) => Descendant[]"
+    >
+      Deserialize an HTML element into Plate nodes. The HTML parser plugin calls
+      this for `text/html` paste data.
+    </APIItem>
+    <APIItem
+      name="editor.api.react.refreshDecorations"
+      type="(options?: PliteProjectionStoreRefreshOptions) => void"
+    >
+      Refresh React decorations after an external state change.
+    </APIItem>
+    <APIItem
+      name="editor.api.navigation.activeTarget"
+      type="() => NavigationFeedbackTarget | null"
+    >
+      Read the current navigation feedback target and clear it if the stored
+      target no longer resolves.
+    </APIItem>
+    <APIItem name="editor.api.navigation.clear" type="() => void">
+      Clear the current navigation feedback target.
+    </APIItem>
+    <APIItem
+      name="editor.api.navigation.isTarget"
+      type="(path: Path) => boolean"
+    >
+      Check whether a path matches the active navigation feedback target.
+    </APIItem>
+  </APIMethods>
 </API>
 
 ## Core Transactions
@@ -191,68 +232,93 @@ transaction object, and plugins contribute their keyed commands through
 the constructor's `update` field.
 
 <API name="Core transactions">
-<APITransforms>
-  <APIItem name="editor.update(policy).value.replace(input)" type="(input: SnapshotInput) => void">
-    Replace primary children, named roots, persisted meta, and optionally the
-    selection through one configured Plite update.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.nodes.insert(node, options))" type="(node: Node, options?: NodeInsertNodesOptions) => void">
-    Insert a node or fragment through the Plite node transaction group.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.nodes.set(props, options))" type="(props: Partial<Node>, options?: NodeSetNodesOptions) => void">
-    Update matching nodes through the Plite node transaction group.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.marks.toggle(key, value))" type="(key: string, value?: unknown) => void">
-    Toggle an inline mark through the Plite mark transaction group.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.selection.select(location))" type="(location: Location) => void">
-    Update the current selection through the Plite selection transaction group.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.navigation.clear())" type="() => void">
-    Clear navigation feedback state.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.navigation.flashTarget(options))" type="(options: NavigationFlashTargetOptions) => boolean">
-    Store a target temporarily so components can render navigation feedback.
-  </APIItem>
-  <APIItem name="editor.update((tx) => tx.navigation.navigate(options))" type="(options: NavigationNavigateOptions) => boolean">
-    Navigate to a target and flash it through the navigation feedback plugin.
-  </APIItem>
-</APITransforms>
+  <APITransforms>
+    <APIItem
+      name="editor.update(policy).value.replace(input)"
+      type="(input: SnapshotInput) => void"
+    >
+      Replace primary children, named roots, persisted meta, and optionally the
+      selection through one configured Plite update.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.nodes.insert(node, options))"
+      type="(node: Node, options?: NodeInsertNodesOptions) => void"
+    >
+      Insert a node or fragment through the Plite node transaction group.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.nodes.set(props, options))"
+      type="(props: Partial<Node>, options?: NodeSetNodesOptions) => void"
+    >
+      Update matching nodes through the Plite node transaction group.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.marks.toggle(key, value))"
+      type="(key: string, value?: unknown) => void"
+    >
+      Toggle an inline mark through the Plite mark transaction group.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.selection.select(location))"
+      type="(location: Location) => void"
+    >
+      Update the current selection through the Plite selection transaction
+      group.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.navigation.clear())"
+      type="() => void"
+    >
+      Clear navigation feedback state.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.navigation.flashTarget(options))"
+      type="(options: NavigationFlashTargetOptions) => boolean"
+    >
+      Store a target temporarily so components can render navigation feedback.
+    </APIItem>
+    <APIItem
+      name="editor.update((tx) => tx.navigation.navigate(options))"
+      type="(options: NavigationNavigateOptions) => boolean"
+    >
+      Navigate to a target and flash it through the navigation feedback plugin.
+    </APIItem>
+  </APITransforms>
 </API>
 
 ## Plugin Pipeline Effects
 
 Some core behavior is exposed by routing browser/editor events into the Plite transaction runtime rather than by adding public editor methods.
 
-| Surface | Effect |
-| --- | --- |
+| Surface                | Effect                                                                                                                                                                                                                 |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Product codec registry | Compiles constructor codec declarations created by context-bound `defineCodecs(map)` or `defineCodecs(TargetPlugin, map)`, then delegates exact `ContentSlice` decoding and encoding to the generic clipboard runtime. |
-| Plite change events | Emits committed node and text change contexts so Plate handlers can receive previous and next node or text state. |
-| Plite React runtime | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior. |
-| `HtmlPlugin` | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`. |
-| `BaseParagraphPlugin` | Registers the default paragraph element under key `p` and maps HTML `<p>` elements, excluding code-font paragraphs. |
+| Plite change events    | Emits committed node and text change contexts through Plate `on.nodeChange` and `on.textChange`.                                                                                                                       |
+| Plite React runtime    | Handles editable keyboard, composition, focus, read-only, DOM selection export, and decoration refresh behavior.                                                                                                       |
+| `HtmlPlugin`           | Registers the `text/html` parser path and owns HTML element conversion through `editor.api.html.deserialize`.                                                                                                          |
+| `BaseParagraphPlugin`  | Registers the default paragraph element under name `p` and maps HTML `<p>` elements, excluding code-font paragraphs.                                                                                                   |
 
 ## Type Helpers
 
 Use `PlateEditor` when you want an editor typed to a specific value and plugin union.
 
 ```ts title="Typed editor helper"
-import type { PlateEditor } from 'platejs/react';
-import type { Value } from 'platejs';
-import { BoldPlugin } from '@platejs/basic-nodes/react';
+import type { PlateEditor } from "platejs/react";
+import type { Value } from "platejs";
+import { BoldPlugin } from "@platejs/basic-nodes/react";
 
 type BasicEditor = PlateEditor<Value, typeof BoldPlugin>;
 ```
 
-| Type | Purpose |
-| --- | --- |
-| `PlateEditor` | Runtime editor type with the default Plate core plugin surface. |
-| `PlateEditor<V, P>` | Typed editor for a specific `Value` and plugin union. |
-| `KeyofPlugins<T>` | String key union for Plate core plugins plus the supplied plugin config union. |
+| Type                | Purpose                                                                             |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| `PlateEditor`       | Runtime editor type with the default Plate core plugin surface.                     |
+| `PlateEditor<V, P>` | Typed editor for a specific `Value` and plugin union.                               |
+| `NameofPlugins<T>`  | String name union for Plate core plugins plus the supplied plugin definition union. |
 
 ## Related APIs
 
 - [Plate components](/docs/api/core/plate-components) covers `Plate`, `PlateContent`, `PlateView`, and component-layer runtime effects.
 - [PlateController](/docs/api/core/plate-controller) covers active, primary, and fallback editor lookup.
-- [Plate plugin](/docs/api/core/plate-plugin) covers plugin configuration, methods, options, handlers, and render hooks.
+- [Plate plugin](/docs/api/core/plate-plugin) covers plugin definitions, methods, state, events, and render hooks.
 - [Controlled Value](/docs/controlled) covers React-owned value patterns around `editor.update`.

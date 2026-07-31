@@ -9,10 +9,7 @@ import type {
   EditorCommandInput,
   EditorCommandRegistration,
   EditorCommandResult,
-  EditorStateView,
   EditorUpdateTag,
-  ExtensionsOf,
-  ValueOf,
 } from '../interfaces/editor';
 
 type CommandDefinitionSpec<
@@ -91,7 +88,7 @@ export const defineCommand = <
   });
   const command = {
     build(
-      state: EditorStateView<ValueOf<TEditor>, ExtensionsOf<TEditor>>,
+      state: EditorCommandContext<Input, TEditor>['state'],
       ...input: [Input] extends [void] ? [] | [input: Input] : [input: Input]
     ) {
       return runtime.build({

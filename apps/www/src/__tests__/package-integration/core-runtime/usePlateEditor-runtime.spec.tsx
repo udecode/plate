@@ -14,7 +14,7 @@ describe('usePlateEditor Plite runtime route', () => {
       { children: [{ text: 'runtime hook' }], type: 'p' },
     ];
     const TxPlugin = createPlatePlugin({
-      key: 'txPlugin',
+      name: 'txPlugin',
       update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
       }),
@@ -61,7 +61,7 @@ describe('usePlateEditor Plite runtime route', () => {
       { children: [{ text: 'runtime factory' }], type: 'p' },
     ];
     const TxPlugin = createPlatePlugin({
-      key: 'txPlugin',
+      name: 'txPlugin',
       update: ({ tx }) => ({
         replace: () => tx.value.replace({ children: nextValue }),
       }),

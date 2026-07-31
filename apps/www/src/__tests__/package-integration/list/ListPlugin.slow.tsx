@@ -37,11 +37,11 @@ import { BaseListPlugin } from '../../../../../../packages/list/src/lib/BaseList
 jsxt;
 
 const targetPluginConfig = {
-  targetPluginKeys: [
-    BaseParagraphPlugin.key,
-    H1Plugin.key,
-    H2Plugin.key,
-    H3Plugin.key,
+  targetPluginNames: [
+    BaseParagraphPlugin.name,
+    H1Plugin.name,
+    H2Plugin.name,
+    H3Plugin.name,
   ],
 };
 
@@ -68,7 +68,7 @@ const createClipboardData = (html: string, rtf?: string): DataTransfer =>
   }) as any;
 
 const insertData = (editor: BaseEditor, data: DataTransfer) => {
-  editor.api.clipboard.insertData(data);
+  editor.api.dom.clipboard.insertData(data);
 };
 
 describe('when insertData disc and decimal from gdocs', () => {

@@ -54,12 +54,10 @@ const ContentRootSchema = defineEditorSchema({
     },
   },
   id: 'content-root-lifecycle',
-  root: {
-    content: schema.content.types(
-      ['exclusive-portal', 'paragraph', 'shared-portal'],
-      { default: { type: 'paragraph' }, min: 1 }
-    ),
-  },
+  root: schema.content.types(
+    ['exclusive-portal', 'paragraph', 'shared-portal'],
+    { default: { type: 'paragraph' }, min: 1 }
+  ),
   unknown: 'reject',
   version: 1,
 });

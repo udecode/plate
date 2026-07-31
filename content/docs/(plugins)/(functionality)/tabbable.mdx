@@ -79,7 +79,7 @@ const editor = createPlateEditor({
           // Disable when in lists or code blocks
           const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
           const inCodeBlock = editor.read.nodes.some({
-            match: { type: editor.getType(KEYS.codeBlock) },
+            match: { type: editor.plugin(KEYS.codeBlock).type },
           });
           return !inList && !inCodeBlock;
         },
@@ -114,7 +114,7 @@ Use the `query` option to disable the Tabbable plugin when the `Tab` key should 
 query: (event) => {
   const inList = editor.read.nodes.some({ match: { type: KEYS.li } });
   const inCodeBlock = editor.read.nodes.some({
-    match: { type: editor.getType(KEYS.codeBlock) },
+    match: { type: editor.plugin(KEYS.codeBlock).type },
   });
   return !inList && !inCodeBlock;
 },

@@ -1,82 +1,44 @@
-import {
-  type InferConfig,
-  type RenderStaticNodeWrapperProps,
-} from '@platejs/core';
-import { createPlateEditor } from '@platejs/core/react';
+import { createPlateEditor, Plate, PlateContent } from '@platejs/core/react';
 import type { Element } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
-import ReactDOMServer from 'react-dom/server';
+import { render } from '@testing-library/react';
+import React from 'react';
 
 import { ListPlugin } from './ListPlugin';
 
 describe('ListPlugin rendering', () => {
   it('renders ordered and unordered list wrappers', () => {
-    const editor = createPlateEditor({ plugins: [ListPlugin] });
-    const renderBelow = editor.getPlugin(ListPlugin).render.belowNodes;
-
-    if (!renderBelow) throw new Error('Missing list wrapper renderer');
-
-    const context = editor.plugin(ListPlugin);
-    const props = (element: Element, children: string) =>
-      ({
-        ...context,
-        attributes: { 'data-plite-node': 'element' as const },
-        children,
-        element,
-        key: KEYS.list,
-        slots: {
-          children: () => null,
-          contentBoundary: ({ children }) => children,
-          contentRoot: () => null,
-        },
-      }) satisfies RenderStaticNodeWrapperProps<InferConfig<typeof ListPlugin>>;
-    const orderedProps = props(
+    const initialValue: Element[] = [
       {
         children: [{ text: 'Item' }],
         listStart: 4,
         listStyleType: 'decimal',
         type: KEYS.p,
       },
-      'Item'
-    );
-    const orderedWrapper = renderBelow(orderedProps);
-
-    if (!orderedWrapper) throw new Error('Missing ordered list wrapper');
-
-    const unorderedProps = props(
       {
         children: [{ text: 'Bullet' }],
         listStyleType: 'disc',
         type: KEYS.p,
       },
-      'Bullet'
+      {
+        children: [{ text: 'Plain' }],
+        type: KEYS.p,
+      },
+    ];
+    const editor = createPlateEditor({
+      initialValue,
+      plugins: [ListPlugin],
+    });
+    const { container } = render(
+      <Plate editor={editor} suppressInstanceWarning>
+        <PlateContent readOnly />
+      </Plate>
     );
-    const unorderedWrapper = renderBelow(unorderedProps);
 
-    if (!unorderedWrapper) throw new Error('Missing unordered list wrapper');
-
-    const orderedMarkup = ReactDOMServer.renderToStaticMarkup(
-      orderedWrapper(orderedProps)
-    );
-    const unorderedMarkup = ReactDOMServer.renderToStaticMarkup(
-      unorderedWrapper(unorderedProps)
-    );
-
-    expect(orderedMarkup).toContain('<ol');
-    expect(orderedMarkup).toContain('start="4"');
-    expect(orderedMarkup).toContain('<li>Item</li>');
-    expect(unorderedMarkup).toContain('<ul');
-    expect(unorderedMarkup).toContain('<li>Bullet</li>');
-    expect(
-      renderBelow(
-        props(
-          {
-            children: [{ text: 'Plain' }],
-            type: KEYS.p,
-          },
-          'Plain'
-        )
-      )
-    ).toBeUndefined();
+    expect(container.querySelector('ol')?.getAttribute('start')).toBe('4');
+    expect(container.querySelector('ol > li')?.textContent).toBe('Item');
+    expect(container.querySelector('ul > li')?.textContent).toBe('Bullet');
+    expect(container.querySelectorAll('ol, ul')).toHaveLength(2);
+    expect(container.textContent).toContain('Plain');
   });
 });

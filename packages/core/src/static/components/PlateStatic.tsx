@@ -19,7 +19,10 @@ import {
 import clsx from 'clsx';
 
 import type { EditableProps, BaseEditor, RenderElementSlots } from '../../lib';
-import { getPlateRuntime } from '../../internal/plugin/compilePlateModel';
+import {
+  getCompiledPlatePlugin,
+  getPlateRuntime,
+} from '../../internal/plugin/compilePlateModel';
 import type { PliteRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
@@ -288,33 +291,37 @@ export function PlateStatic(props: PlateStaticProps) {
   let afterEditable: React.ReactNode = null;
   let beforeEditable: React.ReactNode = null;
 
-  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
-    const BeforeEditable = plugin.render.beforeEditable;
+  getPlateRuntime(editor).pluginCache.render.beforeEditable.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      const BeforeEditable = plugin.render.beforeEditable;
 
-    if (BeforeEditable) {
-      beforeEditable = (
-        <>
-          {beforeEditable}
-          <BeforeEditable />
-        </>
-      );
+      if (BeforeEditable) {
+        beforeEditable = (
+          <>
+            {beforeEditable}
+            <BeforeEditable />
+          </>
+        );
+      }
     }
-  });
+  );
 
-  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
-    const AfterEditable = plugin.render.afterEditable;
+  getPlateRuntime(editor).pluginCache.render.afterEditable.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      const AfterEditable = plugin.render.afterEditable;
 
-    if (AfterEditable) {
-      afterEditable = (
-        <>
-          {afterEditable}
-          <AfterEditable />
-        </>
-      );
+      if (AfterEditable) {
+        afterEditable = (
+          <>
+            {afterEditable}
+            <AfterEditable />
+          </>
+        );
+      }
     }
-  });
+  );
 
   const content = (
     <div
@@ -343,14 +350,16 @@ export function PlateStatic(props: PlateStaticProps) {
   );
 
   // Use pre-computed arrays for aboveEditable components
-  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach((key) => {
-    const plugin = editor.getPlugin({ key });
-    const AboveEditable = plugin.render.aboveEditable;
+  getPlateRuntime(editor).pluginCache.render.aboveEditable.forEach(
+    (pluginName) => {
+      const plugin = getCompiledPlatePlugin(editor, pluginName)!;
+      const AboveEditable = plugin.render.aboveEditable;
 
-    if (AboveEditable) {
-      aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+      if (AboveEditable) {
+        aboveEditable = <AboveEditable>{aboveEditable}</AboveEditable>;
+      }
     }
-  });
+  );
 
   return aboveEditable;
 }

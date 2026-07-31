@@ -67,17 +67,25 @@ Read/update API types include `EditorStateView`, `EditorStateValueApi`,
 `EditorUpdate`, `EditorUpdatePolicy`, `EditorUpdatePolicyFor`,
 `EditorUpdateTransaction`, and `EditorTransactionValueApi`.
 
-Extension and schema types include `EditorExtension`, `EditorExtensionInput`,
+Extension and schema types include `EditorExtension`,
+`EditorExtensionDefinition`, `EditorExtensionDefinitionInput`,
+`EditorExtensionReference`, `EditorExtensionDependencyReference`,
+`DefinitionOf`, `EditorExtensionPortal`,
 `EditorExtensionActivationContext`, `EditorExtensionCleanupContext`,
-`EditorExtensionConfigurationContext`, `EditorLifecycleError`,
-`EditorLifecycleErrorSink`, `EditorExtensionStateGroup`,
-`EditorExtensionStateGroups`, `EditorExtensionTxGroup`,
-`EditorExtensionTxGroups`, `EditorSchemaDefinition`,
-`EditorSchemaContribution`, `EditorSchemaIdentity`,
-`SchemaElement`, `SchemaContent`, `SchemaTarget`, `PropertyValueDescriptor`,
-`ContentSlice`, `EditorStateSliceApi`, `EditorTransactionSliceApi`,
-`StateFieldDescriptor`, `StateFieldValueInput`, `EditorStateField`,
-`EditorValueCodec`, `SerializedEditorValue`, and `SerializedEditorEffect`.
+`EditorExtensionCandidateContext`, `EditorExtensionReadFactory`,
+`EditorExtensionUpdateFactory`, `EditorExtensionReadMiddlewareFactory`,
+`EditorExtensionApiFactory`, `EditorExtensionApiFactoryContext`,
+`EditorLifecycleError`,
+`EditorLifecycleErrorSink`, `EditorSchemaDefinition`,
+`EditorSchemaContribution`, `EditorSchemaIdentity`, `SchemaElement`,
+`SchemaContent`, `SchemaTarget`, `PropertyValueDescriptor`, `ContentSlice`,
+`EditorStateSliceApi`, `EditorTransactionSliceApi`, `StateFieldDescriptor`,
+`StateFieldValueInput`, `EditorStateField`, `EditorValueCodec`,
+`SerializedEditorValue`, and `SerializedEditorEffect`.
+
+`EditorExtensionDependencyReference` is shallow and non-generic. Compiler-only
+dependency capability/provider types are exported from
+`@platejs/plite/internal`, not the root package.
 
 Command, read-policy, and debug APIs include `EditorCommand`,
 `EditorCommandHandler`, `EditorCommandAroundHandler`,
@@ -94,27 +102,28 @@ with `encodeEditorEffect` and decode them against an installed descriptor with
 
 ## Extension Authoring
 
-Extensions register schema facts, state groups, transaction groups,
+Extensions register schema facts, owner-local read and update groups,
 changed-range corrections, commit listeners, and runtime APIs.
 
-Use `api` for mounted host/runtime services. Use `tx` for feature commands that
-change Plite model state.
+Use an `api` factory for mounted host/runtime services, even when it needs no
+context. It receives one `{ editor, root, getContributions }` object. Use
+`update` for feature commands that change Plite model state.
 
 Pass statically known extensions to `createEditor`. Use `editor.extend` for a
-dynamic extension; installation produces one atomic configuration commit,
+dynamic extension; installation produces one atomic extension commit,
 optionally with a candidate-schema document migration, and its cleanup function
-removes the extension through another configuration commit. Use
-`tx.extensions.reconfigure` when configuration must commit with other document
-changes. A schema replacement that rejects the current document uses the
-optional `migrate` callback; Plite publishes the candidate document and
-configuration together or publishes nothing.
+removes the extension through another extension commit. Use
+`tx.extensions.reconfigure` when an extension replacement must commit with other
+document changes. A schema replacement that rejects the current document uses
+the optional `migrate` callback; Plite publishes the candidate document and
+extension revision together or publishes nothing.
 
 Every API factory resolves against the same detached declarative candidate.
 Its context exposes the candidate schema and descriptor-resolved dependency APIs;
 results from other API factories become visible only after every factory has
-resolved. `validateConfiguration` receives that final candidate while the live
-editor keeps its previous configuration. `activate(editor, context)` runs only
-after the validated candidate is published.
+resolved. `validate(context)` receives that final candidate while the live
+editor keeps its previous installed extension set. `activate(editor, context)`
+runs only after the validated candidate is published.
 
 `createEditorView(runtime, { root })` resolves functional API factories against
 that view. `context.root` identifies the named root, and API reads, writes, and

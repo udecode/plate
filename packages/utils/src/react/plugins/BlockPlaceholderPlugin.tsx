@@ -1,4 +1,4 @@
-import type { InferConfig } from '@platejs/core';
+import type { DefinitionOf } from '@platejs/core';
 import { type PlateEditor, createPlatePlugin } from '@platejs/core/react';
 import { type Element, type Path, PathApi } from '@platejs/plite';
 
@@ -28,7 +28,7 @@ export type BlockPlaceholderPluginState = {
 };
 
 const BlockPlaceholderPluginBase = createPlatePlugin({
-  key: KEYS.blockPlaceholder,
+  name: KEYS.blockPlaceholder,
   initialState: (): BlockPlaceholderPluginState => ({
     _target: null,
     className: undefined,
@@ -41,6 +41,7 @@ const BlockPlaceholderPluginBase = createPlatePlugin({
   inject: {
     isBlock: true,
   },
+}).extend({
   selectors: {
     placeholder: (state, path?: Path) => {
       const target = state._target;
@@ -52,7 +53,7 @@ const BlockPlaceholderPluginBase = createPlatePlugin({
   },
 });
 
-export type BlockPlaceholderHookConfig = InferConfig<
+export type BlockPlaceholderHookDefinition = DefinitionOf<
   typeof BlockPlaceholderPluginBase
 >;
 
@@ -65,4 +66,6 @@ export const BlockPlaceholderPlugin = BlockPlaceholderPluginBase.extend({
   useHooks: useBlockPlaceholder,
 });
 
-export type BlockPlaceholderConfig = InferConfig<typeof BlockPlaceholderPlugin>;
+export type BlockPlaceholderDefinition = DefinitionOf<
+  typeof BlockPlaceholderPlugin
+>;

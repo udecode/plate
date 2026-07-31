@@ -2,12 +2,16 @@ import {
   ContentSlice,
   createEditor,
   defineEditorExtension,
+  type Editor,
+  type EditorExtensionContribution,
+  type EditorExtensionDefinitionInput,
   type Node as PliteNode,
 } from '@platejs/plite';
 import {
   clipboardHandler,
   defineHostCodec,
   dom,
+  type DOMClipboardHandler,
   hostCodecs,
 } from '@platejs/plite-dom';
 
@@ -47,6 +51,29 @@ const jsonCodec = defineHostCodec<CustomValue>({
 });
 
 const DomExtension = dom();
+const ImageExtension = defineEditorExtension({
+  name: 'img',
+  update: () => ({
+    insert: ({ url }: { url: string }) => {
+      void url;
+    },
+  }),
+});
+const typedClipboardContribution = clipboardHandler({
+  insertData(_data, { transaction }) {
+    transaction.img.insert({ url: 'https://example.com/image.png' });
+
+    // @ts-expect-error Dependency transactions preserve command inputs.
+    transaction.img.insert({ src: 'https://example.com/image.png' });
+
+    return true;
+  },
+});
+const TypedClipboardExtension = defineEditorExtension({
+  dependencies: [ImageExtension],
+  contributions: [typedClipboardContribution],
+  name: 'typed-clipboard-handler',
+});
 const ClipboardExtension = defineEditorExtension({
   name: 'clipboard-handler',
   contributions: [
@@ -61,14 +88,33 @@ const ClipboardExtension = defineEditorExtension({
 });
 const HostCodecsExtension = hostCodecs('custom-value-host-codecs', [jsonCodec]);
 const editor = createEditor({
-  extensions: [DomExtension, HostCodecsExtension, ClipboardExtension],
+  extensions: [
+    DomExtension,
+    HostCodecsExtension,
+    ClipboardExtension,
+    TypedClipboardExtension,
+  ],
   initialValue,
 });
 
+declare const imageClipboardContribution: EditorExtensionContribution<
+  DOMClipboardHandler<ImageEditor>,
+  ImageEditor
+>;
+
+const weakEditorContributions: NonNullable<
+  EditorExtensionDefinitionInput<Editor<CustomValue>>['contributions']
+> = [
+  // @ts-expect-error A contribution cannot require unavailable editor capabilities.
+  imageClipboardContribution,
+];
+
+void weakEditorContributions;
+
 editor.api.dom.focus();
 editor.api.dom.resolvePath(pliteNode);
-editor.api.clipboard.insertData(dataTransfer);
-editor.api.clipboard.writeSelection(dataTransfer);
+editor.api.dom.clipboard.insertData(dataTransfer);
+editor.api.dom.clipboard.writeSelection(dataTransfer);
 
 const plainEditor = createEditor({ initialValue });
 
@@ -76,10 +122,10 @@ const plainEditor = createEditor({ initialValue });
 plainEditor.api.dom.focus();
 
 // @ts-expect-error clipboard is installed by the DOM extension only
-plainEditor.api.clipboard.insertData(dataTransfer);
+plainEditor.api.dom.clipboard.insertData(dataTransfer);
 
 // @ts-expect-error clipboard export is installed by the DOM extension only
-plainEditor.api.clipboard.writeSelection(dataTransfer);
+plainEditor.api.dom.clipboard.writeSelection(dataTransfer);
 
 const insertionOnlyEditor = createEditor({
   extensions: [dom({ clipboard: false })],
@@ -87,10 +133,10 @@ const insertionOnlyEditor = createEditor({
 });
 
 // @ts-expect-error clipboard is disabled explicitly
-insertionOnlyEditor.api.clipboard.insertData(dataTransfer);
+insertionOnlyEditor.api.dom.clipboard.insertData(dataTransfer);
 
 // @ts-expect-error clipboard export is disabled explicitly
-insertionOnlyEditor.api.clipboard.writeSelection(dataTransfer);
+insertionOnlyEditor.api.dom.clipboard.writeSelection(dataTransfer);
 
 const maybeClipboardEditor = createEditor({
   extensions: [dom(domOptions)],
@@ -98,13 +144,10 @@ const maybeClipboardEditor = createEditor({
 });
 
 // @ts-expect-error clipboard export is not guaranteed by dynamic options
-maybeClipboardEditor.api.clipboard.writeSelection(dataTransfer);
-
-// @ts-expect-error clipboard is a sibling capability, not nested under dom
-editor.api.dom.clipboard.insertData(dataTransfer);
+maybeClipboardEditor.api.dom.clipboard.writeSelection(dataTransfer);
 
 // @ts-expect-error DOM methods are not exposed on the clipboard capability
-editor.api.clipboard.resolvePath(pliteNode);
+editor.api.dom.clipboard.resolvePath(pliteNode);
 
 editor.read((state) => {
   // @ts-expect-error DOM is not replayable read state
@@ -115,20 +158,20 @@ editor.update((tx) => {
   // @ts-expect-error DOM is not replayable transaction state
   tx.dom.focus();
 
-  tx.clipboard.insertData(dataTransfer);
+  tx.dom.insertData(dataTransfer);
 });
 
 plainEditor.update((tx) => {
   // @ts-expect-error clipboard is installed by the DOM extension only
-  tx.clipboard.insertData(dataTransfer);
+  tx.dom.insertData(dataTransfer);
 });
 
 insertionOnlyEditor.update((tx) => {
   // @ts-expect-error clipboard is disabled explicitly
-  tx.clipboard.insertData(dataTransfer);
+  tx.dom.insertData(dataTransfer);
 });
 
 maybeClipboardEditor.update((tx) => {
   // @ts-expect-error clipboard is not guaranteed by dynamic options
-  tx.clipboard.insertData(dataTransfer);
+  tx.dom.insertData(dataTransfer);
 });

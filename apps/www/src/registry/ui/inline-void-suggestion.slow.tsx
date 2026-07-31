@@ -18,7 +18,6 @@ const useEditorSelectorMock = mock();
 const useElementMock = mock();
 const useMountedMock = mock();
 const useEquationElementMock = mock();
-const useEditorPluginMock = mock();
 const usePluginStoreMock = mock();
 
 Object.assign(globalThis, { React });
@@ -59,7 +58,6 @@ mock.module('platejs/react', () => ({
     </span>
   ),
   createPrimitiveComponent: () => () => () => null,
-  useEditorPlugin: useEditorPluginMock,
   useEditor: useEditorMock,
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
@@ -93,11 +91,11 @@ mock.module('@platejs/date', () => ({
 mock.module('@platejs/mention', () => ({}));
 
 mock.module('@platejs/selection/react', () => ({
-  BlockSelectionPlugin: { key: 'blockSelection' },
+  BlockSelectionPlugin: { name: 'blockSelection' },
 }));
 
 mock.module('@platejs/suggestion/react', () => ({
-  SuggestionPlugin: { key: 'suggestion' },
+  SuggestionPlugin: { name: 'suggestion' },
 }));
 
 mock.module('@/components/ui/button', () => ({
@@ -161,7 +159,6 @@ describe('inline void suggestion styling', () => {
     useSelectedMock.mockReset();
     useEditorMock.mockReset();
     useEditorSelectorMock.mockReset();
-    useEditorPluginMock.mockReset();
     useElementMock.mockReset();
     useMountedMock.mockReset();
     usePluginStoreMock.mockReset();
@@ -172,15 +169,6 @@ describe('inline void suggestion styling', () => {
     useSelectedMock.mockReturnValue(false);
     useEditorMock.mockReturnValue(editor);
     useEditorSelectorMock.mockReturnValue(false);
-    useEditorPluginMock.mockReturnValue({
-      api: {
-        suggestion: {
-          dataList: () => [],
-          nodeId: () => null,
-        },
-      },
-      store: { set: () => {} },
-    });
     useMountedMock.mockReturnValue(true);
     usePluginStoreMock.mockReturnValue(null);
     useEquationElementMock.mockReturnValue(undefined);

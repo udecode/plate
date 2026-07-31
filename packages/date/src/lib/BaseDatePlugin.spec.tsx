@@ -16,7 +16,10 @@ describe('BaseDatePlugin', () => {
     });
 
     const element = { children: [{ text: '' }], type: KEYS.date };
-    const dateElement = editor.read.schema.handle(BaseDatePlugin);
+    const dateElement = schema.handle.element(
+      BaseDatePlugin,
+      BaseDatePlugin.type
+    );
     const date = schema.handle.property(dateElement, 'date');
 
     expect(editor.read.schema.isVoid(element)).toBe(true);
@@ -218,28 +221,6 @@ describe('BaseDatePlugin', () => {
         type: KEYS.p,
       },
     ]);
-  });
-
-  it('uses the configured date node type', () => {
-    const editor = createBaseEditor({
-      plugins: [BaseDatePlugin.configure({ type: 'custom-date' })],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: 'x' }], type: KEYS.p }],
-    });
-
-    editor.update.date.insert({ date: 'Mon Mar 23 2026' });
-
-    expect(editor.read.children()[0]).toMatchObject({
-      children: [
-        { text: 'x' },
-        { date: '2026-03-23', type: 'custom-date' },
-        { text: ' ' },
-      ],
-    });
   });
 
   it('forwards explicit insertion options', () => {

@@ -17,7 +17,11 @@ import { BaseFootnoteKit } from './footnote-base-kit';
 import { FootnoteKit } from './footnote-kit';
 import { MarkdownKit } from './markdown-kit';
 
-const footnoteKeys = ['footnote', KEYS.footnoteDefinition, KEYS.footnoteInput];
+const footnotePluginNames = [
+  'footnote',
+  KEYS.footnoteDefinition,
+  KEYS.footnoteInput,
+];
 
 describe('MarkdownKit', () => {
   it('configures both live and base editors', () => {
@@ -35,10 +39,12 @@ describe('MarkdownKit', () => {
     const editor = createPlateEditor({
       plugins: [...FootnoteKit, ...MarkdownKit],
     });
-    const keys = getPlateRuntime(editor).pluginList.map((plugin) => plugin.key);
+    const pluginNames = getPlateRuntime(editor).pluginList.map(
+      (plugin) => plugin.name
+    );
 
-    for (const key of footnoteKeys) {
-      expect(keys.filter((pluginKey) => pluginKey === key)).toHaveLength(1);
+    for (const pluginName of footnotePluginNames) {
+      expect(pluginNames.filter((name) => name === pluginName)).toHaveLength(1);
     }
 
     expect(getPlateRuntime(editor).components.footnote).toBe(
@@ -54,10 +60,12 @@ describe('MarkdownKit', () => {
     const editor = createBaseEditor({
       plugins: [...BaseFootnoteKit, ...MarkdownKit],
     });
-    const keys = getPlateRuntime(editor).pluginList.map((plugin) => plugin.key);
+    const pluginNames = getPlateRuntime(editor).pluginList.map(
+      (plugin) => plugin.name
+    );
 
-    for (const key of footnoteKeys) {
-      expect(keys.filter((pluginKey) => pluginKey === key)).toHaveLength(1);
+    for (const pluginName of footnotePluginNames) {
+      expect(pluginNames.filter((name) => name === pluginName)).toHaveLength(1);
     }
 
     expect(getPlateRuntime(editor).components.footnote).toBe(

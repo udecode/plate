@@ -119,17 +119,14 @@ import { createPlateEditor } from 'platejs/react';
 const editor = createPlateEditor({
   plugins: [
     // ...otherPlugins,
-    DocxIOPlugin.configure({
-      initialState: {
-        editorPlugins: myPlugins,
-        editorStaticComponent: MyEditorStatic,
-      },
-    }),
+    DocxIOPlugin,
   ],
 });
 
 const docx = editor.plugin(DocxIOPlugin);
 const blob = await docx.api.toBlob(editor.read.children(), {
+  editorPlugins: myPlugins,
+  editorStaticComponent: MyEditorStatic,
   orientation: 'landscape',
 });
 
@@ -154,22 +151,16 @@ Components included:
 - **Callouts**: Table layout for icon + content
 - **TOC**: Anchor links with proper paragraph breaks
 
-## Plugins
+## Export options
 
-### DocxIOPlugin
-
-Plugin providing DOCX import and explicit-snapshot export.
-
-<API name="DocxIOPlugin">
 <APIOptions>
-<APIItem name="editorPlugins" type="BasePlugin[]" optional>
-Plugins to use for HTML serialization. If not provided, uses the editor's current plugins.
+<APIItem name="editorPlugins" type="BasePluginInput[]" optional>
+Editor plugin descriptors used for HTML serialization.
 </APIItem>
 <APIItem name="editorStaticComponent" type="React.ComponentType<PlateStaticProps>" optional>
 React component to use for static rendering.
 </APIItem>
 </APIOptions>
-</API>
 
 ## API
 

@@ -181,7 +181,7 @@ import { schema } from 'platejs';
 
 // Table structure
 const CustomTablePlugin = createBasePlugin({
-  key: 'table',
+  name: 'table',
   schema: {
     element: {
       content: schema.content.type('tr', { min: 1 }),
@@ -190,7 +190,7 @@ const CustomTablePlugin = createBasePlugin({
 });
 
 const CustomTableRowPlugin = createBasePlugin({
-  key: 'tr',
+  name: 'tr',
   schema: {
     element: {
       content: schema.content.types(['td', 'th'], { min: 1 }),
@@ -199,7 +199,7 @@ const CustomTableRowPlugin = createBasePlugin({
 });
 
 const CustomTableCellPlugin = createBasePlugin({
-  key: 'td',
+  name: 'td',
   schema: {
     element: {
       content: schema.content.group('block', { min: 1 }),

@@ -55,17 +55,15 @@ describe('BaseCodeBlockPlugin', () => {
     });
     const html = new Map([['text/html', '<p>pasted</p>']]);
 
-    expect(BaseCodeBlockPlugin.key).toBe('codeBlock');
+    expect(BaseCodeBlockPlugin.name).toBe('codeBlock');
     expect(BaseCodeBlockPlugin.type).toBe(NODES.codeBlock);
-    expect(BaseCodeLinePlugin.key).toBe('codeLine');
+    expect(BaseCodeLinePlugin.name).toBe('codeLine');
     expect(BaseCodeLinePlugin.type).toBe(NODES.codeLine);
-    expect(BaseCodeHighlightPlugin.key).toBe('codeSyntax');
+    expect(BaseCodeHighlightPlugin.name).toBe('codeSyntax');
     expect(BaseCodeHighlightPlugin.type).toBe(NODES.codeSyntax);
     expect(BaseCodeBlockPlugin.dependencies).toEqual([BaseCodeLinePlugin]);
     expect(BaseCodeHighlightPlugin.dependencies).toEqual([BaseCodeBlockPlugin]);
-    expect(
-      editorWithCodeLine.read.schema.createAndFill(BaseCodeBlockPlugin)
-    ).toEqual({
+    expect(editorWithCodeLine.read.schema.create(BaseCodeBlockPlugin)).toEqual({
       children: [{ children: [{ text: '' }], type: NODES.codeLine }],
       type: NODES.codeBlock,
     });
@@ -87,7 +85,7 @@ describe('BaseCodeBlockPlugin', () => {
       editorWithCodeLine.read.schema.element(BaseCodeLinePlugin)?.groups
     ).toContain('block');
     expect(() =>
-      editorWithCodeLine.read.schema.validateDocument({
+      editorWithCodeLine.read.schema.assertDocument({
         children: [
           {
             children: [{ text: '' }],
@@ -98,10 +96,12 @@ describe('BaseCodeBlockPlugin', () => {
     ).toThrow(/root.*cannot contain|cannot contain.*root/i);
 
     expect(
-      editorWithCodeLine.api.clipboard.insertData(createDataTransfer(html))
+      editorWithCodeLine.api.dom.clipboard.insertData(createDataTransfer(html))
     ).toBe(false);
     expect(
-      editorWithoutCodeLine.api.clipboard.insertData(createDataTransfer(html))
+      editorWithoutCodeLine.api.dom.clipboard.insertData(
+        createDataTransfer(html)
+      )
     ).toBe(true);
 
     expect(editorWithCodeLine.update.codeBlock.toggle).toEqual(
@@ -152,7 +152,7 @@ describe('BaseCodeBlockPlugin', () => {
       },
     ]);
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const body = new DOMParser().parseFromString(
       data.getData('text/html'),
@@ -201,7 +201,7 @@ describe('BaseCodeBlockPlugin', () => {
 
     pipeDecorate(editor)?.(entry);
 
-    expect(() => editor.getPlugin(BaseCodeHighlightPlugin)).toThrow(
+    expect(() => editor.plugin(BaseCodeHighlightPlugin).plugin).toThrow(
       /not installed/i
     );
   });
@@ -1073,7 +1073,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
   jsxt;
 
   const BaseCommentCodecPlugin = createBasePlugin({
-    key: 'comment_parser',
+    name: 'comment_parser',
     codecs: ({ defineCodecs }) =>
       defineCodecs({
         'text/plain': {
@@ -1135,7 +1135,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const editor = createEditor(input);
 
-      editor.api.clipboard.insertData(fragment);
+      editor.api.dom.clipboard.insertData(fragment);
 
       expect(editor.read.children()).toEqual(expected.children);
     });
@@ -1175,7 +1175,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       let commits = 0;
       const unsubscribe = editor.subscribeCommit(() => commits++);
 
-      editor.api.clipboard.insertData(data);
+      editor.api.dom.clipboard.insertData(data);
       unsubscribe();
 
       expect(editor.read.children()).toEqual(expected.children);
@@ -1216,7 +1216,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const editor = createEditor(input);
 
-      editor.api.clipboard.insertData(data);
+      editor.api.dom.clipboard.insertData(data);
 
       expect(editor.read.children()).toEqual(expected.children);
     });
@@ -1252,7 +1252,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
 
       const editor = createEditorWithParser(input);
 
-      editor.api.clipboard.insertData(data);
+      editor.api.dom.clipboard.insertData(data);
 
       expect(editor.read.children()).toEqual(expected.children);
     });
@@ -1274,7 +1274,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       ) as TestEditor;
       const deserialize = mock(() => [{ text: 'mixed parser' }]);
       const MixedSelectionCodecPlugin = createBasePlugin({
-        key: 'mixed_selection_parser',
+        name: 'mixed_selection_parser',
         codecs: ({ defineCodecs }) =>
           defineCodecs({
             'text/plain': {
@@ -1296,7 +1296,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
         new Map([['text/plain', 'const a = 1;\nconst b = 2;']])
       );
 
-      editor.api.clipboard.insertData(data);
+      editor.api.dom.clipboard.insertData(data);
 
       expect(deserialize).toHaveBeenCalledTimes(1);
     });

@@ -48,13 +48,15 @@ const removeEmptySourceAfterInsert = (
   path: Path,
   currentBlockType: string
 ) => {
+  const insertedPlugin = editor.plugin(insertedType);
   const inserted = editor.read.nodes.get(PathApi.next(path));
   const source = editor.read.nodes.get(path);
 
   if (
     !inserted ||
     !ElementApi.isElement(inserted[0]) ||
-    inserted[0].type !== editor.getType(insertedType) ||
+    inserted[0].type !==
+      (insertedPlugin.installed ? insertedPlugin.type : insertedType) ||
     !source ||
     !ElementApi.isElement(source[0]) ||
     getBlockType(source[0]) !== currentBlockType ||
@@ -103,7 +105,8 @@ export const insertBlock = (
   const [currentNode, path] = block;
   const isCurrentBlockEmpty = editor.read.nodes.isEmpty(currentNode);
   const currentBlockType = getBlockType(currentNode);
-  const nodeType = editor.getType(type);
+  const plugin = editor.plugin(type);
+  const nodeType = plugin.installed ? plugin.type : type;
 
   const isSameBlockType = nodeType === currentBlockType;
 
@@ -229,7 +232,18 @@ export const insertBlock = (
 
     return;
   }
-  editor.plugin(BaseExcalidrawPlugin).editor.update((tx) => {
+  if (type === KEYS.excalidraw) {
+    editor.plugin(BaseExcalidrawPlugin).update.insert({}, { select: true });
+
+    if (!isSameBlockType && isCurrentBlockEmpty) {
+      editor.plugin(BaseSuggestionPlugin).api.untracked(() => {
+        editor.update({ history: 'merge' }).nodes.remove({ at: path });
+      });
+    }
+
+    return;
+  }
+  editor.update((tx) => {
     const insertByType: Record<string, () => void> = {
       [KEYS.listTodo]: () =>
         tx.nodes.insert(
@@ -246,7 +260,6 @@ export const insertBlock = (
           createBlock({ indent: 1, listStyleType: type, type: KEYS.p }),
           { select: true }
         ),
-      [KEYS.excalidraw]: () => tx.excalidraw.insert({}, { select: true }),
     };
     const insert = insertByType[type];
 
@@ -299,7 +312,8 @@ export const setBlockType = (
     return;
   }
 
-  const nodeType = editor.getType(type);
+  const plugin = editor.plugin(type);
+  const nodeType = plugin.installed ? plugin.type : type;
 
   editor.update((tx) => {
     const setEntry = (entry: NodeEntry<Element>) => {

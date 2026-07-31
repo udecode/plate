@@ -14,7 +14,7 @@ Framework runtimes usually call the DOM bridge through installed editor APIs.
 
 ```ts
 editor.api.dom.focus();
-editor.api.clipboard.insertTextData(dataTransfer);
+editor.api.dom.clipboard.insertTextData(dataTransfer);
 ```
 
 Use direct public imports from `@platejs/plite-dom` for framework integration
@@ -164,7 +164,7 @@ next eligible codec.
 Framework clipboard writers call
 `writeHostFragmentData(editor, data, slice)` to run registered serializers into
 a `setData`-compatible host sink. Applications normally use
-`editor.api.clipboard.writeSelection(dataTransfer)`, which writes the native
+`editor.api.dom.clipboard.writeSelection(dataTransfer)`, which writes the native
 Plite payload and registered host formats together.
 
 ## Public Type Groups

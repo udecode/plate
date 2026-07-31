@@ -2227,7 +2227,7 @@ Clipboard calls only `insertHostData`/`writeHostFragmentData`; parsed slices fit
   `defineCodecs(TargetPlugin, map)` as the sole foreign-target path; allow a
   self-owned element-property rule to declare
   `createsElement: true`, deriving its primary configured element target from
-  `targetPluginKeys[0]` while retaining the remaining targets for property
+  `targetPluginNames[0]` while retaining the remaining targets for property
   accumulation; model composable mark/property accumulation separately from
   exclusive element/document claims; compile stable
   priority/order and reject unresolved overlap; migrate every HTML node/mark
@@ -2421,11 +2421,11 @@ The compiler resolves the referenced plugin's configured type and proves the
 contributed properties are valid claims for it. Schema-owned properties such as
 List’s `checked`/restart/start/style claims, BaseIndent’s `indent`, and
 TextAlign’s alignment remain contributions of those property owners even
-though their compiled target set comes from configured `targetPluginKeys`;
+though their compiled target set comes from configured `targetPluginNames`;
 they do not hardcode `BaseParagraphPlugin` or use the foreign overload. A
 self-owned element-property rule may additionally set `createsElement: true`
 when it must create an element for its primary configured target. The compiler
-resolves that target from `targetPluginKeys[0]`, rejects a missing, disabled, or
+resolves that target from `targetPluginNames[0]`, rejects a missing, disabled, or
 non-element primary target, and treats later target keys only as property
 accumulation targets. Whole-input DOCX cleanup is not a foreign node codec; it
 remains flat `transformData`.
@@ -2437,15 +2437,15 @@ remains flat `transformData`.
 ```ts
 const TextAlignPlugin = createBasePlugin({
   key: 'textAlign',
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
     ],
   }),
-  targetPluginKeys: [BaseParagraphPlugin.key],
+  targetPluginNames: [BaseParagraphPlugin.key],
 }).extend(({ defineCodecs }) => ({
   codecs: defineCodecs({
     'text/html': {
@@ -2469,7 +2469,7 @@ List is the required structural element-property case:
 const BaseListPlugin = createBasePlugin({
   key: 'list',
   schema: listPropertySchema,
-  targetPluginKeys: [BaseParagraphPlugin.key],
+  targetPluginNames: [BaseParagraphPlugin.key],
 }).extend(({ defineCodecs }) => ({
   codecs: defineCodecs({
     'text/html': {
@@ -2501,7 +2501,7 @@ const BaseListPlugin = createBasePlugin({
 
 `createsElement: true` is composition intent, not duplicated target metadata.
 The compiler derives the created element's configured type from
-`targetPluginKeys[0]` and verifies every returned property against that target.
+`targetPluginNames[0]` and verifies every returned property against that target.
 BaseIndent separately decodes/encodes `indent`; BaseList does not acquire that
 claim. `patchTarget: true` identifies the one semantic target element inside a
 composite spec, so BaseIndent and other independently owned property patches
@@ -2730,7 +2730,7 @@ compilation. Plugin array position never decides behavior.
 - **Target invariants:** One HTML host codec; plugin identity supplies stable
   owner and inferred self target; only the typed descriptor overload names a
   foreign target; `createsElement` derives its primary target from configured
-  `targetPluginKeys[0]` and never names Paragraph; exclusive element claims
+  `targetPluginNames[0]` and never names Paragraph; exclusive element claims
   cannot overlap unresolved; distinct property claims accumulate; competing
   writes to one property require a priority winner and equal priority fails;
   wrapper order is stable and the first/highest ordered wrapper is outermost;
@@ -2818,7 +2818,7 @@ compilation. Plugin array position never decides behavior.
 - **Focused unit proof:** Tag/style/attribute matching; exclusive conflicts;
   composable property accumulation; competing-property writes; configured
   owner/foreign-target type inference; configured primary
-  `targetPluginKeys[0]` resolution without a Paragraph special case; stable
+  `targetPluginNames[0]` resolution without a Paragraph special case; stable
   priority/owner tie order; plugin-array permutation independence; safe nested
   output/content-token consumption; default-root and nested `patchTarget`
   composition; duplicate target rejection; element-property patch merge and
@@ -3549,7 +3549,7 @@ portal are keep constraints.
 **Execution skill:** `plate-plan --deep`; `tdd` for implementation; `autoreview` before handoff. Use `plite-plan --deep` only when a reproduced headless/interception/preview job cannot use the current command contract.
 
 **Final owner:** Each Plate feature package owns its inferred
-`editor.api[pluginKey]` and `editor.update[pluginKey]` namespaces plus any
+`editor.api[pluginName]` and `editor.update[pluginName]` namespaces plus any
 feature-specific React state. Plate core publishes and collision-checks them.
 `packages/plite` remains the only conditional command runtime owner. The
 registry owns labels, icons, ordering, and rendered controls.
@@ -5754,7 +5754,7 @@ owners:
   (`content/docs/plite/concepts/06-commands.mdx:40-115`,
   `content/docs/plite/walkthroughs/05-executing-commands.mdx:80-231`).
 - Plate publishes inferred plugin-owned APIs at
-  `editor.api[pluginKey]` and updates at `editor.update[pluginKey]`; the exact
+  `editor.api[pluginName]` and updates at `editor.update[pluginName]`; the exact
   descriptor portal is the generic-code escape
   (`packages/core/src/lib/plugin/BasePlugin.ts:1234-1260`,
   `packages/core/src/lib/plugin/getEditorPlugin.spec.ts:130-202`). Root update
@@ -5817,7 +5817,7 @@ exclusions from new package API design.
 | C02 private change kernel | Public removal | Keep `DocumentChange`; remove public `ChangeSet` machinery without replacement. |
 | C03 compiled fitter owner | Internal | Preserve `ContentSlice` and current insert call sites; move only private fit machinery. |
 | C04 product codecs | Public change | Use one ordinary inferred `.extend()` author contribution before terminal consumer `.configure()`, returning `codecs: defineCodecs(MIME_KEYED_MAP)`. Owner and normal schema target derive from the plugin. No direct `createBasePlugin({ codecs })`, `definePlateCodec`, duplicate `key`, specialized builder method, or public compiler type. |
-| C05 HTML node codecs | Public change | Put each inferred `'text/html'` rule in the same `codecs: defineCodecs(...)` declaration on the owning plugin. Infer self targets from compiled schema claims; reserve `defineCodecs(TargetPlugin, map)` for genuine foreign targets. Ordinary element-property rules emit patches; the structural self-owned case declares `createsElement: true`, with element identity derived from configured `targetPluginKeys[0]`. Require `encode` or explicit `decodeOnly: true`; support safe full node/wrapper specs and attribute/style-only patches. Compile exactly one internal schema-owning `plate:html` host codec. Keep whole-input `query`/`transformData`/`transformFragment` hooks flat under `parsers.html`; reject the redundant `ingress` bucket and all `HtmlIngress` naming. Keep `HostCodec` as the internal Plite DOM compiler boundary; do not restore Plate's deleted public `host` namespace, `definePlateHtmlNodeCodec`, duplicate `key`, or ordinary `target`. |
+| C05 HTML node codecs | Public change | Put each inferred `'text/html'` rule in the same `codecs: defineCodecs(...)` declaration on the owning plugin. Infer self targets from compiled schema claims; reserve `defineCodecs(TargetPlugin, map)` for genuine foreign targets. Ordinary element-property rules emit patches; the structural self-owned case declares `createsElement: true`, with element identity derived from configured `targetPluginNames[0]`. Require `encode` or explicit `decodeOnly: true`; support safe full node/wrapper specs and attribute/style-only patches. Compile exactly one internal schema-owning `plate:html` host codec. Keep whole-input `query`/`transformData`/`transformFragment` hooks flat under `parsers.html`; reject the redundant `ingress` bucket and all `HtmlIngress` naming. Keep `HostCodec` as the internal Plite DOM compiler boundary; do not restore Plate's deleted public `host` namespace, `definePlateHtmlNodeCodec`, duplicate `key`, or ordinary `target`. |
 | C06 DOM root runtime | Internal | Keep `<Editable>`/`<PlateContent>` unchanged; root runtime and generation tokens stay private. |
 | C07 host capabilities | Public removal + internal | Remove realm-wrong `IS_*` exports where possible. Resolve semantic quirks per mounted root internally; do not publish `DOMHostCapabilities` or `editor.api.dom.capabilities()`. |
 | C08 input/IME kernel | Internal | Keep normal editing and extension command call sites. Event intents, decisions, frames, epochs, and quirks stay private. |

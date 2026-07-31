@@ -274,7 +274,7 @@ describe('BaseTablePlugin deletion', () => {
       type: 'table-test-root-owner',
     };
     const RootOwnerPlugin = createBasePlugin({
-      key: 'table-test-root-owner',
+      name: 'table-test-root-owner',
       schema: {
         element: {
           content: schema.content.text({ default: 'text', min: 1 }),

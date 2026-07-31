@@ -39,7 +39,7 @@ describe('BaseBlockquotePlugin', () => {
       },
     ]);
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const body = new DOMParser().parseFromString(
       data.getData('text/html'),
@@ -67,7 +67,7 @@ describe('BaseBlockquotePlugin', () => {
     expect(editor.read.schema.allowsElementType(KEYS.blockquote, KEYS.p)).toBe(
       true
     );
-    expect(editor.read.schema.createAndFill(BaseBlockquotePlugin)).toEqual({
+    expect(editor.read.schema.create(BaseBlockquotePlugin)).toEqual({
       children: [{ children: [{ text: '' }], type: KEYS.p }],
       type: KEYS.blockquote,
     });
@@ -275,7 +275,7 @@ describe('BaseHorizontalRulePlugin', () => {
       },
     ]);
 
-    editor.api.clipboard.writeSelection(data);
+    editor.api.dom.clipboard.writeSelection(data);
 
     const body = new DOMParser().parseFromString(
       data.getData('text/html'),
@@ -388,36 +388,6 @@ describe('basic block input rules', () => {
       {
         children: [{ text: '' }],
         type: KEYS.p,
-      },
-    ]);
-  });
-
-  it('uses configured hr and paragraph types', () => {
-    const editor = createBaseEditor({
-      plugins: [
-        BaseParagraphPlugin.configure({ type: 'customParagraph' }),
-        BaseHorizontalRulePlugin.configure({
-          inputRules: [HorizontalRuleRules.markdown({ variant: '-' })],
-          type: 'customHr',
-        }),
-      ],
-      selection: {
-        kind: 'text',
-        anchor: { offset: 2, path: [0, 0] },
-        focus: { offset: 2, path: [0, 0] },
-      },
-      initialValue: [{ children: [{ text: '--' }], type: 'customParagraph' }],
-    });
-
-    editor.update.text.insert('-');
-
-    expect(editor.read.children()).toMatchObject([
-      {
-        type: 'customHr',
-      },
-      {
-        children: [{ text: '' }],
-        type: 'customParagraph',
       },
     ]);
   });

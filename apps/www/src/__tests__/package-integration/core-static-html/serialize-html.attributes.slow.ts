@@ -19,7 +19,7 @@ describe('core static renderStaticHtml attributes', () => {
       {
         plugins: [
           ...BaseEditorKit.filter(
-            (plugin) => plugin.key !== BaseItalicPlugin.key
+            (plugin) => plugin.name !== BaseItalicPlugin.name
           ),
           BaseItalicPlugin.configure({
             render: {

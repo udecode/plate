@@ -14,7 +14,7 @@ import {
   getPluginNodeClass,
 } from '../../lib';
 import { getPluginNodeProps } from '../../lib/utils/getPluginNodeProps';
-import { getEditorPlugin } from '../plugin';
+import { createPluginContext } from '../plugin/createPluginContext.internal';
 
 /**
  * Merge explicitly projected plugin props and extend the class name with the
@@ -51,7 +51,7 @@ export const getRenderNodeProps = <TProps extends RenderNodePropsInput>({
     ? pluginContext
     : plugin
       ? {
-          ...getEditorPlugin(editor, plugin),
+          ...createPluginContext(editor, plugin),
           api: editor.api,
         }
       : {

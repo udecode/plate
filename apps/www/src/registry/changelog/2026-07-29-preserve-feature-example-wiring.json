@@ -64,7 +64,7 @@
     {
       "id": "2026-07-29-code-drawing-keep-feature-setup-explicit-b2ece858",
       "kind": "fix",
-      "summary": "Configure feature renderers explicitly while installing each plugin key once.",
+      "summary": "Configure feature renderers explicitly while installing each plugin name once.",
       "details": [],
       "migrationNotes": [],
       "targets": ["code-drawing-demo", "excalidraw-demo"],

@@ -1,7 +1,7 @@
 import {
   createBasePlugin,
   getInjectMatch,
-  type InferConfig,
+  type DefinitionOf,
 } from '@platejs/core';
 import {
   type Element,
@@ -13,6 +13,29 @@ import {
 import { KEYS } from '@platejs/utils';
 
 const digitRegex = /\d+/;
+const getMarkdownStyleValue = (
+  attributes: readonly {
+    type: string;
+    name?: string;
+    value?: unknown;
+  }[],
+  styleName: string
+) => {
+  const styleAttribute = attributes.find(
+    (attribute) =>
+      attribute.type === 'mdxJsxAttribute' &&
+      attribute.name === 'style' &&
+      typeof attribute.value === 'string'
+  );
+
+  if (typeof styleAttribute?.value !== 'string') return;
+
+  for (const style of styleAttribute.value.split(';')) {
+    const [name, value] = style.split(':').map((part) => part.trim());
+
+    if (name === styleName) return value;
+  }
+};
 
 export type Alignment =
   | 'center'
@@ -28,7 +51,7 @@ export type TextIndentPluginState = {
 };
 
 export const BaseFontBackgroundColorPlugin = createBasePlugin({
-  key: KEYS.backgroundColor,
+  name: KEYS.backgroundColor,
   schema: { mark: property.string() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -39,6 +62,35 @@ export const BaseFontBackgroundColorPlugin = createBasePlugin({
           tag: 'span',
         }),
         match: [{ style: { backgroundColor: '*' } }],
+      },
+
+      'text/markdown': {
+        from: 'span',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) => {
+          const value = getMarkdownStyleValue(
+            node.attributes,
+            'background-color'
+          );
+
+          return decode(node.children, {
+            ...decoration,
+            ...(value === undefined ? {} : { [type]: value }),
+          });
+        },
+        encode: ({ node, type }) => ({
+          attributes: [
+            {
+              name: 'style',
+              type: 'mdxJsxAttribute',
+              value: `background-color: ${String(node[type])};`,
+            },
+          ],
+          children: [{ type: 'text', value: node.text }],
+          name: 'span',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   inject: {
@@ -57,7 +109,7 @@ export const BaseFontBackgroundColorPlugin = createBasePlugin({
 });
 
 export const BaseFontColorPlugin = createBasePlugin({
-  key: KEYS.color,
+  name: KEYS.color,
   schema: { mark: property.string() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -68,6 +120,32 @@ export const BaseFontColorPlugin = createBasePlugin({
           tag: 'span',
         }),
         match: [{ style: { color: '*' } }],
+      },
+
+      'text/markdown': {
+        from: 'span',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) => {
+          const value = getMarkdownStyleValue(node.attributes, 'color');
+
+          return decode(node.children, {
+            ...decoration,
+            ...(value === undefined ? {} : { [type]: value }),
+          });
+        },
+        encode: ({ node, type }) => ({
+          attributes: [
+            {
+              name: 'style',
+              type: 'mdxJsxAttribute',
+              value: `color: ${String(node[type])};`,
+            },
+          ],
+          children: [{ type: 'text', value: node.text }],
+          name: 'span',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   inject: {
@@ -87,7 +165,7 @@ export const BaseFontColorPlugin = createBasePlugin({
 });
 
 export const BaseFontFamilyPlugin = createBasePlugin({
-  key: KEYS.fontFamily,
+  name: KEYS.fontFamily,
   schema: { mark: property.string() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -98,6 +176,32 @@ export const BaseFontFamilyPlugin = createBasePlugin({
           tag: 'span',
         }),
         match: [{ style: { fontFamily: '*' } }],
+      },
+
+      'text/markdown': {
+        from: 'span',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) => {
+          const value = getMarkdownStyleValue(node.attributes, 'font-family');
+
+          return decode(node.children, {
+            ...decoration,
+            ...(value === undefined ? {} : { [type]: value }),
+          });
+        },
+        encode: ({ node, type }) => ({
+          attributes: [
+            {
+              name: 'style',
+              type: 'mdxJsxAttribute',
+              value: `font-family: ${String(node[type])};`,
+            },
+          ],
+          children: [{ type: 'text', value: node.text }],
+          name: 'span',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   inject: {
@@ -113,7 +217,7 @@ export const BaseFontFamilyPlugin = createBasePlugin({
 });
 
 export const BaseFontSizePlugin = createBasePlugin({
-  key: KEYS.fontSize,
+  name: KEYS.fontSize,
   schema: { mark: property.string() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -124,6 +228,32 @@ export const BaseFontSizePlugin = createBasePlugin({
           tag: 'span',
         }),
         match: [{ style: { fontSize: '*' } }],
+      },
+
+      'text/markdown': {
+        from: 'span',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) => {
+          const value = getMarkdownStyleValue(node.attributes, 'font-size');
+
+          return decode(node.children, {
+            ...decoration,
+            ...(value === undefined ? {} : { [type]: value }),
+          });
+        },
+        encode: ({ node, type }) => ({
+          attributes: [
+            {
+              name: 'style',
+              type: 'mdxJsxAttribute',
+              value: `font-size: ${String(node[type])};`,
+            },
+          ],
+          children: [{ type: 'text', value: node.text }],
+          name: 'span',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   inject: {
@@ -139,7 +269,7 @@ export const BaseFontSizePlugin = createBasePlugin({
 });
 
 export const BaseFontWeightPlugin = createBasePlugin({
-  key: KEYS.fontWeight,
+  name: KEYS.fontWeight,
   schema: { mark: property.string() },
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -150,6 +280,32 @@ export const BaseFontWeightPlugin = createBasePlugin({
           tag: 'span',
         }),
         match: [{ style: { fontWeight: '*' } }],
+      },
+
+      'text/markdown': {
+        from: 'span',
+        kind: 'node',
+        mark: true,
+        decode: ({ decode, decoration, node, type }) => {
+          const value = getMarkdownStyleValue(node.attributes, 'font-weight');
+
+          return decode(node.children, {
+            ...decoration,
+            ...(value === undefined ? {} : { [type]: value }),
+          });
+        },
+        encode: ({ node, type }) => ({
+          attributes: [
+            {
+              name: 'style',
+              type: 'mdxJsxAttribute',
+              value: `font-weight: ${String(node[type])};`,
+            },
+          ],
+          children: [{ type: 'text', value: node.text }],
+          name: 'span',
+          type: 'mdxJsxTextElement',
+        }),
       },
     }),
   inject: {
@@ -166,8 +322,8 @@ export const BaseFontWeightPlugin = createBasePlugin({
 
 /** Enables configurable line spacing on targeted block elements. */
 export const BaseLineHeightPlugin = createBasePlugin({
-  key: KEYS.lineHeight,
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  name: KEYS.lineHeight,
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(
         property.json({
@@ -177,13 +333,13 @@ export const BaseLineHeightPlugin = createBasePlugin({
           validationVersion: 1,
         }),
         {
-          target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+          target: target.types(plugins.elementTypesByName(targetPluginNames)),
           typeChange: 'preserve-if-allowed',
         }
       ),
     ],
   }),
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
   codecs: ({ defineCodecs }) =>
     defineCodecs({
       'text/html': {
@@ -206,7 +362,8 @@ export const BaseLineHeightPlugin = createBasePlugin({
   },
   update: ({ editor, plugin, tx, type }) => ({
     set: (value: number, options?: NodeSetNodesOptions<Element>) => {
-      const { defaultNodeValue } = editor.getInjectProps(plugin);
+      const { defaultNodeValue } =
+        editor.plugin(plugin).plugin.inject.nodeProps!;
       const match = getInjectMatch(editor, plugin);
 
       if (value === defaultNodeValue) {
@@ -230,16 +387,16 @@ export const BaseLineHeightPlugin = createBasePlugin({
 
 /** Creates a plugin that adds alignment functionality to the editor. */
 export const BaseTextAlignPlugin = createBasePlugin({
-  key: KEYS.textAlign,
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  name: KEYS.textAlign,
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(property.string(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
     ],
   }),
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
   type: 'align',
   codecs: ({ defineCodecs }) =>
     defineCodecs({
@@ -265,7 +422,8 @@ export const BaseTextAlignPlugin = createBasePlugin({
   },
   update: ({ editor, plugin, tx, type }) => ({
     set: (value: Alignment, options?: NodeSetNodesOptions<Element>) => {
-      const { defaultNodeValue } = editor.getInjectProps(plugin);
+      const { defaultNodeValue } =
+        editor.plugin(plugin).plugin.inject.nodeProps!;
       const match = getInjectMatch(editor, plugin);
 
       if (value === defaultNodeValue) {
@@ -292,16 +450,16 @@ export const BaseTextIndentPlugin = createBasePlugin({
     offset: 24,
     unit: 'px',
   }),
-  key: KEYS.textIndent,
-  schema: ({ own, plugins, targetPluginKeys }) => ({
+  name: KEYS.textIndent,
+  schema: ({ own, plugins, targetPluginNames }) => ({
     properties: [
       own.elementProperty(property.number(), {
-        target: target.types(plugins.elementTypesByKey(targetPluginKeys)),
+        target: target.types(plugins.elementTypesByName(targetPluginNames)),
         typeChange: 'preserve-if-allowed',
       }),
     ],
   }),
-  targetPluginKeys: [KEYS.p],
+  targetPluginNames: [KEYS.p],
   codecs: ({ defineCodecs, store }) =>
     defineCodecs({
       'text/html': {
@@ -353,6 +511,7 @@ export const BaseTextIndentPlugin = createBasePlugin({
       },
     },
   },
+}).extend({
   update: ({ tx, type }) => ({
     set: (value: number, options?: NodeSetNodesOptions<Element>) => {
       tx.nodes.set({ [type]: value }, options);
@@ -363,9 +522,9 @@ export const BaseTextIndentPlugin = createBasePlugin({
   }),
 });
 
-export type LineHeightConfig = InferConfig<typeof BaseLineHeightPlugin>;
-export type TextAlignConfig = InferConfig<typeof BaseTextAlignPlugin>;
-export type TextIndentConfig = InferConfig<typeof BaseTextIndentPlugin>;
+export type LineHeightDefinition = DefinitionOf<typeof BaseLineHeightPlugin>;
+export type TextAlignDefinition = DefinitionOf<typeof BaseTextAlignPlugin>;
+export type TextIndentDefinition = DefinitionOf<typeof BaseTextIndentPlugin>;
 
 /** Converts a CSS size to a unitless pixel value. */
 export const toUnitLess = (value: string): string => {

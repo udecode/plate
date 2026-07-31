@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "latestVersion": 23,
+  "latestVersion": 40,
   "versions": [
     {
       "version": 0,
@@ -191,7 +191,7 @@
       "doctrineFingerprint": "sha256:b5aa00eda188ba8ab3eb5d7de0d6c2961a59c3cf246f1c6e1ddf17fdedd7a43a",
       "summary": "Plugin callbacks use their current-owner context directly without confusing cross-plugin or editor-wide capabilities.",
       "migrationChecks": [
-        "Audit plugin authoring callbacks for editor.plugin(currentPlugin), current-key root api/read/update groups, editor.getPlugin(currentKey), and editor.getType(currentKey).",
+        "Audit plugin authoring callbacks for editor.plugin(currentPlugin), current-key root api/read/update groups, editor.getPlugin(currentKey), and editor.plugin(currentKey).type.",
         "Replace same-owner lookups with supplied store, api, read, update, type, plugin, or installed values and remove unused editor or plugin destructuring.",
         "Classify every surviving editor access as editor-wide substrate, cross-plugin access, one-shot transaction metadata, or a specialized callback contract that does not expose owner shortcuts.",
         "Do not move, split, or wrap a coherent declaration solely to manufacture a shortcut; repair the owning Core contextual type when a documented shortcut is exposed but loses inference.",
@@ -277,6 +277,210 @@
         "Return plain extension objects from Plate constructors and .extend() callbacks, preserving nested command, input, state, transaction, dependency, and plugin-state inference.",
         "Reject and delete Plate context identity helpers, aliases, annotations, casts, and any-based workarounds that compensate for a broken extension-field generic.",
         "Keep Plate context capture inside authoring callbacks, extract domain inputs, and reserve Plite defineEditorExtension for independently reusable standalone descriptors."
+      ]
+    },
+    {
+      "version": 24,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:87623d783ca6afd0874dc088f928e41df806cbcea0207a34a7dd1dcd5cbe69b8",
+      "summary": "Plate plugin identity uses name consistently across descriptors, portals, targets, overrides, and transaction groups.",
+      "migrationChecks": [
+        "Migrate Plate descriptor identity declarations, descriptor access, and identity parameters to name without changing unrelated keyboard, property, storage, or React keys.",
+        "Use plugin.name for scoped API, read, update, override, target, and active transaction identities; reject identity-only descriptor surrogates and outdated composition wording.",
+        "Prove package source, tests, apps, current docs, release prose, source doctrine, generated skill parity, and public type inference contain no deprecated descriptor identity surface."
+      ]
+    },
+    {
+      "version": 25,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:6e49751fb55996cfd74845d5ae89fe87b0fe6c343c3e132f1412ecf1b8a01152",
+      "summary": "Plate plugins are exact flat definitions built directly on config-free Plite extensions with one API and one event family.",
+      "migrationChecks": [
+        "Migrate Plite extension authoring from config, state, tx, overloaded read middleware, and validateConfiguration to closure-owned inputs, read, update, readMiddleware, and config-free validate.",
+        "Flatten native Plite fields onto the Plate plugin root and reject nested extension, PluginConfig, public __config, pluginApi, getApi, handlers, and clone surfaces.",
+        "Project one descriptor-owned API through editor.api.<name>, editor.extension(Extension).api, and editor.plugin(Plugin).api; keep lifecycle and host/DOM events in prefixless on.*.",
+        "Prove one inferred author-input generic normalizes to an exact private-witness definition across Plite, Base, and Plate; prove extend widening, terminal configure, exact toPlatePlugin, declaration emit, package behavior, docs, and browser adoption."
+      ]
+    },
+    {
+      "version": 26,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:36510a757134361e864693a3934c5ec7d9424f32ee9c9bba60bc743462a0ebb7",
+      "summary": "Plugin APIs are factory-only, extracted definitions use DefinitionOf and *Definition names, and private inferred environments preserve contextual typing without caller generics.",
+      "migrationChecks": [
+        "Require api factories at Plite, Base, and Plate layers, including context-free APIs; reject static api objects, positional factory contexts, and consumer .configure({ api }).",
+        "Use DefinitionOf<typeof Descriptor> as the sole public definition extractor and name aliases *Definition; reject InferConfig, *Config aliases for extracted definitions, and unsuffixed extracted aliases while preserving true domain/runtime config types.",
+        "Keep public factories as one object call with no caller-supplied generics; allow only private inferred dependency or dependency-plus-initial-state environments needed for contextual callback inference.",
+        "Prove exact normalized definition inference, excess-field rejection, finite declaration emit, docs/checker adoption, and zero stale source aliases or API declaration shapes."
+      ]
+    },
+    {
+      "version": 27,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:81e2f0ca64c216ac117e14dce008aa77bfd132a1426c83ec965037f414debe63",
+      "summary": "Raw plugin references stay nominal while concrete descriptors alone carry one private exact-definition witness and public EditorExtension keeps one definition generic.",
+      "migrationChecks": [
+        "Keep raw PluginReference nominal with name/type identity only; reject a definition generic or private definition witness on the erased reference shape.",
+        "Carry the single private invariant definition witness only on concrete Base and Plate descriptors, use DefinitionOf as the sole public extractor, and preserve concrete descriptor intersections in dependency tuples.",
+        "Keep EditorExtension<Definition> to one public definition parameter; transitive dependency requirements stay private and official factory return types are derived rather than reconstructed with a public dependencies generic.",
+        "Prove declaration emit exposes no callback graph, private witness, or dependencies generic and preserves exact DefinitionOf, dependency, portal, and root inference."
+      ]
+    },
+    {
+      "version": 28,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:12a7da5c6e9fd6d5cb0eae088f289813e4ddde8584023598e731a0559ba451c8",
+      "summary": "Public dependency references stay shallow while finite capability providers, Core lowering aliases, and the React invariant-union erasure remain internal.",
+      "migrationChecks": [
+        "Keep root EditorExtensionDependencyReference shallow and non-generic; retain finite name-keyed direct capability/provider carriers and their value-sensitive HKT only under @platejs/plite/internal without recursively encoding exact dependency ancestry.",
+        "Require static portals to prove one literal-name match and mutual capability assignability while runtime portals prove exact installed descriptor identity.",
+        "Keep Core author-source-to-canonical-lowered aliases internal so public plugin authoring remains one object call returning one exact descriptor.",
+        "Require low-level React composition to use react({ dom }) with the exact DOM descriptor and permit one explicit erased implementation boundary only for the TypeScript 7 invariant-union reduction limit."
+      ]
+    },
+    {
+      "version": 29,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:a6d420ebc6cdb4e13d556af09f863f7d84ed628d6c92a7da276f52a55a4b423a",
+      "summary": "Staged plugin capabilities respect each field's merge law instead of treating extend as generic array concatenation.",
+      "migrationChecks": [
+        "Keep ordered replacement declarations such as commands in one owner factory unless a later stage intentionally replaces the complete earlier declaration.",
+        "Permit repeated api, read, and update stages only for honest inferred capability dependencies and prove the accumulated surface.",
+        "Inspect every repeated staged field against its runtime merge law and add focused behavior proof for any surviving replacement."
+      ]
+    },
+    {
+      "version": 30,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:ef18d63d06503482f4f99cce0d20d19b17e62b20785e9cfa991f6024d32899b4",
+      "summary": "Clipboard ingress is a direct typed contribution rather than a root plugin field.",
+      "migrationChecks": [
+        "Reject the root clipboard definition field across Plate source, tests, docs, examples, and release guidance.",
+        "Declare clipboard ingress directly in contributions with clipboardHandler(handler) when core editor transaction capabilities are enough.",
+        "Use clipboardHandler(editor, handler) inside the authoring callback when the handler needs that editor's exact installed update capabilities.",
+        "Prove the hard cut with schema-adoption and docs-contract checkers plus focused clipboard type and runtime coverage."
+      ]
+    },
+    {
+      "version": 31,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:f6061257e1fa4f235b08fe45994da6387853ecf56158235913df7749d3f4e216",
+      "summary": "Clipboard contributions use one inferred handler-only authoring form.",
+      "migrationChecks": [
+        "Use clipboardHandler(handler) as the sole clipboard contribution form across Plite, Plate, docs, examples, tests, and release guidance.",
+        "Infer the handler transaction contextually from the owning extension or Plate stage and its installed update capabilities.",
+        "Reject editor-first clipboardHandler(editor, handler) overloads, helper aliases, callback annotations, casts, and manual editor-type arguments.",
+        "Prove one-argument inference and two-argument rejection with focused type contracts plus clipboard runtime coverage."
+      ]
+    },
+    {
+      "version": 32,
+      "date": "2026-07-30",
+      "doctrineFingerprint": "sha256:981533261406899da2e81725d0796c247fb140bf650ff2d79ea74d7f235e290e",
+      "summary": "Base descriptors stay renderer-neutral; every static or live component binding converts to a Plate descriptor.",
+      "migrationChecks": [
+        "Reject component configuration on Base descriptors across source, registry kits, tests, docs, examples, and release guidance.",
+        "Bind every static or live renderer through toPlatePlugin(BasePlugin).configure({ component }) while keeping createBasePlugin renderer-neutral.",
+        "Require static/base kits to bind the owning static renderer rather than importing a feature package's live/client plugin or node component.",
+        "Prove Base-to-Plate definition preservation, static rendering, live rendering, and zero stale BasePlugin.configure({ component }) call sites."
+      ]
+    },
+    {
+      "version": 33,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:7b7e33aeed032b114c40ca3a99f667bd30e4494ed4debc531cb901d3eaa7d097",
+      "summary": "Plugin-authoring adjuncts are source-owned and sync-checked; the sole public TypeProvider bridge is distinct from internal capability machinery.",
+      "migrationChecks": [
+        "Require source-owned creation-flow, typing, and authoring-audit adjuncts whose generated copies exactly match after pnpm install.",
+        "Teach flat native fields, prefixless on callbacks, and factory inference without caller config generics in every required Plugin Creator resource.",
+        "Keep EditorExtensionTypeProvider as the sole public value-sensitive capability bridge while its higher-kinded encoding, normalized installed carrier, and transitive expansion remain internal.",
+        "Prove the v33 doctrine fingerprint, missing-or-stale adjunct rejection, exact generated parity, and unchanged package attestations."
+      ]
+    },
+    {
+      "version": 34,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:96fe683f24c277d750ecae48a21871b4a494c98a56c9022ec8d0ff04f69c4335",
+      "summary": "Terminal Base configuration owns server-safe static renderer binding; Base-to-Plate conversion remains a live React adapter.",
+      "migrationChecks": [
+        "Reject component authoring in createBasePlugin and Base .extend() while accepting it through one terminal BasePlugin.configure({ component }).",
+        "Bind static/base kits directly to the owning server-safe static renderer without importing Plate React entrypoints, live plugins, or live node components.",
+        "Use toPlatePlugin(BasePlugin).configure({ component }) only for live React adapters.",
+        "Prove Base terminal component typing and runtime publication, static rendering, live rendering, zero stale static conversion call sites, and exact generated main-skill and doctrine-resource parity.",
+        "Keep every package at its last proven version until its own v34 review and evidence close."
+      ]
+    },
+    {
+      "version": 35,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:b712a20d752125d18b7c031190bfbd3d53934d664c78484df305a08992b7f13f",
+      "summary": "Schema authoring uses direct grammar, safe defaults, honest Plate lineage and membership names, narrowing assertions, placement metadata roles, and private compiler witnesses.",
+      "migrationChecks": [
+        "Use direct complete and named roots, omitted closed defaults, schema.element.textBlock() for ordinary editable blocks, and validator-backed narrowing for property.json().",
+        "Use schemaIdentity for Plate lineage, blockContent for Plate element membership, placement-owned role metadata, and create/assertDocument/assertFragment/isMarkableVoid runtime verbs.",
+        "Pass Plate descriptors directly to schema queries, reserve schema.handle.* for raw Plite schema ownership, and reject public normalized schema/compiler/provider witnesses.",
+        "Prove source, inference, runtime, docs, generated skill parity, stale-name deletion, and package adoption before attesting any package at v35."
+      ]
+    },
+    {
+      "version": 36,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:2e18a081b5803485d37d5b5b1c893937af277ab01118cf4e83c9e8c93f27b454",
+      "summary": "Base and Plate descriptors own ordinary component publication for static, RSC, and live rendering without component-only conversion.",
+      "migrationChecks": [
+        "Accept root-level component in createBasePlugin and createPlatePlugin, reject it in Base .extend(), and allow terminal .configure({ component }) replacement.",
+        "Delete terminal toPlatePlugin(BasePlugin).configure({ component }) calls while preserving owning React adapters that publish reusable Plate-layer descriptors.",
+        "Keep static/base owners free of Plate React entrypoint imports while allowing them to declare server-safe components directly.",
+        "Prove constructor and configuration inference, runtime publication, static HTML/RSC rendering, live Plate rendering, docs adoption, and exact generated skill parity.",
+        "Keep every package at its last proven version until its own v36 review and evidence close."
+      ]
+    },
+    {
+      "version": 37,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:b67d88deb87e50eca252d43a21993d16e711f43b4c9208931939e1bb21714333",
+      "summary": "Terminal configurations from one authored plugin compose in source order while unrelated plugins and divergent authoring branches remain invalid.",
+      "migrationChecks": [
+        "Compose terminal configurations derived from one authored plugin in array order, preserving earlier non-overlapping fields and letting later defined values win.",
+        "Keep exact descriptor repetition idempotent and reject unrelated plugins or divergent authoring branches that share a name.",
+        "Use direct ordered plugin configuration in app and registry owners instead of weak override or aggregate filtering when the final composition owns membership.",
+        "Prove Core resolution, Table registry adoption, current docs and release guidance, generated skill parity, and focused browser behavior before attesting any package at v37."
+      ]
+    },
+    {
+      "version": 38,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:2b7829d44224ce517267c7dc1b44d17a6a1f95ba098b577cf6ee49a92424c653",
+      "summary": "One typed installed-plugin portal replaces public lookup helpers while compiler registries remain private.",
+      "migrationChecks": [
+        "Use editor.plugin(Plugin) as the sole public imperative plugin lookup and keep authoring-only editor and defineCodecs fields out of consumer portals.",
+        "Use portal .type for known descriptors and editor.plugin(name).type only for true runtime-name resolution.",
+        "Remove standalone and editor lookup alternatives, including type, name, reverse, container, and inject-props helpers.",
+        "Keep reverse, render, container, and injection compilation inside Core; prove public exports, exact inference, static and React rendering, docs, and generated skill parity before attesting a package at v38."
+      ]
+    },
+    {
+      "version": 39,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:1ebeef08b226b0fe2a2d300548cbad8174e591e5212d1bb587a6f20cf034fc4c",
+      "summary": "Plugin lookup accepts exact descriptors or runtime name strings through one portal and rejects weak name objects.",
+      "migrationChecks": [
+        "Use editor.plugin(Plugin) for exact inferred capabilities and editor.plugin(pluginName) only when the name is genuinely dynamic.",
+        "Reject public { name } lookup inputs and remove editor.getType plus equivalent standalone lookup alternatives.",
+        "Treat installed as the only non-throwing absence check; all other missing runtime-name portal fields must throw instead of falling back.",
+        "Migrate source, tests, registry callers, current docs, release guidance, and generated skills before attesting a package at v39."
+      ]
+    },
+    {
+      "version": 40,
+      "date": "2026-07-31",
+      "doctrineFingerprint": "sha256:5653d6d7055f85ab1c087ac4b1de9cb761e12acf896938a29436e64fc475883e",
+      "summary": "Runtime-name portals also own family-agnostic slots where the caller intentionally accepts whichever installed descriptor owns the name.",
+      "migrationChecks": [
+        "Use a concrete descriptor portal whenever descriptor identity and inferred capabilities matter.",
+        "Use a runtime-name portal for dynamic input or a family-agnostic slot that intentionally accepts another descriptor family with the same name.",
+        "Keep runtime-name portals erased and use installed as the only non-throwing absence check.",
+        "Prove exact-family rejection and family-agnostic name acceptance before attesting a package at v40."
       ]
     }
   ],

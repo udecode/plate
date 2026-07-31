@@ -1,6 +1,6 @@
-import type { DOMHandlers } from '../plugin/DOMHandlers';
+import type { DOMHandlerProp } from '../plugin/DOMHandlers';
 
-export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
+export const DOM_HANDLERS = [
   // Clipboard Events
   'onCopy',
   'onCopyCapture',
@@ -150,6 +150,7 @@ export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   'onPointerDown',
   'onPointerDownCapture',
   'onPointerMove',
+  'onPointerMoveCapture',
   'onPointerUp',
   'onPointerUpCapture',
   'onPointerCancel',
@@ -184,4 +185,4 @@ export const DOM_HANDLERS: (keyof DOMHandlers)[] = [
   // Transition Events
   'onTransitionEnd',
   'onTransitionEndCapture',
-];
+] as const satisfies readonly DOMHandlerProp[];
