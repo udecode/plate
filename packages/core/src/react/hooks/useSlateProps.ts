@@ -64,8 +64,11 @@ export const useSlateProps = ({ id }: { id?: string }): PlateSlateProps => {
 
   const onValueChange: SlateComponentProps['onValueChange'] = React.useMemo(
     () => (value) => {
-      updateVersionValue();
-      onValueChangeProp?.({ editor, value: value as Value });
+      if (editor.children !== prevValueRef.current) {
+        prevValueRef.current = editor.children;
+        updateVersionValue();
+        onValueChangeProp?.({ editor, value: value as Value });
+      }
     },
     [editor, onValueChangeProp, updateVersionValue]
   );
@@ -73,8 +76,11 @@ export const useSlateProps = ({ id }: { id?: string }): PlateSlateProps => {
   const onSelectionChange: SlateComponentProps['onSelectionChange'] =
     React.useMemo(
       () => (selection) => {
-        updateVersionSelection();
-        onSelectionChangeProp?.({ editor, selection });
+        if (editor.selection !== prevSelectionRef.current) {
+          prevSelectionRef.current = editor.selection;
+          updateVersionSelection();
+          onSelectionChangeProp?.({ editor, selection });
+        }
       },
       [editor, onSelectionChangeProp, updateVersionSelection]
     );
