@@ -56,30 +56,16 @@ describe('useSlateProps', () => {
     expect(result.current.props.key).toBe(editor.meta.key);
 
     act(() => {
+      editor.children = nextValue as any;
+      editor.selection = nextSelection;
       result.current.props.onChange(nextValue as any);
-    });
-
-    expect(result.current.editorVersion).toBe(2);
-    expect(result.current.selectionVersion).toBe(1);
-    expect(result.current.valueVersion).toBe(1);
-    expect(onChange).toHaveBeenCalledWith({ editor, value: nextValue });
-
-    act(() => {
-      result.current.props.onValueChange(nextValue as any);
-    });
-
-    expect(result.current.editorVersion).toBe(2);
-    expect(result.current.selectionVersion).toBe(1);
-    expect(result.current.valueVersion).toBe(2);
-    expect(onValueChange).toHaveBeenCalledWith({ editor, value: nextValue });
-
-    act(() => {
-      result.current.props.onSelectionChange(nextSelection);
     });
 
     expect(result.current.editorVersion).toBe(2);
     expect(result.current.selectionVersion).toBe(2);
     expect(result.current.valueVersion).toBe(2);
+    expect(onChange).toHaveBeenCalledWith({ editor, value: nextValue });
+    expect(onValueChange).toHaveBeenCalledWith({ editor, value: nextValue });
     expect(onSelectionChange).toHaveBeenCalledWith({
       editor,
       selection: nextSelection,
